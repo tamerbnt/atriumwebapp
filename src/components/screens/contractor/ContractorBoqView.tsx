@@ -14,6 +14,7 @@ import {
   useAtriumActions,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -70,7 +71,7 @@ export const ContractorBoqView: React.FC<any> = () => {
   } = useAtriumSelector(
     (s) => ({
       language: s.language,
-      currentBusiness: s.currentBusiness,
+      currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       currentUser: s.currentUser,
@@ -513,7 +514,7 @@ export const ContractorBoqView: React.FC<any> = () => {
         subline: `${item.designation} · ${item.unit}`,
         categoryLabel: `Poste ${item.itemCode}`,
         statusLabel: isOverrun ? `+${pct - 100}% Avenant` : isDone ? 'Achevé' : `${pct}% exécuté`,
-        statusVariant: isOverrun ? 'danger' : isDone ? 'active' : 'warning',
+        statusVariant: isOverrun ? 'blocked' : isDone ? 'active' : 'warning',
         metricPrimary: formatMoney(item.totalExecutedDzd, language),
         metricSecondary: `${item.executedQty}/${item.plannedQty} ${item.unit}`,
         detailCol1: {

@@ -575,9 +575,9 @@ export const RealEstateLeasesView: React.FC<any> = () => {
               statusVariant: isAct ? 'active' : 'neutral',
               metricPrimary: formatMoney(l.monthlyRentDzd, language),
               metricSecondary: `${l.startDate} → ${l.endDate}`,
-              detailCol1: { label: isAr ? 'المستأجر' : 'Locataire', value: l.tenantName },
-              detailCol2: { label: isAr ? 'الوديعة' : 'Caution', value: formatMoney(l.securityDepositDzd, language) },
-              detailCol3: { label: isAr ? 'الانتهاء' : 'Échéance', value: l.endDate },
+              detailCol1: { heading: isAr ? 'المستأجر' : 'Locataire', primaryText: l.tenantName },
+              detailCol2: { heading: isAr ? 'الوديعة' : 'Caution', primaryText: formatMoney(l.securityDepositDzd, language) },
+              detailCol3: { heading: isAr ? 'الانتهاء' : 'Échéance', primaryText: l.endDate },
             };
           }}
           getFanActions={(l): KineticRowFanAction[] => [

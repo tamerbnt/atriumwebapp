@@ -711,28 +711,34 @@ export const MedicalBillingView: React.FC<any> = () => {
             }}
             getRowMeta={(c): KineticRowMeta => ({
               title: c.patientName,
-              subtitle: `${c.ticketNumber ? `${c.ticketNumber} · ` : ''}${c.ngapCode || 'C'} · ${
+              subline: `${c.ticketNumber ? `${c.ticketNumber} · ` : ''}${c.ngapCode || 'C'} · ${
                 c.consultationDate.split('T')[0]
               }`,
               avatarText: getInitials2(c.patientName),
+              categoryLabel: c.ngapCode || 'NGAP',
               statusLabel: c.isPaid ? (isAr ? 'مدفوع' : 'Encaissé') : isAr ? 'معلق' : 'En attente',
-              statusClassName: c.isPaid ? MEMBER_PILL_OK : MEMBER_PILL_WARN,
-              primaryStat: formatMoney(c.consultationFeeDzd, 'DZD'),
-              secondaryStat: `TM: ${formatMoney(c.copayAmountDzd || 0, 'DZD')} · Chifa: ${formatMoney(
+              statusVariant: c.isPaid ? 'active' : 'warning',
+              metricPrimary: formatMoney(c.consultationFeeDzd, 'DZD'),
+              metricSecondary: `TM: ${formatMoney(c.copayAmountDzd || 0, 'DZD')} · Chifa: ${formatMoney(
                 c.insuranceShareDzd || 0,
                 'DZD'
               )}`,
               isPinned: pinnedIds.has(c.id),
+              detailCol1: { heading: 'NGAP', primaryText: c.ngapCode || 'C' },
+              detailCol2: { heading: 'Ticket Modérateur', primaryText: formatMoney(c.copayAmountDzd || 0, 'DZD') },
+              detailCol3: { heading: 'Part Chifa', primaryText: formatMoney(c.insuranceShareDzd || 0, 'DZD') },
             })}
             getFanActions={(c): KineticRowFanAction<MedicalConsultation>[] => [
-              {
-                id: 'pay',
-                label: isAr ? 'تحصيل' : 'Encaisser',
-                icon: <CheckCircle2 size={13} />,
-                variant: 'primary',
-                disabled: c.isPaid,
-                onClick: () => handlePay(c),
-              },
+              ...(!c.isPaid
+                ? [
+                    {
+                      id: 'pay',
+                      label: isAr ? 'تحصيل' : 'Encaisser',
+                      icon: <CheckCircle2 size={13} />,
+                      onClick: () => handlePay(c),
+                    },
+                  ]
+                : []),
               {
                 id: 'print',
                 label: isAr ? 'إيصال' : 'Quittance',
@@ -753,7 +759,6 @@ export const MedicalBillingView: React.FC<any> = () => {
                       id: 'pay',
                       label: isAr ? 'تحصيل' : 'Encaisser',
                       icon: <CheckCircle2 size={14} />,
-                      variant: 'primary' as const,
                       onClick: () => handlePay(c),
                     },
                   ]
@@ -1356,8 +1361,7 @@ export const MedicalBillingView: React.FC<any> = () => {
               <>
                 <InspectorSection
                   title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}
-                  delayIndex={0}
-                  animateKey={consultation.id}
+                  index={0}
                 >
                   <InspectorQuickActions
                     actions={[
@@ -1389,8 +1393,7 @@ export const MedicalBillingView: React.FC<any> = () => {
 
                 <InspectorSection
                   title={isAr ? 'تفاصيل الأتعاب' : 'Ventilation des Honoraires'}
-                  delayIndex={1}
-                  animateKey={consultation.id}
+                  index={1}
                 >
                   <InspectorCard>
                     <InspectorKeyValue
@@ -1418,8 +1421,7 @@ export const MedicalBillingView: React.FC<any> = () => {
 
                 <InspectorSection
                   title={isAr ? 'وسيلة الدفع' : "Mode d'encaissement"}
-                  delayIndex={2}
-                  animateKey={consultation.id}
+                  index={2}
                 >
                   <div className="grid grid-cols-3 gap-2">
                     {['Cash', 'Dahabia', 'BaridiMob'].map((method) => (
@@ -1442,7 +1444,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                       <InspectorWideButton
                         label={`Encaisser via ${paymentMethod}`}
                         icon={<CheckCircle2 size={15} />}
-                        variant="primary"
+                        tone="accent"
                         onClick={() => handlePay(consultation)}
                       />
                     </div>
@@ -1454,8 +1456,7 @@ export const MedicalBillingView: React.FC<any> = () => {
             {tab === 'tiers_payant' && (
               <InspectorSection
                 title="Convention Tiers-Payant Chifa"
-                delayIndex={0}
-                animateKey={consultation.id}
+                index={0}
               >
                 <InspectorCard>
                   <InspectorKeyValue
@@ -1488,14 +1489,13 @@ export const MedicalBillingView: React.FC<any> = () => {
             {tab === 'actions' && (
               <InspectorSection
                 title={isAr ? 'الطباعة والإجراءات' : 'Quittance & Suivi'}
-                delayIndex={0}
-                animateKey={consultation.id}
+                index={0}
               >
                 <div className="space-y-2.5">
                   <InspectorWideButton
                     label="Imprimer quittance patient"
                     icon={<Printer size={15} />}
-                    variant="primary"
+                    tone="accent"
                     onClick={() => handlePrintReceipt(consultation)}
                   />
                   <InspectorWideButton

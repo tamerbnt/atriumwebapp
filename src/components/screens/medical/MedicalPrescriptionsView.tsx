@@ -867,20 +867,26 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               }}
               getRowMeta={(rx): KineticRowMeta => ({
                 title: rx.patientName,
-                subtitle: `${rx.qrCodeHash} · ${rx.prescribingDoctorName || rx.doctorName || 'Dr. Polyclinique'}`,
+                subline: `${rx.qrCodeHash} · ${rx.prescribingDoctorName || rx.doctorName || 'Dr. Polyclinique'}`,
                 avatarText: getInitials2(rx.patientName),
+                categoryLabel: 'Chifa',
                 statusLabel: 'Certifié Chifa',
-                statusClassName: MEMBER_PILL_OK,
-                primaryStat: `${rx.items.length} ${isAr ? 'أدوية' : 'spécialités'}`,
-                secondaryStat: `${rx.items[0]?.drugName || 'Ordonnance'} · ${rx.prescriptionDate}`,
+                statusVariant: 'active',
+                metricPrimary: `${rx.items.length} ${isAr ? 'أدوية' : 'spécialités'}`,
+                metricSecondary: `${rx.items[0]?.drugName || 'Ordonnance'} · ${rx.prescriptionDate}`,
                 isPinned: pinnedIds.has(rx.id),
+                detailCol1: {
+                  heading: isAr ? 'الطبيب' : 'Prescripteur',
+                  primaryText: rx.prescribingDoctorName || rx.doctorName || 'Dr. Polyclinique',
+                },
+                detailCol2: { heading: 'Date', primaryText: rx.prescriptionDate },
+                detailCol3: { heading: 'QR Hash', primaryText: rx.qrCodeHash },
               })}
               getFanActions={(rx): KineticRowFanAction<MedicalPrescription>[] => [
                 {
                   id: 'print',
                   label: isAr ? 'طباعة' : 'Imprimer',
                   icon: <Printer size={13} />,
-                  variant: 'primary',
                   onClick: () => handlePrint(rx),
                 },
                 {
@@ -901,7 +907,6 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   id: 'print',
                   label: isAr ? 'طباعة' : 'Imprimer',
                   icon: <Printer size={14} />,
-                  variant: 'primary',
                   onClick: () => handlePrint(rx),
                 },
                 {
@@ -972,8 +977,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   <>
                     <InspectorSection
                       title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}
-                      delayIndex={0}
-                      animateKey={rx.id}
+                      index={0}
                     >
                       <InspectorQuickActions
                         actions={[
@@ -1001,8 +1005,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 
                     <InspectorSection
                       title={`Spécialités délivrées (${rx.items.length})`}
-                      delayIndex={1}
-                      animateKey={rx.id}
+                      index={1}
                     >
                       <InspectorCard>
                         {rx.items.map((item, idx) => (
@@ -1022,8 +1025,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     {rx.notes && (
                       <InspectorSection
                         title="Recommandation Médicale"
-                        delayIndex={2}
-                        animateKey={rx.id}
+                        index={2}
                       >
                         <InspectorCard>
                           <InspectorKeyValue label="Note" value={rx.notes} isLast />
@@ -1036,8 +1038,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 {tab === 'apercu' && (
                   <InspectorSection
                     title="Aperçu Papeterie & Studio"
-                    delayIndex={0}
-                    animateKey={rx.id}
+                    index={0}
                   >
                     <InspectorCard>
                       <InspectorKeyValue
@@ -1147,8 +1148,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   <>
                     <InspectorSection
                       title="Certification & Code QR Chifa"
-                      delayIndex={0}
-                      animateKey={rx.id}
+                      index={0}
                     >
                       <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 flex flex-col items-center justify-center space-y-2.5 text-center mb-3">
                         <QrCode size={72} className="text-[#d4522f]" />
@@ -1176,14 +1176,13 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 
                     <InspectorSection
                       title="Actions & Délivrance"
-                      delayIndex={1}
-                      animateKey={rx.id}
+                      index={1}
                     >
                       <div className="space-y-2.5">
                         <InspectorWideButton
                           label="Imprimer ordonnance PDF"
                           icon={<Printer size={15} />}
-                          variant="primary"
+                          tone="accent"
                           onClick={() => handlePrint(rx)}
                         />
                         <InspectorWideButton

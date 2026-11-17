@@ -591,9 +591,9 @@ export const TradingFinanceView: React.FC = () => {
               metricPrimary: formatMoney(inv.netToPay),
               metricSecondary: `Éch: ${inv.dueDate || '30j'}`,
               branchName: branchInfo.name,
-              detailCol1: { label: 'Client B2B', value: inv.clientName },
-              detailCol2: { label: 'Date', value: inv.date },
-              detailCol3: { label: 'Mode', value: inv.paymentMethod || 'Virement' },
+              detailCol1: { heading: 'Client B2B', primaryText: inv.clientName },
+              detailCol2: { heading: 'Date', primaryText: inv.date },
+              detailCol3: { heading: 'Mode', primaryText: inv.paymentMethod || 'Virement' },
             };
           }}
           getFanActions={(inv) =>

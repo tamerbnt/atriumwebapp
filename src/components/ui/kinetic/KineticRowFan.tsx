@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pencil, Mail, Trash2 } from 'lucide-react';
 
-export interface KineticRowFanAction {
+export interface KineticRowFanAction<_T = unknown> {
   id: string;
   label: string;
   icon: React.ReactNode;

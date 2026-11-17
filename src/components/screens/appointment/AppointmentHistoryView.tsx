@@ -632,8 +632,10 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
                   <InspectorBigStat
                     value={formatMoney(apt.price)}
                     tone={apt.status === 'Completed' ? 'ok' : 'accent'}
-                    actionLabel="Imprimer Ticket 80mm"
-                    onAction={() => window.print()}
+                    action={{
+                      label: 'Imprimer Ticket 80mm',
+                      onClick: () => window.print(),
+                    }}
                   />
                 </InspectorSection>
                 <InspectorSection index={1} title="Détail ticket thermique">

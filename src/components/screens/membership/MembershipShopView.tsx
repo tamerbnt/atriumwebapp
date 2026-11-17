@@ -917,8 +917,14 @@ export const MembershipShopView: React.FC = React.memo(() => {
                   <InspectorBigStat
                     value={formatMoney(cartTotal)}
                     tone={cart.length > 0 ? 'accent' : 'ok'}
-                    actionLabel={cart.length > 0 ? (isAr ? 'إتمام البيع الآن' : 'Encaisser maintenant') : undefined}
-                    onAction={cart.length > 0 ? handleCheckout : undefined}
+                    action={
+                      cart.length > 0
+                        ? {
+                            label: isAr ? 'إتمام البيع الآن' : 'Encaisser maintenant',
+                            onClick: handleCheckout,
+                          }
+                        : undefined
+                    }
                   />
                 </InspectorSection>
 

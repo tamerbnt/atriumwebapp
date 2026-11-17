@@ -680,9 +680,9 @@ export const TradingCatalogView: React.FC = () => {
               branchName: branchInfo.name,
               isPinned: pinnedIds.has(p.id),
               notes: p.description,
-              detailCol1: { label: 'Coût Achat HT', value: formatMoney(cost) },
-              detailCol2: { label: 'TVA', value: `${p.taxRate ?? 19}%` },
-              detailCol3: { label: 'Unité', value: p.unit || 'u' },
+              detailCol1: { heading: 'Coût Achat HT', primaryText: formatMoney(cost) },
+              detailCol2: { heading: 'TVA', primaryText: `${p.taxRate ?? 19}%` },
+              detailCol3: { heading: 'Unité', primaryText: p.unit || 'u' },
             };
           }}
           getFanActions={(p) => {

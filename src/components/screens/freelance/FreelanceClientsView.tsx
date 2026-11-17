@@ -328,13 +328,13 @@ export const FreelanceClientsView: React.FC = () => {
       const unbilled = getClientUnbilledTime(client.id);
       return {
         avatarText: client.name.slice(0, 2).toUpperCase(),
-        subtitle: client.company || t('free_clients_private_client', language),
+        subline: client.company || t('free_clients_private_client', language),
         categoryLabel: client.currency,
-        statusTone:
+        statusVariant:
           client.status === 'ActiveRetainer'
-            ? 'ok'
+            ? 'active'
             : client.status === 'ProjectBased'
-            ? 'warn'
+            ? 'warning'
             : 'info',
         statusLabel:
           client.status === 'ActiveRetainer'

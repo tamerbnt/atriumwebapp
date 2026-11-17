@@ -338,14 +338,14 @@ export const FreelanceProposalsView: React.FC = () => {
   const getProposalRowMeta = useCallback(
     (proposal: FreelanceProposal): KineticRowMeta => ({
       avatarText: proposal.clientName.slice(0, 2).toUpperCase(),
-      subtitle: `${proposal.clientName}${proposal.clientCompany ? ` · ${proposal.clientCompany}` : ''}`,
+      subline: `${proposal.clientName}${proposal.clientCompany ? ` · ${proposal.clientCompany}` : ''}`,
       categoryLabel: proposal.pricingModel,
-      statusTone:
+      statusVariant:
         proposal.status === 'Accepted'
-          ? 'ok'
+          ? 'active'
           : proposal.status === 'Declined'
-          ? 'danger'
-          : 'warn',
+          ? 'blocked'
+          : 'warning',
       statusLabel:
         proposal.status === 'Accepted'
           ? isAr

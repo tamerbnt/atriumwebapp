@@ -474,9 +474,9 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       const val = Math.round((entry.durationSeconds / 3600) * entry.rateAtMoment);
       return {
         avatarText: entry.clientName.slice(0, 2).toUpperCase(),
-        subtitle: `${entry.clientName} · ${entry.projectTitle}`,
+        subline: `${entry.clientName} · ${entry.projectTitle}`,
         categoryLabel: entry.currency,
-        statusTone: entry.isInvoiced ? 'ok' : entry.isBillable ? 'warn' : 'info',
+        statusVariant: entry.isInvoiced ? 'active' : entry.isBillable ? 'warning' : 'info',
         statusLabel: entry.isInvoiced
           ? t('free_kanban_invoiced', language)
           : entry.isBillable

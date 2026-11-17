@@ -309,6 +309,7 @@ export interface StaffMember {
   emergencyContactPhone?: string;
   bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
   medicalNotes?: string;
+  notes?: string;
   // Domain Specific & Performance
   categoryProperties?: StaffCategoryProperties;
   performance?: StaffPerformanceMetric;

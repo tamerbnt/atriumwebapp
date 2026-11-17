@@ -743,9 +743,9 @@ export const TradingInventoryView: React.FC = () => {
                 metricSecondary: `PMP ${formatMoney(cost)}`,
                 branchName: branchInfo.name,
                 isPinned: pinnedIds.has(p.id),
-                detailCol1: { label: 'Stock Réel', value: `${p.stockQuantity || 0} ${p.unit || 'u'}` },
-                detailCol2: { label: 'Seuil Alerte', value: `${p.reorderLevel || 10}` },
-                detailCol3: { label: 'Prix Vente HT', value: formatMoney(p.price?.amount || 0) },
+                detailCol1: { heading: 'Stock Réel', primaryText: `${p.stockQuantity || 0} ${p.unit || 'u'}` },
+                detailCol2: { heading: 'Seuil Alerte', primaryText: `${p.reorderLevel || 10}` },
+                detailCol3: { heading: 'Prix Vente HT', primaryText: formatMoney(p.price?.amount || 0) },
               };
             }}
             getFanActions={() => [
@@ -806,9 +806,9 @@ export const TradingInventoryView: React.FC = () => {
                 metricPrimary: formatMoney(v.totalValuationDzd),
                 metricSecondary: v.date,
                 branchName: branchInfo.name,
-                detailCol1: { label: 'Source', value: v.depotSourceName },
-                detailCol2: { label: 'Destination', value: v.depotTargetName || '—' },
-                detailCol3: { label: 'Motif', value: v.reason.replace('_', ' ') },
+                detailCol1: { heading: 'Source', primaryText: v.depotSourceName },
+                detailCol2: { heading: 'Destination', primaryText: v.depotTargetName || '—' },
+                detailCol3: { heading: 'Motif', primaryText: v.reason.replace('_', ' ') },
               };
             }}
             emptyTitle={isAr ? 'لا توجد حركات مخزون مسجلة' : 'Aucun mouvement de stock enregistré'}

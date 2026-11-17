@@ -332,16 +332,19 @@ export const AutoGarageBillingView: React.FC<any> = () => {
   }, [activeScreenTab, filteredInvoices, sortedBillingOrders, branchesById, currentBranch, language, isAr]);
 
   const getOrderRowMeta = useCallback(
-    (o: RepairOrder): KineticRowData => {
+    (o: RepairOrder): Partial<KineticRowData> => {
       const settled = o.status === 'Delivered' || Boolean(o.isPaid);
       const br = resolveRecordBranch(o, branchesById, currentBranch, language);
       return {
-        primary: `${o.orderNumber} · ${o.vehiclePlate}`,
-        secondary: `${o.clientName} · ${o.vehicleModel}`,
-        meta: `${formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)} · ${br.name}`,
-        badge: settled
-          ? { label: isAr ? 'مسوى' : 'Réglé', tone: 'ok' }
-          : { label: isAr ? 'قيد التحصيل' : 'À Encaisser', tone: 'warn' },
+        title: `${o.orderNumber} · ${o.vehiclePlate}`,
+        subline: `${o.clientName} · ${o.vehicleModel}`,
+        categoryLabel: o.bayName || 'Atelier',
+        statusLabel: settled ? (isAr ? 'مسوى' : 'Réglé') : isAr ? 'قيد التحصيل' : 'À Encaisser',
+        statusVariant: settled ? 'active' : 'warning',
+        metricPrimary: formatMoney(o.finalCostDzd || o.estimatedCostDzd, language),
+        metricSecondary: br.name,
+        branchName: br.name,
+        branchCode: br.code,
       };
     },
     [branchesById, currentBranch, language, isAr]
@@ -372,16 +375,18 @@ export const AutoGarageBillingView: React.FC<any> = () => {
   );
 
   const getInvoiceRowMeta = useCallback(
-    (inv: GarageInvoice): KineticRowData => {
+    (inv: GarageInvoice): Partial<KineticRowData> => {
       const br = resolveRecordBranch(inv, branchesById, currentBranch, language);
       return {
-        primary: `${inv.invoiceNumber} · ${inv.clientName}`,
-        secondary: `${inv.vehiclePlate} · ${inv.orderNumber}`,
-        meta: `${formatMoney(inv.netToPayDzd, language)} · ${br.name}`,
-        badge:
-          inv.billingType === 'facture_dgi'
-            ? { label: 'DGI 19%', tone: 'info' }
-            : { label: 'Bon Caisse', tone: 'neutral' },
+        title: `${inv.invoiceNumber} · ${inv.clientName}`,
+        subline: `${inv.vehiclePlate} · ${inv.orderNumber}`,
+        categoryLabel: inv.billingType === 'facture_dgi' ? 'Facture DGI' : 'Bon Caisse',
+        statusLabel: inv.billingType === 'facture_dgi' ? 'DGI 19%' : 'Bon Caisse',
+        statusVariant: inv.billingType === 'facture_dgi' ? 'info' : 'neutral',
+        metricPrimary: formatMoney(inv.netToPayDzd, language),
+        metricSecondary: br.name,
+        branchName: br.name,
+        branchCode: br.code,
       };
     },
     [branchesById, currentBranch, language]
@@ -1110,29 +1115,26 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                   <div className="mt-3">
                     {!settled ? (
                       <InspectorWideButton
-                        variant="accent"
+                        tone="accent"
+                        label={isAr ? 'تحصيل وإصدار الفاتورة DGI' : 'Encaisser & Facturer (DGI)'}
                         icon={<CreditCard className="w-4 h-4" />}
                         onClick={() => openSettlementModal(o)}
-                      >
-                        {isAr ? 'تحصيل وإصدار الفاتورة DGI' : 'Encaisser & Facturer (DGI)'}
-                      </InspectorWideButton>
+                      />
                     ) : existingInv ? (
                       <InspectorWideButton
+                        label={isAr ? 'طباعة الفاتورة' : `Imprimer (${existingInv.invoiceNumber})`}
                         icon={<Printer className="w-4 h-4" />}
                         onClick={() => {
                           setActivePrintInvoice(existingInv);
                           setIsPrintModalOpen(true);
                         }}
-                      >
-                        {isAr ? 'طباعة الفاتورة' : `Imprimer (${existingInv.invoiceNumber})`}
-                      </InspectorWideButton>
+                      />
                     ) : (
                       <InspectorWideButton
+                        label={isAr ? 'إعادة إصدار فاتورة' : 'Émettre Facture DGI'}
                         icon={<CreditCard className="w-4 h-4" />}
                         onClick={() => openSettlementModal(o)}
-                      >
-                        {isAr ? 'إعادة إصدار فاتورة' : 'Émettre Facture DGI'}
-                      </InspectorWideButton>
+                      />
                     )}
                   </div>
                 </InspectorSection>
@@ -1164,29 +1166,26 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               <InspectorSection index={2}>
                 {!settled ? (
                   <InspectorWideButton
-                    variant="accent"
+                    tone="accent"
+                    label={isAr ? 'تحصيل وإصدار الفاتورة DGI' : 'Encaisser & Facturer (DGI)'}
                     icon={<CreditCard className="w-4 h-4" />}
                     onClick={() => openSettlementModal(o)}
-                  >
-                    {isAr ? 'تحصيل وإصدار الفاتورة DGI' : 'Encaisser & Facturer (DGI)'}
-                  </InspectorWideButton>
+                  />
                 ) : existingInv ? (
                   <InspectorWideButton
+                    label={isAr ? 'طباعة الفاتورة' : `Imprimer (${existingInv.invoiceNumber})`}
                     icon={<Printer className="w-4 h-4" />}
                     onClick={() => {
                       setActivePrintInvoice(existingInv);
                       setIsPrintModalOpen(true);
                     }}
-                  >
-                    {isAr ? 'طباعة الفاتورة' : `Imprimer (${existingInv.invoiceNumber})`}
-                  </InspectorWideButton>
+                  />
                 ) : (
                   <InspectorWideButton
+                    label={isAr ? 'إعادة إصدار فاتورة' : 'Émettre Facture DGI'}
                     icon={<CreditCard className="w-4 h-4" />}
                     onClick={() => openSettlementModal(o)}
-                  >
-                    {isAr ? 'إعادة إصدار فاتورة' : 'Émettre Facture DGI'}
-                  </InspectorWideButton>
+                  />
                 )}
               </InspectorSection>
             </>

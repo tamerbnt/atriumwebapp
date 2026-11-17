@@ -365,9 +365,9 @@ export const EducationAttendanceView: React.FC = () => {
       const rate = total > 0 ? Math.round((presents / total) * 100) : st.attendanceRatePercent ?? 95;
       return {
         avatarText: st.fullName.slice(0, 2).toUpperCase(),
-        subtitle: st.phone || st.email || st.schoolGrade || 'Enrolled',
+        subline: st.phone || st.email || st.schoolGrade || 'Enrolled',
         categoryLabel: st.schoolGrade || 'Standard',
-        statusTone: rate >= 85 ? 'ok' : rate >= 70 ? 'warn' : 'danger',
+        statusVariant: rate >= 85 ? 'active' : rate >= 70 ? 'warning' : 'blocked',
         statusLabel: localizeStatus(st.status, language),
         metricPrimary: `${rate}%`,
         metricSecondary: `${total} ${isAr ? 'جلسات' : 'séances'}`,

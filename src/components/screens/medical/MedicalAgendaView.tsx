@@ -652,12 +652,24 @@ export const MedicalAgendaView: React.FC<any> = () => {
           onViewDetails={handleInspectApt}
           getRowMeta={(a): KineticRowMeta => ({
             title: a.patientName,
-            subtitle: `${a.reason} · ${getAptBranchName(a)}`,
+            subline: `${a.reason} · ${getAptBranchName(a)}`,
             avatarText: getInitials2(a.patientName),
+            categoryLabel: a.doctorName,
             statusLabel: a.status,
-            statusClassName: getAptStatusClassName(a.status),
-            primaryStat: `${a.startTime} (${a.durationMinutes}m)`,
-            secondaryStat: `${a.doctorName} · ${a.date}`,
+            statusVariant:
+              a.status === 'InRoom' || a.status === 'Completed'
+                ? 'active'
+                : a.status === 'Arrived'
+                ? 'warning'
+                : a.status === 'Cancelled' || a.status === 'NoShow'
+                ? 'blocked'
+                : 'info',
+            metricPrimary: `${a.startTime} (${a.durationMinutes}m)`,
+            metricSecondary: `${a.doctorName} · ${a.date}`,
+            branchName: getAptBranchName(a),
+            detailCol1: { heading: isAr ? 'الطبيب' : 'Praticien', primaryText: a.doctorName },
+            detailCol2: { heading: isAr ? 'السبب' : 'Motif', primaryText: a.reason },
+            detailCol3: { heading: isAr ? 'التاريخ' : 'Date & Créneau', primaryText: `${a.date} · ${a.startTime}` },
           })}
           getFanActions={(apt): KineticRowFanAction<MedicalAppointmentSlot>[] => {
             if (apt.status === 'Booked') {
@@ -666,7 +678,6 @@ export const MedicalAgendaView: React.FC<any> = () => {
                   id: 'arrived',
                   label: isAr ? 'وصل' : 'Arrivé',
                   icon: <UserCheck size={13} />,
-                  variant: 'primary',
                   onClick: () => handleStatusChange(apt, 'Arrived'),
                 },
               ];
@@ -677,7 +688,6 @@ export const MedicalAgendaView: React.FC<any> = () => {
                   id: 'inroom',
                   label: isAr ? 'دخول' : 'En Salle',
                   icon: <Stethoscope size={13} />,
-                  variant: 'primary',
                   onClick: () => handleStatusChange(apt, 'InRoom'),
                 },
               ];
@@ -688,7 +698,6 @@ export const MedicalAgendaView: React.FC<any> = () => {
                   id: 'complete',
                   label: isAr ? 'إنهاء' : 'Terminer',
                   icon: <CheckCircle2 size={13} />,
-                  variant: 'primary',
                   onClick: () => handleStatusChange(apt, 'Completed'),
                 },
               ];
@@ -702,7 +711,6 @@ export const MedicalAgendaView: React.FC<any> = () => {
                   id: 'arrived',
                   label: isAr ? 'تسجيل الوصول' : 'Marquer Arrivé',
                   icon: <UserCheck size={14} />,
-                  variant: 'primary',
                   onClick: () => handleStatusChange(apt, 'Arrived'),
                 },
               ];
@@ -713,7 +721,6 @@ export const MedicalAgendaView: React.FC<any> = () => {
                   id: 'inroom',
                   label: isAr ? 'إدخال الغرفة' : 'Entrée en Salle',
                   icon: <Stethoscope size={14} />,
-                  variant: 'primary',
                   onClick: () => handleStatusChange(apt, 'InRoom'),
                 },
               ];
@@ -933,8 +940,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                 <>
                   <InspectorSection
                     title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}
-                    delayIndex={0}
-                    animateKey={apt.id}
+                    index={0}
                   >
                     <InspectorQuickActions
                       actions={[
@@ -962,8 +968,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
 
                   <InspectorSection
                     title={isAr ? 'تفاصيل الموعد' : 'Créneau & Praticien'}
-                    delayIndex={1}
-                    animateKey={apt.id}
+                    index={1}
                   >
                     <InspectorCard>
                       <InspectorKeyValue label={isAr ? 'الطبيب' : 'Praticien'} value={apt.doctorName} />
@@ -997,8 +1002,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
               {tab === 'patient' && (
                 <InspectorSection
                   title={isAr ? 'ملف المريض المرتبط' : 'Fiche Patient Associée'}
-                  delayIndex={0}
-                  animateKey={apt.id}
+                  index={0}
                 >
                   <InspectorCard>
                     <InspectorKeyValue label={isAr ? 'الاسم' : 'Patient'} value={apt.patientName} />
@@ -1035,8 +1039,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
               {tab === 'actions' && (
                 <InspectorSection
                   title={isAr ? 'سير العمل' : "Workflow Salle d'Attente"}
-                  delayIndex={0}
-                  animateKey={apt.id}
+                  index={0}
                 >
                   <div className="space-y-2.5">
                     {(['Arrived', 'InRoom', 'Completed', 'Cancelled'] as const).map((nextSt) => (
@@ -1052,8 +1055,8 @@ export const MedicalAgendaView: React.FC<any> = () => {
                             : 'Annuler le Rendez-vous'
                         }
                         icon={nextSt === 'Cancelled' ? <XCircle size={15} /> : <CheckCircle2 size={15} />}
-                        variant={
-                          nextSt === 'Cancelled' ? 'danger' : nextSt === 'InRoom' ? 'primary' : 'default'
+                        tone={
+                          nextSt === 'Cancelled' ? 'dark' : nextSt === 'InRoom' ? 'accent' : 'neutral'
                         }
                         disabled={apt.status === nextSt}
                         onClick={() => handleStatusChange(apt, nextSt)}

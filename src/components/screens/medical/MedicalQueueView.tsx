@@ -711,8 +711,9 @@ export const MedicalQueueView: React.FC<any> = () => {
                 onViewDetails={handleSelectConsultation}
                 getRowMeta={(c): KineticRowMeta => ({
                   title: c.patientName,
-                  subtitle: `${c.chiefComplaint} · ${c.vitals?.bloodPressure || '120/80'}`,
+                  subline: `${c.chiefComplaint} · ${c.vitals?.bloodPressure || '120/80'}`,
                   avatarText: getInitials2(c.patientName),
+                  categoryLabel: c.ticketNumber || c.ngapCode || 'C',
                   statusLabel:
                     c.status === 'InWaitingQueue'
                       ? isAr
@@ -725,10 +726,18 @@ export const MedicalQueueView: React.FC<any> = () => {
                       : isAr
                       ? 'مكتمل'
                       : 'Terminé',
-                  statusClassName: getQueueStatusClassName(c.status),
-                  primaryStat: formatMoney(c.consultationFeeDzd, 'DZD'),
-                  secondaryStat: `${c.ticketNumber || c.id} · ${c.consultationDate.split('T')[0]}`,
+                  statusVariant:
+                    c.status === 'InWaitingQueue'
+                      ? 'warning'
+                      : c.status === 'InConsultation'
+                      ? 'info'
+                      : 'active',
+                  metricPrimary: formatMoney(c.consultationFeeDzd, 'DZD'),
+                  metricSecondary: `${c.ticketNumber || c.id} · ${c.consultationDate.split('T')[0]}`,
                   isPinned: pinnedIds.has(c.id),
+                  detailCol1: { heading: isAr ? 'السبب' : 'Motif', primaryText: c.chiefComplaint },
+                  detailCol2: { heading: isAr ? 'الضغط' : 'TA', primaryText: c.vitals?.bloodPressure || '120/80' },
+                  detailCol3: { heading: isAr ? 'التاريخ' : 'Date', primaryText: c.consultationDate.split('T')[0] },
                 })}
                 getFanActions={(c): KineticRowFanAction<MedicalConsultation>[] => [
                   {
@@ -742,7 +751,6 @@ export const MedicalQueueView: React.FC<any> = () => {
                         ? 'إنهاء'
                         : 'Clôturer',
                     icon: <Stethoscope size={13} />,
-                    variant: 'primary',
                     onClick: () => {
                       if (c.status === 'InWaitingQueue') handleStartExam(c);
                       else handleFinishExam(c);
@@ -767,7 +775,6 @@ export const MedicalQueueView: React.FC<any> = () => {
                         ? 'إنهاء'
                         : 'Clôturer',
                     icon: <Stethoscope size={14} />,
-                    variant: 'primary',
                     onClick: () => {
                       if (c.status === 'InWaitingQueue') handleStartExam(c);
                       else handleFinishExam(c);
@@ -949,8 +956,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                   <>
                     <InspectorSection
                       title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}
-                      delayIndex={0}
-                      animateKey={cons.id}
+                      index={0}
                     >
                       <InspectorQuickActions
                         actions={[
@@ -996,8 +1002,7 @@ export const MedicalQueueView: React.FC<any> = () => {
 
                     <InspectorSection
                       title="Motif & Examen Clinique"
-                      delayIndex={1}
-                      animateKey={cons.id}
+                      index={1}
                     >
                       <InspectorCard>
                         <InspectorKeyValue label="Motif" value={cons.chiefComplaint} />
@@ -1015,8 +1020,7 @@ export const MedicalQueueView: React.FC<any> = () => {
 
                     <InspectorSection
                       title={isAr ? 'ملاحظة الطبيب الفورية' : "Note d'observation immédiate"}
-                      delayIndex={2}
-                      animateKey={cons.id}
+                      index={2}
                     >
                       <InspectorNotesField
                         value={quickNote}
@@ -1038,8 +1042,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                 {tab === 'vitals' && (
                   <InspectorSection
                     title={isAr ? 'العلامات الحيوية المسجلة' : 'Constantes Vitales de Triage'}
-                    delayIndex={0}
-                    animateKey={cons.id}
+                    index={0}
                   >
                     <InspectorCard>
                       <InspectorKeyValue
@@ -1079,8 +1082,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                   <>
                     <InspectorSection
                       title="Honoraires & Convention CNAS"
-                      delayIndex={0}
-                      animateKey={cons.id}
+                      index={0}
                     >
                       <InspectorCard>
                         <InspectorKeyValue
@@ -1108,15 +1110,14 @@ export const MedicalQueueView: React.FC<any> = () => {
 
                     <InspectorSection
                       title="Actions & Règlement"
-                      delayIndex={1}
-                      animateKey={cons.id}
+                      index={1}
                     >
                       <div className="space-y-2.5">
                         {!cons.isPaid && (
                           <InspectorWideButton
                             label="Encaisser la consultation"
                             icon={<CreditCard size={15} />}
-                            variant="primary"
+                            tone="accent"
                             onClick={() => {
                               markConsultationPaid(cons.id);
                               setInspectedConsultation({ ...cons, isPaid: true });
@@ -1132,7 +1133,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                           <InspectorWideButton
                             label="Faire entrer le patient"
                             icon={<Stethoscope size={15} />}
-                            variant="primary"
+                            tone="accent"
                             onClick={() => handleStartExam(cons)}
                           />
                         )}
@@ -1140,7 +1141,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                           <InspectorWideButton
                             label="Clôturer la consultation"
                             icon={<CheckCircle2 size={15} />}
-                            variant="primary"
+                            tone="accent"
                             onClick={() => handleFinishExam(cons)}
                           />
                         )}

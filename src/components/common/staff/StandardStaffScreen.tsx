@@ -95,7 +95,7 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
         categoryLabel: s.role || contractType,
         statusLabel: st.label,
         statusVariant: st.variant,
-        metricPrimary: foundation.isOwnerViewer ? `${formatMoney(s.salary || 0)} DZD` : score,
+        metricPrimary: foundation.isOwnerViewer ? `${formatMoney(s.salary || 0)} DZD` : String(score),
         metricSecondary: s.isClockedInToday
           ? isAr
             ? `حاضر · ${s.lastClockInTime || '08:00'}`

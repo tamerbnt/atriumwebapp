@@ -687,8 +687,9 @@ export const MedicalPatientsView: React.FC<any> = () => {
             const branchName = resolveRecordBranch(p, branchesById, currentBranch, language).name;
             return {
               title: p.fullName,
-              subtitle: `NSS: ${p.nationalId || 'CHIFA-OK'} · ${p.bloodGroup || 'O+'}`,
+              subline: `NSS: ${p.nationalId || 'CHIFA-OK'} · ${p.bloodGroup || 'O+'}`,
               avatarText: getInitials2(p.fullName),
+              categoryLabel: p.bloodGroup || 'Patient',
               statusLabel: hasVigilance
                 ? isAr
                   ? 'حساسية/مزمن'
@@ -696,10 +697,14 @@ export const MedicalPatientsView: React.FC<any> = () => {
                 : isAr
                 ? 'سجل سليم'
                 : 'Dossier Standard',
-              statusClassName: hasVigilance ? MEMBER_PILL_DANGER : MEMBER_PILL_OK,
-              primaryStat: `${visitCount} ${isAr ? 'فحوصات' : 'visites'}`,
-              secondaryStat: `${p.phone} · ${branchName}`,
+              statusVariant: hasVigilance ? 'blocked' : 'active',
+              metricPrimary: `${visitCount} ${isAr ? 'فحوصات' : 'visites'}`,
+              metricSecondary: `${p.phone} · ${branchName}`,
+              branchName,
               isPinned: pinnedIds.has(p.id),
+              detailCol1: { heading: 'NSS / Chifa', primaryText: p.nationalId || 'CHIFA-OK' },
+              detailCol2: { heading: isAr ? 'الهاتف' : 'Téléphone', primaryText: p.phone },
+              detailCol3: { heading: isAr ? 'الزيارات' : 'Consultations', primaryText: `${visitCount}` },
             };
           }}
           getFanActions={(p): KineticRowFanAction<MedicalPatient>[] => [
@@ -707,7 +712,6 @@ export const MedicalPatientsView: React.FC<any> = () => {
               id: 'consult',
               label: isAr ? 'فحص سريري' : 'Consultation',
               icon: <Stethoscope size={13} />,
-              variant: 'primary',
               onClick: () => handleOpenConsultation(p),
             },
             {
@@ -734,7 +738,6 @@ export const MedicalPatientsView: React.FC<any> = () => {
               id: 'consult',
               label: isAr ? 'فحص سريري' : 'Consulter',
               icon: <Stethoscope size={14} />,
-              variant: 'primary',
               onClick: () => handleOpenConsultation(p),
             },
             {
@@ -831,8 +834,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                 <>
                   <InspectorSection
                     title={isAr ? 'إجراءات سريعة' : isFr ? 'Actions cliniques' : 'Quick Actions'}
-                    delayIndex={0}
-                    animateKey={patient.id}
+                    index={0}
                   >
                     <InspectorQuickActions
                       actions={[
@@ -866,8 +868,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 
                   <InspectorSection
                     title={isAr ? 'بيانات المريض' : 'État Civil & Contact'}
-                    delayIndex={1}
-                    animateKey={patient.id}
+                    index={1}
                   >
                     <InspectorCard>
                       <InspectorKeyValue
@@ -906,8 +907,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                   {patient.emergencyContact && (
                     <InspectorSection
                       title={isAr ? 'طوارئ' : "Contact d'urgence"}
-                      delayIndex={2}
-                      animateKey={patient.id}
+                      index={2}
                     >
                       <InspectorCard>
                         <InspectorKeyValue
@@ -926,8 +926,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 
                   <InspectorSection
                     title={isAr ? 'الحساسيات والأمراض المزمنة' : 'Vigilances & Antécédents'}
-                    delayIndex={3}
-                    animateKey={patient.id}
+                    index={3}
                   >
                     <InspectorCard>
                       <InspectorKeyValue
@@ -966,8 +965,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 
                   <InspectorSection
                     title={isAr ? 'الملاحظات السريرية' : 'Observations Cliniques'}
-                    delayIndex={4}
-                    animateKey={patient.id}
+                    index={4}
                   >
                     <InspectorNotesField
                       value={patient.notes || ''}
@@ -1010,8 +1008,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                   <>
                     <InspectorSection
                       title={isAr ? 'المؤشرات الحيوية الحالية' : 'Constantes Vitales'}
-                      delayIndex={0}
-                      animateKey={patient.id}
+                      index={0}
                     >
                       <InspectorCard>
                         <InspectorKeyValue
@@ -1279,8 +1276,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
 
                     <InspectorSection
                       title={isAr ? 'التحاليل البيولوجية' : 'Bilans Biologiques'}
-                      delayIndex={1}
-                      animateKey={patient.id}
+                      index={1}
                     >
                       {patientLabs.length > 0 ? (
                         <InspectorCard>
@@ -1318,7 +1314,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                         <InspectorWideButton
                           label={isAr ? 'تحليل مخبري جديد' : 'Ouvrir / Nouveau Bilan Labo'}
                           icon={<Microscope size={14} />}
-                          variant="primary"
+                          tone="accent"
                           onClick={() => setIsLabModalOpen(true)}
                         />
                       </div>
@@ -1330,8 +1326,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
               {tab === 'history' && (
                 <InspectorSection
                   title={isAr ? 'سجل الفحوصات الطبية' : 'Historique des Consultations'}
-                  delayIndex={0}
-                  animateKey={patient.id}
+                  index={0}
                 >
                   {patientConsults.length > 0 ? (
                     <InspectorCard>
@@ -1365,7 +1360,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                     <InspectorWideButton
                       label={isAr ? 'إضافة فحص سريري' : 'Nouvelle Consultation'}
                       icon={<Stethoscope size={14} />}
-                      variant="primary"
+                      tone="accent"
                       onClick={() => handleOpenConsultation(patient)}
                     />
                   </div>

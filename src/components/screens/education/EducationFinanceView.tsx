@@ -326,14 +326,14 @@ export const EducationFinanceView: React.FC = () => {
   const getEnrollmentRowMeta = useCallback(
     (enr: EduEnrollment): KineticRowMeta => ({
       avatarText: enr.studentName.slice(0, 2).toUpperCase(),
-      subtitle: `${enr.cohortName} · ID ${enr.studentId}`,
+      subline: `${enr.cohortName} · ID ${enr.studentId}`,
       categoryLabel: `${enr.installments?.length || 1} ${isAr ? 'أقساط' : 'échéances'}`,
-      statusTone:
+      statusVariant:
         enr.paymentStatus === 'Paid'
-          ? 'ok'
+          ? 'active'
           : enr.paymentStatus === 'Overdue'
-          ? 'danger'
-          : 'warn',
+          ? 'blocked'
+          : 'warning',
       statusLabel:
         enr.paymentStatus === 'Paid'
           ? t('edu_tuition_paid')

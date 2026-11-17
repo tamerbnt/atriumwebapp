@@ -510,9 +510,9 @@ export const RealEstateFinanceView: React.FC<any> = () => {
               statusVariant: isSettled ? 'active' : 'warning',
               metricPrimary: formatMoney(l.monthlyRentDzd, language),
               metricSecondary: `Net: ${formatMoney(l.monthlyRentDzd * 0.9, language)}`,
-              detailCol1: { label: isAr ? 'المستأجر' : 'Locataire', value: l.tenantName },
-              detailCol2: { label: 'Com. 10%', value: formatMoney(l.monthlyRentDzd * 0.1, language) },
-              detailCol3: { label: 'Net Bailleur', value: formatMoney(l.monthlyRentDzd * 0.9, language) },
+              detailCol1: { heading: isAr ? 'المستأجر' : 'Locataire', primaryText: l.tenantName },
+              detailCol2: { heading: 'Com. 10%', primaryText: formatMoney(l.monthlyRentDzd * 0.1, language) },
+              detailCol3: { heading: 'Net Bailleur', primaryText: formatMoney(l.monthlyRentDzd * 0.9, language) },
             };
           }}
           getFanActions={(l): KineticRowFanAction[] => {

@@ -658,9 +658,9 @@ export const TradingPurchasesView: React.FC = () => {
               metricSecondary: doc.depotName || 'Dépôt Central',
               branchName: branchInfo.name,
               isPinned: pinnedIds.has(doc.id),
-              detailCol1: { label: 'Fournisseur', value: doc.supplierName },
-              detailCol2: { label: 'Dépôt', value: doc.depotName || 'Dépôt Central' },
-              detailCol3: { label: 'Date', value: doc.orderDate },
+              detailCol1: { heading: 'Fournisseur', primaryText: doc.supplierName },
+              detailCol2: { heading: 'Dépôt', primaryText: doc.depotName || 'Dépôt Central' },
+              detailCol3: { heading: 'Date', primaryText: doc.orderDate },
             };
           }}
           getFanActions={(doc) => {

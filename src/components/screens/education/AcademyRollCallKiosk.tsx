@@ -552,6 +552,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
           </div>
         </div>
         </div>
+        </div>
       </ScreenPod>
 
       {notifyingStudent && (

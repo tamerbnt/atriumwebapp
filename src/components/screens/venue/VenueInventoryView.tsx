@@ -826,18 +826,18 @@ export const VenueInventoryView: React.FC = () => {
               isPinned: pinnedUnitIds.has(unit.id),
               notes: unit.description,
               detailCol1: {
-                label: t('venue_inv_capacity'),
-                value: t('venue_card_capacity', language, { count: unit.capacity }),
+                heading: t('venue_inv_capacity'),
+                primaryText: t('venue_card_capacity', language, { count: unit.capacity }),
               },
               detailCol2: {
-                label: t('venue_inv_surface'),
-                value: unit.surfaceAreaSqm
+                heading: t('venue_inv_surface'),
+                primaryText: unit.surfaceAreaSqm
                   ? t('venue_inv_surface_unit', language, { surface: unit.surfaceAreaSqm })
                   : '--',
               },
               detailCol3: {
-                label: t('venue_inv_daily_rate'),
-                value: formatCurrencyAmount(unit.dailyRate, unit.currency),
+                heading: t('venue_inv_daily_rate'),
+                primaryText: formatCurrencyAmount(unit.dailyRate, unit.currency),
               },
             };
           }}

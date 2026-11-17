@@ -1318,14 +1318,14 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                       statusVariant: isOut ? 'expired' : isLow ? 'warning' : inCartItem ? 'info' : 'active',
                       metricPrimary: formatMoney(product.price.amount),
                       metricSecondary: `${product.stockQuantity} ${product.unit || t('shop_unit_pcs')}`,
-                      detailCol1: { label: 'SKU', value: product.sku },
+                      detailCol1: { heading: 'SKU', primaryText: product.sku },
                       detailCol2: {
-                        label: t('shop_col_category'),
-                        value: product.category,
+                        heading: t('shop_col_category'),
+                        primaryText: product.category,
                       },
                       detailCol3: {
-                        label: t('shop_col_stock'),
-                        value: `${product.stockQuantity} ${product.unit || t('shop_unit_pcs')}`,
+                        heading: t('shop_col_stock'),
+                        primaryText: `${product.stockQuantity} ${product.unit || t('shop_unit_pcs')}`,
                       },
                     };
                   }}
@@ -1655,9 +1655,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 statusVariant: 'warning',
                 metricPrimary: formatMoney(po.totalAmount),
                 metricSecondary: `${po.items.length} art.`,
-                detailCol1: { label: isAr ? 'العميل' : isEn ? 'Customer' : 'Client', value: po.customerName || t('shop_receipt_walkin') },
-                detailCol2: { label: isAr ? 'الأصناف' : isEn ? 'Items' : 'Articles', value: String(po.items.length) },
-                detailCol3: { label: isAr ? 'الوقت' : isEn ? 'Time' : 'Heure', value: new Date(po.createdAt).toLocaleTimeString() },
+                detailCol1: { heading: isAr ? 'العميل' : isEn ? 'Customer' : 'Client', primaryText: po.customerName || t('shop_receipt_walkin') },
+                detailCol2: { heading: isAr ? 'الأصناف' : isEn ? 'Items' : 'Articles', primaryText: String(po.items.length) },
+                detailCol3: { heading: isAr ? 'الوقت' : isEn ? 'Time' : 'Heure', primaryText: new Date(po.createdAt).toLocaleTimeString() },
               };
             }}
             getFanActions={(po): KineticRowFanAction[] => [
@@ -1789,9 +1789,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 statusVariant: isOut ? 'expired' : isLow ? 'warning' : 'active',
                 metricPrimary: formatMoney(p.price.amount),
                 metricSecondary: `${p.stockQuantity} ${p.unit || t('shop_unit_pcs')}`,
-                detailCol1: { label: 'SKU', value: p.sku },
-                detailCol2: { label: t('shop_col_stock'), value: `${p.stockQuantity} ${p.unit || t('shop_unit_pcs')}` },
-                detailCol3: { label: t('shop_col_retail'), value: formatMoney(p.price.amount) },
+                detailCol1: { heading: 'SKU', primaryText: p.sku },
+                detailCol2: { heading: t('shop_col_stock'), primaryText: `${p.stockQuantity} ${p.unit || t('shop_unit_pcs')}` },
+                detailCol3: { heading: t('shop_col_retail'), primaryText: formatMoney(p.price.amount) },
               };
             }}
             getFanActions={(p): KineticRowFanAction[] => [

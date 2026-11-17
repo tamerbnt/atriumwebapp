@@ -19,6 +19,7 @@ import {
   useAtriumActions,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -78,7 +79,7 @@ export const AgricultureHarvestView: React.FC = () => {
   } = useAtriumSelector(
     (s) => ({
       language: s.language,
-      currentBusiness: s.currentBusiness,
+      currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       currentUser: s.currentUser,
@@ -1420,10 +1421,11 @@ export const AgricultureHarvestView: React.FC = () => {
               <InspectorSection index={2} title={isAr ? 'ملاحظات الجودة' : isEn ? 'Quality Notes' : 'Observations qualité'}>
                 <InspectorNotesField
                   value={inspectorNotes}
-                  onChange={setInspectorNotes}
-                  onSave={handleSaveNotes}
+                  onSave={(next) => {
+                    setInspectorNotes(next);
+                    handleSaveNotes();
+                  }}
                   placeholder="Noter le calibre des fruits, le degré Brix ou l'heure de départ..."
-                  savedLabel={noteSaved ? (isAr ? 'تم الحفظ' : 'Mentions enregistrées') : undefined}
                 />
               </InspectorSection>
             </>

@@ -365,9 +365,9 @@ export const LogisticsScannerView: React.FC = () => {
   const getScannerRowMeta = useCallback(
     (s: LogisticsShipment): KineticRowMeta => ({
       avatarText: (s.recipientName || 'AW').slice(0, 2).toUpperCase(),
-      subtitle: `${s.trackingCode} · ${s.destinationWilaya}`,
+      subline: `${s.trackingCode} · ${s.destinationWilaya}`,
       categoryLabel: s.deliveryMode === 'StopDesk' ? 'Stop-Desk' : isAr ? 'منزلي' : 'Domicile',
-      statusTone: s.status === 'Delivered' || s.status === 'Sorted' ? 'ok' : 'warn',
+      statusVariant: s.status === 'Delivered' || s.status === 'Sorted' ? 'active' : 'warning',
       statusLabel: localizeStatus(s.status, language),
       metricPrimary: `${s.weightKg} kg`,
       metricSecondary: resolveRecordBranch(s, branchesById, currentBranch, language).name,

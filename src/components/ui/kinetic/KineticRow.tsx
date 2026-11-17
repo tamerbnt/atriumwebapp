@@ -44,6 +44,8 @@ export interface KineticRowData {
   branchNode?: React.ReactNode;
 }
 
+export type KineticRowMeta = Partial<KineticRowData>;
+
 export interface KineticRowProps {
   row: KineticRowData;
   isSelected?: boolean;

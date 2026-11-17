@@ -279,9 +279,9 @@ export const FreelanceFinanceView: React.FC = () => {
   const getExpenseRowMeta = useCallback(
     (exp: FreelanceExpense): KineticRowMeta => ({
       avatarText: exp.vendor.slice(0, 2).toUpperCase(),
-      subtitle: exp.description,
+      subline: exp.description,
       categoryLabel: exp.category,
-      statusTone: exp.isTaxDeductible ? 'ok' : 'warn',
+      statusVariant: exp.isTaxDeductible ? 'active' : 'warning',
       statusLabel: exp.isTaxDeductible
         ? isAr
           ? 'معفى ضريبياً'

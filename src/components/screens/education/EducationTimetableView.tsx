@@ -290,9 +290,9 @@ export const EducationTimetableView: React.FC = () => {
       const hasConflict = conflicts.has(s.id);
       return {
         avatarText: (s.cohortName || 'SE').slice(0, 2).toUpperCase(),
-        subtitle: `${s.topic || 'Séance de cours'} · ${s.instructorName || 'Formateur'}`,
+        subline: `${s.topic || 'Séance de cours'} · ${s.instructorName || 'Formateur'}`,
         categoryLabel: s.classroomName || 'Salle',
-        statusTone: hasConflict ? 'danger' : 'ok',
+        statusVariant: hasConflict ? 'blocked' : 'active',
         statusLabel: hasConflict ? 'Conflit' : 'Planifiée',
         metricPrimary: `${s.startTime} - ${s.endTime}`,
         metricSecondary: s.date,

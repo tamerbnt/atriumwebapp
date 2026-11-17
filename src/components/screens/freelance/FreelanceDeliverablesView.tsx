@@ -378,14 +378,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
       const isCreep = item.loggedHours > item.estimatedHours;
       return {
         avatarText: item.title.slice(0, 2).toUpperCase(),
-        subtitle: `${item.projectTitle} · ${item.clientName}`,
+        subline: `${item.projectTitle} · ${item.clientName}`,
         categoryLabel: item.projectTitle,
-        statusTone: isCreep
-          ? 'danger'
+        statusVariant: isCreep
+          ? 'blocked'
           : item.stage === 'Approved'
-          ? 'ok'
+          ? 'active'
           : item.stage === 'InProgress'
-          ? 'warn'
+          ? 'warning'
           : 'info',
         statusLabel: t(STAGE_KEYS[item.stage], language),
         metricPrimary: `${item.loggedHours}h / ${item.estimatedHours}h`,

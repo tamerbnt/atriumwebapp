@@ -346,9 +346,9 @@ export const LogisticsManifestsView: React.FC<any> = () => {
       const isCompleted = m.status === 'Completed' || m.status === 'Reconciled';
       return {
         avatarText: (m.driverName || 'TR').slice(0, 2).toUpperCase(),
-        subtitle: `${m.manifestNumber} · ${m.vehiclePlate}`,
+        subline: `${m.manifestNumber} · ${m.vehiclePlate}`,
         categoryLabel: m.zoneWilaya || 'Alger',
-        statusTone: isCompleted ? 'ok' : 'info',
+        statusVariant: isCompleted ? 'active' : 'info',
         statusLabel: isCompleted ? (isAr ? 'مكتملة' : 'Clôturée') : isAr ? 'في التوزيع' : 'En Tournée',
         metricPrimary: formatMoney(m.totalCodExpectedDzd || 0, language),
         metricSecondary: `${m.totalShipmentsCount} ${isAr ? 'طرد' : 'colis'}`,

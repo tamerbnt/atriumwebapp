@@ -252,9 +252,9 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
       const isOut = s.status === 'OutForDelivery';
       return {
         avatarText: (s.recipientName || 'AW').slice(0, 2).toUpperCase(),
-        subtitle: `${s.trackingCode} · ${s.destinationWilaya.split('-')[0].trim()}`,
+        subline: `${s.trackingCode} · ${s.destinationWilaya.split('-')[0].trim()}`,
         categoryLabel: s.deliveryMode === 'StopDesk' ? 'Stop-Desk' : isAr ? 'منزلي' : 'Domicile',
-        statusTone: isDelivered ? 'ok' : isOut ? 'warn' : 'neutral',
+        statusVariant: isDelivered ? 'active' : isOut ? 'warning' : 'neutral',
         statusLabel: isDelivered
           ? isAr ? 'تم التوصيل' : 'Livré'
           : isOut

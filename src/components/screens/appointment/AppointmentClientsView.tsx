@@ -926,10 +926,12 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                     <InspectorBigStat
                       value={formatMoney(client.segmentData?.lifetimeSpent || 0)}
                       tone="accent"
-                      actionLabel={isAr ? 'برمجة موعد' : isEn ? 'Schedule Visit' : 'Programmer un Soin'}
-                      onAction={() => {
-                        setInspectingClient(null);
-                        setIsNewBookingModalOpen(true);
+                      action={{
+                        label: isAr ? 'برمجة موعد' : isEn ? 'Schedule Visit' : 'Programmer un Soin',
+                        onClick: () => {
+                          setInspectingClient(null);
+                          setIsNewBookingModalOpen(true);
+                        },
                       }}
                     />
                   </InspectorSection>
@@ -944,7 +946,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                             key={apt.id}
                             title={apt.serviceName}
                             subtitle={`${apt.date} à ${apt.startTime} · ${apt.staffName}`}
-                            trailing={formatMoney(apt.price)}
+                            metaRight={formatMoney(apt.price)}
                             isLast={idx === arr.length - 1}
                           />
                         ))

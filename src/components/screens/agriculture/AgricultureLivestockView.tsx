@@ -16,6 +16,7 @@ import {
   useAtriumActions,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
 import { useAgricultureData } from './agricultureData';
@@ -76,7 +77,7 @@ export const AgricultureLivestockView: React.FC = () => {
   } = useAtriumSelector(
     (s) => ({
       language: s.language,
-      currentBusiness: s.currentBusiness,
+      currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       currentUser: s.currentUser,
@@ -791,7 +792,7 @@ export const AgricultureLivestockView: React.FC = () => {
             : hs === 'Quarantine'
             ? isAr ? 'حجر صحي' : 'Quarantaine'
             : isAr ? 'سحب دوائي' : 'Retrait Lait',
-        statusVariant: hs === 'Quarantine' ? 'danger' : isLocked ? 'warning' : 'active',
+        statusVariant: hs === 'Quarantine' ? 'blocked' : isLocked ? 'warning' : 'active',
         metricPrimary: `${prod} L/j`,
         metricSecondary: `Lact. N°${a.lactationNumber || 1}`,
         detailCol1: {
@@ -1352,7 +1353,7 @@ export const AgricultureLivestockView: React.FC = () => {
                 <InspectorSection index={0} title={isAr ? 'الرقابة الصحية' : isEn ? 'Milk Exclusion' : 'Statut laitier ONIL'}>
                   <InspectorBigStat
                     value={isLocked ? (isAr ? 'موقوف' : 'Retrait Actif') : isAr ? 'مطابق' : 'Lait Conforme'}
-                    tone={isLocked ? 'warn' : 'ok'}
+                    tone={isLocked ? 'accent' : 'ok'}
                     caption={
                       isLocked
                         ? "Interdiction d'incorporation dans le tank collectif Giplait/Soummam"
@@ -1375,9 +1376,9 @@ export const AgricultureLivestockView: React.FC = () => {
               <InspectorSection index={0} title={isAr ? 'الملاحظات البيطرية' : isEn ? 'Veterinary Notes' : 'Observations & Prophylaxie'}>
                 <InspectorNotesField
                   value={animalNotesDraft}
-                  onChange={setAnimalNotesDraft}
-                  onSave={() => {
-                    const updated: AgriLivestock = { ...animal, notes: animalNotesDraft };
+                  onSave={(next) => {
+                    setAnimalNotesDraft(next);
+                    const updated: AgriLivestock = { ...animal, notes: next };
                     updateLivestock(updated);
                     setSelectedAnimal(updated);
                     showToast(isAr ? 'تم حفظ الملاحظات البيطرية' : 'Carnet sanitaire enregistré', 'success');
@@ -1421,7 +1422,7 @@ export const AgricultureLivestockView: React.FC = () => {
               <InspectorSection index={1}>
                 <InspectorBigStat
                   value={`${dailyLiters} L/j`}
-                  tone={isLocked ? 'warn' : 'ok'}
+                  tone={isLocked ? 'accent' : 'ok'}
                   caption={`${animal.reproStatus || 'Lactation'} · Lactation N° ${animal.lactationNumber || 1}`}
                 />
               </InspectorSection>
@@ -1503,7 +1504,7 @@ export const AgricultureLivestockView: React.FC = () => {
                 <InspectorSection index={0} title={isAr ? 'تبريد الحليب' : isEn ? 'Tank Temp' : 'Température tank'}>
                   <InspectorBigStat
                     value={`+${milk.tankTemperatureCelsius}°C`}
-                    tone={milk.tankTemperatureCelsius <= 4 ? 'ok' : 'warn'}
+                    tone={milk.tankTemperatureCelsius <= 4 ? 'ok' : 'accent'}
                     caption={`Norme chaîne du froid ≤ 4.0°C · BL ${milk.dairyDeliverySlipNo || 'En attente'}`}
                   />
                 </InspectorSection>

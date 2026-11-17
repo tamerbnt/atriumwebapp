@@ -36,6 +36,7 @@ import {
   InspectorBigStat,
   InspectorListItem,
   InspectorWideButton,
+  KineticRowFanAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -693,13 +694,13 @@ export const TradingSalesView: React.FC = () => {
               metricSecondary: `HT ${formatMoney(doc.totalHtFinal || doc.totalHtRaw || 0)}`,
               branchName: branchInfo.name,
               isPinned: pinnedDocIds.has(doc.id),
-              detailCol1: { label: 'Client', value: doc.clientName },
-              detailCol2: { label: 'NIF', value: doc.clientNif || 'Non renseigné' },
-              detailCol3: { label: 'Date', value: doc.date },
+              detailCol1: { heading: 'Client', primaryText: doc.clientName },
+              detailCol2: { heading: 'NIF', primaryText: doc.clientNif || 'Non renseigné' },
+              detailCol3: { heading: 'Date', primaryText: doc.date },
             };
           }}
-          getFanActions={(doc) => {
-            const actions = [
+          getFanActions={(doc): KineticRowFanAction<CommercialDocument>[] => {
+            const actions: KineticRowFanAction<CommercialDocument>[] = [
               {
                 id: 'print',
                 label: t('action_print', 'Imprimer'),

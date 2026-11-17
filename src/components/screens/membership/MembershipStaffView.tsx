@@ -102,7 +102,7 @@ export const MembershipStaffView: React.FC<any> = () => {
         id: 'punch',
         label: isAr ? 'حضور' : isEn ? 'Punch In' : 'Pointer',
         icon: <Fingerprint className="w-[15px] h-[15px]" />,
-        onClick: () => foundation.handlePunchPointage(member, 'in'),
+        onClick: () => foundation.handlePunchPointage(member.id),
       },
       {
         id: 'edit',
@@ -127,7 +127,7 @@ export const MembershipStaffView: React.FC<any> = () => {
         id: 'punch',
         label: isAr ? 'تسجيل حضور' : isEn ? 'Clock In' : 'Pointer',
         icon: <Fingerprint className="w-3.5 h-3.5 text-[#096b40]" />,
-        onClick: () => foundation.handlePunchPointage(member, 'in'),
+        onClick: () => foundation.handlePunchPointage(member.id),
       },
       {
         id: 'edit',

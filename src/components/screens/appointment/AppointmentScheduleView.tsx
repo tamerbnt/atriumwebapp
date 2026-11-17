@@ -940,16 +940,14 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                   <InspectorBigStat
                     value={formatMoney(apt.price)}
                     tone={apt.isPaid ? 'ok' : 'accent'}
-                    actionLabel={
+                    action={
                       apt.status !== 'Completed' && apt.status !== 'Cancelled'
-                        ? t('salon_quick_checkout', language)
-                        : undefined
-                    }
-                    onAction={
-                      apt.status !== 'Completed' && apt.status !== 'Cancelled'
-                        ? () => {
-                            handleOneClickCheckout(apt);
-                            setInspectingApt(null);
+                        ? {
+                            label: t('salon_quick_checkout', language),
+                            onClick: () => {
+                              handleOneClickCheckout(apt);
+                              setInspectingApt(null);
+                            },
                           }
                         : undefined
                     }
@@ -961,7 +959,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                       title={apt.serviceName}
                       subtitle={`${apt.date} · ${apt.startTime}-${apt.endTime}`}
                       badge={{ label: apt.isPaid ? 'Réglé' : 'À payer', tone: apt.isPaid ? 'ok' : 'warn' }}
-                      trailing={formatMoney(apt.price)}
+                      metaRight={formatMoney(apt.price)}
                       isLast
                     />
                   </InspectorCard>

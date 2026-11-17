@@ -568,24 +568,28 @@ export const MedicalCertificatesView: React.FC<any> = () => {
           }}
           getRowMeta={(cert): KineticRowMeta => ({
             title: cert.patientName,
-            subtitle: `${getCertTypeLabel(cert.certificateType)} · ${cert.qrHash}`,
+            subline: `${getCertTypeLabel(cert.certificateType)} · ${cert.qrHash}`,
             avatarText: getInitials2(cert.patientName),
+            categoryLabel: getCertTypeLabel(cert.certificateType),
             statusLabel: cert.isSigned ? (isAr ? 'موقّع' : 'Signé QR') : isAr ? 'مسودة' : 'Brouillon',
-            statusClassName: cert.isSigned ? MEMBER_PILL_OK : MEMBER_PILL_WARN,
-            primaryStat:
+            statusVariant: cert.isSigned ? 'active' : 'warning',
+            metricPrimary:
               cert.certificateType === 'ArretDeTravail'
                 ? `${cert.durationDays}j (${cert.startDate})`
                 : cert.certificateType === 'CertificatDescriptifITT'
                 ? `${cert.ittDays}j ITT`
                 : cert.purpose || 'Aptitude',
-            secondaryStat: `${cert.doctorName} · ${cert.issueDate}`,
+            metricSecondary: `${cert.doctorName} · ${cert.issueDate}`,
+            branchName: getCertBranchName(cert),
+            detailCol1: { heading: isAr ? 'الطبيب' : 'Médecin', primaryText: cert.doctorName },
+            detailCol2: { heading: isAr ? 'التاريخ' : 'Émission', primaryText: cert.issueDate },
+            detailCol3: { heading: 'QR Hash', primaryText: cert.qrHash },
           })}
           getFanActions={(cert): KineticRowFanAction<MedicalCertificateRecord>[] => [
             {
               id: 'print',
               label: isAr ? 'طباعة' : 'Imprimer',
               icon: <Printer size={13} />,
-              variant: 'primary',
               onClick: () => setActivePrintCert(cert),
             },
           ]}
@@ -594,7 +598,6 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               id: 'print',
               label: isAr ? 'طباعة الشهادة' : 'Imprimer',
               icon: <Printer size={14} />,
-              variant: 'primary',
               onClick: () => setActivePrintCert(cert),
             },
           ]}
@@ -651,8 +654,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               <>
                 <InspectorSection
                   title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}
-                  delayIndex={0}
-                  animateKey={cert.id}
+                  index={0}
                 >
                   <InspectorQuickActions
                     actions={[
@@ -674,8 +676,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 
                 <InspectorSection
                   title={isAr ? 'الوثيقة الطبية' : 'Identification du Document'}
-                  delayIndex={1}
-                  animateKey={cert.id}
+                  index={1}
                 >
                   <InspectorCard>
                     <InspectorKeyValue
@@ -710,8 +711,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 {cert.certificateType === 'ArretDeTravail' && (
                   <InspectorSection
                     title={isAr ? 'فترة التوقف عن العمل' : "Période d'Arrêt CNAS"}
-                    delayIndex={2}
-                    animateKey={cert.id}
+                    index={2}
                   >
                     <InspectorCard>
                       <InspectorKeyValue
@@ -737,8 +737,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 {cert.certificateType === 'CertificatDescriptifITT' && (
                   <InspectorSection
                     title="Incapacité Totale de Travail"
-                    delayIndex={2}
-                    animateKey={cert.id}
+                    index={2}
                   >
                     <InspectorCard>
                       <InspectorKeyValue label="Durée ITT" value={`${cert.ittDays} jours`} mono isLast />
@@ -751,8 +750,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
             {tab === 'findings' && (
               <InspectorSection
                 title={isAr ? 'الملاحظات الطبية والختم الرقمي' : 'Constatations Cliniques & QR'}
-                delayIndex={0}
-                animateKey={cert.id}
+                index={0}
               >
                 <InspectorCard>
                   <InspectorKeyValue
@@ -774,14 +772,13 @@ export const MedicalCertificatesView: React.FC<any> = () => {
             {tab === 'actions' && (
               <InspectorSection
                 title={isAr ? 'الطباعة الرسمية' : 'Impression & Archivage'}
-                delayIndex={0}
-                animateKey={cert.id}
+                index={0}
               >
                 <div className="space-y-2.5">
                   <InspectorWideButton
                     label={isAr ? 'فتح وطباعة الشهادة الرسمية' : 'Ouvrir & Imprimer Certificat Officiel'}
                     icon={<Printer size={15} />}
-                    variant="primary"
+                    tone="accent"
                     onClick={() => setActivePrintCert(cert)}
                   />
                   <InspectorWideButton

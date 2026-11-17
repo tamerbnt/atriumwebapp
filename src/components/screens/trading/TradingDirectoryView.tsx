@@ -698,9 +698,9 @@ export const TradingDirectoryView: React.FC = () => {
                 metricSecondary: `Plafond ${formatMoney(c.creditLimit || 0)}`,
                 branchName: branchInfo.name,
                 isPinned: pinnedIds.has(c.id),
-                detailCol1: { label: 'Interlocuteur', value: c.contactName || 'Standard' },
-                detailCol2: { label: 'Téléphone', value: c.phone || c.contactPhone || '—' },
-                detailCol3: { label: 'Wilaya', value: c.city || '—' },
+                detailCol1: { heading: 'Interlocuteur', primaryText: c.contactName || 'Standard' },
+                detailCol2: { heading: 'Téléphone', primaryText: c.phone || c.contactPhone || '—' },
+                detailCol3: { heading: 'Wilaya', primaryText: c.city || '—' },
               };
             }}
             getFanActions={(c) => [
@@ -819,9 +819,9 @@ export const TradingDirectoryView: React.FC = () => {
                 metricSecondary: 'Dette fournisseur',
                 branchName: branchInfo.name,
                 isPinned: pinnedIds.has(s.id),
-                detailCol1: { label: 'Contact', value: s.contactName || 'Standard' },
-                detailCol2: { label: 'Téléphone', value: s.phone || '—' },
-                detailCol3: { label: 'Ville', value: s.city || '—' },
+                detailCol1: { heading: 'Contact', primaryText: s.contactName || 'Standard' },
+                detailCol2: { heading: 'Téléphone', primaryText: s.phone || '—' },
+                detailCol3: { heading: 'Ville', primaryText: s.city || '—' },
               };
             }}
             getFanActions={(s) => [

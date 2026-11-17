@@ -483,12 +483,14 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 <InspectorBigStat
                   value={st ? formatMoney(st.servicePriceDzd, 'DZD') : '0 DA'}
                   tone={st ? 'accent' : 'ok'}
-                  actionLabel={st ? (isRtl ? 'تحصيل الآن' : 'Passer en caisse') : undefined}
-                  onAction={
+                  action={
                     st
-                      ? () => {
-                          setInspectedStationId(null);
-                          setCheckoutModalStationKey(ws.id);
+                      ? {
+                          label: isRtl ? 'تحصيل الآن' : 'Passer en caisse',
+                          onClick: () => {
+                            setInspectedStationId(null);
+                            setCheckoutModalStationKey(ws.id);
+                          },
                         }
                       : undefined
                   }

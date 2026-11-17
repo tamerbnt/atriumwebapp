@@ -1,11 +1,20 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useAtriumStore } from '../../../services/store';
-import { PMCollateralItem, PMPrintOrder, PMBatDeliverable, PMExpense } from '../../../types/index';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
+import {
+  useAtriumStore,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
+import {
+  PMCollateralItem,
+  PMPrintOrder,
+  PMBatDeliverable,
+  PMExpense,
+  PMProject,
+} from '../../../types/index';
 import {
   FolderKanban,
   ShoppingBag,
   FileCheck2,
-  DollarSign,
   Plus,
   Trash2,
   Send,
@@ -13,22 +22,15 @@ import {
   CheckCircle,
   Eye,
   MessageSquare,
-  Clock,
-  Layers,
-  Sparkles,
-  ChevronRight,
   Printer,
-  Building2,
-  ChevronDown,
-  Download,
-  Check,
   Pin,
   X,
   Receipt,
-  RotateCcw,
+  Package,
+  Truck,
+  Ban,
 } from 'lucide-react';
 import { LabelInput } from '../../ui/LabelInput';
-import { Seek } from '../../ui/Seek';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { formatMoney } from '../../../utils/rules';
@@ -37,872 +39,2314 @@ import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import {
+  ScreenHeaderBar,
+  ScreenKpiBanner,
+  ScreenPod,
+  ScreenCollectionToolbar,
+  ActiveFilterChip,
+  KineticFilterModal,
+  KineticFilterSection,
+  KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorListItem,
+  InspectorWideButton,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
+  KineticStatusVariant,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
+  downloadCsvSafe,
+} from '../../ui/kinetic';
 
 interface ProjectChefProjetViewProps {
   initialTab?: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses';
 }
 
+interface PrintCartLine {
+  item: PMCollateralItem;
+  quantity: number;
+}
 
+const getOrderStatusBadge = (
+  status: string,
+  language: string
+): { label: string; variant: KineticStatusVariant; pillClass: string } => {
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
+  switch (status) {
+    case 'sent_to_crea':
+      return {
+        label: isAr ? 'محال للتصميم' : isEn ? 'Sent to Crea' : 'Transmis Créa',
+        variant: 'info',
+        pillClass:
+          'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]',
+      };
+    case 'bat_in_progress':
+      return {
+        label: isAr ? 'BAT قيد الإنجاز' : isEn ? 'BAT Proofing' : 'BAT en cours',
+        variant: 'warning',
+        pillClass:
+          'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+      };
+    case 'bat_approved':
+      return {
+        label: isAr ? 'BAT معتمد' : isEn ? 'BAT Approved' : 'BAT Validé',
+        variant: 'active',
+        pillClass:
+          'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+      };
+    case 'in_print':
+    case 'sent_to_printer':
+      return {
+        label: isAr ? 'قيد الطباعة' : isEn ? 'At Printer' : "Chez l'Imprimeur",
+        variant: 'warning',
+        pillClass:
+          'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
+      };
+    case 'delivered':
+    case 'printed':
+      return {
+        label: isAr ? 'مطبوع ومُسلم' : isEn ? 'Delivered' : 'Imprimé & Livré',
+        variant: 'active',
+        pillClass:
+          'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+      };
+    default:
+      return {
+        label: status,
+        variant: 'neutral',
+        pillClass:
+          'bg-[#F3EDE7] dark:bg-neutral-800 text-black/75 dark:text-white/80 border border-[#E6DED6] dark:border-neutral-700',
+      };
+  }
+};
+
+const getBatStatusBadge = (
+  status: PMBatDeliverable['approvalStatus'],
+  language: string
+): { label: string; variant: KineticStatusVariant; pillClass: string } => {
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
+  if (status === 'approved') {
+    return {
+      label: isAr ? 'معتمد للطباعة' : isEn ? 'Approved' : 'Bon à Tirer Validé',
+      variant: 'active',
+      pillClass:
+        'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+    };
+  }
+  if (status === 'revision_requested') {
+    return {
+      label: isAr ? 'تعديلات مطلوبة' : isEn ? 'Revision Requested' : 'Corrections Demandées',
+      variant: 'blocked',
+      pillClass:
+        'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
+    };
+  }
+  return {
+    label: isAr ? 'بانتظار المراجعة' : isEn ? 'Pending Review' : 'En Attente de Revue',
+    variant: 'warning',
+    pillClass:
+      'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+  };
+};
 
 export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ initialTab }) => {
-	const { t, language, isRtl } = useTranslation();
-	const { currentBranch, branches, switchBranch, pmProjects, pmMilestones, pmCollateralCatalog, pmPrintOrders, pmBatDeliverables, pmExpenses, pmEquipmentStock, addPmPrintOrder, batchUpdatePmPrintOrderStatus, batchDeletePmPrintOrders, reviewPmBatDeliverable, batchReviewPmBatDeliverables, batchDeletePmBatDeliverables, addPmExpense, batchDeletePmExpenses, resetPmMockData, activePmSubScreen, setActivePmSubScreen, showToast, isSyncing, networkMode, retryCloudSync, lastSyncedAt } = useAtriumStore();
-	const [isBranchDropdownOpen, setIsBranchDropdownOpen] = React.useState(false);
-	const activeTab = activePmSubScreen === "catalog" || initialTab === "catalog" ? "catalog" : activePmSubScreen === "orders" || initialTab === "orders" ? "orders" : activePmSubScreen === "bat" || activePmSubScreen === "files" || initialTab === "bat" ? "bat" : activePmSubScreen === "expenses" || initialTab === "expenses" ? "expenses" : "portfolio";
-	const setActiveTab = (tab: any) => {
-		setActivePmSubScreen(tab);
-	};
-	const [selectedProjectId, setSelectedProjectId] = React.useState(pmProjects[0]?.id || "");
-	const [cartItems, setCartItems] = React.useState<any[]>([]);
-	const [isCartOpen, setIsCartOpen] = React.useState(false);
-	const [activeBatId, setActiveBatId] = React.useState<any>(null);
-	const [correctionNote, setCorrectionNote] = React.useState("");
-	const [isCorrectionModalOpen, setIsCorrectionModalOpen] = React.useState(false);
-	const [selectedReceiptUrl, setSelectedReceiptUrl] = React.useState<any>(null);
-	const [catalogSearch, setCatalogSearch] = React.useState("");
-	const [catalogCategory, setCatalogCategory] = React.useState("all");
-	const [ordersSearch, setOrdersSearch] = React.useState("");
-	const [ordersStatusFilter, setOrdersStatusFilter] = React.useState("all");
-	const [selectedOrderIds, setSelectedOrderIds] = React.useState(/* @__PURE__ */ new Set());
-	const [pinnedOrderIds, setPinnedOrderIds] = React.useState(/* @__PURE__ */ new Set());
-	const [ordersSortBy, setOrdersSortBy] = React.useState("orderNumber");
-	const [ordersSortDir, setOrdersSortDir] = React.useState("desc");
-	const [batSearch, setBatSearch] = React.useState("");
-	const [selectedBatIds, setSelectedBatIds] = React.useState(/* @__PURE__ */ new Set());
-	const [pinnedBatIds, setPinnedBatIds] = React.useState(/* @__PURE__ */ new Set());
-	const [expenseSearch, setExpenseSearch] = React.useState("");
-	const [selectedExpenseIds, setSelectedExpenseIds] = React.useState(/* @__PURE__ */ new Set());
-	const [purchaseTitle, setPurchaseTitle] = React.useState("Nappe comptoir brandée");
-	const [purchaseAmount, setPurchaseAmount] = React.useState("8400");
-	const [purchaseCategory, setPurchaseCategory] = React.useState("materials");
-	const [purchaseSuccessMessage, setPurchaseSuccessMessage] = React.useState<any>(null);
-	const selectedProject = pmProjects.find((p) => p.id === selectedProjectId) || pmProjects[0];
-	const projectExpenses = pmExpenses.filter((e) => e.projectId === selectedProject?.id);
-	const totalExpensesSpent = projectExpenses.reduce((acc, e) => acc + e.amountDzd, 0);
-	const fieldExpensesLimit = selectedProject?.maxFieldExpensesDzd || 1;
-	const burnRatePercent = Math.min(Math.round(totalExpensesSpent / fieldExpensesLimit * 100), 100);
-	const isOverThreshold = burnRatePercent >= 85;
-	const handleAddToCart = (item: any) => {
-		setCartItems((prev) => {
-			if (prev.find((i) => i.item.id === item.id)) return prev.map((i) => i.item.id === item.id ? {
-				...i,
-				quantity: i.quantity + 1
-			} : i);
-			return [...prev, {
-				item,
-				quantity: 1
-			}];
-		});
-		setIsCartOpen(true);
-	};
-	const handleUpdateQuantity = (itemId: any, delta: any) => {
-		setCartItems((prev) => prev.map((i) => i.item.id === itemId ? {
-			...i,
-			quantity: Math.max(1, i.quantity + delta)
-		} : i).filter((i) => i.quantity > 0));
-	};
-	const handleRemoveFromCart = (itemId: any) => {
-		setCartItems((prev) => prev.filter((i) => i.item.id !== itemId));
-	};
-	const cartTotalDzd = cartItems.reduce((acc, i) => acc + i.item.unitCostDzd * i.quantity, 0);
-	const handleTransmitToCrea = () => {
-		if (cartItems.length === 0 || !selectedProject) return;
-		const orderNumber = `CMD-PRINT-${(/* @__PURE__ */ new Date()).getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
-		addPmPrintOrder({
-			tenantId: "acc_01",
-			facilityId: "branch_agency_main",
-			projectId: selectedProject.id,
-			projectTitle: selectedProject.title,
-			orderNumber,
-			items: cartItems.map((ci) => ({
-				collateralItemId: ci.item.id,
-				itemTitle: ci.item.title,
-				quantity: ci.quantity,
-				unitPriceDzd: ci.item.unitCostDzd
-			})),
-			totalCostDzd: cartTotalDzd,
-			status: "sent_to_crea"
-		});
-		setCartItems([]);
-		setIsCartOpen(false);
-		setActiveTab("orders");
-	};
-	const handleApproveBat = (batId: any) => {
-		reviewPmBatDeliverable(batId, "approved");
-	};
-	const handleRequestRevision = () => {
-		if (activeBatId) {
-			reviewPmBatDeliverable(activeBatId, "revision_requested", correctionNote);
-			setIsCorrectionModalOpen(false);
-			setCorrectionNote("");
-			setActiveBatId(null);
-		}
-	};
-	const handleDeclarePurchase = (e: any) => {
-		e.preventDefault();
-		if (!purchaseTitle || !purchaseAmount || !selectedProject) return;
-		addPmExpense({
-			tenantId: "acc_01",
-			facilityId: "branch_agency_main",
-			projectId: selectedProject.id,
-			projectTitle: selectedProject.title,
-			declaredByUserId: "stf_pm_01",
-			declaredByUserName: "K. Yacine (CDP)",
-			declaredByRole: "chef_projet",
-			title: purchaseTitle,
-			category: purchaseCategory as any,
-			amountDzd: Number(purchaseAmount),
-			receiptPhotoUrl: "https://images.unsplash.com/photo-1554415707-9e49fe74a64c?w=500&auto=format&fit=crop&q=80",
-			fiscalNif: "001916001234567",
-			hasFiscalInvoice: true
-		});
-		const msg = t("pm_cp_toast_purchase_desc", { title: purchaseTitle });
-		setPurchaseSuccessMessage(msg);
-		setTimeout(() => setPurchaseSuccessMessage(null), 3e3);
-		setPurchaseTitle("");
-	};
-	const filteredCatalog = React.useMemo(() => {
-		return pmCollateralCatalog.filter((item) => {
-			const q = catalogSearch.toLowerCase().trim();
-			const matchQ = !q || item.title.toLowerCase().includes(q) || item.category.toLowerCase().includes(q) || item.sku.toLowerCase().includes(q);
-			const matchCat = catalogCategory === "all" || item.category === catalogCategory;
-			return matchQ && matchCat;
-		});
-	}, [
-		pmCollateralCatalog,
-		catalogSearch,
-		catalogCategory
-	]);
-	const filteredOrders = React.useMemo(() => {
-		return pmPrintOrders.filter((order) => {
-			const q = ordersSearch.toLowerCase().trim();
-			const matchQ = !q || order.orderNumber.toLowerCase().includes(q) || order.projectTitle.toLowerCase().includes(q) || order.items.some((i) => i.itemTitle.toLowerCase().includes(q));
-			const matchStatus = ordersStatusFilter === "all" || order.status === ordersStatusFilter;
-			return matchQ && matchStatus;
-		});
-	}, [
-		pmPrintOrders,
-		ordersSearch,
-		ordersStatusFilter
-	]);
-	const sortedOrders = React.useMemo(() => {
-		return [...filteredOrders].sort((a, b) => {
-			const aPinned = pinnedOrderIds.has(a.id);
-			const bPinned = pinnedOrderIds.has(b.id);
-			if (aPinned && !bPinned) return -1;
-			if (!aPinned && bPinned) return 1;
-			if (ordersSortBy === "orderNumber") {
-				const cmp = a.orderNumber.localeCompare(b.orderNumber);
-				return ordersSortDir === "asc" ? cmp : -cmp;
-			}
-			if (ordersSortBy === "totalCost") return ordersSortDir === "asc" ? a.totalCostDzd - b.totalCostDzd : b.totalCostDzd - a.totalCostDzd;
-			return 0;
-		});
-	}, [
-		filteredOrders,
-		pinnedOrderIds,
-		ordersSortBy,
-		ordersSortDir
-	]);
-	const catalogColumns = React.useMemo(() => [
-		{
-			key: "item",
-			header: "Support & Réf. POSM",
-			width: "2.5*",
-			minWidth: "220px",
-			renderCell: (item: any) => /* @__PURE__ */ <div className="flex items-center gap-3">
-<img src={item.imageUrl} alt={item.title} className="w-10 h-10 rounded-xl object-cover shrink-0 border border-[#E6DED6] dark:border-neutral-800" />
-<div className="min-w-0">
-<div className="font-semibold text-black dark:text-white text-xs truncate max-w-[200px]">{item.title}</div>
-<div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
-{item.sku}
-{" · "}
-{item.category}
-</div>
-</div>
-</div>
-		},
-		{
-			key: "dimensions",
-			header: "Format & Spécifications",
-			width: "1.5*",
-			minWidth: "160px",
-			renderCell: (item: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75 font-mono">{item.dimensions}</div>
-		},
-		{
-			key: "cost",
-			header: "Coût Unitaire DZD",
-			width: "1.2*",
-			minWidth: "130px",
-			align: "right",
-			renderCell: (item: any) => /* @__PURE__ */ <div className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">{formatMoney(item.unitCostDzd, "DZD")}</div>
-		},
-		{
-			key: "actions",
-			header: "Commande",
-			width: "1*",
-			minWidth: "120px",
-			align: "right",
-			renderCell: (item: any) => /* @__PURE__ */ <AtriumButton type="button" size="xs" variant="primary" icon={<ShoppingBag className="w-3.5 h-3.5" />} onClick={() => handleAddToCart(item)} className="ml-auto">Ajouter</AtriumButton>
-		}
-	], []);
-	const orderColumns = React.useMemo(() => [
-		{
-			key: "orderNumber",
-			header: "Réf. Bon de Commande",
-			width: "2*",
-			minWidth: "200px",
-			sortable: true,
-			renderCell: (order: any) => {
-				const isPinned = pinnedOrderIds.has(order.id);
-				return /* @__PURE__ */ <div className="flex items-center gap-2">
-<button type="button" onClick={(e) => {
-							e.stopPropagation();
-							setPinnedOrderIds((prev) => {
-								const next = new Set(prev);
-								if (next.has(order.id)) next.delete(order.id);
-								else next.add(order.id);
-								return next;
-							});
-						}} className={`p-1 rounded-lg transition-colors cursor-pointer ${isPinned ? "text-[#d4522f] bg-[#d4522f]/10" : "text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"}`}><Pin className={`w-3.5 h-3.5 ${isPinned ? "fill-current" : ""}`} /></button>
-<div>
-<div className="font-mono font-bold text-xs text-black dark:text-white">{order.orderNumber}</div>
-<div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[170px]">{order.projectTitle}</div>
-</div>
-</div>;
-			}
-		},
-		{
-			key: "items",
-			header: "Détails des Articles POSM",
-			width: "2.5*",
-			minWidth: "220px",
-			renderCell: (order: any) => /* @__PURE__ */ <div className="text-xs text-black/70 dark:text-white/75 space-y-0.5">
-{order.items.slice(0, 2).map((it: any, idx: number) => /* @__PURE__ */ <div key={idx} className="truncate">
-{"• "}
-{it.quantity}
-{"x "}
-{it.itemTitle}
-</div>)}
-{order.items.length > 2 && /* @__PURE__ */ <div className="text-[10px] text-black/55 dark:text-white/55 italic">
-{"+ "}
-{order.items.length - 2}
-{" autre(s) référence(s)"}
-</div>}
-</div>
-		},
-		{
-			key: "totalCost",
-			header: "Montant Impression",
-			width: "1.5*",
-			minWidth: "150px",
-			sortable: true,
-			align: "right",
-			renderCell: (order: any) => /* @__PURE__ */ <div className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">{formatMoney(order.totalCostDzd, "DZD")}</div>
-		},
-		{
-			key: "status",
-			header: "Statut Production",
-			width: "1.5*",
-			minWidth: "150px",
-			align: "center",
-			renderCell: (order: any) => {
-				const badge = ({
-					sent_to_crea: {
-						label: "Transmis Créa",
-						bg: "bg-blue-100 dark:bg-blue-950/60",
-						text: "text-blue-700 dark:text-blue-300"
-					},
-					bat_in_progress: {
-						label: "BAT en cours",
-						bg: "bg-amber-100 dark:bg-amber-950/60",
-						text: "text-amber-700 dark:text-amber-300"
-					},
-					sent_to_printer: {
-						label: "Chez l'Imprimeur",
-						bg: "bg-purple-100 dark:bg-purple-950/60",
-						text: "text-purple-700 dark:text-purple-300"
-					},
-					printed: {
-						label: "Imprimé & Livré",
-						bg: "bg-emerald-100 dark:bg-emerald-950/60",
-						text: "text-emerald-700 dark:text-emerald-300"
-					}
-				} as Record<string, any>)[order.status] || {
-					label: order.status,
-					bg: "bg-[#F3EDE7]",
-					text: "text-black/70 dark:text-white/75"
-				};
-				return /* @__PURE__ */ <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.bg} ${badge.text}`}>{badge.label}</span>;
-			}
-		}
-	], [pinnedOrderIds]);
-	const handleExportOrdersCsv = () => {
-		const headers = [
-			"N° Commande",
-			"Projet",
-			"Nombre Articles",
-			"Montant Total DZD",
-			"Statut"
-		];
-		const rows = sortedOrders.map((o) => [
-			`"${o.orderNumber}"`,
-			`"${o.projectTitle.replace(/"/g, "\"\"")}"`,
-			o.items.reduce((acc, i) => acc + i.quantity, 0),
-			o.totalCostDzd,
-			o.status
-		]);
-		const csvContent = "﻿" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement("a");
-		link.href = url;
-		link.download = `commandes_print_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.csv`;
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-		URL.revokeObjectURL(url);
-	};
-	const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
-		isLoading: isSyncing || networkMode === "force_skeleton",
-		hasCachedData: pmProjects.length > 0 || pmPrintOrders.length > 0
-	});
-	if (showSkeleton && (pmProjects.length === 0 && pmPrintOrders.length === 0 || networkMode === "force_skeleton")) return /* @__PURE__ */ <SkeletonCollectionScreen kpiCount={3} columns={[
-			{
-				width: "2.5*",
-				minWidth: "180px"
-			},
-			{
-				width: "2.5*",
-				minWidth: "220px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "150px"
-			},
-			{
-				width: "1.5*",
-				minWidth: "150px"
-			}
-		]} viewMode="list" isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={retryCloudSync || retry} />;
-	return /* @__PURE__ */ <div className="space-y-6 animate-in fade-in duration-200">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-1">
-<div>
-<h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase leading-none rtl:leading-tight tracking-[0.01em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:tracking-normal">
-{activeTab === "portfolio" ? (language === "ar" ? "المشاريع" : language === "en" ? "Projects" : "Projets") : activeTab === "catalog" ? (language === "ar" ? "الكتالوج" : language === "en" ? "Catalog" : "Catalogue") : activeTab === "orders" ? (language === "ar" ? "الطلبات" : language === "en" ? "Orders" : "Commandes") : activeTab === "bat" ? (language === "ar" ? "المراجعات" : language === "en" ? "Proofs" : "Revue BAT") : (language === "ar" ? "المشتريات" : language === "en" ? "Purchases" : "Achats")}
-</h1>
-</div>
-<div className="flex items-center gap-2.5">
-<AtriumButton variant="primary" size="sm" onClick={() => setIsCartOpen(true)} icon={<ShoppingBag className="w-3.5 h-3.5" />} className="relative">
-<span>Panier Print</span>
-{cartItems.length > 0 && /* @__PURE__ */ <span className="w-5 h-5 rounded-full bg-white text-[#d4522f] font-bold text-[10px] flex items-center justify-center ml-1">{cartItems.reduce((acc, i) => acc + i.quantity, 0)}</span>}
-</AtriumButton>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div>
-<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
-{language === "ar" ? "مؤشرات التنسيق الميداني والإنتاج الطباعي" : language === "fr" ? "Indicateurs de Coordination & Production Print" : "Coordination & Print Production Metrics"}
-</h2>
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
-{language === "ar" ? "المشاريع الخاضعة للمتابعة" : language === "fr" ? "Campagnes Supervisées" : "Supervised Projects"}
-</span>
-<span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-{pmProjects.length}
-{" "}
-{language === "ar" ? "نشطة" : "actives"}
-</span>
-</div>
-<div>
-<div className="text-2xl font-black text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{pmProjects.length}</div>
-<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
-{language === "ar" ? "مخططات الإنتاج قيد الإنجاز" : "plannings opérationnels en cours"}
-</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-black/55 dark:text-white/75">
-{language === "ar" ? "أوامر الطباعة ومراجعة BAT" : language === "fr" ? "Commandes Print & BAT" : "Print Orders & BAT"}
-</span>
-<span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-{pmPrintOrders.length}
-{" "}
-{language === "ar" ? "أمر" : "ordres"}
-</span>
-</div>
-<div>
-<div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-{pmBatDeliverables.filter((b) => b.approvalStatus === "pending_review").length}
-{" "}
-{language === "ar" ? "BAT بانتظار التأشير" : "BAT en attente"}
-</div>
-<p className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
-{pmPrintOrders.length}
-{" "}
-{language === "ar" ? "طلبيات طباعة في المطبعة" : "commandes POSM transmises"}
-</p>
-</div>
-</div>
-<div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-<div className="flex items-center justify-between">
-<span className="text-[11px] font-medium text-white/80">
-{language === "ar" ? "المشتريات الميدانية (Slide 11)" : language === "fr" ? "Dépenses Terrain Consommées" : "Field Expenses Spent"}
-</span>
-<span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
-{burnRatePercent}
-{"% "}
-{language === "ar" ? "مستهلك" : "consommé"}
-</span>
-</div>
-<div>
-<div className="text-2xl font-black text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">{formatMoney(totalExpensesSpent, "DZD")}</div>
-<p className="text-[11px] text-white/75 mt-0.5 flex items-center gap-1.5">
-<span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
-<span>
-{language === "ar" ? `سقف المشروع: ${formatMoney(fieldExpensesLimit, "DZD")}` : `Plafond : ${formatMoney(fieldExpensesLimit, "DZD")}`}
-</span>
-</p>
-</div>
-</div>
-</div>
-</div>
-<div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-<div>
-<h2 className="text-[13.5px] font-semibold text-black dark:text-white">
-{language === "ar" ? "سير العمليات ومخطط الإنتاج والتنفيذ" : "Matrice de Déploiement & Pipeline Opérationnel"}
-</h2>
-</div>
-<LiveSegmentedControl size="sm" value={activeTab} onValueChange={(val) => setActiveTab(val)} options={[
-								{
-									value: "portfolio",
-									label: language === "ar" ? "المشاريع" : language === "fr" ? "Pilotage" : "Projects",
-									tooltip: language === "ar" ? "متابعة المشاريع والتنفيذ" : language === "fr" ? "Pilotage du portefeuille" : "Portfolio oversight",
-									count: pmProjects.length
-								},
-								{
-									value: "catalog",
-									label: language === "ar" ? "الكتالوج" : language === "fr" ? "Catalogue" : "Catalog",
-									tooltip: language === "ar" ? "كتالوج POSM والدعائم" : language === "fr" ? "Catalogue POSM & PLV" : "POSM & print catalog",
-									count: pmCollateralCatalog.length
-								},
-								{
-									value: "orders",
-									label: language === "ar" ? "الطباعة" : language === "fr" ? "Commandes" : "Orders",
-									tooltip: language === "ar" ? "طلبات الطباعة" : language === "fr" ? "Commandes Print" : "Print orders",
-									count: pmPrintOrders.length
-								},
-								{
-									value: "bat",
-									label: language === "ar" ? "الاعتماد" : language === "fr" ? "BAT" : "Proofs",
-									tooltip: language === "ar" ? "مراجعة BAT" : language === "fr" ? "Revue BAT" : "Artwork proofs review",
-									count: pmBatDeliverables.length
-								},
-								{
-									value: "expenses",
-									label: language === "ar" ? "المصاريف" : language === "fr" ? "Dépenses" : "Expenses",
-									tooltip: language === "ar" ? "مصاريف المشروع" : language === "fr" ? "Dépenses terrain" : "Project expenses",
-									count: pmExpenses.length
-								}
-							]} aria-label="Project Chef de Projet Stages Filter" />
-</div>
-{activeTab === "portfolio" && /* @__PURE__ */ <div className="space-y-6">
-<div className="p-5 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-<div>
-<span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Contrôle des Plafonds Dépenses Terrain (Slide 6 & 11)</span>
-<h2 className="text-lg font-bold text-black dark:text-white mt-0.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans">{selectedProject?.title}</h2>
-<div className="text-xs text-black/55 dark:text-white/55">
-{"Client : "}
-<span className="font-semibold text-black/70 dark:text-white/75">{selectedProject?.clientName}</span>
-{" · Plafond autorisé : "}
-<span className="font-mono font-bold">{formatMoney(selectedProject?.maxFieldExpensesDzd || 0, "DZD")}</span>
-</div>
-</div>
-<div className="w-full sm:w-64 space-y-1.5">
-<div className="flex justify-between text-xs font-semibold">
-<span className="text-black/55 dark:text-white/55">Consommé Terrain :</span>
-<span className={`font-mono tabular-nums ${isOverThreshold ? "text-red-600 font-bold" : "text-black dark:text-white"}`}>
-{formatMoney(totalExpensesSpent, "DZD")}
-{" ("}
-{burnRatePercent}
-%)
-</span>
-</div>
-<div className="w-full h-2.5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden">
-<div className={`h-full transition-all ${isOverThreshold ? "bg-red-500" : "bg-emerald-500"}`} style={{ width: `${burnRatePercent}%` }} />
-</div>
-</div>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-{pmProjects.map((p) => {
-								const spent = pmExpenses.filter((e) => e.projectId === p.id).reduce((acc, e) => acc + e.amountDzd, 0);
-								const limit = p.maxFieldExpensesDzd || 1;
-								const pct = Math.min(Math.round(spent / limit * 100), 100);
-								return /* @__PURE__ */ <div key={p.id} onClick={() => setSelectedProjectId(p.id)} className={`p-5 rounded-2xl border transition-all cursor-pointer shadow-xs ${selectedProject?.id === p.id ? "border-[#d4522f] bg-[#d4522f]/5 dark:bg-[#d4522f]/10 ring-1 ring-[#d4522f]" : "border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-[#D5CBBF]"}`}>
-<div className="flex items-start justify-between gap-2 mb-2">
-<span className="text-[11px] font-bold text-[#d4522f] uppercase truncate">{p.clientName}</span>
-<span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">{p.status}</span>
-</div>
-<h3 className="text-sm font-bold text-black dark:text-white mb-2 truncate">{p.title}</h3>
-<div className="space-y-1 text-xs text-black/55 dark:text-white/55">
-<div className="flex justify-between">
-<span>Plafond Global:</span>
-<span className="font-mono font-bold text-black dark:text-white">{formatMoney(p.budgetCapDzd, "DZD")}</span>
-</div>
-<div className="flex justify-between">
-<span>Dépenses Terrain:</span>
-<span className="font-mono">
-{formatMoney(spent, "DZD")}
-{" / "}
-{formatMoney(limit, "DZD")}
-</span>
-</div>
-</div>
-<div className="w-full h-1.5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden mt-3">
-<div className={`h-full ${pct >= 85 ? "bg-red-500" : "bg-[#d4522f]"}`} style={{ width: `${pct}%` }} />
-</div>
-</div>;
-							})}
-</div>
-</div>}
-{activeTab === "catalog" && /* @__PURE__ */ <div className="space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs">
-<div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
-<Seek value={catalogSearch} onChange={setCatalogSearch} placeholder="Rechercher totem, rollup, kakemono, stand..." openWidth={360} shutSize={38} />
-<FilterSelect label="Catégorie" value={catalogCategory} onChange={(val) => setCatalogCategory(typeof val === "string" ? val : val.target?.value || val)} options={[
-										{
-											value: "all",
-											label: language === "ar" ? "الكل" : language === "fr" ? "Toutes" : "All",
-											tooltip: language === "ar" ? "جميع الفئات" : language === "fr" ? "Toutes les catégories" : "All categories"
-										},
-										{
-											value: "stand",
-											label: language === "ar" ? "منصات" : language === "fr" ? "Stands" : "Booths",
-											tooltip: language === "ar" ? "منصات ومكاتب عرض" : language === "fr" ? "Stands & Comptoirs" : "Booths & counters"
-										},
-										{
-											value: "display",
-											label: language === "ar" ? "حوامل" : language === "fr" ? "Totems" : "Displays",
-											tooltip: language === "ar" ? "أعمدة ولافتات" : language === "fr" ? "Totems & Roll-ups" : "Totems & roll-ups"
-										},
-										{
-											value: "print",
-											label: language === "ar" ? "مطبوعات" : language === "fr" ? "Imprimés" : "Print",
-											tooltip: language === "ar" ? "منشورات وملصقات" : language === "fr" ? "Flyers & Affiches" : "Flyers & posters"
-										},
-										{
-											value: "textile",
-											label: language === "ar" ? "ألبسة" : language === "fr" ? "Textiles" : "Apparel",
-											tooltip: language === "ar" ? "ملابس وقبعات" : language === "fr" ? "Textiles & Casquettes" : "Apparel & caps"
-										}
-									]} />
-</div>
-<div className="text-xs text-black/55 dark:text-white/55 font-semibold">
-{filteredCatalog.length}
-{" support(s) configuré(s)"}
-</div>
-</div>
-<UniversalDataCollection items={filteredCatalog} keyExtractor={(i) => i.id} defaultViewMode="grid" columns={catalogColumns} renderCard={(item) => /* @__PURE__ */ <div className="flex flex-col justify-between h-full space-y-3">
-<div className="space-y-2">
-<img src={item.imageUrl} alt={item.title} className="w-full h-36 rounded-xl object-cover border border-[#E6DED6]/60 dark:border-neutral-800" />
-<div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 font-mono">
-<span>{item.sku}</span>
-<span className="uppercase text-[#d4522f] font-bold">{item.category}</span>
-</div>
-<h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{item.title}</h3>
-<p className="text-xs text-black/55 dark:text-white/55 font-mono">
-{"Format : "}
-{item.dimensions}
-</p>
-</div>
-<div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
-<span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">{formatMoney(item.unitCostDzd, "DZD")}</span>
-<AtriumButton type="button" size="xs" variant="primary" icon={<Plus className="w-3.5 h-3.5" />} onClick={() => handleAddToCart(item)}>Commander</AtriumButton>
-</div>
-</div>} />
-</div>}
-{activeTab === "orders" && /* @__PURE__ */ <div className="space-y-4">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs">
-<div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
-<Seek value={ordersSearch} onChange={setOrdersSearch} placeholder="Rechercher par n° de bon ou campagne..." openWidth={360} shutSize={38} />
-<FilterSelect label="Statut" value={ordersStatusFilter} onChange={(val) => setOrdersStatusFilter(typeof val === "string" ? val : val.target?.value || val)} options={[
-											{
-												value: "all",
-												label: language === "ar" ? "الكل" : language === "fr" ? "Tous" : "All",
-												tooltip: language === "ar" ? "جميع الحالات" : language === "fr" ? "Tous les statuts" : "All statuses"
-											},
-											{
-												value: "sent_to_crea",
-												label: language === "ar" ? "التصميم" : language === "fr" ? "Créa" : "Studio",
-												tooltip: language === "ar" ? "محال إلى التصميم" : language === "fr" ? "Transmis Créa" : "Sent to creative studio"
-											},
-											{
-												value: "bat_in_progress",
-												label: language === "ar" ? "مراجعة" : language === "fr" ? "BAT" : "Proofing",
-												tooltip: language === "ar" ? "BAT قيد الإنجاز" : language === "fr" ? "BAT en cours" : "Proofing in progress"
-											},
-											{
-												value: "sent_to_printer",
-												label: language === "ar" ? "المطبعة" : language === "fr" ? "Imprimeur" : "Printer",
-												tooltip: language === "ar" ? "لدى المطبعة" : language === "fr" ? "Chez l'Imprimeur" : "At printer"
-											},
-											{
-												value: "printed",
-												label: language === "ar" ? "مطبوع" : language === "fr" ? "Livré" : "Delivered",
-												tooltip: language === "ar" ? "مطبوع ومُسلّم" : language === "fr" ? "Imprimé & Livré" : "Printed & delivered"
-											}
-										]} />
-</div>
-<button onClick={handleExportOrdersCsv} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#FBF8F5] rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer">
-<Download className="w-3.5 h-3.5" />
-<span>Export CSV</span>
-</button>
-</div>
-{selectedOrderIds.size > 0 && /* @__PURE__ */ <div className="flex items-center justify-between px-4 py-3 bg-[#d4522f]/10 border border-[#d4522f]/30 rounded-2xl animate-in fade-in">
-<div className="flex items-center gap-3 text-xs font-semibold text-[#d4522f]">
-<span>
-{selectedOrderIds.size}
-{" commande(s) sélectionnée(s)"}
-</span>
-<button type="button" onClick={() => setSelectedOrderIds(/* @__PURE__ */ new Set())} className="text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white underline cursor-pointer">Désélectionner</button>
-</div>
-<div className="flex items-center gap-2">
-<button type="button" onClick={() => {
-												batchUpdatePmPrintOrderStatus(Array.from(selectedOrderIds), "in_print");
-												setSelectedOrderIds(/* @__PURE__ */ new Set());
-											}} className="px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-100 hover:bg-purple-200 rounded-xl transition-colors cursor-pointer">Envoyer à l'Imprimeur</button>
-<button type="button" onClick={() => {
-												batchUpdatePmPrintOrderStatus(Array.from(selectedOrderIds), "delivered");
-												setSelectedOrderIds(/* @__PURE__ */ new Set());
-											}} className="px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-xl transition-colors cursor-pointer">Marquer Imprimé & Reçu</button>
-<button type="button" onClick={() => {
-												batchDeletePmPrintOrders(Array.from(selectedOrderIds));
-												setSelectedOrderIds(/* @__PURE__ */ new Set());
-											}} className="px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 rounded-xl transition-colors flex items-center gap-1 cursor-pointer">
-<Trash2 className="w-3.5 h-3.5" />
-Supprimer
-</button>
-</div>
-</div>}
-<UniversalDataCollection items={sortedOrders} keyExtractor={(o) => o.id} defaultViewMode="list" columns={orderColumns} sortBy={ordersSortBy} sortDirection={ordersSortDir} onSortChange={(key) => {
-									if (ordersSortBy === key) setOrdersSortDir((prev) => prev === "asc" ? "desc" : "asc");
-									else {
-										setOrdersSortBy(key);
-										setOrdersSortDir("asc");
-									}
-								}} selectedIds={selectedOrderIds} onSelectionChange={setSelectedOrderIds} renderCard={(order) => /* @__PURE__ */ <div className="flex flex-col justify-between h-full space-y-3">
-<div>
-<div className="flex items-center justify-between text-xs font-mono font-bold text-black dark:text-white mb-1">
-<span>{order.orderNumber}</span>
-<span className="text-black/55 dark:text-white/55 font-normal">{order.status}</span>
-</div>
-<h4 className="text-sm font-semibold text-black dark:text-white">{order.projectTitle}</h4>
-<div className="text-xs text-black/55 dark:text-white/55 mt-2 space-y-1">
-{order.items.map((it, idx) => /* @__PURE__ */ <div key={idx}>
-{"• "}
-{it.quantity}
-{"x "}
-{it.itemTitle}
-</div>)}
-</div>
-</div>
-<div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex justify-between items-center text-xs">
-<span className="text-black/55 dark:text-white/55">Total :</span>
-<span className="font-mono font-bold text-black dark:text-white tabular-nums">{formatMoney(order.totalCostDzd, "DZD")}</span>
-</div>
-</div>} />
-</div>}
-{activeTab === "bat" && /* @__PURE__ */ <div className="space-y-4">
-<div className="p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex items-center justify-between">
-<Seek value={batSearch} onChange={setBatSearch} placeholder="Rechercher par livrable ou campagne..." openWidth={360} shutSize={38} />
-{selectedBatIds.size > 0 && /* @__PURE__ */ <div className="flex items-center gap-2">
-<button type="button" onClick={() => {
-										batchReviewPmBatDeliverables(Array.from(selectedBatIds), "approved");
-										setSelectedBatIds(/* @__PURE__ */ new Set());
-									}} className="px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors cursor-pointer">
-Valider Bon à Tirer (
-{selectedBatIds.size}
-)
-</button>
-</div>}
-</div>
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-{pmBatDeliverables.filter((b) => !batSearch.trim() || b.title.toLowerCase().includes(batSearch.toLowerCase()) || b.projectTitle.toLowerCase().includes(batSearch.toLowerCase())).map((bat) => /* @__PURE__ */ <div key={bat.id} className="p-5 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-3">
-<img src={bat.previewUrl} alt={bat.title} className="w-full h-44 rounded-xl object-cover border border-[#E6DED6]/60 dark:border-neutral-800" />
-<div className="flex items-start justify-between gap-2">
-<span className="text-xs font-bold text-[#d4522f] uppercase truncate">{bat.projectTitle}</span>
-<span className={`px-2 py-0.5 rounded text-[10px] font-bold ${bat.approvalStatus === "approved" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : bat.approvalStatus === "revision_requested" ? "bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300" : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"}`}>
-{bat.approvalStatus === "approved" ? "Bon à Tirer Validé" : bat.approvalStatus === "revision_requested" ? "Corrections Demandées" : "En Attente de Revue"}
-</span>
-</div>
-<h3 className="text-sm font-bold text-black dark:text-white truncate">{bat.title}</h3>
-<div className="flex items-center gap-3 text-xs text-black/55 dark:text-white/55 font-mono">
-<span>{bat.colorSpace}</span>
-<span>·</span>
-<span>
-{bat.resolutionDpi}
-{" DPI"}
-</span>
-<span>·</span>
-<span>
-{"Fond perdu : "}
-{bat.bleedMm}
-mm
-</span>
-</div>
-{bat.revisionComments && /* @__PURE__ */ <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 text-xs">
-{"Note CDP : "}
-{bat.revisionComments}
-</div>}
-<div className="pt-2 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-end gap-2">
-<button type="button" onClick={() => {
-												setActiveBatId(bat.id);
-												setIsCorrectionModalOpen(true);
-											}} className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#F3EDE7] rounded-xl transition-colors cursor-pointer">Demander Révision</button>
-<button type="button" onClick={() => handleApproveBat(bat.id)} className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors cursor-pointer">Valider BAT</button>
-</div>
-</div>)}
-</div>
-</div>}
-{activeTab === "expenses" && /* @__PURE__ */ <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-<div className="lg:col-span-7 space-y-4">
-<div className="p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex items-center justify-between">
-<Seek value={expenseSearch} onChange={setExpenseSearch} placeholder="Rechercher par titre de dépense..." openWidth={300} shutSize={38} />
-<span className="text-xs text-black/55 dark:text-white/55 font-semibold">
-{projectExpenses.length}
-{" dépense(s) pour ce projet"}
-</span>
-</div>
-<div className="space-y-3">
-{projectExpenses.map((exp) => /* @__PURE__ */ <div key={exp.id} className="p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex items-center justify-between gap-4">
-<div className="space-y-1">
-<div className="flex items-center gap-2">
-<span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">{exp.category}</span>
-<span className="font-semibold text-xs text-black dark:text-white">{exp.title}</span>
-{exp.hasFiscalInvoice && /* @__PURE__ */ <span className="text-[10px] text-emerald-600 font-bold">Facture Fiscale</span>}
-</div>
-<div className="text-[11px] text-black/55 dark:text-white/55">
-{"Par "}
-{exp.declaredByUserName}
-{" · Statut : "}
-<span className="font-semibold">{exp.status}</span>
-</div>
-</div>
-<div className="flex items-center gap-3 shrink-0">
-<span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">{formatMoney(exp.amountDzd, "DZD")}</span>
-{exp.receiptPhotoUrl && /* @__PURE__ */ <button type="button" onClick={() => setSelectedReceiptUrl(exp.receiptPhotoUrl || null)} className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer" title="Voir le justificatif"><Eye className="w-4 h-4" /></button>}
-</div>
-</div>)}
-</div>
-</div>
-<div className="lg:col-span-5 p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
-<div>
-<span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">Déclaration d'Achat Terrain (Slide 11)</span>
-<h3 className="text-base font-bold text-black dark:text-white mt-0.5">Saisie Immédiate & Codage Stock</h3>
-<p className="text-xs text-black/55 dark:text-white/55">Génère automatiquement une référence d'immobilisation indirecte pour l'agence.</p>
-</div>
-{purchaseSuccessMessage && /* @__PURE__ */ <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300">{purchaseSuccessMessage}</div>}
-<form onSubmit={handleDeclarePurchase} className="space-y-4">
-<LabelInput field="PurchaseTitle" label="Désignation du Matériel" value={purchaseTitle} onChange={setPurchaseTitle} required height={44} corner={12} />
-<LabelInput field="PurchaseAmount" label="Montant TTC (DZD)" type="number" value={purchaseAmount} onChange={setPurchaseAmount} required height={44} corner={12} />
-<FilterSelect label="Nature de l'Achat" value={purchaseCategory} onChange={(val) => setPurchaseCategory(typeof val === "string" ? val : val.target?.value || val)} options={[
-												{
-													value: "materials",
-													label: language === "ar" ? "معدات" : language === "fr" ? "Matériel" : "Equipment",
-													tooltip: language === "ar" ? "معدات وأثاث المنصة" : language === "fr" ? "Matériel & Mobilier Stand" : "Booth equipment & furniture"
-												},
-												{
-													value: "catering",
-													label: language === "ar" ? "إطعام" : language === "fr" ? "Restauration" : "Catering",
-													tooltip: language === "ar" ? "إطعام المنشطين" : language === "fr" ? "Restauration Animateurs" : "Promoter catering"
-												},
-												{
-													value: "transport",
-													label: language === "ar" ? "نقل" : language === "fr" ? "Transport" : "Transport",
-													tooltip: language === "ar" ? "وقود ونقل" : language === "fr" ? "Carburant & Transport" : "Fuel & transport"
-												}
-											]} />
-<AtriumButton type="submit" variant="primary" className="w-full" icon={<Plus className="w-4 h-4" />}>Déclarer & Imputer au Projet</AtriumButton>
-</form>
-</div>
-</div>}
-{isCartOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs">
-<div className="w-full max-w-md bg-white dark:bg-neutral-900 h-full p-6 flex flex-col justify-between shadow-2xl border-l border-[#E6DED6] dark:border-neutral-800">
-<div className="space-y-4">
-<div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
-<h3 className="text-base font-bold text-black dark:text-white flex items-center gap-2">
-<ShoppingBag className="w-5 h-5 text-[#d4522f]" />
-Bon de Commande Impression
-</h3>
-<button type="button" onClick={() => setIsCartOpen(false)} className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"><X className="w-4 h-4" /></button>
-</div>
-<div className="space-y-1">
-<span className="text-xs text-black/55 dark:text-white/55">Campagne Associée :</span>
-<div className="font-bold text-xs text-black dark:text-white">{selectedProject?.title}</div>
-</div>
-<div className="space-y-2 overflow-y-auto max-h-[50vh] pr-1">
-{cartItems.length === 0 ? /* @__PURE__ */ <div className="py-8 text-center text-xs text-black/55 dark:text-white/55">Le panier est vide. Sélectionnez des supports dans le catalogue.</div> : cartItems.map((ci) => /* @__PURE__ */ <div key={ci.item.id} className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 rounded-xl flex items-center justify-between gap-3 text-xs">
-<div className="min-w-0">
-<div className="font-semibold text-black dark:text-white truncate">{ci.item.title}</div>
-<div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
-{formatMoney(ci.item.unitCostDzd, "DZD")}
-{" / unité"}
-</div>
-</div>
-<div className="flex items-center gap-2 shrink-0">
-<button type="button" onClick={() => handleUpdateQuantity(ci.item.id, -1)} className="w-6 h-6 rounded bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer">-</button>
-<span className="font-mono font-bold w-6 text-center">{ci.quantity}</span>
-<button type="button" onClick={() => handleUpdateQuantity(ci.item.id, 1)} className="w-6 h-6 rounded bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer">+</button>
-<button type="button" onClick={() => handleRemoveFromCart(ci.item.id)} className="p-1 text-red-500 hover:text-red-700 ml-1 cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
-</div>
-</div>)}
-</div>
-</div>
-<div className="pt-4 border-t border-[#E6DED6] dark:border-neutral-800 space-y-3">
-<div className="flex justify-between items-center text-sm font-bold">
-<span>Total Estimé HT :</span>
-<span className="font-mono text-base text-[#d4522f] tabular-nums">{formatMoney(cartTotalDzd, "DZD")}</span>
-</div>
-<AtriumButton type="button" variant="primary" className="w-full" onClick={handleTransmitToCrea} disabled={cartItems.length === 0} icon={<Send className="w-4 h-4" />}>Transmettre au Studio Créa pour BAT ➔</AtriumButton>
-</div>
-</div>
-</div>}
-</div>
-{isCorrectionModalOpen && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
-<div className="flex items-center justify-between">
-<h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-<MessageSquare className="w-4 h-4 text-[#d4522f]" />
-Demande de Correction BAT
-</h3>
-<button type="button" onClick={() => setIsCorrectionModalOpen(false)} className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"><X className="w-4 h-4" /></button>
-</div>
-<textarea rows={4} value={correctionNote} onChange={(e) => setCorrectionNote(e.target.value)} placeholder="Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille dans le texte légal)..." className="w-full px-3 py-2 text-xs rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]" />
-<div className="flex justify-end gap-2">
-<AtriumButton type="button" variant="ghost" size="sm" onClick={() => setIsCorrectionModalOpen(false)}>Annuler</AtriumButton>
-<AtriumButton type="button" variant="primary" size="sm" onClick={handleRequestRevision}>Envoyer au Studio Créa</AtriumButton>
-</div>
-</div>
-</div>}
-{selectedReceiptUrl && /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
-<div className="flex items-center justify-between">
-<h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-<Receipt className="w-4 h-4 text-[#d4522f]" />
-Justificatif d'Achat Terrain
-</h3>
-<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"><X className="w-4 h-4" /></button>
-</div>
-<img src={selectedReceiptUrl} alt="Justificatif" className="w-full h-72 object-cover rounded-xl" />
-<div className="flex justify-end">
-<button type="button" onClick={() => setSelectedReceiptUrl(null)} className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 rounded-xl cursor-pointer">Fermer</button>
-</div>
-</div>
-</div>}
-</div>;
+  const { t, language, isRtl } = useTranslation();
+  const isAr = language === 'ar';
+  const isEn = language === 'en';
+
+  const state = useAtriumStore();
+  const {
+    currentBranch,
+    branches,
+    pmProjects,
+    pmCollateralCatalog,
+    pmPrintOrders,
+    pmBatDeliverables,
+    pmExpenses,
+    addPmPrintOrder,
+    batchUpdatePmPrintOrderStatus,
+    batchDeletePmPrintOrders,
+    reviewPmBatDeliverable,
+    batchReviewPmBatDeliverables,
+    batchDeletePmBatDeliverables,
+    addPmExpense,
+    batchDeletePmExpenses,
+    activePmSubScreen,
+    setActivePmSubScreen,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
+  } = state;
+
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
+
+  const activeTab: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses' =
+    activePmSubScreen === 'catalog' || initialTab === 'catalog'
+      ? 'catalog'
+      : activePmSubScreen === 'orders' || initialTab === 'orders'
+      ? 'orders'
+      : activePmSubScreen === 'bat' || activePmSubScreen === 'files' || initialTab === 'bat'
+      ? 'bat'
+      : activePmSubScreen === 'expenses' || initialTab === 'expenses'
+      ? 'expenses'
+      : 'portfolio';
+
+  const setActiveTab = useCallback(
+    (tab: string) => {
+      setActivePmSubScreen(tab);
+    },
+    [setActivePmSubScreen]
+  );
+
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(pmProjects[0]?.id || '');
+  const [cartItems, setCartItems] = useState<PrintCartLine[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const [activeBatId, setActiveBatId] = useState<string | null>(null);
+  const [correctionNote, setCorrectionNote] = useState('');
+  const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
+  const [selectedReceiptUrl, setSelectedReceiptUrl] = useState<string | null>(null);
+
+  // Catalog state
+  const [catalogSearch, setCatalogSearch] = useState('');
+  const [catalogCategory, setCatalogCategory] = useState('all');
+  const [catalogViewMode, setCatalogViewMode] = useState<'list' | 'grid' | 'calendar'>('grid');
+  const [isCatalogFilterOpen, setIsCatalogFilterOpen] = useState(false);
+  const catalogFilterRef = useRef<HTMLButtonElement | null>(null);
+  const [inspectedCatalog, setInspectedCatalog] = useState<PMCollateralItem | null>(null);
+  const [catalogOpenerEl, setCatalogOpenerEl] = useState<HTMLElement | null>(null);
+
+  // Orders state
+  const [ordersSearch, setOrdersSearch] = useState('');
+  const [ordersStatusFilter, setOrdersStatusFilter] = useState('all');
+  const [ordersViewMode, setOrdersViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
+  const [isOrdersFilterOpen, setIsOrdersFilterOpen] = useState(false);
+  const ordersFilterRef = useRef<HTMLButtonElement | null>(null);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedOrderIds, setPinnedOrderIds] = useState<Set<string>>(() => new Set<string>());
+  const [ordersSortBy, setOrdersSortBy] = useState<string>('orderNumber');
+  const [ordersSortDir, setOrdersSortDir] = useState<'asc' | 'desc'>('desc');
+  const [inspectedOrder, setInspectedOrder] = useState<PMPrintOrder | null>(null);
+  const [orderOpenerEl, setOrderOpenerEl] = useState<HTMLElement | null>(null);
+
+  // BAT state
+  const [batSearch, setBatSearch] = useState('');
+  const [batStatusFilter, setBatStatusFilter] = useState('all');
+  const [batViewMode, setBatViewMode] = useState<'list' | 'grid' | 'calendar'>('grid');
+  const [isBatFilterOpen, setIsBatFilterOpen] = useState(false);
+  const batFilterRef = useRef<HTMLButtonElement | null>(null);
+  const [selectedBatIds, setSelectedBatIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedBatIds, setPinnedBatIds] = useState<Set<string>>(() => new Set<string>());
+  const [inspectedBat, setInspectedBat] = useState<PMBatDeliverable | null>(null);
+  const [batOpenerEl, setBatOpenerEl] = useState<HTMLElement | null>(null);
+
+  // Expenses state
+  const [expenseSearch, setExpenseSearch] = useState('');
+  const [expenseViewMode, setExpenseViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
+  const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(() => new Set<string>());
+  const [inspectedExpense, setInspectedExpense] = useState<PMExpense | null>(null);
+  const [expenseOpenerEl, setExpenseOpenerEl] = useState<HTMLElement | null>(null);
+  const [purchaseTitle, setPurchaseTitle] = useState('Nappe comptoir brandée');
+  const [purchaseAmount, setPurchaseAmount] = useState('8400');
+  const [purchaseCategory, setPurchaseCategory] = useState('materials');
+  const [purchaseSuccessMessage, setPurchaseSuccessMessage] = useState<string | null>(null);
+
+  const selectedProject: PMProject | undefined = useMemo(
+    () => pmProjects.find((p) => p.id === selectedProjectId) || pmProjects[0],
+    [pmProjects, selectedProjectId]
+  );
+
+  const projectExpenses = useMemo(
+    () => pmExpenses.filter((e) => e.projectId === selectedProject?.id),
+    [pmExpenses, selectedProject]
+  );
+
+  const filteredProjectExpenses = useMemo(() => {
+    const q = expenseSearch.toLowerCase().trim();
+    if (!q) return projectExpenses;
+    return projectExpenses.filter(
+      (e) =>
+        e.title.toLowerCase().includes(q) ||
+        e.declaredByUserName.toLowerCase().includes(q) ||
+        e.category.toLowerCase().includes(q)
+    );
+  }, [projectExpenses, expenseSearch]);
+
+  const totalExpensesSpent = useMemo(
+    () => projectExpenses.reduce((acc, e) => acc + e.amountDzd, 0),
+    [projectExpenses]
+  );
+  const fieldExpensesLimit = selectedProject?.maxFieldExpensesDzd || 1;
+  const burnRatePercent = Math.min(Math.round((totalExpensesSpent / fieldExpensesLimit) * 100), 100);
+  const isOverThreshold = burnRatePercent >= 85;
+  const pendingBatCount = useMemo(
+    () => pmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length,
+    [pmBatDeliverables]
+  );
+
+  const handleAddToCart = useCallback(
+    (item: PMCollateralItem) => {
+      setCartItems((prev) => {
+        if (prev.find((i) => i.item.id === item.id)) {
+          return prev.map((i) =>
+            i.item.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+          );
+        }
+        return [...prev, { item, quantity: 1 }];
+      });
+      setIsCartOpen(true);
+      showToast(
+        isAr ? `تمت إضافة ${item.title} للسلة` : `${item.title} ajouté au panier print`,
+        'info'
+      );
+    },
+    [isAr]
+  );
+
+  const handleUpdateQuantity = (itemId: string, delta: number) => {
+    setCartItems((prev) =>
+      prev
+        .map((i) => (i.item.id === itemId ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i))
+        .filter((i) => i.quantity > 0)
+    );
+  };
+
+  const handleRemoveFromCart = (itemId: string) => {
+    setCartItems((prev) => prev.filter((i) => i.item.id !== itemId));
+  };
+
+  const cartTotalDzd = cartItems.reduce((acc, i) => acc + i.item.unitCostDzd * i.quantity, 0);
+
+  const handleTransmitToCrea = () => {
+    if (cartItems.length === 0 || !selectedProject) return;
+    const orderNumber = `CMD-PRINT-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
+    addPmPrintOrder({
+      tenantId: 'acc_01',
+      facilityId: currentBranch?.id || 'branch_agency_main',
+      projectId: selectedProject.id,
+      projectTitle: selectedProject.title,
+      orderNumber,
+      items: cartItems.map((ci) => ({
+        collateralItemId: ci.item.id,
+        itemTitle: ci.item.title,
+        quantity: ci.quantity,
+        unitPriceDzd: ci.item.unitCostDzd,
+      })),
+      totalCostDzd: cartTotalDzd,
+      status: 'sent_to_crea',
+    });
+    setCartItems([]);
+    setIsCartOpen(false);
+    setActiveTab('orders');
+    showToast(
+      isAr ? `تم إرسال الطلب ${orderNumber} للاستوديو` : `Commande ${orderNumber} transmise au Studio Créa`,
+      'success'
+    );
+  };
+
+  const handleApproveBat = useCallback(
+    (batId: string) => {
+      reviewPmBatDeliverable(batId, 'approved');
+      showToast(
+        isAr ? 'تم اعتماد ملف الطباعة BAT' : isEn ? 'BAT Proof approved' : 'Bon à Tirer validé',
+        'success'
+      );
+    },
+    [reviewPmBatDeliverable, isAr, isEn]
+  );
+
+  const handleRequestRevision = () => {
+    if (activeBatId) {
+      reviewPmBatDeliverable(activeBatId, 'revision_requested', correctionNote);
+      setIsCorrectionModalOpen(false);
+      setCorrectionNote('');
+      setActiveBatId(null);
+      showToast(
+        isAr ? 'تم إرسال طلب التعديل للاستوديو' : isEn ? 'Revision sent to studio' : 'Demande de correction transmise',
+        'info'
+      );
+    }
+  };
+
+  const handleDeclarePurchase = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!purchaseTitle || !purchaseAmount || !selectedProject) return;
+    addPmExpense({
+      tenantId: 'acc_01',
+      facilityId: currentBranch?.id || 'branch_agency_main',
+      projectId: selectedProject.id,
+      projectTitle: selectedProject.title,
+      declaredByUserId: 'stf_pm_01',
+      declaredByUserName: 'K. Yacine (CDP)',
+      declaredByRole: 'chef_projet',
+      title: purchaseTitle,
+      category: purchaseCategory as PMExpense['category'],
+      amountDzd: Number(purchaseAmount),
+      receiptPhotoUrl:
+        'https://images.unsplash.com/photo-1554415707-9e49fe74a64c?w=500&auto=format&fit=crop&q=80',
+      fiscalNif: '001916001234567',
+      hasFiscalInvoice: true,
+    });
+    const msg = t('pm_cp_toast_purchase_desc', { title: purchaseTitle });
+    setPurchaseSuccessMessage(msg);
+    setTimeout(() => setPurchaseSuccessMessage(null), 3000);
+    setPurchaseTitle('');
+  };
+
+  // Filtered lists
+  const filteredCatalog = useMemo(() => {
+    const q = catalogSearch.toLowerCase().trim();
+    return pmCollateralCatalog.filter((item) => {
+      const matchQ =
+        !q ||
+        item.title.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q) ||
+        item.sku.toLowerCase().includes(q);
+      const matchCat = catalogCategory === 'all' || item.category === catalogCategory;
+      return matchQ && matchCat;
+    });
+  }, [pmCollateralCatalog, catalogSearch, catalogCategory]);
+
+  const filteredOrders = useMemo(() => {
+    const q = ordersSearch.toLowerCase().trim();
+    return pmPrintOrders.filter((order) => {
+      const matchQ =
+        !q ||
+        order.orderNumber.toLowerCase().includes(q) ||
+        order.projectTitle.toLowerCase().includes(q) ||
+        order.items.some((i) => i.itemTitle.toLowerCase().includes(q));
+      const normalizedFilter =
+        ordersStatusFilter === 'sent_to_printer'
+          ? 'in_print'
+          : ordersStatusFilter === 'printed'
+          ? 'delivered'
+          : ordersStatusFilter;
+      const matchStatus =
+        ordersStatusFilter === 'all' ||
+        order.status === ordersStatusFilter ||
+        order.status === normalizedFilter;
+      return matchQ && matchStatus;
+    });
+  }, [pmPrintOrders, ordersSearch, ordersStatusFilter]);
+
+  const sortedOrders = useMemo(() => {
+    return [...filteredOrders].sort((a, b) => {
+      const aPinned = pinnedOrderIds.has(a.id);
+      const bPinned = pinnedOrderIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      if (ordersSortBy === 'orderNumber') {
+        const cmp = a.orderNumber.localeCompare(b.orderNumber);
+        return ordersSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (ordersSortBy === 'totalCost') {
+        return ordersSortDir === 'asc'
+          ? a.totalCostDzd - b.totalCostDzd
+          : b.totalCostDzd - a.totalCostDzd;
+      }
+      return 0;
+    });
+  }, [filteredOrders, pinnedOrderIds, ordersSortBy, ordersSortDir]);
+
+  const filteredBats = useMemo(() => {
+    const q = batSearch.toLowerCase().trim();
+    return pmBatDeliverables
+      .filter((b) => {
+        const matchQ =
+          !q ||
+          b.title.toLowerCase().includes(q) ||
+          b.projectTitle.toLowerCase().includes(q);
+        const matchStatus = batStatusFilter === 'all' || b.approvalStatus === batStatusFilter;
+        return matchQ && matchStatus;
+      })
+      .sort((a, b) => {
+        const aP = pinnedBatIds.has(a.id);
+        const bP = pinnedBatIds.has(b.id);
+        if (aP && !bP) return -1;
+        if (!aP && bP) return 1;
+        return 0;
+      });
+  }, [pmBatDeliverables, batSearch, batStatusFilter, pinnedBatIds]);
+
+  const activeOrder = useMemo(
+    () => (inspectedOrder ? pmPrintOrders.find((o) => o.id === inspectedOrder.id) || inspectedOrder : null),
+    [inspectedOrder, pmPrintOrders]
+  );
+
+  const activeBat = useMemo(
+    () => (inspectedBat ? pmBatDeliverables.find((b) => b.id === inspectedBat.id) || inspectedBat : null),
+    [inspectedBat, pmBatDeliverables]
+  );
+
+  const handleTogglePinOrder = useCallback((order: PMPrintOrder) => {
+    setPinnedOrderIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(order.id)) next.delete(order.id);
+      else next.add(order.id);
+      return next;
+    });
+  }, []);
+
+  const handleTogglePinBat = useCallback((bat: PMBatDeliverable) => {
+    setPinnedBatIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(bat.id)) next.delete(bat.id);
+      else next.add(bat.id);
+      return next;
+    });
+  }, []);
+
+  const handleExportOrdersCsv = useCallback(() => {
+    const headers = ['N° Commande', 'Projet', 'Nombre Articles', 'Montant Total DZD', 'Statut'];
+    const rows = sortedOrders.map((o) => [
+      o.orderNumber,
+      o.projectTitle,
+      o.items.reduce((acc, i) => acc + i.quantity, 0),
+      o.totalCostDzd,
+      o.status,
+    ]);
+    downloadCsvSafe(`commandes_print_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+    showToast(isAr ? 'تم تصدير طلبات الطباعة CSV' : 'Export CSV commandes généré', 'info');
+  }, [sortedOrders, isAr]);
+
+  // Kinetic Row Metadata
+  const getCatalogRowMeta = useCallback(
+    (item: PMCollateralItem): Partial<KineticRowData> => {
+      const br = resolveRecordBranch(item, branchesById, currentBranch, language);
+      return {
+        title: item.title,
+        subline: `${item.sku} · ${item.dimensions}`,
+        avatarText: item.title.slice(0, 2).toUpperCase(),
+        categoryLabel: item.category,
+        statusLabel: item.isCustomizable
+          ? isAr
+            ? 'قابل للتخصيص'
+            : isEn
+            ? 'Custom Print'
+            : 'Personnalisable'
+          : isAr
+          ? 'قياسي'
+          : isEn
+          ? 'Standard'
+          : 'Standard',
+        statusVariant: 'info',
+        metricPrimary: formatMoney(item.unitCostDzd, 'DZD'),
+        metricSecondary: item.material,
+        branchName: br.name,
+        branchCode: br.code,
+        detailCol1: {
+          heading: isAr ? 'المواصفات' : isEn ? 'Specifications' : 'Spécifications',
+          primaryText: item.sku,
+          secondaryText: item.dimensions,
+        },
+        detailCol2: {
+          heading: isAr ? 'المادة' : isEn ? 'Material' : 'Support',
+          primaryText: item.material,
+          secondaryText: formatMoney(item.unitCostDzd, 'DZD'),
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr, isEn]
+  );
+
+  const getOrderRowMeta = useCallback(
+    (order: PMPrintOrder): Partial<KineticRowData> => {
+      const br = resolveRecordBranch(order, branchesById, currentBranch, language);
+      const badge = getOrderStatusBadge(order.status, language);
+      const totalQty = order.items.reduce((acc, i) => acc + i.quantity, 0);
+      return {
+        title: order.orderNumber,
+        subline: order.projectTitle,
+        avatarText: 'PR',
+        categoryLabel: `${order.items.length} réf. (${totalQty} u)`,
+        statusLabel: badge.label,
+        statusVariant: badge.variant,
+        metricPrimary: formatMoney(order.totalCostDzd, 'DZD'),
+        metricSecondary: order.createdAt.slice(0, 10),
+        branchName: br.name,
+        branchCode: br.code,
+        isPinned: pinnedOrderIds.has(order.id),
+        detailCol1: {
+          heading: isAr ? 'بنود الطلبية' : isEn ? 'Order Items' : 'Articles POSM',
+          primaryText: order.items[0] ? `${order.items[0].quantity}x ${order.items[0].itemTitle}` : '—',
+          secondaryText: order.items[1] ? `${order.items[1].quantity}x ${order.items[1].itemTitle}` : undefined,
+        },
+        detailCol2: {
+          heading: isAr ? 'المالية' : isEn ? 'Totals' : 'Valorisation',
+          primaryText: formatMoney(order.totalCostDzd, 'DZD'),
+          secondaryText: badge.label,
+        },
+      };
+    },
+    [branchesById, currentBranch, language, pinnedOrderIds, isAr, isEn]
+  );
+
+  const getBatRowMeta = useCallback(
+    (bat: PMBatDeliverable): Partial<KineticRowData> => {
+      const br = resolveRecordBranch(bat, branchesById, currentBranch, language);
+      const badge = getBatStatusBadge(bat.approvalStatus, language);
+      return {
+        title: bat.title,
+        subline: `${bat.projectTitle} · ${bat.versionCode}`,
+        avatarText: bat.fileFormat.toUpperCase().slice(0, 2),
+        categoryLabel: `${bat.colorSpace} · ${bat.resolutionDpi} DPI`,
+        statusLabel: badge.label,
+        statusVariant: badge.variant,
+        metricPrimary: `${bat.resolutionDpi} DPI`,
+        metricSecondary: `Bleed ${bat.bleedMm}mm`,
+        branchName: br.name,
+        branchCode: br.code,
+        isPinned: pinnedBatIds.has(bat.id),
+        detailCol1: {
+          heading: isAr ? 'معايير الطباعة' : isEn ? 'Pre-press' : 'Prépresse',
+          primaryText: `${bat.colorSpace} · ${bat.resolutionDpi} DPI`,
+          secondaryText: `Fond perdu ${bat.bleedMm} mm`,
+        },
+        detailCol2: {
+          heading: isAr ? 'المصمم' : isEn ? 'Designer' : 'Studio Créa',
+          primaryText: bat.uploadedByCreativeName,
+          secondaryText: bat.versionCode,
+        },
+      };
+    },
+    [branchesById, currentBranch, language, pinnedBatIds, isAr, isEn]
+  );
+
+  const getExpenseRowMeta = useCallback(
+    (exp: PMExpense): Partial<KineticRowData> => {
+      const br = resolveRecordBranch(exp, branchesById, currentBranch, language);
+      const isApp = exp.status === 'approved_by_direction' || exp.status === 'audited_and_paid';
+      const isRej = exp.status === 'rejected';
+      return {
+        title: exp.title,
+        subline: `${exp.declaredByUserName} · ${exp.projectTitle}`,
+        avatarText: exp.category.slice(0, 2).toUpperCase(),
+        categoryLabel: exp.category,
+        statusLabel: isApp
+          ? isAr
+            ? 'معتمد'
+            : 'Validé'
+          : isRej
+          ? isAr
+            ? 'مرفوض'
+            : 'Rejeté'
+          : isAr
+          ? 'قيد الانتظار'
+          : 'En attente',
+        statusVariant: isApp ? 'active' : isRej ? 'blocked' : 'warning',
+        metricPrimary: formatMoney(exp.amountDzd, 'DZD'),
+        metricSecondary: exp.hasFiscalInvoice ? 'Facture NIF' : 'Reçu simple',
+        branchName: br.name,
+        branchCode: br.code,
+      };
+    },
+    [branchesById, currentBranch, language, isAr]
+  );
+
+  // Columns
+  const catalogColumns = useMemo<ColumnDefinition<PMCollateralItem>[]>(
+    () => [
+      {
+        key: 'item',
+        header: isAr ? 'الدعامة والمرجع POSM' : isEn ? 'Support & SKU' : 'Support & Réf. POSM',
+        width: '2.5*',
+        minWidth: '220px',
+        renderCell: (item) => (
+          <div className="flex items-center gap-3">
+            <img
+              src={item.imageUrl}
+              alt={item.title}
+              referrerPolicy="no-referrer"
+              className="w-10 h-10 rounded-xl object-cover shrink-0 border border-[#E6DED6] dark:border-neutral-800"
+            />
+            <div className="min-w-0">
+              <div className="font-semibold text-black dark:text-white text-xs truncate max-w-[200px]">
+                {item.title}
+              </div>
+              <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+                {item.sku} · {item.category}
+              </div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'dimensions',
+        header: isAr ? 'المقاسات والمواصفات' : isEn ? 'Specs' : 'Format & Spécifications',
+        width: '1.5*',
+        minWidth: '160px',
+        renderCell: (item) => (
+          <div className="text-xs text-black/70 dark:text-white/75 font-mono">{item.dimensions}</div>
+        ),
+      },
+      {
+        key: 'cost',
+        header: isAr ? 'التكلفة الفردية' : isEn ? 'Unit Cost' : 'Coût Unitaire DZD',
+        width: '1.2*',
+        minWidth: '130px',
+        align: 'right',
+        renderCell: (item) => (
+          <div className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+            {formatMoney(item.unitCostDzd, 'DZD')}
+          </div>
+        ),
+      },
+      {
+        key: 'actions',
+        header: isAr ? 'طلب' : isEn ? 'Order' : 'Commande',
+        width: '1*',
+        minWidth: '120px',
+        align: 'right',
+        renderCell: (item) => (
+          <AtriumButton
+            type="button"
+            size="xs"
+            variant="primary"
+            icon={<ShoppingBag className="w-3.5 h-3.5" />}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddToCart(item);
+            }}
+            className="ml-auto"
+          >
+            {isAr ? 'إضافة' : isEn ? 'Add' : 'Ajouter'}
+          </AtriumButton>
+        ),
+      },
+    ],
+    [handleAddToCart, isAr, isEn]
+  );
+
+  const orderColumns = useMemo<ColumnDefinition<PMPrintOrder>[]>(
+    () => [
+      {
+        key: 'orderNumber',
+        header: isAr ? 'رقم طلب الطباعة' : isEn ? 'Print Order Ref.' : 'Réf. Bon de Commande',
+        width: '2*',
+        minWidth: '200px',
+        sortable: true,
+        renderCell: (order) => {
+          const isPinned = pinnedOrderIds.has(order.id);
+          return (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label={isPinned ? 'Unpin' : 'Pin'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTogglePinOrder(order);
+                }}
+                className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                  isPinned
+                    ? 'text-[#d4522f] bg-[#d4522f]/10'
+                    : 'text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80'
+                }`}
+              >
+                <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
+              </button>
+              <div>
+                <div className="font-mono font-bold text-xs text-black dark:text-white">
+                  {order.orderNumber}
+                </div>
+                <div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[170px]">
+                  {order.projectTitle}
+                </div>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'items',
+        header: isAr ? 'تفاصيل المواد POSM' : isEn ? 'POSM Articles' : 'Détails des Articles POSM',
+        width: '2.5*',
+        minWidth: '220px',
+        renderCell: (order) => (
+          <div className="text-xs text-black/70 dark:text-white/75 space-y-0.5">
+            {order.items.slice(0, 2).map((it, idx) => (
+              <div key={idx} className="truncate">
+                • {it.quantity}x {it.itemTitle}
+              </div>
+            ))}
+            {order.items.length > 2 && (
+              <div className="text-[10px] text-black/55 dark:text-white/55 italic">
+                + {order.items.length - 2} autre(s) référence(s)
+              </div>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: 'totalCost',
+        header: isAr ? 'إجمالي الطباعة' : isEn ? 'Total Print Cost' : 'Montant Impression',
+        width: '1.5*',
+        minWidth: '150px',
+        sortable: true,
+        align: 'right',
+        renderCell: (order) => (
+          <div className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+            {formatMoney(order.totalCostDzd, 'DZD')}
+          </div>
+        ),
+      },
+      {
+        key: 'status',
+        header: isAr ? 'حالة الإنتاج' : isEn ? 'Status' : 'Statut Production',
+        width: '1.5*',
+        minWidth: '150px',
+        align: 'center',
+        renderCell: (order) => {
+          const badge = getOrderStatusBadge(order.status, language);
+          return (
+            <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.pillClass}`}>
+              {badge.label}
+            </span>
+          );
+        },
+      },
+    ],
+    [pinnedOrderIds, handleTogglePinOrder, language, isAr, isEn]
+  );
+
+  const batColumns = useMemo<ColumnDefinition<PMBatDeliverable>[]>(
+    () => [
+      {
+        key: 'title',
+        header: isAr ? 'ملف الطباعة BAT' : isEn ? 'Artwork Proof' : 'Livrable BAT',
+        width: '2.5*',
+        minWidth: '220px',
+        renderCell: (bat) => (
+          <div className="flex items-center gap-3">
+            <img
+              src={bat.previewUrl}
+              alt={bat.title}
+              referrerPolicy="no-referrer"
+              className="w-10 h-10 rounded-lg object-cover border border-[#E6DED6] dark:border-neutral-800 shrink-0"
+            />
+            <div className="min-w-0">
+              <div className="font-semibold text-xs text-black dark:text-white truncate">
+                {bat.title}
+              </div>
+              <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+                {bat.projectTitle} · {bat.versionCode}
+              </div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'specs',
+        header: isAr ? 'المواصفات الفنية' : isEn ? 'Pre-press' : 'Spécifications',
+        width: '1.5*',
+        minWidth: '150px',
+        renderCell: (bat) => (
+          <span className="font-mono text-xs text-black/70 dark:text-white/75">
+            {bat.colorSpace} · {bat.resolutionDpi} DPI · {bat.bleedMm}mm
+          </span>
+        ),
+      },
+      {
+        key: 'status',
+        header: isAr ? 'الحالة' : isEn ? 'Status' : 'Statut',
+        width: '1.3*',
+        minWidth: '140px',
+        renderCell: (bat) => {
+          const badge = getBatStatusBadge(bat.approvalStatus, language);
+          return (
+            <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.pillClass}`}>
+              {badge.label}
+            </span>
+          );
+        },
+      },
+    ],
+    [language, isAr, isEn]
+  );
+
+  const expenseColumns = useMemo<ColumnDefinition<PMExpense>[]>(
+    () => [
+      {
+        key: 'title',
+        header: isAr ? 'البيان' : isEn ? 'Expense' : 'Désignation',
+        width: '2.5*',
+        minWidth: '200px',
+        renderCell: (exp) => (
+          <div className="min-w-0">
+            <div className="font-semibold text-xs text-black dark:text-white truncate">
+              {exp.title}
+            </div>
+            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+              {exp.declaredByUserName} · {exp.category}
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'amount',
+        header: isAr ? 'المبلغ' : isEn ? 'Amount' : 'Montant DZD',
+        width: '1.2*',
+        minWidth: '130px',
+        align: 'right',
+        renderCell: (exp) => (
+          <span className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+            {formatMoney(exp.amountDzd, 'DZD')}
+          </span>
+        ),
+      },
+      {
+        key: 'receipt',
+        header: isAr ? 'الوصل' : isEn ? 'Receipt' : 'Justificatif',
+        width: '0.8*',
+        minWidth: '90px',
+        align: 'right',
+        renderCell: (exp) =>
+          exp.receiptPhotoUrl ? (
+            <button
+              type="button"
+              aria-label="Voir le justificatif"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedReceiptUrl(exp.receiptPhotoUrl || null);
+              }}
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer ml-auto"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          ) : null,
+      },
+    ],
+    [isAr, isEn]
+  );
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: pmProjects.length > 0 || pmPrintOrders.length > 0,
+  });
+
+  if (showSkeleton && ((pmProjects.length === 0 && pmPrintOrders.length === 0) || networkMode === 'force_skeleton')) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut || isSyncTimeout}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync || retry}
+        />
+        <SkeletonCollectionScreen
+          kpiCount={3}
+          columns={[
+            { width: '2.5*', minWidth: '180px' },
+            { width: '2.5*', minWidth: '220px' },
+            { width: '1.5*', minWidth: '150px' },
+            { width: '1.5*', minWidth: '150px' },
+          ]}
+          viewMode="list"
+          isOffline={isOffline}
+          isTimedOut={isTimedOut || isSyncTimeout}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync || retry}
+        />
+      </div>
+    );
+  }
+
+  const cartCount = cartItems.reduce((acc, i) => acc + i.quantity, 0);
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut || isSyncTimeout}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync || retry}
+      />
+
+      <ScreenHeaderBar
+        icon={<FolderKanban size={22} />}
+        title={
+          activeTab === 'portfolio'
+            ? isAr
+              ? 'المشاريع'
+              : isEn
+              ? 'Projects'
+              : 'Projets'
+            : activeTab === 'catalog'
+            ? isAr
+              ? 'الكتالوج'
+              : isEn
+              ? 'Catalog'
+              : 'Catalogue'
+            : activeTab === 'orders'
+            ? isAr
+              ? 'الطلبات'
+              : isEn
+              ? 'Orders'
+              : 'Commandes'
+            : activeTab === 'bat'
+            ? isAr
+              ? 'المراجعات'
+              : isEn
+              ? 'Proofs'
+              : 'Revue BAT'
+            : isAr
+            ? 'المشتريات'
+            : isEn
+            ? 'Purchases'
+            : 'Achats'
+        }
+        primaryAction={{
+          label: `${isAr ? 'سلة الطباعة' : isEn ? 'Print Cart' : 'Panier Print'}${
+            cartCount > 0 ? ` (${cartCount})` : ''
+          }`,
+          icon: <ShoppingBag size={16} />,
+          onClick: () => setIsCartOpen(true),
+          dataAction: 'open-print-cart',
+        }}
+      />
+
+      <ScreenKpiBanner
+        heading={
+          isAr
+            ? 'مؤشرات التنسيق الميداني والإنتاج الطباعي'
+            : isEn
+            ? 'Coordination & Print Production Metrics'
+            : 'Indicateurs de Coordination & Production Print'
+        }
+        language={language}
+        primaryCard={{
+          label: isAr
+            ? 'المشاريع الخاضعة للمتابعة'
+            : isEn
+            ? 'Supervised Projects'
+            : 'Campagnes Supervisées',
+          count: pmProjects.length,
+          badgeText: `${pmProjects.length} ${isAr ? 'نشطة' : isEn ? 'active' : 'actives'}`,
+          tone: 'emerald',
+          isActive: activeTab === 'portfolio',
+          onToggle: () => setActiveTab('portfolio'),
+        }}
+        secondaryCard={{
+          label: isAr
+            ? 'أوامر الطباعة ومراجعة BAT'
+            : isEn
+            ? 'Pending BAT & Print Orders'
+            : 'BAT en Attente & Commandes',
+          count: pendingBatCount,
+          badgeText: `${pmPrintOrders.length} ${isAr ? 'أمر' : isEn ? 'orders' : 'ordres'}`,
+          tone: 'terracotta',
+          isActive: activeTab === 'bat',
+          onToggle: () => setActiveTab('bat'),
+        }}
+        darkCard={{
+          label: isAr
+            ? 'المشتريات الميدانية المستهلكة'
+            : isEn
+            ? 'Field Expenses Consumed'
+            : 'Dépenses Terrain Consommées',
+          valueCount: totalExpensesSpent,
+          formatValue: (v) => formatMoney(Math.round(v), 'DZD'),
+          badgeCount: burnRatePercent,
+          badgePrefix: '',
+          badgeSuffix: `% ${isAr ? 'مستهلك' : isEn ? 'used' : 'consommé'}`,
+          caption: isAr
+            ? `سقف المشروع: ${formatMoney(fieldExpensesLimit, 'DZD')}`
+            : isEn
+            ? `Project Cap: ${formatMoney(fieldExpensesLimit, 'DZD')}`
+            : `Plafond : ${formatMoney(fieldExpensesLimit, 'DZD')}`,
+        }}
+      />
+
+      <ScreenPod>
+        <div className="space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
+                {isAr
+                  ? 'سير العمليات ومخطط الإنتاج والتنفيذ'
+                  : isEn
+                  ? 'Deployment Matrix & Operational Pipeline'
+                  : 'Matrice de Déploiement & Pipeline Opérationnel'}
+              </h2>
+            </div>
+            <LiveSegmentedControl
+              size="sm"
+              value={activeTab}
+              onValueChange={(val) => setActiveTab(val)}
+              options={[
+                {
+                  value: 'portfolio',
+                  label: isAr ? 'المشاريع' : isEn ? 'Projects' : 'Pilotage',
+                  tooltip: isAr ? 'متابعة المشاريع والتنفيذ' : isEn ? 'Portfolio oversight' : 'Pilotage du portefeuille',
+                  count: pmProjects.length,
+                },
+                {
+                  value: 'catalog',
+                  label: isAr ? 'الكتالوج' : isEn ? 'Catalog' : 'Catalogue',
+                  tooltip: isAr ? 'كتالوج POSM والدعائم' : isEn ? 'POSM & print catalog' : 'Catalogue POSM & PLV',
+                  count: pmCollateralCatalog.length,
+                },
+                {
+                  value: 'orders',
+                  label: isAr ? 'الطباعة' : isEn ? 'Orders' : 'Commandes',
+                  tooltip: isAr ? 'طلبات الطباعة' : isEn ? 'Print orders' : 'Commandes Print',
+                  count: pmPrintOrders.length,
+                },
+                {
+                  value: 'bat',
+                  label: isAr ? 'الاعتماد' : isEn ? 'Proofs' : 'BAT',
+                  tooltip: isAr ? 'مراجعة BAT' : isEn ? 'Artwork proofs review' : 'Revue BAT',
+                  count: pmBatDeliverables.length,
+                },
+                {
+                  value: 'expenses',
+                  label: isAr ? 'المصاريف' : isEn ? 'Expenses' : 'Dépenses',
+                  tooltip: isAr ? 'مصاريف المشروع' : isEn ? 'Project expenses' : 'Dépenses terrain',
+                  count: pmExpenses.length,
+                },
+              ]}
+              aria-label="Project Chef de Projet Stages Filter"
+            />
+          </div>
+
+          {activeTab === 'portfolio' && (
+            <div className="space-y-5">
+              <div className="p-5 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
+                    {isAr
+                      ? 'مراقبة سقف المصاريف الميدانية'
+                      : isEn
+                      ? 'Field Expense Burn-Rate Control'
+                      : 'Contrôle des Plafonds Dépenses Terrain'}
+                  </span>
+                  <h3 className="text-lg font-bold text-black dark:text-white mt-0.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                    {selectedProject?.title}
+                  </h3>
+                  <div className="text-xs text-black/55 dark:text-white/55">
+                    {isAr ? 'العميل:' : isEn ? 'Client:' : 'Client :'}{' '}
+                    <span className="font-semibold text-black/70 dark:text-white/75">
+                      {selectedProject?.clientName}
+                    </span>{' '}
+                    · {isAr ? 'السقف المعتمد:' : isEn ? 'Cap:' : 'Plafond autorisé :'}{' '}
+                    <span className="font-mono font-bold">
+                      {formatMoney(selectedProject?.maxFieldExpensesDzd || 0, 'DZD')}
+                    </span>
+                  </div>
+                </div>
+                <div className="w-full sm:w-64 space-y-1.5">
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span className="text-black/55 dark:text-white/55">
+                      {isAr ? 'المستهلك ميدانياً:' : isEn ? 'Consumed:' : 'Consommé Terrain :'}
+                    </span>
+                    <span
+                      className={`font-mono tabular-nums ${
+                        isOverThreshold ? 'text-red-600 font-bold' : 'text-black dark:text-white'
+                      }`}
+                    >
+                      {formatMoney(totalExpensesSpent, 'DZD')} ({burnRatePercent}%)
+                    </span>
+                  </div>
+                  <div className="w-full h-2.5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${
+                        isOverThreshold ? 'bg-red-500' : 'bg-emerald-500'
+                      }`}
+                      style={{ width: `${burnRatePercent}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {pmProjects.map((p) => {
+                  const spent = pmExpenses
+                    .filter((e) => e.projectId === p.id)
+                    .reduce((acc, e) => acc + e.amountDzd, 0);
+                  const limit = p.maxFieldExpensesDzd || 1;
+                  const pct = Math.min(Math.round((spent / limit) * 100), 100);
+                  const isSel = selectedProject?.id === p.id;
+                  return (
+                    <button
+                      type="button"
+                      key={p.id}
+                      onClick={() => setSelectedProjectId(p.id)}
+                      className={`p-5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer shadow-xs ${
+                        isSel
+                          ? 'border-[#d4522f] bg-[#d4522f]/5 dark:bg-[#d4522f]/10 ring-1 ring-[#d4522f]'
+                          : 'border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-[#D5CBBF]'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <span className="text-[11px] font-bold text-[#d4522f] uppercase truncate">
+                          {p.clientName}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
+                          {p.status}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-bold text-black dark:text-white mb-2 truncate">
+                        {p.title}
+                      </h4>
+                      <div className="space-y-1 text-xs text-black/55 dark:text-white/55">
+                        <div className="flex justify-between">
+                          <span>{isAr ? 'الميزانية الإجمالية:' : isEn ? 'Global Cap:' : 'Plafond Global:'}</span>
+                          <span className="font-mono font-bold text-black dark:text-white">
+                            {formatMoney(p.budgetCapDzd, 'DZD')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>{isAr ? 'مصاريف الميدان:' : isEn ? 'Field Spend:' : 'Dépenses Terrain:'}</span>
+                          <span className="font-mono">
+                            {formatMoney(spent, 'DZD')} / {formatMoney(limit, 'DZD')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden mt-3">
+                        <div
+                          className={`h-full ${pct >= 85 ? 'bg-red-500' : 'bg-[#d4522f]'}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'catalog' && (
+            <div className="space-y-4">
+              <ScreenCollectionToolbar
+                title={isAr ? 'كتالوج الدعائم والمواد POSM' : isEn ? 'POSM & Print Catalog' : 'Catalogue POSM & PLV'}
+                liveRegionText={`${filteredCatalog.length} ${isAr ? 'دعامة' : isEn ? 'items' : 'supports'}`}
+                language={language}
+                searchQuery={catalogSearch}
+                onSearchChange={setCatalogSearch}
+                searchPlaceholder={
+                  isAr ? 'بحث بالاسم أو SKU...' : isEn ? 'Search totem, rollup, stand...' : 'Rechercher totem, rollup, stand...'
+                }
+                statusOptions={[
+                  { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Toutes', count: pmCollateralCatalog.length },
+                  { value: 'stand', label: isAr ? 'منصات' : isEn ? 'Stands' : 'Stands' },
+                  { value: 'pos_display', label: isAr ? 'حوامل' : isEn ? 'Displays' : 'PLV' },
+                  { value: 'banner', label: isAr ? 'لافتات' : isEn ? 'Banners' : 'Bannières' },
+                  { value: 'apparel', label: isAr ? 'ألبسة' : isEn ? 'Apparel' : 'Textiles' },
+                ]}
+                statusValue={catalogCategory}
+                onStatusChange={setCatalogCategory}
+                hasActiveAdvancedFilters={catalogCategory !== 'all'}
+                activeFiltersCount={catalogCategory !== 'all' ? 1 : 0}
+                isFilterModalOpen={isCatalogFilterOpen}
+                filterButtonRef={catalogFilterRef}
+                onToggleFilterModal={() => setIsCatalogFilterOpen((p) => !p)}
+                viewMode={catalogViewMode}
+                onViewModeChange={setCatalogViewMode}
+                activeChips={
+                  catalogCategory !== 'all'
+                    ? [{ key: 'cat', label: catalogCategory, onRemove: () => setCatalogCategory('all') }]
+                    : []
+                }
+                onResetAllFilters={() => {
+                  setCatalogSearch('');
+                  setCatalogCategory('all');
+                }}
+              />
+
+              <UniversalDataCollection<PMCollateralItem>
+                hideToolbar
+                items={filteredCatalog}
+                keyExtractor={(i) => i.id}
+                viewMode={catalogViewMode === 'list' ? 'list' : 'grid'}
+                defaultViewMode={catalogViewMode}
+                columns={catalogColumns}
+                openItemId={inspectedCatalog?.id || null}
+                onItemClick={(item, el) => {
+                  if (el) setCatalogOpenerEl(el);
+                  setInspectedCatalog(item);
+                }}
+                onViewDetails={(item, el) => {
+                  if (el) setCatalogOpenerEl(el);
+                  setInspectedCatalog(item);
+                }}
+                getRowMeta={getCatalogRowMeta}
+                getFanActions={(item): KineticRowFanAction[] => [
+                  {
+                    id: 'add-cart',
+                    label: isAr ? 'أضف' : isEn ? 'Add' : 'Ajouter',
+                    icon: <ShoppingBag size={14} />,
+                    onClick: () => handleAddToCart(item),
+                  },
+                ]}
+                getDetailActions={(item): KineticDetailAction[] => [
+                  {
+                    id: 'add-cart',
+                    label: isAr ? 'إضافة للسلة' : isEn ? 'Add to Print Cart' : 'Ajouter au Panier',
+                    icon: <ShoppingBag size={14} />,
+                    onClick: () => handleAddToCart(item),
+                  },
+                ]}
+                renderCard={(item) => (
+                  <div className="flex flex-col justify-between h-full space-y-3">
+                    <div className="space-y-2">
+                      {item.imageUrl && (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-36 rounded-xl object-cover border border-[#E6DED6]/60 dark:border-neutral-800"
+                        />
+                      )}
+                      <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 font-mono">
+                        <span>{item.sku}</span>
+                        <span className="uppercase text-[#d4522f] font-bold">{item.category}</span>
+                      </div>
+                      <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-black/55 dark:text-white/55 font-mono">
+                        {item.dimensions}
+                      </p>
+                    </div>
+                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
+                      <span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">
+                        {formatMoney(item.unitCostDzd, 'DZD')}
+                      </span>
+                      <AtriumButton
+                        type="button"
+                        size="xs"
+                        variant="primary"
+                        icon={<Plus className="w-3.5 h-3.5" />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(item);
+                        }}
+                      >
+                        {isAr ? 'طلب' : isEn ? 'Order' : 'Commander'}
+                      </AtriumButton>
+                    </div>
+                  </div>
+                )}
+              />
+            </div>
+          )}
+
+          {activeTab === 'orders' && (
+            <div className="space-y-4">
+              <ScreenCollectionToolbar
+                title={isAr ? 'سجل أوامر الطباعة' : isEn ? 'Print Orders Registry' : 'Registre Commandes Print'}
+                liveRegionText={`${sortedOrders.length} ${isAr ? 'طلبية' : isEn ? 'orders' : 'commandes'}`}
+                language={language}
+                searchQuery={ordersSearch}
+                onSearchChange={setOrdersSearch}
+                searchPlaceholder={
+                  isAr ? 'بحث برقم الطلب أو الحملة...' : isEn ? 'Search order #, campaign...' : 'Rechercher par n° de bon ou campagne...'
+                }
+                statusOptions={[
+                  { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: pmPrintOrders.length },
+                  { value: 'sent_to_crea', label: isAr ? 'التصميم' : isEn ? 'Studio' : 'Créa' },
+                  { value: 'bat_in_progress', label: isAr ? 'مراجعة BAT' : isEn ? 'Proofing' : 'BAT' },
+                  { value: 'in_print', label: isAr ? 'المطبعة' : isEn ? 'Printer' : 'Imprimeur' },
+                  { value: 'delivered', label: isAr ? 'مُسلّم' : isEn ? 'Delivered' : 'Livré' },
+                ]}
+                statusValue={ordersStatusFilter}
+                onStatusChange={setOrdersStatusFilter}
+                hasActiveAdvancedFilters={ordersStatusFilter !== 'all'}
+                activeFiltersCount={ordersStatusFilter !== 'all' ? 1 : 0}
+                isFilterModalOpen={isOrdersFilterOpen}
+                filterButtonRef={ordersFilterRef}
+                onToggleFilterModal={() => setIsOrdersFilterOpen((p) => !p)}
+                viewMode={ordersViewMode}
+                onViewModeChange={setOrdersViewMode}
+                onExport={handleExportOrdersCsv}
+                activeChips={
+                  ordersStatusFilter !== 'all'
+                    ? [
+                        {
+                          key: 'status',
+                          label: getOrderStatusBadge(ordersStatusFilter, language).label,
+                          onRemove: () => setOrdersStatusFilter('all'),
+                        },
+                      ]
+                    : []
+                }
+                onResetAllFilters={() => {
+                  setOrdersSearch('');
+                  setOrdersStatusFilter('all');
+                }}
+              />
+
+              <UniversalDataCollection<PMPrintOrder>
+                hideToolbar
+                items={sortedOrders}
+                keyExtractor={(o) => o.id}
+                viewMode={ordersViewMode === 'grid' ? 'grid' : 'list'}
+                defaultViewMode={ordersViewMode}
+                columns={orderColumns}
+                sortBy={ordersSortBy}
+                sortDirection={ordersSortDir}
+                onSortChange={(key, dir) => {
+                  setOrdersSortBy(key);
+                  setOrdersSortDir(dir);
+                }}
+                selectedIds={selectedOrderIds}
+                onSelectionChange={setSelectedOrderIds}
+                isPinned={(o) => pinnedOrderIds.has(o.id)}
+                onTogglePin={handleTogglePinOrder}
+                openItemId={activeOrder?.id || null}
+                onItemClick={(order, el) => {
+                  if (el) setOrderOpenerEl(el);
+                  setInspectedOrder(order);
+                }}
+                onViewDetails={(order, el) => {
+                  if (el) setOrderOpenerEl(el);
+                  setInspectedOrder(order);
+                }}
+                bulkSecondaryAction={{
+                  label: isAr ? 'تحديد كمُسلم' : isEn ? 'Mark Delivered' : 'Marquer Livré',
+                  icon: <Truck size={14} />,
+                  onClick: () => {
+                    batchUpdatePmPrintOrderStatus(Array.from(selectedOrderIds), 'delivered');
+                    setSelectedOrderIds(new Set<string>());
+                  },
+                }}
+                onBulkDelete={(ids) => {
+                  batchDeletePmPrintOrders(Array.from(ids));
+                  setSelectedOrderIds(new Set<string>());
+                }}
+                getRowMeta={getOrderRowMeta}
+                getFanActions={(order): KineticRowFanAction[] => [
+                  {
+                    id: 'print',
+                    label: isAr ? 'للمطبعة' : isEn ? 'To Print' : 'Imprimeur',
+                    icon: <Printer size={14} />,
+                    onClick: () => batchUpdatePmPrintOrderStatus([order.id], 'in_print'),
+                  },
+                  {
+                    id: 'deliver',
+                    label: isAr ? 'مُسلّم' : isEn ? 'Delivered' : 'Livré',
+                    icon: <CheckCircle size={14} />,
+                    onClick: () => batchUpdatePmPrintOrderStatus([order.id], 'delivered'),
+                  },
+                ]}
+                getDetailActions={(order): KineticDetailAction[] => [
+                  {
+                    id: 'print',
+                    label: isAr ? 'إرسال للمطبعة' : isEn ? 'Send to Printer' : 'Envoyer Imprimeur',
+                    icon: <Printer size={14} />,
+                    onClick: () => batchUpdatePmPrintOrderStatus([order.id], 'in_print'),
+                  },
+                  {
+                    id: 'deliver',
+                    label: isAr ? 'تأكيد الاستلام' : isEn ? 'Mark Delivered' : 'Marquer Livré',
+                    icon: <CheckCircle size={14} />,
+                    onClick: () => batchUpdatePmPrintOrderStatus([order.id], 'delivered'),
+                  },
+                ]}
+                renderCard={(order) => (
+                  <div className="flex flex-col justify-between h-full space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between text-xs font-mono font-bold text-black dark:text-white mb-1">
+                        <span>{order.orderNumber}</span>
+                        <span className="text-black/55 dark:text-white/55 font-normal">
+                          {getOrderStatusBadge(order.status, language).label}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-semibold text-black dark:text-white">
+                        {order.projectTitle}
+                      </h4>
+                      <div className="text-xs text-black/55 dark:text-white/55 mt-2 space-y-1">
+                        {order.items.map((it, idx) => (
+                          <div key={idx}>
+                            • {it.quantity}x {it.itemTitle}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex justify-between items-center text-xs">
+                      <span className="text-black/55 dark:text-white/55">Total :</span>
+                      <span className="font-mono font-bold text-black dark:text-white tabular-nums">
+                        {formatMoney(order.totalCostDzd, 'DZD')}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              />
+            </div>
+          )}
+
+          {activeTab === 'bat' && (
+            <div className="space-y-4">
+              <ScreenCollectionToolbar
+                title={isAr ? 'مراجعة ملفات BAT' : isEn ? 'Artwork Proofing (BAT)' : 'Revue & Validation BAT'}
+                liveRegionText={`${filteredBats.length} BAT`}
+                language={language}
+                searchQuery={batSearch}
+                onSearchChange={setBatSearch}
+                searchPlaceholder={
+                  isAr ? 'بحث في ملفات BAT...' : isEn ? 'Search deliverable or campaign...' : 'Rechercher par livrable ou campagne...'
+                }
+                statusOptions={[
+                  { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: pmBatDeliverables.length },
+                  {
+                    value: 'pending_review',
+                    label: isAr ? 'قيد المراجعة' : isEn ? 'Pending' : 'En Attente',
+                    count: pendingBatCount,
+                  },
+                  {
+                    value: 'approved',
+                    label: isAr ? 'معتمد' : isEn ? 'Approved' : 'Validés',
+                    count: pmBatDeliverables.filter((b) => b.approvalStatus === 'approved').length,
+                  },
+                  {
+                    value: 'revision_requested',
+                    label: isAr ? 'مُعدّل' : isEn ? 'Revisions' : 'Corrections',
+                  },
+                ]}
+                statusValue={batStatusFilter}
+                onStatusChange={setBatStatusFilter}
+                hasActiveAdvancedFilters={batStatusFilter !== 'all'}
+                activeFiltersCount={batStatusFilter !== 'all' ? 1 : 0}
+                isFilterModalOpen={isBatFilterOpen}
+                filterButtonRef={batFilterRef}
+                onToggleFilterModal={() => setIsBatFilterOpen((p) => !p)}
+                viewMode={batViewMode}
+                onViewModeChange={setBatViewMode}
+                activeChips={
+                  batStatusFilter !== 'all'
+                    ? [
+                        {
+                          key: 'batStatus',
+                          label: getBatStatusBadge(
+                            batStatusFilter as PMBatDeliverable['approvalStatus'],
+                            language
+                          ).label,
+                          onRemove: () => setBatStatusFilter('all'),
+                        },
+                      ]
+                    : []
+                }
+                onResetAllFilters={() => {
+                  setBatSearch('');
+                  setBatStatusFilter('all');
+                }}
+              />
+
+              <UniversalDataCollection<PMBatDeliverable>
+                hideToolbar
+                items={filteredBats}
+                keyExtractor={(b) => b.id}
+                viewMode={batViewMode === 'list' ? 'list' : 'grid'}
+                defaultViewMode={batViewMode}
+                columns={batColumns}
+                selectedIds={selectedBatIds}
+                onSelectionChange={setSelectedBatIds}
+                isPinned={(b) => pinnedBatIds.has(b.id)}
+                onTogglePin={handleTogglePinBat}
+                openItemId={activeBat?.id || null}
+                onItemClick={(bat, el) => {
+                  if (el) setBatOpenerEl(el);
+                  setInspectedBat(bat);
+                }}
+                onViewDetails={(bat, el) => {
+                  if (el) setBatOpenerEl(el);
+                  setInspectedBat(bat);
+                }}
+                bulkSecondaryAction={{
+                  label: isAr ? 'اعتماد BAT' : isEn ? 'Approve BAT' : 'Valider BAT',
+                  icon: <FileCheck2 size={14} />,
+                  onClick: () => {
+                    batchReviewPmBatDeliverables(Array.from(selectedBatIds), 'approved');
+                    setSelectedBatIds(new Set<string>());
+                  },
+                }}
+                onBulkDelete={(ids) => {
+                  batchDeletePmBatDeliverables(Array.from(ids));
+                  setSelectedBatIds(new Set<string>());
+                }}
+                getRowMeta={getBatRowMeta}
+                getFanActions={(bat): KineticRowFanAction[] => [
+                  {
+                    id: 'approve',
+                    label: isAr ? 'اعتماد' : isEn ? 'Approve' : 'Valider',
+                    icon: <CheckCircle size={14} />,
+                    onClick: () => handleApproveBat(bat.id),
+                  },
+                  {
+                    id: 'revise',
+                    label: isAr ? 'تعديل' : isEn ? 'Revise' : 'Révision',
+                    icon: <MessageSquare size={14} />,
+                    onClick: () => {
+                      setActiveBatId(bat.id);
+                      setIsCorrectionModalOpen(true);
+                    },
+                  },
+                ]}
+                getDetailActions={(bat): KineticDetailAction[] => [
+                  {
+                    id: 'approve',
+                    label: isAr ? 'اعتماد BAT' : isEn ? 'Approve BAT' : 'Valider BAT',
+                    icon: <CheckCircle size={14} />,
+                    onClick: () => handleApproveBat(bat.id),
+                  },
+                  {
+                    id: 'revise',
+                    label: isAr ? 'طلب تصحيح' : isEn ? 'Request Revision' : 'Demander Révision',
+                    icon: <MessageSquare size={14} />,
+                    onClick: () => {
+                      setActiveBatId(bat.id);
+                      setIsCorrectionModalOpen(true);
+                    },
+                  },
+                ]}
+                renderCard={(bat) => {
+                  const badge = getBatStatusBadge(bat.approvalStatus, language);
+                  return (
+                    <div className="space-y-3">
+                      <img
+                        src={bat.previewUrl}
+                        alt={bat.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-44 rounded-xl object-cover border border-[#E6DED6]/60 dark:border-neutral-800"
+                      />
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-xs font-bold text-[#d4522f] uppercase truncate">
+                          {bat.projectTitle}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${badge.pillClass}`}>
+                          {badge.label}
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-bold text-black dark:text-white truncate">
+                        {bat.title}
+                      </h3>
+                      <div className="flex items-center gap-2 text-xs text-black/55 dark:text-white/55 font-mono">
+                        <span>{bat.colorSpace}</span>
+                        <span>·</span>
+                        <span>{bat.resolutionDpi} DPI</span>
+                        <span>·</span>
+                        <span>{bat.bleedMm}mm</span>
+                      </div>
+                      {bat.revisionComments && (
+                        <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 text-xs">
+                          Note CDP : {bat.revisionComments}
+                        </div>
+                      )}
+                      <div className="pt-2 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveBatId(bat.id);
+                            setIsCorrectionModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 rounded-xl transition-colors cursor-pointer"
+                        >
+                          {isAr ? 'طلب تعديل' : isEn ? 'Revision' : 'Demander Révision'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleApproveBat(bat.id);
+                          }}
+                          className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors cursor-pointer"
+                        >
+                          {isAr ? 'اعتماد BAT' : isEn ? 'Approve' : 'Valider BAT'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }}
+              />
+            </div>
+          )}
+
+          {activeTab === 'expenses' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-7 space-y-4">
+                <ScreenCollectionToolbar
+                  title={isAr ? 'مصاريف الحملة الميدانية' : isEn ? 'Project Field Expenses' : 'Dépenses Terrain Projet'}
+                  liveRegionText={`${filteredProjectExpenses.length} ${isAr ? 'مصاريف' : isEn ? 'expenses' : 'dépenses'}`}
+                  language={language}
+                  searchQuery={expenseSearch}
+                  onSearchChange={setExpenseSearch}
+                  searchPlaceholder={
+                    isAr ? 'بحث بالعنوان أو المصرح...' : isEn ? 'Search expense title...' : 'Rechercher par titre de dépense...'
+                  }
+                  viewMode={expenseViewMode}
+                  onViewModeChange={setExpenseViewMode}
+                />
+                <UniversalDataCollection<PMExpense>
+                  hideToolbar
+                  items={filteredProjectExpenses}
+                  keyExtractor={(e) => e.id}
+                  viewMode={expenseViewMode === 'grid' ? 'grid' : 'list'}
+                  defaultViewMode={expenseViewMode}
+                  columns={expenseColumns}
+                  selectedIds={selectedExpenseIds}
+                  onSelectionChange={setSelectedExpenseIds}
+                  onBulkDelete={(ids) => {
+                    batchDeletePmExpenses(Array.from(ids));
+                    setSelectedExpenseIds(new Set<string>());
+                  }}
+                  openItemId={inspectedExpense?.id || null}
+                  onItemClick={(exp, el) => {
+                    if (el) setExpenseOpenerEl(el);
+                    setInspectedExpense(exp);
+                  }}
+                  getRowMeta={getExpenseRowMeta}
+                  getFanActions={(exp): KineticRowFanAction[] =>
+                    exp.receiptPhotoUrl
+                      ? [
+                          {
+                            id: 'receipt',
+                            label: isAr ? 'الوصل' : isEn ? 'Receipt' : 'Reçu',
+                            icon: <Eye size={14} />,
+                            onClick: () => setSelectedReceiptUrl(exp.receiptPhotoUrl || null),
+                          },
+                        ]
+                      : []
+                  }
+                  renderCard={(exp) => (
+                    <div className="p-4 flex items-center justify-between gap-4">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                            {exp.category}
+                          </span>
+                          <span className="font-semibold text-xs text-black dark:text-white truncate">
+                            {exp.title}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-black/55 dark:text-white/55">
+                          {exp.declaredByUserName} · {exp.status}
+                        </div>
+                      </div>
+                      <span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums shrink-0">
+                        {formatMoney(exp.amountDzd, 'DZD')}
+                      </span>
+                    </div>
+                  )}
+                />
+              </div>
+
+              <div className="lg:col-span-5 p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4 self-start">
+                <div>
+                  <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
+                    {isAr ? 'التصريح بمشتريات الميدان' : isEn ? 'Field Purchase Declaration' : "Déclaration d'Achat Terrain"}
+                  </span>
+                  <h3 className="text-base font-bold text-black dark:text-white mt-0.5">
+                    {isAr ? 'إدخال فوري وترميز المخزون' : isEn ? 'Quick Entry & Asset Coding' : 'Saisie Immédiate & Codage Stock'}
+                  </h3>
+                  <p className="text-xs text-black/55 dark:text-white/55">
+                    {isAr
+                      ? 'ينشئ تلقائياً مرجع أصل للوكالة عند المصادقة.'
+                      : isEn
+                      ? 'Automatically tracks indirect agency asset coding.'
+                      : "Génère automatiquement une référence d'immobilisation indirecte pour l'agence."}
+                  </p>
+                </div>
+                {purchaseSuccessMessage && (
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300">
+                    {purchaseSuccessMessage}
+                  </div>
+                )}
+                <form onSubmit={handleDeclarePurchase} className="space-y-4">
+                  <LabelInput
+                    field="PurchaseTitle"
+                    label={isAr ? 'بيان المشتريات' : isEn ? 'Item Description' : 'Désignation du Matériel'}
+                    value={purchaseTitle}
+                    onChange={setPurchaseTitle}
+                    required
+                    height={44}
+                    corner={12}
+                  />
+                  <LabelInput
+                    field="PurchaseAmount"
+                    label={isAr ? 'المبلغ (دج)' : isEn ? 'Amount TTC (DZD)' : 'Montant TTC (DZD)'}
+                    type="number"
+                    value={purchaseAmount}
+                    onChange={setPurchaseAmount}
+                    required
+                    height={44}
+                    corner={12}
+                  />
+                  <FilterSelect
+                    label={isAr ? 'طبيعة الشراء' : isEn ? 'Category' : "Nature de l'Achat"}
+                    value={purchaseCategory}
+                    onChange={(val) =>
+                      setPurchaseCategory(typeof val === 'string' ? val : val.target?.value || String(val))
+                    }
+                    options={[
+                      {
+                        value: 'materials',
+                        label: isAr ? 'معدات' : isEn ? 'Equipment' : 'Matériel',
+                        tooltip: isAr ? 'معدات وأثاث المنصة' : 'Matériel & Mobilier Stand',
+                      },
+                      {
+                        value: 'catering',
+                        label: isAr ? 'إطعام' : isEn ? 'Catering' : 'Restauration',
+                        tooltip: isAr ? 'إطعام المنشطين' : 'Restauration Animateurs',
+                      },
+                      {
+                        value: 'transport',
+                        label: isAr ? 'نقل' : isEn ? 'Transport' : 'Transport',
+                        tooltip: isAr ? 'وقود ونقل' : 'Carburant & Transport',
+                      },
+                    ]}
+                  />
+                  <AtriumButton
+                    type="submit"
+                    variant="primary"
+                    className="w-full"
+                    icon={<Plus className="w-4 h-4" />}
+                  >
+                    {isAr ? 'تصريح وتحميل على المشروع' : isEn ? 'Submit to Project' : 'Déclarer & Imputer au Projet'}
+                  </AtriumButton>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      </ScreenPod>
+
+      {/* Filter Modals */}
+      <KineticFilterModal
+        isOpen={isCatalogFilterOpen}
+        onClose={() => setIsCatalogFilterOpen(false)}
+        triggerRef={catalogFilterRef}
+        language={language}
+        displayCount={filteredCatalog.length}
+        entityPluralLabel={isAr ? 'دعامات' : isEn ? 'items' : 'supports'}
+        hasActiveFilters={catalogCategory !== 'all'}
+        onResetFilters={() => {
+          setCatalogSearch('');
+          setCatalogCategory('all');
+        }}
+        sections={[
+          {
+            id: 'category',
+            kind: 'segmented',
+            label: isAr ? 'الفئة' : isEn ? 'Category' : 'Catégorie POSM',
+            value: catalogCategory,
+            onChange: setCatalogCategory,
+            options: [
+              { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Toutes', count: pmCollateralCatalog.length },
+              { value: 'stand', label: 'Stands' },
+              { value: 'pos_display', label: 'PLV / Totems' },
+              { value: 'banner', label: 'Bannières' },
+              { value: 'apparel', label: 'Textiles' },
+            ],
+          },
+        ]}
+      />
+
+      <KineticFilterModal
+        isOpen={isOrdersFilterOpen}
+        onClose={() => setIsOrdersFilterOpen(false)}
+        triggerRef={ordersFilterRef}
+        language={language}
+        displayCount={sortedOrders.length}
+        entityPluralLabel={isAr ? 'طلبات' : isEn ? 'orders' : 'commandes'}
+        hasActiveFilters={ordersStatusFilter !== 'all'}
+        onResetFilters={() => {
+          setOrdersSearch('');
+          setOrdersStatusFilter('all');
+        }}
+        sections={[
+          {
+            id: 'orderStatus',
+            kind: 'segmented',
+            label: isAr ? 'حالة الطباعة' : isEn ? 'Production Status' : 'Statut Production',
+            value: ordersStatusFilter,
+            onChange: setOrdersStatusFilter,
+            options: [
+              { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: pmPrintOrders.length },
+              { value: 'sent_to_crea', label: 'Transmis Créa' },
+              { value: 'bat_in_progress', label: 'BAT en cours' },
+              { value: 'in_print', label: "Chez l'Imprimeur" },
+              { value: 'delivered', label: 'Livré' },
+            ],
+          },
+        ]}
+      />
+
+      <KineticFilterModal
+        isOpen={isBatFilterOpen}
+        onClose={() => setIsBatFilterOpen(false)}
+        triggerRef={batFilterRef}
+        language={language}
+        displayCount={filteredBats.length}
+        entityPluralLabel="BAT"
+        hasActiveFilters={batStatusFilter !== 'all'}
+        onResetFilters={() => {
+          setBatSearch('');
+          setBatStatusFilter('all');
+        }}
+        sections={[
+          {
+            id: 'batStatus',
+            kind: 'segmented',
+            label: isAr ? 'حالة المراجعة' : isEn ? 'Review Status' : 'Statut Validation',
+            value: batStatusFilter,
+            onChange: setBatStatusFilter,
+            options: [
+              { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: pmBatDeliverables.length },
+              { value: 'pending_review', label: 'En Attente' },
+              { value: 'approved', label: 'Validés' },
+              { value: 'revision_requested', label: 'Corrections' },
+            ],
+          },
+        ]}
+      />
+
+      {/* Inspectors */}
+      <KineticSlideOverInspector<PMCollateralItem>
+        isOpen={Boolean(inspectedCatalog)}
+        item={inspectedCatalog}
+        allItems={filteredCatalog}
+        keyExtractor={(i) => i.id}
+        openerElement={catalogOpenerEl}
+        language={language}
+        title={inspectedCatalog?.title || ''}
+        subtitle={`${inspectedCatalog?.sku || ''} · ${inspectedCatalog?.dimensions || ''}`}
+        categoryLabel={inspectedCatalog?.category}
+        avatarText={(inspectedCatalog?.title || 'PM').slice(0, 2).toUpperCase()}
+        onClose={() => setInspectedCatalog(null)}
+        onSelectItem={(item) => setInspectedCatalog(item)}
+        renderBody={(item) => (
+          <>
+            {item.imageUrl && (
+              <InspectorSection index={0}>
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-48 rounded-2xl object-cover border border-[#E6DED6] dark:border-neutral-800"
+                />
+              </InspectorSection>
+            )}
+            <InspectorSection index={1}>
+              <InspectorBigStat
+                value={formatMoney(item.unitCostDzd, 'DZD')}
+                tone="accent"
+                caption={`${item.material} · ${item.dimensions}`}
+              />
+            </InspectorSection>
+            <InspectorSection index={2} title={isAr ? 'المواصفات الفنية' : 'Fiche Technique POSM'}>
+              <InspectorCard>
+                <InspectorKeyValue label="SKU" value={item.sku} />
+                <InspectorKeyValue label="Catégorie" value={item.category} mono={false} />
+                <InspectorKeyValue label="Dimensions" value={item.dimensions} />
+                <InspectorKeyValue label="Matière" value={item.material} mono={false} isLast />
+              </InspectorCard>
+            </InspectorSection>
+            <InspectorSection index={3}>
+              <InspectorWideButton
+                label={isAr ? '+ إضافة إلى سلة الطباعة' : '+ Ajouter au Bon de Commande Print'}
+                onClick={() => handleAddToCart(item)}
+              />
+            </InspectorSection>
+          </>
+        )}
+      />
+
+      <KineticSlideOverInspector<PMPrintOrder>
+        isOpen={Boolean(activeOrder)}
+        item={activeOrder}
+        allItems={sortedOrders}
+        keyExtractor={(o) => o.id}
+        openerElement={orderOpenerEl}
+        language={language}
+        title={activeOrder?.orderNumber || ''}
+        subtitle={activeOrder?.projectTitle}
+        categoryLabel={`${activeOrder?.items.length || 0} réf. POSM`}
+        avatarText="PR"
+        statusLabel={activeOrder ? getOrderStatusBadge(activeOrder.status, language).label : undefined}
+        statusClassName={activeOrder ? getOrderStatusBadge(activeOrder.status, language).pillClass : undefined}
+        onClose={() => setInspectedOrder(null)}
+        onSelectItem={(o) => setInspectedOrder(o)}
+        onDelete={(o) => {
+          batchDeletePmPrintOrders([o.id]);
+          setInspectedOrder(null);
+        }}
+        holdToDelete
+        renderBody={(order) => (
+          <>
+            <InspectorSection index={0} title={isAr ? 'إجراءات سريعة' : 'Actions rapides'}>
+              <InspectorQuickActions
+                actions={[
+                  {
+                    id: 'print',
+                    label: isAr ? 'للمطبعة' : 'Imprimeur',
+                    icon: <Printer className="w-[18px] h-[18px]" />,
+                    primary: true,
+                    onClick: () => batchUpdatePmPrintOrderStatus([order.id], 'in_print'),
+                  },
+                  {
+                    id: 'deliver',
+                    label: isAr ? 'تم التسليم' : 'Livré',
+                    icon: <CheckCircle className="w-[18px] h-[18px]" />,
+                    onClick: () => batchUpdatePmPrintOrderStatus([order.id], 'delivered'),
+                  },
+                  {
+                    id: 'pin',
+                    label: pinnedOrderIds.has(order.id) ? 'Désépingler' : 'Épingler',
+                    icon: <Pin className="w-[18px] h-[18px]" />,
+                    onClick: () => handleTogglePinOrder(order),
+                  },
+                ]}
+              />
+            </InspectorSection>
+            <InspectorSection index={1}>
+              <InspectorBigStat
+                value={formatMoney(order.totalCostDzd, 'DZD')}
+                tone="accent"
+                caption={`${order.items.reduce((a, i) => a + i.quantity, 0)} unité(s) · ${order.projectTitle}`}
+              />
+            </InspectorSection>
+            <InspectorSection index={2} title={isAr ? 'تفاصيل المواد' : `Articles commandés (${order.items.length})`}>
+              <InspectorCard>
+                {order.items.map((it, idx) => (
+                  <InspectorListItem
+                    key={`${it.collateralItemId}-${idx}`}
+                    title={it.itemTitle}
+                    subtitle={`${it.quantity} × ${formatMoney(it.unitPriceDzd, 'DZD')}`}
+                    metaRight={formatMoney(it.quantity * it.unitPriceDzd, 'DZD')}
+                    isLast={idx === order.items.length - 1}
+                  />
+                ))}
+              </InspectorCard>
+            </InspectorSection>
+          </>
+        )}
+      />
+
+      <KineticSlideOverInspector<PMBatDeliverable>
+        isOpen={Boolean(activeBat)}
+        item={activeBat}
+        allItems={filteredBats}
+        keyExtractor={(b) => b.id}
+        openerElement={batOpenerEl}
+        language={language}
+        title={activeBat?.title || ''}
+        subtitle={`${activeBat?.projectTitle || ''} · ${activeBat?.versionCode || ''}`}
+        categoryLabel={activeBat ? `${activeBat.colorSpace} · ${activeBat.resolutionDpi} DPI` : undefined}
+        avatarText={activeBat?.fileFormat.toUpperCase().slice(0, 2) || 'BT'}
+        statusLabel={activeBat ? getBatStatusBadge(activeBat.approvalStatus, language).label : undefined}
+        statusClassName={activeBat ? getBatStatusBadge(activeBat.approvalStatus, language).pillClass : undefined}
+        onClose={() => setInspectedBat(null)}
+        onSelectItem={(b) => setInspectedBat(b)}
+        onDelete={(b) => {
+          batchDeletePmBatDeliverables([b.id]);
+          setInspectedBat(null);
+        }}
+        holdToDelete
+        renderBody={(bat) => (
+          <>
+            <InspectorSection index={0}>
+              <img
+                src={bat.previewUrl}
+                alt={bat.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-48 rounded-2xl object-cover border border-[#E6DED6] dark:border-neutral-800"
+              />
+            </InspectorSection>
+            <InspectorSection index={1} title={isAr ? 'إجراءات الاعتماد' : 'Contrôle Qualité BAT'}>
+              <InspectorQuickActions
+                actions={[
+                  {
+                    id: 'approve',
+                    label: isAr ? 'اعتماد' : 'Valider BAT',
+                    icon: <CheckCircle className="w-[18px] h-[18px]" />,
+                    primary: true,
+                    onClick: () => handleApproveBat(bat.id),
+                  },
+                  {
+                    id: 'revision',
+                    label: isAr ? 'تصحيح' : 'Corrections',
+                    icon: <MessageSquare className="w-[18px] h-[18px]" />,
+                    onClick: () => {
+                      setActiveBatId(bat.id);
+                      setIsCorrectionModalOpen(true);
+                    },
+                  },
+                  {
+                    id: 'pin',
+                    label: pinnedBatIds.has(bat.id) ? 'Désépingler' : 'Épingler',
+                    icon: <Pin className="w-[18px] h-[18px]" />,
+                    onClick: () => handleTogglePinBat(bat),
+                  },
+                ]}
+              />
+            </InspectorSection>
+            <InspectorSection index={2} title={isAr ? 'المواصفات الفنية' : 'Spécifications Prépresse'}>
+              <InspectorCard>
+                <InspectorKeyValue label="Espace Couleur" value={bat.colorSpace} />
+                <InspectorKeyValue label="Résolution" value={`${bat.resolutionDpi} DPI`} />
+                <InspectorKeyValue label="Fond Perdu" value={`${bat.bleedMm} mm`} />
+                <InspectorKeyValue label="Format / Version" value={`${bat.fileFormat.toUpperCase()} (${bat.versionCode})`} />
+                <InspectorKeyValue label="Graphiste" value={bat.uploadedByCreativeName} mono={false} isLast />
+              </InspectorCard>
+            </InspectorSection>
+          </>
+        )}
+      />
+
+      <KineticSlideOverInspector<PMExpense>
+        isOpen={Boolean(inspectedExpense)}
+        item={inspectedExpense}
+        allItems={filteredProjectExpenses}
+        keyExtractor={(e) => e.id}
+        openerElement={expenseOpenerEl}
+        language={language}
+        title={inspectedExpense?.title || ''}
+        subtitle={inspectedExpense?.projectTitle}
+        categoryLabel={inspectedExpense?.category}
+        avatarText="EX"
+        onClose={() => setInspectedExpense(null)}
+        onSelectItem={(e) => setInspectedExpense(e)}
+        onDelete={(e) => {
+          batchDeletePmExpenses([e.id]);
+          setInspectedExpense(null);
+        }}
+        holdToDelete
+        renderBody={(exp) => (
+          <>
+            <InspectorSection index={0}>
+              <InspectorBigStat
+                value={formatMoney(exp.amountDzd, 'DZD')}
+                tone="accent"
+                caption={`${exp.declaredByUserName} · ${exp.hasFiscalInvoice ? 'Facture Fiscale NIF' : 'Reçu Simple'}`}
+              />
+            </InspectorSection>
+            <InspectorSection index={1} title={isAr ? 'تفاصيل النفقة' : 'Détails Justificatif'}>
+              <InspectorCard>
+                <InspectorKeyValue label="Catégorie" value={exp.category} mono={false} />
+                <InspectorKeyValue label="Déclarant" value={exp.declaredByUserName} mono={false} />
+                <InspectorKeyValue label="NIF" value={exp.fiscalNif || 'N/A'} />
+                <InspectorKeyValue label="Statut" value={exp.status} mono={false} isLast />
+              </InspectorCard>
+            </InspectorSection>
+            {exp.receiptPhotoUrl && (
+              <InspectorSection index={2}>
+                <InspectorWideButton
+                  label={isAr ? 'عرض الوصل الممسوح' : 'Afficher Scan du Justificatif'}
+                  onClick={() => setSelectedReceiptUrl(exp.receiptPhotoUrl || null)}
+                />
+              </InspectorSection>
+            )}
+          </>
+        )}
+      />
+
+      {/* Print Cart Drawer */}
+      {isCartOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs"
+        >
+          <div className="w-full max-w-md bg-white dark:bg-neutral-900 h-full p-6 flex flex-col justify-between shadow-2xl border-l border-[#E6DED6] dark:border-neutral-800">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
+                <h3 className="text-base font-bold text-black dark:text-white flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-[#d4522f]" />
+                  {isAr ? 'أمر طلب الطباعة' : isEn ? 'Print Order Cart' : 'Bon de Commande Impression'}
+                </h3>
+                <button
+                  type="button"
+                  aria-label="Fermer"
+                  onClick={() => setIsCartOpen(false)}
+                  className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-black/55 dark:text-white/55">
+                  {isAr ? 'الحملة المرتبطة:' : isEn ? 'Campaign:' : 'Campagne Associée :'}
+                </span>
+                <div className="font-bold text-xs text-black dark:text-white">
+                  {selectedProject?.title}
+                </div>
+              </div>
+              <div className="space-y-2 overflow-y-auto max-h-[50vh] pr-1">
+                {cartItems.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-black/55 dark:text-white/55">
+                    {isAr
+                      ? 'السلة فارغة. اختر دعائم من الكتالوج.'
+                      : 'Le panier est vide. Sélectionnez des supports dans le catalogue.'}
+                  </div>
+                ) : (
+                  cartItems.map((ci) => (
+                    <div
+                      key={ci.item.id}
+                      className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 rounded-xl flex items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="min-w-0">
+                        <div className="font-semibold text-black dark:text-white truncate">
+                          {ci.item.title}
+                        </div>
+                        <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+                          {formatMoney(ci.item.unitCostDzd, 'DZD')} / unité
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateQuantity(ci.item.id, -1)}
+                          className="w-6 h-6 rounded bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer"
+                        >
+                          -
+                        </button>
+                        <span className="font-mono font-bold w-6 text-center">{ci.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateQuantity(ci.item.id, 1)}
+                          className="w-6 h-6 rounded bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer"
+                        >
+                          +
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Supprimer"
+                          onClick={() => handleRemoveFromCart(ci.item.id)}
+                          className="p-1 text-red-500 hover:text-red-700 ml-1 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            <div className="pt-4 border-t border-[#E6DED6] dark:border-neutral-800 space-y-3">
+              <div className="flex justify-between items-center text-sm font-bold">
+                <span>{isAr ? 'الإجمالي التقديري:' : 'Total Estimé HT :'}</span>
+                <span className="font-mono text-base text-[#d4522f] tabular-nums">
+                  {formatMoney(cartTotalDzd, 'DZD')}
+                </span>
+              </div>
+              <AtriumButton
+                type="button"
+                variant="primary"
+                className="w-full"
+                onClick={handleTransmitToCrea}
+                disabled={cartItems.length === 0}
+                icon={<Send className="w-4 h-4" />}
+              >
+                {isAr
+                  ? 'إرسال للاستوديو لإعداد BAT'
+                  : 'Transmettre au Studio Créa pour BAT ➔'}
+              </AtriumButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BAT Correction Modal */}
+      {isCorrectionModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+        >
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-[#d4522f]" />
+                {isAr ? 'طلب تعديل على BAT' : 'Demande de Correction BAT'}
+              </h3>
+              <button
+                type="button"
+                aria-label="Fermer"
+                onClick={() => setIsCorrectionModalOpen(false)}
+                className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <textarea
+              rows={4}
+              value={correctionNote}
+              onChange={(e) => setCorrectionNote(e.target.value)}
+              placeholder={
+                isAr
+                  ? 'اذكر التعديلات المطلوبة...'
+                  : 'Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille texte)...'
+              }
+              className="w-full px-3 py-2 text-xs rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+            />
+            <div className="flex justify-end gap-2">
+              <AtriumButton
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsCorrectionModalOpen(false)}
+              >
+                {isAr ? 'إلغاء' : 'Annuler'}
+              </AtriumButton>
+              <AtriumButton type="button" variant="primary" size="sm" onClick={handleRequestRevision}>
+                {isAr ? 'إرسال للاستوديو' : 'Envoyer au Studio Créa'}
+              </AtriumButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Receipt Image Modal */}
+      {selectedReceiptUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+        >
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-[#d4522f]" />
+                {isAr ? 'وصل الشراء الميداني' : "Justificatif d'Achat Terrain"}
+              </h3>
+              <button
+                type="button"
+                aria-label="Fermer"
+                onClick={() => setSelectedReceiptUrl(null)}
+                className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <img
+              src={selectedReceiptUrl}
+              alt="Justificatif"
+              referrerPolicy="no-referrer"
+              className="w-full h-72 object-cover rounded-xl"
+            />
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedReceiptUrl(null)}
+                className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 rounded-xl cursor-pointer"
+              >
+                {isAr ? 'إغلاق' : 'Fermer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };

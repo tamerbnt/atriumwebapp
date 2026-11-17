@@ -783,14 +783,14 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               branchName: bInfo.name,
               isPinned: pinnedBookingIds.has(b.id),
               notes: b.notes,
-              detailCol1: { label: t('venue_voucher_renter_name'), value: b.renterName },
+              detailCol1: { heading: t('venue_voucher_renter_name'), primaryText: b.renterName },
               detailCol2: {
-                label: t('venue_inv_capacity'),
-                value: t('venue_guests_count', language, { count: b.attendeeCount }),
+                heading: t('venue_inv_capacity'),
+                primaryText: t('venue_guests_count', language, { count: b.attendeeCount }),
               },
               detailCol3: {
-                label: t('venue_col_caution'),
-                value: formatCurrencyAmount(b.depositAmount, b.currency),
+                heading: t('venue_col_caution'),
+                primaryText: formatCurrencyAmount(b.depositAmount, b.currency),
               },
             };
           }}

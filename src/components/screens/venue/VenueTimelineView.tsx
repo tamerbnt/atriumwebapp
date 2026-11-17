@@ -839,11 +839,11 @@ export const VenueTimelineView: React.FC = () => {
               metricSecondary: `${b.startDateTime.replace('T', ' ').slice(0, 16)} (${b.durationHours}h)`,
               branchName: bInfo.name,
               isPinned: pinnedBookingIds.has(b.id),
-              detailCol1: { label: t('venue_voucher_renter_name'), value: b.renterName },
-              detailCol2: { label: t('venue_col_space'), value: b.unitName },
+              detailCol1: { heading: t('venue_voucher_renter_name'), primaryText: b.renterName },
+              detailCol2: { heading: t('venue_col_space'), primaryText: b.unitName },
               detailCol3: {
-                label: t('venue_col_schedule'),
-                value: `${b.startDateTime.replace('T', ' ').slice(0, 16)} (${b.durationHours}h)`,
+                heading: t('venue_col_schedule'),
+                primaryText: `${b.startDateTime.replace('T', ' ').slice(0, 16)} (${b.durationHours}h)`,
               },
             };
           }}

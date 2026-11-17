@@ -608,14 +608,14 @@ export const VenueFinanceView: React.FC = () => {
               metricSecondary: dep.paymentMethod,
               branchName: bInfo.name,
               isPinned: pinnedIds.has(dep.id),
-              detailCol1: { label: t('venue_voucher_space'), value: dep.unitName },
+              detailCol1: { heading: t('venue_voucher_space'), primaryText: dep.unitName },
               detailCol2: {
-                label: isAr ? 'طريقة الدفع' : 'Mode Paiement',
-                value: dep.paymentMethod,
+                heading: isAr ? 'طريقة الدفع' : 'Mode Paiement',
+                primaryText: dep.paymentMethod,
               },
               detailCol3: {
-                label: isAr ? 'تاريخ التحصيل' : 'Encaissement',
-                value: dep.collectedAt,
+                heading: isAr ? 'تاريخ التحصيل' : 'Encaissement',
+                primaryText: dep.collectedAt,
               },
             };
           }}

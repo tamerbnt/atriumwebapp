@@ -563,9 +563,9 @@ export const RealEstateMandatesView: React.FC<any> = () => {
               statusVariant: isExpiring ? 'warning' : 'active',
               metricPrimary: formatMoney(m.askingPriceDzd, language),
               metricSecondary: `Hon: ${formatMoney(m.commissionEstimatedTtcDzd, language)}`,
-              detailCol1: { label: isAr ? 'الموكل' : 'Mandant', value: m.ownerFullName },
-              detailCol2: { label: isAr ? 'الصلاحية' : 'Échéance', value: m.endDate },
-              detailCol3: { label: 'Décret 09-18', value: formatMoney(m.commissionEstimatedTtcDzd, language) },
+              detailCol1: { heading: isAr ? 'الموكل' : 'Mandant', primaryText: m.ownerFullName },
+              detailCol2: { heading: isAr ? 'الصلاحية' : 'Échéance', primaryText: m.endDate },
+              detailCol3: { heading: 'Décret 09-18', primaryText: formatMoney(m.commissionEstimatedTtcDzd, language) },
             };
           }}
           getFanActions={(item): KineticRowFanAction[] => [

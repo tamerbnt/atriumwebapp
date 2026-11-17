@@ -12,7 +12,12 @@ import {
   Eye,
   Trash2,
 } from 'lucide-react';
-import { useAtriumSelector, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { localizeStatus } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -71,11 +76,11 @@ const extractStr = (v: unknown): string => {
 export const LegalVaultView: React.FC<any> = () => {
   const language = useAtriumSelector((s) => s.language);
   const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
-  const currentBranch = useAtriumSelector((s) => s.currentBranch);
+  const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
   const branches = useAtriumSelector((s) => s.branches);
   const isSyncing = useAtriumSelector((s) => s.isSyncing);
   const networkMode = useAtriumSelector((s) => s.networkMode);
-  const retryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -346,9 +351,9 @@ export const LegalVaultView: React.FC<any> = () => {
   const getRowMeta = useCallback(
     (item: VaultItem): KineticRowMeta => ({
       avatarText: item.roleScope === 'notaire' ? 'MN' : 'VL',
-      subtitle: `${item.code} · Dossier ${item.matterReference}`,
+      subline: `${item.code} · Dossier ${item.matterReference}`,
       categoryLabel: item.category,
-      statusTone: item.status === 'Confidential' ? 'danger' : 'ok',
+      statusVariant: item.status === 'Confidential' ? 'blocked' : 'active',
       statusLabel: localizeStatus(item.status, language),
       metricPrimary: item.depositDate,
       metricSecondary: item.officialSealNumber || undefined,

@@ -1346,11 +1346,15 @@ export const AgricultureCyclesView: React.FC = () => {
             return (
               <>
                 <InspectorSection index={0} title={isAr ? 'مؤشر المردود' : isEn ? 'Yield Progress' : 'Rendement réalisé'}>
-                  <InspectorProgressBar
-                    label={`${cycle.actualYieldQtx || 0} / ${cycle.projectedYieldQtx} Qtx`}
-                    value={`${yieldPct}%`}
-                    percent={yieldPct}
-                  />
+                  <InspectorCard>
+                    <div className="py-2.5">
+                      <div className="flex justify-between items-center text-[12px] mb-1.5">
+                        <span className="text-black/70 dark:text-white/75">{`${cycle.actualYieldQtx || 0} / ${cycle.projectedYieldQtx} Qtx`}</span>
+                        <span className="font-mono font-bold text-[#096b40] dark:text-[#5BE3A3]">{`${yieldPct}%`}</span>
+                      </div>
+                      <InspectorProgressBar percent={yieldPct} animateKey={cycle.id} />
+                    </div>
+                  </InspectorCard>
                 </InspectorSection>
                 <InspectorSection index={1} title={isAr ? 'تفاصيل الحصاد' : isEn ? 'Production Targets' : 'Objectifs de récolte'}>
                   <InspectorCard>
@@ -1525,16 +1529,24 @@ export const AgricultureCyclesView: React.FC = () => {
                 <InspectorSection index={0} title={isAr ? 'حالة فترة الأمان' : isEn ? 'DAR Status' : 'Rémanence INPV'}>
                   <InspectorBigStat
                     value={safety.isLocked ? `${safety.daysRemaining}j` : '0j'}
-                    tone={safety.isLocked ? 'warn' : 'ok'}
+                    tone={safety.isLocked ? 'accent' : 'ok'}
                     caption={`Récolte autorisée : ${treat.harvestAllowedDate}`}
                   />
                 </InspectorSection>
                 <InspectorSection index={1} title={isAr ? 'تقدم مدة الأمان' : isEn ? 'Safety Window' : 'Progression DAR'}>
-                  <InspectorProgressBar
-                    label={`${treat.darDays} jours réglementaires`}
-                    value={`${elapsedPct}%`}
-                    percent={elapsedPct}
-                  />
+                  <InspectorCard>
+                    <div className="py-2.5">
+                      <div className="flex justify-between items-center text-[12px] mb-1.5">
+                        <span className="text-black/70 dark:text-white/75">{`${treat.darDays} jours réglementaires`}</span>
+                        <span className="font-mono font-bold text-[#096b40] dark:text-[#5BE3A3]">{`${elapsedPct}%`}</span>
+                      </div>
+                      <InspectorProgressBar
+                        percent={elapsedPct}
+                        tone={safety.isLocked ? 'warn' : 'ok'}
+                        animateKey={treat.id}
+                      />
+                    </div>
+                  </InspectorCard>
                 </InspectorSection>
               </>
             );

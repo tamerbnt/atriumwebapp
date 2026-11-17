@@ -760,23 +760,22 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
                 <InspectorBigStat
                   value={formatMoney(payout.totalPayout)}
                   tone={payout.status === 'Paid' ? 'ok' : 'accent'}
-                  actionLabel={
+                  action={
                     payout.status === 'Pending'
-                      ? 'Approuver le bordereau'
-                      : payout.status === 'Approved'
-                      ? 'Régler via BaridiMob'
-                      : undefined
-                  }
-                  onAction={
-                    payout.status === 'Pending'
-                      ? () => {
-                          updateStylistPayoutStatus(payout.id, 'Approved');
-                          setInspectingPayout({ ...payout, status: 'Approved' });
+                      ? {
+                          label: 'Approuver le bordereau',
+                          onClick: () => {
+                            updateStylistPayoutStatus(payout.id, 'Approved');
+                            setInspectingPayout({ ...payout, status: 'Approved' });
+                          },
                         }
                       : payout.status === 'Approved'
-                      ? () => {
-                          updateStylistPayoutStatus(payout.id, 'Paid', 'BaridiMob');
-                          setInspectingPayout({ ...payout, status: 'Paid', paymentMethod: 'BaridiMob' });
+                      ? {
+                          label: 'Régler via BaridiMob',
+                          onClick: () => {
+                            updateStylistPayoutStatus(payout.id, 'Paid', 'BaridiMob');
+                            setInspectingPayout({ ...payout, status: 'Paid', paymentMethod: 'BaridiMob' });
+                          },
                         }
                       : undefined
                   }

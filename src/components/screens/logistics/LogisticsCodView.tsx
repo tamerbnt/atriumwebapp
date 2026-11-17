@@ -243,9 +243,9 @@ export const LogisticsCodView: React.FC<any> = () => {
       const b = resolveRecordBranch(s, branchesById, currentBranch, language);
       return {
         avatarText: (s.merchantName || 'CD').slice(0, 2).toUpperCase(),
-        subtitle: `${s.trackingCode} · ${s.recipientName}`,
+        subline: `${s.trackingCode} · ${s.recipientName}`,
         categoryLabel: b.name,
-        statusTone: isSettled ? 'ok' : 'warn',
+        statusVariant: isSettled ? 'active' : 'warning',
         statusLabel: isSettled ? (isAr ? 'محوّل' : 'Viré') : isAr ? 'قيد التسوية' : 'À Régler',
         metricPrimary: formatMoney(net, language),
         metricSecondary: `Brut ${formatMoney(s.codAmountDzd, language)}`,
@@ -859,6 +859,7 @@ export const LogisticsCodView: React.FC<any> = () => {
               </tbody>
             </table>
           </div>
+          </div>
         </ScreenPod>
       )}
 
@@ -950,6 +951,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
         </ScreenPod>
       )}

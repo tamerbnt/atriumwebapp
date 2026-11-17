@@ -665,9 +665,9 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                 statusVariant: isEntry ? 'active' : 'warning',
                 metricPrimary: `${insp.keysDeliveredCount || insp.keysCount || 4} clés`,
                 metricSecondary: `${insp.meterReadings?.electricKwh || insp.meterElectricityKwh || 0} kWh`,
-                detailCol1: { label: isAr ? 'الخبير' : 'Inspecteur', value: insp.inspectorName || '—' },
-                detailCol2: { label: 'Élec', value: `${insp.meterReadings?.electricKwh || insp.meterElectricityKwh || 0} kWh` },
-                detailCol3: { label: 'Gaz', value: `${insp.meterReadings?.gasM3 || insp.meterGasM3 || 0} m³` },
+                detailCol1: { heading: isAr ? 'الخبير' : 'Inspecteur', primaryText: insp.inspectorName || '—' },
+                detailCol2: { heading: 'Élec', primaryText: `${insp.meterReadings?.electricKwh || insp.meterElectricityKwh || 0} kWh` },
+                detailCol3: { heading: 'Gaz', primaryText: `${insp.meterReadings?.gasM3 || insp.meterGasM3 || 0} m³` },
               };
             }}
             getFanActions={(insp): KineticRowFanAction[] => [
@@ -779,9 +779,9 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                 statusVariant: v.clientImpression === 'OfferSubmitted' ? 'active' : 'info',
                 metricPrimary: v.counterOfferDzd ? formatMoney(v.counterOfferDzd, language) : v.visitTimestamp.slice(0, 10),
                 metricSecondary: `${v.gpsLatitude?.toFixed(3)}°N`,
-                detailCol1: { label: isAr ? 'المفاوض' : 'Négociateur', value: v.negotiatorName },
-                detailCol2: { label: 'GPS', value: `${v.gpsLatitude?.toFixed(4)}°N, ${v.gpsLongitude?.toFixed(4)}°E` },
-                detailCol3: { label: isAr ? 'التاريخ' : 'Date', value: v.visitTimestamp.slice(0, 10) },
+                detailCol1: { heading: isAr ? 'المفاوض' : 'Négociateur', primaryText: v.negotiatorName },
+                detailCol2: { heading: 'GPS', primaryText: `${v.gpsLatitude?.toFixed(4)}°N, ${v.gpsLongitude?.toFixed(4)}°E` },
+                detailCol3: { heading: isAr ? 'التاريخ' : 'Date', primaryText: v.visitTimestamp.slice(0, 10) },
               };
             }}
             getFanActions={(v): KineticRowFanAction[] => [

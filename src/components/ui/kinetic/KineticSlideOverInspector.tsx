@@ -21,6 +21,7 @@ export interface KineticSlideOverInspectorProps<T = any> {
   avatarText?: string;
   avatarColor?: string;
   branchName?: string;
+  categoryLabel?: string;
   statusLabel?: string;
   statusClassName?: string;
   headerPills?: React.ReactNode;
@@ -48,6 +49,7 @@ function KineticSlideOverInspectorInner<T>({
   avatarText,
   avatarColor = '#d4522f',
   branchName,
+  categoryLabel,
   statusLabel,
   statusClassName,
   headerPills,
@@ -476,6 +478,11 @@ function KineticSlideOverInspectorInner<T>({
                 <span className="pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--atr-acc,#d4522f)]" />
                   {branchName}
+                </span>
+              )}
+              {categoryLabel && (
+                <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F]">
+                  {categoryLabel}
                 </span>
               )}
               {headerPills}

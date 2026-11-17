@@ -23,6 +23,7 @@ import {
   useAtriumActions,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
 import { useContractorData } from './contractorData';
@@ -81,7 +82,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
   } = useAtriumSelector(
     (s) => ({
       language: s.language,
-      currentBusiness: s.currentBusiness,
+      currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       currentUser: s.currentUser,
@@ -491,22 +492,19 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
   );
 
   const getRowMeta = useCallback(
-    (log: ContractorDailyLog): KineticRowData => {
+    (log: ContractorDailyLog): Partial<KineticRowData> => {
       const isSunny = log.weather.toLowerCase().includes('ensoleill');
       const br = resolveRecordBranch(log, branchesById, currentBranch, language);
       return {
-        primary: log.date,
-        secondary: `${log.headcountWorkers} ${isAr ? 'عمال' : 'ouvriers'} · ${log.supervisorSignature || 'Chef chantier'}`,
-        meta: br.name,
-        badge: isSunny
-          ? {
-              label: isAr ? 'مشمس' : 'Ensoleillé',
-              tone: 'ok',
-            }
-          : {
-              label: isAr ? 'تقلبات' : 'Intempéries',
-              tone: 'warn',
-            },
+        title: log.date,
+        subline: `${log.headcountWorkers} ${isAr ? 'عمال' : 'ouvriers'} · ${log.supervisorSignature || 'Chef chantier'}`,
+        categoryLabel: log.weather,
+        statusLabel: isSunny ? (isAr ? 'مشمس' : 'Ensoleillé') : (isAr ? 'تقلبات' : 'Intempéries'),
+        statusVariant: isSunny ? 'active' : 'warning',
+        metricPrimary: `${log.headcountWorkers} ${isAr ? 'عامل' : 'ouvr.'}`,
+        metricSecondary: log.equipmentOnSite?.length ? `${log.equipmentOnSite.length} engins` : br.name,
+        branchName: br.name,
+        branchCode: br.code,
       };
     },
     [branchesById, currentBranch, language, isAr]

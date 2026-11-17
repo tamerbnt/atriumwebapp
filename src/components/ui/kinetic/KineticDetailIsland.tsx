@@ -12,6 +12,7 @@ export interface KineticDetailAction {
   id: string;
   label: string;
   icon?: React.ReactNode;
+  isDanger?: boolean;
   onClick: () => void;
 }
 
@@ -204,7 +205,11 @@ export const KineticDetailIsland: React.FC<KineticDetailIslandProps> = React.mem
                       e.stopPropagation();
                       btn.onClick();
                     }}
-                    className="h-[30px] px-3 rounded-[9px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white dark:hover:bg-[var(--atr-acc,#e8643f)] dark:hover:text-white text-[var(--atr-ink,#000000)] dark:text-white font-medium text-[11.5px] flex items-center gap-1.5 transition-colors duration-140 cursor-pointer whitespace-nowrap"
+                    className={`h-[30px] px-3 rounded-[9px] border font-medium text-[11.5px] flex items-center gap-1.5 transition-colors duration-140 cursor-pointer whitespace-nowrap ${
+                      btn.isDanger
+                        ? 'border-[#F5BDB3] dark:border-[#5C2B24] bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] hover:bg-[#c0283d] hover:text-white hover:border-[#c0283d]'
+                        : 'border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white dark:hover:bg-[var(--atr-acc,#e8643f)] dark:hover:text-white text-[var(--atr-ink,#000000)] dark:text-white'
+                    }`}
                   >
                     {btn.icon}
                     <span className="truncate">{btn.label}</span>

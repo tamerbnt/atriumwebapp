@@ -302,16 +302,16 @@ export const EducationCohortsView: React.FC = () => {
       const pct = Math.min(100, Math.round((cohort.enrolledCount / Math.max(1, cohort.maxStudents)) * 100));
       return {
         avatarText: cohort.name.slice(0, 2).toUpperCase(),
-        subtitle: `${cohort.courseTitle} · ${cohort.instructorName}`,
+        subline: `${cohort.courseTitle} · ${cohort.instructorName}`,
         categoryLabel: cohort.classroomName || 'Campus',
-        statusTone:
+        statusVariant:
           cohort.status === 'InProgress'
-            ? 'ok'
+            ? 'active'
             : cohort.status === 'Enrolling'
             ? 'info'
             : cohort.status === 'Completed'
             ? 'neutral'
-            : 'warn',
+            : 'warning',
         statusLabel: localizeStatus(cohort.status, language),
         metricPrimary: formatMoney(cohort.tuitionFee),
         metricSecondary: `${cohort.enrolledCount}/${cohort.maxStudents} (${pct}%)`,

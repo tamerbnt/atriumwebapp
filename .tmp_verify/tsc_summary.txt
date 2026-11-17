@@ -1,0 +1,344 @@
+src/components/common/StaffInspectorDrawer.tsx (2)
+  L603:38 [TS2339] Property 'notes' does not exist on type 'StaffMember'.
+  L612:57 [TS2353] Object literal may only specify known properties, and 'notes' does not exist in type 'Partial<StaffMember>'.
+src/components/common/staff/StandardStaffScreen.tsx (2)
+  L98:9 [TS2322] Type 'string | number' is not assignable to type 'string | undefined'.
+  L136:15 [TS2339] Property 'notes' does not exist on type 'StaffMember'.
+src/components/screens/agriculture/AgricultureCyclesView.tsx (5)
+  L1309:9 [TS2322] Type '{ isOpen: boolean; item: AgriCropCycle | null; allItems: AgriCropCycle[]; keyExtractor: (c: AgriCropCycle) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (cycle: AgriCropCycle, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<AgriCropCycle>'.
+  L1350:21 [TS2322] Type '{ label: string; value: string; percent: number; }' is not assignable to type 'IntrinsicAttributes & { percent: number; tone?: "accent" | "danger" | "ok" | "warn" | undefined; animateKey?: string | number | undefined; }'.
+  L1492:9 [TS2322] Type '{ isOpen: boolean; item: AgriTreatmentLog | null; allItems: AgriTreatmentLog[]; keyExtractor: (t: AgriTreatmentLog) => string; ... 16 more ...; renderBody: (treat: AgriTreatmentLog, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<AgriTreatmentLog>'.
+  L1528:21 [TS2322] Type '"ok" | "warn"' is not assignable to type '"accent" | "danger" | "default" | "ok" | undefined'.
+  L1534:21 [TS2322] Type '{ label: string; value: string; percent: number; }' is not assignable to type 'IntrinsicAttributes & { percent: number; tone?: "accent" | "danger" | "ok" | "warn" | undefined; animateKey?: string | number | undefined; }'.
+src/components/screens/agriculture/AgricultureHarvestView.tsx (3)
+  L81:26 [TS2551] Property 'currentBusiness' does not exist on type 'AppState'. Did you mean 'currentBusinessId'?
+  L1271:9 [TS2322] Type '{ isOpen: boolean; item: AgriWeighbridgeTicket | null; allItems: AgriWeighbridgeTicket[]; keyExtractor: (t: AgriWeighbridgeTicket) => string; ... 16 more ...; renderBody: (ticket: AgriWeighbridgeTicket, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<AgriWeighbridgeTicket>'.
+  L1423:19 [TS2322] Type '{ value: string; onChange: Dispatch<SetStateAction<string>>; onSave: () => void; placeholder: string; savedLabel: string | undefined; }' is not assignable to type 'IntrinsicAttributes & { value: string; onSave: (next: string) => void; placeholder?: string | undefined; ariaLabel?: string | undefined; }'.
+src/components/screens/agriculture/AgricultureLivestockView.tsx (8)
+  L79:26 [TS2551] Property 'currentBusiness' does not exist on type 'AppState'. Did you mean 'currentBusinessId'?
+  L794:9 [TS2322] Type '"active" | "danger" | "warning"' is not assignable to type 'KineticStatusVariant | undefined'.
+  L1308:9 [TS2322] Type '{ isOpen: boolean; item: AgriDairyCow | null; allItems: AgriDairyCow[]; keyExtractor: (a: AgriDairyCow) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (animal: AgriDairyCow, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<AgriDairyCow>'.
+  L1355:21 [TS2322] Type '"ok" | "warn"' is not assignable to type '"accent" | "danger" | "default" | "ok" | undefined'.
+  L1378:19 [TS2322] Type '{ value: string; onChange: Dispatch<SetStateAction<string>>; onSave: () => void; placeholder: string; }' is not assignable to type 'IntrinsicAttributes & { value: string; onSave: (next: string) => void; placeholder?: string | undefined; ariaLabel?: string | undefined; }'.
+  L1424:19 [TS2322] Type '"ok" | "warn"' is not assignable to type '"accent" | "danger" | "default" | "ok" | undefined'.
+  L1473:9 [TS2322] Type '{ isOpen: boolean; item: AgriMilkingRecord | null; allItems: AgriMilkingRecord[]; keyExtractor: (m: AgriMilkingRecord) => string; ... 16 more ...; renderBody: (milk: AgriMilkingRecord, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<AgriMilkingRecord>'.
+  L1506:21 [TS2322] Type '"ok" | "warn"' is not assignable to type '"accent" | "danger" | "default" | "ok" | undefined'.
+src/components/screens/agriculture/AgricultureParcelsView.tsx (1)
+  L914:9 [TS2322] Type '{ isOpen: boolean; item: AgriParcel | null; allItems: AgriParcel[]; keyExtractor: (p: AgriParcel) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (item: AgriParcel, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<AgriParcel>'.
+src/components/screens/agriculture/AgricultureWholesaleView.tsx (1)
+  L961:9 [TS2322] Type '{ isOpen: boolean; item: AgriWeighbridgeTicket | null; allItems: AgriWeighbridgeTicket[]; keyExtractor: (t: AgriWeighbridgeTicket) => string; ... 16 more ...; renderBody: (item: AgriWeighbridgeTicket, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<AgriWeighbridgeTicket>'.
+src/components/screens/appointment/AppointmentClientsView.tsx (3)
+  L826:11 [TS2322] Type '{ isOpen: boolean; item: Member | null; allItems: Member[]; keyExtractor: (c: Member) => string; openerElement: HTMLElement | null; language: SupportedLanguage; ... 13 more ...; renderBody: (client: Member, activeTab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<Member>'.
+  L929:23 [TS2322] Type '{ value: string; tone: "accent"; actionLabel: string; onAction: () => void; }' is not assignable to type 'IntrinsicAttributes & { value: ReactNode; tone?: "accent" | "danger" | "default" | "ok" | undefined; caption?: ReactNode; action?: { label: string; onClick: () => void; tone?: "accent" | ... 1 more ... | undefined; } | undefined; }'.
+  L947:29 [TS2322] Type '{ key: string; title: string; subtitle: string; trailing: string; isLast: boolean; }' is not assignable to type 'IntrinsicAttributes & InspectorListItemProps'.
+src/components/screens/appointment/AppointmentFinanceView.tsx (2)
+  L658:9 [TS2322] Type '{ isOpen: boolean; item: StylistPayout | null; allItems: StylistPayout[]; keyExtractor: (p: StylistPayout) => string; openerElement: HTMLElement | null; ... 11 more ...; renderBody: (payout: StylistPayout, activeTab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<StylistPayout>'.
+  L763:19 [TS2322] Type '{ value: string; tone: "accent" | "ok"; actionLabel: string | undefined; onAction: (() => void) | undefined; }' is not assignable to type 'IntrinsicAttributes & { value: ReactNode; tone?: "accent" | "danger" | "default" | "ok" | undefined; caption?: ReactNode; action?: { label: string; onClick: () => void; tone?: "accent" | ... 1 more ... | undefined; } | undefined; }'.
+src/components/screens/appointment/AppointmentHistoryView.tsx (2)
+  L600:9 [TS2322] Type '{ isOpen: boolean; item: Appointment | null; allItems: Appointment[]; keyExtractor: (a: Appointment) => string; openerElement: HTMLElement | null; ... 14 more ...; renderBody: (apt: Appointment, activeTab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<Appointment>'.
+  L635:21 [TS2322] Type '{ value: string; tone: "accent" | "ok"; actionLabel: string; onAction: () => void; }' is not assignable to type 'IntrinsicAttributes & { value: ReactNode; tone?: "accent" | "danger" | "default" | "ok" | undefined; caption?: ReactNode; action?: { label: string; onClick: () => void; tone?: "accent" | ... 1 more ... | undefined; } | undefined; }'.
+src/components/screens/appointment/AppointmentScheduleView.tsx (3)
+  L893:9 [TS2322] Type '{ isOpen: boolean; item: Appointment | null; allItems: Appointment[]; keyExtractor: (a: Appointment) => string; openerElement: HTMLElement | null; ... 13 more ...; renderBody: (apt: Appointment, activeTab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<Appointment>'.
+  L943:21 [TS2322] Type '{ value: string; tone: "accent" | "ok"; actionLabel: string | undefined; onAction: (() => void) | undefined; }' is not assignable to type 'IntrinsicAttributes & { value: ReactNode; tone?: "accent" | "danger" | "default" | "ok" | undefined; caption?: ReactNode; action?: { label: string; onClick: () => void; tone?: "accent" | ... 1 more ... | undefined; } | undefined; }'.
+  L964:23 [TS2322] Type '{ title: string; subtitle: string; badge: { label: string; tone: "ok" | "warn"; }; trailing: string; isLast: true; }' is not assignable to type 'IntrinsicAttributes & InspectorListItemProps'.
+src/components/screens/appointment/AppointmentServicesView.tsx (1)
+  L715:9 [TS2322] Type '{ isOpen: boolean; item: ServiceItem | null; allItems: ServiceItem[]; keyExtractor: (s: ServiceItem) => string; openerElement: HTMLElement | null; ... 14 more ...; renderBody: (service: ServiceItem, activeTab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<ServiceItem>'.
+src/components/screens/appointment/SalonQuickChairKiosk.tsx (2)
+  L441:9 [TS2322] Type '{ isOpen: boolean; item: { id: string; name: string; type: string; } | null; allItems: { id: string; name: string; type: string; }[]; keyExtractor: (w: any) => any; openerElement: HTMLElement | null; ... 11 more ...; renderBody: (ws: any, activeTab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<any>'.
+  L486:19 [TS2322] Type '{ value: string; tone: "accent" | "ok"; actionLabel: string | undefined; onAction: (() => void) | undefined; }' is not assignable to type 'IntrinsicAttributes & { value: ReactNode; tone?: "accent" | "danger" | "default" | "ok" | undefined; caption?: ReactNode; action?: { label: string; onClick: () => void; tone?: "accent" | ... 1 more ... | undefined; } | undefined; }'.
+src/components/screens/contractor/ContractorBillingView.tsx (2)
+  L77:26 [TS2551] Property 'currentBusiness' does not exist on type 'AppState'. Did you mean 'currentBusinessId'?
+  L793:9 [TS2322] Type '{ isOpen: boolean; item: ContractorDgp | null; allItems: ContractorDgp[]; keyExtractor: (d: ContractorDgp) => string; openerElement: HTMLElement | null; ... 13 more ...; renderBody: (d: ContractorDgp, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<ContractorDgp>'.
+src/components/screens/contractor/ContractorBoqView.tsx (3)
+  L73:26 [TS2551] Property 'currentBusiness' does not exist on type 'AppState'. Did you mean 'currentBusinessId'?
+  L516:9 [TS2322] Type '"active" | "danger" | "warning"' is not assignable to type 'KineticStatusVariant | undefined'.
+  L893:9 [TS2322] Type '{ isOpen: boolean; item: ContractorBoqItem | null; allItems: ContractorBoqItem[]; keyExtractor: (item: ContractorBoqItem) => string; ... 16 more ...; renderBody: (item: ContractorBoqItem, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<ContractorBoqItem>'.
+src/components/screens/contractor/ContractorDailyLogsView.tsx (3)
+  L84:26 [TS2551] Property 'currentBusiness' does not exist on type 'AppState'. Did you mean 'currentBusinessId'?
+  L498:9 [TS2353] Object literal may only specify known properties, and 'primary' does not exist in type 'KineticRowData'.
+  L1156:9 [TS2322] Type '{ isOpen: boolean; item: ContractorDailyLog | null; allItems: ContractorDailyLog[]; keyExtractor: (l: ContractorDailyLog) => string; ... 14 more ...; renderBody: (log: ContractorDailyLog, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<ContractorDailyLog>'.
+src/components/screens/contractor/ContractorSitesView.tsx (2)
+  L463:9 [TS2353] Object literal may only specify known properties, and 'primary' does not exist in type 'KineticRowData'.
+  L848:9 [TS2322] Type '{ isOpen: boolean; item: ContractorProject | null; allItems: ContractorProject[]; keyExtractor: (p: ContractorProject) => string; ... 16 more ...; renderBody: (p: ContractorProject, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<ContractorProject>'.
+src/components/screens/education/EducationAdmissionsView.tsx (2)
+  L40:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L948:9 [TS2322] Type '{ isOpen: boolean; item: EduAdmissionLead | null; allItems: EduAdmissionLead[]; keyExtractor: (l: EduAdmissionLead) => string; ... 16 more ...; renderBody: (lead: EduAdmissionLead, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<EduAdmissionLead>'.
+src/components/screens/education/EducationAttendanceView.tsx (2)
+  L40:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L907:9 [TS2322] Type '{ isOpen: boolean; item: EduStudent | null; allItems: EduStudent[]; keyExtractor: (s: EduStudent) => string; openerElement: HTMLElement | null; ... 14 more ...; renderBody: (st: EduStudent, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<EduStudent>'.
+src/components/screens/education/EducationCohortsView.tsx (2)
+  L39:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L708:9 [TS2322] Type '{ isOpen: boolean; item: EduCohort | null; allItems: EduCohort[]; keyExtractor: (c: EduCohort) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (cohort: EduCohort, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<EduCohort>'.
+src/components/screens/education/EducationFinanceView.tsx (2)
+  L40:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L813:9 [TS2322] Type '{ isOpen: boolean; item: EduEnrollment | null; allItems: EduEnrollment[]; keyExtractor: (e: EduEnrollment) => string; openerElement: HTMLElement | null; ... 14 more ...; renderBody: (enr: EduEnrollment, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<EduEnrollment>'.
+src/components/screens/education/EducationStudentsView.tsx (2)
+  L43:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L826:9 [TS2322] Type '{ isOpen: boolean; item: EduStudent | null; allItems: EduStudent[]; keyExtractor: (s: EduStudent) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (st: EduStudent, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<EduStudent>'.
+src/components/screens/education/EducationTimetableView.tsx (2)
+  L40:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L779:9 [TS2322] Type '{ isOpen: boolean; item: EduSession | null; allItems: EduSession[]; keyExtractor: (s: EduSession) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (sess: EduSession, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<EduSession>'.
+src/components/screens/freelance/FreelanceClientsView.tsx (2)
+  L45:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L973:9 [TS2322] Type '{ isOpen: boolean; item: FreelanceClient | null; allItems: FreelanceClient[]; keyExtractor: (c: FreelanceClient) => string; openerElement: HTMLElement | null; ... 16 more ...; renderBody: (client: FreelanceClient, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<FreelanceClient>'.
+src/components/screens/freelance/FreelanceDeliverablesView.tsx (2)
+  L53:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L1327:9 [TS2322] Type '{ isOpen: boolean; item: FlatDeliverableItem | null; allItems: FlatDeliverableItem[]; keyExtractor: (item: FlatDeliverableItem) => string; ... 17 more ...; renderBody: (item: FlatDeliverableItem, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<FlatDeliverableItem>'.
+src/components/screens/freelance/FreelanceFinanceView.tsx (2)
+  L37:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L894:9 [TS2322] Type '{ isOpen: boolean; item: FreelanceExpense | null; allItems: FreelanceExpense[]; keyExtractor: (exp: FreelanceExpense) => string; ... 17 more ...; renderBody: (exp: FreelanceExpense, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<FreelanceExpense>'.
+src/components/screens/freelance/FreelanceInvoicesView.tsx (2)
+  L41:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L1009:9 [TS2322] Type '{ isOpen: boolean; item: FreelanceInvoice | null; allItems: FreelanceInvoice[]; keyExtractor: (inv: FreelanceInvoice) => string; ... 17 more ...; renderBody: (inv: FreelanceInvoice, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<FreelanceInvoice>'.
+src/components/screens/freelance/FreelanceProposalsView.tsx (2)
+  L41:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L997:9 [TS2322] Type '{ isOpen: boolean; item: FreelanceProposal | null; allItems: FreelanceProposal[]; keyExtractor: (p: FreelanceProposal) => string; ... 17 more ...; renderBody: (proposal: FreelanceProposal, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<FreelanceProposal>'.
+src/components/screens/freelance/FreelanceTimeTrackerView.tsx (2)
+  L41:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L1221:9 [TS2322] Type '{ isOpen: boolean; item: TimeLogEntry | null; allItems: TimeLogEntry[]; keyExtractor: (l: TimeLogEntry) => string; openerElement: HTMLElement | null; ... 16 more ...; renderBody: (entry: TimeLogEntry, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<TimeLogEntry>'.
+src/components/screens/garage/AutoGarageBillingView.tsx (9)
+  L339:9 [TS2353] Object literal may only specify known properties, and 'primary' does not exist in type 'KineticRowData'.
+  L378:9 [TS2353] Object literal may only specify known properties, and 'primary' does not exist in type 'KineticRowData'.
+  L1011:9 [TS2322] Type '{ isOpen: boolean; item: RepairOrder | null; allItems: RepairOrder[]; keyExtractor: (o: RepairOrder) => string; openerElement: HTMLElement | null; ... 13 more ...; renderBody: (o: RepairOrder, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<RepairOrder>'.
+  L1113:25 [TS2322] Type '{ variant: string; icon: Element; onClick: () => void; children: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+  L1120:24 [TS2322] Type '{ icon: Element; onClick: () => void; children: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+  L1130:24 [TS2322] Type '{ icon: Element; onClick: () => void; children: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+  L1167:21 [TS2322] Type '{ variant: string; icon: Element; onClick: () => void; children: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+  L1174:20 [TS2322] Type '{ icon: Element; onClick: () => void; children: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+  L1184:20 [TS2322] Type '{ icon: Element; onClick: () => void; children: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+src/components/screens/garage/AutoGarageOrdersView.tsx (5)
+  L371:9 [TS2353] Object literal may only specify known properties, and 'primary' does not exist in type 'KineticRowData'.
+  L991:9 [TS2322] Type '{ isOpen: boolean; item: RepairOrder | null; allItems: RepairOrder[]; keyExtractor: (o: RepairOrder) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (order: RepairOrder, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<RepairOrder>'.
+  L1021:21 [TS2322] Type '{ variant: string; icon: Element; onClick: () => void; children: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+  L1040:27 [TS2322] Type '{ key: string; title: string; subtitle: string; value: string | undefined; tone: string; isLast: boolean; }' is not assignable to type 'IntrinsicAttributes & InspectorListItemProps'.
+  L1188:18 [TS2304] Cannot find name 'Boxes'.
+src/components/screens/garage/AutoGaragePartsView.tsx (3)
+  L78:26 [TS2551] Property 'currentBusiness' does not exist on type 'AppState'. Did you mean 'currentBusinessId'?
+  L399:9 [TS2353] Object literal may only specify known properties, and 'primary' does not exist in type 'KineticRowData'.
+  L834:9 [TS2322] Type '{ isOpen: boolean; item: SparePart | null; allItems: SparePart[]; keyExtractor: (p: SparePart) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (part: SparePart, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<SparePart>'.
+src/components/screens/garage/AutoGarageVehiclesView.tsx (4)
+  L301:9 [TS2353] Object literal may only specify known properties, and 'primary' does not exist in type 'KineticRowData'.
+  L782:9 [TS2322] Type '{ isOpen: boolean; item: VehicleAsset | null; allItems: VehicleAsset[]; keyExtractor: (v: VehicleAsset) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (v: VehicleAsset, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<VehicleAsset>'.
+  L831:25 [TS2322] Type '{ key: string; title: string; subtitle: string; value: string; badge: { label: "Delivered" | "Diagnostic" | "InRepair" | "Intake" | "ReadyForPickup" | "Testing" | "WaitingApproval" | "WaitingParts"; tone: "ok" | "warn"; }; isLast: boolean; }' is not assignable to type 'IntrinsicAttributes & InspectorListItemProps'.
+  L874:23 [TS2322] Type '{ variant: string; icon: Element; onClick: () => void; children: string; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+src/components/screens/legal/LegalHearingsView.tsx (5)
+  L39:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L60:54 [TS2551] Property 'currentBusiness' does not exist on type 'AppState'. Did you mean 'currentBusinessId'?
+  L61:52 [TS2551] Property 'currentBranch' does not exist on type 'AppState'. Did you mean 'currentBranchId'?
+  L66:53 [TS2339] Property 'retryCloudSync' does not exist on type 'AppState'.
+  L1013:9 [TS2322] Type '{ isOpen: boolean; item: LegalHearing | null; allItems: LegalHearing[]; keyExtractor: (h: LegalHearing) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (h: LegalHearing, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<LegalHearing>'.
+src/components/screens/legal/LegalMattersView.tsx (5)
+  L38:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L49:52 [TS2551] Property 'currentBranch' does not exist on type 'AppState'. Did you mean 'currentBranchId'?
+  L53:53 [TS2339] Property 'retryCloudSync' does not exist on type 'AppState'.
+  L1188:11 [TS2322] Type '{ isOpen: boolean; item: NotaryDeed | null; allItems: NotaryDeed[]; keyExtractor: (d: NotaryDeed) => string; openerElement: HTMLElement | null; ... 13 more ...; renderBody: (d: NotaryDeed, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<NotaryDeed>'.
+  L1330:11 [TS2322] Type '{ isOpen: boolean; item: LegalMatter | null; allItems: LegalMatter[]; keyExtractor: (m: LegalMatter) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (m: LegalMatter, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<LegalMatter>'.
+src/components/screens/legal/LegalTrustView.tsx (8)
+  L54:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L75:54 [TS2551] Property 'currentBusiness' does not exist on type 'AppState'. Did you mean 'currentBusinessId'?
+  L76:52 [TS2551] Property 'currentBranch' does not exist on type 'AppState'. Did you mean 'currentBranchId'?
+  L81:53 [TS2339] Property 'retryCloudSync' does not exist on type 'AppState'.
+  L1114:11 [TS2322] Type '{ isOpen: boolean; item: EscrowAccount | null; allItems: EscrowAccount[]; keyExtractor: (a: EscrowAccount) => string; openerElement: HTMLElement | null; ... 13 more ...; renderBody: (esc: EscrowAccount, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<EscrowAccount>'.
+  L1592:11 [TS2322] Type '{ isOpen: boolean; item: SCFJournalEntry | null; allItems: SCFJournalEntry[]; keyExtractor: (e: SCFJournalEntry) => string; openerElement: HTMLElement | null; ... 13 more ...; renderBody: (entry: SCFJournalEntry, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<SCFJournalEntry>'.
+  L2053:11 [TS2322] Type '{ isOpen: boolean; item: CashReceipt | null; allItems: CashReceipt[]; keyExtractor: (r: CashReceipt) => string; openerElement: HTMLElement | null; ... 13 more ...; renderBody: (rc: CashReceipt, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<CashReceipt>'.
+  L2573:9 [TS2322] Type '{ isOpen: boolean; item: LegalMatter | null; allItems: LegalMatter[]; keyExtractor: (m: LegalMatter) => string; openerElement: HTMLElement | null; ... 13 more ...; renderBody: (m: LegalMatter, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<LegalMatter>'.
+src/components/screens/legal/LegalVaultView.tsx (4)
+  L38:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L74:52 [TS2551] Property 'currentBranch' does not exist on type 'AppState'. Did you mean 'currentBranchId'?
+  L78:53 [TS2339] Property 'retryCloudSync' does not exist on type 'AppState'.
+  L889:9 [TS2322] Type '{ isOpen: boolean; item: VaultItem | null; allItems: VaultItem[]; keyExtractor: (i: VaultItem) => string; openerElement: HTMLElement | null; ... 15 more ...; renderBody: (item: VaultItem, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<VaultItem>'.
+src/components/screens/logistics/LogisticsCodView.tsx (2)
+  L40:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L1055:9 [TS2322] Type '{ isOpen: boolean; item: LogisticsShipment | null; allItems: LogisticsShipment[]; keyExtractor: (s: LogisticsShipment) => string; ... 14 more ...; renderBody: (s: LogisticsShipment, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<LogisticsShipment>'.
+src/components/screens/logistics/LogisticsManifestsView.tsx (2)
+  L42:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L833:9 [TS2322] Type '{ isOpen: boolean; item: LogisticsManifest | null; allItems: LogisticsManifest[]; keyExtractor: (m: LogisticsManifest) => string; ... 16 more ...; renderBody: (m: LogisticsManifest, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<LogisticsManifest>'.
+src/components/screens/logistics/LogisticsScannerView.tsx (2)
+  L38:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L856:9 [TS2322] Type '{ isOpen: boolean; item: LogisticsShipment | null; allItems: LogisticsShipment[]; keyExtractor: (s: LogisticsShipment) => string; ... 14 more ...; renderBody: (s: LogisticsShipment, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<LogisticsShipment>'.
+src/components/screens/logistics/LogisticsShipmentsView.tsx (2)
+  L38:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L787:9 [TS2322] Type '{ isOpen: boolean; item: LogisticsShipment | null; allItems: LogisticsShipment[]; keyExtractor: (s: LogisticsShipment) => string; ... 16 more ...; renderBody: (s: LogisticsShipment, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<LogisticsShipment>'.
+src/components/screens/medical/MedicalAgendaView.tsx (10)
+  L33:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L662:33 [TS2315] Type 'KineticRowFanAction' is not generic.
+  L705:19 [TS2353] Object literal may only specify known properties, and 'variant' does not exist in type 'KineticDetailAction'.
+  L716:19 [TS2353] Object literal may only specify known properties, and 'variant' does not exist in type 'KineticDetailAction'.
+  L915:9 [TS2322] Type '{ isOpen: boolean; item: MedicalAppointmentSlot | null; allItems: MedicalAppointmentSlot[]; keyExtractor: (a: MedicalAppointmentSlot) => string; ... 15 more ...; renderBody: (apt: MedicalAppointmentSlot, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<MedicalAppointmentSlot>'.
+  L936:21 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L965:21 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1000:19 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1038:19 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1055:25 [TS2322] Type '{ key: "Arrived" | "Cancelled" | "Completed" | "InRoom"; label: string; icon: Element; variant: string; disabled: boolean; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+src/components/screens/medical/MedicalBillingView.tsx (12)
+  L38:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L727:33 [TS2315] Type 'KineticRowFanAction' is not generic.
+  L756:23 [TS2353] Object literal may only specify known properties, and 'variant' does not exist in type 'KineticDetailAction'.
+  L761:15 [TS2322] Type '{ id: string; label: string; icon: Element; onClick: () => void; } | undefined' is not assignable to type 'KineticDetailAction'.
+  L1328:9 [TS2322] Type '{ isOpen: boolean; item: MedicalConsultation | null; allItems: MedicalConsultation[]; keyExtractor: (c: MedicalConsultation) => string; ... 15 more ...; renderBody: (consultation: MedicalConsultation, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<MedicalConsultation>'.
+  L1359:19 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1392:19 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1421:19 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: (false | Element)[]; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1445:25 [TS2322] Type '{ label: string; icon: Element; variant: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+  L1457:17 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1491:17 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1498:21 [TS2322] Type '{ label: string; icon: Element; variant: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+src/components/screens/medical/MedicalCertificatesView.tsx (11)
+  L35:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L583:34 [TS2315] Type 'KineticRowFanAction' is not generic.
+  L597:15 [TS2353] Object literal may only specify known properties, and 'variant' does not exist in type 'KineticDetailAction'.
+  L635:9 [TS2322] Type '{ isOpen: boolean; item: MedicalCertificateRecord | null; allItems: MedicalCertificateRecord[]; keyExtractor: (c: MedicalCertificateRecord) => string; ... 15 more ...; renderBody: (cert: MedicalCertificateRecord, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<MedicalCertificateRecord>'.
+  L654:19 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L677:19 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L713:21 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L740:21 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L754:17 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L777:17 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L784:21 [TS2322] Type '{ label: string; icon: Element; variant: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+src/components/screens/medical/MedicalPatientsView.tsx (14)
+  L40:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L705:31 [TS2315] Type 'KineticRowFanAction' is not generic.
+  L737:15 [TS2353] Object literal may only specify known properties, and 'variant' does not exist in type 'KineticDetailAction'.
+  L787:9 [TS2322] Type '{ isOpen: boolean; item: MedicalPatient | null; allItems: MedicalPatient[]; keyExtractor: (p: MedicalPatient) => string; openerElement: HTMLElement | null; ... 16 more ...; renderBody: (patient: MedicalPatient, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<MedicalPatient>'.
+  L834:21 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L869:21 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L909:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L929:21 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: (false | Element | undefined)[]; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L969:21 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1013:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element[]; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1282:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element[]; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1321:27 [TS2322] Type '{ label: string; icon: Element; variant: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+  L1333:19 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element[]; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1368:23 [TS2322] Type '{ label: string; icon: Element; variant: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+src/components/screens/medical/MedicalPrescriptionsView.tsx (11)
+  L41:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L878:36 [TS2315] Type 'KineticRowFanAction' is not generic.
+  L904:19 [TS2353] Object literal may only specify known properties, and 'variant' does not exist in type 'KineticDetailAction'.
+  L950:13 [TS2322] Type '{ isOpen: boolean; item: MedicalPrescription | null; allItems: MedicalPrescription[]; keyExtractor: (rx: MedicalPrescription) => string; ... 15 more ...; renderBody: (rx: MedicalPrescription, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<MedicalPrescription>'.
+  L975:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1004:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1025:25 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1039:21 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element[]; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1150:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element[]; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1179:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1186:27 [TS2322] Type '{ label: string; icon: Element; variant: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+src/components/screens/medical/MedicalQueueView.tsx (13)
+  L41:3 [TS2724] '"../../ui/kinetic"' has no exported member named 'KineticRowMeta'. Did you mean 'KineticRowData'?
+  L733:37 [TS2315] Type 'KineticRowFanAction' is not generic.
+  L770:21 [TS2353] Object literal may only specify known properties, and 'variant' does not exist in type 'KineticDetailAction'.
+  L915:13 [TS2322] Type '{ isOpen: boolean; item: MedicalConsultation | null; allItems: MedicalConsultation[]; keyExtractor: (c: MedicalConsultation) => string; ... 15 more ...; renderBody: (cons: MedicalConsultation, tab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<MedicalConsultation>'.
+  L952:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L999:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1018:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1041:21 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1082:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1111:23 [TS2322] Type '{ title: string; delayIndex: number; animateKey: string; children: Element; }' is not assignable to type 'IntrinsicAttributes & InspectorSectionProps'.
+  L1119:29 [TS2322] Type '{ label: string; icon: Element; variant: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+  L1135:29 [TS2322] Type '{ label: string; icon: Element; variant: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+  L1143:29 [TS2322] Type '{ label: string; icon: Element; variant: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { label: string; icon?: ReactNode; tone?: "accent" | "dark" | "neutral" | undefined; disabled?: boolean | undefined; onClick: () => void; }'.
+src/components/screens/membership/GymFrontDeskKiosk.tsx (1)
+  L625:9 [TS2322] Type '{ isOpen: boolean; item: MemberCheckInLog | null; allItems: MemberCheckInLog[]; keyExtractor: (l: any) => any; openerElement: HTMLElement | null; ... 11 more ...; renderBody: (log: any, activeTab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<any>'.
+src/components/screens/membership/MembershipSchedulerView.tsx (1)
+  L849:9 [TS2322] Type '{ isOpen: boolean; item: ScheduleEvent | null; allItems: ScheduleEvent[]; keyExtractor: (e: ScheduleEvent) => string; openerElement: HTMLElement | null; ... 13 more ...; renderBody: (ev: ScheduleEvent, activeTab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<ScheduleEvent>'.
+src/components/screens/membership/MembershipShopView.tsx (2)
+  L836:9 [TS2322] Type '{ isOpen: boolean; item: Product | null; allItems: Product[]; keyExtractor: (p: Product) => string; openerElement: HTMLElement | null; language: SupportedLanguage; ... 10 more ...; renderBody: (p: Product, activeTab: string) => Element; }' is not assignable to type 'IntrinsicAttributes & KineticSlideOverInspectorProps<Product>'.
+  L920:21 [TS2322] Type '{ value: string; tone: "accent" | "ok"; actionLabel: string | undefined; onAction: (() => void) | undefined; }' is not assignable to type 'IntrinsicAttributes & { value: ReactNode; tone?: "accent" | "danger" | "default" | "ok" | undefined; caption?: ReactNode; action?: { label: string; onClick: () => void; tone?: "accent" | ... 1 more ... | undefined; } | undefined; }'.
+src/components/screens/membership/MembershipStaffView.tsx (2)
+  L105:63 [TS2554] Expected 1 arguments, but got 2.
+  L130:63 [TS2554] Expected 1 arguments, but got 2.
+src/components/screens/pos/PosRegisterView.tsx (9)
+  L1321:37 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L1323:25 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L1327:25 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L1658:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L1659:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L1660:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L1792:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L1793:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L1794:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+src/components/screens/project/ProjectChefProjetView.tsx (7)
+  L49:413 [TS2339] Property 'showToast' does not exist on type '{ setScreen: (activeScreen: ActiveScreen) => void; setTheme: (theme: AppTheme) => void; setLanguage: (language: SupportedLanguage, isAuto?: boolean) => void; ... 341 more ...; staffPayrollSlips: StaffPayrollSlipRecord[]; }'.
+  L676:43 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L680:43 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L684:38 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L692:142 [TS2322] Type 'string' is not assignable to type '"asc" | "desc" | undefined'.
+  L698:12 [TS2322] Type 'Set<unknown>' is not assignable to type 'Set<string>'.
+  L725:40 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+src/components/screens/project/ProjectComptaView.tsx (8)
+  L51:394 [TS2339] Property 'showToast' does not exist on type '{ setScreen: (activeScreen: ActiveScreen) => void; setTheme: (theme: AppTheme) => void; setLanguage: (language: SupportedLanguage, isAuto?: boolean) => void; ... 341 more ...; staffPayrollSlips: StaffPayrollSlipRecord[]; }'.
+  L496:37 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L504:137 [TS2322] Type 'string' is not assignable to type '"asc" | "desc" | undefined'.
+  L510:10 [TS2322] Type 'Set<unknown>' is not assignable to type 'Set<string>'.
+  L538:32 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L542:31 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L550:126 [TS2322] Type 'Set<unknown>' is not assignable to type 'Set<string>'.
+  L605:123 [TS2322] Type 'Set<unknown>' is not assignable to type 'Set<string>'.
+src/components/screens/project/ProjectCreaView.tsx (4)
+  L438:39 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L442:39 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L450:143 [TS2322] Type 'string' is not assignable to type '"asc" | "desc" | undefined'.
+  L456:10 [TS2322] Type 'Set<unknown>' is not assignable to type 'Set<string>'.
+src/components/screens/project/ProjectDirectionView.tsx (5)
+  L871:38 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L875:38 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L879:33 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L887:147 [TS2322] Type 'string' is not assignable to type '"asc" | "desc" | undefined'.
+  L893:10 [TS2322] Type 'Set<unknown>' is not assignable to type 'Set<string>'.
+src/components/screens/project/ProjectRhView.tsx (6)
+  L55:202 [TS2339] Property 'showToast' does not exist on type '{ setScreen: (activeScreen: ActiveScreen) => void; setTheme: (theme: AppTheme) => void; setLanguage: (language: SupportedLanguage, isAuto?: boolean) => void; ... 341 more ...; staffPayrollSlips: StaffPayrollSlipRecord[]; }'.
+  L407:37 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L411:37 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L415:32 [TS2345] Argument of type 'unknown[]' is not assignable to parameter of type 'string[]'.
+  L423:144 [TS2322] Type 'string' is not assignable to type '"asc" | "desc" | undefined'.
+  L486:64 [TS2322] Type 'Set<unknown>' is not assignable to type 'Set<string>'.
+src/components/screens/project/ProjectSuperviseurView.tsx (2)
+  L458:126 [TS2322] Type 'Set<unknown>' is not assignable to type 'Set<string>'.
+  L533:131 [TS2322] Type 'Set<unknown>' is not assignable to type 'Set<string>'.
+src/components/screens/realestate/RealEstateFinanceView.tsx (3)
+  L513:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L514:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L515:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+src/components/screens/realestate/RealEstateInspectionsView.tsx (6)
+  L668:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L669:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L670:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L782:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L783:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L784:31 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+src/components/screens/realestate/RealEstateLeasesView.tsx (3)
+  L578:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L579:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L580:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+src/components/screens/realestate/RealEstateMandatesView.tsx (3)
+  L566:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L567:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L568:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+src/components/screens/realestate/RealEstatePropertiesView.tsx (3)
+  L593:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L594:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+  L595:29 [TS2353] Object literal may only specify known properties, and 'label' does not exist in type 'KineticDetailColumn'.
+src/components/screens/trading/TradingCatalogView.tsx (1)
+  L659:11 [TS2322] Type '(p: Product) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string | (string & {}); statusLabel: string; statusVariant: "active" | "info" | "warning"; ... 7 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: Product) => Partial<KineticRowData>'.
+src/components/screens/trading/TradingDirectoryView.tsx (2)
+  L686:13 [TS2322] Type '(c: B2bClient) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string; statusLabel: string; statusVariant: "active" | "blocked"; ... 6 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: B2bClient) => Partial<KineticRowData>'.
+  L808:13 [TS2322] Type '(s: B2bSupplier) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string; statusLabel: string; statusVariant: "info"; metricPrimary: string; ... 5 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: B2bSupplier) => Partial<KineticRowData>'.
+src/components/screens/trading/TradingFinanceView.tsx (1)
+  L580:11 [TS2322] Type '(inv: CommercialDocument) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string; statusLabel: string; statusVariant: "active" | "blocked"; ... 5 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: CommercialDocument) => Partial<KineticRowData>'.
+src/components/screens/trading/TradingInventoryView.tsx (2)
+  L729:13 [TS2322] Type '(p: Product) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string | (string & {}); statusLabel: string; statusVariant: "active" | "warning"; ... 6 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: Product) => Partial<KineticRowData>'.
+  L796:13 [TS2322] Type '(v: StockMovementVoucher) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string; statusLabel: string; statusVariant: "active" | ... 1 more ... | "info"; ... 5 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: StockMovementVoucher) => Partial<KineticRowData>'.
+src/components/screens/trading/TradingPurchasesView.tsx (1)
+  L646:11 [TS2322] Type '(doc: PurchaseDocument) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string; statusLabel: string; statusVariant: "active" | "warning"; ... 6 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: PurchaseDocument) => Partial<KineticRowData>'.
+src/components/screens/trading/TradingSalesView.tsx (2)
+  L675:11 [TS2322] Type '(doc: CommercialDocument) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string; statusLabel: string; statusVariant: "active" | "info" | "neutral" | "warning"; ... 6 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: CommercialDocument) => Partial<KineticRowData>'.
+  L728:15 [TS2353] Object literal may only specify known properties, and 'isDanger' does not exist in type '{ id: string; label: string; icon: Element; onClick: () => void; }'.
+src/components/screens/venue/VenueBookingsView.tsx (1)
+  L754:11 [TS2322] Type '(b: RentalBooking) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string; statusLabel: string; statusVariant: "active" | "blocked" | "info" | "warning"; ... 7 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: RentalBooking) => Partial<KineticRowData>'.
+src/components/screens/venue/VenueFinanceView.tsx (1)
+  L586:11 [TS2322] Type '(dep: SecurityDepositRecord) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: "Card" | "Cash" | "Check"; statusLabel: string; ... 7 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: SecurityDepositRecord) => Partial<KineticRowData>'.
+src/components/screens/venue/VenueInventoryView.tsx (1)
+  L782:11 [TS2322] Type '(unit: RentableUnit) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string; statusLabel: string; statusVariant: "active" | "info" | "warning"; ... 7 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: RentableUnit) => Partial<KineticRowData>'.
+src/components/screens/venue/VenueRentersView.tsx (1)
+  L649:11 [TS2322] Type '(renter: RentalRenter) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string; statusLabel: string; statusVariant: "active" | "info"; ... 7 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: RentalRenter) => Partial<KineticRowData>'.
+src/components/screens/venue/VenueTimelineView.tsx (1)
+  L821:11 [TS2322] Type '(b: RentalBooking) => { title: string; subline: string; avatarText: string; avatarColor: string; categoryLabel: string; statusLabel: string; statusVariant: "active" | "info" | "neutral" | "warning"; ... 6 more ...; detailCol3: { ...; }; }' is not assignable to type '(item: RentalBooking) => Partial<KineticRowData>'.

@@ -590,9 +590,9 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
               statusVariant: isRented ? 'info' : 'active',
               metricPrimary: formatMoney(p.priceDzd, language),
               metricSecondary: p.listingType === 'Rental' ? '/ mois' : 'Vente',
-              detailCol1: { label: isAr ? 'المالك' : 'Bailleur', value: p.ownerName },
-              detailCol2: { label: isAr ? 'المساحة' : 'Surface', value: `${p.surfaceM2} m²` },
-              detailCol3: { label: isAr ? 'العملية' : 'Opération', value: p.listingType === 'Rental' ? 'Location' : 'Vente' },
+              detailCol1: { heading: isAr ? 'المالك' : 'Bailleur', primaryText: p.ownerName },
+              detailCol2: { heading: isAr ? 'المساحة' : 'Surface', primaryText: `${p.surfaceM2} m²` },
+              detailCol3: { heading: isAr ? 'العملية' : 'Opération', primaryText: p.listingType === 'Rental' ? 'Location' : 'Vente' },
             };
           }}
           getFanActions={(p): KineticRowFanAction[] => [

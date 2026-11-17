@@ -304,16 +304,16 @@ export const FreelanceInvoicesView: React.FC = () => {
   const getInvoiceRowMeta = useCallback(
     (inv: FreelanceInvoice): KineticRowMeta => ({
       avatarText: inv.clientName.slice(0, 2).toUpperCase(),
-      subtitle: `${inv.clientName}${inv.clientCompany ? ` · ${inv.clientCompany}` : ''}`,
+      subline: `${inv.clientName}${inv.clientCompany ? ` · ${inv.clientCompany}` : ''}`,
       categoryLabel: inv.currency,
-      statusTone:
+      statusVariant:
         inv.status === 'Paid'
-          ? 'ok'
+          ? 'active'
           : inv.status === 'Overdue'
-          ? 'danger'
+          ? 'blocked'
           : inv.status === 'Sent'
           ? 'info'
-          : 'warn',
+          : 'warning',
       statusLabel:
         inv.status === 'Paid'
           ? t('free_invoice_status_paid', language)

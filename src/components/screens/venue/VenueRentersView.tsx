@@ -672,11 +672,11 @@ export const VenueRentersView: React.FC = () => {
               branchName: bInfo.name,
               isPinned: pinnedRenterIds.has(renter.id),
               notes: renter.notes,
-              detailCol1: { label: isAr ? 'الهاتف' : 'Téléphone', value: renter.phone },
-              detailCol2: { label: isAr ? 'البريد' : 'E-mail', value: renter.email },
+              detailCol1: { heading: isAr ? 'الهاتف' : 'Téléphone', primaryText: renter.phone },
+              detailCol2: { heading: isAr ? 'البريد' : 'E-mail', primaryText: renter.email },
               detailCol3: {
-                label: isAr ? 'الهوية / NIF' : 'Pièce / NIF',
-                value: renter.idDocNumber || '--',
+                heading: isAr ? 'الهوية / NIF' : 'Pièce / NIF',
+                primaryText: renter.idDocNumber || '--',
               },
             };
           }}

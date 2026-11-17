@@ -445,25 +445,30 @@ export const ContractorSitesView: React.FC = () => {
   );
 
   const getRowMeta = useCallback(
-    (p: ContractorProject): KineticRowData => {
+    (p: ContractorProject): Partial<KineticRowData> => {
       const br = resolveRecordBranch(p, branchesById, currentBranch, language);
-      const badgeTone =
+      const statusVariant: KineticRowData['statusVariant'] =
         p.status === 'DefinitiveHandover'
-          ? ('ok' as const)
+          ? 'active'
           : p.status === 'ProvisionalHandover'
-          ? ('warn' as const)
-          : ('info' as const);
-      const badgeLabel =
+          ? 'warning'
+          : 'info';
+      const statusLabel =
         p.status === 'DefinitiveHandover'
           ? isAr ? 'استلام نهائي' : 'Réception Déf.'
           : p.status === 'ProvisionalHandover'
           ? isAr ? 'استلام مؤقت' : 'Réception Prov.'
           : isAr ? 'جاري' : 'En Cours';
       return {
-        primary: p.projectName,
-        secondary: `${p.projectCode} · ${p.progressPercent}% · ${formatMoney(p.contractAmountDzd, language)}`,
-        meta: `${p.clientName} · ${br.name}`,
-        badge: { label: badgeLabel, tone: badgeTone },
+        title: p.projectName,
+        subline: `${p.projectCode} · ${p.clientName}`,
+        categoryLabel: p.clientName,
+        statusLabel,
+        statusVariant,
+        metricPrimary: formatMoney(p.contractAmountDzd, language),
+        metricSecondary: `${p.progressPercent}%`,
+        branchName: br.name,
+        branchCode: br.code,
       };
     },
     [branchesById, currentBranch, language, isAr]

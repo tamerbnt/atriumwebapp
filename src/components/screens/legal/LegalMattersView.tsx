@@ -10,7 +10,12 @@ import {
   Eye,
   Trash2,
 } from 'lucide-react';
-import { useAtriumSelector, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { LegalMatter, NotaryDeed } from '../../../types';
 import { useLegalData } from './legalData';
@@ -46,11 +51,11 @@ import {
 export const LegalMattersView: React.FC<any> = () => {
   const language = useAtriumSelector((s) => s.language);
   const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
-  const currentBranch = useAtriumSelector((s) => s.currentBranch);
+  const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
   const branches = useAtriumSelector((s) => s.branches);
   const isSyncing = useAtriumSelector((s) => s.isSyncing);
   const networkMode = useAtriumSelector((s) => s.networkMode);
-  const retryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
   const isNotary = activeLegalRole === 'notaire_titulaire';
@@ -442,9 +447,9 @@ export const LegalMattersView: React.FC<any> = () => {
       const isPublished = d.status === 'publie_conservation';
       return {
         avatarText: d.repertoireNumber.slice(-2).toUpperCase(),
-        subtitle: `${d.parties.vendorName} ➔ ${d.parties.purchaserName}`,
+        subline: `${d.parties.vendorName} ➔ ${d.parties.purchaserName}`,
         categoryLabel: d.actType.replace('_', ' ').toUpperCase(),
-        statusTone: isPublished ? 'ok' : 'warn',
+        statusVariant: isPublished ? 'active' : 'warning',
         statusLabel: isPublished
           ? `Publié (${d.conservationVolume || 'Vol.'})`
           : isAr
@@ -531,9 +536,9 @@ export const LegalMattersView: React.FC<any> = () => {
       const isActive = m.status === 'Active';
       return {
         avatarText: (m.clientName || 'LG').slice(0, 2).toUpperCase(),
-        subtitle: `${m.matterNumber} · ${m.clientName}`,
+        subline: `${m.matterNumber} · ${m.clientName}`,
         categoryLabel: m.category,
-        statusTone: isActive ? 'ok' : m.status === 'PendingHearing' ? 'warn' : 'neutral',
+        statusVariant: isActive ? 'active' : m.status === 'PendingHearing' ? 'warning' : 'neutral',
         statusLabel:
           m.status === 'Active'
             ? isAr

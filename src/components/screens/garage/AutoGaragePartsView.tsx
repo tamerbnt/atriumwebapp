@@ -15,6 +15,7 @@ import {
   useAtriumActions,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -75,7 +76,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
   } = useAtriumSelector(
     (s) => ({
       language: s.language,
-      currentBusiness: s.currentBusiness,
+      currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       currentUser: s.currentUser,
       branches: s.branches,
@@ -392,17 +393,19 @@ export const AutoGaragePartsView: React.FC<any> = () => {
   );
 
   const getRowMeta = useCallback(
-    (p: SparePart): KineticRowData => {
+    (p: SparePart): Partial<KineticRowData> => {
       const isLow = p.stockQuantity <= p.minThreshold;
       const br = resolveRecordBranch(p, branchesById, currentBranch, language);
       return {
-        primary: p.name,
-        secondary: `${p.sku} · ${p.category} · ${p.locationBin}`,
-        meta: `${formatMoney(p.sellingPriceDzd, language)} · ${br.name}`,
-        badge: {
-          label: `${p.stockQuantity} u.`,
-          tone: isLow ? 'warn' : 'ok',
-        },
+        title: p.name,
+        subline: `${p.sku} · ${p.locationBin}`,
+        categoryLabel: p.category,
+        statusLabel: `${p.stockQuantity} u.`,
+        statusVariant: isLow ? 'warning' : 'active',
+        metricPrimary: formatMoney(p.sellingPriceDzd, language),
+        metricSecondary: `Min: ${p.minThreshold}`,
+        branchName: br.name,
+        branchCode: br.code,
       };
     },
     [branchesById, currentBranch, language]

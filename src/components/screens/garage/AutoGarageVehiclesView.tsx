@@ -292,20 +292,25 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
   }, [sortedVehicles, branchesById, currentBranch, language, isAr]);
 
   const getRowMeta = useCallback(
-    (v: VehicleAsset): KineticRowData => {
+    (v: VehicleAsset): Partial<KineticRowData> => {
       const estKm = calculateEstimatedMileage(v.mileageKm, v.lastServiceDate, v.dailyAvgKm || 50);
       const isDue = estKm - (v.lastServiceKm || v.mileageKm - 5000) >= 9500;
       const inShop = orders.some((o) => o.vehiclePlate === v.plateNumber && o.status !== 'Delivered');
       const br = resolveRecordBranch(v, branchesById, currentBranch, language);
       return {
-        primary: `${v.brand} ${v.model}`,
-        secondary: `${v.plateNumber} · ${v.ownerName} · ${estKm.toLocaleString()} km`,
-        meta: `${v.isFleet ? 'Flotte B2B' : 'Particulier'} · ${br.name}`,
-        badge: inShop
-          ? { label: isAr ? 'في الورشة' : 'En Atelier', tone: 'info' }
+        title: `${v.brand} ${v.model}`,
+        subline: `${v.plateNumber} · ${v.ownerName}`,
+        categoryLabel: v.isFleet ? 'Flotte B2B' : 'Particulier',
+        statusLabel: inShop
+          ? isAr ? 'في الورشة' : 'En Atelier'
           : isDue
-          ? { label: isAr ? 'تغيير زيت' : 'Vidange Due', tone: 'warn' }
-          : { label: isAr ? 'جاهز' : 'Disponible', tone: 'ok' },
+          ? isAr ? 'تغيير زيت' : 'Vidange Due'
+          : isAr ? 'جاهز' : 'Disponible',
+        statusVariant: inShop ? 'info' : isDue ? 'warning' : 'active',
+        metricPrimary: `${estKm.toLocaleString()} km`,
+        metricSecondary: v.ownerPhone || br.name,
+        branchName: br.name,
+        branchCode: br.code,
       };
     },
     [orders, branchesById, currentBranch, language, isAr]
@@ -828,7 +833,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
                         key={o.id}
                         title={o.orderNumber}
                         subtitle={`${new Date(o.intakeDate).toLocaleDateString()} · ${o.diagnosticNotes}`}
-                        value={formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
+                        metaRight={formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
                         badge={{ label: o.status, tone: o.status === 'Delivered' ? 'ok' : 'warn' }}
                         isLast={i === vehOrders.length - 1}
                       />
@@ -871,12 +876,11 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
                   </InspectorCard>
                   <div className="mt-3">
                     <InspectorWideButton
-                      variant="accent"
+                      tone="accent"
+                      label={isAr ? 'جدولة صيانة وقائية' : 'Planifier Révision Atelier'}
                       icon={<Wrench className="w-4 h-4" />}
                       onClick={() => handleOpenNewOrder(v)}
-                    >
-                      {isAr ? 'جدولة صيانة وقائية' : 'Planifier Révision Atelier'}
-                    </InspectorWideButton>
+                    />
                   </div>
                 </InspectorSection>
               </>

@@ -6,6 +6,7 @@ import {
   X,
   ArrowRight,
   Package,
+  Boxes,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -357,23 +358,28 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
   }, [sortedOrders, isMechanicRole, branchesById, currentBranch, language, isAr]);
 
   const getRowMeta = useCallback(
-    (o: RepairOrder): KineticRowData => {
+    (o: RepairOrder): Partial<KineticRowData> => {
       const br = resolveRecordBranch(o, branchesById, currentBranch, language);
-      const tone =
+      const statusVariant: KineticRowData['statusVariant'] =
         o.status === 'ReadyForPickup' || o.status === 'Delivered'
-          ? ('ok' as const)
+          ? 'active'
           : o.status === 'WaitingParts'
-          ? ('danger' as const)
+          ? 'blocked'
           : o.status === 'Diagnostic' || o.status === 'WaitingApproval'
-          ? ('warn' as const)
-          : ('info' as const);
+          ? 'warning'
+          : 'info';
       return {
-        primary: `${o.orderNumber} · ${o.vehiclePlate}`,
-        secondary: `${o.vehicleModel} · ${o.clientName}`,
-        meta: `${o.bayName || 'Cour'} · ${br.name}${
-          !isMechanicRole ? ` · ${formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}` : ''
-        }`,
-        badge: { label: getStatusLabel(o.status), tone },
+        title: `${o.orderNumber} · ${o.vehiclePlate}`,
+        subline: `${o.vehicleModel} · ${o.clientName}`,
+        categoryLabel: o.bayName || 'Atelier',
+        statusLabel: getStatusLabel(o.status),
+        statusVariant,
+        metricPrimary: !isMechanicRole
+          ? formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)
+          : `${o.partsUsed.length} pcs`,
+        metricSecondary: o.bayName || 'Cour',
+        branchName: br.name,
+        branchCode: br.code,
       };
     },
     [branchesById, currentBranch, language, isMechanicRole, getStatusLabel]
@@ -1018,12 +1024,11 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
               <>
                 <InspectorSection index={0}>
                   <InspectorWideButton
-                    variant="accent"
+                    tone="accent"
+                    label={isAr ? 'صرف قطعة من المخزن' : 'Sortir une pièce magasin'}
                     icon={<Plus className="w-4 h-4" />}
                     onClick={() => setIsRequisitionModalOpen(true)}
-                  >
-                    {isAr ? 'صرف قطعة من المخزن' : 'Sortir une pièce magasin'}
-                  </InspectorWideButton>
+                  />
                 </InspectorSection>
                 <InspectorSection index={1} title={isAr ? 'قطع الغيار المصروفة' : 'Pièces Utilisées'}>
                   {order.partsUsed.length === 0 ? (
@@ -1037,8 +1042,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                           key={p.id}
                           title={p.name}
                           subtitle={`${p.sku} · x${p.quantity}`}
-                          value={!isMechanicRole ? formatMoney(p.totalPriceDzd, language) : undefined}
-                          tone="accent"
+                          metaRight={!isMechanicRole ? formatMoney(p.totalPriceDzd, language) : undefined}
                           isLast={i === order.partsUsed.length - 1}
                         />
                       ))}

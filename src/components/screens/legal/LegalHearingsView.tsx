@@ -11,7 +11,13 @@ import {
   ArrowRight,
   MapPin,
 } from 'lucide-react';
-import { useAtriumSelector, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { LegalHearing } from '../../../types';
 import { useLegalData } from './legalData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -57,13 +63,13 @@ const extractStr = (v: unknown): string => {
 export const LegalHearingsView: React.FC<any> = () => {
   const language = useAtriumSelector((s) => s.language);
   const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
-  const currentBusiness = useAtriumSelector((s) => s.currentBusiness);
-  const currentBranch = useAtriumSelector((s) => s.currentBranch);
+  const currentBusiness = useAtriumSelector(selectCurrentBusinessFromState);
+  const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
   const currentUser = useAtriumSelector((s) => s.currentUser);
   const branches = useAtriumSelector((s) => s.branches);
   const isSyncing = useAtriumSelector((s) => s.isSyncing);
   const networkMode = useAtriumSelector((s) => s.networkMode);
-  const retryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -381,9 +387,9 @@ export const LegalHearingsView: React.FC<any> = () => {
       const isPostponed = h.status === 'Postponed';
       return {
         avatarText: (h.postponementCode || 'AU').slice(0, 2).toUpperCase(),
-        subtitle: `${h.matterNumber} · ${h.courtName}`,
+        subline: `${h.matterNumber} · ${h.courtName}`,
         categoryLabel: h.postponementCode || h.chamber || 'Rôle',
-        statusTone: isDone ? 'ok' : isPostponed ? 'warn' : 'accent',
+        statusVariant: isDone ? 'active' : isPostponed ? 'warning' : 'info',
         statusLabel: isDone ? (isAr ? 'تمت' : 'Plaidée') : isPostponed ? (isAr ? 'مؤجلة' : 'Renvoi') : isAr ? 'مبرمجة' : 'Fixée',
         metricPrimary: `${h.hearingDate}${h.hearingTime ? ` · ${h.hearingTime}` : ''}`,
         metricSecondary: h.courtRoom || undefined,

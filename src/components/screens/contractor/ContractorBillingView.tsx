@@ -16,6 +16,7 @@ import {
   useAtriumActions,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -74,7 +75,7 @@ export const ContractorBillingView: React.FC<any> = () => {
   } = useAtriumSelector(
     (s) => ({
       language: s.language,
-      currentBusiness: s.currentBusiness,
+      currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       currentUser: s.currentUser,

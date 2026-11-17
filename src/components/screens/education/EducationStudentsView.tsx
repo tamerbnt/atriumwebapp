@@ -373,16 +373,16 @@ export const EducationStudentsView: React.FC = () => {
       const rate = student.attendanceRatePercent ?? 100;
       return {
         avatarText: student.fullName.slice(0, 2).toUpperCase(),
-        subtitle: `${student.phone}${student.email ? ` · ${student.email}` : ''}`,
+        subline: `${student.phone}${student.email ? ` · ${student.email}` : ''}`,
         categoryLabel: enrollment ? enrollment.cohortName : student.schoolGrade || (isAr ? 'طالب' : 'Étudiant'),
-        statusTone:
+        statusVariant:
           student.status === 'Active'
-            ? 'ok'
+            ? 'active'
             : student.status === 'Graduated'
             ? 'info'
             : student.status === 'Applicant'
-            ? 'warn'
-            : 'danger',
+            ? 'warning'
+            : 'blocked',
         statusLabel: localizeStatus(student.status, language),
         metricPrimary: `${rate}%`,
         metricSecondary: enrollment ? formatMoney(enrollment.paidAmount) : student.guardianName || undefined,

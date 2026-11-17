@@ -318,14 +318,14 @@ export const EducationAdmissionsView: React.FC = () => {
   const getLeadRowMeta = useCallback(
     (lead: EduAdmissionLead): KineticRowMeta => ({
       avatarText: lead.studentName.slice(0, 2).toUpperCase(),
-      subtitle: `${lead.desiredCourseTitle} · ${lead.phone}`,
+      subline: `${lead.desiredCourseTitle} · ${lead.phone}`,
       categoryLabel: lead.source || (isAr ? 'مترشح' : 'Prospect'),
-      statusTone:
+      statusVariant:
         lead.stage === 'Enrolled'
-          ? 'ok'
+          ? 'active'
           : lead.stage === 'Admitted'
           ? 'info'
-          : 'warn',
+          : 'warning',
       statusLabel: stages.find((s) => s.id === lead.stage)?.title || lead.stage,
       metricPrimary: lead.placementScore || lead.stage,
       metricSecondary: lead.guardianName || undefined,

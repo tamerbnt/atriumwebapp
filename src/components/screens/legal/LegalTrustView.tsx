@@ -14,7 +14,13 @@ import {
   Key,
   MapPin,
 } from 'lucide-react';
-import { useAtriumSelector, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useLegalData } from './legalData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -72,13 +78,13 @@ const extractStr = (v: unknown): string => {
 export const LegalTrustView: React.FC<any> = () => {
   const language = useAtriumSelector((s) => s.language);
   const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
-  const currentBusiness = useAtriumSelector((s) => s.currentBusiness);
-  const currentBranch = useAtriumSelector((s) => s.currentBranch);
+  const currentBusiness = useAtriumSelector(selectCurrentBusinessFromState);
+  const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
   const currentUser = useAtriumSelector((s) => s.currentUser);
   const branches = useAtriumSelector((s) => s.branches);
   const isSyncing = useAtriumSelector((s) => s.isSyncing);
   const networkMode = useAtriumSelector((s) => s.networkMode);
-  const retryCloudSync = useAtriumSelector((s) => s.retryCloudSync);
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -423,9 +429,9 @@ export const LegalTrustView: React.FC<any> = () => {
   const getEscrowRowMeta = useCallback(
     (a: EscrowAccount): KineticRowMeta => ({
       avatarText: 'SQ',
-      subtitle: `${a.clientName} ➔ ${a.beneficiaryName}`,
+      subline: `${a.clientName} ➔ ${a.beneficiaryName}`,
       categoryLabel: isAr ? 'حساب حراسة' : 'Séquestre',
-      statusTone: a.isLocked ? 'danger' : 'ok',
+      statusVariant: a.isLocked ? 'blocked' : 'active',
       statusLabel: a.isLocked ? (isAr ? 'مقفل' : 'Verrouillé') : isAr ? 'محرر' : 'Libéré',
       metricPrimary: formatMoney(a.currentBalanceDzd, language),
     }),
@@ -494,9 +500,9 @@ export const LegalTrustView: React.FC<any> = () => {
   const getScfRowMeta = useCallback(
     (e: SCFJournalEntry): KineticRowMeta => ({
       avatarText: (e.journalCode || 'EC').slice(0, 2).toUpperCase(),
-      subtitle: `${e.libelle} · Réf ${e.pieceJustificativeRef}`,
+      subline: `${e.libelle} · Réf ${e.pieceJustificativeRef}`,
       categoryLabel: `Journal ${e.journalCode}`,
-      statusTone: 'ok',
+      statusVariant: 'active',
       statusLabel: isAr ? 'متوازن' : 'Équilibré',
       metricPrimary: formatMoney(e.totalDebitDzd, language),
       metricSecondary: e.date,
@@ -557,9 +563,9 @@ export const LegalTrustView: React.FC<any> = () => {
   const getReceiptRowMeta = useCallback(
     (r: CashReceipt): KineticRowMeta => ({
       avatarText: 'RC',
-      subtitle: `${r.clientName} · ${r.matterTitle}`,
+      subline: `${r.clientName} · ${r.matterTitle}`,
       categoryLabel: 'Art. 317',
-      statusTone: 'ok',
+      statusVariant: 'active',
       statusLabel: isAr ? 'مقبوض' : 'Encaissé',
       metricPrimary: formatMoney(r.netCollectedDzd, language),
       metricSecondary: `+${formatMoney(r.timbreFiscalDzd, language)}`,
@@ -630,9 +636,9 @@ export const LegalTrustView: React.FC<any> = () => {
       const hasEscrow = (m.trustEscrowBalanceDzd || 0) > 0;
       return {
         avatarText: 'CA',
-        subtitle: `${m.clientName} · ${m.title}`,
+        subline: `${m.clientName} · ${m.title}`,
         categoryLabel: m.category,
-        statusTone: hasEscrow ? 'accent' : 'ok',
+        statusVariant: hasEscrow ? 'info' : 'active',
         statusLabel: hasEscrow ? (isAr ? 'تحت الحراسة' : 'Sous Séquestre') : isAr ? 'مصفى' : 'Soldé',
         metricPrimary: formatMoney(m.trustEscrowBalanceDzd || 0, language),
         metricSecondary: formatMoney(m.retainerAmountDzd, language),
