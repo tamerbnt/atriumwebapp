@@ -300,20 +300,37 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
       return {
         title: `${v.brand} ${v.model}`,
         subline: `${v.plateNumber} · ${v.ownerName}`,
-        categoryLabel: v.isFleet ? 'Flotte B2B' : 'Particulier',
+        categoryLabel: v.isFleet
+          ? isAr ? 'أسطول B2B' : isEn ? 'B2B Fleet' : 'Flotte B2B'
+          : isAr ? 'فردي' : isEn ? 'Individual' : 'Particulier',
         statusLabel: inShop
-          ? isAr ? 'في الورشة' : 'En Atelier'
+          ? isAr ? 'في الورشة' : isEn ? 'In Shop' : 'En Atelier'
           : isDue
-          ? isAr ? 'تغيير زيت' : 'Vidange Due'
-          : isAr ? 'جاهز' : 'Disponible',
+          ? isAr ? 'تغيير زيت' : isEn ? 'Service Due' : 'Vidange Due'
+          : isAr ? 'جاهز' : isEn ? 'Available' : 'Disponible',
         statusVariant: inShop ? 'info' : isDue ? 'warning' : 'active',
         metricPrimary: `${estKm.toLocaleString()} km`,
         metricSecondary: v.ownerPhone || br.name,
         branchName: br.name,
         branchCode: br.code,
+        detailCol1: {
+          heading: isAr ? 'المالك والأسطول' : isEn ? 'Owner & Fleet' : 'Propriétaire & Flotte',
+          primaryText: v.ownerName,
+          secondaryText: v.fleetName || v.ownerPhone || '—',
+        },
+        detailCol2: {
+          heading: isAr ? 'العداد والصيانة' : isEn ? 'Odometer & Service' : 'Kilométrage & Révision',
+          primaryText: `${estKm.toLocaleString()} km`,
+          secondaryText: `${v.fuelType || 'Diesel'} · ${v.year}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الترقيم والفرع' : isEn ? 'Plate & Branch' : 'Matricule & Succursale',
+          primaryText: v.plateNumber,
+          secondaryText: br.name,
+        },
       };
     },
-    [orders, branchesById, currentBranch, language, isAr]
+    [orders, branchesById, currentBranch, language, isAr, isEn]
   );
 
   const getFanActions = useCallback(

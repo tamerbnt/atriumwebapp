@@ -329,8 +329,24 @@ export const EducationAdmissionsView: React.FC = () => {
       statusLabel: stages.find((s) => s.id === lead.stage)?.title || lead.stage,
       metricPrimary: lead.placementScore || lead.stage,
       metricSecondary: lead.guardianName || undefined,
+      detailCol1: {
+        heading: isAr ? 'المترشح والاتصال' : isEn ? 'Applicant & Contact' : 'Candidat & Contact',
+        primaryText: lead.studentName,
+        secondaryText: lead.phone,
+        tertiaryText: lead.guardianName ? `${isAr ? 'الولي:' : 'Tuteur:'} ${lead.guardianName}` : undefined,
+      },
+      detailCol2: {
+        heading: isAr ? 'التكوين والمصدر' : isEn ? 'Program & Source' : 'Formation & Source',
+        primaryText: lead.desiredCourseTitle,
+        secondaryText: lead.source || (isAr ? 'تسجيل مباشر' : 'Direct'),
+      },
+      detailCol3: {
+        heading: isAr ? 'المستوى والمرحلة' : isEn ? 'Placement & Stage' : 'Niveau & Étape',
+        primaryText: stages.find((s) => s.id === lead.stage)?.title || lead.stage,
+        secondaryText: lead.placementScore ? `${isAr ? 'التقييم:' : 'Score:'} ${lead.placementScore}` : undefined,
+      },
     }),
-    [stages, isAr]
+    [stages, isAr, isEn]
   );
 
   const getLeadFanActions = useCallback(

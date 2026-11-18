@@ -302,30 +302,48 @@ export const FreelanceInvoicesView: React.FC = () => {
   }, [freelanceClients, timeLogs, billUnbilledHours, isAr]);
 
   const getInvoiceRowMeta = useCallback(
-    (inv: FreelanceInvoice): KineticRowMeta => ({
-      avatarText: inv.clientName.slice(0, 2).toUpperCase(),
-      subline: `${inv.clientName}${inv.clientCompany ? ` · ${inv.clientCompany}` : ''}`,
-      categoryLabel: inv.currency,
-      statusVariant:
-        inv.status === 'Paid'
-          ? 'active'
-          : inv.status === 'Overdue'
-          ? 'blocked'
-          : inv.status === 'Sent'
-          ? 'info'
-          : 'warning',
-      statusLabel:
-        inv.status === 'Paid'
-          ? t('free_invoice_status_paid', language)
-          : inv.status === 'Overdue'
-          ? t('free_invoice_status_overdue', language)
-          : inv.status === 'Sent'
-          ? t('free_invoice_status_sent', language)
-          : t('free_invoice_status_draft', language),
-      metricPrimary: formatCurrencyAmount(inv.totalAmount, inv.currency),
-      metricSecondary: inv.dueDate,
-    }),
-    [language, t]
+    (inv: FreelanceInvoice): KineticRowMeta => {
+      const branchInfo = resolveRecordBranch(inv, branchesById, currentBranch, language);
+      return {
+        avatarText: inv.clientName.slice(0, 2).toUpperCase(),
+        subline: `${inv.clientName}${inv.clientCompany ? ` · ${inv.clientCompany}` : ''}`,
+        categoryLabel: inv.currency,
+        statusVariant:
+          inv.status === 'Paid'
+            ? 'active'
+            : inv.status === 'Overdue'
+            ? 'blocked'
+            : inv.status === 'Sent'
+            ? 'info'
+            : 'warning',
+        statusLabel:
+          inv.status === 'Paid'
+            ? t('free_invoice_status_paid', language)
+            : inv.status === 'Overdue'
+            ? t('free_invoice_status_overdue', language)
+            : inv.status === 'Sent'
+            ? t('free_invoice_status_sent', language)
+            : t('free_invoice_status_draft', language),
+        metricPrimary: formatCurrencyAmount(inv.totalAmount, inv.currency),
+        metricSecondary: inv.dueDate,
+        detailCol1: {
+          heading: isAr ? 'العميل' : 'Client',
+          primaryText: inv.clientName,
+          secondaryText: inv.clientCompany || inv.clientEmail || '—',
+        },
+        detailCol2: {
+          heading: isAr ? 'القيمة والبنود' : isFr ? 'Montant & Lignes' : 'Amount & Items',
+          primaryText: formatCurrencyAmount(inv.totalAmount, inv.currency),
+          secondaryText: `${inv.items.length} ${isAr ? 'بنود' : isFr ? 'lignes' : 'items'}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'التواريخ والفرع' : isFr ? 'Dates & Branche' : 'Dates & Branch',
+          primaryText: `${inv.issueDate} → ${inv.dueDate}`,
+          secondaryText: branchInfo.name,
+        },
+      };
+    },
+    [branchesById, currentBranch, language, t, isAr, isFr]
   );
 
   const getInvoiceFanActions = useCallback(

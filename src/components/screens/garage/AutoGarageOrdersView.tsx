@@ -371,7 +371,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
       return {
         title: `${o.orderNumber} · ${o.vehiclePlate}`,
         subline: `${o.vehicleModel} · ${o.clientName}`,
-        categoryLabel: o.bayName || 'Atelier',
+        categoryLabel: o.bayName || (isAr ? 'الورشة' : isEn ? 'Workshop' : 'Atelier'),
         statusLabel: getStatusLabel(o.status),
         statusVariant,
         metricPrimary: !isMechanicRole
@@ -380,9 +380,26 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         metricSecondary: o.bayName || 'Cour',
         branchName: br.name,
         branchCode: br.code,
+        detailCol1: {
+          heading: isAr ? 'المركبة والعميل' : isEn ? 'Vehicle & Client' : 'Véhicule & Client',
+          primaryText: `${o.vehicleModel} · ${o.vehiclePlate}`,
+          secondaryText: `${o.clientName}${o.clientPhone ? ` · ${o.clientPhone}` : ''}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'الأشغال والقطع' : isEn ? 'Cost & Parts' : 'Devis & Pièces',
+          primaryText: !isMechanicRole
+            ? formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)
+            : `${o.partsUsed.length} ${isAr ? 'قطع' : isEn ? 'parts' : 'pièces'}`,
+          secondaryText: `${o.partsUsed.length} ${isAr ? 'قطعة مستخدمة' : isEn ? 'parts used' : 'pièces montées'}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'التقني والجسر' : isEn ? 'Tech & Bay' : 'Tech & Pont',
+          primaryText: o.technicianName || '—',
+          secondaryText: `${o.bayName || (isAr ? 'الساحة' : isEn ? 'Yard' : 'Cour')} · ${br.name}`,
+        },
       };
     },
-    [branchesById, currentBranch, language, isMechanicRole, getStatusLabel]
+    [branchesById, currentBranch, language, isMechanicRole, getStatusLabel, isAr, isEn]
   );
 
   const getFanActions = useCallback(

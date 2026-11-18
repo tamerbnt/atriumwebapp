@@ -555,6 +555,11 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           primaryText: item.material,
           secondaryText: formatMoney(item.unitCostDzd, 'DZD'),
         },
+        detailCol3: {
+          heading: isAr ? 'التوافر والفرع' : isEn ? 'Availability' : 'Disponibilité',
+          primaryText: item.isCustomizable ? (isAr ? 'حسب الطلب' : 'Sur mesure') : isAr ? 'متوفر' : 'Standard',
+          secondaryText: br.name,
+        },
       };
     },
     [branchesById, currentBranch, language, isAr, isEn]
@@ -587,6 +592,11 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           primaryText: formatMoney(order.totalCostDzd, 'DZD'),
           secondaryText: badge.label,
         },
+        detailCol3: {
+          heading: isAr ? 'المشروع والتاريخ' : isEn ? 'Project & Date' : 'Projet & Émission',
+          primaryText: order.projectTitle,
+          secondaryText: `${order.createdAt.slice(0, 10)} · ${br.name}`,
+        },
       };
     },
     [branchesById, currentBranch, language, pinnedOrderIds, isAr, isEn]
@@ -617,6 +627,11 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           heading: isAr ? 'المصمم' : isEn ? 'Designer' : 'Studio Créa',
           primaryText: bat.uploadedByCreativeName,
           secondaryText: bat.versionCode,
+        },
+        detailCol3: {
+          heading: isAr ? 'الاعتماد والمشروع' : isEn ? 'Approval' : 'Validation BAT',
+          primaryText: badge.label,
+          secondaryText: `${bat.projectTitle} · ${br.name}`,
         },
       };
     },
@@ -649,6 +664,22 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         metricSecondary: exp.hasFiscalInvoice ? 'Facture NIF' : 'Reçu simple',
         branchName: br.name,
         branchCode: br.code,
+        detailCol1: {
+          heading: isAr ? 'المصرح والمشروع' : isEn ? 'Declarant & Project' : 'Déclarant & Projet',
+          primaryText: exp.declaredByUserName,
+          secondaryText: exp.projectTitle,
+          tertiaryText: br.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'التصنيف والمستند' : isEn ? 'Category & Proof' : 'Nature & Justificatif',
+          primaryText: exp.category,
+          secondaryText: exp.hasFiscalInvoice ? 'Facture NIF' : 'Reçu simple',
+        },
+        detailCol3: {
+          heading: isAr ? 'المبلغ والحالة' : isEn ? 'Amount & Status' : 'Montant & Statut',
+          primaryText: formatMoney(exp.amountDzd, 'DZD'),
+          secondaryText: isApp ? (isAr ? 'معتمد' : 'Validé') : isRej ? (isAr ? 'مرفوض' : 'Rejeté') : isAr ? 'قيد الانتظار' : 'En attente',
+        },
       };
     },
     [branchesById, currentBranch, language, isAr]
@@ -1718,6 +1749,24 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         ]
                       : []
                   }
+                  getDetailActions={(exp): KineticDetailAction[] => [
+                    {
+                      id: 'inspect',
+                      label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+                      icon: <Eye size={14} />,
+                      onClick: () => setInspectedExpense(exp),
+                    },
+                    ...(exp.receiptPhotoUrl
+                      ? [
+                          {
+                            id: 'receipt',
+                            label: isAr ? 'الوصل' : isEn ? 'Receipt' : 'Reçu',
+                            icon: <Eye size={14} />,
+                            onClick: () => setSelectedReceiptUrl(exp.receiptPhotoUrl || null),
+                          },
+                        ]
+                      : []),
+                  ]}
                   renderCard={(exp) => (
                     <div className="p-4 flex items-center justify-between gap-4">
                       <div className="space-y-1 min-w-0">

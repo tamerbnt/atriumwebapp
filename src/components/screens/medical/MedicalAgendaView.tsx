@@ -8,6 +8,7 @@ import {
   Stethoscope,
   UserCheck,
   XCircle,
+  Pin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { useMedicalData } from './medicalData';
@@ -84,6 +85,25 @@ export const MedicalAgendaView: React.FC<any> = () => {
   const [sortBy, setSortBy] = useState<string>('startTime');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
+
+  const handleTogglePin = useCallback(
+    (id: string) => {
+      setPinnedIds((prev) => {
+        const next = new Set(prev);
+        const nowPinned = !next.has(id);
+        if (nowPinned) next.add(id);
+        else next.delete(id);
+        showToast({
+          type: 'info',
+          title: nowPinned ? (isAr ? 'تم التثبيت' : 'RDV Épinglé') : (isAr ? 'تم إلغاء التثبيت' : 'RDV Désépinglé'),
+          message: nowPinned ? (isAr ? 'تمت إضافة الموعد للأعلى' : 'Rendez-vous maintenu en tête') : (isAr ? 'تمت الإزالة من الأعلى' : 'Rendez-vous retiré des épinglés'),
+        });
+        return next;
+      });
+    },
+    [isAr]
+  );
 
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -227,6 +247,10 @@ export const MedicalAgendaView: React.FC<any> = () => {
   const sortedAppointments = useMemo(() => {
     const list = [...filteredAppointments];
     list.sort((a, b) => {
+      const aPinned = pinnedIds.has(a.id);
+      const bPinned = pinnedIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
       let cmp = 0;
       if (sortBy === 'patientName') {
         cmp = a.patientName.localeCompare(b.patientName);
@@ -242,7 +266,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return list;
-  }, [filteredAppointments, sortBy, sortDir, getAptBranchName]);
+  }, [filteredAppointments, pinnedIds, sortBy, sortDir, getAptBranchName]);
 
   const handleExportCSV = useCallback(() => {
     const headers = [
@@ -650,7 +674,10 @@ export const MedicalAgendaView: React.FC<any> = () => {
           openItemId={activeApt?.id ?? null}
           onItemClick={handleInspectApt}
           onViewDetails={handleInspectApt}
+          isPinned={(a) => pinnedIds.has(a.id)}
+          onTogglePin={(a) => handleTogglePin(a.id)}
           getRowMeta={(a): KineticRowMeta => ({
+            isPinned: pinnedIds.has(a.id),
             title: a.patientName,
             subline: `${a.reason} · ${getAptBranchName(a)}`,
             avatarText: getInitials2(a.patientName),
@@ -672,60 +699,61 @@ export const MedicalAgendaView: React.FC<any> = () => {
             detailCol3: { heading: isAr ? 'التاريخ' : 'Date & Créneau', primaryText: `${a.date} · ${a.startTime}` },
           })}
           getFanActions={(apt): KineticRowFanAction<MedicalAppointmentSlot>[] => {
+            const actions: KineticRowFanAction<MedicalAppointmentSlot>[] = [];
             if (apt.status === 'Booked') {
-              return [
-                {
-                  id: 'arrived',
-                  label: isAr ? 'وصل' : 'Arrivé',
-                  icon: <UserCheck size={13} />,
-                  onClick: () => handleStatusChange(apt, 'Arrived'),
-                },
-              ];
+              actions.push({
+                id: 'arrived',
+                label: isAr ? 'وصل' : 'Arrivé',
+                icon: <UserCheck size={13} />,
+                onClick: () => handleStatusChange(apt, 'Arrived'),
+              });
+            } else if (apt.status === 'Arrived') {
+              actions.push({
+                id: 'inroom',
+                label: isAr ? 'دخول' : 'En Salle',
+                icon: <Stethoscope size={13} />,
+                onClick: () => handleStatusChange(apt, 'InRoom'),
+              });
+            } else if (apt.status === 'InRoom') {
+              actions.push({
+                id: 'complete',
+                label: isAr ? 'إنهاء' : 'Terminer',
+                icon: <CheckCircle2 size={13} />,
+                onClick: () => handleStatusChange(apt, 'Completed'),
+              });
             }
-            if (apt.status === 'Arrived') {
-              return [
-                {
-                  id: 'inroom',
-                  label: isAr ? 'دخول' : 'En Salle',
-                  icon: <Stethoscope size={13} />,
-                  onClick: () => handleStatusChange(apt, 'InRoom'),
-                },
-              ];
-            }
-            if (apt.status === 'InRoom') {
-              return [
-                {
-                  id: 'complete',
-                  label: isAr ? 'إنهاء' : 'Terminer',
-                  icon: <CheckCircle2 size={13} />,
-                  onClick: () => handleStatusChange(apt, 'Completed'),
-                },
-              ];
-            }
-            return [];
+            actions.push({
+              id: 'pin',
+              label: pinnedIds.has(apt.id) ? (isAr ? 'إلغاء' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+              icon: <Pin size={13} className={pinnedIds.has(apt.id) ? 'fill-current' : ''} />,
+              onClick: () => handleTogglePin(apt.id),
+            });
+            return actions;
           }}
           getDetailActions={(apt): KineticDetailAction[] => {
+            const actions: KineticDetailAction[] = [];
             if (apt.status === 'Booked') {
-              return [
-                {
-                  id: 'arrived',
-                  label: isAr ? 'تسجيل الوصول' : 'Marquer Arrivé',
-                  icon: <UserCheck size={14} />,
-                  onClick: () => handleStatusChange(apt, 'Arrived'),
-                },
-              ];
+              actions.push({
+                id: 'arrived',
+                label: isAr ? 'تسجيل الوصول' : 'Marquer Arrivé',
+                icon: <UserCheck size={14} />,
+                onClick: () => handleStatusChange(apt, 'Arrived'),
+              });
+            } else if (apt.status === 'Arrived') {
+              actions.push({
+                id: 'inroom',
+                label: isAr ? 'إدخال الغرفة' : 'Entrée en Salle',
+                icon: <Stethoscope size={14} />,
+                onClick: () => handleStatusChange(apt, 'InRoom'),
+              });
             }
-            if (apt.status === 'Arrived') {
-              return [
-                {
-                  id: 'inroom',
-                  label: isAr ? 'إدخال الغرفة' : 'Entrée en Salle',
-                  icon: <Stethoscope size={14} />,
-                  onClick: () => handleStatusChange(apt, 'InRoom'),
-                },
-              ];
-            }
-            return [];
+            actions.push({
+              id: 'pin',
+              label: pinnedIds.has(apt.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+              icon: <Pin size={14} className={pinnedIds.has(apt.id) ? 'fill-current' : ''} />,
+              onClick: () => handleTogglePin(apt.id),
+            });
+            return actions;
           }}
           renderCalendarView={() => (
             <div className="bg-white dark:bg-neutral-900 rounded-[24px] border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-2xs">

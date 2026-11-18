@@ -453,33 +453,54 @@ export function UniversalDataCollection<T>({
     storeLanguage,
   ]);
 
+  const checkPinned = useCallback(
+    (item: T): boolean => {
+      const id = String(keyExtractor(item));
+      if (pinnedIds) return pinnedIds.has(id);
+      if (internalPinnedIds.has(id)) return true;
+      return isPinned(item);
+    },
+    [keyExtractor, pinnedIds, internalPinnedIds, isPinned]
+  );
+
   const sortedItems = useMemo(() => {
+    let base = filteredItems;
     // Allow internal Branch sorting even when screen delegates other columns, OR full internal sort
-    if (!effectiveSortBy) return filteredItems;
-    if (onSortChange && effectiveSortBy !== 'branch') return filteredItems;
+    if (effectiveSortBy && (!onSortChange || effectiveSortBy === 'branch')) {
+      const dirSign = effectiveSortDir === 'asc' ? 1 : -1;
+      const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
+      const colDef = columns.find(
+        (c) =>
+          (c.key || c.id || c.accessorKey) === effectiveSortBy ||
+          c.accessorKey === effectiveSortBy
+      );
+      const field = colDef?.accessorKey || colDef?.key || colDef?.id || effectiveSortBy;
 
-    const dirSign = effectiveSortDir === 'asc' ? 1 : -1;
-    const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
-    const colDef = columns.find(
-      (c) =>
-        (c.key || c.id || c.accessorKey) === effectiveSortBy ||
-        c.accessorKey === effectiveSortBy
-    );
-    const field = colDef?.accessorKey || colDef?.key || colDef?.id || effectiveSortBy;
+      base = [...filteredItems].sort((a: any, b: any) => {
+        if (effectiveSortBy === 'branch') {
+          const aBranch = resolveRecordBranch(a, branchesById, currentBranch, storeLanguage).name;
+          const bBranch = resolveRecordBranch(b, branchesById, currentBranch, storeLanguage).name;
+          return collator.compare(aBranch, bBranch) * dirSign;
+        }
+        const aVal = a?.[field] ?? '';
+        const bVal = b?.[field] ?? '';
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          return (aVal - bVal) * dirSign;
+        }
+        return collator.compare(String(aVal), String(bVal)) * dirSign;
+      });
+    }
 
-    return [...filteredItems].sort((a: any, b: any) => {
-      if (effectiveSortBy === 'branch') {
-        const aBranch = resolveRecordBranch(a, branchesById, currentBranch, storeLanguage).name;
-        const bBranch = resolveRecordBranch(b, branchesById, currentBranch, storeLanguage).name;
-        return collator.compare(aBranch, bBranch) * dirSign;
-      }
-      const aVal = a?.[field] ?? '';
-      const bVal = b?.[field] ?? '';
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return (aVal - bVal) * dirSign;
-      }
-      return collator.compare(String(aVal), String(bVal)) * dirSign;
-    });
+    const pinnedList: T[] = [];
+    const unpinnedList: T[] = [];
+    for (let i = 0; i < base.length; i++) {
+      const it = base[i];
+      if (checkPinned(it)) pinnedList.push(it);
+      else unpinnedList.push(it);
+    }
+    return pinnedList.length > 0 && unpinnedList.length > 0
+      ? [...pinnedList, ...unpinnedList]
+      : base;
   }, [
     filteredItems,
     onSortChange,
@@ -489,6 +510,7 @@ export function UniversalDataCollection<T>({
     branchesById,
     currentBranch,
     storeLanguage,
+    checkPinned,
   ]);
 
   const actualItems = sortedItems;
@@ -509,16 +531,6 @@ export function UniversalDataCollection<T>({
     }
     return map;
   }, [actualItems, keyExtractor]);
-
-  const checkPinned = useCallback(
-    (item: T): boolean => {
-      const id = String(keyExtractor(item));
-      if (pinnedIds) return pinnedIds.has(id);
-      if (internalPinnedIds.has(id)) return true;
-      return isPinned(item);
-    },
-    [keyExtractor, pinnedIds, internalPinnedIds, isPinned]
-  );
 
   const resolvedPinnedIds = useMemo(() => {
     if (pinnedIds) return pinnedIds;
@@ -893,7 +905,22 @@ export function UniversalDataCollection<T>({
   const getDetailActions = useCallback(
     (item: T): KineticDetailAction[] => {
       if (getDetailActionsOverride) {
-        return getDetailActionsOverride(item);
+        const overridden = getDetailActionsOverride(item);
+        if ((onTogglePin || onPinToggle) && !overridden.some((a) => a.id === 'pin')) {
+          const pinned = checkPinned(item);
+          return [
+            ...overridden,
+            {
+              id: 'pin',
+              label: pinned
+                ? storeLanguage === 'ar' ? 'إلغاء التثبيت' : storeLanguage === 'fr' ? 'Détacher' : 'Unpin'
+                : storeLanguage === 'ar' ? 'تثبيت' : storeLanguage === 'fr' ? 'Épingler' : 'Pin',
+              icon: <Pin className="w-3.5 h-3.5" />,
+              onClick: () => handleTogglePin(item),
+            },
+          ];
+        }
+        return overridden;
       }
       const actionsList: KineticDetailAction[] = [];
       if (onViewDetails || onItemClick) {

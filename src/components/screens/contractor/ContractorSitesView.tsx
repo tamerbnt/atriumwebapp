@@ -469,6 +469,22 @@ export const ContractorSitesView: React.FC = () => {
         metricSecondary: `${p.progressPercent}%`,
         branchName: br.name,
         branchCode: br.code,
+        detailCol1: {
+          heading: isAr ? 'المشروع وصاحب العمل' : isEn ? 'Project & Client' : 'Marché & Maître d’Ouvrage',
+          primaryText: p.projectName,
+          secondaryText: `${p.projectCode} · ${p.clientName}`,
+          tertiaryText: br.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'التقدم والمدة' : isEn ? 'Progress & Dates' : 'Avancement & Délais',
+          primaryText: `${p.progressPercent}% ${isAr ? 'منجز' : 'exécuté'}`,
+          secondaryText: `${p.startDate} → ${p.revisedEndDate || p.targetEndDate || '—'}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'قيمة الصفقة' : isEn ? 'Contract Value' : 'Montant Marché',
+          primaryText: formatMoney(p.contractAmountDzd, language),
+          secondaryText: statusLabel,
+        },
       };
     },
     [branchesById, currentBranch, language, isAr]

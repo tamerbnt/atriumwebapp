@@ -277,12 +277,9 @@ export const FreelanceFinanceView: React.FC = () => {
   };
 
   const getExpenseRowMeta = useCallback(
-    (exp: FreelanceExpense): KineticRowMeta => ({
-      avatarText: exp.vendor.slice(0, 2).toUpperCase(),
-      subline: exp.description,
-      categoryLabel: exp.category,
-      statusVariant: exp.isTaxDeductible ? 'active' : 'warning',
-      statusLabel: exp.isTaxDeductible
+    (exp: FreelanceExpense): KineticRowMeta => {
+      const branchInfo = resolveRecordBranch(exp, branchesById, currentBranch, language);
+      const taxLabel = exp.isTaxDeductible
         ? isAr
           ? 'معفى ضريبياً'
           : isFr
@@ -292,11 +289,33 @@ export const FreelanceFinanceView: React.FC = () => {
         ? 'قياسي'
         : isFr
         ? 'Standard'
-        : 'Standard',
-      metricPrimary: formatCurrencyAmount(exp.amount, exp.currency),
-      metricSecondary: exp.date || '2026-02-15',
-    }),
-    [isAr, isFr]
+        : 'Standard';
+      return {
+        avatarText: exp.vendor.slice(0, 2).toUpperCase(),
+        subline: exp.description,
+        categoryLabel: exp.category,
+        statusVariant: exp.isTaxDeductible ? 'active' : 'warning',
+        statusLabel: taxLabel,
+        metricPrimary: formatCurrencyAmount(exp.amount, exp.currency),
+        metricSecondary: exp.date || '2026-02-15',
+        detailCol1: {
+          heading: isAr ? 'المورد والفئة' : isFr ? 'Fournisseur & Catégorie' : 'Vendor & Category',
+          primaryText: exp.vendor,
+          secondaryText: exp.category,
+        },
+        detailCol2: {
+          heading: isAr ? 'المبلغ والضريبة' : isFr ? 'Montant & Fiscalité' : 'Amount & Tax',
+          primaryText: formatCurrencyAmount(exp.amount, exp.currency),
+          secondaryText: taxLabel,
+        },
+        detailCol3: {
+          heading: isAr ? 'الفرع والتاريخ' : isFr ? 'Branche & Date' : 'Branch & Date',
+          primaryText: branchInfo.name,
+          secondaryText: exp.date || '2026-02-15',
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr, isFr]
   );
 
   const getExpenseFanActions = useCallback(

@@ -8,6 +8,7 @@ import {
   FileBadge,
   AlertTriangle,
   Download,
+  Pin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { useMedicalData } from './medicalData';
@@ -75,6 +76,25 @@ export const MedicalCertificatesView: React.FC<any> = () => {
   const [sortBy, setSortBy] = useState<string>('issueDate');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
+
+  const handleTogglePin = useCallback(
+    (id: string) => {
+      setPinnedIds((prev) => {
+        const next = new Set(prev);
+        const nowPinned = !next.has(id);
+        if (nowPinned) next.add(id);
+        else next.delete(id);
+        showToast({
+          type: 'info',
+          title: nowPinned ? (isAr ? 'تم التثبيت' : 'Certificat Épinglé') : (isAr ? 'تم إلغاء التثبيت' : 'Certificat Désépinglé'),
+          message: nowPinned ? (isAr ? 'تم تثبيت الشهادة بالأعلى' : 'Document maintenu en tête') : (isAr ? 'تمت الإزالة من الأعلى' : 'Document retiré des épinglés'),
+        });
+        return next;
+      });
+    },
+    [isAr]
+  );
 
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -169,6 +189,10 @@ export const MedicalCertificatesView: React.FC<any> = () => {
   const sortedCertificates = useMemo(() => {
     const list = [...filteredCertificates];
     list.sort((a, b) => {
+      const aPinned = pinnedIds.has(a.id);
+      const bPinned = pinnedIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
       let cmp = 0;
       if (sortBy === 'patientName') cmp = a.patientName.localeCompare(b.patientName);
       else if (sortBy === 'certificateType') cmp = a.certificateType.localeCompare(b.certificateType);
@@ -177,7 +201,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return list;
-  }, [filteredCertificates, sortBy, sortDir, getCertBranchName]);
+  }, [filteredCertificates, pinnedIds, sortBy, sortDir, getCertBranchName]);
 
   const handleSelectCert = useCallback(
     (cert: MedicalCertificateRecord, opener?: HTMLElement | null) => {
@@ -566,7 +590,10 @@ export const MedicalCertificatesView: React.FC<any> = () => {
             icon: <Download size={14} />,
             onClick: handleExportCSV,
           }}
+          isPinned={(c) => pinnedIds.has(c.id)}
+          onTogglePin={(c) => handleTogglePin(c.id)}
           getRowMeta={(cert): KineticRowMeta => ({
+            isPinned: pinnedIds.has(cert.id),
             title: cert.patientName,
             subline: `${getCertTypeLabel(cert.certificateType)} · ${cert.qrHash}`,
             avatarText: getInitials2(cert.patientName),
@@ -592,6 +619,12 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               icon: <Printer size={13} />,
               onClick: () => setActivePrintCert(cert),
             },
+            {
+              id: 'pin',
+              label: pinnedIds.has(cert.id) ? (isAr ? 'إلغاء' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+              icon: <Pin size={13} className={pinnedIds.has(cert.id) ? 'fill-current' : ''} />,
+              onClick: () => handleTogglePin(cert.id),
+            },
           ]}
           getDetailActions={(cert): KineticDetailAction[] => [
             {
@@ -599,6 +632,12 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               label: isAr ? 'طباعة الشهادة' : 'Imprimer',
               icon: <Printer size={14} />,
               onClick: () => setActivePrintCert(cert),
+            },
+            {
+              id: 'pin',
+              label: pinnedIds.has(cert.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+              icon: <Pin size={14} className={pinnedIds.has(cert.id) ? 'fill-current' : ''} />,
+              onClick: () => handleTogglePin(cert.id),
             },
           ]}
           emptyTitle={isAr ? 'لا توجد شهادات' : 'Aucun certificat émis'}

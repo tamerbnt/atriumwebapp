@@ -326,6 +326,8 @@ export const FreelanceClientsView: React.FC = () => {
   const getClientRowMeta = useCallback(
     (client: FreelanceClient): KineticRowMeta => {
       const unbilled = getClientUnbilledTime(client.id);
+      const clientProjectsCount = freelanceProjects.filter((p) => p.clientId === client.id).length;
+      const branchInfo = resolveRecordBranch(client, branchesById, currentBranch, language);
       return {
         avatarText: client.name.slice(0, 2).toUpperCase(),
         subline: client.company || t('free_clients_private_client', language),
@@ -343,10 +345,34 @@ export const FreelanceClientsView: React.FC = () => {
             ? t('free_clients_status_project_based', language)
             : client.status,
         metricPrimary: `${formatCurrencyAmount(client.hourlyRate, client.currency)}${t('free_dash_per_hour', language)}`,
-        metricSecondary: unbilled.amount > 0 ? `${unbilled.hours}h unbilled` : `${freelanceProjects.filter((p) => p.clientId === client.id).length} ${t('free_nav_deliverables', language)}`,
+        metricSecondary:
+          unbilled.amount > 0
+            ? `${unbilled.hours}h ${isAr ? 'غير مفوترة' : isFr ? 'non fact.' : 'unbilled'}`
+            : `${clientProjectsCount} ${t('free_nav_deliverables', language)}`,
+        detailCol1: {
+          heading: isAr ? 'التواصل والموقع' : isFr ? 'Contact & Pays' : 'Contact & Region',
+          primaryText: client.email || client.phone || '—',
+          secondaryText: client.country || (client.phone ? client.phone : '—'),
+        },
+        detailCol2: {
+          heading: isAr ? 'التسعير والنشاط' : isFr ? 'Tarif & Activité' : 'Rate & Activity',
+          primaryText: `${formatCurrencyAmount(client.hourlyRate, client.currency)}${t('free_dash_per_hour', language)}`,
+          secondaryText:
+            unbilled.amount > 0
+              ? `${unbilled.hours}h · ${formatCurrencyAmount(unbilled.amount, client.currency)}`
+              : `${clientProjectsCount} ${t('free_nav_deliverables', language)}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الفرع والعقد' : isFr ? 'Branche & Contrat' : 'Branch & Terms',
+          primaryText: branchInfo.name,
+          secondaryText:
+            client.status === 'ActiveRetainer' && client.monthlyRetainerHours
+              ? `${client.monthlyRetainerHours}h / ${isAr ? 'شهر' : isFr ? 'mois' : 'mo'}`
+              : client.currency,
+        },
       };
     },
-    [freelanceProjects, getClientUnbilledTime, language, t]
+    [freelanceProjects, getClientUnbilledTime, branchesById, currentBranch, language, t, isAr, isFr]
   );
 
   const getClientFanActions = useCallback(

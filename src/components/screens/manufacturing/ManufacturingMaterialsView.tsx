@@ -8,6 +8,8 @@ import {
   Warehouse,
   X,
   MapPin,
+  Eye,
+  Edit,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -30,6 +32,9 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -876,6 +881,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
             data={sortedMaterials}
             keyExtractor={(m) => m.id}
             defaultViewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             columns={materialColumns}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -891,6 +897,95 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
             onItemClick={handleSelectMaterial}
             onViewDetails={handleSelectMaterial}
             onEdit={handleOpenEdit}
+            getRowMeta={(m): Partial<KineticRowData> => {
+              const bInfo = resolveRecordBranch(m, branchesById, currentBranch, language);
+              const isLow = m.currentStock <= m.reorderThreshold;
+              const stockVal = m.totalValuationDzd || Math.round(m.currentStock * m.unitCostPmpDzd);
+              return {
+                title: m.name,
+                subline: `${m.sku} · ${m.category}`,
+                avatarText: (m.sku || m.name || 'MT').slice(0, 3).toUpperCase(),
+                avatarColor: isLow ? '#DC2626' : '#d4522f',
+                categoryLabel: m.category,
+                statusLabel: isLow ? (isAr ? 'مخزون منخفض' : 'Sous Seuil') : isAr ? 'متوفر' : 'Optimal',
+                statusVariant: isLow ? 'warning' : 'active',
+                metricPrimary: `${m.currentStock} ${m.unit}`,
+                metricSecondary: `PMP ${formatMoney(m.unitCostPmpDzd, language)}`,
+                branchName: bInfo.name,
+                branchCode: bInfo.code,
+                isPinned: pinnedIds.has(m.id),
+                detailCol1: {
+                  heading: isAr ? 'المادة والتصنيف' : isEn ? 'Material & SKU' : 'Matière & Réf',
+                  primaryText: m.name,
+                  secondaryText: `${m.sku} · ${m.category}`,
+                  tertiaryText: bInfo.name,
+                },
+                detailCol2: {
+                  heading: isAr ? 'المخزون وحد الطلب' : isEn ? 'Stock & Threshold' : 'Stock & Seuil Alerte',
+                  primaryText: `${m.currentStock} ${m.unit}`,
+                  secondaryText: `${isAr ? 'حد التنبيه:' : 'Seuil min:'} ${m.reorderThreshold} ${m.unit}`,
+                  tertiaryText: m.warehouseLocation || undefined,
+                },
+                detailCol3: {
+                  heading: isAr ? 'التقييم (PMP)' : isEn ? 'Valuation (PMP)' : 'Valorisation PMP',
+                  primaryText: formatMoney(stockVal, language),
+                  secondaryText: `${formatMoney(m.unitCostPmpDzd, language)} / ${m.unit}`,
+                },
+              };
+            }}
+            getFanActions={(m): KineticRowFanAction[] => [
+              {
+                id: 'inspect',
+                label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+                icon: <Eye className="w-[15px] h-[15px]" />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  handleSelectMaterial(m, e.currentTarget);
+                },
+              },
+              {
+                id: 'edit',
+                label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                icon: <Edit className="w-[15px] h-[15px]" />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  handleOpenEdit(m);
+                },
+              },
+              {
+                id: 'bsm',
+                label: 'Bon BSM',
+                icon: <FileText className="w-[15px] h-[15px]" />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setVoucherMaterialId(m.id);
+                  setIsVoucherModalOpen(true);
+                },
+              },
+            ]}
+            getDetailActions={(m): KineticDetailAction[] => [
+              {
+                id: 'inspect',
+                label: isAr ? 'فتح البطاقة' : isEn ? 'Open' : 'Fiche Matière',
+                icon: <Eye className="w-3.5 h-3.5" />,
+                onClick: () => handleSelectMaterial(m),
+              },
+              {
+                id: 'bsm',
+                label: 'Bon BSM',
+                icon: <FileText className="w-3.5 h-3.5" />,
+                onClick: () => {
+                  setVoucherMaterialId(m.id);
+                  setIsVoucherModalOpen(true);
+                },
+              },
+              {
+                id: 'edit',
+                label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+                icon: <Edit className="w-3.5 h-3.5" />,
+                onClick: () => handleOpenEdit(m),
+              },
+            ]}
             customActions={(m) => [
               {
                 id: 'bsm',
@@ -931,6 +1026,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
             data={sortedVouchers}
             keyExtractor={(v) => v.id}
             defaultViewMode={viewMode}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             columns={voucherColumns}
             sortBy={sortBy}
             sortDirection={sortDir}
@@ -941,6 +1037,74 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
             openItemId={activeVoucher?.id}
             onItemClick={handleSelectVoucher}
             onViewDetails={handleSelectVoucher}
+            getRowMeta={(v): Partial<KineticRowData> => {
+              const bInfo = resolveRecordBranch(v, branchesById, currentBranch, language);
+              const firstItem = v.items[0];
+              const typeCode = v.voucherType === 'BonDeSortie' ? 'BSM' : v.voucherType === 'BonDeReception' ? 'BR' : 'BT';
+              return {
+                title: v.voucherNumber,
+                subline: firstItem ? `${firstItem.materialName} · ${firstItem.quantity} ${firstItem.unit}` : v.transferDate,
+                avatarText: typeCode,
+                avatarColor: v.voucherType === 'BonDeSortie' ? '#D97706' : v.voucherType === 'BonDeReception' ? '#059669' : '#2563EB',
+                categoryLabel: typeCode,
+                statusLabel: v.transferDate,
+                statusVariant: v.voucherType === 'BonDeSortie' ? 'warning' : v.voucherType === 'BonDeReception' ? 'active' : 'info',
+                metricPrimary: formatMoney(v.totalValueDzd, language),
+                metricSecondary: firstItem ? `${firstItem.quantity} ${firstItem.unit}` : undefined,
+                branchName: bInfo.name,
+                branchCode: bInfo.code,
+                detailCol1: {
+                  heading: isAr ? 'السند والتاريخ' : isEn ? 'Voucher & Date' : 'Bon & Date',
+                  primaryText: `${v.voucherNumber} (${typeCode})`,
+                  secondaryText: v.transferDate,
+                  tertiaryText: bInfo.name,
+                },
+                detailCol2: {
+                  heading: isAr ? 'المادة والكمية' : isEn ? 'Material & Qty' : 'Matière & Quantité',
+                  primaryText: firstItem?.materialName || '—',
+                  secondaryText: firstItem ? `${firstItem.quantity} ${firstItem.unit}` : undefined,
+                },
+                detailCol3: {
+                  heading: isAr ? 'القيمة والمستلم' : isEn ? 'Value & Recipient' : 'Valeur & Bénéficiaire',
+                  primaryText: formatMoney(v.totalValueDzd, language),
+                  secondaryText: v.recipientStaffName || v.orderNumber || v.notes || undefined,
+                },
+              };
+            }}
+            getFanActions={(v): KineticRowFanAction[] => [
+              {
+                id: 'inspect',
+                label: isAr ? 'تفاصيل' : isEn ? 'Details' : 'Détails',
+                icon: <Eye className="w-[15px] h-[15px]" />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  handleSelectVoucher(v, e.currentTarget);
+                },
+              },
+              {
+                id: 'print',
+                label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
+                icon: <Printer className="w-[15px] h-[15px]" />,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setPrintableVoucher(v);
+                },
+              },
+            ]}
+            getDetailActions={(v): KineticDetailAction[] => [
+              {
+                id: 'inspect',
+                label: isAr ? 'فتح السند' : isEn ? 'Open' : 'Détails Bon',
+                icon: <Eye className="w-3.5 h-3.5" />,
+                onClick: () => handleSelectVoucher(v),
+              },
+              {
+                id: 'print',
+                label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
+                icon: <Printer className="w-3.5 h-3.5" />,
+                onClick: () => setPrintableVoucher(v),
+              },
+            ]}
             customActions={(v) => [
               {
                 id: 'print',

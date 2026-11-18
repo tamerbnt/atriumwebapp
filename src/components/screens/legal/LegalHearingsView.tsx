@@ -385,17 +385,37 @@ export const LegalHearingsView: React.FC<any> = () => {
     (h: LegalHearing): KineticRowMeta => {
       const isDone = Boolean(h.isCompleted);
       const isPostponed = h.status === 'Postponed';
+      const branchInfo = resolveRecordBranch(h, branchesById, currentBranch, language);
       return {
         avatarText: (h.postponementCode || 'AU').slice(0, 2).toUpperCase(),
         subline: `${h.matterNumber} · ${h.courtName}`,
         categoryLabel: h.postponementCode || h.chamber || 'Rôle',
         statusVariant: isDone ? 'active' : isPostponed ? 'warning' : 'info',
-        statusLabel: isDone ? (isAr ? 'تمت' : 'Plaidée') : isPostponed ? (isAr ? 'مؤجلة' : 'Renvoi') : isAr ? 'مبرمجة' : 'Fixée',
+        statusLabel: isDone
+          ? isAr ? 'تمت' : isEn ? 'Heard' : 'Plaidée'
+          : isPostponed
+          ? isAr ? 'مؤجلة' : isEn ? 'Adjourned' : 'Renvoi'
+          : isAr ? 'مبرمجة' : isEn ? 'Scheduled' : 'Fixée',
         metricPrimary: `${h.hearingDate}${h.hearingTime ? ` · ${h.hearingTime}` : ''}`,
         metricSecondary: h.courtRoom || undefined,
+        detailCol1: {
+          heading: isAr ? 'المحكمة والقاعة' : isEn ? 'Court & Room' : 'Juridiction & Salle',
+          primaryText: h.courtName,
+          secondaryText: `${h.courtRoom || '—'} · ${h.chamber || '—'}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'التاريخ والقاضي' : isEn ? 'Date & Judge' : 'Date & Siège',
+          primaryText: `${h.hearingDate}${h.hearingTime ? ` · ${h.hearingTime}` : ''}`,
+          secondaryText: h.benchJudge || '—',
+        },
+        detailCol3: {
+          heading: isAr ? 'القضية والفرع' : isEn ? 'Matter & Branch' : 'Dossier & Branche',
+          primaryText: h.matterNumber,
+          secondaryText: branchInfo.name,
+        },
       };
     },
-    [isAr]
+    [branchesById, currentBranch, language, isAr, isEn]
   );
 
   const getFanActions = useCallback(

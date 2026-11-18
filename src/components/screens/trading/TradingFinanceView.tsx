@@ -3,6 +3,7 @@ import {
   Wallet,
   CheckCircle,
   X,
+  Pin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -75,6 +76,25 @@ export const TradingFinanceView: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [sortBy, setSortBy] = useState<string>('date');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
+
+  const handleTogglePin = useCallback(
+    (id: string) => {
+      setPinnedIds((prev) => {
+        const next = new Set(prev);
+        const nowPinned = !next.has(id);
+        if (nowPinned) next.add(id);
+        else next.delete(id);
+        showToast({
+          type: 'info',
+          title: nowPinned ? (isAr ? 'تم التثبيت' : 'Facture Épinglée') : (isAr ? 'تم إلغاء التثبيت' : 'Facture Désépinglée'),
+          message: nowPinned ? (isAr ? 'تم تثبيت الفاتورة بالأعلى' : 'Échéance maintenue en tête') : (isAr ? 'تمت الإزالة من الأعلى' : 'Facture retirée des épinglées'),
+        });
+        return next;
+      });
+    },
+    [isAr]
+  );
 
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [inspectingDoc, setInspectingDoc] = useState<CommercialDocument | null>(null);
@@ -154,6 +174,10 @@ export const TradingFinanceView: React.FC = () => {
         return true;
       })
       .sort((a, b) => {
+        const aPinned = pinnedIds.has(a.id);
+        const bPinned = pinnedIds.has(b.id);
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
         let cmp = 0;
         if (sortBy === 'docNumber') cmp = a.docNumber.localeCompare(b.docNumber);
         else if (sortBy === 'client') cmp = a.clientName.localeCompare(b.clientName);
@@ -161,7 +185,7 @@ export const TradingFinanceView: React.FC = () => {
         else cmp = (a.date || '').localeCompare(b.date || '');
         return sortDir === 'asc' ? cmp : -cmp;
       });
-  }, [invoices, filterMode, branchFilter, agingBucketFilter, searchQuery, sortBy, sortDir, branchesById, currentBranch, language]);
+  }, [invoices, filterMode, branchFilter, agingBucketFilter, searchQuery, pinnedIds, sortBy, sortDir, branchesById, currentBranch, language]);
 
   const handleConfirmSettlement = (e: React.FormEvent) => {
     e.preventDefault();
@@ -577,10 +601,13 @@ export const TradingFinanceView: React.FC = () => {
             setDrawerOpenerEl(el || null);
             setInspectingDoc(inv);
           }}
+          isPinned={(inv) => pinnedIds.has(inv.id)}
+          onTogglePin={(inv) => handleTogglePin(inv.id)}
           getRowMeta={(inv) => {
             const isPaid = inv.status === 'Paid';
             const branchInfo = resolveRecordBranch(inv, branchesById, currentBranch, language);
             return {
+              isPinned: pinnedIds.has(inv.id),
               title: inv.docNumber,
               subline: `${inv.clientName} · ${inv.date}`,
               avatarText: 'FA',
@@ -596,30 +623,42 @@ export const TradingFinanceView: React.FC = () => {
               detailCol3: { heading: 'Mode', primaryText: inv.paymentMethod || 'Virement' },
             };
           }}
-          getFanActions={(inv) =>
-            inv.status !== 'Paid'
-              ? [
-                  {
-                    id: 'settle',
-                    label: t('trading_finance_settle_invoice', 'Encaisser'),
-                    icon: <CheckCircle size={14} />,
-                    onClick: () => setSettlementDoc(inv),
-                  },
-                ]
-              : undefined
-          }
-          getDetailActions={(inv) =>
-            inv.status !== 'Paid'
-              ? [
-                  {
-                    id: 'settle',
-                    label: t('trading_finance_settle_invoice', 'Encaisser'),
-                    icon: <CheckCircle size={13} />,
-                    onClick: () => setSettlementDoc(inv),
-                  },
-                ]
-              : []
-          }
+          getFanActions={(inv) => {
+            const actions = [];
+            if (inv.status !== 'Paid') {
+              actions.push({
+                id: 'settle',
+                label: t('trading_finance_settle_invoice', 'Encaisser'),
+                icon: <CheckCircle size={14} />,
+                onClick: () => setSettlementDoc(inv),
+              });
+            }
+            actions.push({
+              id: 'pin',
+              label: pinnedIds.has(inv.id) ? (isAr ? 'إلغاء' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+              icon: <Pin size={14} className={pinnedIds.has(inv.id) ? 'fill-current' : ''} />,
+              onClick: () => handleTogglePin(inv.id),
+            });
+            return actions;
+          }}
+          getDetailActions={(inv) => {
+            const actions = [];
+            if (inv.status !== 'Paid') {
+              actions.push({
+                id: 'settle',
+                label: t('trading_finance_settle_invoice', 'Encaisser'),
+                icon: <CheckCircle size={13} />,
+                onClick: () => setSettlementDoc(inv),
+              });
+            }
+            actions.push({
+              id: 'pin',
+              label: pinnedIds.has(inv.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+              icon: <Pin size={13} className={pinnedIds.has(inv.id) ? 'fill-current' : ''} />,
+              onClick: () => handleTogglePin(inv.id),
+            });
+            return actions;
+          }}
           emptyTitle={isAr ? 'لا توجد فواتير مطابقة' : 'Aucune facture trouvée'}
           emptyDescription={
             isAr

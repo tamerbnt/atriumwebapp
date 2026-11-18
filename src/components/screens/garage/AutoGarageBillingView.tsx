@@ -8,6 +8,7 @@ import {
   Building2,
   FileText,
   Wallet,
+  Pin,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -86,8 +87,46 @@ export const AutoGarageBillingView: React.FC<any> = () => {
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedOrderIds, setPinnedOrderIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedInvoiceIds, setPinnedInvoiceIds] = useState<Set<string>>(() => new Set<string>());
   const [sortBy, setSortBy] = useState<string>('orderNumber');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const toggleOrderPin = useCallback(
+    (id: string) => {
+      setPinnedOrderIds((prev) => {
+        const next = new Set(prev);
+        const nowPinned = !next.has(id);
+        if (nowPinned) next.add(id);
+        else next.delete(id);
+        showToast({
+          type: 'info',
+          title: nowPinned ? (isAr ? 'تم التثبيت' : 'OR Épinglé') : (isAr ? 'تم إلغاء التثبيت' : 'OR Désépinglé'),
+          message: nowPinned ? (isAr ? 'تمت إضافة الأمر للأعلى' : 'Ordre prioritaire en tête de liste') : (isAr ? 'تمت الإزالة من الأعلى' : 'Ordre retiré des épinglés'),
+        });
+        return next;
+      });
+    },
+    [isAr]
+  );
+
+  const toggleInvoicePin = useCallback(
+    (id: string) => {
+      setPinnedInvoiceIds((prev) => {
+        const next = new Set(prev);
+        const nowPinned = !next.has(id);
+        if (nowPinned) next.add(id);
+        else next.delete(id);
+        showToast({
+          type: 'info',
+          title: nowPinned ? (isAr ? 'تم التثبيت' : 'Facture Épinglée') : (isAr ? 'تم إلغاء التثبيت' : 'Facture Désépinglée'),
+          message: nowPinned ? (isAr ? 'تم تثبيت الفاتورة بالأعلى' : 'Facture maintenue en tête') : (isAr ? 'تم إلغاء التثبيت' : 'Facture retirée des épinglés'),
+        });
+        return next;
+      });
+    },
+    [isAr]
+  );
 
   const [inspectedOrder, setInspectedOrder] = useState<RepairOrder | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -174,6 +213,10 @@ export const AutoGarageBillingView: React.FC<any> = () => {
   const sortedBillingOrders = useMemo(() => {
     const list = [...filteredBillingOrders];
     list.sort((a, b) => {
+      const aPinned = pinnedOrderIds.has(a.id);
+      const bPinned = pinnedOrderIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
       let cmp = 0;
       if (sortBy === 'orderNumber') {
         cmp = a.orderNumber.localeCompare(b.orderNumber);
@@ -191,7 +234,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return list;
-  }, [filteredBillingOrders, sortBy, sortDir, branchesById, currentBranch, language]);
+  }, [filteredBillingOrders, pinnedOrderIds, sortBy, sortDir, branchesById, currentBranch, language]);
 
   const filteredInvoices = useMemo(() => {
     return invoices.filter((inv) => {
@@ -211,6 +254,18 @@ export const AutoGarageBillingView: React.FC<any> = () => {
       return true;
     });
   }, [invoices, branchFilter, searchQuery, branchesById, currentBranch, language]);
+
+  const sortedInvoices = useMemo(() => {
+    const list = [...filteredInvoices];
+    list.sort((a, b) => {
+      const aPinned = pinnedInvoiceIds.has(a.id);
+      const bPinned = pinnedInvoiceIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return 0;
+    });
+    return list;
+  }, [filteredInvoices, pinnedInvoiceIds]);
 
   const openSettlementModal = useCallback((order: RepairOrder) => {
     setOrderToSettle(order);
@@ -336,18 +391,39 @@ export const AutoGarageBillingView: React.FC<any> = () => {
       const settled = o.status === 'Delivered' || Boolean(o.isPaid);
       const br = resolveRecordBranch(o, branchesById, currentBranch, language);
       return {
+        isPinned: pinnedOrderIds.has(o.id),
         title: `${o.orderNumber} · ${o.vehiclePlate}`,
         subline: `${o.clientName} · ${o.vehicleModel}`,
-        categoryLabel: o.bayName || 'Atelier',
-        statusLabel: settled ? (isAr ? 'مسوى' : 'Réglé') : isAr ? 'قيد التحصيل' : 'À Encaisser',
+        categoryLabel: o.bayName || (isAr ? 'الورشة' : isEn ? 'Workshop' : 'Atelier'),
+        statusLabel: settled
+          ? isAr ? 'مسوى' : isEn ? 'Settled' : 'Réglé'
+          : isAr ? 'قيد التحصيل' : isEn ? 'Pending' : 'À Encaisser',
         statusVariant: settled ? 'active' : 'warning',
         metricPrimary: formatMoney(o.finalCostDzd || o.estimatedCostDzd, language),
         metricSecondary: br.name,
         branchName: br.name,
         branchCode: br.code,
+        detailCol1: {
+          heading: isAr ? 'العميل والمركبة' : isEn ? 'Client & Vehicle' : 'Client & Véhicule',
+          primaryText: o.clientName,
+          secondaryText: `${o.vehicleModel} · ${o.vehiclePlate}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'التكلفة والوضع' : isEn ? 'Amount & Type' : 'Montant & Type',
+          primaryText: formatMoney(o.finalCostDzd || o.estimatedCostDzd, language),
+          secondaryText:
+            o.clientType === 'corporate_fleet'
+              ? isAr ? 'أسطول B2B' : isEn ? 'Fleet B2B' : 'Flotte B2B'
+              : isAr ? 'فردي' : isEn ? 'Individual' : 'Particulier',
+        },
+        detailCol3: {
+          heading: isAr ? 'الفرع والورشة' : isEn ? 'Branch & Bay' : 'Succursale & Pont',
+          primaryText: br.name,
+          secondaryText: o.bayName || o.technicianName || '—',
+        },
       };
     },
-    [branchesById, currentBranch, language, isAr]
+    [pinnedOrderIds, branchesById, currentBranch, language, isAr, isEn]
   );
 
   const getOrderFanActions = useCallback(
@@ -358,8 +434,14 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         icon: <CreditCard size={14} />,
         onClick: () => openSettlementModal(o),
       },
+      {
+        id: 'pin',
+        label: pinnedOrderIds.has(o.id) ? (isAr ? 'إلغاء' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin size={14} className={pinnedOrderIds.has(o.id) ? 'fill-current' : ''} />,
+        onClick: () => toggleOrderPin(o.id),
+      },
     ],
-    [openSettlementModal]
+    [openSettlementModal, pinnedOrderIds, toggleOrderPin, isAr]
   );
 
   const getOrderDetailActions = useCallback(
@@ -370,14 +452,21 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         icon: <CreditCard size={14} />,
         onClick: () => openSettlementModal(o),
       },
+      {
+        id: 'pin',
+        label: pinnedOrderIds.has(o.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin size={14} className={pinnedOrderIds.has(o.id) ? 'fill-current' : ''} />,
+        onClick: () => toggleOrderPin(o.id),
+      },
     ],
-    [openSettlementModal]
+    [openSettlementModal, pinnedOrderIds, toggleOrderPin, isAr]
   );
 
   const getInvoiceRowMeta = useCallback(
     (inv: GarageInvoice): Partial<KineticRowData> => {
       const br = resolveRecordBranch(inv, branchesById, currentBranch, language);
       return {
+        isPinned: pinnedInvoiceIds.has(inv.id),
         title: `${inv.invoiceNumber} · ${inv.clientName}`,
         subline: `${inv.vehiclePlate} · ${inv.orderNumber}`,
         categoryLabel: inv.billingType === 'facture_dgi' ? 'Facture DGI' : 'Bon Caisse',
@@ -387,9 +476,24 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         metricSecondary: br.name,
         branchName: br.name,
         branchCode: br.code,
+        detailCol1: {
+          heading: isAr ? 'العميل والمركبة' : isEn ? 'Client & Vehicle' : 'Client & Véhicule',
+          primaryText: inv.clientName,
+          secondaryText: `${inv.vehiclePlate} · ${inv.vehicleModel}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'الصافي والرسوم' : isEn ? 'Net & Tax' : 'Net TTC & Timbre',
+          primaryText: formatMoney(inv.netToPayDzd, language),
+          secondaryText: `TVA ${inv.tvaRate}% · Timbre ${formatMoney(inv.timbreFiscal, language)}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الدفع والفرع' : isEn ? 'Payment & Branch' : 'Paiement & Succursale',
+          primaryText: inv.paymentMethod,
+          secondaryText: br.name,
+        },
       };
     },
-    [branchesById, currentBranch, language]
+    [pinnedInvoiceIds, branchesById, currentBranch, language, isAr, isEn]
   );
 
   const getInvoiceFanActions = useCallback(
@@ -403,8 +507,14 @@ export const AutoGarageBillingView: React.FC<any> = () => {
           setIsPrintModalOpen(true);
         },
       },
+      {
+        id: 'pin',
+        label: pinnedInvoiceIds.has(inv.id) ? (isAr ? 'إلغاء' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin size={14} className={pinnedInvoiceIds.has(inv.id) ? 'fill-current' : ''} />,
+        onClick: () => toggleInvoicePin(inv.id),
+      },
     ],
-    []
+    [pinnedInvoiceIds, toggleInvoicePin, isAr]
   );
 
   const getInvoiceDetailActions = useCallback(
@@ -418,8 +528,14 @@ export const AutoGarageBillingView: React.FC<any> = () => {
           setIsPrintModalOpen(true);
         },
       },
+      {
+        id: 'pin',
+        label: pinnedInvoiceIds.has(inv.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin size={14} className={pinnedInvoiceIds.has(inv.id) ? 'fill-current' : ''} />,
+        onClick: () => toggleInvoicePin(inv.id),
+      },
     ],
-    [isAr]
+    [isAr, pinnedInvoiceIds, toggleInvoicePin]
   );
 
   const orderColumns: ColumnDefinition<RepairOrder>[] = useMemo(
@@ -832,6 +948,8 @@ export const AutoGarageBillingView: React.FC<any> = () => {
             getRowMeta={getOrderRowMeta}
             getFanActions={getOrderFanActions}
             getDetailActions={getOrderDetailActions}
+            isPinned={(o) => pinnedOrderIds.has(o.id)}
+            onTogglePin={(o) => toggleOrderPin(o.id)}
             customActions={(order) => [
               {
                 id: 'settle',
@@ -964,7 +1082,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
 
           <UniversalDataCollection
             hideToolbar
-            items={filteredInvoices}
+            items={sortedInvoices}
             keyExtractor={(inv) => inv.id}
             viewMode={viewMode === 'grid' ? 'grid' : 'list'}
             defaultViewMode={viewMode}
@@ -976,6 +1094,8 @@ export const AutoGarageBillingView: React.FC<any> = () => {
             getRowMeta={getInvoiceRowMeta}
             getFanActions={getInvoiceFanActions}
             getDetailActions={getInvoiceDetailActions}
+            isPinned={(inv) => pinnedInvoiceIds.has(inv.id)}
+            onTogglePin={(inv) => toggleInvoicePin(inv.id)}
             customActions={(inv) => [
               {
                 id: 'print',

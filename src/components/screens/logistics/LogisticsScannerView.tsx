@@ -11,6 +11,7 @@ import {
   Boxes,
   MapPin,
   Eye,
+  Pin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { LogisticsShipment } from '../../../types';
@@ -99,8 +100,28 @@ export const LogisticsScannerView: React.FC = () => {
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
   const [sortBy, setSortBy] = useState<string>('code');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const handleTogglePin = useCallback(
+    (id: string) => {
+      setPinnedIds((prev) => {
+        const next = new Set(prev);
+        const nowPinned = !next.has(id);
+        if (nowPinned) next.add(id);
+        else next.delete(id);
+        showToast(
+          nowPinned
+            ? isAr ? 'تم تثبيت الطرد في الأعلى' : 'Colis épinglé en tête de quai'
+            : isAr ? 'تم إلغاء تثبيت الطرد' : 'Colis désépinglé',
+          'info'
+        );
+        return next;
+      });
+    },
+    [isAr]
+  );
 
   const [selectedShipment, setSelectedShipment] = useState<LogisticsShipment | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -329,6 +350,10 @@ export const LogisticsScannerView: React.FC = () => {
   const sortedShipments = useMemo(() => {
     const list = [...filteredShipments];
     list.sort((a, b) => {
+      const aPinned = pinnedIds.has(a.id);
+      const bPinned = pinnedIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
       if (sortBy === 'code') {
         const cmp = a.trackingCode.localeCompare(b.trackingCode);
         return sortDir === 'asc' ? cmp : -cmp;
@@ -346,7 +371,7 @@ export const LogisticsScannerView: React.FC = () => {
       return 0;
     });
     return list;
-  }, [filteredShipments, sortBy, sortDir, branchesById, currentBranch, language]);
+  }, [filteredShipments, pinnedIds, sortBy, sortDir, branchesById, currentBranch, language]);
 
   const handleExportQuai = useCallback(() => {
     const headers = ['AWB', 'Destinataire', 'Wilaya', 'Agence / Hub', 'Mode', 'Statut'];
@@ -363,16 +388,39 @@ export const LogisticsScannerView: React.FC = () => {
   }, [sortedShipments, branchesById, currentBranch, language, isAr]);
 
   const getScannerRowMeta = useCallback(
-    (s: LogisticsShipment): KineticRowMeta => ({
-      avatarText: (s.recipientName || 'AW').slice(0, 2).toUpperCase(),
-      subline: `${s.trackingCode} · ${s.destinationWilaya}`,
-      categoryLabel: s.deliveryMode === 'StopDesk' ? 'Stop-Desk' : isAr ? 'منزلي' : 'Domicile',
-      statusVariant: s.status === 'Delivered' || s.status === 'Sorted' ? 'active' : 'warning',
-      statusLabel: localizeStatus(s.status, language),
-      metricPrimary: `${s.weightKg} kg`,
-      metricSecondary: resolveRecordBranch(s, branchesById, currentBranch, language).name,
-    }),
-    [isAr, language, branchesById, currentBranch]
+    (s: LogisticsShipment): KineticRowMeta => {
+      const branchInfo = resolveRecordBranch(s, branchesById, currentBranch, language);
+      const modeLabel =
+        s.deliveryMode === 'StopDesk'
+          ? 'Stop-Desk'
+          : isAr ? 'منزلي' : isEn ? 'Home' : 'Domicile';
+      return {
+        isPinned: pinnedIds.has(s.id),
+        avatarText: (s.recipientName || 'AW').slice(0, 2).toUpperCase(),
+        subline: `${s.trackingCode} · ${s.destinationWilaya}`,
+        categoryLabel: modeLabel,
+        statusVariant: s.status === 'Delivered' || s.status === 'Sorted' ? 'active' : 'warning',
+        statusLabel: localizeStatus(s.status, language),
+        metricPrimary: `${s.weightKg} kg`,
+        metricSecondary: branchInfo.name,
+        detailCol1: {
+          heading: isAr ? 'المستلم والوجهة' : isEn ? 'Recipient & Dest.' : 'Destinataire & Wilaya',
+          primaryText: s.recipientName,
+          secondaryText: `${s.destinationWilaya} · ${s.recipientPhone}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'الوزن والتسليم' : isEn ? 'Weight & Mode' : 'Poids & Remise',
+          primaryText: `${s.weightKg} kg`,
+          secondaryText: modeLabel,
+        },
+        detailCol3: {
+          heading: isAr ? 'الباركود والمركز' : isEn ? 'AWB & Hub' : 'Code AWB & Hub',
+          primaryText: s.trackingCode,
+          secondaryText: branchInfo.name,
+        },
+      };
+    },
+    [pinnedIds, isAr, isEn, language, branchesById, currentBranch]
   );
 
   const getScannerFanActions = useCallback(
@@ -394,6 +442,12 @@ export const LogisticsScannerView: React.FC = () => {
         onClick: () => handleScanCode(s.trackingCode),
       },
       {
+        id: 'pin',
+        label: pinnedIds.has(s.id) ? (isAr ? 'إلغاء' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className={`w-[15px] h-[15px] ${pinnedIds.has(s.id) ? 'fill-current' : ''}`} />,
+        onClick: () => handleTogglePin(s.id),
+      },
+      {
         id: 'barcode',
         label: 'Barcode',
         icon: <Printer className="w-[15px] h-[15px]" />,
@@ -404,7 +458,7 @@ export const LogisticsScannerView: React.FC = () => {
           ),
       },
     ],
-    [isAr, handleScanCode]
+    [isAr, handleScanCode, pinnedIds, handleTogglePin]
   );
 
   const getScannerDetailActions = useCallback(
@@ -425,6 +479,12 @@ export const LogisticsScannerView: React.FC = () => {
         onClick: () => handleScanCode(s.trackingCode),
       },
       {
+        id: 'pin',
+        label: pinnedIds.has(s.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className={`w-3.5 h-3.5 ${pinnedIds.has(s.id) ? 'fill-current' : ''}`} />,
+        onClick: () => handleTogglePin(s.id),
+      },
+      {
         id: 'share',
         label: isAr ? 'مشاركة' : 'Partager',
         icon: <Share2 className="w-3.5 h-3.5" />,
@@ -435,7 +495,7 @@ export const LogisticsScannerView: React.FC = () => {
           ),
       },
     ],
-    [isAr, handleScanCode]
+    [isAr, handleScanCode, pinnedIds, handleTogglePin]
   );
 
   const columns: ColumnDefinition<LogisticsShipment>[] = useMemo(
@@ -786,6 +846,8 @@ export const LogisticsScannerView: React.FC = () => {
               getRowMeta={getScannerRowMeta}
               getFanActions={getScannerFanActions}
               getDetailActions={getScannerDetailActions}
+              isPinned={(s) => pinnedIds.has(s.id)}
+              onTogglePin={(s) => handleTogglePin(s.id)}
               customActions={(s) => [
                 {
                   id: 'sort',

@@ -180,7 +180,7 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
   // Filtered & Sorted Staff
   const filteredStaff = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return facilityStaff.filter((s) => {
+    const list = facilityStaff.filter((s) => {
       if (statusFilter !== 'all') {
         if (statusFilter === 'on_leave') {
           if (s.status !== 'on_leave' && s.status !== 'vacation') return false;
@@ -211,6 +211,12 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
       }
       return true;
     });
+    if (pinnedStaffIds.size === 0) return list;
+    return [...list].sort((a, b) => {
+      const aPin = pinnedStaffIds.has(a.id) ? 1 : 0;
+      const bPin = pinnedStaffIds.has(b.id) ? 1 : 0;
+      return bPin - aPin;
+    });
   }, [
     facilityStaff,
     statusFilter,
@@ -220,6 +226,7 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     branchesById,
     currentBranch,
     language,
+    pinnedStaffIds,
   ]);
 
   // Aggregate Metrics for Header Pods

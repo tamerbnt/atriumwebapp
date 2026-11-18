@@ -678,6 +678,22 @@ export const PosFinanceView: React.FC = () => {
               branchName: branchInfo.name,
               branchCode: branchInfo.code,
               isPinned: pinnedExpenseIds.has(e.id),
+              detailCol1: {
+                heading: isAr ? 'المستفيد والمرجع' : isEn ? 'Payee & Ref' : 'Bénéficiaire & Réf',
+                primaryText: e.payee,
+                secondaryText: `${e.reference} · ${e.category}`,
+                tertiaryText: branchInfo.name,
+              },
+              detailCol2: {
+                heading: isAr ? 'طريقة الدفع والمسؤول' : isEn ? 'Method & Author' : 'Règlement & Caissier',
+                primaryText: e.paymentMethod === 'Cash' ? 'Espèces' : e.paymentMethod,
+                secondaryText: e.paidBy,
+              },
+              detailCol3: {
+                heading: isAr ? 'المبلغ المصروف' : isEn ? 'Amount' : 'Montant Décaissement',
+                primaryText: `-${formatMoney(e.amount)}`,
+                secondaryText: new Date(e.createdAt).toLocaleDateString(),
+              },
             };
           }}
           getFanActions={(e): KineticRowFanAction[] => [

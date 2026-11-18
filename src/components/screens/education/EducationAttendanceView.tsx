@@ -7,6 +7,7 @@ import {
   Plus,
   X,
   Eye,
+  Pin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { RollCallModal } from './RollCallModal';
@@ -371,10 +372,36 @@ export const EducationAttendanceView: React.FC = () => {
         statusLabel: localizeStatus(st.status, language),
         metricPrimary: `${rate}%`,
         metricSecondary: `${total} ${isAr ? 'جلسات' : 'séances'}`,
+        detailCol1: {
+          heading: isAr ? 'الطالب والمستوى' : isEn ? 'Student & Grade' : 'Apprenant & Niveau',
+          primaryText: st.fullName,
+          secondaryText: st.phone || st.email || '—',
+          tertiaryText: st.schoolGrade || 'Standard',
+        },
+        detailCol2: {
+          heading: isAr ? 'الحضور والمواظبة' : isEn ? 'Attendance Rate' : 'Assiduité & Séances',
+          primaryText: `${rate}% (${presents}/${total})`,
+          secondaryText: `${total} ${isAr ? 'حصة مسجلة' : 'séances suivies'}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الحالة الأكاديمية' : isEn ? 'Status & Guardian' : 'Statut & Tuteur',
+          primaryText: localizeStatus(st.status, language),
+          secondaryText: st.guardianName || undefined,
+        },
+        isPinned: pinnedStudentIds.has(st.id),
       };
     },
-    [cohortAttendance, isAr, language]
+    [cohortAttendance, pinnedStudentIds, isAr, isEn, language]
   );
+
+  const toggleStudentPin = useCallback((id: string) => {
+    setPinnedStudentIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
   const getStudentFanActions = useCallback(
     (st: EduStudent): KineticRowFanAction[] => [
@@ -403,8 +430,14 @@ export const EducationAttendanceView: React.FC = () => {
           setIsGradeModalOpen(true);
         },
       },
+      {
+        id: 'pin',
+        label: pinnedStudentIds.has(st.id) ? (isAr ? 'إلغاء التثبيت' : 'Détacher') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className="w-[15px] h-[15px]" />,
+        onClick: () => toggleStudentPin(st.id),
+      },
     ],
-    [isAr, isEn, t]
+    [isAr, isEn, t, pinnedStudentIds, toggleStudentPin]
   );
 
   const getStudentDetailActions = useCallback(
@@ -433,8 +466,14 @@ export const EducationAttendanceView: React.FC = () => {
           setIsGradeModalOpen(true);
         },
       },
+      {
+        id: 'pin',
+        label: pinnedStudentIds.has(st.id) ? (isAr ? 'إلغاء التثبيت' : 'Détacher') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className="w-3.5 h-3.5" />,
+        onClick: () => toggleStudentPin(st.id),
+      },
     ],
-    [isAr, isEn, t]
+    [isAr, isEn, t, pinnedStudentIds, toggleStudentPin]
   );
 
   const studentColumns: ColumnDefinition<EduStudent>[] = useMemo(
@@ -717,7 +756,7 @@ export const EducationAttendanceView: React.FC = () => {
           filterButtonRef={filterButtonRef}
           onToggleFilterModal={() => setIsFilterModalOpen((v) => !v)}
           viewMode={viewMode}
-          showViewToggle={activeTab === 'attendance'}
+          showViewToggle
           onViewModeChange={(m) => setViewMode(m === 'grid' ? 'grid' : 'list')}
           extraTrailingControls={
             <LiveSegmentedControl
@@ -791,92 +830,167 @@ export const EducationAttendanceView: React.FC = () => {
             onAddFirstItem={() => setIsRollCallOpen(true)}
           />
         ) : (
-          <div className="w-full overflow-x-auto">
-            <table className="w-full text-left rtl:text-right border-separate border-spacing-y-1.5 text-xs">
-              <thead>
-                <tr className="bg-transparent text-[11px] font-semibold text-black/70 dark:text-white/70 uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
-                  <th className="py-2.5 px-4">{t('edu_col_student')}</th>
-                  {assessmentTitles.map((title) => (
-                    <th key={title} className="py-2.5 px-4">
-                      {title}
-                    </th>
-                  ))}
-                  <th className="py-2.5 px-4">{t('edu_avg_weighted')}</th>
-                  <th className="py-2.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedStudents.map((st) => {
-                  const studentGrades = cohortGrades.filter((g) => g.studentId === st.id);
-                  const totalScore = studentGrades.reduce((acc, g) => acc + (g.score / g.maxScore) * 100, 0);
-                  const avgScore = studentGrades.length > 0 ? Math.round(totalScore / studentGrades.length) : 0;
-
-                  return (
-                    <tr
-                      key={st.id}
-                      className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
-                    >
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-black dark:text-white">{st.fullName}</div>
-                        <div className="text-[10px] text-black/55 dark:text-white/55">
-                          {st.schoolGrade || 'Standard'}
-                        </div>
-                      </td>
-
-                      {assessmentTitles.map((title) => {
-                        const grade = studentGrades.find((g) => g.assessmentTitle === title);
-                        return (
-                          <td key={title} className="py-3.5 px-4 tabular-nums">
-                            {grade ? (
-                              <span className="font-semibold text-black dark:text-white">
-                                {grade.score} / {grade.maxScore}
-                              </span>
-                            ) : (
-                              <span className="text-black/55 dark:text-white/55">—</span>
-                            )}
-                          </td>
-                        );
-                      })}
-
-                      <td className="py-3.5 px-4">
-                        {studentGrades.length > 0 ? (
-                          <span
-                            className={`font-bold tabular-nums text-xs ${
-                              avgScore >= 80
-                                ? 'text-emerald-600 dark:text-emerald-400'
-                                : avgScore >= 60
-                                ? 'text-amber-600 dark:text-amber-400'
-                                : 'text-rose-600 dark:text-rose-400'
-                            }`}
-                          >
-                            {avgScore}%
-                          </span>
-                        ) : (
-                          <span className="text-black/55 dark:text-white/55 italic">—</span>
-                        )}
-                      </td>
-
-                      <td className="py-3.5 px-4 text-right rtl:text-left">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setGradeForm((prev) => ({
-                              ...prev,
-                              studentId: st.id,
-                            }));
-                            setIsGradeModalOpen(true);
-                          }}
-                          className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white text-xs font-semibold transition-colors cursor-pointer"
-                        >
-                          {t('edu_btn_record_grade')}
-                        </button>
-                      </td>
-                    </tr>
+          <UniversalDataCollection<EduStudent>
+            hideToolbar
+            items={sortedStudents}
+            keyExtractor={(st) => st.id}
+            viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
+            isLoading={isSyncing || networkMode === 'force_skeleton'}
+            isOffline={networkMode === 'offline'}
+            isTimedOut={isSyncTimeout}
+            lastSyncedAt={lastSyncedAt}
+            onRetrySync={retryCloudSync}
+            sortBy={sortBy}
+            sortDirection={sortDir}
+            onSortChange={(key, dir) => {
+              setSortBy(key);
+              setSortDir(dir);
+            }}
+            openItemId={activeStudent?.id ?? null}
+            pinnedIds={pinnedStudentIds}
+            onPinToggle={(idOrItem) => {
+              const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
+              toggleStudentPin(id);
+            }}
+            selectedIds={selectedStudentIds}
+            onSelectionChange={setSelectedStudentIds}
+            onItemClick={(st, el) => {
+              setDrawerOpenerEl(el || null);
+              setSelectedStudent(st);
+              setInspectorTab('grades');
+            }}
+            onViewDetails={(st, el) => {
+              setDrawerOpenerEl(el || null);
+              setSelectedStudent(st);
+              setInspectorTab('grades');
+            }}
+            columns={[
+              {
+                key: 'student',
+                header: t('edu_col_student'),
+                width: '2.2*',
+                minWidth: '175px',
+                sortable: true,
+                renderCell: (st) => (
+                  <div>
+                    <div className="font-semibold text-xs text-black dark:text-white">{st.fullName}</div>
+                    <div className="text-[10px] text-black/55 dark:text-white/55">
+                      {st.schoolGrade || 'Standard'}
+                    </div>
+                  </div>
+                ),
+              },
+              ...assessmentTitles.map((title) => ({
+                key: `grade_${title}`,
+                header: title,
+                width: '1.2*',
+                renderCell: (st: EduStudent) => {
+                  const grade = cohortGrades.find(
+                    (g) => g.studentId === st.id && g.assessmentTitle === title
                   );
-                })}
-              </tbody>
-            </table>
-          </div>
+                  return grade ? (
+                    <span className="font-semibold text-xs tabular-nums text-black dark:text-white">
+                      {grade.score} / {grade.maxScore}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-black/55 dark:text-white/55">—</span>
+                  );
+                },
+              })),
+              {
+                key: 'avgScore',
+                header: t('edu_avg_weighted'),
+                width: '1.2*',
+                renderCell: (st) => {
+                  const stGrades = cohortGrades.filter((g) => g.studentId === st.id);
+                  const totalScore = stGrades.reduce((acc, g) => acc + (g.score / g.maxScore) * 100, 0);
+                  const avgScore = stGrades.length > 0 ? Math.round(totalScore / stGrades.length) : 0;
+                  return stGrades.length > 0 ? (
+                    <span
+                      className={`font-bold tabular-nums text-xs ${
+                        avgScore >= 80
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : avgScore >= 60
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-rose-600 dark:text-rose-400'
+                      }`}
+                    >
+                      {avgScore}%
+                    </span>
+                  ) : (
+                    <span className="text-black/55 dark:text-white/55 italic text-xs">—</span>
+                  );
+                },
+              },
+              {
+                key: 'actions',
+                header: t('edu_col_actions'),
+                width: '1.2*',
+                renderCell: (st) => (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setGradeForm((prev) => ({
+                        ...prev,
+                        studentId: st.id,
+                      }));
+                      setIsGradeModalOpen(true);
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    {t('edu_btn_record_grade')}
+                  </button>
+                ),
+              },
+            ]}
+            getRowMeta={(st): KineticRowMeta => {
+              const stGrades = cohortGrades.filter((g) => g.studentId === st.id);
+              const totalScore = stGrades.reduce((acc, g) => acc + (g.score / g.maxScore) * 100, 0);
+              const avgScore = stGrades.length > 0 ? Math.round(totalScore / stGrades.length) : 0;
+              const summaryScores = stGrades
+                .slice(0, 3)
+                .map((g) => `${g.assessmentTitle}: ${g.score}/${g.maxScore}`)
+                .join(' · ');
+              return {
+                avatarText: st.fullName.slice(0, 2).toUpperCase(),
+                subline: st.schoolGrade || 'Standard',
+                categoryLabel: `${stGrades.length} ${isAr ? 'تقييمات' : 'notes'}`,
+                statusVariant: stGrades.length === 0 ? 'warning' : avgScore >= 80 ? 'active' : avgScore >= 60 ? 'warning' : 'blocked',
+                statusLabel: stGrades.length > 0 ? `${avgScore}%` : '—',
+                metricPrimary: stGrades.length > 0 ? `${avgScore}%` : '—',
+                metricSecondary: `${stGrades.length} évaluations`,
+                isPinned: pinnedStudentIds.has(st.id),
+                detailCol1: {
+                  heading: t('edu_col_student'),
+                  primaryText: st.fullName,
+                  secondaryText: st.schoolGrade || 'Standard',
+                },
+                detailCol2: {
+                  heading: t('edu_tab_gradebook'),
+                  primaryText: summaryScores || 'Aucune note enregistrée',
+                },
+                detailCol3: {
+                  heading: t('edu_avg_weighted'),
+                  primaryText: stGrades.length > 0 ? `${avgScore}%` : '—',
+                  secondaryText: localizeStatus(st.status, language),
+                },
+              };
+            }}
+            getFanActions={getStudentFanActions}
+            getDetailActions={getStudentDetailActions}
+            emptyTitle="No learners in cohort"
+            emptyDescription="No student records match the search criteria for this cohort"
+            primaryActionLabel={t('edu_btn_record_grade')}
+            onAddFirstItem={() => {
+              setGradeForm((prev) => ({
+                ...prev,
+                studentId: cohortStudents[0]?.id || '',
+              }));
+              setIsGradeModalOpen(true);
+            }}
+          />
         )}
       </ScreenPod>
 

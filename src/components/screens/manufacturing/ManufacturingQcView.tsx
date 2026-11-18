@@ -6,6 +6,8 @@ import {
   Check,
   X,
   MapPin,
+  Eye,
+  Pin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -24,6 +26,9 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -45,8 +50,28 @@ export const ManufacturingQcView: React.FC<any> = () => {
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
   const [sortBy, setSortBy] = useState<string>('orderNumber');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const handleTogglePin = useCallback(
+    (id: string) => {
+      setPinnedIds((prev) => {
+        const next = new Set(prev);
+        const nowPinned = !next.has(id);
+        if (nowPinned) next.add(id);
+        else next.delete(id);
+        showToast(
+          nowPinned
+            ? isAr ? 'تم تثبيت الدفعة بالأعلى' : 'Lot épinglé en tête de contrôle'
+            : isAr ? 'تم إلغاء تثبيت الدفعة' : 'Lot désépinglé',
+          'info'
+        );
+        return next;
+      });
+    },
+    [isAr]
+  );
 
   const [selectedOrder, setSelectedOrder] = useState<ManufacturingOrder | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -119,6 +144,10 @@ export const ManufacturingQcView: React.FC<any> = () => {
   const sortedOrders = useMemo(() => {
     const list = [...filteredOrders];
     list.sort((a, b) => {
+      const aPinned = pinnedIds.has(a.id);
+      const bPinned = pinnedIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
       let cmp = 0;
       if (sortBy === 'orderNumber') cmp = a.orderNumber.localeCompare(b.orderNumber);
       else if (sortBy === 'qty') cmp = (a.actualQuantityProduced || a.targetQuantity) - (b.actualQuantityProduced || b.targetQuantity);
@@ -134,7 +163,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return list;
-  }, [filteredOrders, sortBy, sortDir, branchesById, currentBranch, language]);
+  }, [filteredOrders, pinnedIds, sortBy, sortDir, branchesById, currentBranch, language]);
 
   const handleReleaseLot = useCallback(
     (order: ManufacturingOrder) => {
@@ -427,6 +456,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
           data={sortedOrders}
           keyExtractor={(o) => o.id}
           defaultViewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -439,6 +469,120 @@ export const ManufacturingQcView: React.FC<any> = () => {
           openItemId={activeOrder?.id}
           onItemClick={handleSelectOrder}
           onViewDetails={handleSelectOrder}
+          isPinned={(o) => pinnedIds.has(o.id)}
+          onTogglePin={(o) => handleTogglePin(o.id)}
+          getRowMeta={(o): Partial<KineticRowData> => {
+            const bInfo = resolveRecordBranch(o, branchesById, currentBranch, language);
+            const qty = o.actualQuantityProduced || o.targetQuantity || 1;
+            const unitCost = Math.round(o.totalCostDzd / qty);
+            const isReleased = o.status === 'Completed';
+            return {
+              isPinned: pinnedIds.has(o.id),
+              title: o.productName,
+              subline: `${o.orderNumber} · Lot ${o.batchLotNumber || 'STD'}`,
+              avatarText: 'CQ',
+              avatarColor: isReleased ? '#059669' : '#D97706',
+              categoryLabel: `Lot ${o.batchLotNumber || 'STD'}`,
+              statusLabel: isReleased ? (isAr ? 'محرر مطابق' : 'Libéré ✓') : isAr ? 'قيد الفحص' : 'En contrôle',
+              statusVariant: isReleased ? 'active' : 'warning',
+              metricPrimary: formatMoney(unitCost, language),
+              metricSecondary: `${qty} pcs · 98.8% AQL`,
+              branchName: bInfo.name,
+              branchCode: bInfo.code,
+              detailCol1: {
+                heading: isAr ? 'الدفعة والمنتج' : isEn ? 'Batch & Product' : 'Lot & Produit',
+                primaryText: o.productName,
+                secondaryText: `${o.orderNumber} · ${o.batchLotNumber || 'LOT-2026-STD'}`,
+                tertiaryText: bInfo.name,
+              },
+              detailCol2: {
+                heading: isAr ? 'معايير الفحص (AQL)' : isEn ? 'QC Inspection' : 'Contrôle Qualité',
+                primaryText: isReleased ? (isAr ? 'مطابق ISO 9001' : 'Conforme ISO 9001') : isAr ? 'فحص مخبري جارٍ' : 'En quarantaine AQL',
+                secondaryText: `${qty} ${isAr ? 'وحدة مفحوصة' : 'unités inspectées'}`,
+              },
+              detailCol3: {
+                heading: isAr ? 'تكلفة الوحدة' : isEn ? 'Unit Cost' : 'Coût Unitaire',
+                primaryText: formatMoney(unitCost, language),
+                secondaryText: `${isAr ? 'الإجمالي:' : 'Lot:'} ${formatMoney(o.totalCostDzd, language)}`,
+              },
+            };
+          }}
+          getFanActions={(o): KineticRowFanAction[] => [
+            {
+              id: 'release',
+              label: isAr ? 'تحرير' : 'Libérer',
+              icon: <Check className="w-[15px] h-[15px]" />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleReleaseLot(o);
+              },
+            },
+            {
+              id: 'cert',
+              label: isAr ? 'شهادة' : 'Certificat',
+              icon: <Printer className="w-[15px] h-[15px]" />,
+              onClick: (e) => {
+                e.stopPropagation();
+                setOrderForCertificate(o);
+              },
+            },
+            {
+              id: 'inspect',
+              label: isAr ? 'فحص' : 'Détails',
+              icon: <Eye className="w-[15px] h-[15px]" />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleSelectOrder(o, e.currentTarget);
+              },
+            },
+            {
+              id: 'pin',
+              label: pinnedIds.has(o.id) ? (isAr ? 'إلغاء' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+              icon: <Pin className={`w-[15px] h-[15px] ${pinnedIds.has(o.id) ? 'fill-current' : ''}`} />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleTogglePin(o.id);
+              },
+            },
+          ]}
+          getDetailActions={(o): KineticDetailAction[] => [
+            {
+              id: 'inspect',
+              label: isAr ? 'فتح الفحص' : 'Inspecter',
+              icon: <Eye className="w-3.5 h-3.5" />,
+              onClick: () => handleSelectOrder(o),
+            },
+            {
+              id: 'release',
+              label: isAr ? 'تحرير الدفعة' : 'Libérer Lot',
+              icon: <Check className="w-3.5 h-3.5" />,
+              onClick: () => handleReleaseLot(o),
+            },
+            {
+              id: 'cert',
+              label: isAr ? 'شهادة المطابقة' : 'Certificat ISO',
+              icon: <Printer className="w-3.5 h-3.5" />,
+              onClick: () => setOrderForCertificate(o),
+            },
+            {
+              id: 'pin',
+              label: pinnedIds.has(o.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+              icon: <Pin className={`w-3.5 h-3.5 ${pinnedIds.has(o.id) ? 'fill-current' : ''}`} />,
+              onClick: () => handleTogglePin(o.id),
+            },
+            {
+              id: 'scrap',
+              label: isAr ? 'تسجيل تالف' : 'Rebut',
+              icon: <AlertCircle className="w-3.5 h-3.5 text-[#c0283d]" />,
+              onClick: () =>
+                showToast(
+                  isAr
+                    ? `تم تسجيل تقرير عدم مطابقة للدفعة ${o.orderNumber}`
+                    : `Fiche de non-conformité ouverte pour le lot ${o.orderNumber}`,
+                  'info'
+                ),
+            },
+          ]}
           customActions={(o) => [
             {
               id: 'release',

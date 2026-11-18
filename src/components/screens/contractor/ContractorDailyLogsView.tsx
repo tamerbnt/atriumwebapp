@@ -17,6 +17,8 @@ import {
   AlertOctagon,
   Minus,
   MapPin,
+  Pin,
+  Eye,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -118,6 +120,10 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedLogIds, setPinnedLogIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedEquipmentIds, setPinnedEquipmentIds] = useState<Set<string>>(() => new Set<string>());
+  const [eqSearchQuery, setEqSearchQuery] = useState('');
+  const [eqViewMode, setEqViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
   const [sortBy, setSortBy] = useState<string>('date');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
@@ -248,9 +254,39 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
     });
   }, [projectLogs, weatherFilter, branchFilter, searchQuery, branchesById, currentBranch, language]);
 
+  const handleTogglePinLog = useCallback(
+    (id: string) => {
+      setPinnedLogIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+      showToast(isAr ? 'تم تحديث التثبيت' : 'Épinglage mis à jour', 'info');
+    },
+    [isAr]
+  );
+
+  const handleTogglePinEquipment = useCallback(
+    (id: string) => {
+      setPinnedEquipmentIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+      showToast(isAr ? 'تم تحديث التثبيت' : 'Épinglage engin mis à jour', 'info');
+    },
+    [isAr]
+  );
+
   const sortedLogs = useMemo(() => {
     const list = [...filteredLogs];
     list.sort((a, b) => {
+      const aPinned = pinnedLogIds.has(a.id);
+      const bPinned = pinnedLogIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
       if (sortBy === 'date') {
         const cmp = a.date.localeCompare(b.date);
         return sortDir === 'asc' ? cmp : -cmp;
@@ -268,7 +304,52 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
       return 0;
     });
     return list;
-  }, [filteredLogs, sortBy, sortDir, branchesById, currentBranch, language]);
+  }, [filteredLogs, pinnedLogIds, sortBy, sortDir, branchesById, currentBranch, language]);
+
+  const sortedEquipmentLogs = useMemo(() => {
+    const q = eqSearchQuery.trim().toLowerCase();
+    const list = projectEquipmentLogs.filter((log) => {
+      if (!q) return true;
+      return (
+        log.equipmentName.toLowerCase().includes(q) ||
+        log.matriculeNumber.toLowerCase().includes(q) ||
+        log.operatorName.toLowerCase().includes(q) ||
+        log.date.includes(q)
+      );
+    });
+    list.sort((a, b) => {
+      const aPinned = pinnedEquipmentIds.has(a.id);
+      const bPinned = pinnedEquipmentIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return b.date.localeCompare(a.date);
+    });
+    return list;
+  }, [projectEquipmentLogs, eqSearchQuery, pinnedEquipmentIds]);
+
+  const handleExportEquipment = useCallback(() => {
+    const headers = ['Date', 'Engin', 'Matricule', 'Opérateur', 'Heures (h)', 'Gasoil (L)', 'Ratio Réel (L/h)', 'Norme (L/h)', 'Statut'];
+    const rows = sortedEquipmentLogs.map((log) => {
+      const anomaly = calculateFuelConsumptionAnomaly(
+        log.operatingHours,
+        log.fuelAddedLiters,
+        log.theoreticalHourlyBurnRate
+      );
+      return [
+        log.date,
+        log.equipmentName,
+        log.matriculeNumber,
+        log.operatorName,
+        log.operatingHours,
+        log.fuelAddedLiters,
+        anomaly.actualRateLph,
+        log.theoreticalHourlyBurnRate,
+        anomaly.isAnomaly ? `Surconsommation (+${anomaly.variancePercent}%)` : 'Conforme',
+      ];
+    });
+    downloadCsvSafe(`parc_engins_gasoil_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+    showToast(isAr ? 'تم تصدير سجل العتاد' : 'Export CSV parc engins généré', 'info');
+  }, [sortedEquipmentLogs, isAr]);
 
   const activeLog = useMemo(() => {
     if (!selectedLog) return null;
@@ -505,9 +586,26 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         metricSecondary: log.equipmentOnSite?.length ? `${log.equipmentOnSite.length} engins` : br.name,
         branchName: br.name,
         branchCode: br.code,
+        isPinned: pinnedLogIds.has(log.id),
+        detailCol1: {
+          heading: isAr ? 'التاريخ والطقس' : isEn ? 'Date & Weather' : 'Date & Météo',
+          primaryText: log.date,
+          secondaryText: log.weather,
+          tertiaryText: br.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'الطاقم والمعدات' : isEn ? 'Crew & Equipment' : 'Effectif & Engins',
+          primaryText: `${log.headcountWorkers} ${isAr ? 'عامل' : 'ouvriers'}`,
+          secondaryText: log.equipmentOnSite?.length ? `${log.equipmentOnSite.length} engins sur site` : 'Aucun engin listé',
+        },
+        detailCol3: {
+          heading: isAr ? 'الإشراف والأشغال' : isEn ? 'Supervision & Works' : 'Visa & Travaux',
+          primaryText: log.supervisorSignature || 'Chef chantier',
+          secondaryText: log.tasksAccomplished || log.worksSummary || undefined,
+        },
       };
     },
-    [branchesById, currentBranch, language, isAr]
+    [branchesById, currentBranch, language, isAr, isEn, pinnedLogIds]
   );
 
   const getFanActions = useCallback(
@@ -532,8 +630,14 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
             'success'
           ),
       },
+      {
+        id: 'pin',
+        label: pinnedLogIds.has(log.id) ? (isAr ? 'إلغاء التثبيت' : 'Détacher') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin size={14} />,
+        onClick: () => handleTogglePinLog(log.id),
+      },
     ],
-    [isAr]
+    [isAr, pinnedLogIds, handleTogglePinLog]
   );
 
   const getDetailActions = useCallback(
@@ -567,8 +671,14 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
           );
         },
       },
+      {
+        id: 'pin',
+        label: pinnedLogIds.has(log.id) ? (isAr ? 'إلغاء التثبيت' : 'Détacher') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin size={14} />,
+        onClick: () => handleTogglePinLog(log.id),
+      },
     ],
-    [isAr, addDailyLog]
+    [isAr, addDailyLog, pinnedLogIds, handleTogglePinLog]
   );
 
   const columns: ColumnDefinition<ContractorDailyLog>[] = useMemo(
@@ -842,6 +952,8 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
             }}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
+            isPinned={(log) => pinnedLogIds.has(log.id)}
+            onTogglePin={(log) => handleTogglePinLog(log.id)}
             openItemId={activeLog?.id || null}
             onItemClick={(log, el) => {
               if (el) setDrawerOpenerEl(el);
@@ -1033,101 +1145,213 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
       )}
 
       {activeSection === 'equipment' && (
-        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
-              {isAr
+        <ScreenPod>
+          <ScreenCollectionToolbar
+            title={
+              isAr
                 ? 'مراقبة العتاد الثقيل واستهلاك الوقود'
-                : 'Gestion du Parc Engins & Rapprochement Gasoil'}
-            </h2>
-            <AtriumButton
-              variant="primary"
-              onClick={() => setIsEquipmentModalOpen(true)}
-              icon={<Plus size={14} />}
-            >
-              {isAr ? 'تسجيل ساعات ووقود' : 'Nouveau Relevé'}
-            </AtriumButton>
-          </div>
-          <div className="overflow-x-auto w-full">
-            <table className="w-full text-left text-xs border-separate border-spacing-y-1.5">
-              <thead className="bg-transparent text-black/55 dark:text-white/55 text-[11px]">
-                <tr>
-                  <th className="py-2.5 px-4 font-semibold">Date</th>
-                  <th className="py-2.5 px-4 font-semibold">Engin & Matricule</th>
-                  <th className="py-2.5 px-4 font-semibold">Opérateur</th>
-                  <th className="py-2.5 px-4 font-semibold text-right">Heures Travail</th>
-                  <th className="py-2.5 px-4 font-semibold text-right">Gasoil Ajouté</th>
-                  <th className="py-2.5 px-4 font-semibold text-right">Ratio Réel</th>
-                  <th className="py-2.5 px-4 font-semibold text-right">Ratio Constructeur</th>
-                  <th className="py-2.5 px-4 font-semibold">Statut Contrôle</th>
-                </tr>
-              </thead>
-              <tbody>
-                {projectEquipmentLogs.map((log) => {
+                : 'Gestion du Parc Engins & Rapprochement Gasoil'
+            }
+            liveRegionText={`${sortedEquipmentLogs.length} ${isAr ? 'آلية' : 'relevés'}`}
+            language={language}
+            searchQuery={eqSearchQuery}
+            onSearchChange={setEqSearchQuery}
+            searchPlaceholder={
+              isAr ? 'بحث بالآلية، الترقيم أو السائق...' : 'Rechercher engin, matricule, opérateur...'
+            }
+            viewMode={eqViewMode}
+            onViewModeChange={setEqViewMode}
+            showViewToggle
+            onExport={handleExportEquipment}
+            extraTrailingControls={
+              <AtriumButton
+                variant="primary"
+                size="sm"
+                onClick={() => setIsEquipmentModalOpen(true)}
+                icon={<Plus size={14} />}
+              >
+                {isAr ? 'تسجيل ساعات ووقود' : 'Nouveau Relevé'}
+              </AtriumButton>
+            }
+            onResetAllFilters={() => setEqSearchQuery('')}
+          />
+
+          <UniversalDataCollection
+            hideToolbar
+            items={sortedEquipmentLogs}
+            keyExtractor={(log) => log.id}
+            viewMode={eqViewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={eqViewMode === 'grid' ? 'grid' : 'list'}
+            isPinned={(log) => pinnedEquipmentIds.has(log.id)}
+            onTogglePin={(log) => handleTogglePinEquipment(log.id)}
+            columns={[
+              {
+                key: 'date',
+                header: isAr ? 'التاريخ' : 'Date',
+                width: '1.1*',
+                renderCell: (log) => (
+                  <span className="font-mono font-semibold text-xs text-black dark:text-white">
+                    {log.date}
+                  </span>
+                ),
+              },
+              {
+                key: 'equipmentName',
+                header: isAr ? 'الآلية والترقيم' : 'Engin & Matricule',
+                width: '2.2*',
+                renderCell: (log) => (
+                  <div className="min-w-0">
+                    <div className="font-bold text-xs text-black dark:text-white truncate">
+                      {log.equipmentName}
+                    </div>
+                    <div className="text-[10px] text-black/55 dark:text-white/55 font-mono truncate">
+                      {log.matriculeNumber}
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'operatorName',
+                header: isAr ? 'السائق' : 'Opérateur',
+                width: '1.3*',
+                renderCell: (log) => (
+                  <span className="text-xs text-black/75 dark:text-white/75 truncate">
+                    {log.operatorName}
+                  </span>
+                ),
+              },
+              {
+                key: 'operatingHours',
+                header: isAr ? 'الساعات / الوقود' : 'Heures & Gasoil',
+                width: '1.4*',
+                renderCell: (log) => (
+                  <div className="font-mono text-xs">
+                    <span className="font-bold text-black dark:text-white">{log.operatingHours} h</span>
+                    <span className="text-black/40 dark:text-white/40 mx-1">·</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">{log.fuelAddedLiters} L</span>
+                  </div>
+                ),
+              },
+              {
+                key: 'ratio',
+                header: isAr ? 'النسبة والمطابقة' : 'Ratio Réel vs Norme',
+                width: '1.8*',
+                renderCell: (log) => {
                   const anomaly = calculateFuelConsumptionAnomaly(
                     log.operatingHours,
                     log.fuelAddedLiters,
                     log.theoreticalHourlyBurnRate
                   );
                   return (
-                    <tr
-                      key={log.id}
-                      className="bg-white dark:bg-neutral-850 rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs hover:bg-neutral-50/90 dark:hover:bg-neutral-800/80 transition-colors"
-                    >
-                      <td className="py-3 px-4 font-mono font-semibold text-black dark:text-white">
-                        {log.date}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="font-bold text-black dark:text-white">
-                          {log.equipmentName}
-                        </div>
-                        <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
-                          {log.matriculeNumber}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-black/70 dark:text-white/75">
-                        {log.operatorName}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-black dark:text-white">
-                        {log.operatingHours} h
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-amber-600 dark:text-amber-400">
-                        {log.fuelAddedLiters} L
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold">
-                        <span
-                          className={
-                            anomaly.isAnomaly
-                              ? 'text-rose-600 dark:text-rose-400'
-                              : 'text-black dark:text-white'
-                          }
-                        >
-                          {anomaly.actualRateLph} L/h
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono text-black/55 dark:text-white/55">
-                        {log.theoreticalHourlyBurnRate} L/h
-                      </td>
-                      <td className="py-3 px-4">
-                        {anomaly.isAnomaly ? (
-                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-[10px] font-bold w-fit">
-                            <AlertTriangle size={12} className="shrink-0" />
-                            <span>Surconsommation (+{anomaly.variancePercent}%)</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold w-fit">
-                            <CheckCircle2 size={12} className="shrink-0" />
-                            <span>Conforme</span>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`font-mono font-bold text-xs ${
+                          anomaly.isAnomaly ? 'text-rose-600 dark:text-rose-400' : 'text-black dark:text-white'
+                        }`}
+                      >
+                        {anomaly.actualRateLph} / {log.theoreticalHourlyBurnRate} L/h
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          anomaly.isAnomaly
+                            ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300'
+                            : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                        }`}
+                      >
+                        {anomaly.isAnomaly ? `+${anomaly.variancePercent}%` : 'Conforme'}
+                      </span>
+                    </div>
                   );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                },
+              },
+            ]}
+            getRowMeta={(log): Partial<KineticRowData> => {
+              const anomaly = calculateFuelConsumptionAnomaly(
+                log.operatingHours,
+                log.fuelAddedLiters,
+                log.theoreticalHourlyBurnRate
+              );
+              const br = resolveRecordBranch(log, branchesById, currentBranch, language);
+              return {
+                title: log.equipmentName,
+                subline: `${log.matriculeNumber} · ${log.date}`,
+                avatarText: 'EQ',
+                categoryLabel: log.equipmentCategory || 'Engin',
+                statusLabel: anomaly.isAnomaly
+                  ? `Surconsommation (+${anomaly.variancePercent}%)`
+                  : 'Conforme',
+                statusVariant: anomaly.isAnomaly ? 'blocked' : 'active',
+                metricPrimary: `${log.fuelAddedLiters} L`,
+                metricSecondary: `${log.operatingHours} h (${anomaly.actualRateLph} L/h)`,
+                branchName: br.name,
+                branchCode: br.code,
+                isPinned: pinnedEquipmentIds.has(log.id),
+                detailCol1: {
+                  heading: isAr ? 'الآلية والترقيم' : 'Engin & Matricule',
+                  primaryText: `${log.equipmentName} (${log.matriculeNumber})`,
+                  secondaryText: `${isAr ? 'السائق' : 'Opérateur'}: ${log.operatorName}`,
+                },
+                detailCol2: {
+                  heading: isAr ? 'الساعات والوقود' : 'Heures & Gasoil',
+                  primaryText: `${log.operatingHours} h · ${log.fuelAddedLiters} L`,
+                  secondaryText: log.date,
+                },
+                detailCol3: {
+                  heading: isAr ? 'المقارنة التقنية' : 'Ratio L/h & Contrôle',
+                  primaryText: `${anomaly.actualRateLph} L/h vs ${log.theoreticalHourlyBurnRate} L/h`,
+                  secondaryText: anomaly.isAnomaly ? `Écart +${anomaly.variancePercent}%` : 'Norme respectée',
+                },
+              };
+            }}
+            getFanActions={(log): KineticRowFanAction[] => {
+              const anomaly = calculateFuelConsumptionAnomaly(
+                log.operatingHours,
+                log.fuelAddedLiters,
+                log.theoreticalHourlyBurnRate
+              );
+              return [
+                {
+                  id: 'audit-fuel',
+                  label: isAr ? 'فحص' : 'Contrôle',
+                  icon: <Eye size={14} />,
+                  onClick: () =>
+                    showToast(
+                      anomaly.isAnomaly
+                        ? `Alerte gasoil ${log.matriculeNumber}: +${anomaly.variancePercent}% vs norme`
+                        : `${log.matriculeNumber}: ratio ${anomaly.actualRateLph} L/h conforme`,
+                      anomaly.isAnomaly ? 'warning' : 'success'
+                    ),
+                },
+                {
+                  id: 'pin',
+                  label: pinnedEquipmentIds.has(log.id) ? 'Détacher' : 'Épingler',
+                  icon: <Pin size={14} />,
+                  onClick: () => handleTogglePinEquipment(log.id),
+                },
+              ];
+            }}
+            getDetailActions={(log): KineticDetailAction[] => [
+              {
+                id: 'new-log',
+                label: isAr ? 'إضافة' : 'Nouveau Relevé',
+                icon: <Plus size={14} />,
+                onClick: () => setIsEquipmentModalOpen(true),
+              },
+              {
+                id: 'pin',
+                label: pinnedEquipmentIds.has(log.id) ? 'Détacher' : 'Épingler',
+                icon: <Pin size={14} />,
+                onClick: () => handleTogglePinEquipment(log.id),
+              },
+            ]}
+            emptyTitle={isAr ? 'لا توجد سجلات للآليات' : 'Aucun relevé engin'}
+            emptyDescription={isAr ? 'أضف أول سجل ساعات ووقود' : 'Enregistrez le premier relevé horaire & gasoil'}
+            primaryActionLabel={isAr ? 'تسجيل ساعات ووقود' : 'Nouveau Relevé'}
+            onAddFirstItem={() => setIsEquipmentModalOpen(true)}
+            onResetFilters={() => setEqSearchQuery('')}
+            hasActiveFilters={eqSearchQuery.trim().length > 0}
+          />
+        </ScreenPod>
       )}
 
       <KineticFilterModal

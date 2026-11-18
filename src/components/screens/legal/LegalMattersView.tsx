@@ -445,6 +445,7 @@ export const LegalMattersView: React.FC<any> = () => {
   const getDeedRowMeta = useCallback(
     (d: NotaryDeed): KineticRowMeta => {
       const isPublished = d.status === 'publie_conservation';
+      const branchInfo = resolveRecordBranch(d, branchesById, currentBranch, language);
       return {
         avatarText: d.repertoireNumber.slice(-2).toUpperCase(),
         subline: `${d.parties.vendorName} ➔ ${d.parties.purchaserName}`,
@@ -454,12 +455,29 @@ export const LegalMattersView: React.FC<any> = () => {
           ? `Publié (${d.conservationVolume || 'Vol.'})`
           : isAr
           ? 'في انتظار النشر'
+          : isEn
+          ? 'Pending'
           : 'En attente',
         metricPrimary: formatMoney(d.transactionValueDzd, language),
         metricSecondary: `HT: ${formatMoney(d.financials.honorairesHtDzd, language)}`,
+        detailCol1: {
+          heading: isAr ? 'الأطراف الموقعة' : isEn ? 'Parties' : 'Parties Contractantes',
+          primaryText: `${d.parties.vendorName} ➔ ${d.parties.purchaserName}`,
+          secondaryText: `NIN: ${d.parties.purchaserNin}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'القيمة والتعريفة' : isEn ? 'Value & Fees' : 'Valeur & Honoraires',
+          primaryText: formatMoney(d.transactionValueDzd, language),
+          secondaryText: `HT: ${formatMoney(d.financials.honorairesHtDzd, language)}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الفهرس والفرع' : isEn ? 'Repertoire & Branch' : 'Répertoire & Branche',
+          primaryText: d.repertoireNumber,
+          secondaryText: branchInfo.name,
+        },
       };
     },
-    [isAr, language]
+    [branchesById, currentBranch, isAr, isEn, language]
   );
 
   const getDeedFanActions = useCallback(
@@ -534,6 +552,7 @@ export const LegalMattersView: React.FC<any> = () => {
   const getMatterRowMeta = useCallback(
     (m: LegalMatter): KineticRowMeta => {
       const isActive = m.status === 'Active';
+      const branchInfo = resolveRecordBranch(m, branchesById, currentBranch, language);
       return {
         avatarText: (m.clientName || 'LG').slice(0, 2).toUpperCase(),
         subline: `${m.matterNumber} · ${m.clientName}`,
@@ -543,17 +562,38 @@ export const LegalMattersView: React.FC<any> = () => {
           m.status === 'Active'
             ? isAr
               ? 'جارية'
+              : isEn
+              ? 'Active'
               : 'Actif'
             : m.status === 'PendingHearing'
             ? isAr
               ? 'جلسة قادمة'
+              : isEn
+              ? 'Hearing'
               : 'Audience'
             : m.status,
         metricPrimary: formatMoney(m.retainerAmountDzd, language),
         metricSecondary: `CARPA: ${formatMoney(m.trustEscrowBalanceDzd || 0, language)}`,
+        detailCol1: {
+          heading: isAr ? 'الموكل والخصم' : isEn ? 'Client & Adverse' : 'Client & Partie Adverse',
+          primaryText: isAr && m.clientNameAr ? m.clientNameAr : m.clientName,
+          secondaryText: `c/ ${m.adversePartyName || 'N/A'}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'المحكمة والجلسة' : isEn ? 'Court & Hearing' : 'Juridiction & Audience',
+          primaryText: m.courtJurisdiction || '—',
+          secondaryText: m.nextHearingDate
+            ? `${isAr ? 'جلسة:' : isEn ? 'Hearing:' : 'Audience :'} ${m.nextHearingDate}`
+            : m.category,
+        },
+        detailCol3: {
+          heading: isAr ? 'الأتعاب والفرع' : isEn ? 'Fees & Branch' : 'Honoraires & Branche',
+          primaryText: formatMoney(m.retainerAmountDzd, language),
+          secondaryText: `CARPA ${formatMoney(m.trustEscrowBalanceDzd || 0, language)} · ${branchInfo.name}`,
+        },
       };
     },
-    [isAr, language]
+    [branchesById, currentBranch, isAr, isEn, language]
   );
 
   const getMatterFanActions = useCallback(

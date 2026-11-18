@@ -342,8 +342,29 @@ export const EducationFinanceView: React.FC = () => {
           : t('edu_tuition_partial'),
       metricPrimary: formatMoney(enr.paidAmount),
       metricSecondary: enr.balanceDue > 0 ? `${formatMoney(enr.balanceDue)} dû` : formatMoney(enr.agreedTuition),
+      detailCol1: {
+        heading: isAr ? 'الطالب والفوج' : isEn ? 'Student & Cohort' : 'Apprenant & Cohorte',
+        primaryText: enr.studentName,
+        secondaryText: enr.cohortName,
+        tertiaryText: `ID: ${enr.studentId}`,
+      },
+      detailCol2: {
+        heading: isAr ? 'الرسوم والمدفوع' : isEn ? 'Tuition & Paid' : 'Scolarité & Encaissé',
+        primaryText: `${formatMoney(enr.paidAmount)} / ${formatMoney(enr.agreedTuition)}`,
+        secondaryText: `${enr.installments?.length || 1} ${isAr ? 'أقساط' : 'tranches'}`,
+      },
+      detailCol3: {
+        heading: isAr ? 'المتبقي والحالة' : isEn ? 'Balance Due' : 'Reste & Statut',
+        primaryText: enr.balanceDue > 0 ? formatMoney(enr.balanceDue) : (isAr ? 'مسدد بالكامل' : 'Soldé'),
+        secondaryText:
+          enr.paymentStatus === 'Paid'
+            ? t('edu_tuition_paid')
+            : enr.paymentStatus === 'Overdue'
+            ? t('edu_tuition_overdue')
+            : t('edu_tuition_partial'),
+      },
     }),
-    [isAr, t]
+    [isAr, isEn, t]
   );
 
   const getEnrollmentFanActions = useCallback(

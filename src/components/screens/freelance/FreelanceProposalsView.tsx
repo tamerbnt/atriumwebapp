@@ -336,34 +336,52 @@ export const FreelanceProposalsView: React.FC = () => {
   );
 
   const getProposalRowMeta = useCallback(
-    (proposal: FreelanceProposal): KineticRowMeta => ({
-      avatarText: proposal.clientName.slice(0, 2).toUpperCase(),
-      subline: `${proposal.clientName}${proposal.clientCompany ? ` · ${proposal.clientCompany}` : ''}`,
-      categoryLabel: proposal.pricingModel,
-      statusVariant:
-        proposal.status === 'Accepted'
-          ? 'active'
-          : proposal.status === 'Declined'
-          ? 'blocked'
-          : 'warning',
-      statusLabel:
-        proposal.status === 'Accepted'
-          ? isAr
-            ? 'موقّع ونشط'
+    (proposal: FreelanceProposal): KineticRowMeta => {
+      const branchInfo = resolveRecordBranch(proposal, branchesById, currentBranch, language);
+      return {
+        avatarText: proposal.clientName.slice(0, 2).toUpperCase(),
+        subline: `${proposal.clientName}${proposal.clientCompany ? ` · ${proposal.clientCompany}` : ''}`,
+        categoryLabel: proposal.pricingModel,
+        statusVariant:
+          proposal.status === 'Accepted'
+            ? 'active'
+            : proposal.status === 'Declined'
+            ? 'blocked'
+            : 'warning',
+        statusLabel:
+          proposal.status === 'Accepted'
+            ? isAr
+              ? 'موقّع ونشط'
+              : isFr
+              ? 'Signé & Actif'
+              : 'Signed & Active'
+            : proposal.status === 'Declined'
+            ? t('free_prop_status_rejected', language)
+            : isAr
+            ? 'بانتظار المراجعة'
             : isFr
-            ? 'Signé & Actif'
-            : 'Signed & Active'
-          : proposal.status === 'Declined'
-          ? t('free_prop_status_rejected', language)
-          : isAr
-          ? 'بانتظار المراجعة'
-          : isFr
-          ? 'En attente'
-          : 'Pending',
-      metricPrimary: formatCurrencyAmount(proposal.proposedBudget, proposal.currency),
-      metricSecondary: `${proposal.estimatedTimelineWeeks}w · ${proposal.validUntil}`,
-    }),
-    [isAr, isFr, language, t]
+            ? 'En attente'
+            : 'Pending',
+        metricPrimary: formatCurrencyAmount(proposal.proposedBudget, proposal.currency),
+        metricSecondary: `${proposal.estimatedTimelineWeeks}w · ${proposal.validUntil}`,
+        detailCol1: {
+          heading: isAr ? 'العميل' : 'Client',
+          primaryText: proposal.clientName,
+          secondaryText: proposal.clientCompany || proposal.clientEmail || '—',
+        },
+        detailCol2: {
+          heading: isAr ? 'الميزانية والنطاق' : isFr ? 'Budget & Périmètre' : 'Budget & Scope',
+          primaryText: formatCurrencyAmount(proposal.proposedBudget, proposal.currency),
+          secondaryText: `${proposal.scopeItems.length} ${isAr ? 'بنود' : isFr ? 'livrables' : 'scope items'} · ${proposal.pricingModel}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'المدة والفرع' : isFr ? 'Délai & Branche' : 'Timeline & Branch',
+          primaryText: `${proposal.estimatedTimelineWeeks}${isAr ? ' أسبوع' : isFr ? ' sem.' : 'w'} · ${proposal.validUntil}`,
+          secondaryText: branchInfo.name,
+        },
+      };
+    },
+    [branchesById, currentBranch, isAr, isFr, language, t]
   );
 
   const getProposalFanActions = useCallback(

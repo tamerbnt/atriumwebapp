@@ -842,6 +842,23 @@ export const TradingDirectoryView: React.FC = () => {
                 onClick: () => setDeleteTarget(s),
               },
             ]}
+            getDetailActions={(s) => [
+              {
+                id: 'edit',
+                label: t('action_edit', 'Modifier'),
+                icon: <Edit size={13} />,
+                onClick: () => {
+                  setEditingEntity(s);
+                  setEntityModalOpen(true);
+                },
+              },
+              {
+                id: 'delete',
+                label: t('action_delete', 'Supprimer'),
+                icon: <Trash2 size={13} />,
+                onClick: () => setDeleteTarget(s),
+              },
+            ]}
             emptyTitle={isAr ? 'لم يتم العثور على موردين' : 'Aucun fournisseur trouvé'}
             emptyDescription={isAr ? 'أضف أول مورد.' : 'Ajoutez votre premier fournisseur.'}
           />

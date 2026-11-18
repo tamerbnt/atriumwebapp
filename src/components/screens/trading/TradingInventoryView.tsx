@@ -811,6 +811,31 @@ export const TradingInventoryView: React.FC = () => {
                 detailCol3: { heading: 'Motif', primaryText: v.reason.replace('_', ' ') },
               };
             }}
+            getFanActions={(v) => [
+              {
+                id: 'inspect',
+                label: isAr ? 'معاينة' : isEn ? 'Inspect' : 'Détails',
+                icon: <Boxes size={14} />,
+                onClick: (e) => {
+                  setDrawerOpenerEl(e.currentTarget);
+                  setInspectingVoucher(v);
+                },
+              },
+            ]}
+            getDetailActions={(v) => [
+              {
+                id: 'inspect',
+                label: isAr ? 'فتح السند' : isEn ? 'Open Voucher' : 'Ouvrir Bon',
+                icon: <Boxes size={13} />,
+                onClick: () => setInspectingVoucher(v),
+              },
+              {
+                id: 'move',
+                label: isAr ? 'حركة جديدة' : isEn ? 'New Movement' : 'Mouvement',
+                icon: <Boxes size={13} />,
+                onClick: () => setMovementModalOpen(true),
+              },
+            ]}
             emptyTitle={isAr ? 'لا توجد حركات مخزون مسجلة' : 'Aucun mouvement de stock enregistré'}
             emptyDescription={
               isAr ? 'أنشئ أول سند حركة.' : "Créez votre premier bon d'entrée, sortie ou transfert ci-dessus."

@@ -90,6 +90,9 @@ export const MedicalBillingView: React.FC<any> = () => {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>(['cons_02']));
+  const [pinnedClaimIds, setPinnedClaimIds] = useState<Set<string>>(() => new Set<string>());
+  const [bordereauSearch, setBordereauSearch] = useState('');
+  const [bordereauViewMode, setBordereauViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
 
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -249,6 +252,44 @@ export const MedicalBillingView: React.FC<any> = () => {
     },
     [isAr]
   );
+
+  const handleTogglePinClaim = useCallback(
+    (id: string) => {
+      setPinnedClaimIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+      showToast({
+        type: 'info',
+        title: isAr ? 'التثبيت' : 'Épinglage',
+        message: isAr ? 'تم تحديث تثبيت الملف' : 'Dossier CNAS mis à jour',
+      });
+    },
+    [isAr]
+  );
+
+  const sortedChifaClaims = useMemo(() => {
+    const q = bordereauSearch.trim().toLowerCase();
+    const list = chifaClaims.filter((cl) => {
+      if (!q) return true;
+      return (
+        cl.id.toLowerCase().includes(q) ||
+        cl.patientName.toLowerCase().includes(q) ||
+        cl.chifaNumber.toLowerCase().includes(q) ||
+        cl.ngapCode.toLowerCase().includes(q)
+      );
+    });
+    list.sort((a, b) => {
+      const ap = pinnedClaimIds.has(a.id);
+      const bp = pinnedClaimIds.has(b.id);
+      if (ap && !bp) return -1;
+      if (!ap && bp) return 1;
+      return a.id.localeCompare(b.id);
+    });
+    return list;
+  }, [chifaClaims, bordereauSearch, pinnedClaimIds]);
 
   const handleSelectConsultation = useCallback(
     (c: MedicalConsultation, opener?: HTMLElement | null) => {
@@ -869,71 +910,217 @@ export const MedicalBillingView: React.FC<any> = () => {
               </div>
             </div>
 
-            <div className="w-full overflow-x-auto text-xs">
-              <table className="w-full text-left border-separate border-spacing-y-1.5">
-                <thead className="bg-transparent text-black/55 dark:text-white/55 font-semibold text-[11px]">
-                  <tr>
-                    <th className="p-2.5">N° Dossier</th>
-                    <th className="p-2.5">Assuré(e) / Patient</th>
-                    <th className="p-2.5">N° Carte Chifa</th>
-                    <th className="p-2.5">Cotation</th>
-                    <th className="p-2.5">Taux Prise en Charge</th>
-                    <th className="p-2.5 text-right">Part CNAS</th>
-                    <th className="p-2.5 text-right">Ticket Modérateur</th>
-                    <th className="p-2.5 text-center">Statut</th>
-                  </tr>
-                </thead>
-                <tbody className="font-mono">
-                  {chifaClaims.map((claim) => {
+            <ScreenCollectionToolbar
+              title={isAr ? 'كشوفات CNAS / Chifa' : 'Fiches de Télétransmission Chifa'}
+              liveRegionText={`${sortedChifaClaims.length} dossiers`}
+              language={language}
+              searchQuery={bordereauSearch}
+              onSearchChange={setBordereauSearch}
+              searchPlaceholder="Rechercher assuré, N° Chifa, acte NGAP..."
+              viewMode={bordereauViewMode}
+              onViewModeChange={setBordereauViewMode}
+              showViewToggle
+              onExport={() => {
+                const headers = ['N° Dossier', 'Assuré(e)', 'N° Carte Chifa', 'NGAP', 'Taux %', 'Part CNAS', 'Ticket Modérateur', 'Statut'];
+                const rows = sortedChifaClaims.map((claim) => {
+                  const rate = claim.coverageRate ?? claim.chifaCoveragePercent ?? 80;
+                  const transmitted = claim.isTransmitted ?? claim.status === 'Submitted';
+                  return [
+                    claim.id,
+                    claim.patientName,
+                    claim.chifaNumber,
+                    claim.ngapCode,
+                    `${rate}%`,
+                    claim.cnasShareDzd ?? claim.chifaShareDzd ?? 0,
+                    claim.ticketModerateurDzd ?? claim.copayPaidDzd ?? 0,
+                    transmitted ? 'Transmis' : "Prêt à l'envoi",
+                  ];
+                });
+                downloadCsvSafe(`bordereau_cnas_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+                showToast({ type: 'info', title: 'Export CNAS', message: 'Bordereau CNAS exporté en CSV' });
+              }}
+              onResetAllFilters={() => setBordereauSearch('')}
+            />
+
+            <UniversalDataCollection
+              hideToolbar
+              items={sortedChifaClaims}
+              keyExtractor={(claim) => claim.id}
+              viewMode={bordereauViewMode === 'grid' ? 'grid' : 'list'}
+              defaultViewMode={bordereauViewMode === 'grid' ? 'grid' : 'list'}
+              isPinned={(claim) => pinnedClaimIds.has(claim.id)}
+              onTogglePin={(claim) => handleTogglePinClaim(claim.id)}
+              columns={[
+                {
+                  key: 'id',
+                  header: 'N° Dossier',
+                  width: '1.1*',
+                  renderCell: (claim) => (
+                    <span className="font-mono font-semibold text-xs text-black dark:text-white">{claim.id}</span>
+                  ),
+                },
+                {
+                  key: 'patientName',
+                  header: 'Assuré(e) & Chifa',
+                  width: '2.2*',
+                  renderCell: (claim) => (
+                    <div className="min-w-0">
+                      <div className="font-semibold text-xs text-black dark:text-white truncate">{claim.patientName}</div>
+                      <div className="text-[11px] font-mono text-black/55 dark:text-white/55 truncate">{claim.chifaNumber}</div>
+                    </div>
+                  ),
+                },
+                {
+                  key: 'ngapCode',
+                  header: 'Cotation & Taux',
+                  width: '1.4*',
+                  renderCell: (claim) => {
                     const rate = claim.coverageRate ?? claim.chifaCoveragePercent ?? 80;
+                    return (
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-xs text-[#d4522f]">{claim.ngapCode}</span>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            rate === 100
+                              ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                              : 'bg-blue-50 text-blue-700 border border-blue-200'
+                          }`}
+                        >
+                          {rate}% {rate === 100 ? 'ALD' : ''}
+                        </span>
+                      </div>
+                    );
+                  },
+                },
+                {
+                  key: 'cnasShare',
+                  header: 'Part CNAS',
+                  width: '1.3*',
+                  renderCell: (claim) => (
+                    <span className="font-mono font-bold text-xs text-blue-600">
+                      {formatMoney(claim.cnasShareDzd ?? claim.chifaShareDzd ?? 0, 'DZD')}
+                    </span>
+                  ),
+                },
+                {
+                  key: 'tm',
+                  header: 'Ticket Mod.',
+                  width: '1.2*',
+                  renderCell: (claim) => (
+                    <span className="font-mono text-xs text-black/70 dark:text-white/75">
+                      {formatMoney(claim.ticketModerateurDzd ?? claim.copayPaidDzd ?? 0, 'DZD')}
+                    </span>
+                  ),
+                },
+                {
+                  key: 'status',
+                  header: 'Statut',
+                  width: '1.2*',
+                  renderCell: (claim) => {
                     const transmitted = claim.isTransmitted ?? claim.status === 'Submitted';
                     return (
-                      <tr
-                        key={claim.id}
-                        className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs hover:bg-neutral-50/90 dark:hover:bg-neutral-750"
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                          transmitted ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                        }`}
                       >
-                        <td className="p-3 font-semibold text-black dark:text-white">{claim.id}</td>
-                        <td className="p-3 font-sans font-medium text-black dark:text-white">
-                          {claim.patientName}
-                        </td>
-                        <td className="p-3 text-black/55 dark:text-white/55">
-                          {claim.chifaNumber}
-                        </td>
-                        <td className="p-3 text-[#d4522f] font-bold">{claim.ngapCode}</td>
-                        <td className="p-3 font-sans">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              rate === 100
-                                ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                                : 'bg-blue-50 text-blue-700 border border-blue-200'
-                            }`}
-                          >
-                            {rate}% {rate === 100 ? '(ALD 100%)' : '(80%)'}
-                          </span>
-                        </td>
-                        <td className="p-3 text-right text-blue-600 font-bold">
-                          {formatMoney(claim.cnasShareDzd ?? claim.chifaShareDzd ?? 0, 'DZD')}
-                        </td>
-                        <td className="p-3 text-right text-black/70 dark:text-white/75">
-                          {formatMoney(claim.ticketModerateurDzd ?? claim.copayPaidDzd ?? 0, 'DZD')}
-                        </td>
-                        <td className="p-3 text-center">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                              transmitted
-                                ? 'bg-emerald-50 text-emerald-700'
-                                : 'bg-amber-50 text-amber-700'
-                            }`}
-                          >
-                            {transmitted ? 'Transmis ✓' : "Prêt à l'envoi"}
-                          </span>
-                        </td>
-                      </tr>
+                        {transmitted ? 'Transmis ✓' : "Prêt à l'envoi"}
+                      </span>
                     );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                  },
+                },
+              ]}
+              getRowMeta={(claim): KineticRowMeta => {
+                const rate = claim.coverageRate ?? claim.chifaCoveragePercent ?? 80;
+                const transmitted = claim.isTransmitted ?? claim.status === 'Submitted';
+                const cnasShare = claim.cnasShareDzd ?? claim.chifaShareDzd ?? 0;
+                const tm = claim.ticketModerateurDzd ?? claim.copayPaidDzd ?? 0;
+                return {
+                  title: claim.patientName,
+                  subline: `${claim.id} · Chifa ${claim.chifaNumber}`,
+                  avatarText: getInitials2(claim.patientName),
+                  categoryLabel: `${claim.ngapCode} · ${rate}%`,
+                  statusLabel: transmitted ? 'Transmis ✓' : "Prêt à l'envoi",
+                  statusVariant: transmitted ? 'active' : 'warning',
+                  metricPrimary: formatMoney(cnasShare, 'DZD'),
+                  metricSecondary: `TM ${formatMoney(tm, 'DZD')}`,
+                  isPinned: pinnedClaimIds.has(claim.id),
+                  detailCol1: {
+                    heading: 'Assuré & Chifa',
+                    primaryText: claim.patientName,
+                    secondaryText: `Chifa ${claim.chifaNumber}`,
+                  },
+                  detailCol2: {
+                    heading: 'Cotation NGAP & Taux',
+                    primaryText: `NGAP ${claim.ngapCode} · ${rate}%`,
+                    secondaryText: claim.id,
+                  },
+                  detailCol3: {
+                    heading: 'Décompte CNAS / TM',
+                    primaryText: `CNAS ${formatMoney(cnasShare, 'DZD')}`,
+                    secondaryText: `TM ${formatMoney(tm, 'DZD')}`,
+                  },
+                };
+              }}
+              getFanActions={(claim): KineticRowFanAction[] => [
+                {
+                  id: 'transmit',
+                  label: 'Télétransmettre',
+                  icon: <Send size={13} />,
+                  onClick: handleTransmitBordereau,
+                },
+                {
+                  id: 'pdf-cnas',
+                  label: 'PDF CNAS',
+                  icon: <Download size={13} />,
+                  onClick: () => {
+                    showToast({
+                      type: 'info',
+                      title: 'Export CNAS',
+                      message: `Fiche CNAS ${claim.id} prête pour impression PDF`,
+                    });
+                    window.print();
+                  },
+                },
+                {
+                  id: 'pin',
+                  label: pinnedClaimIds.has(claim.id) ? 'Détacher' : 'Épingler',
+                  icon: <Pin size={13} />,
+                  onClick: () => handleTogglePinClaim(claim.id),
+                },
+              ]}
+              getDetailActions={(claim): KineticDetailAction[] => [
+                {
+                  id: 'transmit',
+                  label: 'Télétransmettre',
+                  icon: <Send size={14} />,
+                  onClick: handleTransmitBordereau,
+                },
+                {
+                  id: 'pdf-cnas',
+                  label: 'PDF CNAS',
+                  icon: <Download size={14} />,
+                  onClick: () => {
+                    showToast({
+                      type: 'info',
+                      title: 'Export CNAS',
+                      message: `Fiche CNAS ${claim.id} prête pour impression PDF`,
+                    });
+                    window.print();
+                  },
+                },
+                {
+                  id: 'pin',
+                  label: pinnedClaimIds.has(claim.id) ? 'Détacher' : 'Épingler',
+                  icon: <Pin size={14} />,
+                  onClick: () => handleTogglePinClaim(claim.id),
+                },
+              ]}
+              emptyTitle="Aucun dossier Chifa"
+              emptyDescription="Aucune fiche ne correspond à votre recherche"
+              onResetFilters={() => setBordereauSearch('')}
+              hasActiveFilters={bordereauSearch.trim().length > 0}
+            />
           </div>
         </ScreenPod>
       )}

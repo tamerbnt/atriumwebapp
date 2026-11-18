@@ -376,6 +376,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
   const getDeliverableRowMeta = useCallback(
     (item: FlatDeliverableItem): KineticRowMeta => {
       const isCreep = item.loggedHours > item.estimatedHours;
+      const branchInfo = resolveRecordBranch(item.project, branchesById, currentBranch, language);
       return {
         avatarText: item.title.slice(0, 2).toUpperCase(),
         subline: `${item.projectTitle} · ${item.clientName}`,
@@ -390,9 +391,30 @@ export const FreelanceDeliverablesView: React.FC = () => {
         statusLabel: t(STAGE_KEYS[item.stage], language),
         metricPrimary: `${item.loggedHours}h / ${item.estimatedHours}h`,
         metricSecondary: item.dueDate,
+        detailCol1: {
+          heading: isAr ? 'المشروع والعميل' : isFr ? 'Projet & Client' : 'Project & Client',
+          primaryText: item.projectTitle,
+          secondaryText: item.clientName,
+        },
+        detailCol2: {
+          heading: isAr ? 'الساعات والتسليم' : isFr ? 'Heures & Échéance' : 'Hours & Due Date',
+          primaryText: `${item.loggedHours}h / ${item.estimatedHours}h`,
+          secondaryText: `${isAr ? 'الاستحقاق' : isFr ? 'Échéance' : 'Due'}: ${item.dueDate}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الفرع والمرحلة' : isFr ? 'Branche & Étape' : 'Branch & Stage',
+          primaryText: branchInfo.name,
+          secondaryText: isCreep
+            ? isAr
+              ? 'تجاوز الساعات'
+              : isFr
+              ? 'Dépassement'
+              : 'Over estimate'
+            : item.currency,
+        },
       };
     },
-    [language, t]
+    [branchesById, currentBranch, language, t, isAr, isFr]
   );
 
   const getDeliverableFanActions = useCallback(

@@ -344,17 +344,35 @@ export const LogisticsManifestsView: React.FC<any> = () => {
   const getManifestRowMeta = useCallback(
     (m: LogisticsManifest): KineticRowMeta => {
       const isCompleted = m.status === 'Completed' || m.status === 'Reconciled';
+      const branchInfo = resolveRecordBranch(m, branchesById, currentBranch, language);
       return {
         avatarText: (m.driverName || 'TR').slice(0, 2).toUpperCase(),
         subline: `${m.manifestNumber} · ${m.vehiclePlate}`,
         categoryLabel: m.zoneWilaya || 'Alger',
         statusVariant: isCompleted ? 'active' : 'info',
-        statusLabel: isCompleted ? (isAr ? 'مكتملة' : 'Clôturée') : isAr ? 'في التوزيع' : 'En Tournée',
+        statusLabel: isCompleted
+          ? isAr ? 'مكتملة' : isEn ? 'Completed' : 'Clôturée'
+          : isAr ? 'في التوزيع' : isEn ? 'Dispatched' : 'En Tournée',
         metricPrimary: formatMoney(m.totalCodExpectedDzd || 0, language),
-        metricSecondary: `${m.totalShipmentsCount} ${isAr ? 'طرد' : 'colis'}`,
+        metricSecondary: `${m.totalShipmentsCount} ${isAr ? 'طرد' : isEn ? 'parcels' : 'colis'}`,
+        detailCol1: {
+          heading: isAr ? 'السائق والمركبة' : isEn ? 'Driver & Vehicle' : 'Chauffeur & Véhicule',
+          primaryText: m.driverName,
+          secondaryText: `${m.vehiclePlate} · ${m.driverPhone}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'الطرود والتحصيل' : isEn ? 'Parcels & COD' : 'Colis & COD Attendu',
+          primaryText: formatMoney(m.totalCodExpectedDzd || 0, language),
+          secondaryText: `${m.totalShipmentsCount} ${isAr ? 'طرد' : isEn ? 'parcels' : 'colis'}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'المنطقة والمركز' : isEn ? 'Zone & Hub' : 'Zone & Agence',
+          primaryText: m.zoneWilaya || 'Alger',
+          secondaryText: `${m.dispatchDate} · ${branchInfo.name}`,
+        },
       };
     },
-    [isAr, language]
+    [branchesById, currentBranch, isAr, isEn, language]
   );
 
   const getManifestFanActions = useCallback(

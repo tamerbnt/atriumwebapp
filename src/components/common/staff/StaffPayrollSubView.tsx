@@ -1,18 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
-  DollarSign,
-  Receipt,
   FileText,
   Plus,
   RefreshCw,
   CheckCircle2,
-  AlertCircle,
-  CreditCard,
-  Building2,
   Calendar,
-  Clock,
+  Pin,
   Printer,
-  ChevronDown,
+  CreditCard,
 } from 'lucide-react';
 import {
   StaffMember,
@@ -23,6 +18,19 @@ import {
 import { AtriumButton } from '../../ui/AtriumButton';
 import { PayslipPrintModal } from './PayslipPrintModal';
 import { SalaryAdvanceModal } from './SalaryAdvanceModal';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import {
+  KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
+  extractInitials,
+  computeInitialsColor,
+} from '../../ui/kinetic';
 
 interface StaffPayrollSubViewProps {
   staffList: StaffMember[];
@@ -58,55 +66,229 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
 
   const [selectedMonth, setSelectedMonth] = useState<number>(11);
   const [selectedYear, setSelectedYear] = useState<number>(2026);
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [paidFilter, setPaidFilter] = useState<'all' | 'paid' | 'pending'>('all');
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
+  const [selectedSlip, setSelectedSlip] = useState<StaffPayrollSlipRecord | null>(null);
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+
   const [activeSlipForPrint, setActiveSlipForPrint] = useState<StaffPayrollSlipRecord | null>(null);
   const [isAdvanceModalOpen, setIsAdvanceModalOpen] = useState(false);
 
-  // Month names
   const months = [
-    { value: 1, label: isAr ? 'جانفي' : 'Janvier' },
-    { value: 2, label: isAr ? 'فيفري' : 'Février' },
-    { value: 3, label: isAr ? 'مارس' : 'Mars' },
-    { value: 4, label: isAr ? 'أفريل' : 'Avril' },
-    { value: 5, label: isAr ? 'ماي' : 'Mai' },
-    { value: 6, label: isAr ? 'جوان' : 'Juin' },
-    { value: 7, label: isAr ? 'جويلية' : 'Juillet' },
-    { value: 8, label: isAr ? 'أوت' : 'Août' },
-    { value: 9, label: isAr ? 'سبتمبر' : 'Septembre' },
-    { value: 10, label: isAr ? 'أكتوبر' : 'Octobre' },
-    { value: 11, label: isAr ? 'نوفمبر' : 'Novembre' },
-    { value: 12, label: isAr ? 'ديسمبر' : 'Décembre' },
+    { value: 1, label: isAr ? 'جانفي' : isEn ? 'January' : 'Janvier' },
+    { value: 2, label: isAr ? 'فيفري' : isEn ? 'February' : 'Février' },
+    { value: 3, label: isAr ? 'مارس' : isEn ? 'March' : 'Mars' },
+    { value: 4, label: isAr ? 'أفريل' : isEn ? 'April' : 'Avril' },
+    { value: 5, label: isAr ? 'ماي' : isEn ? 'May' : 'Mai' },
+    { value: 6, label: isAr ? 'جوان' : isEn ? 'June' : 'Juin' },
+    { value: 7, label: isAr ? 'جويلية' : isEn ? 'July' : 'Juillet' },
+    { value: 8, label: isAr ? 'أوت' : isEn ? 'August' : 'Août' },
+    { value: 9, label: isAr ? 'سبتمبر' : isEn ? 'September' : 'Septembre' },
+    { value: 10, label: isAr ? 'أكتوبر' : isEn ? 'October' : 'Octobre' },
+    { value: 11, label: isAr ? 'نوفمبر' : isEn ? 'November' : 'Novembre' },
+    { value: 12, label: isAr ? 'ديسمبر' : isEn ? 'December' : 'Décembre' },
   ];
 
-  // Active Run for the selected period
-  const runId = `payrun_${selectedYear}_${String(selectedMonth).padStart(2, '0')}`;
   const activeRun = useMemo(() => {
     return payrollRuns.find((r) => r.periodMonth === selectedMonth && r.periodYear === selectedYear);
   }, [payrollRuns, selectedMonth, selectedYear]);
 
-  // Slips for the active run
   const activeSlips = useMemo(() => {
     return payrollSlips.filter((s) => s.periodMonth === selectedMonth && s.periodYear === selectedYear);
   }, [payrollSlips, selectedMonth, selectedYear]);
 
-  // Aggregate Metrics for this period
+  const filteredSlips = useMemo(() => {
+    const list = activeSlips.filter((s) => {
+      if (paidFilter === 'paid' && !s.isPaid) return false;
+      if (paidFilter === 'pending' && s.isPaid) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        return (
+          s.staffFullName.toLowerCase().includes(q) ||
+          (s.matricule || '').toLowerCase().includes(q) ||
+          (s.role || '').toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+    return [...list].sort((a, b) => {
+      const pa = pinnedIds.has(a.id) ? 0 : 1;
+      const pb = pinnedIds.has(b.id) ? 0 : 1;
+      if (pa !== pb) return pa - pb;
+      return a.staffFullName.localeCompare(b.staffFullName);
+    });
+  }, [activeSlips, paidFilter, searchQuery, pinnedIds]);
+
   const totalNet = useMemo(() => activeSlips.reduce((sum, s) => sum + s.netAPayer, 0), [activeSlips]);
   const totalCnas = useMemo(() => activeSlips.reduce((sum, s) => sum + s.cnasSalarial + s.cnasPatronal, 0), [activeSlips]);
   const totalIrg = useMemo(() => activeSlips.reduce((sum, s) => sum + s.irgTax, 0), [activeSlips]);
   const totalAdvances = useMemo(() => activeSlips.reduce((sum, s) => sum + s.acomptesDeduits, 0), [activeSlips]);
 
-  const handleGenerate = () => {
-    onGeneratePayroll(selectedMonth, selectedYear);
+  const handleGenerate = () => onGeneratePayroll(selectedMonth, selectedYear);
+  const handleApprove = () => {
+    if (activeRun) onApprovePayroll(activeRun.id);
   };
 
-  const handleApprove = () => {
-    if (activeRun) {
-      onApprovePayroll(activeRun.id);
-    }
-  };
+  const columns: ColumnDefinition<StaffPayrollSlipRecord>[] = useMemo(
+    () => [
+      {
+        key: 'staffFullName',
+        header: isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur',
+        sortable: true,
+        renderCell: (slip) => (
+          <div>
+            <div className="font-bold text-xs text-black dark:text-white">{slip.staffFullName}</div>
+            <div className="text-[11px] font-mono text-black/62 dark:text-white/65">
+              {slip.matricule} · {slip.role}
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'paymentMethod',
+        header: isAr ? 'طريقة الدفع' : isEn ? 'Method' : 'Mode',
+        sortable: true,
+        renderCell: (slip) => (
+          <span className="text-[11px] uppercase font-bold px-2 py-0.5 rounded-md bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85">
+            {slip.paymentMethod}
+          </span>
+        ),
+      },
+      {
+        key: 'isPaid',
+        header: isAr ? 'الحالة' : isEn ? 'Status' : 'Statut',
+        sortable: true,
+        renderCell: (slip) => (
+          <span
+            className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
+              slip.isPaid
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
+            }`}
+          >
+            {slip.isPaid ? (isAr ? 'مدفوع' : isEn ? 'Paid' : 'Payé') : isAr ? 'معلق' : isEn ? 'Pending' : 'À Payer'}
+          </span>
+        ),
+      },
+      {
+        key: 'netAPayer',
+        header: isAr ? 'الصافي' : isEn ? 'Net Pay' : 'Net à Payer',
+        sortable: true,
+        renderCell: (slip) => (
+          <span className="font-mono font-black text-xs text-[#d4522f] tabular-nums">
+            {slip.netAPayer.toLocaleString()} DZD
+          </span>
+        ),
+      },
+    ],
+    [isAr, isEn]
+  );
+
+  const getRowMeta = useCallback(
+    (slip: StaffPayrollSlipRecord): Partial<KineticRowData> => {
+      const primesNonImpTotal = slip.primesNonImposables?.reduce((s, p) => s + p.amount, 0) || 0;
+      return {
+        title: slip.staffFullName,
+        subline: `${slip.matricule} · ${slip.role}`,
+        avatarText: extractInitials(slip.staffFullName),
+        avatarColor: computeInitialsColor(slip.staffFullName),
+        categoryLabel: slip.paymentMethod.toUpperCase(),
+        statusLabel: slip.isPaid ? (isAr ? 'مدفوع' : isEn ? 'Paid' : 'Payé') : isAr ? 'قيد الدفع' : isEn ? 'Pending' : 'À Payer',
+        statusVariant: slip.isPaid ? 'active' : 'warning',
+        metricPrimary: `${slip.netAPayer.toLocaleString()} DZD`,
+        metricSecondary: `${isAr ? 'إجمالي' : isEn ? 'Gross' : 'Brut'}: ${slip.salaireBrutCotisable.toLocaleString()} DZD`,
+        detailCol1: {
+          heading: isAr ? 'الراتب الأساسي والعلاوات' : isEn ? 'Base & Bonuses' : 'Salaire Base & Primes',
+          primaryText: `${isAr ? 'الأساسي' : isEn ? 'Base' : 'Base'}: ${slip.baseSalary.toLocaleString()} DZD`,
+          secondaryText: slip.coachingCommission
+            ? `${isAr ? 'العلاوة' : isEn ? 'Commission' : 'Commission'}: +${slip.coachingCommission.toLocaleString()} DZD`
+            : `${isAr ? 'البدلات' : isEn ? 'Allowances' : 'Indemnités'}: +${primesNonImpTotal.toLocaleString()} DZD`,
+          tertiaryText: `${isAr ? 'إجمالي خاضع' : isEn ? 'Gross' : 'Brut cotisable'}: ${slip.salaireBrutCotisable.toLocaleString()} DZD`,
+        },
+        detailCol2: {
+          heading: isAr ? 'الاقتطاعات القانونية' : isEn ? 'Statutory Deductions' : 'Retenues CNAS & IRG',
+          primaryText: `CNAS (9%): -${slip.cnasSalarial.toLocaleString()} DZD`,
+          secondaryText: `IRG: -${slip.irgTax.toLocaleString()} DZD`,
+          tertiaryText: slip.acomptesDeduits > 0 ? `${isAr ? 'سلف مخصومة' : isEn ? 'Advances' : 'Acomptes'}: -${slip.acomptesDeduits.toLocaleString()} DZD` : isAr ? 'بدون سلفيات' : isEn ? 'No advances' : 'Aucun acompte déduit',
+        },
+        detailCol3: {
+          heading: isAr ? 'التحويل وصافي الأجر' : isEn ? 'Disbursement' : 'Règlement & Net',
+          primaryText: `${slip.netAPayer.toLocaleString()} DZD`,
+          secondaryText: `${isAr ? 'الطريقة' : isEn ? 'Method' : 'Mode'}: ${slip.paymentMethod.toUpperCase()}`,
+          tertiaryText: slip.matricule,
+        },
+      };
+    },
+    [isAr, isEn]
+  );
+
+  const getFanActions = useCallback(
+    (slip: StaffPayrollSlipRecord): KineticRowFanAction[] => {
+      const acts: KineticRowFanAction[] = [
+        {
+          id: 'print',
+          label: isAr ? 'طباعة القسيمة' : isEn ? 'Print Slip' : 'Imprimer Bulletin',
+          icon: <Printer className="w-[15px] h-[15px]" />,
+          onClick: () => setActiveSlipForPrint(slip),
+        },
+      ];
+      if (!slip.isPaid) {
+        acts.push({
+          id: 'pay',
+          label: isAr ? 'تأكيد الدفع' : isEn ? 'Mark Paid' : 'Payer',
+          icon: <CreditCard className="w-[15px] h-[15px]" />,
+          onClick: () => onMarkSlipPaid(slip.id),
+        });
+      }
+      return acts;
+    },
+    [isAr, isEn, onMarkSlipPaid]
+  );
+
+  const getDetailActions = useCallback(
+    (slip: StaffPayrollSlipRecord): KineticDetailAction[] => {
+      const acts: KineticDetailAction[] = [
+        {
+          id: 'print',
+          label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
+          icon: <FileText className="w-3.5 h-3.5" />,
+          onClick: () => setActiveSlipForPrint(slip),
+        },
+      ];
+      if (!slip.isPaid) {
+        acts.push({
+          id: 'pay',
+          label: isAr ? 'دفع' : isEn ? 'Pay' : 'Payer',
+          icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#096b40]" />,
+          onClick: () => onMarkSlipPaid(slip.id),
+        });
+      }
+      acts.push({
+        id: 'pin',
+        label: pinnedIds.has(slip.id) ? (isAr ? 'إلغاء التثبيت' : isEn ? 'Unpin' : 'Détacher') : isAr ? 'تثبيت' : isEn ? 'Pin' : 'Épingler',
+        icon: <Pin className="w-3.5 h-3.5" />,
+        onClick: () =>
+          setPinnedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(slip.id)) next.delete(slip.id);
+            else next.add(slip.id);
+            return next;
+          }),
+      });
+      return acts;
+    },
+    [isAr, isEn, onMarkSlipPaid, pinnedIds]
+  );
+
+  const activeInspectedSlip = useMemo(() => {
+    if (!selectedSlip) return null;
+    return filteredSlips.find((s) => s.id === selectedSlip.id) || selectedSlip;
+  }, [selectedSlip, filteredSlips]);
 
   return (
     <div className="space-y-4">
-      {/* Top Controls Bar: Exact 40px Standard Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 bg-[#F3EDE7] dark:bg-[#262422] px-3 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] h-10">
@@ -140,11 +322,13 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                   : 'bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/60'
               }`}
             >
-              {activeRun.status === 'paid' ? '✔️ ' + (isAr ? 'رواتب مدفوعة' : 'Clôturée & Payée') : '⏳ ' + (isAr ? 'مسودة قيد المراجعة' : 'Brouillon')}
+              {activeRun.status === 'paid'
+                ? isAr ? 'رواتب مدفوعة' : isEn ? 'Closed & Paid' : 'Clôturée & Payée'
+                : isAr ? 'مسودة قيد المراجعة' : isEn ? 'Draft' : 'Brouillon'}
             </span>
           ) : (
             <span className="text-xs text-black/60 dark:text-white/65 font-medium">
-              {isAr ? 'لم يتم احتساب الرواتب بعد' : 'Paie non encore générée'}
+              {isAr ? 'لم يتم احتساب الرواتب بعد' : isEn ? 'Payroll not calculated yet' : 'Paie non encore générée'}
             </span>
           )}
         </div>
@@ -167,7 +351,11 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
             icon={<RefreshCw className="w-4 h-4 text-black/70 dark:text-white/75" />}
             className="h-10 text-xs font-semibold"
           >
-            <span>{activeSlips.length > 0 ? (isAr ? 'إعادة الحساب' : isEn ? 'Recalculate' : 'Recalculer') : (isAr ? 'حساب' : isEn ? 'Calculate' : 'Calculer')}</span>
+            <span>
+              {activeSlips.length > 0
+                ? isAr ? 'إعادة الحساب' : isEn ? 'Recalculate' : 'Recalculer'
+                : isAr ? 'حساب' : isEn ? 'Calculate' : 'Calculer'}
+            </span>
           </AtriumButton>
 
           {activeRun && activeRun.status !== 'paid' && (
@@ -184,7 +372,6 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         </div>
       </div>
 
-      {/* 4 Financial Aggregate KPI Cards — Pure White Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
           <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'صافي الأجور' : isEn ? 'Net Pay' : 'Net à Payer'}</p>
@@ -219,123 +406,57 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         </div>
       </div>
 
-      {/* Main Payroll Table */}
-      <div className="bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] overflow-hidden shadow-2xs">
-        <div className="p-4 border-b border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between">
-          <div>
-            <h4 className="text-[15.5px] font-semibold tracking-[-0.015em] rtl:tracking-normal text-black dark:text-white">
-              {isAr ? 'جدول الرواتب' : isEn ? 'Payroll Sheet' : 'Livre de Paie'}
-            </h4>
-          </div>
-          {activeSlips.length === 0 && (
-            <AtriumButton onClick={handleGenerate} className="h-8 px-3 text-xs">
-              {isAr ? 'حساب' : isEn ? 'Calculate' : 'Calculer'}
-            </AtriumButton>
-          )}
-        </div>
+      <UniversalDataCollection<StaffPayrollSlipRecord>
+        title={isAr ? 'جدول الرواتب' : isEn ? 'Payroll Sheet' : 'Livre de Paie'}
+        items={filteredSlips}
+        columns={columns}
+        keyExtractor={(s) => s.id}
+        viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+        onViewModeChange={(m: string) => setViewMode(m === 'grid' ? 'grid' : 'list')}
+        showViewToggle
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder={isAr ? 'بحث بالاسم أو الرقم الوظيفي...' : isEn ? 'Search slip, matricule...' : 'Rechercher bulletin, matricule...'}
+        filterOptions={[
+          { value: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: activeSlips.length },
+          { value: 'paid', label: isAr ? 'مدفوع' : isEn ? 'Paid' : 'Payés', count: activeSlips.filter((s) => s.isPaid).length },
+          { value: 'pending', label: isAr ? 'معلق' : isEn ? 'Pending' : 'À Payer', count: activeSlips.filter((s) => !s.isPaid).length },
+        ]}
+        filterValue={paidFilter}
+        onFilterChange={(v) => setPaidFilter(v as any)}
+        pinnedIds={pinnedIds}
+        onPinToggle={(idOrItem) => {
+          const id = typeof idOrItem === 'string' ? idOrItem : idOrItem.id;
+          setPinnedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+          });
+        }}
+        openItemId={activeInspectedSlip?.id ?? null}
+        onItemClick={(slip, el) => {
+          setDrawerOpenerEl(el || null);
+          setSelectedSlip(slip);
+        }}
+        onViewDetails={(slip, el) => {
+          setDrawerOpenerEl(el || null);
+          setSelectedSlip(slip);
+        }}
+        getRowMeta={getRowMeta}
+        getFanActions={getFanActions}
+        getDetailActions={getDetailActions}
+        primaryActionLabel={isAr ? 'حساب الشهر' : isEn ? 'Run Payroll' : 'Calculer la Paie'}
+        onAddFirstItem={handleGenerate}
+        emptyTitle={isAr ? 'لا توجد رواتب' : isEn ? 'No payroll' : 'Aucune paie'}
+        emptyDescription={isAr ? 'قم باحتساب رواتب الشهر' : isEn ? 'Run payroll calculation for this period' : 'Lancez le calcul de paie pour cette période'}
+      />
 
-        {activeSlips.length === 0 ? (
-          <div className="p-12 text-center">
-            <Receipt className="w-10 h-10 text-black/50 dark:text-white/55 mx-auto mb-3" />
-            <h5 className="text-sm font-bold text-black/80 dark:text-white/85">
-              {isAr ? 'لا توجد رواتب' : isEn ? 'No payroll' : 'Aucune paie'}
-            </h5>
-            <AtriumButton onClick={handleGenerate} className="h-9 px-4 text-xs font-bold mt-3">
-              {isAr ? 'حساب الشهر' : isEn ? 'Run Payroll' : 'Calculer'}
-            </AtriumButton>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse tabular-nums">
-              <thead>
-                <tr className="bg-[#FBF8F5] dark:bg-[#262422] text-black/72 dark:text-white/75 border-b border-[#E6DED6] dark:border-[#3A3734]">
-                  <th className="p-3 font-semibold">{isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}</th>
-                  <th className="p-3 font-semibold text-right">{isAr ? 'الأساسي' : isEn ? 'Base' : 'Base'}</th>
-                  <th className="p-3 font-semibold text-right">{isAr ? 'العلاوات' : isEn ? 'Bonus' : 'Primes'}</th>
-                  <th className="p-3 font-semibold text-right">{isAr ? 'الإجمالي' : isEn ? 'Gross' : 'Brut'}</th>
-                  <th className="p-3 font-semibold text-right text-red-600">{isAr ? 'الضمان' : isEn ? 'Social' : 'Social'}</th>
-                  <th className="p-3 font-semibold text-right text-red-600">{isAr ? 'الضريبة' : isEn ? 'Tax' : 'Impôt'}</th>
-                  <th className="p-3 font-semibold text-right text-emerald-600">{isAr ? 'البدلات' : isEn ? 'Allowances' : 'Indemnités'}</th>
-                  <th className="p-3 font-semibold text-right text-amber-600">{isAr ? 'السلف' : isEn ? 'Advances' : 'Acomptes'}</th>
-                  <th className="p-3 font-semibold text-right font-bold text-black dark:text-white">{isAr ? 'الصافي' : isEn ? 'Net' : 'Net'}</th>
-                  <th className="p-3 font-semibold text-center">{isAr ? 'الدفع' : isEn ? 'Method' : 'Mode'}</th>
-                  <th className="p-3 font-semibold text-right pr-4">{isAr ? 'إجراء' : isEn ? 'Actions' : 'Actions'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E6DED6]/60 dark:divide-[#3A3734]">
-                {activeSlips.map((slip) => {
-                  const primesNonImpTotal = slip.primesNonImposables?.reduce((s, p) => s + p.amount, 0) || 0;
-                  return (
-                    <tr key={slip.id} className="hover:bg-[#F3EDE7]/40 dark:hover:bg-[#262422]/60 transition-colors">
-                      <td className="p-3">
-                        <div className="font-bold text-black dark:text-white">{slip.staffFullName}</div>
-                        <div className="text-[11px] text-black/62 dark:text-white/65 font-mono">{slip.matricule} · {slip.role}</div>
-                      </td>
-                      <td className="p-3 text-right font-mono">{slip.baseSalary.toLocaleString()} DZD</td>
-                      <td className="p-3 text-right font-mono">
-                        {slip.coachingCommission ? `${slip.coachingCommission.toLocaleString()} DZD` : '-'}
-                      </td>
-                      <td className="p-3 text-right font-mono font-bold text-black dark:text-white">
-                        {slip.salaireBrutCotisable.toLocaleString()}
-                      </td>
-                      <td className="p-3 text-right font-mono text-red-600">
-                        -{slip.cnasSalarial.toLocaleString()}
-                      </td>
-                      <td className="p-3 text-right font-mono text-red-600">
-                        -{slip.irgTax.toLocaleString()}
-                      </td>
-                      <td className="p-3 text-right font-mono text-emerald-600">
-                        +{primesNonImpTotal.toLocaleString()}
-                      </td>
-                      <td className="p-3 text-right font-mono text-amber-600">
-                        {slip.acomptesDeduits > 0 ? `-${slip.acomptesDeduits.toLocaleString()}` : '-'}
-                      </td>
-                      <td className="p-3 text-right font-mono font-black text-sm text-[#d4522f]">
-                        {slip.netAPayer.toLocaleString()} DZD
-                      </td>
-                      <td className="p-3 text-center">
-                        <span className="text-[11px] uppercase font-bold px-2 py-0.5 rounded-md bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85">
-                          {slip.paymentMethod}
-                        </span>
-                      </td>
-                      <td className="p-3 text-right pr-4">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setActiveSlipForPrint(slip)}
-                            className="p-1.5 text-xs font-semibold rounded-lg bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85 hover:text-[#d4522f] hover:bg-[#d4522f]/10 transition-colors cursor-pointer"
-                            title={isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer'}
-                          >
-                            <FileText className="w-4 h-4" />
-                          </button>
-                          {!slip.isPaid && (
-                            <button
-                              type="button"
-                              onClick={() => onMarkSlipPaid(slip.id)}
-                              className="px-2 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 cursor-pointer"
-                            >
-                              {isAr ? 'دفع' : isEn ? 'Pay' : 'Payer'}
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Salary Advances (Acomptes) Register Card */}
       <div className="bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] p-4 shadow-2xs">
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
-          <div>
-            <h4 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
-              {isAr ? 'السلفيات' : isEn ? 'Salary Advances' : 'Acomptes'}
-            </h4>
-          </div>
+          <h4 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
+            {isAr ? 'السلفيات' : isEn ? 'Salary Advances' : 'Acomptes'}
+          </h4>
           <button
             type="button"
             onClick={() => setIsAdvanceModalOpen(true)}
@@ -347,7 +468,9 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         </div>
 
         {salaryAdvances.length === 0 ? (
-          <p className="text-xs text-black/62 dark:text-white/65 py-3 text-center">{isAr ? 'لا توجد سلفيات' : isEn ? 'No advances' : 'Aucun acompte'}</p>
+          <p className="text-xs text-black/62 dark:text-white/65 py-3 text-center">
+            {isAr ? 'لا توجد سلفيات' : isEn ? 'No advances' : 'Aucun acompte'}
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {salaryAdvances.map((adv) => (
@@ -357,8 +480,10 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
               >
                 <div>
                   <div className="font-bold text-xs text-black dark:text-white">{adv.staffName}</div>
-                  <div className="text-[11px] font-mono text-black/62 dark:text-white/65 tabular-nums">{adv.voucherNumber} · {adv.dateIssued}</div>
-                  {adv.reason && <div className="text-[11px] text-black/70 dark:text-white/75 italic mt-0.5">"{adv.reason}"</div>}
+                  <div className="text-[11px] font-mono text-black/62 dark:text-white/65 tabular-nums">
+                    {adv.voucherNumber} · {adv.dateIssued}
+                  </div>
+                  {adv.reason && <div className="text-[11px] text-black/70 dark:text-white/75 italic mt-0.5">&quot;{adv.reason}&quot;</div>}
                 </div>
                 <div className="text-right">
                   <div className="font-mono font-bold text-xs text-[#d4522f] tabular-nums">{adv.amountDzd.toLocaleString()} DZD</div>
@@ -378,7 +503,62 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         )}
       </div>
 
-      {/* Payslip Print Modal */}
+      <KineticSlideOverInspector<StaffPayrollSlipRecord>
+        isOpen={Boolean(activeInspectedSlip)}
+        item={activeInspectedSlip}
+        allItems={filteredSlips}
+        keyExtractor={(s) => s.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={activeInspectedSlip?.staffFullName || ''}
+        subtitle={`${activeInspectedSlip?.matricule || ''} · ${activeInspectedSlip?.role || ''}`}
+        categoryLabel={activeInspectedSlip?.paymentMethod.toUpperCase()}
+        avatarText={activeInspectedSlip ? extractInitials(activeInspectedSlip.staffFullName) : 'PR'}
+        statusLabel={activeInspectedSlip?.isPaid ? (isAr ? 'مدفوع' : isEn ? 'Paid' : 'Payé') : isAr ? 'قيد الدفع' : isEn ? 'Pending' : 'À Payer'}
+        onSelectItem={(s) => setSelectedSlip(s)}
+        onClose={() => setSelectedSlip(null)}
+        renderBody={(slip) => {
+          const primesNonImpTotal = slip.primesNonImposables?.reduce((s, p) => s + p.amount, 0) || 0;
+          return (
+            <div className="space-y-4">
+              <InspectorQuickActions
+                actions={[
+                  {
+                    id: 'print',
+                    label: isAr ? 'طباعة كشف الراتب' : isEn ? 'Print Slip' : 'Imprimer Bulletin',
+                    icon: <Printer size={14} />,
+                    primary: true,
+                    onClick: () => setActiveSlipForPrint(slip),
+                  },
+                  ...(!slip.isPaid
+                    ? [
+                        {
+                          id: 'pay',
+                          label: isAr ? 'تأكيد الدفع' : isEn ? 'Mark Paid' : 'Marquer Payé',
+                          icon: <CheckCircle2 size={14} />,
+                          onClick: () => onMarkSlipPaid(slip.id),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+              <InspectorSection title={isAr ? 'تفاصيل كشف الراتب' : isEn ? 'Payslip Breakdown' : 'Détail Bulletin de Paie'}>
+                <InspectorCard>
+                  <InspectorKeyValue label={isAr ? 'الراتب الأساسي' : isEn ? 'Base Salary' : 'Salaire de Base'} value={`${slip.baseSalary.toLocaleString()} DZD`} mono />
+                  <InspectorKeyValue label={isAr ? 'العلاوات' : isEn ? 'Bonuses' : 'Commissions / Primes'} value={`${(slip.coachingCommission || 0).toLocaleString()} DZD`} mono />
+                  <InspectorKeyValue label={isAr ? 'الخاضع للضمان' : isEn ? 'Gross Taxable' : 'Salaire Brut Cotisable'} value={`${slip.salaireBrutCotisable.toLocaleString()} DZD`} mono />
+                  <InspectorKeyValue label="CNAS (9%)" value={`-${slip.cnasSalarial.toLocaleString()} DZD`} mono />
+                  <InspectorKeyValue label="IRG" value={`-${slip.irgTax.toLocaleString()} DZD`} mono />
+                  <InspectorKeyValue label={isAr ? 'البدلات غير الخاضعة' : isEn ? 'Non-Taxable' : 'Indemnités Non Imp.'} value={`+${primesNonImpTotal.toLocaleString()} DZD`} mono />
+                  <InspectorKeyValue label={isAr ? 'السلفيات المخصومة' : isEn ? 'Advances' : 'Acomptes Déduits'} value={`-${slip.acomptesDeduits.toLocaleString()} DZD`} mono />
+                  <InspectorKeyValue label={isAr ? 'الصافي للدفع' : isEn ? 'Net Payable' : 'Net à Payer'} value={`${slip.netAPayer.toLocaleString()} DZD`} mono />
+                </InspectorCard>
+              </InspectorSection>
+            </div>
+          );
+        }}
+      />
+
       <PayslipPrintModal
         isOpen={Boolean(activeSlipForPrint)}
         onClose={() => setActiveSlipForPrint(null)}
@@ -386,7 +566,6 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         language={language}
       />
 
-      {/* Salary Advance Modal */}
       <SalaryAdvanceModal
         isOpen={isAdvanceModalOpen}
         onClose={() => setIsAdvanceModalOpen(false)}

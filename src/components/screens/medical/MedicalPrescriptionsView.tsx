@@ -88,6 +88,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>(['rx_01']));
+  const [pinnedNgapCodes, setPinnedNgapCodes] = useState<Set<string>>(() => new Set<string>());
+  const [ngapSearch, setNgapSearch] = useState('');
+  const [ngapViewMode, setNgapViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
   const [inspectedRx, setInspectedRx] = useState<MedicalPrescription | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<string>('posologie');
@@ -271,6 +274,43 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
     },
     [isAr, isFr]
   );
+
+  const handleTogglePinNgap = useCallback(
+    (code: string) => {
+      setPinnedNgapCodes((prev) => {
+        const next = new Set(prev);
+        if (next.has(code)) next.delete(code);
+        else next.add(code);
+        return next;
+      });
+      showToast({
+        type: 'info',
+        title: isAr ? 'تم التحديث' : 'Nomenclature NGAP',
+        message: isAr ? 'تم تحديث التثبيت' : `Acte ${code} mis à jour`,
+      });
+    },
+    [isAr]
+  );
+
+  const sortedNgapActs = useMemo(() => {
+    const q = ngapSearch.trim().toLowerCase();
+    const list = NGAP_ACTS.filter((act) => {
+      if (!q) return true;
+      return (
+        act.code.toLowerCase().includes(q) ||
+        act.label.toLowerCase().includes(q) ||
+        act.category.toLowerCase().includes(q)
+      );
+    });
+    list.sort((a, b) => {
+      const ap = pinnedNgapCodes.has(a.code);
+      const bp = pinnedNgapCodes.has(b.code);
+      if (ap && !bp) return -1;
+      if (!ap && bp) return 1;
+      return a.code.localeCompare(b.code);
+    });
+    return list;
+  }, [ngapSearch, pinnedNgapCodes]);
 
   const handleSelectRx = useCallback((rx: MedicalPrescription, opener?: HTMLElement | null) => {
     if (opener) setDrawerOpenerEl(opener);
@@ -673,88 +713,185 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   : 'Codification officielle CNAS/CASNOS, tarifs conventionnés, ticket modérateur et dépréciation du stock'}
               </p>
             </div>
-            <div className="overflow-x-auto w-full">
-              <table className="w-full text-left text-xs border-separate border-spacing-y-1.5">
-                <thead className="bg-transparent text-black/55 dark:text-white/55">
-                  <tr>
-                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Code NGAP</th>
-                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">
-                      Libellé de l&apos;Acte Médical
-                    </th>
-                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Catégorie</th>
-                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">
-                      Tarif Conv.
-                    </th>
-                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">
-                      Part CNAS (80%)
-                    </th>
-                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">
-                      Ticket Mod.
-                    </th>
-                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">
-                      Consommables Déduits
-                    </th>
-                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-right">
-                      Action Test
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {NGAP_ACTS.map((act) => (
-                    <tr
-                      key={act.code}
-                      className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs hover:bg-neutral-50/90 dark:hover:bg-neutral-700/60 transition-colors"
-                    >
-                      <td className="p-3.5 font-mono font-bold text-[#d4522f]">
-                        <span className="px-2 py-0.5 rounded-md bg-[#d4522f]/10 border border-[#d4522f]/20">
-                          {act.code}
-                        </span>
-                      </td>
-                      <td className="p-3.5 font-semibold text-black dark:text-white">{act.label}</td>
-                      <td className="p-3.5 text-black/55 dark:text-white/55">{act.category}</td>
-                      <td className="p-3.5 font-mono font-bold text-black dark:text-white">
-                        {act.conventionFeeDzd.toLocaleString()} DA
-                      </td>
-                      <td className="p-3.5 font-mono text-emerald-600 font-semibold">
-                        {act.cnasReimbursementDzd.toLocaleString()} DA
-                      </td>
-                      <td className="p-3.5 font-mono text-black/70 dark:text-white/75">
-                        {act.ticketModerateurDzd.toLocaleString()} DA
-                      </td>
-                      <td className="p-3.5">
-                        <div className="flex flex-wrap gap-1">
-                          {act.linkedConsumables.map((c, idx) => (
-                            <span
-                              key={idx}
-                              className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75 font-mono"
-                            >
-                              {c}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="p-3.5 text-right">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            depleteForAct(act.code);
-                            showToast({
-                              type: 'success',
-                              title: 'Consommables NGAP',
-                              message: `Consommables déduits avec succès pour acte [${act.code}]`,
-                            });
-                          }}
-                          className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-700 hover:bg-[#d4522f] hover:text-white transition-colors cursor-pointer"
-                          title="Simuler la dépréciation des consommables pour cet acte"
+            <ScreenCollectionToolbar
+              title={isAr ? 'دليل الأعمال NGAP' : 'Codification Officielle NGAP'}
+              liveRegionText={`${sortedNgapActs.length} actes`}
+              language={language}
+              searchQuery={ngapSearch}
+              onSearchChange={setNgapSearch}
+              searchPlaceholder={
+                isAr ? 'بحث بالكود أو نوع الفحص...' : 'Rechercher code NGAP, libellé, catégorie...'
+              }
+              viewMode={ngapViewMode}
+              onViewModeChange={setNgapViewMode}
+              showViewToggle
+              onExport={() => {
+                const headers = ['Code NGAP', 'Libellé', 'Catégorie', 'Tarif Conv. (DA)', 'Part CNAS (80%)', 'Ticket Mod. (DA)', 'Consommables'];
+                const rows = sortedNgapActs.map((act) => [
+                  act.code,
+                  act.label,
+                  act.category,
+                  act.conventionFeeDzd,
+                  act.cnasReimbursementDzd,
+                  act.ticketModerateurDzd,
+                  act.linkedConsumables.join(' | '),
+                ]);
+                downloadCsvSafe(`nomenclature_ngap_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+                showToast({ type: 'info', title: 'Export NGAP', message: 'Nomenclature NGAP exportée en CSV' });
+              }}
+              onResetAllFilters={() => setNgapSearch('')}
+            />
+
+            <UniversalDataCollection
+              hideToolbar
+              items={sortedNgapActs}
+              keyExtractor={(act) => act.code}
+              viewMode={ngapViewMode === 'grid' ? 'grid' : 'list'}
+              defaultViewMode={ngapViewMode === 'grid' ? 'grid' : 'list'}
+              isPinned={(act) => pinnedNgapCodes.has(act.code)}
+              onTogglePin={(act) => handleTogglePinNgap(act.code)}
+              columns={[
+                {
+                  key: 'code',
+                  header: 'Code NGAP',
+                  width: '1.0*',
+                  renderCell: (act) => (
+                    <span className="px-2 py-0.5 rounded-md bg-[#d4522f]/10 border border-[#d4522f]/20 font-mono font-bold text-xs text-[#d4522f]">
+                      {act.code}
+                    </span>
+                  ),
+                },
+                {
+                  key: 'label',
+                  header: "Libellé de l'Acte",
+                  width: '2.2*',
+                  renderCell: (act) => (
+                    <div className="min-w-0">
+                      <div className="font-semibold text-xs text-black dark:text-white truncate">{act.label}</div>
+                      <div className="text-[11px] text-black/55 dark:text-white/55 truncate">{act.category}</div>
+                    </div>
+                  ),
+                },
+                {
+                  key: 'conventionFeeDzd',
+                  header: 'Tarif Conv.',
+                  width: '1.2*',
+                  renderCell: (act) => (
+                    <span className="font-mono font-bold text-xs text-black dark:text-white">
+                      {act.conventionFeeDzd.toLocaleString()} DA
+                    </span>
+                  ),
+                },
+                {
+                  key: 'cnasReimbursementDzd',
+                  header: 'Part CNAS (80%)',
+                  width: '1.3*',
+                  renderCell: (act) => (
+                    <span className="font-mono text-xs text-emerald-600 font-semibold">
+                      {act.cnasReimbursementDzd.toLocaleString()} DA
+                    </span>
+                  ),
+                },
+                {
+                  key: 'ticketModerateurDzd',
+                  header: 'Ticket Mod.',
+                  width: '1.1*',
+                  renderCell: (act) => (
+                    <span className="font-mono text-xs text-black/70 dark:text-white/75">
+                      {act.ticketModerateurDzd.toLocaleString()} DA
+                    </span>
+                  ),
+                },
+                {
+                  key: 'linkedConsumables',
+                  header: 'Consommables Déduits',
+                  width: '1.8*',
+                  renderCell: (act) => (
+                    <div className="flex flex-wrap gap-1">
+                      {act.linkedConsumables.map((c, idx) => (
+                        <span
+                          key={idx}
+                          className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75 font-mono"
                         >
-                          Consommer
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  ),
+                },
+              ]}
+              getRowMeta={(act): KineticRowMeta => ({
+                title: act.label,
+                subline: `${act.code} · ${act.category}`,
+                avatarText: act.code.slice(0, 2).toUpperCase(),
+                categoryLabel: act.category,
+                statusLabel: 'Conventionné CNAS',
+                statusVariant: 'active',
+                metricPrimary: `${act.conventionFeeDzd.toLocaleString()} DA`,
+                metricSecondary: `CNAS ${act.cnasReimbursementDzd.toLocaleString()} DA · TM ${act.ticketModerateurDzd.toLocaleString()} DA`,
+                isPinned: pinnedNgapCodes.has(act.code),
+                detailCol1: {
+                  heading: 'Code NGAP & Catégorie',
+                  primaryText: act.code,
+                  secondaryText: act.category,
+                },
+                detailCol2: {
+                  heading: 'Tarif / CNAS / TM',
+                  primaryText: `${act.conventionFeeDzd.toLocaleString()} DA`,
+                  secondaryText: `CNAS ${act.cnasReimbursementDzd.toLocaleString()} DA · TM ${act.ticketModerateurDzd.toLocaleString()} DA`,
+                },
+                detailCol3: {
+                  heading: 'Consommables déduits',
+                  primaryText: act.linkedConsumables.join(', ') || 'Aucun consommable lié',
+                },
+              })}
+              getFanActions={(act): KineticRowFanAction[] => [
+                {
+                  id: 'deplete',
+                  label: 'Consommer',
+                  icon: <CheckCircle2 size={13} />,
+                  onClick: () => {
+                    depleteForAct(act.code);
+                    showToast({
+                      type: 'success',
+                      title: 'Consommables NGAP',
+                      message: `Consommables déduits avec succès pour acte [${act.code}]`,
+                    });
+                  },
+                },
+                {
+                  id: 'pin',
+                  label: pinnedNgapCodes.has(act.code) ? 'Détacher' : 'Épingler',
+                  icon: <Pin size={13} />,
+                  onClick: () => handleTogglePinNgap(act.code),
+                },
+              ]}
+              getDetailActions={(act): KineticDetailAction[] => [
+                {
+                  id: 'deplete',
+                  label: 'Consommer',
+                  icon: <CheckCircle2 size={14} />,
+                  onClick: () => {
+                    depleteForAct(act.code);
+                    showToast({
+                      type: 'success',
+                      title: 'Consommables NGAP',
+                      message: `Consommables déduits avec succès pour acte [${act.code}]`,
+                    });
+                  },
+                },
+                {
+                  id: 'pin',
+                  label: pinnedNgapCodes.has(act.code) ? 'Détacher' : 'Épingler',
+                  icon: <Pin size={14} />,
+                  onClick: () => handleTogglePinNgap(act.code),
+                },
+              ]}
+              emptyTitle="Aucun acte NGAP"
+              emptyDescription="Aucun acte ne correspond à votre recherche"
+              onResetFilters={() => setNgapSearch('')}
+              hasActiveFilters={ngapSearch.trim().length > 0}
+            />
           </div>
         </ScreenPod>
       ) : (

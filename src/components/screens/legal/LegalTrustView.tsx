@@ -13,6 +13,7 @@ import {
   FileCheck,
   Key,
   MapPin,
+  Pin,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -110,9 +111,29 @@ export const LegalTrustView: React.FC<any> = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
   const [sortBy, setSortBy] = useState<string>('default');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
+
+  const handleTogglePin = useCallback(
+    (id: string) => {
+      setPinnedIds((prev) => {
+        const next = new Set(prev);
+        const nowPinned = !next.has(id);
+        if (nowPinned) next.add(id);
+        else next.delete(id);
+        showToast(
+          nowPinned
+            ? isAr ? 'تم التثبيت بالأعلى' : 'Élément épinglé en tête de liste'
+            : isAr ? 'تم إلغاء التثبيت' : 'Élément désépinglé',
+          'info'
+        );
+        return next;
+      });
+    },
+    [isAr]
+  );
 
   // Role-specific Filters & Drawers
   const [escrowLockFilter, setEscrowLockFilter] = useState<string>('All');
@@ -427,15 +448,38 @@ export const LegalTrustView: React.FC<any> = () => {
   );
 
   const getEscrowRowMeta = useCallback(
-    (a: EscrowAccount): KineticRowMeta => ({
-      avatarText: 'SQ',
-      subline: `${a.clientName} ➔ ${a.beneficiaryName}`,
-      categoryLabel: isAr ? 'حساب حراسة' : 'Séquestre',
-      statusVariant: a.isLocked ? 'blocked' : 'active',
-      statusLabel: a.isLocked ? (isAr ? 'مقفل' : 'Verrouillé') : isAr ? 'محرر' : 'Libéré',
-      metricPrimary: formatMoney(a.currentBalanceDzd, language),
-    }),
-    [isAr, language]
+    (a: EscrowAccount): KineticRowMeta => {
+      const branchInfo = resolveRecordBranch(a, branchesById, currentBranch, language);
+      return {
+        isPinned: pinnedIds.has(a.id),
+        avatarText: 'SQ',
+        subline: `${a.clientName} ➔ ${a.beneficiaryName}`,
+        categoryLabel: isAr ? 'حساب حراسة' : isEn ? 'Escrow' : 'Séquestre',
+        statusVariant: a.isLocked ? 'blocked' : 'active',
+        statusLabel: a.isLocked
+          ? isAr ? 'مقفل' : isEn ? 'Locked' : 'Verrouillé'
+          : isAr ? 'محرر' : isEn ? 'Released' : 'Libéré',
+        metricPrimary: formatMoney(a.currentBalanceDzd, language),
+        detailCol1: {
+          heading: isAr ? 'الأطراف' : isEn ? 'Parties' : 'Parties Séquestre',
+          primaryText: a.clientName,
+          secondaryText: `➔ ${a.beneficiaryName}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'الرصيد والمصروف' : isEn ? 'Balance & Out' : 'Solde & Débours',
+          primaryText: formatMoney(a.currentBalanceDzd, language),
+          secondaryText: `${isAr ? 'مصروف' : isEn ? 'Disbursed' : 'Déboursé'}: ${formatMoney(a.totalDisbursedDzd, language)}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الإشهار والفرع' : isEn ? 'Cadastre & Branch' : 'Cadastre & Branche',
+          primaryText: a.cadastralClearanceProof?.volume
+            ? `${a.cadastralClearanceProof.volume} / ${a.cadastralClearanceProof.number}`
+            : isAr ? 'بانتظار الإشهار' : isEn ? 'Pending clearance' : 'Attente pub. foncière',
+          secondaryText: branchInfo.name,
+        },
+      };
+    },
+    [pinnedIds, branchesById, currentBranch, isAr, isEn, language]
   );
 
   const getEscrowFanActions = useCallback(
@@ -460,8 +504,14 @@ export const LegalTrustView: React.FC<any> = () => {
           setEscrowTab('virement');
         },
       },
+      {
+        id: 'pin',
+        label: pinnedIds.has(a.id) ? (isAr ? 'إلغاء' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className={`w-[15px] h-[15px] ${pinnedIds.has(a.id) ? 'fill-current' : ''}`} />,
+        onClick: () => handleTogglePin(a.id),
+      },
     ],
-    [isAr]
+    [isAr, pinnedIds, handleTogglePin]
   );
 
   const getEscrowDetailActions = useCallback(
@@ -493,21 +543,46 @@ export const LegalTrustView: React.FC<any> = () => {
           setEscrowTab('virement');
         },
       },
+      {
+        id: 'pin',
+        label: pinnedIds.has(a.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className={`w-3.5 h-3.5 ${pinnedIds.has(a.id) ? 'fill-current' : ''}`} />,
+        onClick: () => handleTogglePin(a.id),
+      },
     ],
-    [isAr]
+    [isAr, pinnedIds, handleTogglePin]
   );
 
   const getScfRowMeta = useCallback(
-    (e: SCFJournalEntry): KineticRowMeta => ({
-      avatarText: (e.journalCode || 'EC').slice(0, 2).toUpperCase(),
-      subline: `${e.libelle} · Réf ${e.pieceJustificativeRef}`,
-      categoryLabel: `Journal ${e.journalCode}`,
-      statusVariant: 'active',
-      statusLabel: isAr ? 'متوازن' : 'Équilibré',
-      metricPrimary: formatMoney(e.totalDebitDzd, language),
-      metricSecondary: e.date,
-    }),
-    [isAr, language]
+    (e: SCFJournalEntry): KineticRowMeta => {
+      const branchInfo = resolveRecordBranch(e, branchesById, currentBranch, language);
+      return {
+        isPinned: pinnedIds.has(e.id),
+        avatarText: (e.journalCode || 'EC').slice(0, 2).toUpperCase(),
+        subline: `${e.libelle} · Réf ${e.pieceJustificativeRef}`,
+        categoryLabel: `Journal ${e.journalCode}`,
+        statusVariant: 'active',
+        statusLabel: isAr ? 'متوازن' : isEn ? 'Balanced' : 'Équilibré',
+        metricPrimary: formatMoney(e.totalDebitDzd, language),
+        metricSecondary: e.date,
+        detailCol1: {
+          heading: isAr ? 'القيد والمرجع' : isEn ? 'Entry & Ref' : 'Écriture & Pièce',
+          primaryText: e.entryNumber,
+          secondaryText: `Réf: ${e.pieceJustificativeRef}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'المبلغ والأسطر' : isEn ? 'Debit & Lines' : 'Montant & Lignes',
+          primaryText: formatMoney(e.totalDebitDzd, language),
+          secondaryText: `${e.lines.length} ${isAr ? 'أسطر' : isEn ? 'lines' : 'lignes'} · Journal ${e.journalCode}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'التاريخ والفرع' : isEn ? 'Date & Branch' : 'Date & Branche',
+          primaryText: e.date,
+          secondaryText: branchInfo.name,
+        },
+      };
+    },
+    [pinnedIds, branchesById, currentBranch, isAr, isEn, language]
   );
 
   const getScfFanActions = useCallback(
@@ -532,8 +607,14 @@ export const LegalTrustView: React.FC<any> = () => {
           setScfTab('justif');
         },
       },
+      {
+        id: 'pin',
+        label: pinnedIds.has(e.id) ? (isAr ? 'إلغاء' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className={`w-[15px] h-[15px] ${pinnedIds.has(e.id) ? 'fill-current' : ''}`} />,
+        onClick: () => handleTogglePin(e.id),
+      },
     ],
-    [isAr]
+    [isAr, pinnedIds, handleTogglePin]
   );
 
   const getScfDetailActions = useCallback(
@@ -556,21 +637,46 @@ export const LegalTrustView: React.FC<any> = () => {
           setScfTab('justif');
         },
       },
+      {
+        id: 'pin',
+        label: pinnedIds.has(e.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className={`w-3.5 h-3.5 ${pinnedIds.has(e.id) ? 'fill-current' : ''}`} />,
+        onClick: () => handleTogglePin(e.id),
+      },
     ],
-    [isAr]
+    [isAr, pinnedIds, handleTogglePin]
   );
 
   const getReceiptRowMeta = useCallback(
-    (r: CashReceipt): KineticRowMeta => ({
-      avatarText: 'RC',
-      subline: `${r.clientName} · ${r.matterTitle}`,
-      categoryLabel: 'Art. 317',
-      statusVariant: 'active',
-      statusLabel: isAr ? 'مقبوض' : 'Encaissé',
-      metricPrimary: formatMoney(r.netCollectedDzd, language),
-      metricSecondary: `+${formatMoney(r.timbreFiscalDzd, language)}`,
-    }),
-    [isAr, language]
+    (r: CashReceipt): KineticRowMeta => {
+      const branchInfo = resolveRecordBranch(r, branchesById, currentBranch, language);
+      return {
+        isPinned: pinnedIds.has(r.id),
+        avatarText: 'RC',
+        subline: `${r.clientName} · ${r.matterTitle}`,
+        categoryLabel: 'Art. 317',
+        statusVariant: 'active',
+        statusLabel: isAr ? 'مقبوض' : isEn ? 'Collected' : 'Encaissé',
+        metricPrimary: formatMoney(r.netCollectedDzd, language),
+        metricSecondary: `+${formatMoney(r.timbreFiscalDzd, language)}`,
+        detailCol1: {
+          heading: isAr ? 'الموكل والقضية' : isEn ? 'Client & Matter' : 'Client & Dossier',
+          primaryText: r.clientName,
+          secondaryText: r.matterTitle,
+        },
+        detailCol2: {
+          heading: isAr ? 'الصافي والطابع' : isEn ? 'Net & Stamp' : 'Net & Timbre 317',
+          primaryText: formatMoney(r.netCollectedDzd, language),
+          secondaryText: `HT ${formatMoney(r.totalHtDzd, language)} + ${formatMoney(r.timbreFiscalDzd, language)}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'رقم الوصل والفرع' : isEn ? 'Receipt & Branch' : 'Quittance & Branche',
+          primaryText: r.receiptNumber,
+          secondaryText: branchInfo.name,
+        },
+      };
+    },
+    [pinnedIds, branchesById, currentBranch, isAr, isEn, language]
   );
 
   const getReceiptFanActions = useCallback(
@@ -594,8 +700,14 @@ export const LegalTrustView: React.FC<any> = () => {
           window.print();
         },
       },
+      {
+        id: 'pin',
+        label: pinnedIds.has(r.id) ? (isAr ? 'إلغاء' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className={`w-[15px] h-[15px] ${pinnedIds.has(r.id) ? 'fill-current' : ''}`} />,
+        onClick: () => handleTogglePin(r.id),
+      },
     ],
-    [isAr]
+    [isAr, pinnedIds, handleTogglePin]
   );
 
   const getReceiptDetailActions = useCallback(
@@ -627,24 +739,49 @@ export const LegalTrustView: React.FC<any> = () => {
           window.print();
         },
       },
+      {
+        id: 'pin',
+        label: pinnedIds.has(r.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className={`w-3.5 h-3.5 ${pinnedIds.has(r.id) ? 'fill-current' : ''}`} />,
+        onClick: () => handleTogglePin(r.id),
+      },
     ],
-    [isAr]
+    [isAr, pinnedIds, handleTogglePin]
   );
 
   const getCarpaRowMeta = useCallback(
     (m: LegalMatter): KineticRowMeta => {
       const hasEscrow = (m.trustEscrowBalanceDzd || 0) > 0;
+      const branchInfo = resolveRecordBranch(m, branchesById, currentBranch, language);
       return {
+        isPinned: pinnedIds.has(m.id),
         avatarText: 'CA',
         subline: `${m.clientName} · ${m.title}`,
         categoryLabel: m.category,
         statusVariant: hasEscrow ? 'info' : 'active',
-        statusLabel: hasEscrow ? (isAr ? 'تحت الحراسة' : 'Sous Séquestre') : isAr ? 'مصفى' : 'Soldé',
+        statusLabel: hasEscrow
+          ? isAr ? 'تحت الحراسة' : isEn ? 'Escrowed' : 'Sous Séquestre'
+          : isAr ? 'مصفى' : isEn ? 'Settled' : 'Soldé',
         metricPrimary: formatMoney(m.trustEscrowBalanceDzd || 0, language),
         metricSecondary: formatMoney(m.retainerAmountDzd, language),
+        detailCol1: {
+          heading: isAr ? 'الموكل والملف' : isEn ? 'Client & Matter' : 'Client & Dossier',
+          primaryText: m.clientName,
+          secondaryText: m.matterNumber,
+        },
+        detailCol2: {
+          heading: isAr ? 'وديعة CARPA والأتعاب' : isEn ? 'CARPA & Retainer' : 'Séquestre & Honoraires',
+          primaryText: formatMoney(m.trustEscrowBalanceDzd || 0, language),
+          secondaryText: `${isAr ? 'أتعاب' : isEn ? 'Retainer' : 'Honoraires'}: ${formatMoney(m.retainerAmountDzd, language)}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'المحكمة والفرع' : isEn ? 'Court & Branch' : 'Juridiction & Branche',
+          primaryText: m.courtJurisdiction || m.category,
+          secondaryText: branchInfo.name,
+        },
       };
     },
-    [isAr, language]
+    [pinnedIds, branchesById, currentBranch, isAr, isEn, language]
   );
 
   const getCarpaFanActions = useCallback(
@@ -665,8 +802,14 @@ export const LegalTrustView: React.FC<any> = () => {
         icon: <Unlock className="w-[15px] h-[15px]" />,
         onClick: () => handleReleaseTrustFunds(m),
       },
+      {
+        id: 'pin',
+        label: pinnedIds.has(m.id) ? (isAr ? 'إلغاء' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className={`w-[15px] h-[15px] ${pinnedIds.has(m.id) ? 'fill-current' : ''}`} />,
+        onClick: () => handleTogglePin(m.id),
+      },
     ],
-    [isAr, handleReleaseTrustFunds]
+    [isAr, handleReleaseTrustFunds, pinnedIds, handleTogglePin]
   );
 
   const getCarpaDetailActions = useCallback(
@@ -699,8 +842,14 @@ export const LegalTrustView: React.FC<any> = () => {
           );
         },
       },
+      {
+        id: 'pin',
+        label: pinnedIds.has(m.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت' : 'Épingler'),
+        icon: <Pin className={`w-3.5 h-3.5 ${pinnedIds.has(m.id) ? 'fill-current' : ''}`} />,
+        onClick: () => handleTogglePin(m.id),
+      },
     ],
-    [isAr, handleReleaseTrustFunds]
+    [isAr, handleReleaseTrustFunds, pinnedIds, handleTogglePin]
   );
 
   const resetAllFilters = useCallback(() => {
@@ -825,6 +974,10 @@ export const LegalTrustView: React.FC<any> = () => {
         return true;
       })
       .sort((a, b) => {
+        const aPinned = pinnedIds.has(a.id);
+        const bPinned = pinnedIds.has(b.id);
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
         let cmp = 0;
         if (sortBy === 'branch') {
           cmp = resolveRecordBranch(a, branchesById, currentBranch, language).name.localeCompare(
@@ -1067,6 +1220,8 @@ export const LegalTrustView: React.FC<any> = () => {
             getRowMeta={getEscrowRowMeta}
             getFanActions={getEscrowFanActions}
             getDetailActions={getEscrowDetailActions}
+            isPinned={(a) => pinnedIds.has(a.id)}
+            onTogglePin={(a) => handleTogglePin(a.id)}
             customActions={(a) => [
               {
                 id: 'double_lock',
@@ -1335,6 +1490,10 @@ export const LegalTrustView: React.FC<any> = () => {
         return true;
       })
       .sort((a, b) => {
+        const aPinned = pinnedIds.has(a.id);
+        const bPinned = pinnedIds.has(b.id);
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
         let cmp = 0;
         if (sortBy === 'branch') {
           cmp = resolveRecordBranch(a, branchesById, currentBranch, language).name.localeCompare(
@@ -1563,6 +1722,8 @@ export const LegalTrustView: React.FC<any> = () => {
             getRowMeta={getScfRowMeta}
             getFanActions={getScfFanActions}
             getDetailActions={getScfDetailActions}
+            isPinned={(e) => pinnedIds.has(e.id)}
+            onTogglePin={(e) => handleTogglePin(e.id)}
             emptyTitle={isAr ? 'لا توجد قيود مطابقة' : 'Aucune écriture comptable'}
             emptyDescription={
               isAr ? 'سجل قيداً جديداً أو عدّل المرشحات.' : 'Saisissez une écriture ou réinitialisez les filtres.'
@@ -1811,6 +1972,10 @@ export const LegalTrustView: React.FC<any> = () => {
         return true;
       })
       .sort((a, b) => {
+        const aPinned = pinnedIds.has(a.id);
+        const bPinned = pinnedIds.has(b.id);
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
         let cmp = 0;
         if (sortBy === 'branch') {
           cmp = resolveRecordBranch(a, branchesById, currentBranch, language).name.localeCompare(
@@ -2024,6 +2189,8 @@ export const LegalTrustView: React.FC<any> = () => {
             getRowMeta={getReceiptRowMeta}
             getFanActions={getReceiptFanActions}
             getDetailActions={getReceiptDetailActions}
+            isPinned={(r) => pinnedIds.has(r.id)}
+            onTogglePin={(r) => handleTogglePin(r.id)}
             emptyTitle={isAr ? 'لا توجد وصولات نقدية' : 'Aucune quittance enregistrée'}
             emptyDescription={
               isAr ? 'قم بتسجيل قبض نقدي جديد.' : 'Enregistrez un nouvel encaissement.'
@@ -2281,6 +2448,10 @@ export const LegalTrustView: React.FC<any> = () => {
       return true;
     })
     .sort((a, b) => {
+      const aPinned = pinnedIds.has(a.id);
+      const bPinned = pinnedIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
       let cmp = 0;
       if (sortBy === 'branch') {
         cmp = resolveRecordBranch(a, branchesById, currentBranch, language).name.localeCompare(
@@ -2519,6 +2690,8 @@ export const LegalTrustView: React.FC<any> = () => {
           getRowMeta={getCarpaRowMeta}
           getFanActions={getCarpaFanActions}
           getDetailActions={getCarpaDetailActions}
+          isPinned={(m) => pinnedIds.has(m.id)}
+          onTogglePin={(m) => handleTogglePin(m.id)}
           customActions={(m) => [
             {
               id: 'inspect',

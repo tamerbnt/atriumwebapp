@@ -349,16 +349,34 @@ export const LegalVaultView: React.FC<any> = () => {
   );
 
   const getRowMeta = useCallback(
-    (item: VaultItem): KineticRowMeta => ({
-      avatarText: item.roleScope === 'notaire' ? 'MN' : 'VL',
-      subline: `${item.code} · Dossier ${item.matterReference}`,
-      categoryLabel: item.category,
-      statusVariant: item.status === 'Confidential' ? 'blocked' : 'active',
-      statusLabel: localizeStatus(item.status, language),
-      metricPrimary: item.depositDate,
-      metricSecondary: item.officialSealNumber || undefined,
-    }),
-    [language]
+    (item: VaultItem): KineticRowMeta => {
+      const branchInfo = resolveRecordBranch(item, branchesById, currentBranch, language);
+      return {
+        avatarText: item.roleScope === 'notaire' ? 'MN' : 'VL',
+        subline: `${item.code} · Dossier ${item.matterReference}`,
+        categoryLabel: item.category,
+        statusVariant: item.status === 'Confidential' ? 'blocked' : 'active',
+        statusLabel: localizeStatus(item.status, language),
+        metricPrimary: item.depositDate,
+        metricSecondary: item.officialSealNumber || undefined,
+        detailCol1: {
+          heading: isAr ? 'المرجع والملف' : isEn ? 'Code & Matter' : 'Réf & Dossier',
+          primaryText: item.code,
+          secondaryText: `${isAr ? 'ملف' : isEn ? 'Matter' : 'Dossier'} ${item.matterReference}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'التصنيف والختم' : isEn ? 'Category & Seal' : 'Catégorie & Sceau',
+          primaryText: item.category,
+          secondaryText: item.officialSealNumber || 'SHA-256',
+        },
+        detailCol3: {
+          heading: isAr ? 'الإيداع والفرع' : isEn ? 'Deposit & Branch' : 'Dépôt & Branche',
+          primaryText: item.depositDate,
+          secondaryText: branchInfo.name,
+        },
+      };
+    },
+    [branchesById, currentBranch, language, isAr, isEn]
   );
 
   const getFanActions = useCallback(

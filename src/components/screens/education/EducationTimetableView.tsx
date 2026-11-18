@@ -296,9 +296,25 @@ export const EducationTimetableView: React.FC = () => {
         statusLabel: hasConflict ? 'Conflit' : 'Planifiée',
         metricPrimary: `${s.startTime} - ${s.endTime}`,
         metricSecondary: s.date,
+        detailCol1: {
+          heading: isAr ? 'الحصة والأستاذ' : isEn ? 'Topic & Instructor' : 'Séance & Formateur',
+          primaryText: s.topic || 'Séance de cours',
+          secondaryText: s.instructorName || 'Formateur',
+          tertiaryText: s.cohortName,
+        },
+        detailCol2: {
+          heading: isAr ? 'القاعة والتوقيت' : isEn ? 'Room & Schedule' : 'Salle & Créneau',
+          primaryText: s.classroomName || 'Salle standard',
+          secondaryText: `${s.date} · ${s.startTime} - ${s.endTime}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'حالة الجدولة' : isEn ? 'Conflict Check' : 'Disponibilité',
+          primaryText: hasConflict ? (isAr ? 'تعارض قاعة' : 'Conflit détecté') : isAr ? 'مؤكدة' : 'Planifiée',
+          secondaryText: s.cohortName,
+        },
       };
     },
-    [conflicts]
+    [conflicts, isAr, isEn]
   );
 
   const getSessionFanActions = useCallback(

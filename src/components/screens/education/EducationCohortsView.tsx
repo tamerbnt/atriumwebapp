@@ -315,9 +315,25 @@ export const EducationCohortsView: React.FC = () => {
         statusLabel: localizeStatus(cohort.status, language),
         metricPrimary: formatMoney(cohort.tuitionFee),
         metricSecondary: `${cohort.enrolledCount}/${cohort.maxStudents} (${pct}%)`,
+        detailCol1: {
+          heading: isAr ? 'الفوج والأستاذ' : isEn ? 'Cohort & Instructor' : 'Cohorte & Formateur',
+          primaryText: cohort.courseTitle,
+          secondaryText: cohort.instructorName,
+          tertiaryText: cohort.classroomName || 'Campus',
+        },
+        detailCol2: {
+          heading: isAr ? 'نسبة الامتلاء' : isEn ? 'Capacity' : 'Effectif & Remplissage',
+          primaryText: `${cohort.enrolledCount} / ${cohort.maxStudents} (${pct}%)`,
+          secondaryText: `${cohort.startDate} → ${cohort.endDate || '—'}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'رسوم التكوين' : isEn ? 'Tuition & Status' : 'Frais & Statut',
+          primaryText: formatMoney(cohort.tuitionFee),
+          secondaryText: localizeStatus(cohort.status, language),
+        },
       };
     },
-    [language]
+    [isAr, isEn, language]
   );
 
   const getCohortFanActions = useCallback(

@@ -8,6 +8,7 @@ import {
   Fingerprint,
   Edit3,
   Trash2,
+  Pin,
 } from 'lucide-react';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useStaffFoundation } from '../../common/staff/useStaffFoundation';
@@ -74,6 +75,7 @@ export const MembershipStaffView: React.FC<any> = () => {
         statusVariant,
         metricPrimary: member.salary ? `${member.salary.toLocaleString()} DZD` : '—',
         metricSecondary: member.badgeToken || member.cardId || branch.name,
+        isPinned: foundation.pinnedStaffIds.has(member.id),
         detailCol1: {
           heading: isAr ? 'بيانات الاتصال والفرع' : isEn ? 'Contact & Branch' : 'Contact & Agence',
           primaryText: member.phoneNumber || '—',
@@ -134,6 +136,19 @@ export const MembershipStaffView: React.FC<any> = () => {
         label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
         icon: <Edit3 className="w-3.5 h-3.5" />,
         onClick: () => foundation.handleOpenEdit(member),
+      },
+      {
+        id: 'pin',
+        label: foundation.pinnedStaffIds.has(member.id)
+          ? isAr ? 'إلغاء التثبيت' : isEn ? 'Unpin' : 'Détacher'
+          : isAr ? 'تثبيت' : isEn ? 'Pin' : 'Épingler',
+        icon: <Pin className="w-3.5 h-3.5" />,
+        onClick: () => {
+          const next = new Set(foundation.pinnedStaffIds);
+          if (next.has(member.id)) next.delete(member.id);
+          else next.add(member.id);
+          foundation.setPinnedStaffIds(next);
+        },
       },
     ],
     [isAr, isEn, foundation]

@@ -406,9 +406,24 @@ export const AutoGaragePartsView: React.FC<any> = () => {
         metricSecondary: `Min: ${p.minThreshold}`,
         branchName: br.name,
         branchCode: br.code,
+        detailCol1: {
+          heading: isAr ? 'المرجع والتصنيف' : isEn ? 'SKU & Category' : 'Réf & Catégorie',
+          primaryText: p.sku,
+          secondaryText: `${p.category} · ${p.locationBin}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'الأسعار والهامش' : isEn ? 'Pricing' : 'Tarifs Achat / Vente',
+          primaryText: formatMoney(p.sellingPriceDzd, language),
+          secondaryText: `${isAr ? 'شراء' : isEn ? 'Buy' : 'Achat'}: ${formatMoney(p.buyingPriceDzd, language)}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'المخزون والفرع' : isEn ? 'Stock & Branch' : 'Stock & Succursale',
+          primaryText: `${p.stockQuantity} ${isAr ? 'وحدة' : isEn ? 'units' : 'u.'} (Min ${p.minThreshold})`,
+          secondaryText: br.name,
+        },
       };
     },
-    [branchesById, currentBranch, language]
+    [branchesById, currentBranch, language, isAr, isEn]
   );
 
   const getFanActions = useCallback(

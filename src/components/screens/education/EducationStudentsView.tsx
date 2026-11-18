@@ -386,9 +386,25 @@ export const EducationStudentsView: React.FC = () => {
         statusLabel: localizeStatus(student.status, language),
         metricPrimary: `${rate}%`,
         metricSecondary: enrollment ? formatMoney(enrollment.paidAmount) : student.guardianName || undefined,
+        detailCol1: {
+          heading: isAr ? 'بيانات الاتصال والولي' : isEn ? 'Contact & Guardian' : 'Contact & Tuteur',
+          primaryText: student.phone,
+          secondaryText: student.email || '—',
+          tertiaryText: student.guardianName ? `${isAr ? 'الولي:' : 'Tuteur:'} ${student.guardianName}` : undefined,
+        },
+        detailCol2: {
+          heading: isAr ? 'التكوين والمواظبة' : isEn ? 'Cohort & Attendance' : 'Cohorte & Assiduité',
+          primaryText: enrollment ? enrollment.cohortName : student.schoolGrade || 'Non inscrit',
+          secondaryText: `${isAr ? 'الحضور:' : 'Présence:'} ${rate}%`,
+        },
+        detailCol3: {
+          heading: isAr ? 'الوضعية المالية' : isEn ? 'Tuition & Status' : 'Scolarité & Statut',
+          primaryText: enrollment ? formatMoney(enrollment.paidAmount) : localizeStatus(student.status, language),
+          secondaryText: enrollment && enrollment.balanceDue > 0 ? `${formatMoney(enrollment.balanceDue)} dû` : localizeStatus(student.status, language),
+        },
       };
     },
-    [eduEnrollments, isAr, language]
+    [eduEnrollments, isAr, isEn, language]
   );
 
   const getStudentFanActions = useCallback(

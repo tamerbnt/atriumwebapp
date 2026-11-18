@@ -472,6 +472,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
   const getTimeLogRowMeta = useCallback(
     (entry: TimeLogEntry): KineticRowMeta => {
       const val = Math.round((entry.durationSeconds / 3600) * entry.rateAtMoment);
+      const branchInfo = resolveRecordBranch(entry, branchesById, currentBranch, language);
       return {
         avatarText: entry.clientName.slice(0, 2).toUpperCase(),
         subline: `${entry.clientName} · ${entry.projectTitle}`,
@@ -484,9 +485,24 @@ export const FreelanceTimeTrackerView: React.FC = () => {
           : t('free_time_non_billable', language),
         metricPrimary: formatDuration(entry.durationSeconds),
         metricSecondary: formatCurrencyAmount(val, entry.currency),
+        detailCol1: {
+          heading: isAr ? 'العميل والمشروع' : isFr ? 'Client & Projet' : 'Client & Project',
+          primaryText: entry.clientName,
+          secondaryText: entry.projectTitle || '—',
+        },
+        detailCol2: {
+          heading: isAr ? 'المدة والقيمة' : isFr ? 'Durée & Valeur' : 'Duration & Value',
+          primaryText: formatDuration(entry.durationSeconds),
+          secondaryText: `${formatCurrencyAmount(val, entry.currency)} (${formatCurrencyAmount(entry.rateAtMoment, entry.currency)}/h)`,
+        },
+        detailCol3: {
+          heading: isAr ? 'التاريخ والفرع' : isFr ? 'Date & Branche' : 'Date & Branch',
+          primaryText: entry.date,
+          secondaryText: branchInfo.name,
+        },
       };
     },
-    [language, t]
+    [branchesById, currentBranch, language, t, isAr, isFr]
   );
 
   const getTimeLogFanActions = useCallback(

@@ -387,6 +387,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
           primaryText: m.supervisorName,
           secondaryText: `${m.requiredStaffCount} animateurs`,
         },
+        detailCol3: {
+          heading: isAr ? 'البرنامج والتفعيل' : isEn ? 'Schedule & Type' : 'Programme & Activation',
+          primaryText: m.startDate,
+          secondaryText: `${m.activationType.replace(/_/g, ' ')} · ${br.name}`,
+        },
       };
     },
     [branchesById, currentBranch, language, pinnedMissionIds, isAr]
@@ -417,6 +422,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
           primaryText: formatMoney(att.grossPayableDzd, 'DZD'),
           secondaryText: `Forfait ${formatMoney(att.dayRateDzd, 'DZD')}`,
         },
+        detailCol3: {
+          heading: isAr ? 'التقييم والقفل' : isEn ? 'Rating & Lock' : 'Évaluation & Visa',
+          primaryText: `${att.shiftRating}/5 ★`,
+          secondaryText: `${att.date} · ${att.isLocked ? 'Verrouillé' : 'Ouvert'}`,
+        },
       };
     },
     [branchesById, currentBranch, language, isAr]
@@ -436,6 +446,22 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         metricSecondary: tal.isVehicleOwner ? 'Véhiculé' : `${tal.completedMissionsCount} missions`,
         branchName: br.name,
         branchCode: br.code,
+        detailCol1: {
+          heading: isAr ? 'المنطقة والدور' : isEn ? 'Location & Role' : 'Zone & Profil',
+          primaryText: `${tal.wilayaName} · ${tal.commune}`,
+          secondaryText: tal.desiredRoles[0] || 'Animateur',
+          tertiaryText: br.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'الخبرة والتنقل' : isEn ? 'Missions & Mobility' : 'Expérience & Mobilité',
+          primaryText: `${tal.completedMissionsCount} missions`,
+          secondaryText: tal.isVehicleOwner ? 'Véhiculé' : 'Sans véhicule',
+        },
+        detailCol3: {
+          heading: isAr ? 'التقييم العام' : isEn ? 'Rating & Status' : 'Score & Statut',
+          primaryText: `${tal.consolidatedScore.toFixed(1)} ★`,
+          secondaryText: tal.status,
+        },
       };
     },
     [branchesById, currentBranch, language]
@@ -1208,6 +1234,30 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                         },
                       ]
                 }
+                getDetailActions={(att): KineticDetailAction[] =>
+                  isMissionLocked
+                    ? []
+                    : [
+                        {
+                          id: 'present',
+                          label: isAr ? 'حاضر' : isEn ? 'Present' : 'Présent',
+                          icon: <CheckCircle size={14} />,
+                          onClick: () => updatePmAttendanceStatus(att.id, 'present'),
+                        },
+                        {
+                          id: 'late',
+                          label: isAr ? 'تأخر' : isEn ? 'Late' : 'Retard',
+                          icon: <AlertTriangle size={14} />,
+                          onClick: () => updatePmAttendanceStatus(att.id, 'late', 15),
+                        },
+                        {
+                          id: 'absent',
+                          label: isAr ? 'غائب' : isEn ? 'Absent' : 'Absent',
+                          icon: <XCircle size={14} />,
+                          onClick: () => updatePmAttendanceStatus(att.id, 'absent'),
+                        },
+                      ]
+                }
                 renderCard={(att) => (
                   <div className="flex flex-col justify-between h-full space-y-3">
                     <div className="flex items-center gap-3">
@@ -1279,6 +1329,25 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                   setInspectedTalent(tal);
                 }}
                 getRowMeta={getTalentRowMeta}
+                getFanActions={(tal): KineticRowFanAction[] => [
+                  {
+                    id: 'inspect',
+                    label: isAr ? 'الملف' : isEn ? 'Profile' : 'Profil',
+                    icon: <Users size={14} />,
+                    onClick: (e) => {
+                      setTalentOpenerEl(e.currentTarget);
+                      setInspectedTalent(tal);
+                    },
+                  },
+                ]}
+                getDetailActions={(tal): KineticDetailAction[] => [
+                  {
+                    id: 'inspect',
+                    label: isAr ? 'عرض الملف' : isEn ? 'View Profile' : 'Voir Profil',
+                    icon: <Users size={14} />,
+                    onClick: () => setInspectedTalent(tal),
+                  },
+                ]}
                 renderCard={(talent) => (
                   <div className="p-4 flex items-center gap-3">
                     {talent.portraitPhotoUrl ? (

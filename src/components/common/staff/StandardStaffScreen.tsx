@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Clock, Edit, Eye, Trash2, CheckCircle2 } from 'lucide-react';
+import { Clock, Edit, Eye, Trash2, CheckCircle2, Pin } from 'lucide-react';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import {
   ScreenPod,
@@ -105,6 +105,7 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
           : contractType,
         branchName: branch.name,
         branchCode: branch.code,
+        isPinned: foundation.pinnedStaffIds.has(s.id),
         detailCol1: {
           heading: isAr ? 'بيانات الاتصال والوظيفة' : isEn ? 'Contact & Role' : 'Contact & Poste',
           primaryText: s.phoneNumber || '—',
@@ -201,6 +202,19 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
             : 'Pointer',
           icon: <CheckCircle2 className="w-3.5 h-3.5" />,
           onClick: () => foundation.handlePunchPointage(s.id),
+        },
+        {
+          id: 'pin',
+          label: foundation.pinnedStaffIds.has(s.id)
+            ? isAr ? 'إلغاء التثبيت' : isEn ? 'Unpin' : 'Détacher'
+            : isAr ? 'تثبيت' : isEn ? 'Pin' : 'Épingler',
+          icon: <Pin className="w-3.5 h-3.5" />,
+          onClick: () => {
+            const next = new Set(foundation.pinnedStaffIds);
+            if (next.has(s.id)) next.delete(s.id);
+            else next.add(s.id);
+            foundation.setPinnedStaffIds(next);
+          },
         },
       ];
       if (foundation.canCreate) {

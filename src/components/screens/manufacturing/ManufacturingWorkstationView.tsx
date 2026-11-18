@@ -9,9 +9,16 @@ import {
   Wrench,
   BellRing,
   X,
+  Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumStore,
+  useAtriumSelector,
+  showToast,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { computeScrapYield } from '../../../utils/manufacturingRules';
+import { formatMoney } from '../../../utils/rules';
 import { useManufacturingData } from './manufacturingData';
 import { ManufacturingOrder } from '../../../types';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -22,6 +29,15 @@ import {
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
+  KineticSlideOverInspector,
+  InspectorSection,
+  InspectorQuickActions,
+  InspectorCard,
+  InspectorKeyValue,
+  InspectorBigStat,
+  InspectorWideButton,
+  buildBranchesByIdMap,
+  resolveRecordBranch,
 } from '../../ui/kinetic';
 
 const SCRAP_REASON_CODES = [
@@ -62,12 +78,15 @@ export const ManufacturingWorkstationView: React.FC = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
   const {
+    branches,
     isSyncing,
     networkMode,
     retryCloudSync,
     lastSyncedAt,
     isSyncTimeout,
   } = useAtriumStore();
+  const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
+  const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
   const { orders, updateOrder } = useManufacturingData();
 
   const [selectedOrderId, setSelectedOrderId] = useState<string>(() => {
@@ -78,6 +97,10 @@ export const ManufacturingWorkstationView: React.FC = () => {
   const currentOrder = useMemo<ManufacturingOrder | null>(() => {
     return orders.find((o) => o.id === selectedOrderId) || orders[0] || null;
   }, [orders, selectedOrderId]);
+
+  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
+  const [inspectorTab, setInspectorTab] = useState<'of' | 'epi' | 'yield'>('of');
+  const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
 
   const [epiGlasses, setEpiGlasses] = useState(false);
   const [epiGloves, setEpiGloves] = useState(false);
@@ -372,12 +395,24 @@ export const ManufacturingWorkstationView: React.FC = () => {
           formatValue: (v) => `${v}/${targetCount}`,
           badgeText: `${yieldStats.yieldPercent}% ${isAr ? 'جودة' : isEn ? 'yield' : 'rendement'}`,
           tone: 'emerald',
+          isActive: isInspectorOpen && inspectorTab === 'of',
+          onToggle: () => {
+            setInspectorTab('of');
+            setIsInspectorOpen((prev) => (inspectorTab === 'of' ? !prev : true));
+          },
+          filteredLabel: isAr ? 'المعاينة مفتوحة' : isEn ? 'Inspecting' : 'Inspecteur ouvert',
         }}
         secondaryCard={{
           label: isAr ? 'الخردة المسجلة' : isEn ? 'Cumulative Scrap' : 'Rebuts Cumulés',
           count: scrapCount,
           badgeText: isAr ? 'قطعة' : isEn ? 'units' : 'pièces',
           tone: 'terracotta',
+          isActive: isInspectorOpen && inspectorTab === 'yield',
+          onToggle: () => {
+            setInspectorTab('yield');
+            setIsInspectorOpen((prev) => (inspectorTab === 'yield' ? !prev : true));
+          },
+          filteredLabel: isAr ? 'تحليل المردود' : isEn ? 'Yield View' : 'Vue Rendement',
         }}
         darkCard={{
           label: isAr
@@ -462,6 +497,22 @@ export const ManufacturingWorkstationView: React.FC = () => {
                         {producedCount} {isAr ? 'وحدة' : isEn ? 'units' : 'unités'}
                       </span>
                     </div>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        setDrawerOpenerEl(e.currentTarget);
+                        setInspectorTab('of');
+                        setIsInspectorOpen(true);
+                      }}
+                      className="w-full py-2.5 px-3 rounded-xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 hover:border-[#d4522f] text-xs font-bold text-black dark:text-white flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <Eye size={14} className="text-[#d4522f]" />
+                      <span>
+                        {isAr ? 'معاينة أمر التصنيع والمواصفات' : isEn ? 'Inspect MO & Specs' : 'Inspecter OF / Specs'}
+                      </span>
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -816,6 +867,165 @@ export const ManufacturingWorkstationView: React.FC = () => {
           </div>
         </div>
       )}
+      <KineticSlideOverInspector<ManufacturingOrder>
+        isOpen={isInspectorOpen && Boolean(currentOrder)}
+        item={currentOrder}
+        allItems={orders}
+        keyExtractor={(o) => o.id}
+        openerElement={drawerOpenerEl}
+        language={language}
+        title={currentOrder?.orderNumber || ''}
+        subtitle={
+          currentOrder
+            ? `${currentOrder.productName} · Lot ${currentOrder.batchLotNumber || 'LOT-2026-05'}`
+            : ''
+        }
+        avatarText="OF"
+        avatarColor="#d4522f"
+        categoryLabel={isAr ? 'محطة 03 CNC' : isEn ? 'Station 03 CNC' : 'Poste 03 CNC'}
+        branchName={
+          currentOrder
+            ? resolveRecordBranch(currentOrder, branchesById, currentBranch, language).name
+            : ''
+        }
+        statusLabel={currentOrder?.status || ''}
+        statusClassName={
+          currentOrder?.status === 'Completed'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            : currentOrder?.status === 'InProduction'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            : 'bg-neutral-100 dark:bg-neutral-800 text-black/75 dark:text-white/75 border border-neutral-200 dark:border-neutral-700'
+        }
+        tabs={[
+          { id: 'of', label: isAr ? 'أمر التصنيع' : isEn ? 'MO & Specs' : 'Fiche OF' },
+          { id: 'epi', label: isAr ? 'السلامة EPI' : isEn ? 'Safety Loi 88-07' : 'Sécurité EPI' },
+          { id: 'yield', label: isAr ? 'المردود والخردة' : isEn ? 'Yield & Scrap' : 'Rendement' },
+        ]}
+        activeTab={inspectorTab}
+        onTabChange={(t) => setInspectorTab(t as 'of' | 'epi' | 'yield')}
+        onSelectItem={(o) => {
+          setSelectedOrderId(o.id);
+          setElapsedSeconds(0);
+          setIsRunning(false);
+        }}
+        onClose={() => setIsInspectorOpen(false)}
+        renderBody={(ord, tab) => {
+          const ordProduced = ord.actualQuantityProduced || ord.quantityProduced || 0;
+          const ordScrap = ord.scrapQuantity || 0;
+          const ordYield = computeScrapYield(ord.targetQuantity, ordProduced, ordScrap);
+          const br = resolveRecordBranch(ord, branchesById, currentBranch, language);
+          if (tab === 'epi') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection
+                  index={0}
+                  title={isAr ? 'معدات الحماية الإلزامية (قانون 88-07)' : isEn ? 'Mandatory PPE Checklist (Loi 88-07)' : 'Contrôle EPI Obligatoire (Loi 88-07)'}
+                >
+                  <InspectorBigStat
+                    value={`${epiCount} / 4`}
+                    tone={isSafetyChecklistComplete ? 'ok' : 'accent'}
+                    caption={
+                      isSafetyChecklistComplete
+                        ? isAr ? 'جميع شروط السلامة مؤكدة' : isEn ? 'All PPE items verified' : 'Poste conforme pour démarrage'
+                        : isAr ? 'يرجى تأكيد العناصر الأربعة' : isEn ? 'Verify all 4 PPE items' : 'Validation requise avant cycle'
+                    }
+                  />
+                  <InspectorCard>
+                    <InspectorKeyValue label={isAr ? 'نظارات واقية' : isEn ? 'Safety Glasses' : 'Lunettes de protection'} value={epiGlasses ? '✓ OK' : 'En attente'} tone={epiGlasses ? 'ok' : 'warn'} />
+                    <InspectorKeyValue label={isAr ? 'قفازات تقنية' : isEn ? 'Cut-Resistant Gloves' : 'Gants anti-coupure'} value={epiGloves ? '✓ OK' : 'En attente'} tone={epiGloves ? 'ok' : 'warn'} />
+                    <InspectorKeyValue label={isAr ? 'أحذية سلامة S3' : isEn ? 'Safety Shoes S3' : 'Chaussures S3'} value={epiShoes ? '✓ OK' : 'En attente'} tone={epiShoes ? 'ok' : 'warn'} />
+                    <InspectorKeyValue label={isAr ? 'خوذة / واقي أذن' : isEn ? 'Helmet / Ear Protection' : 'Casque / Anti-bruit'} value={epiHelmet ? '✓ OK' : 'En attente'} tone={epiHelmet ? 'ok' : 'warn'} isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={
+                      andonActive
+                        ? isAr ? 'إلغاء نداء أندون' : isEn ? 'Resolve Andon Alert' : 'Résoudre Alerte Andon'
+                        : isAr ? 'إرسال نداء أندون' : isEn ? 'Trigger Andon Alert' : 'Déclencher Appel Andon'
+                    }
+                    icon={<AlertTriangle size={14} />}
+                    tone={andonActive ? 'dark' : 'accent'}
+                    onClick={andonActive ? handleCancelAndon : handleTriggerAndon}
+                  />
+                </InspectorSection>
+              </div>
+            );
+          }
+          if (tab === 'yield') {
+            return (
+              <div className="space-y-4">
+                <InspectorSection index={0} title={isAr ? 'نسبة المطابقة والمردود' : isEn ? 'Cycle Yield & Scrap' : 'Rendement & Maîtrise Rebuts'}>
+                  <InspectorBigStat
+                    value={`${ordYield.yieldPercent}%`}
+                    tone={ordYield.yieldPercent >= 95 ? 'ok' : 'accent'}
+                    caption={`${ordProduced} ${isAr ? 'مطابق' : 'conformes'} / ${ordScrap} ${isAr ? 'خردة' : 'rebuts'}`}
+                  />
+                  <InspectorCard>
+                    <InspectorKeyValue label={isAr ? 'الهدف' : isEn ? 'Target Qty' : 'Quantité Cible'} value={`${ord.targetQuantity} u`} mono />
+                    <InspectorKeyValue label={isAr ? 'المنجز' : isEn ? 'Produced' : 'Conformes Produits'} value={`${ordProduced} u`} mono tone="ok" />
+                    <InspectorKeyValue label={isAr ? 'الخردة' : isEn ? 'Scrap' : 'Rebuts Cumulés'} value={`${ordScrap} u`} mono tone={ordScrap > 0 ? 'warn' : 'ok'} />
+                    <InspectorKeyValue label={isAr ? 'التكلفة الإجمالية' : isEn ? 'Total Cost' : 'Coût Engagé'} value={formatMoney(ord.totalCostDzd, language)} mono isLast />
+                  </InspectorCard>
+                </InspectorSection>
+                <InspectorSection index={1}>
+                  <InspectorWideButton
+                    label={isAr ? 'تصريح الإنتاج والخردة' : isEn ? 'Declare Output & Scrap' : 'Déclarer Pièces & Rebuts'}
+                    icon={<CheckCircle2 size={14} />}
+                    tone="accent"
+                    onClick={handleOpenFinishModal}
+                  />
+                </InspectorSection>
+              </div>
+            );
+          }
+          return (
+            <div className="space-y-4">
+              <InspectorSection index={0} title={isAr ? 'التحكم السريع بالمحطة' : isEn ? 'Quick Workstation Actions' : 'Pilotage Rapide Poste'}>
+                <InspectorQuickActions
+                  actions={[
+                    isRunning
+                      ? {
+                          id: 'pause',
+                          label: isAr ? 'إيقاف مؤقت' : isEn ? 'Pause' : 'Pause',
+                          icon: <Pause size={15} />,
+                          onClick: handlePauseTimer,
+                        }
+                      : {
+                          id: 'start',
+                          label: isAr ? 'تشغيل' : isEn ? 'Start' : 'Démarrer',
+                          icon: <Play size={15} />,
+                          primary: true,
+                          onClick: handleStartTimer,
+                        },
+                    {
+                      id: 'declare',
+                      label: isAr ? 'تسجيل' : isEn ? 'Declare' : 'Déclarer',
+                      icon: <CheckCircle2 size={15} />,
+                      onClick: handleOpenFinishModal,
+                    },
+                    {
+                      id: 'andon',
+                      label: andonActive ? 'Clôturer' : 'Andon',
+                      icon: <AlertTriangle size={15} />,
+                      onClick: andonActive ? handleCancelAndon : handleTriggerAndon,
+                    },
+                  ]}
+                />
+              </InspectorSection>
+              <InspectorSection index={1} title={isAr ? 'مواصفات أمر التصنيع' : isEn ? 'MO Specifications' : 'Spécifications OF'}>
+                <InspectorCard>
+                  <InspectorKeyValue label="N° OF" value={ord.orderNumber} mono />
+                  <InspectorKeyValue label={isAr ? 'المنتج' : isEn ? 'Product' : 'Produit'} value={ord.productName} />
+                  <InspectorKeyValue label="Lot" value={ord.batchLotNumber || 'LOT-2026-05'} mono />
+                  <InspectorKeyValue label={isAr ? 'الوحدة / الفرع' : isEn ? 'Branch' : 'Unité / Atelier'} value={br.name} />
+                  <InspectorKeyValue label={isAr ? 'التقدم' : isEn ? 'Progress' : 'Avancement'} value={`${ordProduced} / ${ord.targetQuantity}`} mono isLast />
+                </InspectorCard>
+              </InspectorSection>
+            </div>
+          );
+        }}
+      />
     </div>
   );
 };

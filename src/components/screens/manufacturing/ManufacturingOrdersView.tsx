@@ -11,6 +11,8 @@ import {
   Boxes,
   Printer,
   MapPin,
+  Eye,
+  Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -30,6 +32,9 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -553,6 +558,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
           data={sortedOrders}
           keyExtractor={(o) => o.id}
           defaultViewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -570,6 +576,106 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
           onViewDetails={handleSelectOrder}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
+          getRowMeta={(o): Partial<KineticRowData> => {
+            const bInfo = resolveRecordBranch(o, branchesById, currentBranch, language);
+            const target = o.targetQuantity || o.quantityOrdered || 1;
+            const done = o.actualQuantityProduced || o.quantityProduced || 0;
+            const isDone = o.status === 'Completed';
+            const isRunning = o.status === 'InProduction';
+            return {
+              title: o.productName,
+              subline: `${o.orderNumber} · ${o.assignedStation || 'Atelier'}`,
+              avatarText: (o.orderNumber || 'OF').slice(0, 3).toUpperCase(),
+              avatarColor: isDone ? '#059669' : isRunning ? '#d4522f' : '#64748B',
+              categoryLabel: o.assignedStation || (isAr ? 'ورشة' : 'Atelier'),
+              statusLabel: isDone ? (isAr ? 'مكتمل' : 'Terminé') : isRunning ? (isAr ? 'قيد التصنيع' : 'En Cours') : isAr ? 'مخطط' : 'Planifié',
+              statusVariant: isDone ? 'active' : isRunning ? 'warning' : 'info',
+              metricPrimary: formatMoney(o.totalCostDzd, language),
+              metricSecondary: `${done} / ${target} u`,
+              branchName: bInfo.name,
+              branchCode: bInfo.code,
+              isPinned: pinnedIds.has(o.id),
+              detailCol1: {
+                heading: isAr ? 'أمر التصنيع والمنتج' : isEn ? 'Order & Product' : 'OF & Produit',
+                primaryText: `${o.orderNumber} · ${o.productName}`,
+                secondaryText: `Lot: ${o.batchLotNumber || 'STD'}`,
+                tertiaryText: bInfo.name,
+              },
+              detailCol2: {
+                heading: isAr ? 'التقدم والمحطة' : isEn ? 'Progress & Station' : 'Cadence & Poste',
+                primaryText: `${done} / ${target} ${isAr ? 'وحدة' : 'unités'}`,
+                secondaryText: o.assignedStation || 'Atelier Central',
+                tertiaryText: o.dueDate ? `Éch: ${o.dueDate}` : undefined,
+              },
+              detailCol3: {
+                heading: isAr ? 'التكلفة الإجمالية' : isEn ? 'Total Cost' : 'Coût Production',
+                primaryText: formatMoney(o.totalCostDzd, language),
+                secondaryText: o.bomId ? (bomMap.get(o.bomId)?.bomCode || 'BOM') : 'Standard',
+              },
+            };
+          }}
+          getFanActions={(o): KineticRowFanAction[] => [
+            {
+              id: 'advance',
+              label: isAr ? 'تقديم الحالة' : isEn ? 'Advance' : 'Avancer',
+              icon: <Play className="w-[15px] h-[15px]" />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleAdvanceStatus(o);
+              },
+            },
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+              icon: <Edit className="w-[15px] h-[15px]" />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleOpenEdit(o);
+              },
+            },
+            {
+              id: 'del',
+              label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+              icon: <Trash2 className="w-[15px] h-[15px]" />,
+              isDanger: true,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleDelete(o);
+              },
+            },
+          ]}
+          getDetailActions={(o): KineticDetailAction[] => [
+            {
+              id: 'inspect',
+              label: isAr ? 'فتح الأمر' : isEn ? 'Open' : 'Fiche OF',
+              icon: <Eye className="w-3.5 h-3.5" />,
+              onClick: () => handleSelectOrder(o),
+            },
+            {
+              id: 'advance',
+              label: isAr ? 'تقديم الحالة' : isEn ? 'Advance' : 'Avancer Étape',
+              icon: <Play className="w-3.5 h-3.5" />,
+              onClick: () => handleAdvanceStatus(o),
+            },
+            {
+              id: 'print',
+              label: isAr ? 'بطاقة التتبع' : 'Fiche Suiveuse',
+              icon: <Printer className="w-3.5 h-3.5" />,
+              onClick: () => setOrderForFiche(o),
+            },
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+              icon: <Edit className="w-3.5 h-3.5" />,
+              onClick: () => handleOpenEdit(o),
+            },
+            {
+              id: 'del',
+              label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+              icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+              onClick: () => handleDelete(o),
+            },
+          ]}
           customActions={(o) => [
             {
               id: 'print',

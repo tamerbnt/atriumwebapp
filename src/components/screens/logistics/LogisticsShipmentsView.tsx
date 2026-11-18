@@ -250,21 +250,43 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
     (s: LogisticsShipment): KineticRowMeta => {
       const isDelivered = s.status === 'Delivered';
       const isOut = s.status === 'OutForDelivery';
+      const branchInfo = resolveRecordBranch(s, branchesById, currentBranch, language);
+      const modeLabel =
+        s.deliveryMode === 'StopDesk'
+          ? 'Stop-Desk'
+          : isAr ? 'منزلي' : isEn ? 'Home' : 'Domicile';
       return {
         avatarText: (s.recipientName || 'AW').slice(0, 2).toUpperCase(),
         subline: `${s.trackingCode} · ${s.destinationWilaya.split('-')[0].trim()}`,
-        categoryLabel: s.deliveryMode === 'StopDesk' ? 'Stop-Desk' : isAr ? 'منزلي' : 'Domicile',
+        categoryLabel: modeLabel,
         statusVariant: isDelivered ? 'active' : isOut ? 'warning' : 'neutral',
         statusLabel: isDelivered
-          ? isAr ? 'تم التوصيل' : 'Livré'
+          ? isAr ? 'تم التوصيل' : isEn ? 'Delivered' : 'Livré'
           : isOut
-          ? isAr ? 'في التوزيع' : 'En Tournée'
-          : isAr ? 'في المستودع' : 'Au Hub',
+          ? isAr ? 'في التوزيع' : isEn ? 'Out' : 'En Tournée'
+          : isAr ? 'في المستودع' : isEn ? 'At Hub' : 'Au Hub',
         metricPrimary: formatMoney(s.codAmountDzd, language),
-        metricSecondary: s.assignedDriverName || (isAr ? 'بانتظار التعيين' : 'Au Hub'),
+        metricSecondary:
+          s.assignedDriverName || (isAr ? 'بانتظار التعيين' : isEn ? 'Unassigned' : 'Au Hub'),
+        detailCol1: {
+          heading: isAr ? 'المستلم والولاية' : isEn ? 'Recipient & Wilaya' : 'Destinataire & Wilaya',
+          primaryText: s.recipientName,
+          secondaryText: `${s.destinationWilaya} · ${s.recipientPhone}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'التحصيل والتاجر' : isEn ? 'COD & Merchant' : 'COD & Marchand',
+          primaryText: formatMoney(s.codAmountDzd, language),
+          secondaryText: s.merchantName || modeLabel,
+        },
+        detailCol3: {
+          heading: isAr ? 'السائق والفرع' : isEn ? 'Driver & Hub' : 'Chauffeur & Agence',
+          primaryText:
+            s.assignedDriverName || (isAr ? 'بانتظار التعيين' : isEn ? 'Unassigned' : 'Au Hub'),
+          secondaryText: branchInfo.name,
+        },
       };
     },
-    [isAr, language]
+    [branchesById, currentBranch, isAr, isEn, language]
   );
 
   const getShipmentFanActions = useCallback(

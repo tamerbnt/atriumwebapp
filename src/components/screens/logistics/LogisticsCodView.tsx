@@ -10,6 +10,7 @@ import {
   UserCheck,
   MapPin,
   Eye,
+  Pin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -77,6 +78,12 @@ export const LogisticsCodView: React.FC<any> = () => {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedDischargeIds, setPinnedDischargeIds] = useState<Set<string>>(() => new Set<string>());
+  const [pinnedRemittanceIds, setPinnedRemittanceIds] = useState<Set<string>>(() => new Set<string>());
+  const [dischargeSearchQuery, setDischargeSearchQuery] = useState('');
+  const [dischargeViewMode, setDischargeViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
+  const [remittanceSearchQuery, setRemittanceSearchQuery] = useState('');
+  const [remittanceViewMode, setRemittanceViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
   const [sortBy, setSortBy] = useState<string>('trackingCode');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
@@ -236,6 +243,65 @@ export const LogisticsCodView: React.FC<any> = () => {
     });
   }, []);
 
+  const handleTogglePinDischarge = useCallback((id: string) => {
+    setPinnedDischargeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleTogglePinRemittance = useCallback((id: string) => {
+    setPinnedRemittanceIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const sortedDischarges = useMemo(() => {
+    const q = dischargeSearchQuery.trim().toLowerCase();
+    const list = discharges.filter((d) => {
+      if (!q) return true;
+      return (
+        d.dischargeNumber.toLowerCase().includes(q) ||
+        d.courierStaffId.toLowerCase().includes(q) ||
+        d.status.toLowerCase().includes(q)
+      );
+    });
+    list.sort((a, b) => {
+      const ap = pinnedDischargeIds.has(a.id);
+      const bp = pinnedDischargeIds.has(b.id);
+      if (ap && !bp) return -1;
+      if (!ap && bp) return 1;
+      return b.timestamp.localeCompare(a.timestamp);
+    });
+    return list;
+  }, [discharges, dischargeSearchQuery, pinnedDischargeIds]);
+
+  const sortedRemittances = useMemo(() => {
+    const q = remittanceSearchQuery.trim().toLowerCase();
+    const list = remittances.filter((r) => {
+      if (!q) return true;
+      return (
+        r.batchNumber.toLowerCase().includes(q) ||
+        r.merchantName.toLowerCase().includes(q) ||
+        r.ccpAccount.toLowerCase().includes(q) ||
+        r.paymentChannel.toLowerCase().includes(q)
+      );
+    });
+    list.sort((a, b) => {
+      const ap = pinnedRemittanceIds.has(a.id);
+      const bp = pinnedRemittanceIds.has(b.id);
+      if (ap && !bp) return -1;
+      if (!ap && bp) return 1;
+      return a.batchNumber.localeCompare(b.batchNumber);
+    });
+    return list;
+  }, [remittances, remittanceSearchQuery, pinnedRemittanceIds]);
+
   const getCodRowMeta = useCallback(
     (s: LogisticsShipment): KineticRowMeta => {
       const isSettled = settledIds.includes(s.id);
@@ -246,12 +312,30 @@ export const LogisticsCodView: React.FC<any> = () => {
         subline: `${s.trackingCode} · ${s.recipientName}`,
         categoryLabel: b.name,
         statusVariant: isSettled ? 'active' : 'warning',
-        statusLabel: isSettled ? (isAr ? 'محوّل' : 'Viré') : isAr ? 'قيد التسوية' : 'À Régler',
+        statusLabel: isSettled
+          ? isAr ? 'محوّل' : isEn ? 'Settled' : 'Viré'
+          : isAr ? 'قيد التسوية' : isEn ? 'Pending' : 'À Régler',
         metricPrimary: formatMoney(net, language),
         metricSecondary: `Brut ${formatMoney(s.codAmountDzd, language)}`,
+        isPinned: pinnedIds.has(s.id),
+        detailCol1: {
+          heading: isAr ? 'المستلم والتاجر' : isEn ? 'Recipient & Merchant' : 'Destinataire & Marchand',
+          primaryText: s.recipientName,
+          secondaryText: `${s.merchantName || '—'} · ${s.destinationWilaya}`,
+        },
+        detailCol2: {
+          heading: isAr ? 'الصافي والمحصّل' : isEn ? 'Net & COD' : 'Net & Brut COD',
+          primaryText: formatMoney(net, language),
+          secondaryText: `Brut ${formatMoney(s.codAmountDzd, language)}`,
+        },
+        detailCol3: {
+          heading: isAr ? 'التتبع والمركز' : isEn ? 'AWB & Hub' : 'Bordereau & Hub',
+          primaryText: s.trackingCode,
+          secondaryText: b.name,
+        },
       };
     },
-    [settledIds, branchesById, currentBranch, language, isAr]
+    [settledIds, pinnedIds, branchesById, currentBranch, language, isAr, isEn]
   );
 
   const getCodFanActions = useCallback(
@@ -287,9 +371,15 @@ export const LogisticsCodView: React.FC<any> = () => {
               'info'
             ),
         },
+        {
+          id: 'pin',
+          label: pinnedIds.has(s.id) ? 'Détacher' : 'Épingler',
+          icon: <Pin className="w-[15px] h-[15px]" />,
+          onClick: () => handleTogglePin(s),
+        },
       ];
     },
-    [settledIds, isAr, handleSelectShipment, handleSettle]
+    [settledIds, pinnedIds, isAr, handleSelectShipment, handleSettle, handleTogglePin]
   );
 
   const getCodDetailActions = useCallback(
@@ -325,9 +415,15 @@ export const LogisticsCodView: React.FC<any> = () => {
               'success'
             ),
         },
+        {
+          id: 'pin',
+          label: pinnedIds.has(s.id) ? 'Détacher' : 'Épingler',
+          icon: <Pin className="w-3.5 h-3.5" />,
+          onClick: () => handleTogglePin(s),
+        },
       ];
     },
-    [settledIds, isAr, handleSelectShipment, handleSettle]
+    [settledIds, pinnedIds, isAr, handleSelectShipment, handleSettle, handleTogglePin]
   );
 
   const handleExportCsv = useCallback(() => {
@@ -780,179 +876,352 @@ export const LogisticsCodView: React.FC<any> = () => {
 
       {activeTab === 'discharges' && (
         <ScreenPod>
-          <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-black dark:text-white">
-              {isAr
+          <ScreenCollectionToolbar
+            title={
+              isAr
                 ? 'محاضر تبرئة ذمة السائقين (Double-Lock Vault)'
-                : 'Registre des Billets de Décharge Chauffeurs'}
-            </h3>
-            <span className="text-xs font-mono font-bold text-black/70 dark:text-white/75">
-              {discharges.length} procès-verbaux
-            </span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-neutral-200 dark:border-neutral-700 text-black/55 dark:text-white/55 font-medium">
-                  <th className="py-2 px-3">N° Décharge</th>
-                  <th className="py-2 px-3">Chauffeur</th>
-                  <th className="py-2 px-3">Date & Heure</th>
-                  <th className="py-2 px-3 text-right">Attendu</th>
-                  <th className="py-2 px-3 text-right">Compté</th>
-                  <th className="py-2 px-3 text-right">Écart</th>
-                  <th className="py-2 px-3">Statut</th>
-                  <th className="py-2 px-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
-                {discharges.map((d) => (
-                  <tr key={d.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
-                    <td className="py-2.5 px-3 font-bold text-[#d4522f]">{d.dischargeNumber}</td>
-                    <td className="py-2.5 px-3 font-sans font-semibold text-black dark:text-white">
-                      {d.courierStaffId}
-                    </td>
-                    <td className="py-2.5 px-3 text-black/55 dark:text-white/55">
+                : 'Registre des Billets de Décharge Chauffeurs'
+            }
+            liveRegionText={`${sortedDischarges.length} ${isAr ? 'محضر' : 'procès-verbaux'}`}
+            language={language}
+            searchQuery={dischargeSearchQuery}
+            onSearchChange={setDischargeSearchQuery}
+            searchPlaceholder={isAr ? 'بحث برقم التبرئة أو السائق...' : 'Rechercher N° décharge, chauffeur...'}
+            viewMode={dischargeViewMode}
+            onViewModeChange={setDischargeViewMode}
+            showViewToggle
+            onResetAllFilters={() => setDischargeSearchQuery('')}
+          />
+
+          <UniversalDataCollection
+            hideToolbar
+            items={sortedDischarges}
+            keyExtractor={(d) => d.id}
+            viewMode={dischargeViewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={dischargeViewMode === 'grid' ? 'grid' : 'list'}
+            isPinned={(d) => pinnedDischargeIds.has(d.id)}
+            onTogglePin={(d) => handleTogglePinDischarge(d.id)}
+            columns={[
+              {
+                key: 'dischargeNumber',
+                header: 'N° Décharge',
+                width: '1.3*',
+                renderCell: (d) => (
+                  <span className="font-mono font-bold text-xs text-[#d4522f]">{d.dischargeNumber}</span>
+                ),
+              },
+              {
+                key: 'courierStaffId',
+                header: 'Chauffeur',
+                width: '1.6*',
+                renderCell: (d) => (
+                  <div>
+                    <div className="font-semibold text-xs text-black dark:text-white">{d.courierStaffId}</div>
+                    <div className="text-[10px] font-mono text-black/55 dark:text-white/55">
                       {d.timestamp.replace('T', ' ').slice(0, 16)}
-                    </td>
-                    <td className="py-2.5 px-3 text-right">{formatMoney(d.expectedCodDzd, language)}</td>
-                    <td className="py-2.5 px-3 text-right font-bold text-black dark:text-white">
-                      {formatMoney(d.actualCashTurnedInDzd, language)}
-                    </td>
-                    <td
-                      className={`py-2.5 px-3 text-right font-bold ${
-                        d.discrepancyDzd === 0
-                          ? 'text-emerald-600'
-                          : d.discrepancyDzd < 0
-                          ? 'text-red-600'
-                          : 'text-blue-600'
-                      }`}
-                    >
-                      {d.discrepancyDzd === 0 ? '0 DZD' : `${d.discrepancyDzd} DZD`}
-                    </td>
-                    <td className="py-2.5 px-3 font-sans">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          d.status === 'Clean'
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                            : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
-                        }`}
-                      >
-                        {d.status === 'Clean' ? 'Décharge Conforme' : 'Manquant (Shortage)'}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 text-right font-sans">
-                      <AtriumButton
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => {
-                          showToast(isAr ? 'طباعة محضر التبرئة' : 'Impression décharge', 'info');
-                          window.print();
-                        }}
-                        icon={<Printer size={12} />}
-                      >
-                        Reçu
-                      </AtriumButton>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          </div>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'amounts',
+                header: 'Attendu / Compté',
+                width: '1.8*',
+                renderCell: (d) => (
+                  <div className="font-mono text-xs">
+                    <span className="text-black/60 dark:text-white/60">{formatMoney(d.expectedCodDzd, language)}</span>
+                    <span className="mx-1.5 text-black/30">/</span>
+                    <span className="font-bold text-black dark:text-white">{formatMoney(d.actualCashTurnedInDzd, language)}</span>
+                  </div>
+                ),
+              },
+              {
+                key: 'discrepancyDzd',
+                header: 'Écart',
+                width: '1.1*',
+                renderCell: (d) => (
+                  <span
+                    className={`font-mono font-bold text-xs ${
+                      d.discrepancyDzd === 0
+                        ? 'text-emerald-600'
+                        : d.discrepancyDzd < 0
+                        ? 'text-red-600'
+                        : 'text-blue-600'
+                    }`}
+                  >
+                    {d.discrepancyDzd === 0 ? '0 DZD' : `${d.discrepancyDzd} DZD`}
+                  </span>
+                ),
+              },
+              {
+                key: 'status',
+                header: 'Statut',
+                width: '1.2*',
+                renderCell: (d) => (
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      d.status === 'Clean'
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                    }`}
+                  >
+                    {d.status === 'Clean' ? 'Décharge Conforme' : 'Manquant (Shortage)'}
+                  </span>
+                ),
+              },
+            ]}
+            getRowMeta={(d): KineticRowMeta => ({
+              title: d.dischargeNumber,
+              subline: `${d.courierStaffId} · ${d.timestamp.replace('T', ' ').slice(0, 16)}`,
+              avatarText: 'DC',
+              categoryLabel: 'Vault',
+              statusVariant: d.status === 'Clean' ? 'active' : 'blocked',
+              statusLabel: d.status === 'Clean' ? 'Décharge Conforme' : 'Manquant',
+              metricPrimary: formatMoney(d.actualCashTurnedInDzd, language),
+              metricSecondary: `Écart ${d.discrepancyDzd} DZD`,
+              isPinned: pinnedDischargeIds.has(d.id),
+              detailCol1: {
+                heading: 'N° Décharge & Chauffeur',
+                primaryText: d.dischargeNumber,
+                secondaryText: d.courierStaffId,
+              },
+              detailCol2: {
+                heading: 'Attendu vs Compté',
+                primaryText: `Expected ${formatMoney(d.expectedCodDzd, language)}`,
+                secondaryText: `Actual ${formatMoney(d.actualCashTurnedInDzd, language)}`,
+              },
+              detailCol3: {
+                heading: 'Écart & Horodatage',
+                primaryText: `Écart ${d.discrepancyDzd} DZD`,
+                secondaryText: d.timestamp.replace('T', ' ').slice(0, 16),
+              },
+            })}
+            getFanActions={(d): KineticRowFanAction[] => [
+              {
+                id: 'receipt',
+                label: 'Reçu',
+                icon: <Printer className="w-[15px] h-[15px]" />,
+                onClick: () => {
+                  showToast(isAr ? 'طباعة محضر التبرئة' : 'Impression décharge', 'info');
+                  window.print();
+                },
+              },
+              {
+                id: 'pin',
+                label: pinnedDischargeIds.has(d.id) ? 'Détacher' : 'Épingler',
+                icon: <Pin className="w-[15px] h-[15px]" />,
+                onClick: () => handleTogglePinDischarge(d.id),
+              },
+            ]}
+            getDetailActions={(d): KineticDetailAction[] => [
+              {
+                id: 'receipt',
+                label: 'Reçu',
+                icon: <Printer className="w-3.5 h-3.5" />,
+                onClick: () => {
+                  showToast(isAr ? 'طباعة محضر التبرئة' : 'Impression décharge', 'info');
+                  window.print();
+                },
+              },
+              {
+                id: 'pin',
+                label: pinnedDischargeIds.has(d.id) ? 'Détacher' : 'Épingler',
+                icon: <Pin className="w-3.5 h-3.5" />,
+                onClick: () => handleTogglePinDischarge(d.id),
+              },
+            ]}
+            emptyTitle={isAr ? 'لا توجد محاضر تبرئة' : 'Aucun billet de décharge'}
+            emptyDescription={isAr ? 'لا توجد نتائج مطابقة' : 'Aucun procès-verbal ne correspond à votre recherche'}
+            onResetFilters={() => setDischargeSearchQuery('')}
+            hasActiveFilters={dischargeSearchQuery.trim().length > 0}
+          />
         </ScreenPod>
       )}
 
       {activeTab === 'remittances' && (
         <ScreenPod>
-          <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-black dark:text-white">
-              {isAr
+          <ScreenCollectionToolbar
+            title={
+              isAr
                 ? 'دفعات التحويل البريدي للتجار (Algérie Poste & BaridiMob)'
-                : 'Lots de Règlements E-Commerçants'}
-            </h3>
-            <AtriumButton
-              variant="primary"
-              size="sm"
-              onClick={() => setIsSfp01ModalOpen(true)}
-              icon={<Building2 size={14} />}
-            >
-              {isAr ? 'تصدير SFP 01' : 'Générer Fichier ASCII'}
-            </AtriumButton>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-neutral-200 dark:border-neutral-700 text-black/55 dark:text-white/55 font-medium">
-                  <th className="py-2 px-3">Lot N°</th>
-                  <th className="py-2 px-3">Commerçant</th>
-                  <th className="py-2 px-3">Compte CCP / Clé</th>
-                  <th className="py-2 px-3">Canal</th>
-                  <th className="py-2 px-3 text-right">Net à Verser</th>
-                  <th className="py-2 px-3">Statut</th>
-                  <th className="py-2 px-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
-                {remittances.map((r) => (
-                  <tr key={r.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
-                    <td className="py-2.5 px-3 font-bold text-[#d4522f]">{r.batchNumber}</td>
-                    <td className="py-2.5 px-3 font-sans font-semibold text-black dark:text-white">
-                      {r.merchantName}
-                    </td>
-                    <td className="py-2.5 px-3 text-black/70 dark:text-white/75">
-                      {r.ccpAccount} <span className="text-[#d4522f] font-bold">Clé {r.ccpKey}</span>
-                    </td>
-                    <td className="py-2.5 px-3 font-sans">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-                        {r.paymentChannel}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 text-right font-bold text-emerald-600 dark:text-emerald-400">
-                      {formatMoney(r.netPayoutDzd, language)}
-                    </td>
-                    <td className="py-2.5 px-3 font-sans">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          r.status === 'Executed'
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                        }`}
-                      >
-                        {r.status === 'Executed' ? 'Exécuté' : 'En Attente'}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 text-right font-sans">
-                      {r.status !== 'Executed' ? (
-                        <AtriumButton
-                          variant="primary"
-                          size="xs"
-                          onClick={() => {
-                            executeRemittance(r.id);
-                            showToast(
-                              isAr
-                                ? `تم تنفيذ التحويل للدفعة ${r.batchNumber}`
-                                : `Virement ${r.batchNumber} exécuté`,
-                              'success'
-                            );
-                          }}
-                          icon={<Send size={12} />}
-                        >
-                          Exécuter
-                        </AtriumButton>
-                      ) : (
-                        <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
-                          Archivé
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          </div>
+                : 'Lots de Règlements E-Commerçants'
+            }
+            liveRegionText={`${sortedRemittances.length} ${isAr ? 'دفعة' : 'lots'}`}
+            language={language}
+            searchQuery={remittanceSearchQuery}
+            onSearchChange={setRemittanceSearchQuery}
+            searchPlaceholder={isAr ? 'بحث برقم الدفعة أو التاجر أو CCP...' : 'Rechercher lot, commerçant, CCP...'}
+            viewMode={remittanceViewMode}
+            onViewModeChange={setRemittanceViewMode}
+            showViewToggle
+            extraTrailingControls={
+              <AtriumButton
+                variant="primary"
+                size="sm"
+                onClick={() => setIsSfp01ModalOpen(true)}
+                icon={<Building2 size={14} />}
+              >
+                {isAr ? 'تصدير SFP 01' : 'Générer Fichier ASCII'}
+              </AtriumButton>
+            }
+            onResetAllFilters={() => setRemittanceSearchQuery('')}
+          />
+
+          <UniversalDataCollection
+            hideToolbar
+            items={sortedRemittances}
+            keyExtractor={(r) => r.id}
+            viewMode={remittanceViewMode === 'grid' ? 'grid' : 'list'}
+            defaultViewMode={remittanceViewMode === 'grid' ? 'grid' : 'list'}
+            isPinned={(r) => pinnedRemittanceIds.has(r.id)}
+            onTogglePin={(r) => handleTogglePinRemittance(r.id)}
+            columns={[
+              {
+                key: 'batchNumber',
+                header: 'Lot N°',
+                width: '1.2*',
+                renderCell: (r) => (
+                  <span className="font-mono font-bold text-xs text-[#d4522f]">{r.batchNumber}</span>
+                ),
+              },
+              {
+                key: 'merchantName',
+                header: 'Commerçant',
+                width: '1.8*',
+                renderCell: (r) => (
+                  <span className="font-semibold text-xs text-black dark:text-white">{r.merchantName}</span>
+                ),
+              },
+              {
+                key: 'ccpAccount',
+                header: 'Compte CCP / Clé',
+                width: '1.8*',
+                renderCell: (r) => (
+                  <span className="font-mono text-xs text-black/70 dark:text-white/75">
+                    {r.ccpAccount} <span className="text-[#d4522f] font-bold">Clé {r.ccpKey}</span>
+                  </span>
+                ),
+              },
+              {
+                key: 'paymentChannel',
+                header: 'Canal',
+                width: '1.1*',
+                renderCell: (r) => (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                    {r.paymentChannel}
+                  </span>
+                ),
+              },
+              {
+                key: 'netPayoutDzd',
+                header: 'Net à Verser',
+                width: '1.3*',
+                renderCell: (r) => (
+                  <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">
+                    {formatMoney(r.netPayoutDzd, language)}
+                  </span>
+                ),
+              },
+              {
+                key: 'status',
+                header: 'Statut',
+                width: '1.1*',
+                renderCell: (r) => (
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      r.status === 'Executed'
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                    }`}
+                  >
+                    {r.status === 'Executed' ? 'Exécuté' : 'En Attente'}
+                  </span>
+                ),
+              },
+            ]}
+            getRowMeta={(r): KineticRowMeta => ({
+              title: r.batchNumber,
+              subline: `${r.merchantName} · ${r.paymentChannel}`,
+              avatarText: 'VP',
+              categoryLabel: r.paymentChannel,
+              statusVariant: r.status === 'Executed' ? 'active' : 'warning',
+              statusLabel: r.status === 'Executed' ? 'Exécuté' : 'En Attente',
+              metricPrimary: formatMoney(r.netPayoutDzd, language),
+              metricSecondary: `${r.ccpAccount} Clé ${r.ccpKey}`,
+              isPinned: pinnedRemittanceIds.has(r.id),
+              detailCol1: {
+                heading: 'Lot & Commerçant',
+                primaryText: r.batchNumber,
+                secondaryText: r.merchantName,
+              },
+              detailCol2: {
+                heading: 'Compte CCP & Canal',
+                primaryText: `${r.ccpAccount} Clé ${r.ccpKey}`,
+                secondaryText: r.paymentChannel,
+              },
+              detailCol3: {
+                heading: 'Montant Net',
+                primaryText: `Net ${formatMoney(r.netPayoutDzd, language)}`,
+                secondaryText: r.status === 'Executed' ? 'Archivé' : 'Prêt pour exécution',
+              },
+            })}
+            getFanActions={(r): KineticRowFanAction[] => [
+              ...(r.status !== 'Executed'
+                ? [
+                    {
+                      id: 'execute',
+                      label: 'Exécuter',
+                      icon: <Send className="w-[15px] h-[15px]" />,
+                      onClick: () => {
+                        executeRemittance(r.id);
+                        showToast(
+                          isAr
+                            ? `تم تنفيذ التحويل للدفعة ${r.batchNumber}`
+                            : `Virement ${r.batchNumber} exécuté`,
+                          'success'
+                        );
+                      },
+                    },
+                  ]
+                : []),
+              {
+                id: 'pin',
+                label: pinnedRemittanceIds.has(r.id) ? 'Détacher' : 'Épingler',
+                icon: <Pin className="w-[15px] h-[15px]" />,
+                onClick: () => handleTogglePinRemittance(r.id),
+              },
+            ]}
+            getDetailActions={(r): KineticDetailAction[] => [
+              ...(r.status !== 'Executed'
+                ? [
+                    {
+                      id: 'execute',
+                      label: 'Exécuter',
+                      icon: <Send className="w-3.5 h-3.5" />,
+                      onClick: () => {
+                        executeRemittance(r.id);
+                        showToast(
+                          isAr
+                            ? `تم تنفيذ التحويل للدفعة ${r.batchNumber}`
+                            : `Virement ${r.batchNumber} exécuté`,
+                          'success'
+                        );
+                      },
+                    },
+                  ]
+                : []),
+              {
+                id: 'pin',
+                label: pinnedRemittanceIds.has(r.id) ? 'Détacher' : 'Épingler',
+                icon: <Pin className="w-3.5 h-3.5" />,
+                onClick: () => handleTogglePinRemittance(r.id),
+              },
+            ]}
+            emptyTitle={isAr ? 'لا توجد دفعات تحويل' : 'Aucun lot de virement'}
+            emptyDescription={isAr ? 'لا توجد دفعات مطابقة' : 'Aucun lot ne correspond à votre recherche'}
+            onResetFilters={() => setRemittanceSearchQuery('')}
+            hasActiveFilters={remittanceSearchQuery.trim().length > 0}
+          />
         </ScreenPod>
       )}
 

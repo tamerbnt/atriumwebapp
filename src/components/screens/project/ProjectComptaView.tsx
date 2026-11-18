@@ -397,6 +397,11 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
           primaryText: slip.transactionReference,
           secondaryText: formatMoney(slip.amountDzd, 'DZD'),
         },
+        detailCol3: {
+          heading: isAr ? 'المستفيد والولاية' : isEn ? 'Beneficiary' : 'Bénéficiaire & Wilaya',
+          primaryText: slip.beneficiaryName,
+          secondaryText: `${slip.wilayaName} · ${br.name}`,
+        },
       };
     },
     [branchesById, currentBranch, language, pinnedSlipIds, isAr, isEn]
@@ -435,6 +440,22 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         branchName: br.name,
         branchCode: br.code,
         isPinned: pinnedExpenseIds.has(exp.id),
+        detailCol1: {
+          heading: isAr ? 'المشروع والمصرح' : isEn ? 'Project & Claimant' : 'Projet & Déclarant',
+          primaryText: exp.declaredByUserName,
+          secondaryText: exp.projectTitle,
+          tertiaryText: br.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'الوثيقة الضريبية' : isEn ? 'Fiscal Proof' : 'Pièce Comptable',
+          primaryText: exp.hasFiscalInvoice ? 'Facture NIF' : 'Reçu Simple',
+          secondaryText: exp.category,
+        },
+        detailCol3: {
+          heading: isAr ? 'المبلغ والاعتماد' : isEn ? 'Amount & Audit' : 'Montant & Visa',
+          primaryText: formatMoney(exp.amountDzd, 'DZD'),
+          secondaryText: isApp ? (isAr ? 'مُصادق عليه' : 'Validé DG') : isRej ? (isAr ? 'مرفوض' : 'Rejeté') : isAr ? 'قيد الانتظار' : 'En Attente DG',
+        },
       };
     },
     [branchesById, currentBranch, language, pinnedExpenseIds, isAr, isEn]
@@ -456,6 +477,22 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         branchName: br.name,
         branchCode: br.code,
         isPinned: pinnedStockIds.has(eq.id),
+        detailCol1: {
+          heading: isAr ? 'المعدات والرمز' : isEn ? 'Asset & Code' : 'Équipement & Code',
+          primaryText: eq.title,
+          secondaryText: `${eq.assetCode} · ${eq.category.replace(/_/g, ' ')}`,
+          tertiaryText: br.name,
+        },
+        detailCol2: {
+          heading: isAr ? 'المستلم والحالة' : isEn ? 'Custodian & State' : 'Affectation & État',
+          primaryText: eq.currentCustodianName || 'Agence',
+          secondaryText: eq.conditionReport,
+        },
+        detailCol3: {
+          heading: isAr ? 'قيمة الاستحواذ' : isEn ? 'Acquisition Cost' : 'Valeur Actif',
+          primaryText: formatMoney(eq.acquisitionCostDzd, 'DZD'),
+          secondaryText: badge.label,
+        },
       };
     },
     [branchesById, currentBranch, language, pinnedStockIds, isAr]
@@ -1215,6 +1252,34 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                       ]
                     : []),
                 ]}
+                getDetailActions={(exp): KineticDetailAction[] => [
+                  {
+                    id: 'inspect',
+                    label: isAr ? 'تفاصيل' : isEn ? 'Inspect' : 'Détails',
+                    icon: <Eye size={14} />,
+                    onClick: () => setInspectedExpense(exp),
+                  },
+                  ...(exp.status === 'pending_direction_approval'
+                    ? [
+                        {
+                          id: 'approve',
+                          label: isAr ? 'اعتماد' : isEn ? 'Approve' : 'Valider',
+                          icon: <CheckCircle size={14} />,
+                          onClick: () => approvePmExpense(exp.id),
+                        },
+                      ]
+                    : []),
+                  ...(exp.receiptPhotoUrl
+                    ? [
+                        {
+                          id: 'scan',
+                          label: isAr ? 'الوصل' : isEn ? 'Receipt' : 'Reçu',
+                          icon: <Eye size={14} />,
+                          onClick: () => setSelectedReceiptUrl(exp.receiptPhotoUrl || null),
+                        },
+                      ]
+                    : []),
+                ]}
                 renderCard={(exp) => (
                   <div className="flex flex-col justify-between h-full space-y-3">
                     <div className="space-y-1">
@@ -1325,6 +1390,20 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   {
                     id: 'maint',
                     label: isAr ? 'صيانة' : 'SAV',
+                    icon: <Wrench size={14} />,
+                    onClick: () => updatePmEquipmentStatus(eq.id, 'in_maintenance'),
+                  },
+                ]}
+                getDetailActions={(eq): KineticDetailAction[] => [
+                  {
+                    id: 'instock',
+                    label: isAr ? 'متوفر بالمخزن' : isEn ? 'In Stock' : 'Mettre en Stock',
+                    icon: <PackageCheck size={14} />,
+                    onClick: () => updatePmEquipmentStatus(eq.id, 'in_stock'),
+                  },
+                  {
+                    id: 'maint',
+                    label: isAr ? 'صيانة' : isEn ? 'Maintenance' : 'Envoyer en SAV',
                     icon: <Wrench size={14} />,
                     onClick: () => updatePmEquipmentStatus(eq.id, 'in_maintenance'),
                   },

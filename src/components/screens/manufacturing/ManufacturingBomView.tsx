@@ -10,6 +10,8 @@ import {
   Save,
   Check,
   MapPin,
+  Eye,
+  Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -29,6 +31,9 @@ import {
   KineticFilterModal,
   KineticFilterSection,
   KineticSlideOverInspector,
+  KineticRowData,
+  KineticRowFanAction,
+  KineticDetailAction,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -559,6 +564,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
           data={sortedBoms}
           keyExtractor={(b) => b.id}
           defaultViewMode={viewMode}
+          viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}
@@ -576,6 +582,96 @@ export const ManufacturingBomView: React.FC<any> = () => {
           onViewDetails={handleSelectBom}
           onEdit={openEditModal}
           onDelete={handleDelete}
+          getRowMeta={(b): Partial<KineticRowData> => {
+            const bInfo = resolveRecordBranch(b, branchesById, currentBranch, language);
+            const compCount = b.components?.length || 0;
+            return {
+              title: b.finishedProductName,
+              subline: `${b.bomCode} · ${compCount} ${isAr ? 'مكونات' : 'composants'}`,
+              avatarText: (b.bomCode || 'BM').slice(0, 3).toUpperCase(),
+              avatarColor: b.isActive ? '#d4522f' : '#64748B',
+              categoryLabel: `${compCount} ${isAr ? 'مكون' : 'matières'}`,
+              statusLabel: b.isActive ? (isAr ? 'سارية' : isEn ? 'Active' : 'Active') : isAr ? 'معطلة' : isEn ? 'Inactive' : 'Inactif',
+              statusVariant: b.isActive ? 'active' : 'blocked',
+              metricPrimary: formatMoney(b.estimatedCostDzd, language),
+              metricSecondary: `${b.standardLaborHours}h MO`,
+              branchName: bInfo.name,
+              branchCode: bInfo.code,
+              isPinned: pinnedIds.has(b.id),
+              detailCol1: {
+                heading: isAr ? 'المنتج المعني' : isEn ? 'Finished Good' : 'Produit Fini',
+                primaryText: b.finishedProductName,
+                secondaryText: b.bomCode,
+                tertiaryText: bInfo.name,
+              },
+              detailCol2: {
+                heading: isAr ? 'المكونات وساعات التشغيل' : isEn ? 'Components & Labor' : 'Nomenclature & Gamme',
+                primaryText: `${compCount} ${isAr ? 'مكون' : 'composants'}`,
+                secondaryText: `${b.standardLaborHours}h ${isAr ? 'عمل معياري' : 'MO standard'}`,
+              },
+              detailCol3: {
+                heading: isAr ? 'التكلفة المعيارية' : isEn ? 'Standard Cost' : 'Coût Revient Est.',
+                primaryText: formatMoney(b.estimatedCostDzd, language),
+                secondaryText: b.isActive ? (isAr ? 'جاهزة للإنتاج' : 'Prête pour OF') : isAr ? 'أرشيف' : 'Suspendue',
+              },
+            };
+          }}
+          getFanActions={(b): KineticRowFanAction[] => [
+            {
+              id: 'inspect',
+              label: isAr ? 'عرض' : isEn ? 'Details' : 'Détails',
+              icon: <Eye className="w-[15px] h-[15px]" />,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleSelectBom(b, e.currentTarget);
+              },
+            },
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+              icon: <Edit className="w-[15px] h-[15px]" />,
+              onClick: (e) => {
+                e.stopPropagation();
+                openEditModal(b);
+              },
+            },
+            {
+              id: 'del',
+              label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+              icon: <Trash2 className="w-[15px] h-[15px]" />,
+              isDanger: true,
+              onClick: (e) => {
+                e.stopPropagation();
+                handleDelete(b);
+              },
+            },
+          ]}
+          getDetailActions={(b): KineticDetailAction[] => [
+            {
+              id: 'inspect',
+              label: isAr ? 'فتح البطاقة' : isEn ? 'Open' : 'Fiche BOM',
+              icon: <Eye className="w-3.5 h-3.5" />,
+              onClick: () => handleSelectBom(b),
+            },
+            {
+              id: 'edit',
+              label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
+              icon: <Edit className="w-3.5 h-3.5" />,
+              onClick: () => openEditModal(b),
+            },
+            {
+              id: 'toggleActive',
+              label: isAr ? 'تبديل الحالة' : b.isActive ? 'Suspendre' : 'Activer',
+              icon: <ShieldCheck className="w-3.5 h-3.5" />,
+              onClick: () => handleToggleActive(b),
+            },
+            {
+              id: 'del',
+              label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
+              icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+              onClick: () => handleDelete(b),
+            },
+          ]}
           customActions={(b) => [
             {
               id: 'toggleActive',
