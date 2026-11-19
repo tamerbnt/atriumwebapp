@@ -84,13 +84,13 @@ export const authService = {
     return data.user;
   },
 
-  onAuthStateChange(callback: (session: Session | null) => void): (() => void) {
+  onAuthStateChange(callback: (session: Session | null, event?: string) => void): (() => void) {
     const client = getSupabaseClient();
     if (!client) {
       return () => {};
     }
-    const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
-      callback(session);
+    const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
+      callback(session, event);
     });
     return () => {
       subscription.unsubscribe();

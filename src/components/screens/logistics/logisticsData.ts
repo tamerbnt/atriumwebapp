@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   LogisticsShipment,
   LogisticsManifest,
@@ -10,6 +10,16 @@ import {
 import { computeAlgerianFiscalStamp, calculateCcpKey } from '../../../utils/logisticsRules';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import type { Dispatch, SetStateAction } from 'react';
+import { isSupabaseConfigured, logisticsService, realtimeService, syncCoordinator, runWithConcurrency } from '../../../lib/supabase';
+
+function mergeLogById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
+  if (remote.length === 0) return prev;
+  const map = new Map<string, T>();
+  for (const item of prev) map.set(item.id, item);
+  for (const item of remote) map.set(item.id, item);
+  return Array.from(map.values());
+}
 
 const INITIAL_SHIPMENTS: LogisticsShipment[] = [
   {
@@ -522,6 +532,9 @@ const INITIAL_REMITTANCES: MerchantRemittanceBatch[] = [
 
 export const useLogisticsData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
+  const currentAccountId = useAtriumSelector((s) => s.account.id);
+  const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
   const activeBranchId = currentBranchId || 'branch_logistics_main';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
@@ -531,7 +544,10 @@ export const useLogisticsData = () => {
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
+      accountId: (item as { accountId?: string }).accountId || currentAccountId || 'acc_01',
+      businessId: (item as { businessId?: string }).businessId || currentBusinessId || 'biz_logistics',
       branchId: (item as { branchId?: string }).branchId || activeBranchId,
+      staffId: (item as { staffId?: string }).staffId || currentStaffId || 'staff_01',
     }) as T;
 
   const [shipments, setShipments] = useState<LogisticsShipment[]>(() => {
@@ -585,27 +601,154 @@ export const useLogisticsData = () => {
   useIdlePersist('atrium_logistics_discharges_v2', discharges);
   useIdlePersist('atrium_logistics_remittances_v2', remittances);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+
+    void syncCoordinator.runSingleFlight(`logistics:${activeBranchId}`, async () => {
+      await syncCoordinator.flushQueue().catch(() => {});
+      const [remoteShipments, remoteBags, remoteManifests, remoteDischarges, remoteRemittances] =
+        await runWithConcurrency(
+          [
+            () => logisticsService.fetchShipments(activeBranchId),
+            () => logisticsService.fetchBags(activeBranchId),
+            () => logisticsService.fetchManifests(activeBranchId),
+            () => logisticsService.fetchDischarges(activeBranchId),
+            () => logisticsService.fetchRemittances(activeBranchId),
+          ],
+          4
+        );
+      if (cancelled) return;
+      if (remoteShipments.length > 0) setShipments((prev) => mergeLogById(prev, remoteShipments as LogisticsShipment[]));
+      if (remoteBags.length > 0) setBags((prev) => mergeLogById(prev, remoteBags as TransportBag[]));
+      if (remoteManifests.length > 0) setManifests((prev) => mergeLogById(prev, remoteManifests as LogisticsManifest[]));
+      if (remoteDischarges.length > 0) setDischarges((prev) => mergeLogById(prev, remoteDischarges as CourierCashDischarge[]));
+      if (remoteRemittances.length > 0) setRemittances((prev) => mergeLogById(prev, remoteRemittances as MerchantRemittanceBatch[]));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBranchId]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const watchedTables = [
+      'logistics_parcels',
+      'logistics_courier_bags',
+      'logistics_fleet',
+      'logistics_discharges',
+      'logistics_remittances',
+    ];
+
+    return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
+      const prune = <T extends { id: string }>(table: string, setter: Dispatch<SetStateAction<T[]>>) => {
+        const ids = deletedIdsByTable[table];
+        if (!ids || ids.length === 0) return;
+        const idSet = new Set(ids);
+        setter((prev) => prev.filter((item) => !idSet.has(item.id)));
+      };
+
+      prune('logistics_parcels', setShipments);
+      prune('logistics_courier_bags', setBags);
+      prune('logistics_fleet', setManifests);
+      prune('logistics_discharges', setDischarges);
+      prune('logistics_remittances', setRemittances);
+
+      const changedSet = new Set(changedTables);
+      const tasks: Array<() => Promise<void>> = [];
+
+      if (changedSet.has('logistics_parcels')) {
+        tasks.push(async () => {
+          const rows = await logisticsService.fetchShipments(activeBranchId);
+          if (!cancelled && rows.length > 0) setShipments((prev) => mergeLogById(prev, rows as LogisticsShipment[]));
+        });
+      }
+      if (changedSet.has('logistics_courier_bags')) {
+        tasks.push(async () => {
+          const rows = await logisticsService.fetchBags(activeBranchId);
+          if (!cancelled && rows.length > 0) setBags((prev) => mergeLogById(prev, rows as TransportBag[]));
+        });
+      }
+      if (changedSet.has('logistics_fleet')) {
+        tasks.push(async () => {
+          const rows = await logisticsService.fetchManifests(activeBranchId);
+          if (!cancelled && rows.length > 0) setManifests((prev) => mergeLogById(prev, rows as LogisticsManifest[]));
+        });
+      }
+      if (changedSet.has('logistics_discharges')) {
+        tasks.push(async () => {
+          const rows = await logisticsService.fetchDischarges(activeBranchId);
+          if (!cancelled && rows.length > 0) setDischarges((prev) => mergeLogById(prev, rows as CourierCashDischarge[]));
+        });
+      }
+      if (changedSet.has('logistics_remittances')) {
+        tasks.push(async () => {
+          const rows = await logisticsService.fetchRemittances(activeBranchId);
+          if (!cancelled && rows.length > 0) setRemittances((prev) => mergeLogById(prev, rows as MerchantRemittanceBatch[]));
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `logistics:rt:${activeBranchId}:${[...changedSet].sort().join(',')}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+  }, [activeBranchId]);
+
   const addShipment = (shipment: LogisticsShipment) => {
-    setShipments((prev) => [withBranch(shipment), ...prev]);
+    const scoped = withBranch(shipment);
+    setShipments((prev) => [scoped, ...prev]);
+    void logisticsService.upsertShipment(scoped).catch(() => {});
   };
 
   const updateShipment = (shipment: LogisticsShipment) => {
-    setShipments((prev) => prev.map((s) => (s.id === shipment.id ? shipment : s)));
+    const scoped = withBranch(shipment);
+    setShipments((prev) => prev.map((s) => (s.id === scoped.id ? scoped : s)));
+    void logisticsService.upsertShipment(scoped).catch(() => {});
   };
 
   const deleteShipment = (id: string) => {
     setShipments((prev) => prev.filter((s) => s.id !== id));
+    void syncCoordinator.softDeleteRow('logistics_parcels', id, currentStaffId).catch(() => {});
   };
 
   const updateShipmentStatus = (id: string, status: LogisticsShipment['status']) => {
-    setShipments((prev) => prev.map((s) => (s.id === id ? { ...s, status } : s)));
+    let updated: LogisticsShipment | null = null;
+    setShipments((prev) =>
+      prev.map((s) => {
+        if (s.id === id) {
+          updated = { ...s, status };
+          return updated;
+        }
+        return s;
+      })
+    );
+    if (updated) {
+      void logisticsService.upsertShipment(updated).catch(() => {});
+    }
   };
 
   const addBag = (bag: TransportBag) => {
-    setBags((prev) => [withBranch(bag), ...prev]);
+    const scoped = withBranch(bag);
+    setBags((prev) => [scoped, ...prev]);
+    void logisticsService.upsertBag(scoped).catch(() => {});
   };
 
   const sealBag = (bagId: string, securitySealNumber: string) => {
+    const targetBag = bags.find((b) => b.id === bagId);
+    const sealedBag: TransportBag | null = targetBag
+      ? {
+          ...targetBag,
+          securitySealNumber,
+          status: 'Sealed',
+          sealedAt: new Date().toISOString(),
+        }
+      : null;
+
     setBags((prev) =>
       prev.map((b) =>
         b.id === bagId
@@ -613,41 +756,60 @@ export const useLogisticsData = () => {
               ...b,
               securitySealNumber,
               status: 'Sealed',
-              sealedAt: new Date().toISOString(),
+              sealedAt: sealedBag?.sealedAt || new Date().toISOString(),
             }
           : b
       )
     );
+    void logisticsService.sealBag(bagId, securitySealNumber, targetBag?.shipmentIds || []).catch(() => {});
+    if (sealedBag) {
+      void logisticsService.upsertBag(sealedBag).catch(() => {});
+    }
   };
 
   const addManifest = (manifest: LogisticsManifest) => {
-    setManifests((prev) => [withBranch(manifest), ...prev]);
+    const scoped = withBranch(manifest);
+    setManifests((prev) => [scoped, ...prev]);
+    void logisticsService.upsertManifest(scoped).catch(() => {});
   };
 
   const updateManifest = (manifest: LogisticsManifest) => {
-    setManifests((prev) => prev.map((m) => (m.id === manifest.id ? manifest : m)));
+    const scoped = withBranch(manifest);
+    setManifests((prev) => prev.map((m) => (m.id === scoped.id ? scoped : m)));
+    void logisticsService.upsertManifest(scoped).catch(() => {});
   };
 
   const deleteManifest = (id: string) => {
     setManifests((prev) => prev.filter((m) => m.id !== id));
+    void syncCoordinator.softDeleteRow('logistics_fleet', id, currentStaffId).catch(() => {});
   };
 
   const addDischarge = (discharge: CourierCashDischarge) => {
-    setDischarges((prev) => [withBranch(discharge), ...prev]);
+    const scoped = withBranch(discharge);
+    setDischarges((prev) => [scoped, ...prev]);
+    void logisticsService.upsertDischarge(scoped).catch(() => {});
   };
 
   const addRemittance = (remittance: MerchantRemittanceBatch) => {
-    setRemittances((prev) => [withBranch(remittance), ...prev]);
+    const scoped = withBranch(remittance);
+    setRemittances((prev) => [scoped, ...prev]);
+    void logisticsService.upsertRemittance(scoped).catch(() => {});
   };
 
   const executeRemittance = (batchId: string) => {
+    let executed: MerchantRemittanceBatch | null = null;
     setRemittances((prev) =>
-      prev.map((r) =>
-        r.id === batchId
-          ? { ...r, status: 'Executed', executedAt: new Date().toISOString() }
-          : r
-      )
+      prev.map((r) => {
+        if (r.id === batchId) {
+          executed = { ...r, status: 'Executed', executedAt: new Date().toISOString() };
+          return executed;
+        }
+        return r;
+      })
     );
+    if (executed) {
+      void logisticsService.upsertRemittance(executed).catch(() => {});
+    }
   };
 
   const resetLogisticsDemoData = () => {

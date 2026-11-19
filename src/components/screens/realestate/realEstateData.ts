@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   RealEstateProperty,
   RealEstateLease,
@@ -11,6 +11,21 @@ import {
 import { computeRentalTimbreFiscal, calculateMandateCommission } from '../../../utils/realEstateRules';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import {
+  isSupabaseConfigured,
+  realEstateService,
+  realtimeService,
+  syncCoordinator,
+  runWithConcurrency,
+} from '../../../lib/supabase/index';
+
+function mergeReById<T extends { id: string }>(localItems: T[], remoteItems: T[]): T[] {
+  if (!remoteItems || remoteItems.length === 0) return localItems;
+  const map = new Map<string, T>();
+  localItems.forEach((item) => map.set(item.id, item));
+  remoteItems.forEach((item) => map.set(item.id, item));
+  return Array.from(map.values());
+}
 
 export const INITIAL_PROPERTIES: RealEstateProperty[] = [
   {
@@ -701,6 +716,9 @@ export const INITIAL_BUYERS: BuyerDemandProfile[] = [
 
 export const useRealEstateData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
+  const currentAccountId = useAtriumSelector((s) => s.account.id);
+  const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
   const activeBranchId = currentBranchId || 'branch_realestate_main';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
@@ -711,6 +729,8 @@ export const useRealEstateData = () => {
     ({
       ...item,
       branchId: (item as { branchId?: string }).branchId || activeBranchId,
+      businessId: (item as { businessId?: string }).businessId || currentBusinessId || 'biz_realestate',
+      accountId: (item as { accountId?: string }).accountId || currentAccountId || 'acc_01',
     }) as T;
 
   const [properties, setProperties] = useState<RealEstateProperty[]>(() => {
@@ -784,57 +804,235 @@ export const useRealEstateData = () => {
   useIdlePersist('atrium_realestate_inspections_v2', inspections);
   useIdlePersist('atrium_realestate_buyers_v2', buyers);
 
+  // Hydrate real estate vertical state from Supabase when configured
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+
+    void syncCoordinator.runSingleFlight(`realestate:${activeBranchId}`, async () => {
+      await syncCoordinator.flushQueue().catch(() => {});
+      const [
+        remoteProps,
+        remoteMandates,
+        remoteLeases,
+        remoteQuittances,
+        remoteVisits,
+        remoteInspections,
+        remoteBuyers,
+      ] = await runWithConcurrency(
+        [
+          () => realEstateService.fetchProperties(activeBranchId),
+          () => realEstateService.fetchMandates(activeBranchId),
+          () => realEstateService.fetchLeases(activeBranchId),
+          () => realEstateService.fetchQuittances(activeBranchId),
+          () => realEstateService.fetchBonsDeVisite(activeBranchId),
+          () => realEstateService.fetchInspections(activeBranchId),
+          () => realEstateService.fetchBuyerDemands(activeBranchId),
+        ],
+        4
+      );
+
+      if (cancelled) return;
+      if (Array.isArray(remoteProps) && remoteProps.length > 0) {
+        setProperties((prev) => mergeReById(prev, remoteProps as RealEstateProperty[]));
+      }
+      if (Array.isArray(remoteMandates) && remoteMandates.length > 0) {
+        setMandates((prev) => mergeReById(prev, remoteMandates as RealEstateMandate[]));
+      }
+      if (Array.isArray(remoteLeases) && remoteLeases.length > 0) {
+        setLeases((prev) => mergeReById(prev, remoteLeases as RealEstateLease[]));
+      }
+      if (Array.isArray(remoteQuittances) && remoteQuittances.length > 0) {
+        setQuittances((prev) => mergeReById(prev, remoteQuittances as RentalQuittanceRecord[]));
+      }
+      if (Array.isArray(remoteVisits) && remoteVisits.length > 0) {
+        setVisits((prev) => mergeReById(prev, remoteVisits as BonDeVisiteRecord[]));
+      }
+      if (Array.isArray(remoteInspections) && remoteInspections.length > 0) {
+        setInspections((prev) => mergeReById(prev, remoteInspections as RealEstateInspection[]));
+      }
+      if (Array.isArray(remoteBuyers) && remoteBuyers.length > 0) {
+        setBuyers((prev) => mergeReById(prev, remoteBuyers as BuyerDemandProfile[]));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBranchId]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const watchedTables = [
+      're_properties',
+      're_mandates',
+      're_leases',
+      're_rent_schedules',
+      're_visits',
+      're_inspections',
+      're_leads',
+    ];
+
+    return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
+      const prune = <T extends { id: string }>(table: string, setter: React.Dispatch<React.SetStateAction<T[]>>) => {
+        const ids = deletedIdsByTable[table];
+        if (!ids || ids.length === 0) return;
+        const idSet = new Set(ids);
+        setter((prev) => prev.filter((item) => !idSet.has(item.id)));
+      };
+
+      prune('re_properties', setProperties);
+      prune('re_mandates', setMandates);
+      prune('re_leases', setLeases);
+      prune('re_rent_schedules', setQuittances);
+      prune('re_visits', setVisits);
+      prune('re_inspections', setInspections);
+      prune('re_leads', setBuyers);
+
+      const changedSet = new Set(changedTables);
+      const tasks: Array<() => Promise<void>> = [];
+
+      if (changedSet.has('re_properties')) {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchProperties(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setProperties((prev) => mergeReById(prev, rows as RealEstateProperty[]));
+          }
+        });
+      }
+      if (changedSet.has('re_mandates')) {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchMandates(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setMandates((prev) => mergeReById(prev, rows as RealEstateMandate[]));
+          }
+        });
+      }
+      if (changedSet.has('re_leases')) {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchLeases(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setLeases((prev) => mergeReById(prev, rows as RealEstateLease[]));
+          }
+        });
+      }
+      if (changedSet.has('re_rent_schedules')) {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchQuittances(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setQuittances((prev) => mergeReById(prev, rows as RentalQuittanceRecord[]));
+          }
+        });
+      }
+      if (changedSet.has('re_visits')) {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchBonsDeVisite(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setVisits((prev) => mergeReById(prev, rows as BonDeVisiteRecord[]));
+          }
+        });
+      }
+      if (changedSet.has('re_inspections')) {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchInspections(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setInspections((prev) => mergeReById(prev, rows as RealEstateInspection[]));
+          }
+        });
+      }
+      if (changedSet.has('re_leads')) {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchBuyerDemands(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setBuyers((prev) => mergeReById(prev, rows as BuyerDemandProfile[]));
+          }
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `realestate:rt:${activeBranchId}:${[...changedSet].sort().join(',')}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+  }, [activeBranchId]);
+
   // Operations
   const addProperty = (prop: RealEstateProperty) => {
-    setProperties((prev) => [withBranch(prop), ...prev]);
+    const scoped = withBranch(prop);
+    setProperties((prev) => [scoped, ...prev]);
+    void realEstateService.upsertProperty(scoped).catch(() => {});
   };
 
   const updateProperty = (prop: RealEstateProperty) => {
-    setProperties((prev) => prev.map((p) => (p.id === prop.id ? prop : p)));
+    const scoped = withBranch(prop);
+    setProperties((prev) => prev.map((p) => (p.id === prop.id ? scoped : p)));
+    void realEstateService.upsertProperty(scoped).catch(() => {});
   };
 
   const deleteProperty = (id: string) => {
     setProperties((prev) => prev.filter((p) => p.id !== id));
+    void realEstateService.deleteProperty(id, currentStaffId).catch(() => {});
   };
 
   const addMandate = (mandate: RealEstateMandate) => {
-    setMandates((prev) => [withBranch(mandate), ...prev]);
+    const scoped = withBranch(mandate);
+    setMandates((prev) => [scoped, ...prev]);
+    void realEstateService.upsertMandate(scoped).catch(() => {});
   };
 
   const updateMandate = (mandate: RealEstateMandate) => {
-    setMandates((prev) => prev.map((m) => (m.id === mandate.id ? mandate : m)));
+    const scoped = withBranch(mandate);
+    setMandates((prev) => prev.map((m) => (m.id === mandate.id ? scoped : m)));
+    void realEstateService.upsertMandate(scoped).catch(() => {});
   };
 
   const deleteMandate = (id: string) => {
     setMandates((prev) => prev.filter((m) => m.id !== id));
+    void syncCoordinator.softDeleteRow('re_mandates', id, currentStaffId).catch(() => {});
   };
 
   const addLease = (lease: RealEstateLease) => {
-    setLeases((prev) => [withBranch(lease), ...prev]);
+    const scoped = withBranch(lease);
+    setLeases((prev) => [scoped, ...prev]);
+    void realEstateService.upsertLease(scoped).catch(() => {});
   };
 
   const updateLease = (lease: RealEstateLease) => {
-    setLeases((prev) => prev.map((l) => (l.id === lease.id ? lease : l)));
+    const scoped = withBranch(lease);
+    setLeases((prev) => prev.map((l) => (l.id === lease.id ? scoped : l)));
+    void realEstateService.upsertLease(scoped).catch(() => {});
   };
 
   const deleteLease = (id: string) => {
     setLeases((prev) => prev.filter((l) => l.id !== id));
+    void syncCoordinator.softDeleteRow('re_leases', id, currentStaffId).catch(() => {});
   };
 
   const addQuittance = (quittance: RentalQuittanceRecord) => {
-    setQuittances((prev) => [withBranch(quittance), ...prev]);
+    const scoped = withBranch(quittance);
+    setQuittances((prev) => [scoped, ...prev]);
+    void realEstateService.upsertQuittance(scoped).catch(() => {});
   };
 
   const addVisit = (visit: BonDeVisiteRecord) => {
-    setVisits((prev) => [withBranch(visit), ...prev]);
+    const scoped = withBranch(visit);
+    setVisits((prev) => [scoped, ...prev]);
+    void realEstateService.upsertBonDeVisite(scoped).catch(() => {});
   };
 
   const addInspection = (insp: RealEstateInspection) => {
-    setInspections((prev) => [withBranch(insp), ...prev]);
+    const scoped = withBranch(insp);
+    setInspections((prev) => [scoped, ...prev]);
+    void realEstateService.upsertInspection(scoped).catch(() => {});
   };
 
   const addBuyer = (buyer: BuyerDemandProfile) => {
-    setBuyers((prev) => [withBranch(buyer), ...prev]);
+    const scoped = withBranch(buyer);
+    setBuyers((prev) => [scoped, ...prev]);
+    void realEstateService.upsertBuyerDemand(scoped).catch(() => {});
   };
 
   // Reset active branch to empty state

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, X, Save, RotateCcw, ShieldCheck } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumStore, useAtriumSelector, showToast } from '../../../services/store';
 import { DEFAULT_TARIFF_RULES, TariffRule, WilayaZone } from '../../../utils/logisticsRules';
 import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { isSupabaseConfigured, logisticsService, syncCoordinator } from '../../../lib/supabase';
 
 interface WilayaTariffModalProps {
   isOpen: boolean;
@@ -12,6 +13,11 @@ interface WilayaTariffModalProps {
 
 export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, onClose }) => {
   const { language } = useAtriumStore();
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
+  const currentAccountId = useAtriumSelector((s) => s.account.id);
+  const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
+  const activeBranchId = currentBranchId || 'branch_logistics_main';
   const isAr = language === 'ar';
 
   const [tariffRules, setTariffRules] = useState<Record<WilayaZone, TariffRule>>(() => {
@@ -22,6 +28,25 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
       return DEFAULT_TARIFF_RULES;
     }
   });
+
+  useEffect(() => {
+    if (!isOpen || !isSupabaseConfigured()) return;
+    let cancelled = false;
+    void syncCoordinator.runSingleFlight(`logistics:tariffs:${activeBranchId}`, async () => {
+      const remote = await logisticsService.fetchWilayaTariffs(activeBranchId);
+      if (cancelled || Object.keys(remote).length === 0) return;
+      setTariffRules((prev) => {
+        const merged = { ...DEFAULT_TARIFF_RULES, ...prev, ...remote } as Record<WilayaZone, TariffRule>;
+        try {
+          localStorage.setItem('atrium_logistics_tariffs_v1', JSON.stringify(merged));
+        } catch {}
+        return merged;
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, activeBranchId]);
 
   if (!isOpen) return null;
 
@@ -39,6 +64,14 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
     try {
       localStorage.setItem('atrium_logistics_tariffs_v1', JSON.stringify(tariffRules));
     } catch {}
+    void logisticsService
+      .upsertWilayaTariffs(tariffRules, {
+        accountId: currentAccountId || 'acc_01',
+        businessId: currentBusinessId || 'biz_logistics',
+        branchId: activeBranchId,
+        staffId: currentStaffId || 'staff_01',
+      })
+      .catch(() => {});
     showToast(
       isAr ? 'تم حفظ جدول تسعيرات الولايات بنجاح' : 'Grille tarifaire des 58 Wilayas enregistrée',
       'success'
@@ -51,6 +84,14 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
     try {
       localStorage.setItem('atrium_logistics_tariffs_v1', JSON.stringify(DEFAULT_TARIFF_RULES));
     } catch {}
+    void logisticsService
+      .upsertWilayaTariffs(DEFAULT_TARIFF_RULES, {
+        accountId: currentAccountId || 'acc_01',
+        businessId: currentBusinessId || 'biz_logistics',
+        branchId: activeBranchId,
+        staffId: currentStaffId || 'staff_01',
+      })
+      .catch(() => {});
     showToast(
       isAr ? 'تمت استعادة التسعيرات الافتراضية' : 'Tarifs par défaut réinitialisés',
       'info'

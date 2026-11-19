@@ -1,20 +1,31 @@
-import { getSupabaseClient } from '../client';
+import { getSupabaseClient, toValidUuid } from '../client';
 import { mapProductFromDb, mapSaleFromDb } from '../mappers';
-import type { Product, Sale } from '../../../types/index';
+import { buildTraceEnvelope, getActiveDeviceId, syncCoordinator } from '../syncCoordinator';
+import type {
+  Product,
+  Sale,
+  ParkedOrder,
+  StockMovement,
+  ReceiptConfig,
+} from '../../../types/index';
 
 export const posService = {
-  async fetchProducts(branchId: string): Promise<Product[]> {
+  async fetchProducts(branchId: string, updatedAfter?: string | null): Promise<Product[]> {
     const client = getSupabaseClient();
     if (!client) return [];
 
     try {
-      const { data, error } = await client
-        .from('products')
+      let query = (client as any)
+        .from('pos_products')
         .select('*')
-        .eq('branch_id', branchId)
+        .eq('branch_id', toValidUuid(branchId))
         .eq('is_active', true)
+        .is('deleted_at', null)
         .order('name', { ascending: true });
 
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+
+      const { data, error } = await query;
       if (error) {
         console.warn('[posService] fetchProducts notice:', error.message);
         return [];
@@ -27,90 +38,195 @@ export const posService = {
   },
 
   async upsertProduct(product: Product): Promise<boolean> {
-    const client = getSupabaseClient();
-    if (!client) return false;
+    const trace = buildTraceEnvelope({
+      accountId: product.accountId || product.tenantId,
+      businessId: product.businessId,
+      branchId: product.branchId || product.facilityId,
+      staffId: product.staffId,
+    });
 
-    try {
-      const { error } = await client
-        .from('products')
-        .upsert({
-          id: product.id,
-          account_id: product.accountId || product.tenantId,
-          business_id: product.businessId,
-          branch_id: product.branchId || product.facilityId,
-          staff_id: product.staffId || null,
-          name: product.name,
-          description: product.description || null,
-          price: product.price.amount,
-          cost: product.cost.amount,
-          stock_quantity: product.stockQuantity,
-          sku: product.sku || null,
-          category: product.category,
-          image_url: product.imageUrl || null,
-          reorder_level: product.reorderLevel,
-          is_active: product.isActive,
-        });
-
-      if (error) {
-        console.warn('[posService] upsertProduct notice:', error.message);
-        return false;
-      }
-      return true;
-    } catch {
-      return false;
-    }
+    const res = await syncCoordinator.mutateOrQueueUpsert('pos_products', {
+      id: toValidUuid(product.id),
+      ...trace,
+      name: product.name,
+      description: product.description || null,
+      sku: product.sku || null,
+      category: product.category || 'General',
+      price_amount: product.price.amount,
+      cost_amount: product.cost.amount,
+      stock_quantity: product.stockQuantity,
+      reorder_level: product.reorderLevel,
+      image_url: product.imageUrl || null,
+      is_pinned: Boolean(product.isPinned),
+      is_active: product.isActive,
+    });
+    return res.success;
   },
 
-  async fetchSales(branchId: string): Promise<Sale[]> {
+  async deleteProduct(productId: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('pos_products', productId, deletedByStaffId);
+    return res.success;
+  },
+
+  async fetchSales(branchId: string, updatedAfter?: string | null): Promise<Sale[]> {
     const client = getSupabaseClient();
     if (!client) return [];
 
     try {
-      const { data, error } = await client
-        .from('sales')
-        .select('*')
-        .eq('branch_id', branchId)
-        .order('created_at', { ascending: false });
+      let query = (client as any)
+        .from('pos_sales')
+        .select('*, pos_sale_items(*)')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('sold_at', { ascending: false });
 
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+
+      const { data, error } = await query;
       if (error) {
         console.warn('[posService] fetchSales notice:', error.message);
         return [];
       }
 
-      return (data || []).map(mapSaleFromDb);
+      return (data || []).map((row: any) =>
+        mapSaleFromDb({
+          ...row,
+          items: Array.isArray(row.pos_sale_items)
+            ? row.pos_sale_items.map((it: any) => ({
+                productId: it.product_id || '',
+                productName: it.product_name,
+                quantity: Number(it.quantity || 1),
+                unitPrice: Number(it.unit_price || 0),
+                totalPrice: Number(it.total_price || 0),
+              }))
+            : [],
+        })
+      );
     } catch {
       return [];
     }
   },
 
   async createSale(sale: Sale): Promise<boolean> {
+    const res = await syncCoordinator.rpcOrQueue('pos_process_sale', {
+      p_branch_id: toValidUuid(sale.branchId || sale.facilityId),
+      p_receipt_number: `POS-${Date.now().toString().slice(-6)}`,
+      p_payment_method: sale.paymentMethod || 'Cash',
+      p_items: (sale.items || []).map((it) => ({
+        productId: it.productId ? toValidUuid(it.productId) : null,
+        productName: it.productName,
+        quantity: it.quantity,
+        unitPrice: it.unitPrice,
+      })),
+      p_customer_id: sale.memberId ? toValidUuid(sale.memberId) : null,
+      p_customer_name: sale.memberName || null,
+      p_discount_amount: Number((sale as { discountAmount?: number; discount?: number }).discountAmount ?? (sale as { discount?: number }).discount ?? 0),
+      p_notes: sale.notes || null,
+      p_device_id: getActiveDeviceId(),
+    });
+    return res.success;
+  },
+
+  async fetchParkedOrders(branchId: string): Promise<ParkedOrder[]> {
     const client = getSupabaseClient();
-    if (!client) return false;
+    if (!client) return [];
 
-    try {
-      const { error } = await client
-        .from('sales')
-        .insert({
-          id: sale.id,
-          account_id: sale.accountId || sale.tenantId,
-          business_id: sale.businessId,
-          branch_id: sale.branchId || sale.facilityId,
-          staff_id: sale.staffId || null,
-          member_id: sale.memberId || null,
-          member_name: sale.memberName || null,
-          total_amount: sale.totalAmount,
-          payment_method: sale.paymentMethod,
-          items: sale.items as any,
-          notes: sale.notes || null,
-        });
+    const { data, error } = await (client as any)
+      .from('pos_parked_orders')
+      .select('*')
+      .eq('branch_id', toValidUuid(branchId))
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
 
-      if (error) {
-        console.warn('[posService] createSale notice:', error.message);
-        return false;
-      }
-      return true;
-    } catch {
-      return false;
-    }
+    if (error) return [];
+    return (data || []).map((row: any): ParkedOrder => ({
+      id: row.id,
+      tenantId: row.account_id,
+      facilityId: row.branch_id,
+      accountId: row.account_id,
+      businessId: row.business_id,
+      branchId: row.branch_id,
+      staffId: row.staff_id || undefined,
+      referenceName: row.label,
+      customerName: row.customer_name || undefined,
+      items: Array.isArray(row.items) ? row.items : [],
+      discount: Number(row.discount || 0),
+      subtotal: Number(row.total_amount || 0),
+      totalAmount: Number(row.total_amount || 0),
+      notes: row.notes || undefined,
+      createdAt: row.created_at,
+    }));
+  },
+
+  async upsertParkedOrder(order: ParkedOrder): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: order.accountId || order.tenantId,
+      businessId: order.businessId,
+      branchId: order.branchId || order.facilityId,
+      staffId: order.staffId,
+    });
+    const res = await syncCoordinator.mutateOrQueueUpsert('pos_parked_orders', {
+      id: toValidUuid(order.id),
+      ...trace,
+      label: order.referenceName,
+      customer_name: order.customerName || null,
+      items: order.items,
+      discount: Number(order.discount || 0),
+      total_amount: order.totalAmount,
+      notes: order.notes || null,
+    });
+    return res.success;
+  },
+
+  async deleteParkedOrder(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('pos_parked_orders', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async fetchStockMovements(branchId: string): Promise<StockMovement[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    const { data, error } = await (client as any)
+      .from('pos_stock_movements')
+      .select('*')
+      .eq('branch_id', toValidUuid(branchId))
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (error) return [];
+    return (data || []).map((row: any): StockMovement => ({
+      id: row.id,
+      tenantId: row.account_id,
+      facilityId: row.branch_id,
+      productId: row.product_id || '',
+      productName: row.product_name,
+      type: row.movement_type === 'out' || row.movement_type === 'sale' ? 'Sale' : 'Restock',
+      quantity: Number(row.quantity || 0),
+      previousStock: Number(row.previous_stock || 0),
+      newStock: Number(row.new_stock || 0),
+      reason: row.reason || undefined,
+      createdAt: row.created_at,
+    }));
+  },
+
+  async upsertReceiptConfig(
+    config: ReceiptConfig,
+    ctx: { accountId: string; businessId: string; branchId: string }
+  ): Promise<boolean> {
+    const trace = buildTraceEnvelope(ctx);
+    const res = await syncCoordinator.mutateOrQueueUpsert(
+      'pos_receipt_configs',
+      {
+        ...trace,
+        header_title: config.headerTitle,
+        footer_message: config.footerMessage || null,
+        show_tax_breakdown: config.showTaxBreakdown,
+        paper_width_mm: 80,
+        nif: config.taxId || null,
+      },
+      { onConflict: 'branch_id' }
+    );
+    return res.success;
   },
 };

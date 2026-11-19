@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   MedicalPatient,
   MedicalConsultation,
@@ -14,6 +14,21 @@ import {
 } from '../../../types';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import {
+  isSupabaseConfigured,
+  medicalService,
+  realtimeService,
+  syncCoordinator,
+  runWithConcurrency,
+} from '../../../lib/supabase/index';
+
+function mergeMedicalById<T extends { id: string }>(localItems: T[], remoteItems: T[]): T[] {
+  if (!remoteItems || remoteItems.length === 0) return localItems;
+  const map = new Map<string, T>();
+  localItems.forEach((item) => map.set(item.id, item));
+  remoteItems.forEach((item) => map.set(item.id, item));
+  return Array.from(map.values());
+}
 
 export const INITIAL_PRACTITIONERS: MedicalPractitioner[] = [
   {
@@ -774,7 +789,19 @@ export const INITIAL_CASH_CLOSURES: DailyCashClosure[] = [
 
 export const useMedicalData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
+  const currentAccountId = useAtriumSelector((s) => s.account.id);
+  const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
   const activeBranchId = currentBranchId || 'branch_medical_main';
+  const medCtx = useMemo(
+    () => ({
+      accountId: currentAccountId || 'acc_01',
+      businessId: currentBusinessId || 'biz_medical',
+      branchId: activeBranchId,
+      staffId: currentStaffId || 'staff_01',
+    }),
+    [currentAccountId, currentBusinessId, activeBranchId, currentStaffId]
+  );
   const belongsToActiveBranch = useCallback(
     (item: unknown) => {
       const rec = item as { branchId?: string; facilityId?: string } | null | undefined;
@@ -786,6 +813,8 @@ export const useMedicalData = () => {
     ({
       ...item,
       branchId: (item as { branchId?: string }).branchId || activeBranchId,
+      businessId: (item as { businessId?: string }).businessId || medCtx.businessId,
+      accountId: (item as { accountId?: string }).accountId || medCtx.accountId,
     }) as T;
 
   const [practitioners, setPractitioners] = useState<MedicalPractitioner[]>(() => {
@@ -902,47 +931,280 @@ export const useMedicalData = () => {
   useIdlePersist('atrium_medical_consumables_v2', consumables);
   useIdlePersist('atrium_medical_cash_closures_v2', cashClosures);
 
+  // Hydrate medical vertical state from Supabase when configured
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+
+    void syncCoordinator.runSingleFlight(`medical:${activeBranchId}`, async () => {
+      await syncCoordinator.flushQueue().catch(() => {});
+      const [
+        remotePractitioners,
+        remoteConfigs,
+        remotePatients,
+        remoteConsultations,
+        remoteAppointments,
+        remotePrescriptions,
+        remoteLabs,
+        remoteCerts,
+        remoteChifa,
+        remoteConsumables,
+        remoteClosures,
+      ] = await runWithConcurrency(
+        [
+          () => medicalService.fetchPractitioners(activeBranchId),
+          () => medicalService.fetchOrdonnanceConfigs(activeBranchId),
+          () => medicalService.fetchPatients(activeBranchId),
+          () => medicalService.fetchConsultations(activeBranchId),
+          () => medicalService.fetchAppointments(activeBranchId),
+          () => medicalService.fetchPrescriptions(activeBranchId),
+          () => medicalService.fetchLabRecords(activeBranchId),
+          () => medicalService.fetchCertificates(activeBranchId),
+          () => medicalService.fetchChifaClaims(activeBranchId),
+          () => medicalService.fetchConsumables(activeBranchId),
+          () => medicalService.fetchCashClosures(activeBranchId),
+        ],
+        4
+      );
+
+      if (cancelled) return;
+      if (Array.isArray(remotePractitioners) && remotePractitioners.length > 0) {
+        setPractitioners((prev) => mergeMedicalById(prev, remotePractitioners as MedicalPractitioner[]));
+      }
+      if (remoteConfigs && typeof remoteConfigs === 'object' && Object.keys(remoteConfigs).length > 0) {
+        setDoctorConfigs((prev) => ({ ...prev, ...(remoteConfigs as Record<string, DoctorOrdonnanceConfig>) }));
+      }
+      if (Array.isArray(remotePatients) && remotePatients.length > 0) {
+        setPatients((prev) => mergeMedicalById(prev, remotePatients as MedicalPatient[]));
+      }
+      if (Array.isArray(remoteConsultations) && remoteConsultations.length > 0) {
+        setConsultations((prev) => mergeMedicalById(prev, remoteConsultations as MedicalConsultation[]));
+      }
+      if (Array.isArray(remoteAppointments) && remoteAppointments.length > 0) {
+        setAppointments((prev) => mergeMedicalById(prev, remoteAppointments as MedicalAppointmentSlot[]));
+      }
+      if (Array.isArray(remotePrescriptions) && remotePrescriptions.length > 0) {
+        setPrescriptions((prev) => mergeMedicalById(prev, remotePrescriptions as MedicalPrescription[]));
+      }
+      if (Array.isArray(remoteLabs) && remoteLabs.length > 0) {
+        setLabRecords((prev) => mergeMedicalById(prev, remoteLabs as MedicalLabRecord[]));
+      }
+      if (Array.isArray(remoteCerts) && remoteCerts.length > 0) {
+        setCertificates((prev) => mergeMedicalById(prev, remoteCerts as MedicalCertificateRecord[]));
+      }
+      if (Array.isArray(remoteChifa) && remoteChifa.length > 0) {
+        setChifaClaims((prev) => mergeMedicalById(prev, remoteChifa as ChifaClaimRecord[]));
+      }
+      if (Array.isArray(remoteConsumables) && remoteConsumables.length > 0) {
+        setConsumables((prev) => mergeMedicalById(prev, remoteConsumables as ClinicConsumableItem[]));
+      }
+      if (Array.isArray(remoteClosures) && remoteClosures.length > 0) {
+        setCashClosures((prev) => mergeMedicalById(prev, remoteClosures as DailyCashClosure[]));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBranchId]);
+
+  // Live Realtime updates for medical_* tables without full-branch polling
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const watchedTables = [
+      'medical_staff',
+      'medical_departments',
+      'medical_patients',
+      'medical_appointments',
+      'medical_consultations',
+      'medical_consumables',
+      'medical_invoices',
+    ];
+
+    return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
+      const prune = <T extends { id: string }>(table: string, setter: React.Dispatch<React.SetStateAction<T[]>>) => {
+        const ids = deletedIdsByTable[table];
+        if (!ids || ids.length === 0) return;
+        const idSet = new Set(ids);
+        setter((prev) => prev.filter((item) => !idSet.has(item.id)));
+      };
+
+      prune('medical_staff', setPractitioners);
+      prune('medical_patients', setPatients);
+      prune('medical_appointments', setAppointments);
+      prune('medical_consultations', setConsultations);
+      prune('medical_consultations', setPrescriptions);
+      prune('medical_consultations', setLabRecords);
+      prune('medical_consultations', setCertificates);
+      prune('medical_consumables', setConsumables);
+      prune('medical_invoices', setChifaClaims);
+      prune('medical_invoices', setCashClosures);
+
+      const changedSet = new Set(changedTables);
+      const tasks: Array<() => Promise<void>> = [];
+
+      if (changedSet.has('medical_staff')) {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchPractitioners(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setPractitioners((prev) => mergeMedicalById(prev, rows as MedicalPractitioner[]));
+          }
+        });
+      }
+      if (changedSet.has('medical_departments')) {
+        tasks.push(async () => {
+          const configs = await medicalService.fetchOrdonnanceConfigs(activeBranchId);
+          if (!cancelled && configs && typeof configs === 'object' && Object.keys(configs).length > 0) {
+            setDoctorConfigs((prev) => ({ ...prev, ...(configs as Record<string, DoctorOrdonnanceConfig>) }));
+          }
+        });
+      }
+      if (changedSet.has('medical_patients')) {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchPatients(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setPatients((prev) => mergeMedicalById(prev, rows as MedicalPatient[]));
+          }
+        });
+      }
+      if (changedSet.has('medical_appointments')) {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchAppointments(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setAppointments((prev) => mergeMedicalById(prev, rows as MedicalAppointmentSlot[]));
+          }
+        });
+      }
+      if (changedSet.has('medical_consultations')) {
+        tasks.push(
+          async () => {
+            const rows = await medicalService.fetchConsultations(activeBranchId);
+            if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+              setConsultations((prev) => mergeMedicalById(prev, rows as MedicalConsultation[]));
+            }
+          },
+          async () => {
+            const rows = await medicalService.fetchPrescriptions(activeBranchId);
+            if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+              setPrescriptions((prev) => mergeMedicalById(prev, rows as MedicalPrescription[]));
+            }
+          },
+          async () => {
+            const rows = await medicalService.fetchLabRecords(activeBranchId);
+            if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+              setLabRecords((prev) => mergeMedicalById(prev, rows as MedicalLabRecord[]));
+            }
+          },
+          async () => {
+            const rows = await medicalService.fetchCertificates(activeBranchId);
+            if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+              setCertificates((prev) => mergeMedicalById(prev, rows as MedicalCertificateRecord[]));
+            }
+          }
+        );
+      }
+      if (changedSet.has('medical_consumables')) {
+        tasks.push(async () => {
+          const rows = await medicalService.fetchConsumables(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setConsumables((prev) => mergeMedicalById(prev, rows as ClinicConsumableItem[]));
+          }
+        });
+      }
+      if (changedSet.has('medical_invoices')) {
+        tasks.push(
+          async () => {
+            const rows = await medicalService.fetchChifaClaims(activeBranchId);
+            if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+              setChifaClaims((prev) => mergeMedicalById(prev, rows as ChifaClaimRecord[]));
+            }
+          },
+          async () => {
+            const rows = await medicalService.fetchCashClosures(activeBranchId);
+            if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+              setCashClosures((prev) => mergeMedicalById(prev, rows as DailyCashClosure[]));
+            }
+          }
+        );
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `medical:rt:${activeBranchId}:${[...changedSet].sort().join(',')}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+  }, [activeBranchId]);
+
   // Actions
   const addPatient = (patient: MedicalPatient) => {
-    setPatients((prev) => [withBranch(patient), ...prev]);
+    const scoped = withBranch(patient);
+    setPatients((prev) => [scoped, ...prev]);
+    void medicalService.upsertPatient(scoped).catch(() => {});
   };
 
   const updatePatient = (updated: MedicalPatient) => {
-    setPatients((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+    const scoped = withBranch(updated);
+    setPatients((prev) => prev.map((p) => (p.id === updated.id ? scoped : p)));
+    void medicalService.upsertPatient(scoped).catch(() => {});
   };
 
   const deletePatient = (id: string) => {
     setPatients((prev) => prev.filter((p) => p.id !== id));
+    void medicalService.deletePatient(id, currentStaffId).catch(() => {});
   };
 
   const addConsultation = (cons: MedicalConsultation) => {
-    setConsultations((prev) => [withBranch(cons), ...prev]);
+    const scoped = withBranch(cons);
+    setConsultations((prev) => [scoped, ...prev]);
+    void medicalService.upsertConsultation(scoped).catch(() => {});
   };
 
   const updateConsultationStatus = (id: string, status: MedicalConsultation['status']) => {
     setConsultations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, status } : c))
+      prev.map((c) => {
+        if (c.id !== id) return c;
+        const next = { ...c, status };
+        void medicalService.upsertConsultation(withBranch(next)).catch(() => {});
+        return next;
+      })
     );
   };
 
   const markConsultationPaid = (id: string, method: 'Cash' | 'BaridiMob' | 'Card' | 'ChifaDirect' = 'Cash') => {
     setConsultations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isPaid: true, paymentMethod: method } : c))
+      prev.map((c) => {
+        if (c.id !== id) return c;
+        const next = { ...c, isPaid: true, paymentMethod: method };
+        void medicalService.upsertConsultation(withBranch(next)).catch(() => {});
+        return next;
+      })
     );
   };
 
   const addAppointment = (apt: MedicalAppointmentSlot) => {
-    setAppointments((prev) => [...prev, withBranch(apt)]);
+    const scoped = withBranch(apt);
+    setAppointments((prev) => [...prev, scoped]);
+    void medicalService.upsertAppointment(scoped, medCtx).catch(() => {});
   };
 
   const updateAppointmentStatus = (id: string, status: MedicalAppointmentSlot['status']) => {
     setAppointments((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status } : a))
+      prev.map((a) => {
+        if (a.id !== id) return a;
+        const next = { ...a, status };
+        void medicalService.upsertAppointment(next, medCtx).catch(() => {});
+        return next;
+      })
     );
   };
 
   const addPrescription = (rx: MedicalPrescription) => {
-    setPrescriptions((prev) => [withBranch(rx), ...prev]);
+    const scoped = withBranch(rx);
+    setPrescriptions((prev) => [scoped, ...prev]);
+    void medicalService.upsertPrescription(scoped, medCtx).catch(() => {});
   };
 
   const saveDoctorConfig = (doctorId: string, config: DoctorOrdonnanceConfig) => {
@@ -950,22 +1212,31 @@ export const useMedicalData = () => {
       ...prev,
       [doctorId]: config,
     }));
+    void medicalService.upsertOrdonnanceConfig(config, medCtx).catch(() => {});
   };
 
   const addCertificate = (cert: MedicalCertificateRecord) => {
-    setCertificates((prev) => [withBranch(cert), ...prev]);
+    const scoped = withBranch(cert);
+    setCertificates((prev) => [scoped, ...prev]);
+    void medicalService.upsertCertificate(scoped, medCtx).catch(() => {});
   };
 
   const addLabRecord = (lab: MedicalLabRecord) => {
-    setLabRecords((prev) => [withBranch(lab), ...prev]);
+    const scoped = withBranch(lab);
+    setLabRecords((prev) => [scoped, ...prev]);
+    void medicalService.upsertLabRecord(scoped, medCtx).catch(() => {});
   };
 
   const addChifaClaim = (claim: ChifaClaimRecord) => {
-    setChifaClaims((prev) => [withBranch(claim), ...prev]);
+    const scoped = withBranch(claim);
+    setChifaClaims((prev) => [scoped, ...prev]);
+    void medicalService.upsertChifaClaim(scoped, medCtx).catch(() => {});
   };
 
   const addCashClosure = (closure: DailyCashClosure) => {
-    setCashClosures((prev) => [withBranch(closure), ...prev]);
+    const scoped = withBranch(closure);
+    setCashClosures((prev) => [scoped, ...prev]);
+    void medicalService.upsertCashClosure(scoped, medCtx).catch(() => {});
   };
 
   const [isEmergencyAlarmActive, setIsEmergencyAlarmActive] = useState<boolean>(() => {
@@ -988,7 +1259,9 @@ export const useMedicalData = () => {
         if (item.itemCode === itemCode || item.id === itemCode) {
           const prevQty = item.currentStockUnits ?? item.currentStock ?? 0;
           const newQty = Math.max(0, prevQty - quantity);
-          return { ...item, currentStock: newQty, currentStockUnits: newQty };
+          const next = { ...item, currentStock: newQty, currentStockUnits: newQty };
+          void medicalService.upsertConsumable(next, medCtx).catch(() => {});
+          return next;
         }
         return item;
       })
@@ -1001,7 +1274,9 @@ export const useMedicalData = () => {
         if (item.itemCode === itemCode || item.id === itemCode) {
           const prevQty = item.currentStockUnits ?? item.currentStock ?? 0;
           const newQty = prevQty + quantity;
-          return { ...item, currentStock: newQty, currentStockUnits: newQty };
+          const next = { ...item, currentStock: newQty, currentStockUnits: newQty };
+          void medicalService.upsertConsumable(next, medCtx).catch(() => {});
+          return next;
         }
         return item;
       })

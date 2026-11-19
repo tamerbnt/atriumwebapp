@@ -202,7 +202,14 @@ import {
   appointmentService,
   posService,
   rentalService,
+  educationService,
   projectMilestoneService,
+  tradingService,
+  syncCoordinator,
+  runWithConcurrency,
+  getActiveDeviceId,
+  toValidUuid,
+  normalizeUuidOrNull,
 } from '../lib/supabase/index';
 
 
@@ -1718,6 +1725,14 @@ export function stopTimerAction() {
     ensureTimerTick(false, false);
     notify();
 
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertTimeLog(newEntry).catch(() => {});
+      const updatedProject = updatedProjects.find((p) => p.id === timer.projectId);
+      if (updatedProject) {
+        freelanceService.upsertProject(updatedProject).catch(() => {});
+      }
+    }
+
     const hours = Math.floor(newEntry.durationSeconds / 3600);
     const mins = Math.floor((newEntry.durationSeconds % 3600) / 60);
     const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m ${newEntry.durationSeconds % 60}s`;
@@ -1908,6 +1923,10 @@ export function rejectPmExpenseAction(expenseId: string, notes?: string) {
     ),
   };
   notify();
+  const updated = (globalState.pmExpenses || []).find((e) => e.id === expenseId);
+  if (updated && isSupabaseConfigured()) {
+    projectMilestoneService.upsertExpense(updated).catch(() => {});
+  }
   showToast({
     type: 'error',
     title: 'Frais Rejeté',
@@ -1945,6 +1964,9 @@ export function deletePmProjectAction(projectId: string) {
     pmProjects: (globalState.pmProjects || []).filter((p) => p.id !== projectId),
   };
   notify();
+  if (isSupabaseConfigured()) {
+    projectMilestoneService.deleteProject(projectId, globalState.currentUser?.id).catch(() => {});
+  }
 }
 
 export function batchDeletePmProjectsAction(projectIds: string[]) {
@@ -1954,6 +1976,12 @@ export function batchDeletePmProjectsAction(projectIds: string[]) {
     pmProjects: (globalState.pmProjects || []).filter((p) => !idSet.has(p.id)),
   };
   notify();
+  if (isSupabaseConfigured()) {
+    runWithConcurrency(
+      projectIds.map((id) => () => projectMilestoneService.deleteProject(id, globalState.currentUser?.id)),
+      4
+    ).catch(() => {});
+  }
   showToast({
     type: 'info',
     title: 'Projets Supprimés',
@@ -1964,13 +1992,21 @@ export function batchDeletePmProjectsAction(projectIds: string[]) {
 
 export function batchUpdatePmProjectStatusAction(projectIds: string[], status: PMProject['status']) {
   const idSet = new Set(projectIds);
+  const updatedProjects = (globalState.pmProjects || []).map((p) =>
+    idSet.has(p.id) ? { ...p, status, updatedAt: new Date().toISOString() } : p
+  );
   globalState = {
     ...globalState,
-    pmProjects: (globalState.pmProjects || []).map((p) =>
-      idSet.has(p.id) ? { ...p, status, updatedAt: new Date().toISOString() } : p
-    ),
+    pmProjects: updatedProjects,
   };
   notify();
+  if (isSupabaseConfigured()) {
+    const affected = updatedProjects.filter((p) => idSet.has(p.id));
+    runWithConcurrency(
+      affected.map((p) => () => projectMilestoneService.upsertProject(p)),
+      4
+    ).catch(() => {});
+  }
   showToast({
     type: 'success',
     title: 'Statuts Projets Mis à Jour',
@@ -1995,6 +2031,12 @@ export function batchApprovePmExpensesAction(expenseIds: string[], notes?: strin
     ),
   };
   notify();
+  if (isSupabaseConfigured()) {
+    runWithConcurrency(
+      expenseIds.map((id) => () => projectMilestoneService.approveDisbursement('expense', id, globalState.currentUser.id, notes)),
+      4
+    ).catch(() => {});
+  }
   showToast({
     type: 'success',
     title: 'Frais Validés en Lot',
@@ -2005,19 +2047,27 @@ export function batchApprovePmExpensesAction(expenseIds: string[], notes?: strin
 
 export function batchRejectPmExpensesAction(expenseIds: string[], notes?: string) {
   const idSet = new Set(expenseIds);
+  const updatedExpenses = (globalState.pmExpenses || []).map((e) =>
+    idSet.has(e.id)
+      ? {
+          ...e,
+          status: 'rejected' as const,
+          directionNotes: notes || 'Rejeté en lot par la Direction.',
+        }
+      : e
+  );
   globalState = {
     ...globalState,
-    pmExpenses: (globalState.pmExpenses || []).map((e) =>
-      idSet.has(e.id)
-        ? {
-            ...e,
-            status: 'rejected',
-            directionNotes: notes || 'Rejeté en lot par la Direction.',
-          }
-        : e
-    ),
+    pmExpenses: updatedExpenses,
   };
   notify();
+  if (isSupabaseConfigured()) {
+    const affected = updatedExpenses.filter((e) => idSet.has(e.id));
+    runWithConcurrency(
+      affected.map((e) => () => projectMilestoneService.upsertExpense(e)),
+      4
+    ).catch(() => {});
+  }
   showToast({
     type: 'error',
     title: 'Frais Rejetés en Lot',
@@ -2033,6 +2083,12 @@ export function batchDeletePmExpensesAction(expenseIds: string[]) {
     pmExpenses: (globalState.pmExpenses || []).filter((e) => !idSet.has(e.id)),
   };
   notify();
+  if (isSupabaseConfigured()) {
+    runWithConcurrency(
+      expenseIds.map((id) => () => projectMilestoneService.deleteExpense(id, globalState.currentUser?.id)),
+      4
+    ).catch(() => {});
+  }
   showToast({
     type: 'info',
     title: 'Frais Supprimés',
@@ -2056,6 +2112,12 @@ export function batchApprovePmPayrollBatchesAction(batchIds: string[]) {
     ),
   };
   notify();
+  if (isSupabaseConfigured()) {
+    runWithConcurrency(
+      batchIds.map((id) => () => projectMilestoneService.approveDisbursement('payroll_batch', id, globalState.currentUser.id)),
+      4
+    ).catch(() => {});
+  }
   showToast({
     type: 'success',
     title: 'Lots de Paie Validés (Double-Clé)',
@@ -2064,7 +2126,109 @@ export function batchApprovePmPayrollBatchesAction(batchIds: string[]) {
   });
 }
 
-export async function syncWithSupabaseAction() {
+function mergeById<T extends { id: string }>(existing: T[] = [], incoming: T[] = []): T[] {
+  if (incoming.length === 0) return existing;
+  const map = new Map<string, T>();
+  for (const item of existing) map.set(item.id, item);
+  for (const item of incoming) map.set(item.id, item);
+  return Array.from(map.values());
+}
+
+function getActiveCategoryForBranch(branchId: string): BusinessCategory {
+  const branch = globalState.branches.find((b) => b.id === branchId);
+  const bizId = branch?.businessId || globalState.currentBusinessId;
+  const biz = globalState.businesses.find((b) => b.id === bizId);
+  return biz?.category || 'membership_session';
+}
+
+function pruneDeletedRecords(
+  state: AppState,
+  deletedIdsByTable?: Record<string, string[]>
+): Partial<AppState> {
+  if (!deletedIdsByTable) return {};
+  const entries = Object.entries(deletedIdsByTable).filter(([, ids]) => ids && ids.length > 0);
+  if (entries.length === 0) return {};
+
+  const tableToStateKey: Record<string, keyof AppState> = {
+    businesses: 'businesses',
+    branches: 'branches',
+    staff: 'staff',
+    staff_attendance_logs: 'staffAttendanceLogs',
+    staff_salary_advances: 'staffSalaryAdvances',
+    staff_payroll_runs: 'staffPayrollRuns',
+    staff_payroll_slips: 'staffPayrollSlips',
+    gym_members: 'members',
+    gym_registration_leads: 'leads',
+    salon_appointments: 'appointments',
+    salon_services: 'servicesCatalog',
+    salon_workstations: 'salonWorkstations',
+    salon_stylist_payouts: 'stylistPayouts',
+    pos_products: 'products',
+    pos_sales: 'sales',
+    pos_parked_orders: 'parkedOrders',
+    pos_stock_movements: 'stockMovements',
+    freelance_clients: 'freelanceClients',
+    freelance_projects: 'freelanceProjects',
+    freelance_time_logs: 'timeLogs',
+    freelance_invoices: 'freelanceInvoices',
+    freelance_proposals: 'freelanceProposals',
+    freelance_expenses: 'freelanceExpenses',
+    rental_units: 'rentableUnits',
+    rental_bookings: 'rentalBookings',
+    rental_renters: 'rentalRenters',
+    rental_security_deposits: 'securityDeposits',
+    edu_courses: 'eduCourses',
+    edu_classrooms: 'eduClassrooms',
+    edu_cohorts: 'eduCohorts',
+    edu_students: 'eduStudents',
+    edu_enrollments: 'eduEnrollments',
+    edu_sessions: 'eduSessions',
+    edu_attendance: 'eduAttendance',
+    edu_grades: 'eduGrades',
+    edu_certificates: 'eduCertificates',
+    edu_admissions: 'eduAdmissions',
+    pm_clients: 'pmClients',
+    pm_projects: 'pmProjects',
+    pm_milestones: 'pmMilestones',
+    pm_collateral_catalog: 'pmCollateralCatalog',
+    pm_print_orders: 'pmPrintOrders',
+    pm_bat_deliverables: 'pmBatDeliverables',
+    pm_talents: 'pmTalents',
+    pm_missions: 'pmMissions',
+    pm_attendances: 'pmAttendances',
+    pm_expenses: 'pmExpenses',
+    pm_payroll_batches: 'pmPayrollBatches',
+    pm_equipment_stock: 'pmEquipmentStock',
+    trading_warehouses: 'warehouses',
+    trading_b2b_clients: 'b2bClients',
+    trading_b2b_suppliers: 'b2bSuppliers',
+    trading_products: 'products',
+    trading_commercial_docs: 'commercialDocs',
+    trading_purchase_docs: 'purchaseDocs',
+    trading_stock_vouchers: 'stockVouchers',
+  };
+
+  const patch: Partial<AppState> = {};
+  for (const [table, ids] of entries) {
+    const key = tableToStateKey[table];
+    if (!key) continue;
+    const currentList = state[key];
+    if (!Array.isArray(currentList)) continue;
+    const idSet = new Set(ids);
+    const filtered = (currentList as Array<{ id: string }>).filter((item) => !idSet.has(item.id));
+    if (filtered.length !== currentList.length) {
+      (patch as any)[key] = filtered;
+    }
+  }
+  return patch;
+}
+
+export interface SyncActionOptions {
+  onlyTables?: string[];
+  deletedIdsByTable?: Record<string, string[]>;
+}
+
+export async function syncWithSupabaseAction(options?: SyncActionOptions) {
   if (!isSupabaseConfigured()) {
     globalState = {
       ...globalState,
@@ -2075,56 +2239,35 @@ export async function syncWithSupabaseAction() {
     return;
   }
 
-  globalState = {
-    ...globalState,
-    isSyncing: true,
-    syncErrorMessage: null,
-  };
-  notify();
+  const branchId = globalState.currentBranchId;
+  const activeCategory = getActiveCategoryForBranch(branchId);
 
-  try {
+  if (options?.deletedIdsByTable) {
+    const deletePatch = pruneDeletedRecords(globalState, options.deletedIdsByTable);
+    if (Object.keys(deletePatch).length > 0) {
+      globalState = {
+        ...globalState,
+        ...deletePatch,
+        lastSyncedAt: new Date().toISOString(),
+      };
+      notify();
+    }
+  }
+
+  const tableFilterSet =
+    options?.onlyTables && options.onlyTables.length > 0 ? new Set(options.onlyTables) : null;
+  const shouldSyncTable = (...tables: string[]) =>
+    !tableFilterSet || tables.some((tbl) => tableFilterSet.has(tbl));
+
+  const singleFlightKey = tableFilterSet
+    ? `branch:${branchId}:delta:${Array.from(tableFilterSet).sort().join(',')}`
+    : `branch:${branchId}:${activeCategory}`;
+
+  return syncCoordinator.runSingleFlight(singleFlightKey, async () => {
     const session = await authService.getSession();
     const accountId = session?.user?.id || globalState.account.id;
-
-    const [
-      businesses,
-      branches,
-      members,
-      leads,
-      staff,
-      appointments,
-      products,
-      sales,
-      freelanceClients,
-      freelanceProjects,
-      freelanceTimeLogs,
-      freelanceInvoices,
-      freelanceProposals,
-      freelanceExpenses,
-      rentableUnits,
-      rentalBookings,
-      rentalRenters,
-      securityDeposits,
-    ] = await Promise.all([
-      tenantService.fetchBusinesses(accountId),
-      tenantService.fetchBranches(accountId),
-      memberService.fetchMembers(globalState.currentBranchId),
-      memberService.fetchRegistrationRequests(globalState.currentBranchId),
-      staffService.fetchStaffForSync(accountId, globalState.currentBranchId),
-      appointmentService.fetchAppointments(globalState.currentBranchId),
-      posService.fetchProducts(globalState.currentBranchId),
-      posService.fetchSales(globalState.currentBranchId),
-      freelanceService.fetchClients(globalState.currentBranchId),
-      freelanceService.fetchProjects(globalState.currentBranchId),
-      freelanceService.fetchTimeLogs(globalState.currentBranchId),
-      freelanceService.fetchInvoices(globalState.currentBranchId),
-      freelanceService.fetchProposals(globalState.currentBranchId),
-      freelanceService.fetchExpenses(globalState.currentBranchId),
-      rentalService.fetchUnits(globalState.currentBranchId),
-      rentalService.fetchBookings(globalState.currentBranchId),
-      rentalService.fetchRenters(globalState.currentBranchId),
-      rentalService.fetchDeposits(globalState.currentBranchId),
-    ]);
+    lastSyncedAuthUserId = session?.user?.id || lastSyncedAuthUserId;
+    const updatedAfter = syncCoordinator.getDeltaCursor(branchId, activeCategory);
 
     const updates: Partial<AppState> = {
       supabaseStatus: 'connected',
@@ -2133,55 +2276,444 @@ export async function syncWithSupabaseAction() {
       syncErrorMessage: null,
     };
 
-    if (businesses.length > 0) updates.businesses = businesses;
-    if (branches.length > 0) updates.branches = branches;
-    if (members.length > 0) {
-      const otherMembers = globalState.members.filter((m) => m.facilityId !== globalState.currentBranchId);
-      updates.members = [...members, ...otherMembers];
+    const tasks: Array<() => Promise<void>> = [];
+
+    if (shouldSyncTable('businesses')) {
+      tasks.push(async () => {
+        const businesses = await tenantService.fetchBusinesses(accountId);
+        if (businesses.length > 0) updates.businesses = businesses;
+      });
     }
-    if (leads.length > 0) {
-      const otherLeads = globalState.leads.filter((l) => l.facilityId !== globalState.currentBranchId);
-      updates.leads = [...leads, ...otherLeads];
+    if (shouldSyncTable('branches')) {
+      tasks.push(async () => {
+        const branches = await tenantService.fetchBranches(accountId);
+        if (branches.length > 0) updates.branches = branches;
+      });
     }
-    if (staff.length > 0) updates.staff = staff;
-    if (appointments.length > 0) updates.appointments = appointments;
-    if (products.length > 0) updates.products = products;
-    if (sales.length > 0) updates.sales = sales;
-    if (freelanceClients.length > 0) updates.freelanceClients = freelanceClients;
-    if (freelanceProjects.length > 0) updates.freelanceProjects = freelanceProjects;
-    if (freelanceTimeLogs.length > 0) updates.timeLogs = freelanceTimeLogs;
-    if (freelanceInvoices.length > 0) updates.freelanceInvoices = freelanceInvoices;
-    if (freelanceProposals.length > 0) updates.freelanceProposals = freelanceProposals;
-    if (freelanceExpenses.length > 0) updates.freelanceExpenses = freelanceExpenses;
-    if (rentableUnits.length > 0) {
-      const otherUnits = globalState.rentableUnits.filter((u) => u.facilityId !== globalState.currentBranchId);
-      updates.rentableUnits = [...rentableUnits, ...otherUnits];
+    if (shouldSyncTable('staff')) {
+      tasks.push(async () => {
+        const staff = await staffService.fetchStaffForSync(accountId, branchId, updatedAfter);
+        if (staff.length > 0) {
+          updates.staff = updatedAfter ? mergeById(globalState.staff, staff) : staff;
+        }
+      });
     }
-    if (rentalBookings.length > 0) {
-      const otherBookings = globalState.rentalBookings.filter((b) => b.facilityId !== globalState.currentBranchId);
-      updates.rentalBookings = [...rentalBookings, ...otherBookings];
+    if (shouldSyncTable('staff_attendance_logs')) {
+      tasks.push(async () => {
+        const logs = await staffService.fetchAttendanceLogs(branchId, updatedAfter);
+        if (logs.length > 0) {
+          updates.staffAttendanceLogs = mergeById(globalState.staffAttendanceLogs || [], logs);
+        }
+      });
     }
-    if (rentalRenters.length > 0) {
-      const otherRenters = globalState.rentalRenters.filter((r) => r.facilityId !== globalState.currentBranchId);
-      updates.rentalRenters = [...rentalRenters, ...otherRenters];
+    if (shouldSyncTable('staff_salary_advances')) {
+      tasks.push(async () => {
+        const advances = await staffService.fetchSalaryAdvances(branchId, updatedAfter);
+        if (advances.length > 0) {
+          updates.staffSalaryAdvances = mergeById(globalState.staffSalaryAdvances || [], advances);
+        }
+      });
     }
-    if (securityDeposits.length > 0) {
-      const otherDeposits = globalState.securityDeposits.filter((d) => d.facilityId !== globalState.currentBranchId);
-      updates.securityDeposits = [...securityDeposits, ...otherDeposits];
+    if (shouldSyncTable('staff_payroll_runs')) {
+      tasks.push(async () => {
+        const runs = await staffService.fetchPayrollRuns(branchId, updatedAfter);
+        if (runs.length > 0) {
+          updates.staffPayrollRuns = mergeById(globalState.staffPayrollRuns || [], runs);
+        }
+      });
+    }
+    if (shouldSyncTable('staff_payroll_slips')) {
+      tasks.push(async () => {
+        const slips = await staffService.fetchPayrollSlips(branchId, updatedAfter);
+        if (slips.length > 0) {
+          updates.staffPayrollSlips = mergeById(globalState.staffPayrollSlips || [], slips);
+        }
+      });
     }
 
-    globalState = { ...globalState, ...updates };
-    notify();
-  } catch (err: any) {
-    console.warn('[store] syncWithSupabase failed:', err);
+    if (activeCategory === 'membership_session') {
+      if (shouldSyncTable('gym_members')) {
+        tasks.push(async () => {
+          const members = await memberService.fetchMembers(branchId, updatedAfter);
+          if (members.length > 0) {
+            const otherMembers = globalState.members.filter((m) => m.facilityId !== branchId);
+            const currentBranchMembers = globalState.members.filter((m) => m.facilityId === branchId);
+            updates.members = [
+              ...(updatedAfter ? mergeById(currentBranchMembers, members) : members),
+              ...otherMembers,
+            ];
+          }
+        });
+      }
+      if (shouldSyncTable('gym_registration_leads')) {
+        tasks.push(async () => {
+          const leads = await memberService.fetchRegistrationRequests(branchId, updatedAfter);
+          if (leads.length > 0) {
+            const otherLeads = globalState.leads.filter((l) => l.facilityId !== branchId);
+            const currentBranchLeads = globalState.leads.filter((l) => l.facilityId === branchId);
+            updates.leads = [
+              ...(updatedAfter ? mergeById(currentBranchLeads, leads) : leads),
+              ...otherLeads,
+            ];
+          }
+        });
+      }
+    } else if (activeCategory === 'appointment_service') {
+      if (shouldSyncTable('salon_appointments')) {
+        tasks.push(async () => {
+          const appointments = await appointmentService.fetchAppointments(branchId, updatedAfter);
+          if (appointments.length > 0) {
+            updates.appointments = updatedAfter
+              ? mergeById(globalState.appointments || [], appointments)
+              : appointments;
+          }
+        });
+      }
+      if (shouldSyncTable('salon_services')) {
+        tasks.push(async () => {
+          const services = await appointmentService.fetchServices(branchId, updatedAfter);
+          if (services.length > 0) {
+            updates.servicesCatalog = mergeById(globalState.servicesCatalog || [], services);
+          }
+        });
+      }
+      if (shouldSyncTable('salon_workstations')) {
+        tasks.push(async () => {
+          const workstations = await appointmentService.fetchWorkstations(branchId);
+          if (workstations.length > 0) updates.salonWorkstations = workstations;
+        });
+      }
+      if (shouldSyncTable('salon_stylist_payouts')) {
+        tasks.push(async () => {
+          const payouts = await appointmentService.fetchStylistPayouts(branchId);
+          if (payouts.length > 0) updates.stylistPayouts = payouts;
+        });
+      }
+    } else if (activeCategory === 'pos_inventory') {
+      if (shouldSyncTable('pos_products')) {
+        tasks.push(async () => {
+          const products = await posService.fetchProducts(branchId, updatedAfter);
+          if (products.length > 0) {
+            updates.products = updatedAfter ? mergeById(globalState.products || [], products) : products;
+          }
+        });
+      }
+      if (shouldSyncTable('pos_sales', 'pos_sale_items')) {
+        tasks.push(async () => {
+          const sales = await posService.fetchSales(branchId, updatedAfter);
+          if (sales.length > 0) {
+            updates.sales = updatedAfter ? mergeById(globalState.sales || [], sales) : sales;
+          }
+        });
+      }
+      if (shouldSyncTable('pos_parked_orders')) {
+        tasks.push(async () => {
+          const parked = await posService.fetchParkedOrders(branchId);
+          if (parked.length > 0) updates.parkedOrders = parked;
+        });
+      }
+      if (shouldSyncTable('pos_stock_movements')) {
+        tasks.push(async () => {
+          const movements = await posService.fetchStockMovements(branchId);
+          if (movements.length > 0) {
+            updates.stockMovements = mergeById(globalState.stockMovements || [], movements);
+          }
+        });
+      }
+    } else if (activeCategory === 'freelance_solo') {
+      if (shouldSyncTable('freelance_clients')) {
+        tasks.push(async () => {
+          const rows = await freelanceService.fetchClients(branchId, updatedAfter);
+          if (rows.length > 0) updates.freelanceClients = mergeById(globalState.freelanceClients, rows);
+        });
+      }
+      if (shouldSyncTable('freelance_projects')) {
+        tasks.push(async () => {
+          const rows = await freelanceService.fetchProjects(branchId, updatedAfter);
+          if (rows.length > 0) updates.freelanceProjects = mergeById(globalState.freelanceProjects, rows);
+        });
+      }
+      if (shouldSyncTable('freelance_time_logs')) {
+        tasks.push(async () => {
+          const rows = await freelanceService.fetchTimeLogs(branchId, updatedAfter);
+          if (rows.length > 0) updates.timeLogs = mergeById(globalState.timeLogs, rows);
+        });
+      }
+      if (shouldSyncTable('freelance_invoices', 'freelance_invoice_items')) {
+        tasks.push(async () => {
+          const rows = await freelanceService.fetchInvoices(branchId, updatedAfter);
+          if (rows.length > 0) updates.freelanceInvoices = mergeById(globalState.freelanceInvoices, rows);
+        });
+      }
+      if (shouldSyncTable('freelance_proposals')) {
+        tasks.push(async () => {
+          const rows = await freelanceService.fetchProposals(branchId, updatedAfter);
+          if (rows.length > 0) updates.freelanceProposals = mergeById(globalState.freelanceProposals, rows);
+        });
+      }
+      if (shouldSyncTable('freelance_expenses')) {
+        tasks.push(async () => {
+          const rows = await freelanceService.fetchExpenses(branchId, updatedAfter);
+          if (rows.length > 0) updates.freelanceExpenses = mergeById(globalState.freelanceExpenses, rows);
+        });
+      }
+    } else if (activeCategory === 'rental_booking') {
+      if (shouldSyncTable('rental_units')) {
+        tasks.push(async () => {
+          const units = await rentalService.fetchUnits(branchId, updatedAfter);
+          if (units.length > 0) {
+            const others = globalState.rentableUnits.filter((u) => u.facilityId !== branchId);
+            const cur = globalState.rentableUnits.filter((u) => u.facilityId === branchId);
+            updates.rentableUnits = [...(updatedAfter ? mergeById(cur, units) : units), ...others];
+          }
+        });
+      }
+      if (shouldSyncTable('rental_bookings', 'rental_booking_addons')) {
+        tasks.push(async () => {
+          const bookings = await rentalService.fetchBookings(branchId, updatedAfter);
+          if (bookings.length > 0) {
+            const others = globalState.rentalBookings.filter((b) => b.facilityId !== branchId);
+            const cur = globalState.rentalBookings.filter((b) => b.facilityId === branchId);
+            updates.rentalBookings = [...(updatedAfter ? mergeById(cur, bookings) : bookings), ...others];
+          }
+        });
+      }
+      if (shouldSyncTable('rental_renters')) {
+        tasks.push(async () => {
+          const renters = await rentalService.fetchRenters(branchId, updatedAfter);
+          if (renters.length > 0) {
+            const others = globalState.rentalRenters.filter((r) => r.facilityId !== branchId);
+            const cur = globalState.rentalRenters.filter((r) => r.facilityId === branchId);
+            updates.rentalRenters = [...(updatedAfter ? mergeById(cur, renters) : renters), ...others];
+          }
+        });
+      }
+      if (shouldSyncTable('rental_security_deposits')) {
+        tasks.push(async () => {
+          const deposits = await rentalService.fetchDeposits(branchId, updatedAfter);
+          if (deposits.length > 0) {
+            const others = globalState.securityDeposits.filter((d) => d.facilityId !== branchId);
+            const cur = globalState.securityDeposits.filter((d) => d.facilityId === branchId);
+            updates.securityDeposits = [...(updatedAfter ? mergeById(cur, deposits) : deposits), ...others];
+          }
+        });
+      }
+    } else if (activeCategory === 'education_cohort') {
+      if (shouldSyncTable('edu_courses')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchCourses(branchId, updatedAfter);
+          if (rows.length > 0) updates.eduCourses = mergeById(globalState.eduCourses || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_classrooms')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchClassrooms(branchId);
+          if (rows.length > 0) updates.eduClassrooms = mergeById(globalState.eduClassrooms || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_cohorts')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchCohorts(branchId, updatedAfter);
+          if (rows.length > 0) updates.eduCohorts = mergeById(globalState.eduCohorts || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_students')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchStudents(branchId, updatedAfter);
+          if (rows.length > 0) updates.eduStudents = mergeById(globalState.eduStudents || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_enrollments')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchEnrollments(branchId);
+          if (rows.length > 0) updates.eduEnrollments = mergeById(globalState.eduEnrollments || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_sessions')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchSessions(branchId);
+          if (rows.length > 0) updates.eduSessions = mergeById(globalState.eduSessions || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_attendance')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchAttendance(branchId);
+          if (rows.length > 0) updates.eduAttendance = mergeById(globalState.eduAttendance || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_grades')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchGrades(branchId);
+          if (rows.length > 0) updates.eduGrades = mergeById(globalState.eduGrades || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_certificates')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchCertificates(branchId);
+          if (rows.length > 0) updates.eduCertificates = mergeById(globalState.eduCertificates || [], rows);
+        });
+      }
+      if (shouldSyncTable('edu_admissions')) {
+        tasks.push(async () => {
+          const rows = await educationService.fetchAdmissions(branchId);
+          if (rows.length > 0) updates.eduAdmissions = mergeById(globalState.eduAdmissions || [], rows);
+        });
+      }
+    } else if (activeCategory === 'project_milestone') {
+      if (shouldSyncTable('pm_clients')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchClients(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmClients = mergeById(globalState.pmClients || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_projects')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchProjects(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmProjects = mergeById(globalState.pmProjects || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_milestones')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchMilestones(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmMilestones = mergeById(globalState.pmMilestones || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_collateral_catalog')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchCollateralCatalog(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmCollateralCatalog = mergeById(globalState.pmCollateralCatalog || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_print_orders')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchPrintOrders(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmPrintOrders = mergeById(globalState.pmPrintOrders || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_bat_deliverables')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchBatDeliverables(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmBatDeliverables = mergeById(globalState.pmBatDeliverables || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_talents')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchTalents(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmTalents = mergeById(globalState.pmTalents || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_missions', 'pm_mission_staff')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchMissions(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmMissions = mergeById(globalState.pmMissions || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_attendances')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchAttendances(branchId, undefined, updatedAfter);
+          if (rows.length > 0) updates.pmAttendances = mergeById(globalState.pmAttendances || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_expenses')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchExpenses(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmExpenses = mergeById(globalState.pmExpenses || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_payroll_batches', 'pm_ccp_slips')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchPayrollBatches(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmPayrollBatches = mergeById(globalState.pmPayrollBatches || [], rows);
+        });
+      }
+      if (shouldSyncTable('pm_equipment_stock')) {
+        tasks.push(async () => {
+          const rows = await projectMilestoneService.fetchEquipmentStock(branchId, updatedAfter);
+          if (rows.length > 0) updates.pmEquipmentStock = mergeById(globalState.pmEquipmentStock || [], rows);
+        });
+      }
+    } else if (activeCategory === 'trading_commercial') {
+      if (shouldSyncTable('trading_warehouses')) {
+        tasks.push(async () => {
+          const rows = await tradingService.fetchWarehouses(branchId, updatedAfter);
+          if (rows.length > 0) updates.warehouses = mergeById(globalState.warehouses || [], rows);
+        });
+      }
+      if (shouldSyncTable('trading_b2b_clients')) {
+        tasks.push(async () => {
+          const rows = await tradingService.fetchClients(branchId, updatedAfter);
+          if (rows.length > 0) updates.b2bClients = mergeById(globalState.b2bClients || [], rows);
+        });
+      }
+      if (shouldSyncTable('trading_b2b_suppliers')) {
+        tasks.push(async () => {
+          const rows = await tradingService.fetchSuppliers(branchId, updatedAfter);
+          if (rows.length > 0) updates.b2bSuppliers = mergeById(globalState.b2bSuppliers || [], rows);
+        });
+      }
+      if (shouldSyncTable('trading_products')) {
+        tasks.push(async () => {
+          const rows = await tradingService.fetchProducts(branchId, updatedAfter);
+          if (rows.length > 0) updates.products = mergeById(globalState.products || [], rows);
+        });
+      }
+      if (shouldSyncTable('trading_commercial_docs', 'trading_commercial_doc_items')) {
+        tasks.push(async () => {
+          const rows = await tradingService.fetchCommercialDocs(branchId, updatedAfter);
+          if (rows.length > 0) updates.commercialDocs = mergeById(globalState.commercialDocs || [], rows);
+        });
+      }
+      if (shouldSyncTable('trading_purchase_docs', 'trading_purchase_doc_items')) {
+        tasks.push(async () => {
+          const rows = await tradingService.fetchPurchaseDocs(branchId, updatedAfter);
+          if (rows.length > 0) updates.purchaseDocs = mergeById(globalState.purchaseDocs || [], rows);
+        });
+      }
+      if (shouldSyncTable('trading_stock_vouchers', 'trading_stock_voucher_items')) {
+        tasks.push(async () => {
+          const rows = await tradingService.fetchStockVouchers(branchId, updatedAfter);
+          if (rows.length > 0) updates.stockVouchers = mergeById(globalState.stockVouchers || [], rows);
+        });
+      }
+    }
+
+    if (tableFilterSet && tasks.length === 0) {
+      syncCoordinator.markSynced(branchId, activeCategory, updates.lastSyncedAt || new Date().toISOString());
+      return;
+    }
+
     globalState = {
       ...globalState,
-      supabaseStatus: 'offline',
-      isSyncing: false,
-      syncErrorMessage: err.message || 'Network error syncing with Supabase',
+      isSyncing: true,
+      syncErrorMessage: null,
     };
     notify();
-  }
+
+    try {
+      if (!tableFilterSet) {
+        await syncCoordinator.flushQueue().catch((err) => {
+          console.warn('[store] flushQueue warning:', err);
+        });
+      }
+
+      await runWithConcurrency(tasks, 4);
+      syncCoordinator.markSynced(branchId, activeCategory, updates.lastSyncedAt || new Date().toISOString());
+
+      const mergedState = { ...globalState, ...updates };
+      const postDeletePatch = pruneDeletedRecords(mergedState, options?.deletedIdsByTable);
+      globalState = { ...mergedState, ...postDeletePatch };
+      notify();
+    } catch (err: any) {
+      console.warn('[store] syncWithSupabase failed:', err);
+      globalState = {
+        ...globalState,
+        supabaseStatus: 'offline',
+        isSyncing: false,
+        syncErrorMessage: err.message || 'Network error syncing with Supabase',
+      };
+      notify();
+    }
+  });
 }
 
 export function setNetworkModeAction(mode: 'online' | 'slow_3g' | 'offline' | 'force_skeleton') {
@@ -2280,20 +2812,31 @@ export function useDashboardShellState() {
 
 export function useAtriumStoreLifecycle() {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const currentAccountId = useAtriumSelector((s) => s.account.id || s.currentUser.id);
+  const activeCategory = useAtriumSelector((s) => {
+    const branch = s.branches.find((b) => b.id === s.currentBranchId);
+    const biz = s.businesses.find((b) => b.id === (branch?.businessId || s.currentBusinessId));
+    return biz?.category || 'membership_session';
+  });
   const timerRunning = useAtriumSelector((s) => s.activeTimer.isRunning);
   const timerPaused = useAtriumSelector((s) => s.activeTimer.isPaused);
 
   useEffect(() => {
     if (isSupabaseConfigured() && !hasInitialSynced) {
       hasInitialSynced = true;
-      syncWithSupabaseAction();
+      void syncWithSupabaseAction();
     }
   }, []);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
-    const unsubscribe = authService.onAuthStateChange(async (session) => {
+    const unsubscribe = authService.onAuthStateChange(async (session, event) => {
+      if (event === 'TOKEN_REFRESHED') {
+        return;
+      }
+
       if (session?.user) {
+        const userId = session.user.id;
         await authService.ensureUserAccount(session.user);
         const fullName =
           session.user.user_metadata?.full_name ||
@@ -2304,14 +2847,22 @@ export function useAtriumStoreLifecycle() {
           ...globalState,
           currentUser: {
             ...globalState.currentUser,
-            id: session.user.id,
+            id: userId,
             email: session.user.email || globalState.currentUser.email,
             fullName,
           },
           isAuthenticated: true,
         };
         notify();
-        syncWithSupabaseAction();
+
+        const isDuplicateInitialSession =
+          event === 'INITIAL_SESSION' && hasInitialSynced && lastSyncedAuthUserId === userId;
+        if (!isDuplicateInitialSession) {
+          lastSyncedAuthUserId = userId;
+          void syncWithSupabaseAction();
+        }
+      } else if (event === 'SIGNED_OUT') {
+        lastSyncedAuthUserId = null;
       }
     });
     return () => {
@@ -2320,8 +2871,8 @@ export function useAtriumStoreLifecycle() {
   }, []);
 
   useEffect(() => {
-    ensureBranchSubscription(currentBranchId);
-  }, [currentBranchId]);
+    ensureBranchSubscription(currentBranchId, activeCategory, currentAccountId);
+  }, [currentBranchId, activeCategory, currentAccountId]);
 
   useEffect(() => {
     ensureTimerTick(timerRunning, timerPaused);
@@ -2525,13 +3076,21 @@ const EMPTY_PLANS: MembershipPlan[] = [];
 
 // Module-level singletons to prevent race conditions across multiple hook consumers
 let hasInitialSynced = false;
+let lastSyncedAuthUserId: string | null = null;
 let activeBranchSub: (() => void) | null = null;
-let activeSubscribedBranchId: string | null = null;
+let activeSubscribedScopeKey: string | null = null;
 let activeTimerInterval: ReturnType<typeof setInterval> | null = null;
 
-function ensureBranchSubscription(branchId: string) {
+function ensureBranchSubscription(
+  branchId: string,
+  categoryOverride?: BusinessCategory,
+  accountIdOverride?: string | null
+) {
   if (!isSupabaseConfigured()) return;
-  if (activeSubscribedBranchId === branchId && activeBranchSub) {
+  const activeCategory = categoryOverride || getActiveCategoryForBranch(branchId);
+  const accountId = accountIdOverride || globalState.account.id || globalState.currentUser.id || null;
+  const scopeKey = `${branchId}:${activeCategory}:${accountId || ''}`;
+  if (activeSubscribedScopeKey === scopeKey && activeBranchSub) {
     return;
   }
   if (activeBranchSub) {
@@ -2542,35 +3101,20 @@ function ensureBranchSubscription(branchId: string) {
     }
     activeBranchSub = null;
   }
-  activeSubscribedBranchId = branchId;
-  activeBranchSub = realtimeService.subscribeToBranch(branchId, {
-    onMemberChange: () => {
-      memberService.fetchMembers(branchId).then((newMembers) => {
-        if (newMembers.length > 0) {
-          const others = globalState.members.filter((m) => m.facilityId !== branchId);
-          globalState = {
-            ...globalState,
-            members: [...newMembers, ...others],
-            lastSyncedAt: new Date().toISOString(),
-          };
-          notify();
-        }
-      });
+  activeSubscribedScopeKey = scopeKey;
+  activeBranchSub = realtimeService.subscribeToBranch(
+    branchId,
+    {
+      onDeltaChange: (changedTables, deletedIdsByTable) => {
+        void syncWithSupabaseAction({
+          onlyTables: changedTables,
+          deletedIdsByTable,
+        });
+      },
     },
-    onLeadChange: () => {
-      memberService.fetchRegistrationRequests(branchId).then((newLeads) => {
-        if (newLeads.length > 0) {
-          const others = globalState.leads.filter((l) => l.facilityId !== branchId);
-          globalState = {
-            ...globalState,
-            leads: [...newLeads, ...others],
-            lastSyncedAt: new Date().toISOString(),
-          };
-          notify();
-        }
-      });
-    },
-  });
+    activeCategory,
+    accountId
+  );
 }
 
 function ensureTimerTick(isRunning: boolean, isPaused: boolean) {
@@ -2975,6 +3519,14 @@ function createAtriumActions() {
     };
     notify();
 
+    if (isSupabaseConfigured()) {
+      memberService
+        .recordCheckIn(globalState.currentBranchId, id, 'rfid', getActiveDeviceId())
+        .catch((err) => {
+          console.warn('[store] Failed to record check-in in Supabase:', err);
+        });
+    }
+
     showToast({
       type: 'success',
       title: t('toast_checkin_granted_title', lang),
@@ -3020,6 +3572,10 @@ function createAtriumActions() {
       ),
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      memberService.updateLeadStatus(leadId, status).catch(() => {});
+    }
   };
 
   const deleteLead = (leadId: string) => {
@@ -3028,6 +3584,10 @@ function createAtriumActions() {
       leads: globalState.leads.filter((l) => l.id !== leadId),
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      memberService.deleteLead(leadId, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   const convertLeadToMember = (
@@ -3075,6 +3635,13 @@ function createAtriumActions() {
       activeScreen: 'members',
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      memberService.updateLeadStatus(leadId, 'Approved').catch(() => {});
+      memberService.createMember(newMember).catch((err) => {
+        console.warn('[store] Failed to save converted member to Supabase:', err);
+      });
+    }
   };
 
   const processSale = (
@@ -3238,6 +3805,47 @@ function createAtriumActions() {
       stockMovements: [...returnMovements, ...(globalState.stockMovements || [])],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      syncCoordinator
+        .mutateOrQueueUpdate('pos_sales', saleId, {
+          status: 'Refunded',
+          notes: reason ? `Refund: ${reason}` : 'Customer Return',
+        })
+        .catch(() => {});
+
+      const returnedProductIds = new Set(returnMovements.map((m) => m.productId));
+      const touchedProducts = updatedProducts.filter((p) => returnedProductIds.has(p.id));
+      if (touchedProducts.length > 0) {
+        runWithConcurrency(
+          touchedProducts.map((p) => () => posService.upsertProduct(p)),
+          4
+        ).catch(() => {});
+      }
+      if (returnMovements.length > 0) {
+        runWithConcurrency(
+          returnMovements.map((mv) => () =>
+            syncCoordinator.mutateOrQueueUpsert('pos_stock_movements', {
+              id: toValidUuid(mv.id),
+              account_id: toValidUuid(globalState.account.id),
+              business_id: toValidUuid(globalState.currentBusinessId),
+              branch_id: toValidUuid(globalState.currentBranchId),
+              staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
+              updated_by_staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
+              device_id: getActiveDeviceId(),
+              product_id: toValidUuid(mv.productId),
+              product_name: mv.productName,
+              movement_type: 'refund',
+              quantity: Math.abs(mv.quantity),
+              previous_stock: mv.previousStock,
+              new_stock: mv.newStock,
+              reason: mv.reason || null,
+            })
+          ),
+          4
+        ).catch(() => {});
+      }
+    }
   };
 
   const adjustStock = (
@@ -3280,6 +3888,42 @@ function createAtriumActions() {
     };
     notify();
 
+    if (isSupabaseConfigured()) {
+      const targetProd = updatedProducts.find((p) => p.id === productId);
+      if (targetProd) {
+        posService.upsertProduct(targetProd).catch(() => {});
+      }
+      if (movement) {
+        const mv: StockMovement = movement;
+        const dbMovementType =
+          mv.type === 'Sale'
+            ? 'sale'
+            : mv.type === 'Restock'
+            ? 'in'
+            : mv.type === 'Return'
+            ? 'refund'
+            : 'adjustment';
+        syncCoordinator
+          .mutateOrQueueUpsert('pos_stock_movements', {
+            id: toValidUuid(mv.id),
+            account_id: toValidUuid(globalState.account.id),
+            business_id: toValidUuid(globalState.currentBusinessId),
+            branch_id: toValidUuid(globalState.currentBranchId),
+            staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
+            updated_by_staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
+            device_id: getActiveDeviceId(),
+            product_id: toValidUuid(mv.productId),
+            product_name: mv.productName,
+            movement_type: dbMovementType,
+            quantity: mv.quantity,
+            previous_stock: mv.previousStock,
+            new_stock: mv.newStock,
+            reason: mv.reason || null,
+          })
+          .catch(() => {});
+      }
+    }
+
     if (movement) {
       const mv: StockMovement = movement;
       showToast({
@@ -3299,13 +3943,19 @@ function createAtriumActions() {
   };
 
   const updateProduct = (productId: string, updates: Partial<Product>) => {
+    const updatedProducts = globalState.products.map((p) =>
+      p.id === productId ? { ...p, ...updates } : p
+    );
     globalState = {
       ...globalState,
-      products: globalState.products.map((p) =>
-        p.id === productId ? { ...p, ...updates } : p
-      ),
+      products: updatedProducts,
     };
     notify();
+
+    const target = updatedProducts.find((p) => p.id === productId);
+    if (target && isSupabaseConfigured()) {
+      posService.upsertProduct(target).catch(() => {});
+    }
   };
 
   const deleteProduct = (productId: string) => {
@@ -3315,6 +3965,10 @@ function createAtriumActions() {
       products: globalState.products.filter((p) => p.id !== productId),
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      posService.deleteProduct(productId, globalState.currentUser?.id).catch(() => {});
+    }
 
     showToast({
       type: 'warning',
@@ -3330,6 +3984,9 @@ function createAtriumActions() {
       sales: globalState.sales.filter((s) => s.id !== saleId),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      syncCoordinator.softDeleteRow('pos_sales', saleId, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   const batchDeleteSales = (saleIds: string[]) => {
@@ -3339,6 +3996,14 @@ function createAtriumActions() {
       sales: globalState.sales.filter((s) => !idSet.has(s.id)),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        saleIds.map((id) => () =>
+          syncCoordinator.softDeleteRow('pos_sales', id, globalState.currentUser?.id)
+        ),
+        4
+      ).catch(() => {});
+    }
   };
 
   const deleteScheduleEvent = (eventId: string) => {
@@ -3382,6 +4047,10 @@ function createAtriumActions() {
     };
     notify();
 
+    if (isSupabaseConfigured()) {
+      staffService.createStaff(newStaff).catch(() => {});
+    }
+
     showToast({
       type: 'success',
       title: 'Collaborateur créé',
@@ -3402,19 +4071,26 @@ function createAtriumActions() {
       }
     }
 
+    const updatedStaffList = globalState.staff.map((s) =>
+      s.id === id
+        ? {
+            ...s,
+            ...updates,
+            isActive: updates.status ? updates.status === 'active' : (updates.isActive ?? s.isActive),
+          }
+        : s
+    );
+
     globalState = {
       ...globalState,
-      staff: globalState.staff.map((s) =>
-        s.id === id
-          ? {
-              ...s,
-              ...updates,
-              isActive: updates.status ? updates.status === 'active' : (updates.isActive ?? s.isActive),
-            }
-          : s
-      ),
+      staff: updatedStaffList,
     };
     notify();
+
+    const updated = updatedStaffList.find((s) => s.id === id);
+    if (updated && isSupabaseConfigured()) {
+      staffService.updateStaff(updated).catch(() => {});
+    }
 
     showToast({
       type: 'info',
@@ -3428,13 +4104,18 @@ function createAtriumActions() {
       throw new Error('Action refusée : le seul propriétaire actif ne peut pas être gelé.');
     }
     const target = globalState.staff.find((s) => s.id === id);
+    const updatedStaffList = globalState.staff.map((s) =>
+      s.id === id ? { ...s, status: 'frozen' as const, isActive: false } : s
+    );
     globalState = {
       ...globalState,
-      staff: globalState.staff.map((s) =>
-        s.id === id ? { ...s, status: 'frozen', isActive: false } : s
-      ),
+      staff: updatedStaffList,
     };
     notify();
+    const updated = updatedStaffList.find((s) => s.id === id);
+    if (updated && isSupabaseConfigured()) {
+      staffService.updateStaff(updated).catch(() => {});
+    }
     showToast({
       type: 'warning',
       title: 'Compte gelé',
@@ -3444,20 +4125,25 @@ function createAtriumActions() {
 
   const vacationStaffMember = (id: string, vacationUntil?: string) => {
     const target = globalState.staff.find((s) => s.id === id);
+    const updatedStaffList = globalState.staff.map((s) =>
+      s.id === id
+        ? {
+            ...s,
+            status: 'vacation' as const,
+            isActive: false,
+            vacationUntil: vacationUntil || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+          }
+        : s
+    );
     globalState = {
       ...globalState,
-      staff: globalState.staff.map((s) =>
-        s.id === id
-          ? {
-              ...s,
-              status: 'vacation',
-              isActive: false,
-              vacationUntil: vacationUntil || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
-            }
-          : s
-      ),
+      staff: updatedStaffList,
     };
     notify();
+    const updated = updatedStaffList.find((s) => s.id === id);
+    if (updated && isSupabaseConfigured()) {
+      staffService.updateStaff(updated).catch(() => {});
+    }
     showToast({
       type: 'info',
       title: 'Départ en congé',
@@ -3470,20 +4156,25 @@ function createAtriumActions() {
       throw new Error('Action refusée : le seul propriétaire actif ne peut pas être arrêté définitivement.');
     }
     const target = globalState.staff.find((s) => s.id === id);
+    const updatedStaffList = globalState.staff.map((s) =>
+      s.id === id
+        ? {
+            ...s,
+            status: 'terminated' as const,
+            isActive: false,
+            terminationDate: terminationDate || new Date().toISOString().split('T')[0],
+          }
+        : s
+    );
     globalState = {
       ...globalState,
-      staff: globalState.staff.map((s) =>
-        s.id === id
-          ? {
-              ...s,
-              status: 'terminated',
-              isActive: false,
-              terminationDate: terminationDate || new Date().toISOString().split('T')[0],
-            }
-          : s
-      ),
+      staff: updatedStaffList,
     };
     notify();
+    const updated = updatedStaffList.find((s) => s.id === id);
+    if (updated && isSupabaseConfigured()) {
+      staffService.updateStaff(updated).catch(() => {});
+    }
     showToast({
       type: 'warning',
       title: 'Contrat arrêté',
@@ -3501,6 +4192,9 @@ function createAtriumActions() {
       staff: globalState.staff.filter((s) => s.id !== id),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      staffService.deleteStaff(id, globalState.currentUser?.id).catch(() => {});
+    }
     showToast({
       type: 'warning',
       title: 'Collaborateur supprimé',
@@ -3581,6 +4275,10 @@ function createAtriumActions() {
     };
     notify();
 
+    if (isSupabaseConfigured()) {
+      staffService.upsertAttendanceLog(newLogEntry).catch(() => {});
+    }
+
     showToast({
       type: 'success',
       title: isClockingIn ? 'Pointage : Arrivée enregistrée' : 'Pointage : Sortie enregistrée',
@@ -3621,6 +4319,9 @@ function createAtriumActions() {
       staffSalaryAdvances: [newAdvance, ...(globalState.staffSalaryAdvances || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      staffService.upsertSalaryAdvance(newAdvance).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Acompte enregistré',
@@ -3630,13 +4331,18 @@ function createAtriumActions() {
   };
 
   const waiveStaffSalaryAdvance = (advanceId: string) => {
+    const updatedAdvances = (globalState.staffSalaryAdvances || []).map((a) =>
+      a.id === advanceId ? { ...a, status: 'waived' as const } : a
+    );
     globalState = {
       ...globalState,
-      staffSalaryAdvances: (globalState.staffSalaryAdvances || []).map((a) =>
-        a.id === advanceId ? { ...a, status: 'waived' as const } : a
-      ),
+      staffSalaryAdvances: updatedAdvances,
     };
     notify();
+    const target = updatedAdvances.find((a) => a.id === advanceId);
+    if (target && isSupabaseConfigured()) {
+      staffService.upsertSalaryAdvance(target).catch(() => {});
+    }
   };
 
   const generateStaffPayrollRun = (month: number, year: number, category = 'membership_session') => {
@@ -3739,6 +4445,23 @@ function createAtriumActions() {
     };
     notify();
 
+    if (isSupabaseConfigured()) {
+      const ctx = {
+        accountId: globalState.account.id,
+        businessId: globalState.currentBusinessId,
+        branchId: globalState.currentBranchId,
+      };
+      staffService
+        .upsertPayrollRun(newRun, category)
+        .then(() =>
+          runWithConcurrency(
+            slips.map((slip) => () => staffService.upsertPayrollSlip(slip, ctx)),
+            4
+          )
+        )
+        .catch(() => {});
+    }
+
     showToast({
       type: 'success',
       title: 'Paie calculée avec succès',
@@ -3757,18 +4480,39 @@ function createAtriumActions() {
         ? { ...adv, status: 'deducted' as const, deductedInPeriod: `${run.periodYear}-${String(run.periodMonth).padStart(2, '0')}` }
         : adv
     );
+    const updatedRuns = (globalState.staffPayrollRuns || []).map((r) =>
+      r.id === runId ? { ...r, status: 'paid' as const, approvedAt: new Date().toISOString() } : r
+    );
+    const updatedSlips = (globalState.staffPayrollSlips || []).map((s) =>
+      s.payrollRunId === runId ? { ...s, isPaid: true, paidDate: new Date().toISOString().slice(0, 10) } : s
+    );
 
     globalState = {
       ...globalState,
-      staffPayrollRuns: (globalState.staffPayrollRuns || []).map((r) =>
-        r.id === runId ? { ...r, status: 'paid' as const, approvedAt: new Date().toISOString() } : r
-      ),
-      staffPayrollSlips: (globalState.staffPayrollSlips || []).map((s) =>
-        s.payrollRunId === runId ? { ...s, isPaid: true, paidDate: new Date().toISOString().slice(0, 10) } : s
-      ),
+      staffPayrollRuns: updatedRuns,
+      staffPayrollSlips: updatedSlips,
       staffSalaryAdvances: updatedAdvances,
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      const approvedRun = updatedRuns.find((r) => r.id === runId);
+      const ctx = {
+        accountId: globalState.account.id,
+        businessId: globalState.currentBusinessId,
+        branchId: globalState.currentBranchId,
+      };
+      if (approvedRun) {
+        staffService.upsertPayrollRun(approvedRun, getActiveCategoryForBranch(globalState.currentBranchId)).catch(() => {});
+      }
+      runWithConcurrency(
+        [
+          ...updatedSlips.filter((s) => s.payrollRunId === runId).map((s) => () => staffService.upsertPayrollSlip(s, ctx)),
+          ...updatedAdvances.filter((a) => a.status === 'deducted').map((a) => () => staffService.upsertSalaryAdvance(a)),
+        ],
+        4
+      ).catch(() => {});
+    }
 
     showToast({
       type: 'success',
@@ -3778,13 +4522,25 @@ function createAtriumActions() {
   };
 
   const markStaffPayrollSlipPaid = (slipId: string) => {
+    const updatedSlips = (globalState.staffPayrollSlips || []).map((s) =>
+      s.id === slipId ? { ...s, isPaid: true, paidDate: new Date().toISOString().slice(0, 10) } : s
+    );
     globalState = {
       ...globalState,
-      staffPayrollSlips: (globalState.staffPayrollSlips || []).map((s) =>
-        s.id === slipId ? { ...s, isPaid: true, paidDate: new Date().toISOString().slice(0, 10) } : s
-      ),
+      staffPayrollSlips: updatedSlips,
     };
     notify();
+
+    const target = updatedSlips.find((s) => s.id === slipId);
+    if (target && isSupabaseConfigured()) {
+      staffService
+        .upsertPayrollSlip(target, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
   };
 
   const logStaffAttendanceManual = (
@@ -3819,6 +4575,10 @@ function createAtriumActions() {
     };
     notify();
 
+    if (isSupabaseConfigured()) {
+      staffService.upsertAttendanceLog(logEntry).catch(() => {});
+    }
+
     showToast({
       type: 'success',
       title: 'Pointage enregistré',
@@ -3843,6 +4603,9 @@ function createAtriumActions() {
       parkedOrders: [parked, ...(globalState.parkedOrders || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      posService.upsertParkedOrder(parked).catch(() => {});
+    }
     return parked;
   };
 
@@ -3854,6 +4617,9 @@ function createAtriumActions() {
         parkedOrders: (globalState.parkedOrders || []).filter((p) => p.id !== orderId),
       };
       notify();
+      if (isSupabaseConfigured()) {
+        posService.deleteParkedOrder(orderId, globalState.currentUser?.id).catch(() => {});
+      }
     }
     return target;
   };
@@ -3864,17 +4630,30 @@ function createAtriumActions() {
       parkedOrders: (globalState.parkedOrders || []).filter((p) => p.id !== orderId),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      posService.deleteParkedOrder(orderId, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   const updateReceiptConfig = (config: Partial<ReceiptConfig>) => {
+    const nextConfig: ReceiptConfig = {
+      ...(globalState.receiptConfig || DEFAULT_RECEIPT_CONFIG),
+      ...config,
+    };
     globalState = {
       ...globalState,
-      receiptConfig: {
-        ...(globalState.receiptConfig || DEFAULT_RECEIPT_CONFIG),
-        ...config,
-      },
+      receiptConfig: nextConfig,
     };
     notify();
+    if (isSupabaseConfigured()) {
+      posService
+        .upsertReceiptConfig(nextConfig, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
   };
 
   const seedDemoInventory = (branchId?: string) => {
@@ -4000,6 +4779,12 @@ function createAtriumActions() {
       products: globalState.products.filter((p) => !idSet.has(p.id)),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        productIds.map((id) => () => posService.deleteProduct(id, globalState.currentUser?.id)),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: 'warning',
       title: 'Products Removed',
@@ -4043,6 +4828,35 @@ function createAtriumActions() {
       stockMovements: [...newMovements, ...(globalState.stockMovements || [])],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      const restocked = updated.filter((p) => idSet.has(p.id));
+      runWithConcurrency(
+        restocked.map((p) => () => posService.upsertProduct(p)),
+        4
+      ).catch(() => {});
+      runWithConcurrency(
+        newMovements.map((mv) => () =>
+          syncCoordinator.mutateOrQueueUpsert('pos_stock_movements', {
+            id: toValidUuid(mv.id),
+            account_id: toValidUuid(globalState.account.id),
+            business_id: toValidUuid(globalState.currentBusinessId),
+            branch_id: toValidUuid(globalState.currentBranchId),
+            staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
+            updated_by_staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
+            device_id: getActiveDeviceId(),
+            product_id: toValidUuid(mv.productId),
+            product_name: mv.productName,
+            movement_type: 'in',
+            quantity: mv.quantity,
+            previous_stock: mv.previousStock,
+            new_stock: mv.newStock,
+            reason: mv.reason || null,
+          })
+        ),
+        4
+      ).catch(() => {});
+    }
 
     showToast({
       type: 'success',
@@ -4255,6 +5069,9 @@ function createAtriumActions() {
       appointments: (globalState.appointments || []).filter((a) => a.id !== id),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      appointmentService.deleteAppointment(id, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   const addServiceItem = (serviceData: Omit<ServiceItem, 'id' | 'facilityId'>) => {
@@ -4269,6 +5086,9 @@ function createAtriumActions() {
       servicesCatalog: [...(globalState.servicesCatalog || []), newService],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      appointmentService.upsertService(newService).catch(() => {});
+    }
     return newService;
   };
 
@@ -4310,6 +5130,12 @@ function createAtriumActions() {
     };
     notify();
 
+    if (isSupabaseConfigured()) {
+      appointmentService
+        .checkoutAppointment(appointmentId, paymentMethod, getActiveDeviceId())
+        .catch(() => {});
+    }
+
     const checkoutLang = globalState.language || 'fr';
     const localizedService = getLocalizedServiceName(apt.serviceId, apt.serviceName, checkoutLang);
     showToast({
@@ -4336,6 +5162,12 @@ function createAtriumActions() {
       appointments: (globalState.appointments || []).filter((a) => !idSet.has(a.id)),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        ids.map((id) => () => appointmentService.deleteAppointment(id, globalState.currentUser?.id)),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: 'info',
       title: 'Rendez-vous supprimés',
@@ -4353,6 +5185,12 @@ function createAtriumActions() {
       ),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        ids.map((id) => () => appointmentService.updateStatus(id, status)),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Statuts mis à jour',
@@ -4362,13 +5200,18 @@ function createAtriumActions() {
   };
 
   const updateServiceItem = (id: string, updates: Partial<ServiceItem>) => {
+    const updatedCatalog = (globalState.servicesCatalog || []).map((s) =>
+      s.id === id ? { ...s, ...updates } : s
+    );
     globalState = {
       ...globalState,
-      servicesCatalog: (globalState.servicesCatalog || []).map((s) =>
-        s.id === id ? { ...s, ...updates } : s
-      ),
+      servicesCatalog: updatedCatalog,
     };
     notify();
+    if (isSupabaseConfigured()) {
+      const target = updatedCatalog.find((s) => s.id === id);
+      if (target) appointmentService.upsertService(target).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Prestation mise à jour',
@@ -4383,6 +5226,9 @@ function createAtriumActions() {
       servicesCatalog: (globalState.servicesCatalog || []).filter((s) => s.id !== id),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      appointmentService.deleteService(id, globalState.currentUser?.id).catch(() => {});
+    }
     showToast({
       type: 'info',
       title: 'Prestation supprimée',
@@ -4398,6 +5244,12 @@ function createAtriumActions() {
       servicesCatalog: (globalState.servicesCatalog || []).filter((s) => !idSet.has(s.id)),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        ids.map((id) => () => appointmentService.deleteService(id, globalState.currentUser?.id)),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: 'info',
       title: 'Prestations supprimées',
@@ -4407,20 +5259,33 @@ function createAtriumActions() {
   };
 
   const updateStylistPayoutStatus = (id: string, status: 'Pending' | 'Approved' | 'Paid', paymentMethod?: string) => {
+    const updatedPayouts = (globalState.stylistPayouts || []).map((p) =>
+      p.id === id
+        ? {
+            ...p,
+            status,
+            ...(paymentMethod ? { paymentMethod } : {}),
+            ...(status === 'Paid' ? { paidAt: new Date().toISOString().split('T')[0] } : {}),
+          }
+        : p
+    );
     globalState = {
       ...globalState,
-      stylistPayouts: (globalState.stylistPayouts || []).map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              status,
-              ...(paymentMethod ? { paymentMethod } : {}),
-              ...(status === 'Paid' ? { paidAt: new Date().toISOString().split('T')[0] } : {}),
-            }
-          : p
-      ),
+      stylistPayouts: updatedPayouts,
     };
     notify();
+    if (isSupabaseConfigured()) {
+      const target = updatedPayouts.find((p) => p.id === id);
+      if (target) {
+        appointmentService
+          .upsertStylistPayout(target, {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+          })
+          .catch(() => {});
+      }
+    }
     showToast({
       type: 'success',
       title: 'Commission styliste mise à jour',
@@ -4627,6 +5492,26 @@ function createAtriumActions() {
       devices: [...globalState.devices, newDevice],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      syncCoordinator
+        .mutateOrQueueUpsert('devices', {
+          id: toValidUuid(newDevice.id),
+          account_id: toValidUuid(newDevice.accountId),
+          business_id: toValidUuid(globalState.currentBusinessId),
+          branch_id: toValidUuid(newDevice.branchId),
+          hardware_id: newDevice.hardwareId,
+          label: newDevice.label,
+          is_active: true,
+          last_seen_at: newDevice.lastSeenAt,
+          registered_at: newDevice.registeredAt,
+          updated_by_staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
+          device_id: getActiveDeviceId(),
+          updated_at: new Date().toISOString(),
+        })
+        .catch(() => {});
+    }
+
     return newDevice;
   };
 
@@ -4636,6 +5521,9 @@ function createAtriumActions() {
       devices: globalState.devices.filter((d) => d.id !== deviceId),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      syncCoordinator.softDeleteRow('devices', deviceId, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   const redeemVoucher = (code: string) => {
@@ -6029,6 +6917,9 @@ function createAtriumActions() {
       freelanceExpenses: globalState.freelanceExpenses.filter((e) => e.id !== id),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      freelanceService.deleteExpense(id, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   // ==========================================
@@ -6830,6 +7721,9 @@ function createAtriumActions() {
       eduStudents: [newStudent, ...(globalState.eduStudents || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertStudent(newStudent).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Student Enrolled',
@@ -6841,13 +7735,18 @@ function createAtriumActions() {
   };
 
   const updateEduStudent = (studentId: string, updates: Partial<EduStudent>) => {
+    const updatedStudents = (globalState.eduStudents || []).map((s) =>
+      s.id === studentId ? { ...s, ...updates } : s
+    );
     globalState = {
       ...globalState,
-      eduStudents: (globalState.eduStudents || []).map((s) =>
-        s.id === studentId ? { ...s, ...updates } : s
-      ),
+      eduStudents: updatedStudents,
     };
     notify();
+    const target = updatedStudents.find((s) => s.id === studentId);
+    if (target && isSupabaseConfigured()) {
+      educationService.upsertStudent(target).catch(() => {});
+    }
     showToast({
       type: 'info',
       title: 'Student Updated',
@@ -6867,6 +7766,9 @@ function createAtriumActions() {
       eduGrades: (globalState.eduGrades || []).filter((g) => g.studentId !== studentId),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.deleteStudent(studentId, globalState.currentUser?.id).catch(() => {});
+    }
     showToast({
       type: 'warning',
       title: 'Student Removed',
@@ -6891,6 +7793,9 @@ function createAtriumActions() {
       eduCohorts: [newCohort, ...(globalState.eduCohorts || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertCohort(newCohort).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Cohort Created',
@@ -6902,13 +7807,18 @@ function createAtriumActions() {
   };
 
   const updateEduCohort = (cohortId: string, updates: Partial<EduCohort>) => {
+    const updatedCohorts = (globalState.eduCohorts || []).map((ch) =>
+      ch.id === cohortId ? { ...ch, ...updates } : ch
+    );
     globalState = {
       ...globalState,
-      eduCohorts: (globalState.eduCohorts || []).map((ch) =>
-        ch.id === cohortId ? { ...ch, ...updates } : ch
-      ),
+      eduCohorts: updatedCohorts,
     };
     notify();
+    const target = updatedCohorts.find((c) => c.id === cohortId);
+    if (target && isSupabaseConfigured()) {
+      educationService.upsertCohort(target).catch(() => {});
+    }
   };
 
   const deleteEduCohort = (cohortId: string) => {
@@ -6918,6 +7828,9 @@ function createAtriumActions() {
       eduSessions: (globalState.eduSessions || []).filter((s) => s.cohortId !== cohortId),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.deleteCohort(cohortId, globalState.currentUser?.id).catch(() => {});
+    }
     showToast({
       type: 'warning',
       title: 'Cohort Deleted',
@@ -6941,6 +7854,9 @@ function createAtriumActions() {
       eduSessions: [...(globalState.eduSessions || []), newSession],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertSession(newSession).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Class Scheduled',
@@ -6952,13 +7868,18 @@ function createAtriumActions() {
   };
 
   const updateEduSession = (sessionId: string, updates: Partial<EduSession>) => {
+    const updatedSessions = (globalState.eduSessions || []).map((se) =>
+      se.id === sessionId ? { ...se, ...updates } : se
+    );
     globalState = {
       ...globalState,
-      eduSessions: (globalState.eduSessions || []).map((se) =>
-        se.id === sessionId ? { ...se, ...updates } : se
-      ),
+      eduSessions: updatedSessions,
     };
     notify();
+    const target = updatedSessions.find((s) => s.id === sessionId);
+    if (target && isSupabaseConfigured()) {
+      educationService.upsertSession(target).catch(() => {});
+    }
   };
 
   const deleteEduSession = (sessionId: string) => {
@@ -6967,6 +7888,9 @@ function createAtriumActions() {
       eduSessions: (globalState.eduSessions || []).filter((se) => se.id !== sessionId),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.deleteSession(sessionId, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   const batchRecordAttendance = (
@@ -7014,6 +7938,17 @@ function createAtriumActions() {
     };
     notify();
 
+    if (isSupabaseConfigured()) {
+      const targetSession = updatedSessions.find((s) => s.id === sessionId);
+      runWithConcurrency(
+        [
+          ...newRecords.map((rec) => () => educationService.upsertAttendance(rec)),
+          ...(targetSession ? [() => educationService.upsertSession(targetSession)] : []),
+        ],
+        4
+      ).catch(() => {});
+    }
+
     const presentTally = records.filter((r) => r.status === 'Present' || r.status === 'Late').length;
     showToast({
       type: 'success',
@@ -7038,6 +7973,9 @@ function createAtriumActions() {
       eduGrades: [newGrade, ...(globalState.eduGrades || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertGrade(newGrade).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Grade Recorded',
@@ -7054,6 +7992,9 @@ function createAtriumActions() {
       eduGrades: (globalState.eduGrades || []).filter((g) => g.id !== gradeId),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.deleteGrade(gradeId, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   const recordTuitionPayment = (
@@ -7063,31 +8004,36 @@ function createAtriumActions() {
     paymentMethod: string = 'Cash'
   ) => {
     const nowIso = new Date().toISOString();
+    const updatedEnrollments = (globalState.eduEnrollments || []).map((en) => {
+      if (en.id !== enrollmentId) return en;
+      const newPaid = Math.min(en.agreedTuition, (en.paidAmount || 0) + amount);
+      const newBalance = Math.max(0, en.agreedTuition - newPaid);
+      const newStatus: EnrollmentPaymentStatus = newBalance === 0 ? 'Paid' : 'Partial';
+
+      const updatedInstallments = (en.installments || []).map((inst, idx) => {
+        if (idx === installmentIndex) {
+          return { ...inst, isPaid: true, paidAt: nowIso };
+        }
+        return inst;
+      });
+
+      return {
+        ...en,
+        paidAmount: newPaid,
+        balanceDue: newBalance,
+        paymentStatus: newStatus,
+        installments: updatedInstallments,
+      };
+    });
     globalState = {
       ...globalState,
-      eduEnrollments: (globalState.eduEnrollments || []).map((en) => {
-        if (en.id !== enrollmentId) return en;
-        const newPaid = Math.min(en.agreedTuition, (en.paidAmount || 0) + amount);
-        const newBalance = Math.max(0, en.agreedTuition - newPaid);
-        const newStatus: EnrollmentPaymentStatus = newBalance === 0 ? 'Paid' : 'Partial';
-
-        const updatedInstallments = (en.installments || []).map((inst, idx) => {
-          if (idx === installmentIndex) {
-            return { ...inst, isPaid: true, paidAt: nowIso };
-          }
-          return inst;
-        });
-
-        return {
-          ...en,
-          paidAmount: newPaid,
-          balanceDue: newBalance,
-          paymentStatus: newStatus,
-          installments: updatedInstallments,
-        };
-      }),
+      eduEnrollments: updatedEnrollments,
     };
     notify();
+    const updatedEn = updatedEnrollments.find((e) => e.id === enrollmentId);
+    if (updatedEn && isSupabaseConfigured()) {
+      educationService.upsertEnrollment(updatedEn).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Tuition Payment Logged',
@@ -7124,6 +8070,11 @@ function createAtriumActions() {
       eduCohorts: updatedCohorts,
     };
     notify();
+    if (isSupabaseConfigured()) {
+      const targetCohort = updatedCohorts.find((c) => c.id === newEnrollment.cohortId);
+      educationService.upsertEnrollment(newEnrollment).catch(() => {});
+      if (targetCohort) educationService.upsertCohort(targetCohort).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Enrollment Confirmed',
@@ -7148,6 +8099,9 @@ function createAtriumActions() {
       eduAdmissions: [newLead, ...(globalState.eduAdmissions || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertAdmission(newLead).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Prospect Added',
@@ -7159,23 +8113,33 @@ function createAtriumActions() {
   };
 
   const updateAdmissionStage = (leadId: string, stage: AdmissionStage) => {
+    const updatedLeads = (globalState.eduAdmissions || []).map((l) =>
+      l.id === leadId ? { ...l, stage } : l
+    );
     globalState = {
       ...globalState,
-      eduAdmissions: (globalState.eduAdmissions || []).map((l) =>
-        l.id === leadId ? { ...l, stage } : l
-      ),
+      eduAdmissions: updatedLeads,
     };
     notify();
+    const target = updatedLeads.find((l) => l.id === leadId);
+    if (target && isSupabaseConfigured()) {
+      educationService.upsertAdmission(target).catch(() => {});
+    }
   };
 
   const updateEduAdmissionLead = (leadId: string, updates: Partial<EduAdmissionLead>) => {
+    const updatedLeads = (globalState.eduAdmissions || []).map((l) =>
+      l.id === leadId ? { ...l, ...updates } : l
+    );
     globalState = {
       ...globalState,
-      eduAdmissions: (globalState.eduAdmissions || []).map((l) =>
-        l.id === leadId ? { ...l, ...updates } : l
-      ),
+      eduAdmissions: updatedLeads,
     };
     notify();
+    const target = updatedLeads.find((l) => l.id === leadId);
+    if (target && isSupabaseConfigured()) {
+      educationService.upsertAdmission(target).catch(() => {});
+    }
   };
 
   const deleteEduAdmissionLead = (leadId: string) => {
@@ -7184,6 +8148,9 @@ function createAtriumActions() {
       eduAdmissions: (globalState.eduAdmissions || []).filter((l) => l.id !== leadId),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.deleteAdmission(leadId, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   const convertAdmissionToStudent = (leadId: string, cohortId: string, initialDeposit: number = 0) => {
@@ -7237,18 +8204,36 @@ function createAtriumActions() {
       ],
     };
 
+    const updatedCohorts = (globalState.eduCohorts || []).map((c) =>
+      c.id === cohort.id ? { ...c, enrolledCount: (c.enrolledCount || 0) + 1 } : c
+    );
+    const updatedAdmissions = (globalState.eduAdmissions || []).map((l) =>
+      l.id === leadId ? { ...l, stage: 'Enrolled' as const } : l
+    );
+
     globalState = {
       ...globalState,
       eduStudents: [newStudent, ...(globalState.eduStudents || [])],
       eduEnrollments: [newEnrollment, ...(globalState.eduEnrollments || [])],
-      eduCohorts: (globalState.eduCohorts || []).map((c) =>
-        c.id === cohort.id ? { ...c, enrolledCount: (c.enrolledCount || 0) + 1 } : c
-      ),
-      eduAdmissions: (globalState.eduAdmissions || []).map((l) =>
-        l.id === leadId ? { ...l, stage: 'Enrolled' as const } : l
-      ),
+      eduCohorts: updatedCohorts,
+      eduAdmissions: updatedAdmissions,
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      const updatedCohort = updatedCohorts.find((c) => c.id === cohort.id);
+      const updatedLead = updatedAdmissions.find((l) => l.id === leadId);
+      runWithConcurrency(
+        [
+          () => educationService.upsertStudent(newStudent),
+          () => educationService.upsertEnrollment(newEnrollment),
+          ...(updatedCohort ? [() => educationService.upsertCohort(updatedCohort)] : []),
+          ...(updatedLead ? [() => educationService.upsertAdmission(updatedLead)] : []),
+        ],
+        4
+      ).catch(() => {});
+    }
+
     showToast({
       type: 'success',
       title: 'Student Enrolled',
@@ -7284,6 +8269,9 @@ function createAtriumActions() {
       eduCertificates: [newCert, ...(globalState.eduCertificates || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertCertificate(newCert).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Certificate Issued',
@@ -7313,6 +8301,9 @@ function createAtriumActions() {
       eduClassrooms: [...(globalState.eduClassrooms || []), newRoom],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertClassroom(newRoom).catch(() => {});
+    }
     return newRoom;
   };
 
@@ -7330,6 +8321,9 @@ function createAtriumActions() {
       eduCourses: [newCourse, ...(globalState.eduCourses || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      educationService.upsertCourse(newCourse).catch(() => {});
+    }
     return newCourse;
   };
 
@@ -7423,13 +8417,18 @@ function createAtriumActions() {
   };
 
   const updatePmPrintOrderStatus = (orderId: string, status: PMPrintOrder['status']) => {
+    const updatedOrders = (globalState.pmPrintOrders || []).map((o) =>
+      o.id === orderId ? { ...o, status } : o
+    );
     globalState = {
       ...globalState,
-      pmPrintOrders: (globalState.pmPrintOrders || []).map((o) =>
-        o.id === orderId ? { ...o, status } : o
-      ),
+      pmPrintOrders: updatedOrders,
     };
     notify();
+    const target = updatedOrders.find((o) => o.id === orderId);
+    if (target && isSupabaseConfigured()) {
+      projectMilestoneService.createPrintOrder(target).catch(() => {});
+    }
   };
 
   const addPmBatDeliverable = (batData: Omit<PMBatDeliverable, 'id' | 'createdAt'>) => {
@@ -7563,6 +8562,20 @@ function createAtriumActions() {
       }),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      const updatedAtt = globalState.pmAttendances.find((a) => a.id === attendanceId);
+      if (updatedAtt) {
+        syncCoordinator
+          .mutateOrQueueUpdate('pm_attendances', attendanceId, {
+            status: updatedAtt.status,
+            minutes_late: updatedAtt.minutesLate,
+            shift_rating: updatedAtt.shiftRating,
+            gross_payable_dzd: updatedAtt.grossPayableDzd,
+            check_in_time: updatedAtt.checkInTime || null,
+          })
+          .catch(() => {});
+      }
+    }
   };
 
   const closePmRollCall = (missionId: string) => {
@@ -7742,13 +8755,22 @@ function createAtriumActions() {
   };
 
   const markPmCcpSlipPrinted = (slipId: string) => {
+    const printedAt = new Date().toISOString();
     globalState = {
       ...globalState,
       pmCcpSlips: (globalState.pmCcpSlips || []).map((s) =>
-        s.id === slipId ? { ...s, isPrinted: true, printedAt: new Date().toISOString() } : s
+        s.id === slipId ? { ...s, isPrinted: true, printedAt } : s
       ),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      syncCoordinator
+        .mutateOrQueueUpdate('pm_ccp_slips', slipId, {
+          is_printed: true,
+          printed_at: printedAt,
+        })
+        .catch(() => {});
+    }
   };
 
   const addPmEquipmentStock = (itemData: Omit<PMEquipmentStock, 'id' | 'createdAt'>) => {
@@ -7940,13 +8962,21 @@ function createAtriumActions() {
 
   const batchUpdatePmPrintOrderStatus = (orderIds: string[], status: PMPrintOrder['status']) => {
     const idSet = new Set(orderIds);
+    const updatedOrders = (globalState.pmPrintOrders || []).map((o) =>
+      idSet.has(o.id) ? { ...o, status } : o
+    );
     globalState = {
       ...globalState,
-      pmPrintOrders: (globalState.pmPrintOrders || []).map((o) =>
-        idSet.has(o.id) ? { ...o, status } : o
-      ),
+      pmPrintOrders: updatedOrders,
     };
     notify();
+    if (isSupabaseConfigured()) {
+      const affected = updatedOrders.filter((o) => idSet.has(o.id));
+      runWithConcurrency(
+        affected.map((o) => () => projectMilestoneService.createPrintOrder(o)),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Commandes Impression Mises à Jour',
@@ -7962,6 +8992,12 @@ function createAtriumActions() {
       pmPrintOrders: (globalState.pmPrintOrders || []).filter((o) => !idSet.has(o.id)),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        orderIds.map((id) => () => projectMilestoneService.deletePrintOrder(id, globalState.currentUser?.id)),
+        4
+      ).catch(() => {});
+    }
   };
 
   const batchReviewPmBatDeliverables = (
@@ -7970,19 +9006,27 @@ function createAtriumActions() {
     comments?: string
   ) => {
     const idSet = new Set(batIds);
+    const updatedBats = (globalState.pmBatDeliverables || []).map((b) =>
+      idSet.has(b.id)
+        ? {
+            ...b,
+            approvalStatus: status,
+            revisionComments: comments || b.revisionComments,
+          }
+        : b
+    );
     globalState = {
       ...globalState,
-      pmBatDeliverables: (globalState.pmBatDeliverables || []).map((b) =>
-        idSet.has(b.id)
-          ? {
-              ...b,
-              approvalStatus: status,
-              revisionComments: comments || b.revisionComments,
-            }
-          : b
-      ),
+      pmBatDeliverables: updatedBats,
     };
     notify();
+    if (isSupabaseConfigured()) {
+      const affected = updatedBats.filter((b) => idSet.has(b.id));
+      runWithConcurrency(
+        affected.map((b) => () => projectMilestoneService.upsertBatDeliverable(b)),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: status === 'approved' ? 'success' : 'warning',
       title: status === 'approved' ? 'BAT Validés en Lot' : 'Révisions Demandées',
@@ -7998,6 +9042,12 @@ function createAtriumActions() {
       pmBatDeliverables: (globalState.pmBatDeliverables || []).filter((b) => !idSet.has(b.id)),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        batIds.map((id) => () => projectMilestoneService.deleteBatDeliverable(id, globalState.currentUser?.id)),
+        4
+      ).catch(() => {});
+    }
   };
 
   const batchDeletePmTalents = (talentIds: string[]) => {
@@ -8007,6 +9057,12 @@ function createAtriumActions() {
       pmTalents: (globalState.pmTalents || []).filter((t) => !idSet.has(t.id)),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        talentIds.map((id) => () => projectMilestoneService.deleteTalent(id, globalState.currentUser?.id)),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: 'info',
       title: 'Talents Supprimés',
@@ -8017,13 +9073,21 @@ function createAtriumActions() {
 
   const batchUpdatePmTalentStatus = (talentIds: string[], status: PMTalent['status']) => {
     const idSet = new Set(talentIds);
+    const updatedTalents = (globalState.pmTalents || []).map((t) =>
+      idSet.has(t.id) ? { ...t, status } : t
+    );
     globalState = {
       ...globalState,
-      pmTalents: (globalState.pmTalents || []).map((t) =>
-        idSet.has(t.id) ? { ...t, status } : t
-      ),
+      pmTalents: updatedTalents,
     };
     notify();
+    if (isSupabaseConfigured()) {
+      const affected = updatedTalents.filter((t) => idSet.has(t.id));
+      runWithConcurrency(
+        affected.map((t) => () => projectMilestoneService.upsertTalent(t)),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Statuts Talents Mis à Jour',
@@ -8039,6 +9103,12 @@ function createAtriumActions() {
       pmMissions: (globalState.pmMissions || []).filter((m) => !idSet.has(m.id)),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        missionIds.map((id) => () => projectMilestoneService.deleteMission(id, globalState.currentUser?.id)),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: 'info',
       title: 'Missions Supprimées',
@@ -8049,22 +9119,36 @@ function createAtriumActions() {
 
   const batchUpdatePmAttendanceStatus = (attendanceIds: string[], status: PMAttendance['status']) => {
     const idSet = new Set(attendanceIds);
+    const updatedAttendances = (globalState.pmAttendances || []).map((a) => {
+      if (idSet.has(a.id)) {
+        const grossPayableDzd = ['present', 'late', 'replacement'].includes(status) ? a.dayRateDzd : 0;
+        return {
+          ...a,
+          status,
+          grossPayableDzd,
+          checkInTime: a.checkInTime || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        };
+      }
+      return a;
+    });
     globalState = {
       ...globalState,
-      pmAttendances: (globalState.pmAttendances || []).map((a) => {
-        if (idSet.has(a.id)) {
-          const grossPayableDzd = ['present', 'late', 'replacement'].includes(status) ? a.dayRateDzd : 0;
-          return {
-            ...a,
-            status,
-            grossPayableDzd,
-            checkInTime: a.checkInTime || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-          };
-        }
-        return a;
-      }),
+      pmAttendances: updatedAttendances,
     };
     notify();
+    if (isSupabaseConfigured()) {
+      const affected = updatedAttendances.filter((a) => idSet.has(a.id));
+      runWithConcurrency(
+        affected.map((a) => () =>
+          syncCoordinator.mutateOrQueueUpdate('pm_attendances', a.id, {
+            status: a.status,
+            gross_payable_dzd: a.grossPayableDzd,
+            check_in_time: a.checkInTime || null,
+          })
+        ),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Pointages Mis à Jour',
@@ -8075,13 +9159,25 @@ function createAtriumActions() {
 
   const batchMarkPmCcpSlipsPrinted = (slipIds: string[]) => {
     const idSet = new Set(slipIds);
+    const printedAt = new Date().toISOString();
     globalState = {
       ...globalState,
       pmCcpSlips: (globalState.pmCcpSlips || []).map((s) =>
-        idSet.has(s.id) ? { ...s, isPrinted: true, printedAt: new Date().toISOString() } : s
+        idSet.has(s.id) ? { ...s, isPrinted: true, printedAt } : s
       ),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        slipIds.map((id) => () =>
+          syncCoordinator.mutateOrQueueUpdate('pm_ccp_slips', id, {
+            is_printed: true,
+            printed_at: printedAt,
+          })
+        ),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Bordereaux Marqués Imprimés',
@@ -8095,13 +9191,21 @@ function createAtriumActions() {
     status: PMEquipmentStock['currentStatus']
   ) => {
     const idSet = new Set(assetIds);
+    const updatedStock = (globalState.pmEquipmentStock || []).map((eq) =>
+      idSet.has(eq.id) ? { ...eq, currentStatus: status } : eq
+    );
     globalState = {
       ...globalState,
-      pmEquipmentStock: (globalState.pmEquipmentStock || []).map((eq) =>
-        idSet.has(eq.id) ? { ...eq, currentStatus: status } : eq
-      ),
+      pmEquipmentStock: updatedStock,
     };
     notify();
+    if (isSupabaseConfigured()) {
+      const affected = updatedStock.filter((eq) => idSet.has(eq.id));
+      runWithConcurrency(
+        affected.map((eq) => () => projectMilestoneService.upsertEquipmentStock(eq)),
+        4
+      ).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Matériels Mis à Jour',
@@ -8117,6 +9221,12 @@ function createAtriumActions() {
       pmEquipmentStock: (globalState.pmEquipmentStock || []).filter((eq) => !idSet.has(eq.id)),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        assetIds.map((id) => () => projectMilestoneService.deleteEquipmentStock(id, globalState.currentUser?.id)),
+        4
+      ).catch(() => {});
+    }
   };
 
   const resetAllData = () => {
@@ -8281,6 +9391,9 @@ function createAtriumActions() {
       commercialDocs: [newDoc, ...(globalState.commercialDocs || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      tradingService.upsertCommercialDoc(newDoc).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Document commercial créé',
@@ -8291,13 +9404,18 @@ function createAtriumActions() {
   };
 
   const updateCommercialDoc = (id: string, updates: Partial<CommercialDocument>) => {
+    const updatedDocs = (globalState.commercialDocs || []).map((d) =>
+      d.id === id ? { ...d, ...updates, updatedAt: new Date().toISOString() } : d
+    );
     globalState = {
       ...globalState,
-      commercialDocs: (globalState.commercialDocs || []).map((d) =>
-        d.id === id ? { ...d, ...updates, updatedAt: new Date().toISOString() } : d
-      ),
+      commercialDocs: updatedDocs,
     };
     notify();
+    const target = updatedDocs.find((d) => d.id === id);
+    if (target && isSupabaseConfigured()) {
+      tradingService.upsertCommercialDoc(target).catch(() => {});
+    }
     showToast({
       type: 'info',
       title: 'Document mis à jour',
@@ -8313,6 +9431,9 @@ function createAtriumActions() {
       commercialDocs: (globalState.commercialDocs || []).filter((d) => d.id !== id),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      tradingService.deleteCommercialDoc(id, globalState.currentUser?.id).catch(() => {});
+    }
     showToast({
       type: 'warning',
       title: 'Document supprimé',
@@ -8358,6 +9479,12 @@ function createAtriumActions() {
     };
     notify();
 
+    if (isSupabaseConfigured()) {
+      tradingService.convertCommercialDoc(sourceDocId, targetType, docNumber).catch(() => {});
+      tradingService.upsertCommercialDoc(newDoc).catch(() => {});
+      tradingService.upsertCommercialDoc(updatedSource).catch(() => {});
+    }
+
     showToast({
       type: 'success',
       title: `Conversion effectuée`,
@@ -8386,6 +9513,9 @@ function createAtriumActions() {
       purchaseDocs: [newDoc, ...(globalState.purchaseDocs || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      tradingService.upsertPurchaseDoc(newDoc).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Commande Fournisseur Créée',
@@ -8396,13 +9526,18 @@ function createAtriumActions() {
   };
 
   const updatePurchaseDoc = (id: string, updates: Partial<PurchaseDocument>) => {
+    const updatedDocs = (globalState.purchaseDocs || []).map((p) =>
+      p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p
+    );
     globalState = {
       ...globalState,
-      purchaseDocs: (globalState.purchaseDocs || []).map((p) =>
-        p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p
-      ),
+      purchaseDocs: updatedDocs,
     };
     notify();
+    const target = updatedDocs.find((p) => p.id === id);
+    if (target && isSupabaseConfigured()) {
+      tradingService.upsertPurchaseDoc(target).catch(() => {});
+    }
   };
 
   const receivePurchaseDoc = (poId: string) => {
@@ -8445,6 +9580,9 @@ function createAtriumActions() {
       operatorName: globalState.currentUser?.fullName || 'Responsable Réception',
       tenantId: po.tenantId,
       facilityId: po.facilityId,
+      accountId: po.accountId || globalState.account.id,
+      businessId: po.businessId || globalState.currentBusinessId,
+      branchId: po.branchId || globalState.currentBranchId,
       items: po.items.map((it) => ({
         productId: it.productId || '',
         productName: it.description,
@@ -8485,6 +9623,21 @@ function createAtriumActions() {
     };
     notify();
 
+    if (isSupabaseConfigured()) {
+      const touchedProds = updatedProducts.filter((prod) =>
+        po.items.some((it) => it.productId === prod.id || it.description === prod.name)
+      );
+      runWithConcurrency(
+        [
+          () => tradingService.upsertPurchaseDoc(newBr),
+          () => tradingService.upsertPurchaseDoc(updatedPo),
+          () => tradingService.upsertStockVoucher(newVoucher),
+          ...touchedProds.map((p) => () => tradingService.upsertProduct(p, po.depotId)),
+        ],
+        4
+      ).catch(() => {});
+    }
+
     showToast({
       type: 'success',
       title: 'Réception à Quai Validée',
@@ -8498,6 +9651,7 @@ function createAtriumActions() {
   const createStockVoucher = (voucher: Omit<StockMovementVoucher, 'id' | 'createdAt'>) => {
     const id = `svouch_${Date.now()}`;
     const newVoucher: StockMovementVoucher = {
+      ...getTraceContext(),
       ...voucher,
       id,
       createdAt: new Date().toISOString(),
@@ -8522,6 +9676,19 @@ function createAtriumActions() {
     };
     notify();
 
+    if (isSupabaseConfigured()) {
+      const touchedProds = updatedProducts.filter((prod) =>
+        voucher.items.some((it) => it.productId === prod.id)
+      );
+      runWithConcurrency(
+        [
+          () => tradingService.upsertStockVoucher(newVoucher),
+          ...touchedProds.map((p) => () => tradingService.upsertProduct(p, voucher.depotSourceId)),
+        ],
+        4
+      ).catch(() => {});
+    }
+
     showToast({
       type: 'info',
       title: `Mouvement de stock enregistré`,
@@ -8535,6 +9702,7 @@ function createAtriumActions() {
   const createB2bClient = (client: Omit<B2bClient, 'id' | 'createdAt' | 'updatedAt'>) => {
     const id = `b2b_cli_${Date.now()}`;
     const newClient: B2bClient = {
+      ...getTraceContext(),
       ...client,
       id,
       tenantId: client.tenantId || globalState.account?.id || 'acc_01',
@@ -8547,6 +9715,9 @@ function createAtriumActions() {
       b2bClients: [newClient, ...(globalState.b2bClients || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      tradingService.upsertClient(newClient).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Client B2B Créé',
@@ -8557,13 +9728,18 @@ function createAtriumActions() {
   };
 
   const updateB2bClient = (id: string, updates: Partial<B2bClient>) => {
+    const updatedClients = (globalState.b2bClients || []).map((c) =>
+      c.id === id ? { ...c, ...updates, updatedAt: new Date().toISOString() } : c
+    );
     globalState = {
       ...globalState,
-      b2bClients: (globalState.b2bClients || []).map((c) =>
-        c.id === id ? { ...c, ...updates, updatedAt: new Date().toISOString() } : c
-      ),
+      b2bClients: updatedClients,
     };
     notify();
+    const target = updatedClients.find((c) => c.id === id);
+    if (target && isSupabaseConfigured()) {
+      tradingService.upsertClient(target).catch(() => {});
+    }
   };
 
   const deleteB2bClient = (id: string) => {
@@ -8572,11 +9748,15 @@ function createAtriumActions() {
       b2bClients: (globalState.b2bClients || []).filter((c) => c.id !== id),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      tradingService.deleteClient(id, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   const createB2bSupplier = (supplier: Omit<B2bSupplier, 'id' | 'createdAt' | 'updatedAt'>) => {
     const id = `b2b_sup_${Date.now()}`;
     const newSup: B2bSupplier = {
+      ...getTraceContext(),
       ...supplier,
       id,
       tenantId: supplier.tenantId || globalState.account?.id || 'acc_01',
@@ -8589,6 +9769,9 @@ function createAtriumActions() {
       b2bSuppliers: [newSup, ...(globalState.b2bSuppliers || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      tradingService.upsertSupplier(newSup).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Fournisseur Référencé',
@@ -8599,13 +9782,18 @@ function createAtriumActions() {
   };
 
   const updateB2bSupplier = (id: string, updates: Partial<B2bSupplier>) => {
+    const updatedSuppliers = (globalState.b2bSuppliers || []).map((s) =>
+      s.id === id ? { ...s, ...updates, updatedAt: new Date().toISOString() } : s
+    );
     globalState = {
       ...globalState,
-      b2bSuppliers: (globalState.b2bSuppliers || []).map((s) =>
-        s.id === id ? { ...s, ...updates, updatedAt: new Date().toISOString() } : s
-      ),
+      b2bSuppliers: updatedSuppliers,
     };
     notify();
+    const target = updatedSuppliers.find((s) => s.id === id);
+    if (target && isSupabaseConfigured()) {
+      tradingService.upsertSupplier(target).catch(() => {});
+    }
   };
 
   const deleteB2bSupplier = (id: string) => {
@@ -8614,11 +9802,15 @@ function createAtriumActions() {
       b2bSuppliers: (globalState.b2bSuppliers || []).filter((s) => s.id !== id),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      tradingService.deleteSupplier(id, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   const createWarehouseDepot = (depot: Omit<WarehouseDepot, 'id' | 'createdAt'>) => {
     const id = `depot_${Date.now()}`;
     const newDepot: WarehouseDepot = {
+      ...getTraceContext(),
       ...depot,
       businessId: depot.businessId || globalState.currentBusinessId,
       branchId: depot.branchId || globalState.currentBranchId,
@@ -8631,6 +9823,9 @@ function createAtriumActions() {
       warehouses: [...(globalState.warehouses || []), newDepot],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      tradingService.upsertWarehouse(newDepot).catch(() => {});
+    }
     showToast({
       type: 'success',
       title: 'Dépôt Créé',
@@ -8760,6 +9955,15 @@ function createAtriumActions() {
       walkInTickets: [ticket, ...(globalState.walkInTickets || [])],
     };
     notify();
+    if (isSupabaseConfigured()) {
+      memberService
+        .upsertWalkInTicket(ticket, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
   };
   const updateSalonChairStation = (station: SalonChairStation) => {
     const existing = (globalState.salonChairStations || []).findIndex(
@@ -8770,6 +9974,15 @@ function createAtriumActions() {
     else nextStations.push(station);
     globalState = { ...globalState, salonChairStations: nextStations };
     notify();
+    if (isSupabaseConfigured()) {
+      appointmentService
+        .upsertChairStation(station, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
   };
   const recordQuickAttendance = (record: EduQuickAttendanceRecord) => {
     const existing = (globalState.eduQuickAttendance || []).findIndex(
@@ -9051,54 +10264,6 @@ export function useAtriumStore() {
   }, []);
 
   const syncWithSupabase = syncWithSupabaseAction;
-
-  // Synchronize on mount if configured (once across the application)
-  useEffect(() => {
-    if (isSupabaseConfigured() && !hasInitialSynced) {
-      hasInitialSynced = true;
-      syncWithSupabaseAction();
-    }
-  }, []);
-
-  // Supabase Auth state listener for seamless Google OAuth session hydration
-  useEffect(() => {
-    if (!isSupabaseConfigured()) return;
-    const unsubscribe = authService.onAuthStateChange(async (session) => {
-      if (session?.user) {
-        await authService.ensureUserAccount(session.user);
-        const fullName =
-          session.user.user_metadata?.full_name ||
-          session.user.user_metadata?.name ||
-          session.user.email?.split('@')[0] ||
-          'Atrium Owner';
-        globalState = {
-          ...globalState,
-          currentUser: {
-            ...globalState.currentUser,
-            id: session.user.id,
-            email: session.user.email || globalState.currentUser.email,
-            fullName,
-          },
-          isAuthenticated: true,
-        };
-        notify();
-        syncWithSupabaseAction();
-      }
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  // Real-time synchronization subscription for current active branch
-  useEffect(() => {
-    ensureBranchSubscription(state.currentBranchId);
-  }, [state.currentBranchId]);
-
-  // Active Timer Background Tick
-  useEffect(() => {
-    ensureTimerTick(state.activeTimer.isRunning, state.activeTimer.isPaused);
-  }, [state.activeTimer.isRunning, state.activeTimer.isPaused]);
 
   // Helpers (cached per state reference via module selectors)
   const currentBusiness = selectCurrentBusinessFromState(state);

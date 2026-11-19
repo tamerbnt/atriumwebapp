@@ -1,6 +1,20 @@
-import { getSupabaseClient, isUuid } from '../client';
-import { mapStaffFromDb, mapStaffRoleToDb } from '../mappers';
-import type { StaffMember } from '../../../types/index';
+import { getSupabaseClient, isUuid, toValidUuid } from '../client';
+import {
+  mapStaffFromDb,
+  mapStaffRoleToDb,
+  mapAttendanceLogFromDb,
+  mapSalaryAdvanceFromDb,
+  mapPayrollRunFromDb,
+  mapPayrollSlipFromDb,
+} from '../mappers';
+import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
+import type {
+  StaffMember,
+  StaffAttendanceLogRecord,
+  StaffSalaryAdvance,
+  StaffPayrollRunRecord,
+  StaffPayrollSlipRecord,
+} from '../../../types/index';
 
 export const staffService = {
   async getStaffProfiles(email: string) {
@@ -18,31 +32,63 @@ export const staffService = {
     return data || [];
   },
 
-  async fetchStaffForSync(accountId: string, branchId?: string): Promise<StaffMember[]> {
+  async verifyPin(branchId: string, pin: string) {
+    const client = getSupabaseClient();
+    if (!client) return { success: false, error: 'UNCONFIGURED' };
+
+    const { data, error } = await (client as any).rpc('verify_staff_pin', {
+      p_branch_id: toValidUuid(branchId),
+      p_pin: pin,
+    });
+    if (error) return { success: false, error: error.message };
+    return data || { success: false };
+  },
+
+  async setPin(staffId: string, newPin: string): Promise<boolean> {
+    const client = getSupabaseClient();
+    if (!client || !isUuid(staffId)) return false;
+
+    const { data, error } = await (client as any).rpc('set_staff_pin', {
+      p_staff_id: staffId,
+      p_new_pin: newPin,
+    });
+    return !error && Boolean((data as any)?.success);
+  },
+
+  async fetchStaffForSync(
+    accountId: string,
+    branchId?: string,
+    updatedAfter?: string | null
+  ): Promise<StaffMember[]> {
     const client = getSupabaseClient();
     if (!client || !isUuid(accountId)) return [];
 
-    // Try RPC first as specified in v1.3
     try {
       const { data: rpcData, error: rpcError } = await client.rpc('get_staff_for_sync', {
         p_account_id: accountId,
-        p_facility_id: branchId || null,
-        p_updated_after: null,
+        p_facility_id: branchId && isUuid(branchId) ? branchId : null,
+        p_updated_after: updatedAfter || null,
       });
 
-      if (!rpcError && rpcData && rpcData.length > 0) {
+      if (!rpcError && Array.isArray(rpcData)) {
         return rpcData.map((row: any) => mapStaffFromDb(row, branchId));
       }
     } catch {
-      // Fallback to direct table query
+      // Fallback below
     }
 
-    const { data, error } = await client
+    let query = client
       .from('staff')
       .select('*')
       .eq('account_id', accountId)
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .is('deleted_at', null);
 
+    if (updatedAfter) {
+      query = query.gt('updated_at', updatedAfter);
+    }
+
+    const { data, error } = await query;
     if (error) {
       console.warn('[staffService] fetchStaff failed:', error);
       return [];
@@ -50,29 +96,277 @@ export const staffService = {
     return (data || []).map((row) => mapStaffFromDb(row, branchId));
   },
 
-  async createStaff(staff: Omit<StaffMember, 'id' | 'hireDate'>): Promise<StaffMember | null> {
-    const client = getSupabaseClient();
-    if (!client) return null;
+  async createStaff(staff: StaffMember): Promise<StaffMember | null> {
+    const trace = buildTraceEnvelope({
+      accountId: staff.accountId || staff.tenantId,
+      businessId: staff.businessId,
+      branchId: staff.branchId || staff.facilityId,
+      staffId: staff.staffId,
+    });
 
-    const { data, error } = await client
-      .from('staff')
-      .insert({
-        account_id: staff.accountId || staff.tenantId,
-        business_id: staff.businessId || null,
-        branch_id: staff.branchId || staff.facilityId || null,
-        full_name: staff.fullName,
-        email: staff.email || null,
-        phone: staff.phoneNumber || null,
-        role: mapStaffRoleToDb(staff.role),
-        is_active: staff.isActive,
-      })
-      .select()
-      .single();
+    const payload: Record<string, any> = {
+      id: toValidUuid(staff.id),
+      account_id: trace.account_id,
+      business_id: trace.business_id,
+      branch_id: trace.branch_id,
+      updated_by_staff_id: trace.updated_by_staff_id,
+      device_id: trace.device_id,
+      full_name: staff.fullName,
+      email: staff.email || null,
+      phone: staff.phoneNumber || null,
+      role: mapStaffRoleToDb(staff.role),
+      salary: staff.salary || 0,
+      payment_day: staff.paymentDay || 1,
+      ccp_number: staff.ccpNumber || null,
+      ccp_key: staff.ccpKey || null,
+      bank_rib: staff.bankRib || null,
+      payment_method: staff.paymentMethod || 'cash',
+      card_id: staff.cardId || null,
+      badge_token: staff.badgeToken || null,
+      status: staff.status || 'active',
+      is_active: staff.isActive ?? true,
+      updated_at: trace.updated_at,
+    };
 
-    if (error) {
-      console.warn('[staffService] createStaff failed:', error);
-      return null;
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff', payload);
+    if (res.success && staff.pinCode && staff.pinCode !== '****') {
+      await staffService.setPin(payload.id, staff.pinCode);
     }
-    return mapStaffFromDb(data, staff.branchId || staff.facilityId);
+    return { ...staff, id: payload.id };
+  },
+
+  async updateStaff(staff: StaffMember): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: staff.accountId || staff.tenantId,
+      businessId: staff.businessId,
+      branchId: staff.branchId || staff.facilityId,
+      staffId: staff.staffId,
+    });
+
+    const payload: Record<string, any> = {
+      id: toValidUuid(staff.id),
+      account_id: trace.account_id,
+      business_id: trace.business_id,
+      branch_id: trace.branch_id,
+      updated_by_staff_id: trace.updated_by_staff_id,
+      device_id: trace.device_id,
+      full_name: staff.fullName,
+      email: staff.email || null,
+      phone: staff.phoneNumber || null,
+      role: mapStaffRoleToDb(staff.role),
+      salary: staff.salary || 0,
+      payment_day: staff.paymentDay || 1,
+      ccp_number: staff.ccpNumber || null,
+      ccp_key: staff.ccpKey || null,
+      bank_rib: staff.bankRib || null,
+      payment_method: staff.paymentMethod || 'cash',
+      card_id: staff.cardId || null,
+      badge_token: staff.badgeToken || null,
+      status: staff.status || 'active',
+      is_active: staff.isActive ?? true,
+      updated_at: trace.updated_at,
+    };
+
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff', payload);
+    if (res.success && staff.pinCode && staff.pinCode !== '****') {
+      await staffService.setPin(payload.id, staff.pinCode);
+    }
+    return res.success;
+  },
+
+  async deleteStaff(staffId: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('staff', staffId, deletedByStaffId);
+    return res.success;
+  },
+
+  // ========================================================================
+  // Workforce ERP: Attendance, Salary Advances, Payroll Runs & Slips
+  // ========================================================================
+  async fetchAttendanceLogs(branchId: string, updatedAfter?: string | null): Promise<StaffAttendanceLogRecord[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    let query = (client as any)
+      .from('staff_attendance_logs')
+      .select('*')
+      .eq('branch_id', toValidUuid(branchId))
+      .is('deleted_at', null)
+      .order('log_timestamp', { ascending: false });
+
+    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+
+    const { data, error } = await query;
+    if (error) return [];
+    return (data || []).map(mapAttendanceLogFromDb);
+  },
+
+  async upsertAttendanceLog(entry: StaffAttendanceLogRecord): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: entry.accountId,
+      businessId: entry.businessId,
+      branchId: entry.branchId,
+      staffId: entry.staffId,
+    });
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff_attendance_logs', {
+      id: toValidUuid(entry.id),
+      ...trace,
+      staff_name: entry.staffName,
+      staff_role: entry.staffRole,
+      log_timestamp: entry.timestamp,
+      log_date: entry.date,
+      type: entry.type,
+      method: entry.method,
+      terminal_id: entry.terminalId || null,
+      notes: entry.notes || null,
+    });
+    return res.success;
+  },
+
+  async fetchSalaryAdvances(branchId: string, updatedAfter?: string | null): Promise<StaffSalaryAdvance[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    let query = (client as any)
+      .from('staff_salary_advances')
+      .select('*')
+      .eq('branch_id', toValidUuid(branchId))
+      .is('deleted_at', null)
+      .order('date_issued', { ascending: false });
+
+    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+
+    const { data, error } = await query;
+    if (error) return [];
+    return (data || []).map(mapSalaryAdvanceFromDb);
+  },
+
+  async upsertSalaryAdvance(adv: StaffSalaryAdvance): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: adv.accountId,
+      businessId: adv.businessId,
+      branchId: adv.branchId,
+      staffId: adv.staffId,
+    });
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff_salary_advances', {
+      id: toValidUuid(adv.id),
+      ...trace,
+      staff_name: adv.staffName,
+      amount_dzd: adv.amountDzd,
+      date_issued: adv.dateIssued,
+      payment_method: adv.paymentMethod,
+      reason: adv.reason || null,
+      voucher_number: adv.voucherNumber,
+      status: adv.status,
+      deducted_in_period: adv.deductedInPeriod || null,
+    });
+    return res.success;
+  },
+
+  async fetchPayrollRuns(branchId: string, updatedAfter?: string | null): Promise<StaffPayrollRunRecord[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    let query = (client as any)
+      .from('staff_payroll_runs')
+      .select('*')
+      .eq('branch_id', toValidUuid(branchId))
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+
+    const { data, error } = await query;
+    if (error) return [];
+    return (data || []).map(mapPayrollRunFromDb);
+  },
+
+  async upsertPayrollRun(run: StaffPayrollRunRecord, category = 'membership_session'): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: run.accountId,
+      businessId: run.businessId,
+      branchId: run.branchId,
+    });
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff_payroll_runs', {
+      id: toValidUuid(run.id),
+      ...trace,
+      category,
+      period_month: run.periodMonth,
+      period_year: run.periodYear,
+      title: run.title,
+      status: run.status,
+      total_gross_cotisable: run.totalGrossCotisable,
+      total_cnas_salarial: run.totalCnasSalarial,
+      total_cnas_patronal: run.totalCnasPatronal,
+      total_irg: run.totalIrg,
+      total_net: run.totalNet,
+      slips_count: run.slipsCount,
+      approved_at: run.approvedAt || null,
+    });
+    return res.success;
+  },
+
+  async fetchPayrollSlips(branchId: string, updatedAfter?: string | null): Promise<StaffPayrollSlipRecord[]> {
+    const client = getSupabaseClient();
+    if (!client) return [];
+
+    let query = (client as any)
+      .from('staff_payroll_slips')
+      .select('*')
+      .eq('branch_id', toValidUuid(branchId))
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+
+    const { data, error } = await query;
+    if (error) return [];
+    return (data || []).map(mapPayrollSlipFromDb);
+  },
+
+  async upsertPayrollSlip(
+    slip: StaffPayrollSlipRecord,
+    ctx: { accountId: string; businessId: string; branchId: string }
+  ): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: ctx.accountId,
+      businessId: ctx.businessId,
+      branchId: ctx.branchId,
+      staffId: slip.staffId,
+    });
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff_payroll_slips', {
+      id: toValidUuid(slip.id),
+      ...trace,
+      payroll_run_id: toValidUuid(slip.payrollRunId),
+      matricule: slip.matricule,
+      staff_full_name: slip.staffFullName,
+      role: slip.role,
+      period_month: slip.periodMonth,
+      period_year: slip.periodYear,
+      period_label: slip.periodLabel,
+      base_salary: slip.baseSalary,
+      actual_base_salary: slip.actualBaseSalary,
+      worked_days: slip.workedDays,
+      standard_days: slip.standardDays,
+      coaching_commission: slip.coachingCommission,
+      primes_cotisables: slip.primesCotisables,
+      salaire_brut_cotisable: slip.salaireBrutCotisable,
+      cnas_salarial: slip.cnasSalarial,
+      cnas_patronal: slip.cnasPatronal,
+      salaire_brut_imposable: slip.salaireBrutImposable,
+      irg_tax: slip.irgTax,
+      primes_non_imposables: slip.primesNonImposables,
+      acomptes_deduits: slip.acomptesDeduits,
+      autres_retenues: slip.autresRetenues,
+      net_a_payer: slip.netAPayer,
+      payment_method: slip.paymentMethod,
+      ccp_number: slip.ccpNumber || null,
+      ccp_key: slip.ccpKey || null,
+      bank_rib: slip.bankRib || null,
+      nss: slip.nss || null,
+      is_paid: slip.isPaid,
+      paid_date: slip.paidDate || null,
+      receipt_number: slip.receiptNumber,
+    });
+    return res.success;
   },
 };

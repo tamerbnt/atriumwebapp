@@ -1,10 +1,10 @@
-import { getSupabaseClient, isUuid, toValidUuid } from '../client';
+import { getSupabaseClient, toValidUuid } from '../client';
+import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   RentableUnit,
   RentalBooking,
   RentalRenter,
   SecurityDepositRecord,
-  BookingAddon,
 } from '../../../types/index';
 
 export interface RentalSyncResult {
@@ -12,25 +12,30 @@ export interface RentalSyncResult {
   error?: string;
   table?: string;
   data?: any;
+  queued?: boolean;
 }
 
 export const rentalService = {
   // ============================================================
-  // Rentable Units (Spaces & Assets)
+  // Rental Units (rental_units)
   // ============================================================
-  async fetchUnits(branchId: string): Promise<RentableUnit[]> {
+  async fetchUnits(branchId: string, updatedAfter?: string | null): Promise<RentableUnit[]> {
     const client = getSupabaseClient();
     if (!client) return [];
 
     const safeBranchId = toValidUuid(branchId);
 
     try {
-      const { data, error } = await (client as any)
-        .from('rentable_units')
+      let query = (client as any)
+        .from('rental_units')
         .select('*')
         .eq('branch_id', safeBranchId)
+        .is('deleted_at', null)
         .order('created_at', { ascending: true });
 
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+
+      const { data, error } = await query;
       if (error) {
         console.warn('[rentalService] fetchUnits warning:', error.message);
         return [];
@@ -64,96 +69,64 @@ export const rentalService = {
   },
 
   async upsertUnit(unit: RentableUnit): Promise<RentalSyncResult> {
-    const client = getSupabaseClient();
-    if (!client) {
-      return { success: false, error: 'Supabase client is not connected' };
-    }
+    const trace = buildTraceEnvelope({
+      accountId: unit.accountId || unit.tenantId,
+      businessId: unit.businessId,
+      branchId: unit.branchId || unit.facilityId,
+      staffId: unit.staffId,
+    });
 
-    const safeId = toValidUuid(unit.id);
-    const safeAccountId = toValidUuid(unit.accountId || unit.tenantId);
-    const safeBranchId = toValidUuid(unit.branchId || unit.facilityId);
+    const payload = {
+      id: toValidUuid(unit.id),
+      ...trace,
+      name: unit.name,
+      code: unit.code,
+      type: unit.type,
+      capacity: unit.capacity,
+      surface_area_sqm: unit.surfaceAreaSqm || null,
+      hourly_rate: unit.hourlyRate,
+      daily_rate: unit.dailyRate,
+      currency: unit.currency,
+      amenities: unit.amenities,
+      status: unit.status,
+      description: unit.description || null,
+      color_hex: unit.colorHex || '#8B5CF6',
+    };
 
-    try {
-      const payload: any = {
-        id: safeId,
-        account_id: safeAccountId,
-        business_id: unit.businessId || null,
-        branch_id: safeBranchId,
-        staff_id: unit.staffId || null,
-        name: unit.name,
-        code: unit.code,
-        type: unit.type,
-        capacity: unit.capacity,
-        surface_area_sqm: unit.surfaceAreaSqm || null,
-        hourly_rate: unit.hourlyRate,
-        daily_rate: unit.dailyRate,
-        currency: unit.currency,
-        amenities: unit.amenities,
-        status: unit.status,
-        description: unit.description || null,
-        color_hex: unit.colorHex || '#8B5CF6',
-      };
-
-      let { data, error } = await (client as any)
-        .from('rentable_units')
-        .upsert(payload)
-        .select();
-
-      if (error && (error.message.includes('foreign key') || error.message.includes('fkey'))) {
-        payload.account_id = '00000000-0000-0000-0000-000000000001';
-        payload.branch_id = '00000000-0000-0000-0000-000000000003';
-        const retry = await (client as any).from('rentable_units').upsert(payload).select();
-        data = retry.data;
-        error = retry.error;
-      }
-
-      if (error) {
-        console.warn('[rentalService] upsertUnit error:', error.message);
-        return { success: false, error: error.message, table: 'rentable_units' };
-      }
-      return { success: true, data };
-    } catch (err: any) {
-      return { success: false, error: err?.message || 'Network exception', table: 'rentable_units' };
-    }
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_units', payload);
+    return {
+      success: res.success,
+      queued: res.queued,
+      error: res.error,
+      table: 'rental_units',
+    };
   },
 
-  async deleteUnit(unitId: string): Promise<RentalSyncResult> {
-    const client = getSupabaseClient();
-    if (!client) return { success: false, error: 'Not connected' };
-
-    const safeId = toValidUuid(unitId);
-
-    try {
-      const { error } = await (client as any)
-        .from('rentable_units')
-        .delete()
-        .eq('id', safeId);
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err?.message };
-    }
+  async deleteUnit(unitId: string, deletedByStaffId?: string): Promise<RentalSyncResult> {
+    const res = await syncCoordinator.softDeleteRow('rental_units', unitId, deletedByStaffId);
+    return { success: res.success, queued: res.queued, error: res.error };
   },
 
   // ============================================================
-  // Renters & Corporate Accounts
+  // Renters & Corporate Accounts (rental_renters)
   // ============================================================
-  async fetchRenters(branchId: string): Promise<RentalRenter[]> {
+  async fetchRenters(branchId: string, updatedAfter?: string | null): Promise<RentalRenter[]> {
     const client = getSupabaseClient();
     if (!client) return [];
 
     const safeBranchId = toValidUuid(branchId);
 
     try {
-      const { data, error } = await (client as any)
+      let query = (client as any)
         .from('rental_renters')
         .select('*')
         .eq('branch_id', safeBranchId)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+
+      const { data, error } = await query;
       if (error) {
         console.warn('[rentalService] fetchRenters warning:', error.message);
         return [];
@@ -184,91 +157,61 @@ export const rentalService = {
   },
 
   async upsertRenter(renter: RentalRenter): Promise<RentalSyncResult> {
-    const client = getSupabaseClient();
-    if (!client) return { success: false, error: 'Not connected' };
+    const trace = buildTraceEnvelope({
+      accountId: renter.accountId || renter.tenantId,
+      businessId: renter.businessId,
+      branchId: renter.branchId || renter.facilityId,
+      staffId: renter.staffId,
+    });
 
-    const safeId = toValidUuid(renter.id);
-    const safeAccountId = toValidUuid(renter.accountId || renter.tenantId);
-    const safeBranchId = toValidUuid(renter.branchId || renter.facilityId);
+    const payload = {
+      id: toValidUuid(renter.id),
+      ...trace,
+      full_name: renter.fullName,
+      company_name: renter.companyName || null,
+      email: renter.email,
+      phone: renter.phone,
+      id_doc_number: renter.idDocNumber || null,
+      total_bookings: renter.totalBookings,
+      total_spent: renter.totalSpent,
+      currency: renter.currency,
+      notes: renter.notes || null,
+    };
 
-    try {
-      const payload: any = {
-        id: safeId,
-        account_id: safeAccountId,
-        business_id: renter.businessId || null,
-        branch_id: safeBranchId,
-        staff_id: renter.staffId || null,
-        full_name: renter.fullName,
-        company_name: renter.companyName || null,
-        email: renter.email,
-        phone: renter.phone,
-        id_doc_number: renter.idDocNumber || null,
-        total_bookings: renter.totalBookings,
-        total_spent: renter.totalSpent,
-        currency: renter.currency,
-        notes: renter.notes || null,
-      };
-
-      let { data, error } = await (client as any)
-        .from('rental_renters')
-        .upsert(payload)
-        .select();
-
-      if (error && (error.message.includes('foreign key') || error.message.includes('fkey'))) {
-        payload.account_id = '00000000-0000-0000-0000-000000000001';
-        payload.branch_id = '00000000-0000-0000-0000-000000000003';
-        const retry = await (client as any).from('rental_renters').upsert(payload).select();
-        data = retry.data;
-        error = retry.error;
-      }
-
-      if (error) {
-        console.warn('[rentalService] upsertRenter error:', error.message);
-        return { success: false, error: error.message, table: 'rental_renters' };
-      }
-      return { success: true, data };
-    } catch (err: any) {
-      return { success: false, error: err?.message, table: 'rental_renters' };
-    }
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_renters', payload);
+    return {
+      success: res.success,
+      queued: res.queued,
+      error: res.error,
+      table: 'rental_renters',
+    };
   },
 
-  async deleteRenter(renterId: string): Promise<RentalSyncResult> {
-    const client = getSupabaseClient();
-    if (!client) return { success: false, error: 'Not connected' };
-
-    const safeId = toValidUuid(renterId);
-
-    try {
-      const { error } = await (client as any)
-        .from('rental_renters')
-        .delete()
-        .eq('id', safeId);
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err?.message };
-    }
+  async deleteRenter(renterId: string, deletedByStaffId?: string): Promise<RentalSyncResult> {
+    const res = await syncCoordinator.softDeleteRow('rental_renters', renterId, deletedByStaffId);
+    return { success: res.success, queued: res.queued, error: res.error };
   },
 
   // ============================================================
-  // Bookings & Reservations
+  // Bookings & Reservations (rental_bookings)
   // ============================================================
-  async fetchBookings(branchId: string): Promise<RentalBooking[]> {
+  async fetchBookings(branchId: string, updatedAfter?: string | null): Promise<RentalBooking[]> {
     const client = getSupabaseClient();
     if (!client) return [];
 
     const safeBranchId = toValidUuid(branchId);
 
     try {
-      const { data, error } = await (client as any)
+      let query = (client as any)
         .from('rental_bookings')
         .select('*')
         .eq('branch_id', safeBranchId)
+        .is('deleted_at', null)
         .order('start_date_time', { ascending: true });
 
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+
+      const { data, error } = await query;
       if (error) {
         console.warn('[rentalService] fetchBookings warning:', error.message);
         return [];
@@ -316,108 +259,77 @@ export const rentalService = {
   },
 
   async upsertBooking(booking: RentalBooking): Promise<RentalSyncResult> {
-    const client = getSupabaseClient();
-    if (!client) return { success: false, error: 'Not connected' };
+    const trace = buildTraceEnvelope({
+      accountId: booking.accountId || booking.tenantId,
+      businessId: booking.businessId,
+      branchId: booking.branchId || booking.facilityId,
+      staffId: booking.staffId,
+    });
 
-    const safeId = toValidUuid(booking.id);
-    const safeAccountId = toValidUuid(booking.accountId || booking.tenantId);
-    const safeBranchId = toValidUuid(booking.branchId || booking.facilityId);
+    const payload = {
+      id: toValidUuid(booking.id),
+      ...trace,
+      renter_id: toValidUuid(booking.renterId),
+      renter_name: booking.renterName,
+      renter_phone: booking.renterPhone,
+      renter_email: booking.renterEmail || null,
+      renter_company: booking.renterCompany || null,
+      unit_id: toValidUuid(booking.unitId),
+      unit_name: booking.unitName,
+      unit_type: booking.unitType,
+      purpose: booking.purpose,
+      start_date_time: booking.startDateTime,
+      end_date_time: booking.endDateTime,
+      duration_hours: booking.durationHours,
+      attendee_count: booking.attendeeCount,
+      status: booking.status,
+      base_amount: booking.baseAmount,
+      addons_amount: booking.addonsAmount,
+      total_amount: booking.totalAmount,
+      currency: booking.currency,
+      deposit_amount: booking.depositAmount,
+      deposit_status: booking.depositStatus,
+      paid_amount: booking.paidAmount,
+      balance_due: booking.balanceDue,
+      addons: booking.addons || [],
+      contract_signed: booking.contractSigned,
+      notes: booking.notes || null,
+    };
 
-    try {
-      const payload: any = {
-        id: safeId,
-        account_id: safeAccountId,
-        business_id: booking.businessId || null,
-        branch_id: safeBranchId,
-        staff_id: booking.staffId || null,
-        renter_id: booking.renterId,
-        renter_name: booking.renterName,
-        renter_phone: booking.renterPhone,
-        renter_email: booking.renterEmail || null,
-        renter_company: booking.renterCompany || null,
-        unit_id: booking.unitId,
-        unit_name: booking.unitName,
-        unit_type: booking.unitType,
-        purpose: booking.purpose,
-        start_date_time: booking.startDateTime,
-        end_date_time: booking.endDateTime,
-        duration_hours: booking.durationHours,
-        attendee_count: booking.attendeeCount,
-        status: booking.status,
-        base_amount: booking.baseAmount,
-        addons_amount: booking.addonsAmount,
-        total_amount: booking.totalAmount,
-        currency: booking.currency,
-        deposit_amount: booking.depositAmount,
-        deposit_status: booking.depositStatus,
-        paid_amount: booking.paidAmount,
-        balance_due: booking.balanceDue,
-        addons: booking.addons || [],
-        contract_signed: booking.contractSigned,
-        notes: booking.notes || null,
-        updated_at: new Date().toISOString(),
-      };
-
-      let { data, error } = await (client as any)
-        .from('rental_bookings')
-        .upsert(payload)
-        .select();
-
-      if (error && (error.message.includes('foreign key') || error.message.includes('fkey'))) {
-        payload.account_id = '00000000-0000-0000-0000-000000000001';
-        payload.branch_id = '00000000-0000-0000-0000-000000000003';
-        const retry = await (client as any).from('rental_bookings').upsert(payload).select();
-        data = retry.data;
-        error = retry.error;
-      }
-
-      if (error) {
-        console.warn('[rentalService] upsertBooking error:', error.message);
-        return { success: false, error: error.message, table: 'rental_bookings' };
-      }
-      return { success: true, data };
-    } catch (err: any) {
-      return { success: false, error: err?.message, table: 'rental_bookings' };
-    }
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_bookings', payload);
+    return {
+      success: res.success,
+      queued: res.queued,
+      error: res.error,
+      table: 'rental_bookings',
+    };
   },
 
-  async deleteBooking(bookingId: string): Promise<RentalSyncResult> {
-    const client = getSupabaseClient();
-    if (!client) return { success: false, error: 'Not connected' };
-
-    const safeId = toValidUuid(bookingId);
-
-    try {
-      const { error } = await (client as any)
-        .from('rental_bookings')
-        .delete()
-        .eq('id', safeId);
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err?.message };
-    }
+  async deleteBooking(bookingId: string, deletedByStaffId?: string): Promise<RentalSyncResult> {
+    const res = await syncCoordinator.softDeleteRow('rental_bookings', bookingId, deletedByStaffId);
+    return { success: res.success, queued: res.queued, error: res.error };
   },
 
   // ============================================================
-  // Security Deposits (Caution Escrow)
+  // Security Deposits (rental_security_deposits)
   // ============================================================
-  async fetchDeposits(branchId: string): Promise<SecurityDepositRecord[]> {
+  async fetchDeposits(branchId: string, updatedAfter?: string | null): Promise<SecurityDepositRecord[]> {
     const client = getSupabaseClient();
     if (!client) return [];
 
     const safeBranchId = toValidUuid(branchId);
 
     try {
-      const { data, error } = await (client as any)
-        .from('security_deposits')
+      let query = (client as any)
+        .from('rental_security_deposits')
         .select('*')
         .eq('branch_id', safeBranchId)
+        .is('deleted_at', null)
         .order('collected_at', { ascending: false });
 
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+
+      const { data, error } = await query;
       if (error) {
         console.warn('[rentalService] fetchDeposits warning:', error.message);
         return [];
@@ -448,78 +360,44 @@ export const rentalService = {
   },
 
   async upsertDeposit(deposit: SecurityDepositRecord): Promise<RentalSyncResult> {
-    const client = getSupabaseClient();
-    if (!client) return { success: false, error: 'Not connected' };
+    const trace = buildTraceEnvelope({
+      accountId: deposit.accountId || deposit.tenantId,
+      businessId: deposit.businessId,
+      branchId: deposit.branchId || deposit.facilityId,
+      staffId: deposit.staffId,
+    });
 
-    const safeId = toValidUuid(deposit.id);
-    const safeAccountId = toValidUuid(deposit.accountId || deposit.tenantId);
-    const safeBranchId = toValidUuid(deposit.branchId || deposit.facilityId);
+    const payload = {
+      id: toValidUuid(deposit.id),
+      ...trace,
+      booking_id: toValidUuid(deposit.bookingId),
+      renter_name: deposit.renterName,
+      unit_name: deposit.unitName,
+      amount: deposit.amount,
+      currency: deposit.currency,
+      payment_method: deposit.paymentMethod,
+      status: deposit.status,
+      deduction_reason: deposit.deductionReason || null,
+      collected_at: deposit.collectedAt,
+      released_at: deposit.releasedAt || null,
+    };
 
-    try {
-      const payload: any = {
-        id: safeId,
-        account_id: safeAccountId,
-        business_id: deposit.businessId || null,
-        branch_id: safeBranchId,
-        staff_id: deposit.staffId || null,
-        booking_id: deposit.bookingId,
-        renter_name: deposit.renterName,
-        unit_name: deposit.unitName,
-        amount: deposit.amount,
-        currency: deposit.currency,
-        payment_method: deposit.paymentMethod,
-        status: deposit.status,
-        deduction_reason: deposit.deductionReason || null,
-        collected_at: deposit.collectedAt,
-        released_at: deposit.releasedAt || null,
-      };
-
-      let { data, error } = await (client as any)
-        .from('security_deposits')
-        .upsert(payload)
-        .select();
-
-      if (error && (error.message.includes('foreign key') || error.message.includes('fkey'))) {
-        payload.account_id = '00000000-0000-0000-0000-000000000001';
-        payload.branch_id = '00000000-0000-0000-0000-000000000003';
-        const retry = await (client as any).from('security_deposits').upsert(payload).select();
-        data = retry.data;
-        error = retry.error;
-      }
-
-      if (error) {
-        console.warn('[rentalService] upsertDeposit error:', error.message);
-        return { success: false, error: error.message, table: 'security_deposits' };
-      }
-      return { success: true, data };
-    } catch (err: any) {
-      return { success: false, error: err?.message, table: 'security_deposits' };
-    }
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_security_deposits', payload);
+    return {
+      success: res.success,
+      queued: res.queued,
+      error: res.error,
+      table: 'rental_security_deposits',
+    };
   },
 
-  async deleteDeposit(depositId: string): Promise<RentalSyncResult> {
-    const client = getSupabaseClient();
-    if (!client) return { success: false, error: 'Not connected' };
-
-    const safeId = toValidUuid(depositId);
-
-    try {
-      const { error } = await (client as any)
-        .from('security_deposits')
-        .delete()
-        .eq('id', safeId);
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err?.message };
-    }
+  async deleteDeposit(depositId: string, deletedByStaffId?: string): Promise<RentalSyncResult> {
+    const res = await syncCoordinator.softDeleteRow('rental_security_deposits', depositId, deletedByStaffId);
+    return { success: res.success, queued: res.queued, error: res.error };
   },
 
   // ============================================================
-  // Cloud Sync Health & Diagnostics
+  // Cloud Sync Read Diagnostics (No unsafe write probes)
   // ============================================================
   async checkCloudTables(): Promise<{
     configured: boolean;
@@ -533,68 +411,27 @@ export const rentalService = {
     }
 
     const tablesFound: string[] = [];
-    const checkTable = async (tbl: string) => {
+    for (const tbl of ['rental_units', 'rental_renters', 'rental_bookings', 'rental_security_deposits']) {
       try {
         const { error } = await (client as any).from(tbl).select('id').limit(1);
         if (!error) tablesFound.push(tbl);
       } catch {
         // ignore
       }
-    };
-
-    await Promise.all([
-      checkTable('rentable_units'),
-      checkTable('rental_renters'),
-      checkTable('rental_bookings'),
-      checkTable('security_deposits'),
-    ]);
-
-    // Test write permission
-    let canWrite = false;
-    let errorDetail: string | undefined;
-    try {
-      const testId = '00000000-0000-4000-8000-000000009999';
-      const { error: testErr } = await (client as any)
-        .from('rentable_units')
-        .upsert({
-          id: testId,
-          name: '__cloud_ping_test__',
-          code: '__PING__',
-          type: 'Room',
-          capacity: 1,
-          status: 'Available',
-          hourly_rate: 0,
-          daily_rate: 0,
-        });
-
-      if (testErr) {
-        errorDetail = testErr.message;
-      } else {
-        canWrite = true;
-        // Clean up test row
-        await (client as any).from('rentable_units').delete().eq('id', testId);
-      }
-    } catch (err: any) {
-      errorDetail = err?.message;
     }
 
+    const { data: sessionData } = await client.auth.getSession();
     return {
       configured: true,
       tablesFound,
-      canWrite,
-      errorDetail,
+      canWrite: Boolean(sessionData?.session?.user && tablesFound.length === 4),
     };
   },
 
-  async fetchCloudSummary(): Promise<{
+  async fetchCloudSummary(branchId?: string): Promise<{
     configured: boolean;
     connected: boolean;
-    counts: {
-      units: number;
-      bookings: number;
-      renters: number;
-      deposits: number;
-    };
+    counts: { units: number; bookings: number; renters: number; deposits: number };
     latestBooking?: RentalBooking | null;
     error?: string;
   }> {
@@ -608,50 +445,20 @@ export const rentalService = {
       };
     }
 
-    try {
-      const [uRes, bRes, rRes, dRes, latestRes] = await Promise.all([
-        (client as any).from('rentable_units').select('id', { count: 'exact', head: true }),
-        (client as any).from('rental_bookings').select('id', { count: 'exact', head: true }),
-        (client as any).from('rental_renters').select('id', { count: 'exact', head: true }),
-        (client as any).from('security_deposits').select('id', { count: 'exact', head: true }),
-        (client as any).from('rental_bookings').select('*').order('created_at', { ascending: false }).limit(1),
-      ]);
+    const safeBranchId = branchId ? toValidUuid(branchId) : null;
+    const countQuery = (tbl: string) => {
+      let q = (client as any).from(tbl).select('id', { count: 'exact', head: true }).is('deleted_at', null);
+      if (safeBranchId) q = q.eq('branch_id', safeBranchId);
+      return q;
+    };
 
-      const latestBookingRow = latestRes.data?.[0];
-      const latestBooking: RentalBooking | null = latestBookingRow
-        ? {
-            id: latestBookingRow.id,
-            tenantId: latestBookingRow.account_id,
-            facilityId: latestBookingRow.branch_id,
-            renterId: latestBookingRow.renter_id,
-            renterName: latestBookingRow.renter_name,
-            renterPhone: latestBookingRow.renter_phone,
-            renterEmail: latestBookingRow.renter_email,
-            renterCompany: latestBookingRow.renter_company,
-            unitId: latestBookingRow.unit_id,
-            unitName: latestBookingRow.unit_name,
-            unitType: latestBookingRow.unit_type || 'Room',
-            purpose: latestBookingRow.purpose,
-            startDateTime: latestBookingRow.start_date_time,
-            endDateTime: latestBookingRow.end_date_time,
-            durationHours: Number(latestBookingRow.duration_hours || 1),
-            attendeeCount: Number(latestBookingRow.attendee_count || 1),
-            status: latestBookingRow.status,
-            baseAmount: Number(latestBookingRow.base_amount || 0),
-            addonsAmount: Number(latestBookingRow.addons_amount || 0),
-            totalAmount: Number(latestBookingRow.total_amount || 0),
-            currency: latestBookingRow.currency || 'DZD',
-            depositAmount: Number(latestBookingRow.deposit_amount || 0),
-            depositStatus: latestBookingRow.deposit_status || 'Held',
-            paidAmount: Number(latestBookingRow.paid_amount || 0),
-            balanceDue: Number(latestBookingRow.balance_due || 0),
-            addons: Array.isArray(latestBookingRow.addons) ? latestBookingRow.addons : [],
-            contractSigned: Boolean(latestBookingRow.contract_signed),
-            notes: latestBookingRow.notes,
-            createdAt: latestBookingRow.created_at,
-            updatedAt: latestBookingRow.updated_at,
-          }
-        : null;
+    try {
+      const [uRes, bRes, rRes, dRes] = await Promise.all([
+        countQuery('rental_units'),
+        countQuery('rental_bookings'),
+        countQuery('rental_renters'),
+        countQuery('rental_security_deposits'),
+      ]);
 
       return {
         configured: true,
@@ -662,7 +469,7 @@ export const rentalService = {
           renters: rRes.count ?? 0,
           deposits: dRes.count ?? 0,
         },
-        latestBooking,
+        latestBooking: null,
         error: bRes.error?.message || uRes.error?.message,
       };
     } catch (err: any) {

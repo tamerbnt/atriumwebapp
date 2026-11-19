@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ManufacturingBom,
   ManufacturingOrder,
@@ -8,6 +8,21 @@ import {
 } from '../../../types';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import {
+  isSupabaseConfigured,
+  manufacturingService,
+  realtimeService,
+  syncCoordinator,
+  runWithConcurrency,
+} from '../../../lib/supabase/index';
+
+function mergeMfgById<T extends { id: string }>(localItems: T[], remoteItems: T[]): T[] {
+  if (!remoteItems || remoteItems.length === 0) return localItems;
+  const map = new Map<string, T>();
+  localItems.forEach((item) => map.set(item.id, item));
+  remoteItems.forEach((item) => map.set(item.id, item));
+  return Array.from(map.values());
+}
 
 export const INITIAL_BOMS: ManufacturingBom[] = [
   {
@@ -582,6 +597,9 @@ export const INITIAL_QC_RECORDS: QualityInspectionRecord[] = [
 
 export const useManufacturingData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
+  const currentAccountId = useAtriumSelector((s) => s.account.id);
+  const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
   const activeBranchId = currentBranchId || 'branch_manufacturing_main';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
@@ -592,6 +610,8 @@ export const useManufacturingData = () => {
     ({
       ...item,
       branchId: (item as { branchId?: string }).branchId || activeBranchId,
+      businessId: (item as { businessId?: string }).businessId || currentBusinessId || 'biz_manufacturing',
+      accountId: (item as { accountId?: string }).accountId || currentAccountId || 'acc_01',
     }) as T;
 
   const [boms, setBoms] = useState<ManufacturingBom[]>(() => {
@@ -646,57 +666,210 @@ export const useManufacturingData = () => {
   useIdlePersist('atrium_mfg_vouchers', vouchers);
   useIdlePersist('atrium_mfg_qc_records', qcRecords);
 
+  // Hydrate manufacturing vertical state from Supabase when configured
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+
+    void syncCoordinator.runSingleFlight(`manufacturing:${activeBranchId}`, async () => {
+      await syncCoordinator.flushQueue().catch(() => {});
+      const [
+        remoteBoms,
+        remoteOrders,
+        remoteMaterials,
+        remoteVouchers,
+        remoteQc,
+      ] = await runWithConcurrency(
+        [
+          () => manufacturingService.fetchBoms(activeBranchId),
+          () => manufacturingService.fetchOrders(activeBranchId),
+          () => manufacturingService.fetchRawMaterials(activeBranchId),
+          () => manufacturingService.fetchMaterialVouchers(activeBranchId),
+          () => manufacturingService.fetchQcInspections(activeBranchId),
+        ],
+        4
+      );
+
+      if (cancelled) return;
+      if (Array.isArray(remoteBoms) && remoteBoms.length > 0) {
+        setBoms((prev) => mergeMfgById(prev, remoteBoms as ManufacturingBom[]));
+      }
+      if (Array.isArray(remoteOrders) && remoteOrders.length > 0) {
+        setOrders((prev) => mergeMfgById(prev, remoteOrders as ManufacturingOrder[]));
+      }
+      if (Array.isArray(remoteMaterials) && remoteMaterials.length > 0) {
+        setMaterials((prev) => mergeMfgById(prev, remoteMaterials as RawMaterialStockItem[]));
+      }
+      if (Array.isArray(remoteVouchers) && remoteVouchers.length > 0) {
+        setVouchers((prev) => mergeMfgById(prev, remoteVouchers as MaterialTransferVoucher[]));
+      }
+      if (Array.isArray(remoteQc) && remoteQc.length > 0) {
+        setQcRecords((prev) => mergeMfgById(prev, remoteQc as QualityInspectionRecord[]));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBranchId]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const watchedTables = [
+      'mfg_bom_recipes',
+      'mfg_bom_ingredients',
+      'mfg_orders',
+      'mfg_raw_materials',
+      'mfg_material_vouchers',
+      'mfg_qc_inspections',
+    ];
+
+    return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
+      const prune = <T extends { id: string }>(table: string, setter: React.Dispatch<React.SetStateAction<T[]>>) => {
+        const ids = deletedIdsByTable[table];
+        if (!ids || ids.length === 0) return;
+        const idSet = new Set(ids);
+        setter((prev) => prev.filter((item) => !idSet.has(item.id)));
+      };
+
+      prune('mfg_bom_recipes', setBoms);
+      prune('mfg_orders', setOrders);
+      prune('mfg_raw_materials', setMaterials);
+      prune('mfg_material_vouchers', setVouchers);
+      prune('mfg_qc_inspections', setQcRecords);
+
+      const changedSet = new Set(changedTables);
+      const tasks: Array<() => Promise<void>> = [];
+
+      if (changedSet.has('mfg_bom_recipes') || changedSet.has('mfg_bom_ingredients')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchBoms(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setBoms((prev) => mergeMfgById(prev, rows as ManufacturingBom[]));
+          }
+        });
+      }
+      if (changedSet.has('mfg_orders')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchOrders(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setOrders((prev) => mergeMfgById(prev, rows as ManufacturingOrder[]));
+          }
+        });
+      }
+      if (changedSet.has('mfg_raw_materials')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchRawMaterials(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setMaterials((prev) => mergeMfgById(prev, rows as RawMaterialStockItem[]));
+          }
+        });
+      }
+      if (changedSet.has('mfg_material_vouchers')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchMaterialVouchers(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setVouchers((prev) => mergeMfgById(prev, rows as MaterialTransferVoucher[]));
+          }
+        });
+      }
+      if (changedSet.has('mfg_qc_inspections')) {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchQcInspections(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setQcRecords((prev) => mergeMfgById(prev, rows as QualityInspectionRecord[]));
+          }
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `manufacturing:rt:${activeBranchId}:${[...changedSet].sort().join(',')}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+  }, [activeBranchId]);
+
   // Order CRUD
   const addOrder = (order: ManufacturingOrder) => {
-    setOrders((prev) => [withBranch(order), ...prev]);
+    const scoped = withBranch(order);
+    setOrders((prev) => [scoped, ...prev]);
+    void manufacturingService.upsertOrder(scoped).catch(() => {});
   };
 
   const updateOrder = (order: ManufacturingOrder) => {
-    setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
+    const scoped = withBranch(order);
+    setOrders((prev) => prev.map((o) => (o.id === order.id ? scoped : o)));
+    void manufacturingService.upsertOrder(scoped).catch(() => {});
   };
 
   const deleteOrder = (id: string) => {
     setOrders((prev) => prev.filter((o) => o.id !== id));
+    void syncCoordinator.softDeleteRow('mfg_orders', id, currentStaffId).catch(() => {});
   };
 
   const updateOrderStatus = (id: string, status: ManufacturingOrder['status']) => {
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+    setOrders((prev) =>
+      prev.map((o) => {
+        if (o.id !== id) return o;
+        const next = { ...o, status };
+        void manufacturingService.upsertOrder(withBranch(next)).catch(() => {});
+        return next;
+      })
+    );
   };
 
   // BOM CRUD
   const addBom = (bom: ManufacturingBom) => {
-    setBoms((prev) => [withBranch(bom), ...prev]);
+    const scoped = withBranch(bom);
+    setBoms((prev) => [scoped, ...prev]);
+    void manufacturingService.upsertBom(scoped).catch(() => {});
   };
 
   const updateBom = (bom: ManufacturingBom) => {
-    setBoms((prev) => prev.map((b) => (b.id === bom.id ? bom : b)));
+    const scoped = withBranch(bom);
+    setBoms((prev) => prev.map((b) => (b.id === bom.id ? scoped : b)));
+    void manufacturingService.upsertBom(scoped).catch(() => {});
   };
 
   const deleteBom = (id: string) => {
     setBoms((prev) => prev.filter((b) => b.id !== id));
+    void syncCoordinator.softDeleteRow('mfg_bom_recipes', id, currentStaffId).catch(() => {});
   };
 
   // Raw Materials CRUD
   const addMaterial = (mat: RawMaterialStockItem) => {
-    setMaterials((prev) => [withBranch(mat), ...prev]);
+    const scoped = withBranch(mat);
+    setMaterials((prev) => [scoped, ...prev]);
+    void manufacturingService.upsertRawMaterial(scoped).catch(() => {});
   };
 
   const updateMaterial = (mat: RawMaterialStockItem) => {
-    setMaterials((prev) => prev.map((m) => (m.id === mat.id ? mat : m)));
+    const scoped = withBranch(mat);
+    setMaterials((prev) => prev.map((m) => (m.id === mat.id ? scoped : m)));
+    void manufacturingService.upsertRawMaterial(scoped).catch(() => {});
   };
 
   // Transfer Vouchers CRUD
   const addVoucher = (voucher: MaterialTransferVoucher) => {
-    setVouchers((prev) => [withBranch(voucher), ...prev]);
+    const scoped = withBranch(voucher);
+    setVouchers((prev) => [scoped, ...prev]);
+    void manufacturingService.processMaterialVoucher(scoped).catch(() => {});
   };
 
   // Quality Inspections CRUD
   const addQcRecord = (record: QualityInspectionRecord) => {
-    setQcRecords((prev) => [withBranch(record), ...prev]);
+    const scoped = withBranch(record);
+    setQcRecords((prev) => [scoped, ...prev]);
+    void manufacturingService.upsertQcInspection(scoped).catch(() => {});
   };
 
   const updateQcRecord = (record: QualityInspectionRecord) => {
-    setQcRecords((prev) => prev.map((q) => (q.id === record.id ? record : q)));
+    const scoped = withBranch(record);
+    setQcRecords((prev) => prev.map((q) => (q.id === record.id ? scoped : q)));
+    void manufacturingService.upsertQcInspection(scoped).catch(() => {});
   };
 
   const resetManufacturingDemoData = () => {

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ContractorProject,
   ContractorBoqItem,
@@ -11,6 +11,16 @@ import {
 } from '../../../types/index';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import type { Dispatch, SetStateAction } from 'react';
+import { isSupabaseConfigured, contractorService, realtimeService, syncCoordinator, runWithConcurrency } from '../../../lib/supabase';
+
+function mergeContractorById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
+  if (remote.length === 0) return prev;
+  const map = new Map<string, T>();
+  for (const item of prev) map.set(item.id, item);
+  for (const item of remote) map.set(item.id, item);
+  return Array.from(map.values());
+}
 
 export const INITIAL_CONTRACTOR_PROJECTS: ContractorProject[] = [
   {
@@ -643,6 +653,9 @@ export const INITIAL_EQUIPMENT_LOGS: EquipmentLogRecord[] = [
 
 export const useContractorData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
+  const currentAccountId = useAtriumSelector((s) => s.account.id);
+  const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
   const activeBranchId = currentBranchId || 'branch_contractor_main';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
@@ -652,7 +665,10 @@ export const useContractorData = () => {
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
+      accountId: (item as { accountId?: string }).accountId || currentAccountId || 'acc_01',
+      businessId: (item as { businessId?: string }).businessId || currentBusinessId || 'biz_contractor',
       branchId: (item as { branchId?: string }).branchId || activeBranchId,
+      staffId: (item as { staffId?: string }).staffId || currentStaffId || 'staff_01',
     }) as T;
 
   const [projects, setProjects] = useState<ContractorProject[]>(() => {
@@ -736,60 +752,225 @@ export const useContractorData = () => {
   useIdlePersist('atrium_contractor_os', serviceOrders);
   useIdlePersist('atrium_contractor_concrete', concretePours);
   useIdlePersist('atrium_contractor_subcontractors', subcontractors);
+  useIdlePersist('atrium_contractor_equipment', equipmentLogs);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+
+    void syncCoordinator.runSingleFlight(`contractor:${activeBranchId}`, async () => {
+      await syncCoordinator.flushQueue().catch(() => {});
+      const [
+        remoteProjects,
+        remoteBoq,
+        remoteLogs,
+        remoteDgps,
+        remoteOs,
+        remotePours,
+        remoteSubs,
+        remoteEquipment,
+      ] = await runWithConcurrency(
+        [
+          () => contractorService.fetchProjects(activeBranchId),
+          () => contractorService.fetchBoqItems(activeBranchId),
+          () => contractorService.fetchDailyLogs(activeBranchId),
+          () => contractorService.fetchDgps(activeBranchId),
+          () => contractorService.fetchServiceOrders(activeBranchId),
+          () => contractorService.fetchConcretePours(activeBranchId),
+          () => contractorService.fetchSubcontractors(activeBranchId),
+          () => contractorService.fetchEquipmentLogs(activeBranchId),
+        ],
+        4
+      );
+      if (cancelled) return;
+      if (remoteProjects.length > 0) setProjects((prev) => mergeContractorById(prev, remoteProjects as ContractorProject[]));
+      if (remoteBoq.length > 0) setBoqItems((prev) => mergeContractorById(prev, remoteBoq as ContractorBoqItem[]));
+      if (remoteLogs.length > 0) setDailyLogs((prev) => mergeContractorById(prev, remoteLogs as ContractorDailyLog[]));
+      if (remoteDgps.length > 0) setDgps((prev) => mergeContractorById(prev, remoteDgps as ContractorDgp[]));
+      if (remoteOs.length > 0) setServiceOrders((prev) => mergeContractorById(prev, remoteOs as ContractorServiceOrder[]));
+      if (remotePours.length > 0) setConcretePours((prev) => mergeContractorById(prev, remotePours as ConcretePourRecord[]));
+      if (remoteSubs.length > 0) setSubcontractors((prev) => mergeContractorById(prev, remoteSubs as SubcontractorAgreement[]));
+      if (remoteEquipment.length > 0) setEquipmentLogs((prev) => mergeContractorById(prev, remoteEquipment as EquipmentLogRecord[]));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBranchId]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const watchedTables = [
+      'btp_projects',
+      'btp_boq_items',
+      'btp_daily_logs',
+      'btp_decomptes',
+      'btp_subcontractors',
+      'btp_equipment',
+    ];
+
+    return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
+      const prune = <T extends { id: string }>(table: string, setter: Dispatch<SetStateAction<T[]>>) => {
+        const ids = deletedIdsByTable[table];
+        if (!ids || ids.length === 0) return;
+        const idSet = new Set(ids);
+        setter((prev) => prev.filter((item) => !idSet.has(item.id)));
+      };
+
+      prune('btp_projects', setProjects);
+      prune('btp_boq_items', setBoqItems);
+      prune('btp_daily_logs', setDailyLogs);
+      prune('btp_daily_logs', setServiceOrders);
+      prune('btp_daily_logs', setConcretePours);
+      prune('btp_decomptes', setDgps);
+      prune('btp_subcontractors', setSubcontractors);
+      prune('btp_equipment', setEquipmentLogs);
+
+      const changedSet = new Set(changedTables);
+      const tasks: Array<() => Promise<void>> = [];
+
+      if (changedSet.has('btp_projects')) {
+        tasks.push(async () => {
+          const rows = await contractorService.fetchProjects(activeBranchId);
+          if (!cancelled && rows.length > 0) setProjects((prev) => mergeContractorById(prev, rows as ContractorProject[]));
+        });
+      }
+      if (changedSet.has('btp_boq_items')) {
+        tasks.push(async () => {
+          const rows = await contractorService.fetchBoqItems(activeBranchId);
+          if (!cancelled && rows.length > 0) setBoqItems((prev) => mergeContractorById(prev, rows as ContractorBoqItem[]));
+        });
+      }
+      if (changedSet.has('btp_daily_logs')) {
+        tasks.push(
+          async () => {
+            const rows = await contractorService.fetchDailyLogs(activeBranchId);
+            if (!cancelled && rows.length > 0) setDailyLogs((prev) => mergeContractorById(prev, rows as ContractorDailyLog[]));
+          },
+          async () => {
+            const rows = await contractorService.fetchServiceOrders(activeBranchId);
+            if (!cancelled && rows.length > 0) setServiceOrders((prev) => mergeContractorById(prev, rows as ContractorServiceOrder[]));
+          },
+          async () => {
+            const rows = await contractorService.fetchConcretePours(activeBranchId);
+            if (!cancelled && rows.length > 0) setConcretePours((prev) => mergeContractorById(prev, rows as ConcretePourRecord[]));
+          }
+        );
+      }
+      if (changedSet.has('btp_decomptes')) {
+        tasks.push(async () => {
+          const rows = await contractorService.fetchDgps(activeBranchId);
+          if (!cancelled && rows.length > 0) setDgps((prev) => mergeContractorById(prev, rows as ContractorDgp[]));
+        });
+      }
+      if (changedSet.has('btp_subcontractors')) {
+        tasks.push(async () => {
+          const rows = await contractorService.fetchSubcontractors(activeBranchId);
+          if (!cancelled && rows.length > 0) setSubcontractors((prev) => mergeContractorById(prev, rows as SubcontractorAgreement[]));
+        });
+      }
+      if (changedSet.has('btp_equipment')) {
+        tasks.push(async () => {
+          const rows = await contractorService.fetchEquipmentLogs(activeBranchId);
+          if (!cancelled && rows.length > 0) setEquipmentLogs((prev) => mergeContractorById(prev, rows as EquipmentLogRecord[]));
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `contractor:rt:${activeBranchId}:${[...changedSet].sort().join(',')}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+  }, [activeBranchId]);
 
   const addProject = (project: ContractorProject) => {
-    setProjects((prev) => [withBranch(project), ...prev]);
+    const scoped = withBranch(project);
+    setProjects((prev) => [scoped, ...prev]);
+    void contractorService.upsertProject(scoped).catch(() => {});
   };
 
   const updateProject = (project: ContractorProject) => {
-    setProjects((prev) => prev.map((p) => (p.id === project.id ? project : p)));
+    const scoped = withBranch(project);
+    setProjects((prev) => prev.map((p) => (p.id === scoped.id ? scoped : p)));
+    void contractorService.upsertProject(scoped).catch(() => {});
   };
 
   const deleteProject = (id: string) => {
     setProjects((prev) => prev.filter((p) => p.id !== id));
+    void syncCoordinator.softDeleteRow('btp_projects', id, currentStaffId).catch(() => {});
   };
 
   const addBoqItem = (item: ContractorBoqItem) => {
-    setBoqItems((prev) => [...prev, withBranch(item)]);
+    const scoped = withBranch(item);
+    setBoqItems((prev) => [...prev, scoped]);
+    void contractorService.upsertBoqItem(scoped).catch(() => {});
   };
 
   const updateBoqItem = (item: ContractorBoqItem) => {
-    setBoqItems((prev) => prev.map((b) => (b.id === item.id ? item : b)));
+    const scoped = withBranch(item);
+    setBoqItems((prev) => prev.map((b) => (b.id === scoped.id ? scoped : b)));
+    void contractorService.upsertBoqItem(scoped).catch(() => {});
   };
 
   const deleteBoqItem = (id: string) => {
     setBoqItems((prev) => prev.filter((b) => b.id !== id));
+    void syncCoordinator.softDeleteRow('btp_boq_items', id, currentStaffId).catch(() => {});
   };
 
   const addDailyLog = (log: ContractorDailyLog) => {
-    setDailyLogs((prev) => [withBranch(log), ...prev]);
+    const scoped = withBranch(log);
+    setDailyLogs((prev) => [scoped, ...prev]);
+    void contractorService.upsertDailyLog(scoped).catch(() => {});
   };
 
   const addDgp = (dgp: ContractorDgp) => {
-    setDgps((prev) => [withBranch(dgp), ...prev]);
+    const scoped = withBranch(dgp);
+    setDgps((prev) => [scoped, ...prev]);
+    void contractorService.upsertDgp(scoped).catch(() => {});
   };
 
   const updateDgpStatus = (id: string, status: ContractorDgp['status']) => {
-    setDgps((prev) => prev.map((d) => (d.id === id ? { ...d, status } : d)));
+    let updated: ContractorDgp | null = null;
+    setDgps((prev) =>
+      prev.map((d) => {
+        if (d.id === id) {
+          updated = { ...d, status };
+          return updated;
+        }
+        return d;
+      })
+    );
+    if (updated) {
+      void contractorService.upsertDgp(updated).catch(() => {});
+    }
   };
 
   const addServiceOrder = (os: ContractorServiceOrder) => {
-    setServiceOrders((prev) => [withBranch(os), ...prev]);
+    const scoped = withBranch(os);
+    setServiceOrders((prev) => [scoped, ...prev]);
+    void contractorService.upsertServiceOrder(scoped).catch(() => {});
   };
 
   const addConcretePour = (pour: ConcretePourRecord) => {
-    setConcretePours((prev) => [withBranch(pour), ...prev]);
+    const scoped = withBranch(pour);
+    setConcretePours((prev) => [scoped, ...prev]);
+    void contractorService.upsertConcretePour(scoped).catch(() => {});
   };
 
   const addSubcontractor = (sub: SubcontractorAgreement) => {
-    setSubcontractors((prev) => [withBranch(sub), ...prev]);
+    const scoped = withBranch(sub);
+    setSubcontractors((prev) => [scoped, ...prev]);
+    void contractorService.upsertSubcontractor(scoped).catch(() => {});
   };
 
   const addEquipmentLog = (log: EquipmentLogRecord) => {
-    setEquipmentLogs((prev) => [withBranch(log), ...prev]);
+    const scoped = withBranch(log);
+    setEquipmentLogs((prev) => [scoped, ...prev]);
+    void contractorService.upsertEquipmentLog(scoped).catch(() => {});
   };
-
-  useIdlePersist('atrium_contractor_equipment', equipmentLogs);
 
   const resetContractorDemoData = () => {
     setProjects((prev) => prev.filter((p) => !belongsToActiveBranch(p)));

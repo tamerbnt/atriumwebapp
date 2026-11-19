@@ -1,6 +1,21 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import {
+  isSupabaseConfigured,
+  garageService,
+  realtimeService,
+  syncCoordinator,
+  runWithConcurrency,
+} from '../../../lib/supabase/index';
+
+function mergeGarageById<T extends { id: string }>(localItems: T[], remoteItems: T[]): T[] {
+  if (!remoteItems || remoteItems.length === 0) return localItems;
+  const map = new Map<string, T>();
+  localItems.forEach((item) => map.set(item.id, item));
+  remoteItems.forEach((item) => map.set(item.id, item));
+  return Array.from(map.values());
+}
 
 export interface DamageMarker {
   id: string;
@@ -874,7 +889,19 @@ export const calculateEstimatedMileage = (
 
 export const useGarageData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
+  const currentAccountId = useAtriumSelector((s) => s.account.id);
+  const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
   const activeBranchId = currentBranchId || 'branch_garage_main';
+  const garageCtx = useMemo(
+    () => ({
+      accountId: currentAccountId || 'acc_01',
+      businessId: currentBusinessId || 'biz_garage',
+      branchId: activeBranchId,
+      staffId: currentStaffId || 'stf_01',
+    }),
+    [currentAccountId, currentBusinessId, activeBranchId, currentStaffId]
+  );
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
       (item.branchId || item.facilityId || 'branch_garage_main') === activeBranchId,
@@ -884,6 +911,8 @@ export const useGarageData = () => {
     ({
       ...item,
       branchId: (item as { branchId?: string }).branchId || activeBranchId,
+      businessId: (item as { businessId?: string }).businessId || garageCtx.businessId,
+      accountId: (item as { accountId?: string }).accountId || garageCtx.accountId,
     }) as T;
 
   const [orders, setOrders] = useState<RepairOrder[]>(() => {
@@ -948,10 +977,151 @@ export const useGarageData = () => {
   useIdlePersist('atrium_garage_fleets_v2', fleets);
   useIdlePersist('atrium_garage_invoices_v2', invoices);
 
+  // Hydrate garage vertical state from Supabase when configured
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+
+    void syncCoordinator.runSingleFlight(`garage:${activeBranchId}`, async () => {
+      await syncCoordinator.flushQueue().catch(() => {});
+      const [
+        remoteOrders,
+        remoteVehicles,
+        remoteParts,
+        remoteBays,
+        remoteFleets,
+        remoteInvoices,
+      ] = await runWithConcurrency(
+        [
+          () => garageService.fetchWorkOrders(activeBranchId),
+          () => garageService.fetchVehicles(activeBranchId),
+          () => garageService.fetchParts(activeBranchId),
+          () => garageService.fetchBays(activeBranchId),
+          () => garageService.fetchFleetAccounts(activeBranchId),
+          () => garageService.fetchInvoices(activeBranchId),
+        ],
+        4
+      );
+
+      if (cancelled) return;
+      if (Array.isArray(remoteOrders) && remoteOrders.length > 0) {
+        setOrders((prev) => mergeGarageById(prev, remoteOrders as RepairOrder[]));
+      }
+      if (Array.isArray(remoteVehicles) && remoteVehicles.length > 0) {
+        setVehicles((prev) => mergeGarageById(prev, remoteVehicles as VehicleAsset[]));
+      }
+      if (Array.isArray(remoteParts) && remoteParts.length > 0) {
+        setParts((prev) => mergeGarageById(prev, remoteParts as SparePart[]));
+      }
+      if (Array.isArray(remoteBays) && remoteBays.length > 0) {
+        setBays((prev) => mergeGarageById(prev, remoteBays as WorkshopBay[]));
+      }
+      if (Array.isArray(remoteFleets) && remoteFleets.length > 0) {
+        setFleets((prev) => mergeGarageById(prev, remoteFleets as CorporateFleetAccount[]));
+      }
+      if (Array.isArray(remoteInvoices) && remoteInvoices.length > 0) {
+        setInvoices((prev) => mergeGarageById(prev, remoteInvoices as GarageInvoice[]));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBranchId]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const watchedTables = [
+      'garage_work_orders',
+      'garage_vehicles',
+      'garage_parts',
+      'garage_bays',
+      'garage_fleet_contracts',
+      'garage_invoices',
+    ];
+
+    return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
+      const prune = <T extends { id: string }>(table: string, setter: React.Dispatch<React.SetStateAction<T[]>>) => {
+        const ids = deletedIdsByTable[table];
+        if (!ids || ids.length === 0) return;
+        const idSet = new Set(ids);
+        setter((prev) => prev.filter((item) => !idSet.has(item.id)));
+      };
+
+      prune('garage_work_orders', setOrders);
+      prune('garage_vehicles', setVehicles);
+      prune('garage_parts', setParts);
+      prune('garage_bays', setBays);
+      prune('garage_fleet_contracts', setFleets);
+      prune('garage_invoices', setInvoices);
+
+      const changedSet = new Set(changedTables);
+      const tasks: Array<() => Promise<void>> = [];
+
+      if (changedSet.has('garage_work_orders')) {
+        tasks.push(async () => {
+          const rows = await garageService.fetchWorkOrders(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setOrders((prev) => mergeGarageById(prev, rows as RepairOrder[]));
+          }
+        });
+      }
+      if (changedSet.has('garage_vehicles')) {
+        tasks.push(async () => {
+          const rows = await garageService.fetchVehicles(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setVehicles((prev) => mergeGarageById(prev, rows as VehicleAsset[]));
+          }
+        });
+      }
+      if (changedSet.has('garage_parts')) {
+        tasks.push(async () => {
+          const rows = await garageService.fetchParts(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setParts((prev) => mergeGarageById(prev, rows as SparePart[]));
+          }
+        });
+      }
+      if (changedSet.has('garage_bays')) {
+        tasks.push(async () => {
+          const rows = await garageService.fetchBays(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setBays((prev) => mergeGarageById(prev, rows as WorkshopBay[]));
+          }
+        });
+      }
+      if (changedSet.has('garage_fleet_contracts')) {
+        tasks.push(async () => {
+          const rows = await garageService.fetchFleetAccounts(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setFleets((prev) => mergeGarageById(prev, rows as CorporateFleetAccount[]));
+          }
+        });
+      }
+      if (changedSet.has('garage_invoices')) {
+        tasks.push(async () => {
+          const rows = await garageService.fetchInvoices(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setInvoices((prev) => mergeGarageById(prev, rows as GarageInvoice[]));
+          }
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `garage:rt:${activeBranchId}:${[...changedSet].sort().join(',')}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+  }, [activeBranchId]);
+
   // Order Mutations
   const addOrder = (order: RepairOrder) => {
     const scopedOrder = withBranch(order);
     setOrders((prev) => [scopedOrder, ...prev]);
+    void garageService.upsertWorkOrder(scopedOrder, garageCtx).catch(() => {});
     // If assigned to a bay, lock that bay
     if (scopedOrder.assignedBayId) {
       setBays((prevBays) =>
@@ -959,18 +1129,26 @@ export const useGarageData = () => {
           b.id === scopedOrder.assignedBayId ? { ...b, isOccupied: true, activeOrderId: scopedOrder.id } : b
         )
       );
+      void garageService.assignBay(scopedOrder.assignedBayId, scopedOrder.id, scopedOrder.technicianName || '').catch(() => {});
     }
   };
 
   const updateOrder = (order: RepairOrder) => {
-    setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
+    const scopedOrder = withBranch(order);
+    setOrders((prev) => prev.map((o) => (o.id === order.id ? scopedOrder : o)));
+    void garageService.upsertWorkOrder(scopedOrder, garageCtx).catch(() => {});
   };
 
   const deleteOrder = (id: string) => {
+    const existing = orders.find((o) => o.id === id);
     setOrders((prev) => prev.filter((o) => o.id !== id));
     setBays((prevBays) =>
       prevBays.map((b) => (b.activeOrderId === id ? { ...b, isOccupied: false, activeOrderId: undefined } : b))
     );
+    void garageService.deleteWorkOrder(id, currentStaffId).catch(() => {});
+    if (existing?.assignedBayId) {
+      void garageService.releaseBay(existing.assignedBayId).catch(() => {});
+    }
   };
 
   const updateOrderStatus = (id: string, status: RepairOrder['status']) => {
@@ -984,8 +1162,11 @@ export const useGarageData = () => {
               b.id === o.assignedBayId ? { ...b, isOccupied: false, activeOrderId: undefined } : b
             )
           );
+          void garageService.releaseBay(o.assignedBayId).catch(() => {});
         }
-        return { ...o, status };
+        const next = { ...o, status };
+        void garageService.upsertWorkOrder(withBranch(next), garageCtx).catch(() => {});
+        return next;
       })
     );
   };
@@ -993,10 +1174,14 @@ export const useGarageData = () => {
   // Bay Assignment
   const assignBayToOrder = (orderId: string, bayId: string) => {
     const targetBay = bays.find((b) => b.id === bayId);
+    const targetOrder = orders.find((o) => o.id === orderId);
     setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId ? { ...o, assignedBayId: bayId, bayName: targetBay?.name } : o
-      )
+      prev.map((o) => {
+        if (o.id !== orderId) return o;
+        const next = { ...o, assignedBayId: bayId, bayName: targetBay?.name };
+        void garageService.upsertWorkOrder(withBranch(next), garageCtx).catch(() => {});
+        return next;
+      })
     );
     setBays((prev) =>
       prev.map((b) => {
@@ -1005,50 +1190,65 @@ export const useGarageData = () => {
         return b;
       })
     );
+    void garageService.assignBay(bayId, orderId, targetOrder?.technicianName || '').catch(() => {});
   };
 
   const releaseBay = (bayId: string) => {
     setBays((prev) =>
       prev.map((b) => (b.id === bayId ? { ...b, isOccupied: false, activeOrderId: undefined } : b))
     );
+    void garageService.releaseBay(bayId).catch(() => {});
   };
 
   // Vehicle Mutations
   const addVehicle = (vehicle: VehicleAsset) => {
-    setVehicles((prev) => [withBranch(vehicle), ...prev]);
+    const scoped = withBranch(vehicle);
+    setVehicles((prev) => [scoped, ...prev]);
+    void garageService.upsertVehicle(scoped, garageCtx).catch(() => {});
   };
 
   const updateVehicle = (vehicle: VehicleAsset) => {
-    setVehicles((prev) => prev.map((v) => (v.id === vehicle.id ? vehicle : v)));
+    const scoped = withBranch(vehicle);
+    setVehicles((prev) => prev.map((v) => (v.id === vehicle.id ? scoped : v)));
+    void garageService.upsertVehicle(scoped, garageCtx).catch(() => {});
   };
 
   const deleteVehicle = (id: string) => {
     setVehicles((prev) => prev.filter((v) => v.id !== id));
+    void garageService.deleteVehicle(id, currentStaffId).catch(() => {});
   };
 
   // Spare Part Mutations & Requisition
   const addPart = (part: SparePart) => {
-    setParts((prev) => [withBranch(part), ...prev]);
+    const scoped = withBranch(part);
+    setParts((prev) => [scoped, ...prev]);
+    void garageService.upsertPart(scoped, garageCtx).catch(() => {});
   };
 
   const updatePart = (part: SparePart) => {
-    setParts((prev) => prev.map((p) => (p.id === part.id ? part : p)));
+    const scoped = withBranch(part);
+    setParts((prev) => prev.map((p) => (p.id === part.id ? scoped : p)));
+    void garageService.upsertPart(scoped, garageCtx).catch(() => {});
   };
 
   const deletePart = (id: string) => {
     setParts((prev) => prev.filter((p) => p.id !== id));
+    void garageService.deletePart(id, currentStaffId).catch(() => {});
   };
 
   const requisitionPartToOrder = (orderId: string, partId: string, quantity = 1) => {
     const part = parts.find((p) => p.id === partId);
     if (!part || part.stockQuantity < quantity) return false;
 
+    const nextStock = Math.max(0, part.stockQuantity - quantity);
     // Deduct warehouse stock
     setParts((prev) =>
       prev.map((p) =>
-        p.id === partId ? { ...p, stockQuantity: Math.max(0, p.stockQuantity - quantity) } : p
+        p.id === partId ? { ...p, stockQuantity: nextStock } : p
       )
     );
+    void garageService.upsertPart(withBranch({ ...part, stockQuantity: nextStock }), garageCtx).catch(() => {});
+    void garageService.requisitionPart(orderId, partId, quantity).catch(() => {});
 
     // Append line to repair order
     setOrders((prev) =>
@@ -1085,12 +1285,14 @@ export const useGarageData = () => {
         const newPartsCost = updatedParts.reduce((acc, p) => acc + p.totalPriceDzd, 0);
         const finalCost = (o.laborCostDzd || 0) + newPartsCost;
 
-        return {
+        const nextOrder = {
           ...o,
           partsUsed: updatedParts,
           partsCostDzd: newPartsCost,
           finalCostDzd: finalCost,
         };
+        void garageService.upsertWorkOrder(withBranch(nextOrder), garageCtx).catch(() => {});
+        return nextOrder;
       })
     );
 
@@ -1099,38 +1301,52 @@ export const useGarageData = () => {
 
   // Fleet Mutations
   const addFleet = (fleet: CorporateFleetAccount) => {
-    setFleets((prev) => [withBranch(fleet), ...prev]);
+    const scoped = withBranch(fleet);
+    setFleets((prev) => [scoped, ...prev]);
+    void garageService.upsertFleetAccount(scoped).catch(() => {});
   };
 
   const updateFleet = (fleet: CorporateFleetAccount) => {
-    setFleets((prev) => prev.map((f) => (f.id === fleet.id ? fleet : f)));
+    const scoped = withBranch(fleet);
+    setFleets((prev) => prev.map((f) => (f.id === fleet.id ? scoped : f)));
+    void garageService.upsertFleetAccount(scoped).catch(() => {});
   };
 
   const deleteFleet = (id: string) => {
     setFleets((prev) => prev.filter((f) => f.id !== id));
+    void syncCoordinator.softDeleteRow('garage_fleet_contracts', id, currentStaffId).catch(() => {});
   };
 
   // Invoicing Mutations
   const createInvoice = (inv: GarageInvoice) => {
     const scopedInv = withBranch(inv);
     setInvoices((prev) => [scopedInv, ...prev]);
+    void garageService.upsertInvoice(scopedInv).catch(() => {});
     // Mark order as paid or invoiced
     setOrders((prev) =>
-      prev.map((o) =>
-        o.id === scopedInv.orderId
-          ? {
-              ...o,
-              isPaid: scopedInv.isPaid,
-              billingType: scopedInv.billingType,
-              invoiceId: scopedInv.id,
-            }
-          : o
-      )
+      prev.map((o) => {
+        if (o.id !== scopedInv.orderId) return o;
+        const next = {
+          ...o,
+          isPaid: scopedInv.isPaid,
+          billingType: scopedInv.billingType,
+          invoiceId: scopedInv.id,
+        };
+        void garageService.upsertWorkOrder(withBranch(next), garageCtx).catch(() => {});
+        return next;
+      })
     );
   };
 
   const markInvoicePaid = (id: string) => {
-    setInvoices((prev) => prev.map((i) => (i.id === id ? { ...i, isPaid: true } : i)));
+    setInvoices((prev) =>
+      prev.map((i) => {
+        if (i.id !== id) return i;
+        const next = { ...i, isPaid: true };
+        void garageService.upsertInvoice(withBranch(next)).catch(() => {});
+        return next;
+      })
+    );
   };
 
   // Reset active branch data to empty state

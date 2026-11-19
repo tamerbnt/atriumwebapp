@@ -1,6 +1,8 @@
 export * from './types';
 export * from './client';
 export * from './mappers';
+export * from './offlineQueue';
+export * from './syncCoordinator';
 export * from './services/authService';
 export * from './services/tenantService';
 export * from './services/licenseService';
@@ -11,5 +13,14 @@ export * from './services/freelanceService';
 export * from './services/appointmentService';
 export * from './services/posService';
 export * from './services/rentalService';
+export * from './services/educationService';
 export * from './services/projectMilestoneService';
-
+export * from './services/tradingService';
+export * from './services/medicalService';
+export * from './services/garageService';
+export * from './services/realEstateService';
+export * from './services/manufacturingService';
+export * from './services/legalService';
+export * from './services/logisticsService';
+export * from './services/contractorService';
+export * from './services/agricultureService';

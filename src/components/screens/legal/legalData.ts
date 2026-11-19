@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   LegalMatter,
   LegalHearing,
@@ -13,6 +13,16 @@ import {
 import { calculateCPCADeadline, calculateNotaryDecret08243, calculateArticle317Stamp } from '../../../utils/legalRules';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import type { Dispatch, SetStateAction } from 'react';
+import { isSupabaseConfigured, legalService, realtimeService, syncCoordinator, runWithConcurrency } from '../../../lib/supabase';
+
+function mergeLegalById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
+  if (remote.length === 0) return prev;
+  const map = new Map<string, T>();
+  for (const item of prev) map.set(item.id, item);
+  for (const item of remote) map.set(item.id, item);
+  return Array.from(map.values());
+}
 
 export const INITIAL_LEGAL_ENTITIES: LegalClientEntity[] = [
   {
@@ -507,6 +517,9 @@ export const INITIAL_DAILY_CLOSURE: DailyCashClosure = {
  */
 export const useLegalData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
+  const currentAccountId = useAtriumSelector((s) => s.account.id);
+  const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
   const activeBranchId = currentBranchId || 'branch_legal_main';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
@@ -516,7 +529,10 @@ export const useLegalData = () => {
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
+      accountId: (item as { accountId?: string }).accountId || currentAccountId || 'acc_01',
+      businessId: (item as { businessId?: string }).businessId || currentBusinessId || 'biz_legal',
       branchId: (item as { branchId?: string }).branchId || activeBranchId,
+      staffId: (item as { staffId?: string }).staffId || currentStaffId || 'staff_01',
     }) as T;
 
   const [entities, setEntities] = useState<LegalClientEntity[]>(() => {
@@ -611,29 +627,223 @@ export const useLegalData = () => {
   useIdlePersist('atrium_legal_cash_receipts', cashReceipts);
   useIdlePersist('atrium_legal_daily_closure', dailyClosure);
 
+  // Hydrate Legal & Notary workspace from Supabase when configured
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+
+    void syncCoordinator.runSingleFlight(`legal:${activeBranchId}`, async () => {
+      await syncCoordinator.flushQueue().catch(() => {});
+      const [
+        remoteClients,
+        remoteMatters,
+        remoteHearings,
+        remoteDeadlines,
+        remoteDeeds,
+        remoteScfEntries,
+        remoteReceipts,
+      ] = await runWithConcurrency(
+        [
+          () => legalService.fetchClients(activeBranchId),
+          () => legalService.fetchMatters(activeBranchId),
+          () => legalService.fetchHearings(activeBranchId),
+          () => legalService.fetchCpcaDeadlines(activeBranchId),
+          () => legalService.fetchNotaryDeeds(activeBranchId),
+          () => legalService.fetchScfEntries(activeBranchId),
+          () => legalService.fetchCashReceipts(activeBranchId),
+        ],
+        4
+      );
+      if (cancelled) return;
+      if (remoteClients.length > 0) setEntities((prev) => mergeLegalById(prev, remoteClients as LegalClientEntity[]));
+      if (remoteMatters.length > 0) setMatters((prev) => mergeLegalById(prev, remoteMatters as LegalMatter[]));
+      if (remoteHearings.length > 0) setHearings((prev) => mergeLegalById(prev, remoteHearings as LegalHearing[]));
+      if (remoteDeadlines.length > 0) setDeadlines((prev) => mergeLegalById(prev, remoteDeadlines as CPCADeadline[]));
+      if (remoteDeeds.length > 0) setNotaryDeeds((prev) => mergeLegalById(prev, remoteDeeds as NotaryDeed[]));
+      if (remoteScfEntries.length > 0) setScfEntries((prev) => mergeLegalById(prev, remoteScfEntries as SCFJournalEntry[]));
+      if (remoteReceipts.length > 0) setCashReceipts((prev) => mergeLegalById(prev, remoteReceipts as CashReceipt[]));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBranchId]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const watchedTables = [
+      'legal_clients',
+      'legal_matters',
+      'legal_hearings',
+      'legal_deadlines',
+      'legal_documents',
+      'legal_time_entries',
+      'legal_cash_receipts',
+    ];
+
+    return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
+      const prune = <T extends { id: string }>(table: string, setter: Dispatch<SetStateAction<T[]>>) => {
+        const ids = deletedIdsByTable[table];
+        if (!ids || ids.length === 0) return;
+        const idSet = new Set(ids);
+        setter((prev) => prev.filter((item) => !idSet.has(item.id)));
+      };
+
+      prune('legal_clients', setEntities);
+      prune('legal_matters', setMatters);
+      prune('legal_hearings', setHearings);
+      prune('legal_deadlines', setDeadlines);
+      prune('legal_documents', setNotaryDeeds);
+      prune('legal_time_entries', setScfEntries);
+      prune('legal_cash_receipts', setCashReceipts);
+
+      const changedSet = new Set(changedTables);
+      const tasks: Array<() => Promise<void>> = [];
+
+      if (changedSet.has('legal_clients')) {
+        tasks.push(async () => {
+          const rows = await legalService.fetchClients(activeBranchId);
+          if (!cancelled && rows.length > 0) setEntities((prev) => mergeLegalById(prev, rows as LegalClientEntity[]));
+        });
+      }
+      if (changedSet.has('legal_matters')) {
+        tasks.push(async () => {
+          const rows = await legalService.fetchMatters(activeBranchId);
+          if (!cancelled && rows.length > 0) setMatters((prev) => mergeLegalById(prev, rows as LegalMatter[]));
+        });
+      }
+      if (changedSet.has('legal_hearings')) {
+        tasks.push(async () => {
+          const rows = await legalService.fetchHearings(activeBranchId);
+          if (!cancelled && rows.length > 0) setHearings((prev) => mergeLegalById(prev, rows as LegalHearing[]));
+        });
+      }
+      if (changedSet.has('legal_deadlines')) {
+        tasks.push(async () => {
+          const rows = await legalService.fetchCpcaDeadlines(activeBranchId);
+          if (!cancelled && rows.length > 0) setDeadlines((prev) => mergeLegalById(prev, rows as CPCADeadline[]));
+        });
+      }
+      if (changedSet.has('legal_documents')) {
+        tasks.push(async () => {
+          const rows = await legalService.fetchNotaryDeeds(activeBranchId);
+          if (!cancelled && rows.length > 0) setNotaryDeeds((prev) => mergeLegalById(prev, rows as NotaryDeed[]));
+        });
+      }
+      if (changedSet.has('legal_time_entries')) {
+        tasks.push(async () => {
+          const rows = await legalService.fetchScfEntries(activeBranchId);
+          if (!cancelled && rows.length > 0) setScfEntries((prev) => mergeLegalById(prev, rows as SCFJournalEntry[]));
+        });
+      }
+      if (changedSet.has('legal_cash_receipts')) {
+        tasks.push(async () => {
+          const rows = await legalService.fetchCashReceipts(activeBranchId);
+          if (!cancelled && rows.length > 0) setCashReceipts((prev) => mergeLegalById(prev, rows as CashReceipt[]));
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `legal:rt:${activeBranchId}:${[...changedSet].sort().join(',')}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+  }, [activeBranchId]);
+
   // Operational action handlers
-  const addEntity = (entity: LegalClientEntity) => setEntities((prev) => [withBranch(entity), ...prev]);
-  const addMatter = (matter: LegalMatter) => setMatters((prev) => [withBranch(matter), ...prev]);
-  const updateMatter = (matter: LegalMatter) => setMatters((prev) => prev.map((m) => (m.id === matter.id ? matter : m)));
-  const deleteMatter = (id: string) => setMatters((prev) => prev.filter((m) => m.id !== id));
+  const addEntity = (entity: LegalClientEntity) => {
+    const scoped = withBranch(entity);
+    setEntities((prev) => [scoped, ...prev]);
+    void legalService.upsertClient(scoped).catch(() => {});
+  };
+  const addMatter = (matter: LegalMatter) => {
+    const scoped = withBranch(matter);
+    setMatters((prev) => [scoped, ...prev]);
+    void legalService.upsertMatter(scoped).catch(() => {});
+  };
+  const updateMatter = (matter: LegalMatter) => {
+    const scoped = withBranch(matter);
+    setMatters((prev) => prev.map((m) => (m.id === scoped.id ? scoped : m)));
+    void legalService.upsertMatter(scoped).catch(() => {});
+  };
+  const deleteMatter = (id: string) => {
+    setMatters((prev) => prev.filter((m) => m.id !== id));
+    void legalService.deleteMatter(id, currentStaffId).catch(() => {});
+  };
 
-  const addHearing = (hearing: LegalHearing) => setHearings((prev) => [withBranch(hearing), ...prev]);
-  const updateHearing = (hearing: LegalHearing) => setHearings((prev) => prev.map((h) => (h.id === hearing.id ? hearing : h)));
-  const deleteHearing = (id: string) => setHearings((prev) => prev.filter((h) => h.id !== id));
+  const addHearing = (hearing: LegalHearing) => {
+    const scoped = withBranch(hearing);
+    setHearings((prev) => [scoped, ...prev]);
+    void legalService.upsertHearing(scoped).catch(() => {});
+  };
+  const updateHearing = (hearing: LegalHearing) => {
+    const scoped = withBranch(hearing);
+    setHearings((prev) => prev.map((h) => (h.id === scoped.id ? scoped : h)));
+    void legalService.upsertHearing(scoped).catch(() => {});
+  };
+  const deleteHearing = (id: string) => {
+    setHearings((prev) => prev.filter((h) => h.id !== id));
+    void syncCoordinator.softDeleteRow('legal_hearings', id, currentStaffId).catch(() => {});
+  };
 
-  const addCPCADeadline = (dl: CPCADeadline) => setDeadlines((prev) => [withBranch(dl), ...prev]);
-  const updateCPCADeadline = (dl: CPCADeadline) => setDeadlines((prev) => prev.map((d) => (d.id === dl.id ? dl : d)));
+  const addCPCADeadline = (dl: CPCADeadline) => {
+    const scoped = withBranch(dl);
+    setDeadlines((prev) => [scoped, ...prev]);
+    void legalService.upsertCpcaDeadline(scoped).catch(() => {});
+  };
+  const updateCPCADeadline = (dl: CPCADeadline) => {
+    const scoped = withBranch(dl);
+    setDeadlines((prev) => prev.map((d) => (d.id === scoped.id ? scoped : d)));
+    void legalService.upsertCpcaDeadline(scoped).catch(() => {});
+  };
 
-  const addNotaryDeed = (deed: NotaryDeed) => setNotaryDeeds((prev) => [withBranch(deed), ...prev]);
-  const updateNotaryDeed = (deed: NotaryDeed) => setNotaryDeeds((prev) => prev.map((d) => (d.id === deed.id ? deed : d)));
+  const addNotaryDeed = (deed: NotaryDeed) => {
+    const scoped = withBranch(deed);
+    setNotaryDeeds((prev) => [scoped, ...prev]);
+    void legalService.upsertNotaryDeed(scoped, matters[0]?.id).catch(() => {});
+  };
+  const updateNotaryDeed = (deed: NotaryDeed) => {
+    const scoped = withBranch(deed);
+    setNotaryDeeds((prev) => prev.map((d) => (d.id === scoped.id ? scoped : d)));
+    void legalService.upsertNotaryDeed(scoped, matters[0]?.id).catch(() => {});
+  };
 
-  const updateEscrowAccount = (acc: EscrowAccount) => setEscrowAccounts((prev) => prev.map((a) => (a.id === acc.id ? acc : a)));
+  const updateEscrowAccount = (acc: EscrowAccount) => {
+    const scoped = withBranch(acc);
+    const prevAcc = escrowAccounts.find((a) => a.id === scoped.id);
+    setEscrowAccounts((prev) => prev.map((a) => (a.id === scoped.id ? scoped : a)));
+    void legalService.upsertEscrowSnapshot(scoped).catch(() => {});
+    if (scoped.transactions.length > (prevAcc?.transactions.length ?? 0)) {
+      const existingIds = new Set((prevAcc?.transactions || []).map((t) => t.id));
+      const newTxs = scoped.transactions.filter((t) => !existingIds.has(t.id));
+      newTxs.forEach((tx) => {
+        void legalService
+          .recordEscrowMovement({
+            clientId: scoped.clientName || scoped.id,
+            matterId: scoped.matterId,
+            movementType: tx.type === 'deposit_received' ? 'deposit' : 'withdrawal',
+            amountDzd: tx.amountDzd,
+            reference: tx.bankReference || tx.id,
+            notes: tx.notes,
+          })
+          .catch(() => {});
+      });
+    }
+  };
 
-  const addSCFEntry = (entry: SCFJournalEntry) => setScfEntries((prev) => [withBranch(entry), ...prev]);
+  const addSCFEntry = (entry: SCFJournalEntry) => {
+    const scoped = withBranch(entry);
+    setScfEntries((prev) => [scoped, ...prev]);
+    void legalService.upsertScfEntry(scoped, matters[0]?.id).catch(() => {});
+  };
 
   const addCashReceipt = (rc: CashReceipt) => {
     const scopedRc = withBranch(rc);
     setCashReceipts((prev) => [scopedRc, ...prev]);
+    void legalService.upsertCashReceipt(scopedRc).catch(() => {});
     // update daily closure
     setDailyClosure((prev) => ({
       ...prev,

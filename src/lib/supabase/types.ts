@@ -7,13 +7,22 @@ export type Json =
   | Json[];
 
 export type BusinessCategory =
-  | 'pos_inventory'
-  | 'appointment_service'
   | 'membership_session'
+  | 'appointment_service'
+  | 'pos_inventory'
   | 'project_milestone'
   | 'rental_booking'
   | 'education_cohort'
-  | 'freelance_solo';
+  | 'freelance_solo'
+  | 'trading_commercial'
+  | 'medical_clinic'
+  | 'auto_garage'
+  | 'real_estate'
+  | 'manufacturing_production'
+  | 'legal_accounting'
+  | 'logistics_delivery'
+  | 'construction_contractor'
+  | 'agriculture_farming';
 
 export type StaffRoleEnum =
   | 'owner'
@@ -23,7 +32,12 @@ export type StaffRoleEnum =
   | 'stylist'
   | 'waiter'
   | 'staff'
-  | 'creative';
+  | 'agency_director'
+  | 'project_manager'
+  | 'creative'
+  | 'field_supervisor'
+  | 'hr_casting'
+  | 'accountant';
 
 export interface Database {
   public: {

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   AgriParcel,
   AgriCropCycle,
@@ -11,6 +11,16 @@ import {
 } from '../../../types/index';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import type { Dispatch, SetStateAction } from 'react';
+import { isSupabaseConfigured, agricultureService, realtimeService, syncCoordinator, runWithConcurrency } from '../../../lib/supabase';
+
+function mergeAgriById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
+  if (remote.length === 0) return prev;
+  const map = new Map<string, T>();
+  for (const item of prev) map.set(item.id, item);
+  for (const item of remote) map.set(item.id, item);
+  return Array.from(map.values());
+}
 
 export const INITIAL_PARCELS: AgriParcel[] = [
   {
@@ -542,6 +552,9 @@ export const INITIAL_WEIGHBRIDGE_TICKETS: AgriWeighbridgeTicket[] = [
 
 export const useAgricultureData = () => {
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
+  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
+  const currentAccountId = useAtriumSelector((s) => s.account.id);
+  const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
   const activeBranchId = currentBranchId || 'branch_agri_main';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
@@ -551,7 +564,10 @@ export const useAgricultureData = () => {
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
+      accountId: (item as { accountId?: string }).accountId || currentAccountId || 'acc_01',
+      businessId: (item as { businessId?: string }).businessId || currentBusinessId || 'biz_agri',
       branchId: (item as { branchId?: string }).branchId || activeBranchId,
+      staffId: (item as { staffId?: string }).staffId || currentStaffId || 'staff_01',
     }) as T;
 
   const [parcels, setParcels] = useState<AgriParcel[]>(() => {
@@ -638,106 +654,290 @@ export const useAgricultureData = () => {
   useIdlePersist('atrium_agri_milking_v2', milkingRecords);
   useIdlePersist('atrium_agri_weighbridge_v2', weighbridgeTickets);
 
+  // Hydrate agriculture domain records from Supabase when configured
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+
+    void syncCoordinator.runSingleFlight(`agriculture:${activeBranchId}`, async () => {
+      await syncCoordinator.flushQueue().catch(() => {});
+      const [
+        remoteParcels,
+        remoteCycles,
+        remoteTreatments,
+        remoteWorkers,
+        remotePointages,
+        remoteLivestock,
+        remoteMilking,
+        remoteHarvests,
+      ] = await runWithConcurrency(
+        [
+          () => agricultureService.fetchParcels(activeBranchId),
+          () => agricultureService.fetchCropCycles(activeBranchId),
+          () => agricultureService.fetchTreatments(activeBranchId),
+          () => agricultureService.fetchWorkers(activeBranchId),
+          () => agricultureService.fetchPointages(activeBranchId),
+          () => agricultureService.fetchLivestock(activeBranchId),
+          () => agricultureService.fetchMilkingLogs(activeBranchId),
+          () => agricultureService.fetchHarvestTickets(activeBranchId),
+        ],
+        4
+      );
+      if (cancelled) return;
+      if (remoteParcels.length > 0) setParcels((prev) => mergeAgriById(prev, remoteParcels as AgriParcel[]));
+      if (remoteCycles.length > 0) setCropCycles((prev) => mergeAgriById(prev, remoteCycles as AgriCropCycle[]));
+      if (remoteTreatments.length > 0) setTreatmentLogs((prev) => mergeAgriById(prev, remoteTreatments as AgriTreatmentLog[]));
+      if (remoteWorkers.length > 0) setWorkers((prev) => mergeAgriById(prev, remoteWorkers as AgriWorker[]));
+      if (remotePointages.length > 0) setPointages((prev) => mergeAgriById(prev, remotePointages as AgriDailyPointage[]));
+      if (remoteLivestock.length > 0) setDairyCows((prev) => mergeAgriById(prev, remoteLivestock as AgriDairyCow[]));
+      if (remoteMilking.length > 0) setMilkingRecords((prev) => mergeAgriById(prev, remoteMilking as AgriMilkingRecord[]));
+      if (remoteHarvests.length > 0) setWeighbridgeTickets((prev) => mergeAgriById(prev, remoteHarvests as AgriWeighbridgeTicket[]));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBranchId]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const watchedTables = [
+      'agri_parcels',
+      'agri_crop_cycles',
+      'agri_treatments',
+      'agri_staff',
+      'agri_sales',
+      'agri_livestock',
+      'agri_milking_logs',
+      'agri_harvests',
+    ];
+
+    return realtimeService.subscribeTableChanges(watchedTables, (changedTables, deletedIdsByTable) => {
+      const prune = <T extends { id: string }>(table: string, setter: Dispatch<SetStateAction<T[]>>) => {
+        const ids = deletedIdsByTable[table];
+        if (!ids || ids.length === 0) return;
+        const idSet = new Set(ids);
+        setter((prev) => prev.filter((item) => !idSet.has(item.id)));
+      };
+
+      prune('agri_parcels', setParcels);
+      prune('agri_crop_cycles', setCropCycles);
+      prune('agri_treatments', setTreatmentLogs);
+      prune('agri_staff', setWorkers);
+      prune('agri_sales', setPointages);
+      prune('agri_livestock', setDairyCows);
+      prune('agri_milking_logs', setMilkingRecords);
+      prune('agri_harvests', setWeighbridgeTickets);
+
+      const changedSet = new Set(changedTables);
+      const tasks: Array<() => Promise<void>> = [];
+
+      if (changedSet.has('agri_parcels')) {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchParcels(activeBranchId);
+          if (!cancelled && rows.length > 0) setParcels((prev) => mergeAgriById(prev, rows as AgriParcel[]));
+        });
+      }
+      if (changedSet.has('agri_crop_cycles')) {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchCropCycles(activeBranchId);
+          if (!cancelled && rows.length > 0) setCropCycles((prev) => mergeAgriById(prev, rows as AgriCropCycle[]));
+        });
+      }
+      if (changedSet.has('agri_treatments')) {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchTreatments(activeBranchId);
+          if (!cancelled && rows.length > 0) setTreatmentLogs((prev) => mergeAgriById(prev, rows as AgriTreatmentLog[]));
+        });
+      }
+      if (changedSet.has('agri_staff')) {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchWorkers(activeBranchId);
+          if (!cancelled && rows.length > 0) setWorkers((prev) => mergeAgriById(prev, rows as AgriWorker[]));
+        });
+      }
+      if (changedSet.has('agri_sales')) {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchPointages(activeBranchId);
+          if (!cancelled && rows.length > 0) setPointages((prev) => mergeAgriById(prev, rows as AgriDailyPointage[]));
+        });
+      }
+      if (changedSet.has('agri_livestock')) {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchLivestock(activeBranchId);
+          if (!cancelled && rows.length > 0) setDairyCows((prev) => mergeAgriById(prev, rows as AgriDairyCow[]));
+        });
+      }
+      if (changedSet.has('agri_milking_logs')) {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchMilkingLogs(activeBranchId);
+          if (!cancelled && rows.length > 0) setMilkingRecords((prev) => mergeAgriById(prev, rows as AgriMilkingRecord[]));
+        });
+      }
+      if (changedSet.has('agri_harvests')) {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchHarvestTickets(activeBranchId);
+          if (!cancelled && rows.length > 0) setWeighbridgeTickets((prev) => mergeAgriById(prev, rows as AgriWeighbridgeTicket[]));
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `agriculture:rt:${activeBranchId}:${[...changedSet].sort().join(',')}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+  }, [activeBranchId]);
+
   // Parcel handlers
   const addParcel = (parcel: AgriParcel) => {
-    setParcels((prev) => [withBranch(parcel), ...prev]);
+    const scoped = withBranch(parcel);
+    setParcels((prev) => [scoped, ...prev]);
+    void agricultureService.upsertParcel(scoped).catch(() => {});
   };
   const updateParcel = (parcel: AgriParcel) => {
-    setParcels((prev) => prev.map((p) => (p.id === parcel.id ? parcel : p)));
+    const scoped = withBranch(parcel);
+    setParcels((prev) => prev.map((p) => (p.id === scoped.id ? scoped : p)));
+    void agricultureService.upsertParcel(scoped).catch(() => {});
   };
   const deleteParcel = (id: string) => {
     setParcels((prev) => prev.filter((p) => p.id !== id));
+    void syncCoordinator.softDeleteRow('agri_parcels', id, currentStaffId).catch(() => {});
   };
 
   // Crop cycle handlers
   const addCropCycle = (cycle: AgriCropCycle) => {
-    setCropCycles((prev) => [withBranch(cycle), ...prev]);
+    const scoped = withBranch(cycle);
+    const parcelName = parcels.find((p) => p.id === scoped.parcelId)?.name;
+    setCropCycles((prev) => [scoped, ...prev]);
+    void agricultureService.upsertCropCycle(scoped, parcelName).catch(() => {});
   };
   const updateCropCycle = (cycle: AgriCropCycle) => {
-    setCropCycles((prev) => prev.map((c) => (c.id === cycle.id ? cycle : c)));
+    const scoped = withBranch(cycle);
+    const parcelName = parcels.find((p) => p.id === scoped.parcelId)?.name;
+    setCropCycles((prev) => prev.map((c) => (c.id === scoped.id ? scoped : c)));
+    void agricultureService.upsertCropCycle(scoped, parcelName).catch(() => {});
   };
   const deleteCropCycle = (id: string) => {
     setCropCycles((prev) => prev.filter((c) => c.id !== id));
+    void syncCoordinator.softDeleteRow('agri_crop_cycles', id, currentStaffId).catch(() => {});
   };
 
   // Treatment handlers
   const addTreatmentLog = (treatment: AgriTreatmentLog) => {
     const scopedTreatment = withBranch(treatment);
     setTreatmentLogs((prev) => [scopedTreatment, ...prev]);
+    void agricultureService.upsertTreatment(scopedTreatment).catch(() => {});
     // If treatment has active DAR, update linked crop cycle
     if (scopedTreatment.cropCycleId && scopedTreatment.darDays > 0) {
+      let updatedCycle: AgriCropCycle | null = null;
       setCropCycles((prev) =>
         prev.map((c) => {
           if (c.id === scopedTreatment.cropCycleId) {
-            return {
+            updatedCycle = {
               ...c,
               currentPhase: 'treatment_locked',
               activeDarLockoutUntil: scopedTreatment.harvestAllowedDate,
               activePestWarning: `DAR Actif: ${scopedTreatment.commercialProductName} (${scopedTreatment.darDays}j)`,
             };
+            return updatedCycle;
           }
           return c;
         })
       );
+      if (updatedCycle) {
+        const parcelName = parcels.find((p) => p.id === updatedCycle?.parcelId)?.name;
+        void agricultureService.upsertCropCycle(updatedCycle, parcelName).catch(() => {});
+      }
     }
   };
   const updateTreatmentLog = (treatment: AgriTreatmentLog) => {
-    setTreatmentLogs((prev) => prev.map((t) => (t.id === treatment.id ? treatment : t)));
+    const scoped = withBranch(treatment);
+    setTreatmentLogs((prev) => prev.map((t) => (t.id === scoped.id ? scoped : t)));
+    void agricultureService.upsertTreatment(scoped).catch(() => {});
   };
   const deleteTreatmentLog = (id: string) => {
     setTreatmentLogs((prev) => prev.filter((t) => t.id !== id));
+    void syncCoordinator.softDeleteRow('agri_treatments', id, currentStaffId).catch(() => {});
   };
 
   // Worker handlers
   const addWorker = (worker: AgriWorker) => {
-    setWorkers((prev) => [withBranch(worker), ...prev]);
+    const scoped = withBranch(worker);
+    setWorkers((prev) => [scoped, ...prev]);
+    void agricultureService.upsertWorker(scoped).catch(() => {});
   };
   const updateWorker = (worker: AgriWorker) => {
-    setWorkers((prev) => prev.map((w) => (w.id === worker.id ? worker : w)));
+    const scoped = withBranch(worker);
+    setWorkers((prev) => prev.map((w) => (w.id === scoped.id ? scoped : w)));
+    void agricultureService.upsertWorker(scoped).catch(() => {});
   };
   const deleteWorker = (id: string) => {
     setWorkers((prev) => prev.filter((w) => w.id !== id));
+    void syncCoordinator.softDeleteRow('agri_staff', id, currentStaffId).catch(() => {});
   };
 
   // Pointage handlers
   const addPointage = (pointage: AgriDailyPointage) => {
-    setPointages((prev) => [withBranch(pointage), ...prev]);
+    const scoped = withBranch(pointage);
+    setPointages((prev) => [scoped, ...prev]);
+    void agricultureService.upsertPointage(scoped).catch(() => {});
   };
   const updatePointage = (pointage: AgriDailyPointage) => {
-    setPointages((prev) => prev.map((p) => (p.id === pointage.id ? pointage : p)));
+    const scoped = withBranch(pointage);
+    setPointages((prev) => prev.map((p) => (p.id === scoped.id ? scoped : p)));
+    void agricultureService.upsertPointage(scoped).catch(() => {});
   };
   const deletePointage = (id: string) => {
     setPointages((prev) => prev.filter((p) => p.id !== id));
+    void syncCoordinator.softDeleteRow('agri_sales', `ptg_${id}`, currentStaffId).catch(() => {});
   };
 
   // Dairy herd handlers
   const addDairyCow = (cow: AgriDairyCow) => {
-    setDairyCows((prev) => [withBranch(cow), ...prev]);
+    const scoped = withBranch(cow);
+    setDairyCows((prev) => [scoped, ...prev]);
+    void agricultureService.upsertLivestock(scoped).catch(() => {});
   };
   const updateDairyCow = (cow: AgriDairyCow) => {
-    setDairyCows((prev) => prev.map((c) => (c.id === cow.id ? cow : c)));
+    const scoped = withBranch(cow);
+    setDairyCows((prev) => prev.map((c) => (c.id === scoped.id ? scoped : c)));
+    void agricultureService.upsertLivestock(scoped).catch(() => {});
   };
   const deleteDairyCow = (id: string) => {
     setDairyCows((prev) => prev.filter((c) => c.id !== id));
+    void syncCoordinator.softDeleteRow('agri_livestock', id, currentStaffId).catch(() => {});
   };
 
   // Milking record handlers
   const addMilkingRecord = (record: AgriMilkingRecord) => {
-    setMilkingRecords((prev) => [withBranch(record), ...prev]);
+    const scoped = withBranch(record);
+    setMilkingRecords((prev) => [scoped, ...prev]);
+    void agricultureService.upsertMilkingLog(scoped).catch(() => {});
   };
   const deleteMilkingRecord = (id: string) => {
     setMilkingRecords((prev) => prev.filter((m) => m.id !== id));
+    void syncCoordinator.softDeleteRow('agri_milking_logs', id, currentStaffId).catch(() => {});
   };
 
   // Weighbridge ticket handlers
   const addWeighbridgeTicket = (ticket: AgriWeighbridgeTicket) => {
-    setWeighbridgeTickets((prev) => [withBranch(ticket), ...prev]);
+    const scoped = withBranch(ticket);
+    const fallbackParcelId = selectedParcelId || parcels[0]?.id || 'parc_01';
+    setWeighbridgeTickets((prev) => [scoped, ...prev]);
+    void agricultureService.upsertHarvestTicket(scoped, fallbackParcelId).catch(() => {});
   };
   const updateWeighbridgeTicket = (ticket: AgriWeighbridgeTicket) => {
-    setWeighbridgeTickets((prev) => prev.map((t) => (t.id === ticket.id ? ticket : t)));
+    const scoped = withBranch(ticket);
+    const fallbackParcelId = selectedParcelId || parcels[0]?.id || 'parc_01';
+    setWeighbridgeTickets((prev) => prev.map((t) => (t.id === scoped.id ? scoped : t)));
+    void agricultureService.upsertHarvestTicket(scoped, fallbackParcelId).catch(() => {});
   };
   const deleteWeighbridgeTicket = (id: string) => {
     setWeighbridgeTickets((prev) => prev.filter((t) => t.id !== id));
+    void syncCoordinator.softDeleteRow('agri_harvests', id, currentStaffId).catch(() => {});
   };
 
   // Reset active branch data to empty state
