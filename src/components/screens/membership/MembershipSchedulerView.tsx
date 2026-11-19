@@ -80,15 +80,11 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
     shallowEqualObjects
   );
 
-  const { retryCloudSync, batchDeleteScheduleEvents } = useAtriumActions();
+  const { retryCloudSync, upsertScheduleEvent, batchDeleteScheduleEvents } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const [localAddedEvents, setLocalAddedEvents] = useState<ScheduleEvent[]>([]);
-  const allScheduleEvents = useMemo(
-    () => [...localAddedEvents, ...schedule],
-    [localAddedEvents, schedule]
-  );
+  const allScheduleEvents = schedule;
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -279,7 +275,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
   const handleSaveNewSession = useCallback(() => {
     const created: ScheduleEvent = {
       id: `sch_${Date.now()}`,
-      tenantId: 'acc_01',
+      tenantId: currentBranch?.accountId || 'acc_01',
       facilityId: currentBranch?.id || 'fac_01',
       title: newTitle.trim() || 'Session Fitness',
       category: newCategory.trim() || 'Fitness',
@@ -291,14 +287,14 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
       capacity: Math.max(1, newCapacity),
       enrolledCount: 0,
     };
-    setLocalAddedEvents((prev) => [created, ...prev]);
+    upsertScheduleEvent(created);
     setIsAddModalOpen(false);
     showToast?.({
       type: 'success',
       title: isAr ? 'تمت إضافة الحصة' : isEn ? 'Session Scheduled' : 'Créneau planifié',
       message: `${created.title} · ${created.startTime}-${created.endTime}`,
     });
-  }, [currentBranch, newTitle, newCategory, selectedDay, newStartTime, newEndTime, newTrainer, newRoom, newCapacity, showToast, isAr, isEn]);
+  }, [currentBranch, newTitle, newCategory, selectedDay, newStartTime, newEndTime, newTrainer, newRoom, newCapacity, upsertScheduleEvent, showToast, isAr, isEn]);
 
   const eventColumns: ColumnDefinition<ScheduleEvent>[] = useMemo(
     () => [
@@ -452,7 +448,6 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
 
   const handleDeleteEvent = useCallback(
     (ev: ScheduleEvent) => {
-      setLocalAddedEvents((prev) => prev.filter((item) => item.id !== ev.id));
       batchDeleteScheduleEvents([ev.id]);
       if (selectedEvent?.id === ev.id) setSelectedEvent(null);
       showToast?.({
@@ -985,9 +980,10 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                         const clone: ScheduleEvent = {
                           ...ev,
                           id: `sch_copy_${Date.now()}`,
+                          version: undefined,
                           enrolledCount: 0,
                         };
-                        setLocalAddedEvents((prev) => [clone, ...prev]);
+                        upsertScheduleEvent(clone);
                         showToast?.({
                           type: 'success',
                           title: isAr ? 'تم النسخ' : 'Séance dupliquée',

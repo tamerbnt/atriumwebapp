@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   ManufacturingBom,
@@ -73,19 +74,21 @@ export const manufacturingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('mfg_raw_materials')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('name', { ascending: true });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('mfg_raw_materials')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('name', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): RawMaterialStockItem => {
+      return rows.map((row: any): RawMaterialStockItem => {
         const { plain: supplierLotNumber, meta } = unpackMeta(row.supplier_name);
         const currentStock = Number(row.stock_quantity || 0);
         const allocatedStock = Number(meta.allocatedStock ?? 0);
@@ -109,6 +112,7 @@ export const manufacturingService = {
           warehouseLocation: meta.warehouseLocation || 'Magasin MP',
           supplierLotNumber: supplierLotNumber || undefined,
           onmlCertificateRef: meta.onmlCertificateRef || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -124,7 +128,7 @@ export const manufacturingService = {
       branchId: item.branchId,
       staffId: item.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('mfg_raw_materials', {
+    const payload = {
       id: toValidUuid(item.id),
       ...trace,
       sku: item.sku,
@@ -140,6 +144,12 @@ export const manufacturingService = {
         warehouseLocation: item.warehouseLocation,
         onmlCertificateRef: item.onmlCertificateRef,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('mfg_raw_materials', payload, {
+      expectedVersion: item.version,
+      entityType: 'RawMaterial',
+      entityLabel: item.name,
+      localData: payload,
     });
     return res.success;
   },
@@ -149,28 +159,33 @@ export const manufacturingService = {
     if (!client) return [];
 
     try {
-      let recipeQuery = (client as any)
-        .from('mfg_bom_recipes')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const [recipes, ingredients] = await Promise.all([
+        fetchAllPages<any>((from, to) => {
+          let recipeQuery = (client as any)
+            .from('mfg_bom_recipes')
+            .select('*')
+            .eq('branch_id', toValidUuid(branchId))
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: false })
+            .range(from, to);
 
-      if (updatedAfter) recipeQuery = recipeQuery.gt('updated_at', updatedAfter);
-
-      const [{ data: recipes, error: rErr }, { data: ingredients }] = await Promise.all([
-        recipeQuery,
-        (client as any)
-          .from('mfg_bom_ingredients')
-          .select('*')
-          .eq('branch_id', toValidUuid(branchId))
-          .is('deleted_at', null),
+          if (updatedAfter) recipeQuery = recipeQuery.gt('updated_at', updatedAfter);
+          return recipeQuery;
+        }),
+        fetchAllPages<any>((from, to) =>
+          (client as any)
+            .from('mfg_bom_ingredients')
+            .select('*')
+            .eq('branch_id', toValidUuid(branchId))
+            .is('deleted_at', null)
+            .order('id', { ascending: true })
+            .range(from, to)
+        ),
       ]);
 
-      if (rErr) return [];
-
       const byBom = new Map<string, ManufacturingBomComponent[]>();
-      (ingredients || []).forEach((ing: any) => {
+      ingredients.forEach((ing: any) => {
         const list = byBom.get(ing.bom_id) || [];
         list.push({
           id: ing.id,
@@ -184,7 +199,7 @@ export const manufacturingService = {
         byBom.set(ing.bom_id, list);
       });
 
-      return (recipes || []).map((row: any): ManufacturingBom => {
+      return recipes.map((row: any): ManufacturingBom => {
         const { meta } = unpackMeta(row.version);
         return {
           id: row.id,
@@ -197,6 +212,7 @@ export const manufacturingService = {
           finishedProductSku: meta.finishedProductSku,
           bomCode: row.code,
           version: Number(meta.versionNumber ?? 1),
+          rowVersion: row.row_version != null ? Number(row.row_version) : undefined,
           archetype: meta.archetype || 'Discrete',
           batchYield: Number(row.batch_size || 1),
           unit: row.output_unit || 'U',
@@ -231,7 +247,7 @@ export const manufacturingService = {
       staffId: bom.staffId,
     });
     const bomUuid = toValidUuid(bom.id);
-    const res = await syncCoordinator.mutateOrQueueUpsert('mfg_bom_recipes', {
+    const pRecipe = {
       id: bomUuid,
       ...trace,
       code: bom.bomCode,
@@ -256,20 +272,34 @@ export const manufacturingService = {
         notes: bom.notes,
       }),
       is_active: bom.isActive ?? true,
-    });
+      ...(bom.rowVersion != null ? { expected_row_version: bom.rowVersion } : {}),
+    };
 
-    for (const comp of bom.components || []) {
-      await syncCoordinator.mutateOrQueueUpsert('mfg_bom_ingredients', {
-        id: toValidUuid(comp.id || `${bom.id}_${comp.rawProductId}`),
-        ...trace,
-        bom_id: bomUuid,
-        material_id: null,
-        material_name: comp.rawProductName,
-        quantity_per_batch: Number(comp.quantity || 1),
-        unit: comp.unit || 'kg',
-        scrap_factor_percent: Number(comp.scrapAllowancePercent || 0),
-      });
-    }
+    const pIngredients = (bom.components || []).map((comp) => ({
+      id: toValidUuid(comp.id || `${bom.id}_${comp.rawProductId}`),
+      material_id: null,
+      material_name: comp.rawProductName,
+      quantity_per_batch: Number(comp.quantity || 1),
+      unit: comp.unit || 'kg',
+      scrap_factor_percent: Number(comp.scrapAllowancePercent || 0),
+    }));
+
+    const res = await syncCoordinator.rpcOrQueue(
+      'mfg_upsert_bom_atomic',
+      {
+        p_recipe: pRecipe,
+        p_ingredients: pIngredients,
+      },
+      {
+        table: 'mfg_bom_recipes',
+        recordId: bomUuid,
+        versionColumn: 'row_version',
+        expectedVersion: bom.rowVersion,
+        entityType: 'BOM',
+        entityLabel: `${bom.bomCode} — ${bom.finishedProductName}`,
+        localData: pRecipe,
+      }
+    );
 
     return res.success;
   },
@@ -279,19 +309,21 @@ export const manufacturingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('mfg_orders')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('mfg_orders')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): ManufacturingOrder => {
+      return rows.map((row: any): ManufacturingOrder => {
         const { plain, meta } = unpackMeta(row.notes);
         const produced = Number(row.produced_quantity || 0);
         const scrapped = Number(row.scrap_quantity || 0);
@@ -326,6 +358,7 @@ export const manufacturingService = {
           clientOrderId: meta.clientOrderId,
           clientName: meta.clientName,
           notes: plain || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
           updatedAt: row.updated_at,
         };
@@ -342,7 +375,7 @@ export const manufacturingService = {
       branchId: order.branchId,
       staffId: order.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('mfg_orders', {
+    const payload = {
       id: toValidUuid(order.id),
       ...trace,
       of_number: order.orderNumber,
@@ -370,6 +403,12 @@ export const manufacturingService = {
         clientOrderId: order.clientOrderId,
         clientName: order.clientName,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('mfg_orders', payload, {
+      expectedVersion: order.version,
+      entityType: 'ManufacturingOrder',
+      entityLabel: order.orderNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -379,22 +418,28 @@ export const manufacturingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('mfg_workstation_logs')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('mfg_workstation_logs')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return rows
         .map((row: any): WorkstationSessionLog | null => {
           const { meta } = unpackMeta(row.notes);
-          return meta.log ? (meta.log as WorkstationSessionLog) : null;
+          if (!meta.log) return null;
+          return {
+            ...(meta.log as WorkstationSessionLog),
+            version: row.version != null ? Number(row.version) : (meta.log as WorkstationSessionLog).version,
+          };
         })
         .filter((l: WorkstationSessionLog | null): l is WorkstationSessionLog => Boolean(l));
     } catch {
@@ -409,7 +454,7 @@ export const manufacturingService = {
       branchId: log.branchId,
       staffId: log.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('mfg_workstation_logs', {
+    const payload = {
       id: toValidUuid(log.id),
       ...trace,
       workstation_id: null,
@@ -421,6 +466,12 @@ export const manufacturingService = {
       scrap_units: Number(log.scrapQuantity || 0),
       downtime_minutes: Math.round((log.pauseDurationSeconds || 0) / 60),
       notes: packMeta(log.operationName, { log }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('mfg_workstation_logs', payload, {
+      expectedVersion: log.version,
+      entityType: 'WorkstationSessionLog',
+      entityLabel: `${log.orderNumber} — ${log.operationName}`,
+      localData: payload,
     });
     return res.success;
   },
@@ -430,19 +481,21 @@ export const manufacturingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('mfg_qc_inspections')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('mfg_qc_inspections')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): QualityInspectionRecord => {
+      return rows.map((row: any): QualityInspectionRecord => {
         const { plain, meta } = unpackMeta(row.notes);
         return {
           id: row.id,
@@ -465,6 +518,7 @@ export const manufacturingService = {
           inspectionDate: meta.inspectionDate || (row.inspected_at ? String(row.inspected_at).split('T')[0] : ''),
           certificateOfConformityGenerated: Boolean(meta.certificateOfConformityGenerated),
           notes: plain || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -479,7 +533,7 @@ export const manufacturingService = {
       branchId: qc.branchId,
       staffId: qc.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('mfg_qc_inspections', {
+    const payload = {
       id: toValidUuid(qc.id),
       ...trace,
       order_id: qc.orderId ? toValidUuid(qc.orderId) : null,
@@ -500,6 +554,12 @@ export const manufacturingService = {
         inspectionDate: qc.inspectionDate,
         certificateOfConformityGenerated: qc.certificateOfConformityGenerated,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('mfg_qc_inspections', payload, {
+      expectedVersion: qc.version,
+      entityType: 'QualityInspection',
+      entityLabel: qc.inspectionNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -509,22 +569,29 @@ export const manufacturingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('mfg_material_vouchers')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('mfg_material_vouchers')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return rows
         .map((row: any): MaterialTransferVoucher => {
           const { plain, meta } = unpackMeta(row.notes);
-          if (meta.voucher) return meta.voucher as MaterialTransferVoucher;
+          if (meta.voucher) {
+            return {
+              ...(meta.voucher as MaterialTransferVoucher),
+              version: row.version != null ? Number(row.version) : (meta.voucher as MaterialTransferVoucher).version,
+            };
+          }
           return {
             id: row.id,
             accountId: row.account_id,
@@ -547,6 +614,7 @@ export const manufacturingService = {
             ],
             totalValueDzd: 0,
             notes: plain || undefined,
+            version: row.version != null ? Number(row.version) : undefined,
           };
         });
     } catch {
@@ -564,7 +632,7 @@ export const manufacturingService = {
       branchId: voucher.branchId,
       staffId: voucher.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('mfg_material_vouchers', {
+    const payload = {
       id: toValidUuid(voucher.id),
       ...trace,
       voucher_number: voucher.voucherNumber,
@@ -575,7 +643,33 @@ export const manufacturingService = {
       quantity: Number(firstItem.quantity || 0),
       operator_name: voucher.recipientStaffName || null,
       notes: packMeta(voucher.notes, { voucher }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('mfg_material_vouchers', payload, {
+      expectedVersion: voucher.version,
+      entityType: 'MaterialTransferVoucher',
+      entityLabel: voucher.voucherNumber,
+      localData: payload,
     });
+    return res.success;
+  },
+
+  async deleteOrder(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('mfg_orders', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteBom(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('mfg_bom_recipes', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteRawMaterial(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('mfg_raw_materials', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteQcInspection(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('mfg_qc_inspections', id, deletedByStaffId);
     return res.success;
   },
 };

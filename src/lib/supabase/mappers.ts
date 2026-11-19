@@ -157,6 +157,7 @@ export const mapStaffFromDb = (row: any, facilityId?: string): StaffMember => {
     status: row.status || 'active',
     pinCode: '****', // Server stores bcrypt pin_hash; client never hydrates plaintext PINs
     allowedModules: ['dashboard', 'members', 'registrations', 'shop', 'scheduler'],
+    version: row.version != null ? Number(row.version) : undefined,
   };
 };
 
@@ -184,6 +185,7 @@ export const mapMemberFromDb = (row: any): Member => ({
   emergencyContactName: row.emergency_contact_name || undefined,
   emergencyContactPhone: row.emergency_contact_phone || undefined,
   profileImageUrl: row.profile_image_url || row.photo_url || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
   createdAt: row.created_at,
   updatedAt: row.updated_at || row.created_at,
 });
@@ -210,6 +212,7 @@ export const mapLeadFromDb = (row: any): RegistrationLead => {
         : 'Pending',
     notes: row.notes || p.notes,
     preferredPlanName: row.preferred_plan_name || p.preferredPlanName,
+    version: row.version != null ? Number(row.version) : undefined,
     createdAt: row.requested_at || row.created_at,
     updatedAt: row.processed_at || row.updated_at || row.requested_at || row.created_at,
   };
@@ -236,6 +239,7 @@ export const mapAppointmentFromDb = (row: any): Appointment => ({
   price: Number(row.price || 0),
   status: row.status || 'Confirmed',
   notes: row.notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
   createdAt: row.created_at,
 });
 
@@ -258,6 +262,7 @@ export const mapProductFromDb = (row: any): Product => ({
   reorderLevel: Number(row.reorder_level || 5),
   isActive: row.is_active ?? true,
   isPinned: Boolean(row.is_pinned),
+  version: row.version != null ? Number(row.version) : undefined,
 });
 
 export const mapSaleFromDb = (row: any): Sale => ({
@@ -274,6 +279,7 @@ export const mapSaleFromDb = (row: any): Sale => ({
   paymentMethod: row.payment_method || 'Cash',
   items: Array.isArray(row.items) ? row.items : [],
   notes: row.notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
   createdAt: row.sold_at || row.created_at,
 });
 
@@ -291,6 +297,7 @@ export const mapAttendanceLogFromDb = (row: any): StaffAttendanceLogRecord => ({
   method: row.method,
   terminalId: row.terminal_id || undefined,
   notes: row.notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
 });
 
 export const mapSalaryAdvanceFromDb = (row: any): StaffSalaryAdvance => ({
@@ -307,6 +314,7 @@ export const mapSalaryAdvanceFromDb = (row: any): StaffSalaryAdvance => ({
   voucherNumber: row.voucher_number,
   status: row.status,
   deductedInPeriod: row.deducted_in_period || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
 });
 
 export const mapPayrollRunFromDb = (row: any): StaffPayrollRunRecord => ({
@@ -325,6 +333,7 @@ export const mapPayrollRunFromDb = (row: any): StaffPayrollRunRecord => ({
   totalNet: Number(row.total_net || 0),
   slipsCount: Number(row.slips_count || 0),
   approvedAt: row.approved_at || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
   createdAt: row.created_at,
 });
 
@@ -361,4 +370,5 @@ export const mapPayrollSlipFromDb = (row: any): StaffPayrollSlipRecord => ({
   isPaid: Boolean(row.is_paid),
   paidDate: row.paid_date || undefined,
   receiptNumber: row.receipt_number,
+  version: row.version != null ? Number(row.version) : undefined,
 });

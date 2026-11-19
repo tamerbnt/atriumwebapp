@@ -170,6 +170,15 @@ export interface UniversalDataCollectionProps<T> {
   subtitle?: string;
   searchFilter?: (item: T, query: string) => boolean;
   onSelectRow?: (item: T, openerEl?: HTMLElement | null) => void;
+
+  // Bounded Windowing & Load More Pagination
+  pageSize?: number;
+  totalCount?: number;
+  hasMoreRemote?: boolean;
+  onLoadMore?: () => Promise<void> | void;
+  isLoadingMore?: boolean;
+  loadMoreError?: string | null;
+  onRetryLoadMore?: () => Promise<void> | void;
 }
 
 function extractReactText(node: unknown, depth = 0): string {
@@ -311,6 +320,13 @@ export function UniversalDataCollection<T>({
   onFilterChange,
   filterOptions,
   onSelectRow,
+  pageSize = 100,
+  totalCount,
+  hasMoreRemote = false,
+  onLoadMore,
+  isLoadingMore = false,
+  loadMoreError = null,
+  onRetryLoadMore,
 }: UniversalDataCollectionProps<T>) {
   const [internalViewMode, setInternalViewMode] = useState<'list' | 'grid' | 'calendar'>(
     defaultViewMode
@@ -323,6 +339,7 @@ export function UniversalDataCollection<T>({
   const [internalSortDir, setInternalSortDir] = useState<'asc' | 'desc'>(
     sortDir || sortDirection || 'asc'
   );
+  const [visibleLimit, setVisibleLimit] = useState<number>(pageSize);
   const lastSelectedIdxRef = useRef<number>(-1);
 
   const {
@@ -514,6 +531,26 @@ export function UniversalDataCollection<T>({
   ]);
 
   const actualItems = sortedItems;
+  const pagedItems = useMemo(
+    () => (actualItems.length > visibleLimit ? actualItems.slice(0, visibleLimit) : actualItems),
+    [actualItems, visibleLimit]
+  );
+  const hasMoreLocal = actualItems.length > visibleLimit;
+  const canLoadMore = hasMoreLocal || hasMoreRemote;
+  const displayTotalCount =
+    typeof totalCount === 'number' && totalCount >= actualItems.length
+      ? totalCount
+      : actualItems.length;
+
+  const handleLoadMore = useCallback(async () => {
+    if (hasMoreLocal) {
+      setVisibleLimit((prev) => prev + pageSize);
+      return;
+    }
+    if (hasMoreRemote && onLoadMore) {
+      await onLoadMore();
+    }
+  }, [hasMoreLocal, hasMoreRemote, onLoadMore, pageSize]);
 
   const itemsByIdMap = useMemo(() => {
     const map = new Map<string, T>();
@@ -1164,7 +1201,7 @@ export function UniversalDataCollection<T>({
         />
       ) : renderRow && viewMode === 'list' ? (
         <div className="w-full flex flex-col gap-2">
-          {actualItems.map((item, idx) => {
+          {pagedItems.map((item, idx) => {
             const id = String(keyExtractor(item) || `item_${idx}`);
             return (
               <React.Fragment key={id}>
@@ -1175,7 +1212,7 @@ export function UniversalDataCollection<T>({
         </div>
       ) : (
         <KineticCollectionStage<T>
-          items={actualItems}
+          items={pagedItems}
           keyExtractor={(it) => String(keyExtractor(it))}
           columns={kineticHeaders}
           getRowData={getRowData}
@@ -1201,6 +1238,61 @@ export function UniversalDataCollection<T>({
           getFanActions={getFanActions}
           getDetailActions={getDetailActions}
         />
+      )}
+
+      {isLoadingMore && (
+        <div className="w-full space-y-2 pt-1" aria-busy="true">
+          <div className="h-[54px] w-full rounded-2xl bg-[var(--atr-soft)] border border-[var(--atr-line)] animate-pulse" />
+          <div className="h-[54px] w-full rounded-2xl bg-[var(--atr-soft)] border border-[var(--atr-line)] animate-pulse" />
+        </div>
+      )}
+
+      {loadMoreError && (
+        <div className="w-full px-4 py-2.5 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/30 flex items-center justify-between gap-3 text-xs text-rose-700 dark:text-rose-300">
+          <span>{loadMoreError}</span>
+          {(onRetryLoadMore || onLoadMore) && (
+            <button
+              type="button"
+              onClick={() => void (onRetryLoadMore || onLoadMore)?.()}
+              className="px-3 py-1 rounded-lg border border-rose-300 dark:border-rose-700 font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            >
+              {storeLanguage === 'ar' ? 'إعادة المحاولة' : storeLanguage === 'fr' ? 'Réessayer' : 'Retry'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {(canLoadMore || actualItems.length > pageSize || displayTotalCount > pagedItems.length) && (
+        <div className="w-full pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--atr-line)] text-xs text-[var(--atr-ink-3)]">
+          <span className="font-mono tabular-nums">
+            {storeLanguage === 'ar'
+              ? `عرض ${pagedItems.length} من أصل ${displayTotalCount} سجل`
+              : storeLanguage === 'fr'
+              ? `Affichage de ${pagedItems.length} sur ${displayTotalCount} enregistrements`
+              : `Showing ${pagedItems.length} of ${displayTotalCount} records`}
+          </span>
+
+          {canLoadMore && (
+            <button
+              type="button"
+              disabled={isLoadingMore}
+              onClick={() => void handleLoadMore()}
+              className="h-9 px-4 rounded-xl bg-[var(--atr-card)] border border-[var(--atr-line)] text-xs font-semibold text-[var(--atr-ink)] hover:border-[var(--atr-acc)] transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
+            >
+              {isLoadingMore
+                ? storeLanguage === 'ar'
+                  ? 'جاري التحميل...'
+                  : storeLanguage === 'fr'
+                  ? 'Chargement...'
+                  : 'Loading...'
+                : storeLanguage === 'ar'
+                ? 'تحميل المزيد'
+                : storeLanguage === 'fr'
+                ? 'Charger plus'
+                : 'Load More'}
+            </button>
+          )}
+        </div>
       )}
 
       <KineticFloatingBulkBar

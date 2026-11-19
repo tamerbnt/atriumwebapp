@@ -6,6 +6,7 @@ import {
   garageService,
   realtimeService,
   syncCoordinator,
+  subscribeConcurrencyResolutions,
   runWithConcurrency,
 } from '../../../lib/supabase/index';
 
@@ -37,6 +38,7 @@ export interface WorkshopBay {
   isOccupied: boolean;
   activeOrderId?: string;
   assignedTechnicianName?: string;
+  version?: number;
 }
 
 export interface CorporateFleetAccount {
@@ -61,6 +63,7 @@ export interface CorporateFleetAccount {
   partsDiscountPercent: number;
   activeVehicleCount: number;
   contractActive: boolean;
+  version?: number;
 }
 
 export interface RequisitionedPartLine {
@@ -112,6 +115,7 @@ export interface RepairOrder {
   billingType?: 'bon_caisse' | 'facture_dgi';
   isPaid?: boolean;
   invoiceId?: string;
+  version?: number;
 }
 
 export interface VehicleAsset {
@@ -139,6 +143,7 @@ export interface VehicleAsset {
   dailyAvgKm?: number;
   carteGriseNumber?: string;
   notes?: string;
+  version?: number;
 }
 
 export interface SparePart {
@@ -161,6 +166,7 @@ export interface SparePart {
   supplierName?: string;
   compatibility?: string[];
   createdAt?: string;
+  version?: number;
 }
 
 export interface GarageInvoice {
@@ -195,6 +201,7 @@ export interface GarageInvoice {
   netToPayDzd: number;
   issuedAt: string;
   isPaid: boolean;
+  version?: number;
 }
 
 // ----------------------------------------------------------------------
@@ -1117,6 +1124,68 @@ export const useGarageData = () => {
     });
   }, [activeBranchId]);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const unsub = subscribeConcurrencyResolutions((evt) => {
+      const tasks: Array<() => Promise<void>> = [];
+      if (evt.table === 'garage_work_orders') {
+        tasks.push(async () => {
+          const rows = await garageService.fetchWorkOrders(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setOrders((prev) => mergeGarageById(prev, rows as RepairOrder[]));
+          }
+        });
+      } else if (evt.table === 'garage_vehicles') {
+        tasks.push(async () => {
+          const rows = await garageService.fetchVehicles(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setVehicles((prev) => mergeGarageById(prev, rows as VehicleAsset[]));
+          }
+        });
+      } else if (evt.table === 'garage_parts') {
+        tasks.push(async () => {
+          const rows = await garageService.fetchParts(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setParts((prev) => mergeGarageById(prev, rows as SparePart[]));
+          }
+        });
+      } else if (evt.table === 'garage_bays') {
+        tasks.push(async () => {
+          const rows = await garageService.fetchBays(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setBays((prev) => mergeGarageById(prev, rows as WorkshopBay[]));
+          }
+        });
+      } else if (evt.table === 'garage_fleet_contracts') {
+        tasks.push(async () => {
+          const rows = await garageService.fetchFleetAccounts(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setFleets((prev) => mergeGarageById(prev, rows as CorporateFleetAccount[]));
+          }
+        });
+      } else if (evt.table === 'garage_invoices') {
+        tasks.push(async () => {
+          const rows = await garageService.fetchInvoices(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setInvoices((prev) => mergeGarageById(prev, rows as GarageInvoice[]));
+          }
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `garage:res:${activeBranchId}:${evt.table}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+  }, [activeBranchId]);
+
   // Order Mutations
   const addOrder = (order: RepairOrder) => {
     const scopedOrder = withBranch(order);
@@ -1314,7 +1383,7 @@ export const useGarageData = () => {
 
   const deleteFleet = (id: string) => {
     setFleets((prev) => prev.filter((f) => f.id !== id));
-    void syncCoordinator.softDeleteRow('garage_fleet_contracts', id, currentStaffId).catch(() => {});
+    void garageService.deleteFleetAccount(id, currentStaffId).catch(() => {});
   };
 
   // Invoicing Mutations

@@ -14,7 +14,7 @@ import { calculateCPCADeadline, calculateNotaryDecret08243, calculateArticle317S
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import type { Dispatch, SetStateAction } from 'react';
-import { isSupabaseConfigured, legalService, realtimeService, syncCoordinator, runWithConcurrency } from '../../../lib/supabase';
+import { isSupabaseConfigured, legalService, realtimeService, syncCoordinator, subscribeConcurrencyResolutions, runWithConcurrency } from '../../../lib/supabase';
 
 function mergeLegalById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
   if (remote.length === 0) return prev;
@@ -753,6 +753,61 @@ export const useLegalData = () => {
     });
   }, [activeBranchId]);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const unsub = subscribeConcurrencyResolutions((evt) => {
+      const tasks: Array<() => Promise<void>> = [];
+      if (evt.table === 'legal_clients') {
+        tasks.push(async () => {
+          const rows = await legalService.fetchClients(activeBranchId);
+          if (!cancelled && rows.length > 0) setEntities((prev) => mergeLegalById(prev, rows as LegalClientEntity[]));
+        });
+      } else if (evt.table === 'legal_matters') {
+        tasks.push(async () => {
+          const rows = await legalService.fetchMatters(activeBranchId);
+          if (!cancelled && rows.length > 0) setMatters((prev) => mergeLegalById(prev, rows as LegalMatter[]));
+        });
+      } else if (evt.table === 'legal_hearings') {
+        tasks.push(async () => {
+          const rows = await legalService.fetchHearings(activeBranchId);
+          if (!cancelled && rows.length > 0) setHearings((prev) => mergeLegalById(prev, rows as LegalHearing[]));
+        });
+      } else if (evt.table === 'legal_deadlines') {
+        tasks.push(async () => {
+          const rows = await legalService.fetchCpcaDeadlines(activeBranchId);
+          if (!cancelled && rows.length > 0) setDeadlines((prev) => mergeLegalById(prev, rows as CPCADeadline[]));
+        });
+      } else if (evt.table === 'legal_documents') {
+        tasks.push(async () => {
+          const rows = await legalService.fetchNotaryDeeds(activeBranchId);
+          if (!cancelled && rows.length > 0) setNotaryDeeds((prev) => mergeLegalById(prev, rows as NotaryDeed[]));
+        });
+      } else if (evt.table === 'legal_time_entries') {
+        tasks.push(async () => {
+          const rows = await legalService.fetchScfEntries(activeBranchId);
+          if (!cancelled && rows.length > 0) setScfEntries((prev) => mergeLegalById(prev, rows as SCFJournalEntry[]));
+        });
+      } else if (evt.table === 'legal_cash_receipts') {
+        tasks.push(async () => {
+          const rows = await legalService.fetchCashReceipts(activeBranchId);
+          if (!cancelled && rows.length > 0) setCashReceipts((prev) => mergeLegalById(prev, rows as CashReceipt[]));
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `legal:res:${activeBranchId}:${evt.table}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+  }, [activeBranchId]);
+
   // Operational action handlers
   const addEntity = (entity: LegalClientEntity) => {
     const scoped = withBranch(entity);
@@ -786,7 +841,7 @@ export const useLegalData = () => {
   };
   const deleteHearing = (id: string) => {
     setHearings((prev) => prev.filter((h) => h.id !== id));
-    void syncCoordinator.softDeleteRow('legal_hearings', id, currentStaffId).catch(() => {});
+    void legalService.deleteHearing(id, currentStaffId).catch(() => {});
   };
 
   const addCPCADeadline = (dl: CPCADeadline) => {

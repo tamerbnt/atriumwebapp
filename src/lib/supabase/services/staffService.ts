@@ -1,4 +1,5 @@
 import { getSupabaseClient, isUuid, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import {
   mapStaffFromDb,
   mapStaffRoleToDb,
@@ -77,23 +78,30 @@ export const staffService = {
       // Fallback below
     }
 
-    let query = client
-      .from('staff')
-      .select('*')
-      .eq('account_id', accountId)
-      .eq('is_active', true)
-      .is('deleted_at', null);
+    try {
+      const rows = await fetchAllPages(
+        (from, to) => {
+          let query = client
+            .from('staff')
+            .select('*')
+            .eq('account_id', accountId)
+            .eq('is_active', true)
+            .is('deleted_at', null)
+            .order('id', { ascending: true })
+            .range(from, to);
 
-    if (updatedAfter) {
-      query = query.gt('updated_at', updatedAfter);
-    }
-
-    const { data, error } = await query;
-    if (error) {
+          if (updatedAfter) {
+            query = query.gt('updated_at', updatedAfter);
+          }
+          return query;
+        },
+        { throwOnError: true }
+      );
+      return rows.map((row) => mapStaffFromDb(row, branchId));
+    } catch (error) {
       console.warn('[staffService] fetchStaff failed:', error);
       return [];
     }
-    return (data || []).map((row) => mapStaffFromDb(row, branchId));
   },
 
   async createStaff(staff: StaffMember): Promise<StaffMember | null> {
@@ -128,7 +136,12 @@ export const staffService = {
       updated_at: trace.updated_at,
     };
 
-    const res = await syncCoordinator.mutateOrQueueUpsert('staff', payload);
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff', payload, {
+      expectedVersion: staff.version,
+      entityType: 'Staff',
+      entityLabel: staff.fullName,
+      localData: payload,
+    });
     if (res.success && staff.pinCode && staff.pinCode !== '****') {
       await staffService.setPin(payload.id, staff.pinCode);
     }
@@ -167,7 +180,12 @@ export const staffService = {
       updated_at: trace.updated_at,
     };
 
-    const res = await syncCoordinator.mutateOrQueueUpsert('staff', payload);
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff', payload, {
+      expectedVersion: staff.version,
+      entityType: 'Staff',
+      entityLabel: staff.fullName,
+      localData: payload,
+    });
     if (res.success && staff.pinCode && staff.pinCode !== '****') {
       await staffService.setPin(payload.id, staff.pinCode);
     }
@@ -186,18 +204,20 @@ export const staffService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    let query = (client as any)
-      .from('staff_attendance_logs')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null)
-      .order('log_timestamp', { ascending: false });
+    const rows = await fetchAllPages<any>((from, to) => {
+      let query = (client as any)
+        .from('staff_attendance_logs')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('log_timestamp', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to);
 
-    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-    const { data, error } = await query;
-    if (error) return [];
-    return (data || []).map(mapAttendanceLogFromDb);
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+      return query;
+    });
+    return rows.map(mapAttendanceLogFromDb);
   },
 
   async upsertAttendanceLog(entry: StaffAttendanceLogRecord): Promise<boolean> {
@@ -207,7 +227,7 @@ export const staffService = {
       branchId: entry.branchId,
       staffId: entry.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('staff_attendance_logs', {
+    const payload = {
       id: toValidUuid(entry.id),
       ...trace,
       staff_name: entry.staffName,
@@ -218,6 +238,12 @@ export const staffService = {
       method: entry.method,
       terminal_id: entry.terminalId || null,
       notes: entry.notes || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff_attendance_logs', payload, {
+      expectedVersion: entry.version,
+      entityType: 'StaffAttendanceLog',
+      entityLabel: `${entry.staffName} (${entry.date})`,
+      localData: payload,
     });
     return res.success;
   },
@@ -226,18 +252,20 @@ export const staffService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    let query = (client as any)
-      .from('staff_salary_advances')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null)
-      .order('date_issued', { ascending: false });
+    const rows = await fetchAllPages<any>((from, to) => {
+      let query = (client as any)
+        .from('staff_salary_advances')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('date_issued', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to);
 
-    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-    const { data, error } = await query;
-    if (error) return [];
-    return (data || []).map(mapSalaryAdvanceFromDb);
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+      return query;
+    });
+    return rows.map(mapSalaryAdvanceFromDb);
   },
 
   async upsertSalaryAdvance(adv: StaffSalaryAdvance): Promise<boolean> {
@@ -247,7 +275,7 @@ export const staffService = {
       branchId: adv.branchId,
       staffId: adv.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('staff_salary_advances', {
+    const payload = {
       id: toValidUuid(adv.id),
       ...trace,
       staff_name: adv.staffName,
@@ -258,6 +286,12 @@ export const staffService = {
       voucher_number: adv.voucherNumber,
       status: adv.status,
       deducted_in_period: adv.deductedInPeriod || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff_salary_advances', payload, {
+      expectedVersion: adv.version,
+      entityType: 'StaffSalaryAdvance',
+      entityLabel: `${adv.staffName} (${adv.voucherNumber})`,
+      localData: payload,
     });
     return res.success;
   },
@@ -266,18 +300,20 @@ export const staffService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    let query = (client as any)
-      .from('staff_payroll_runs')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
+    const rows = await fetchAllPages<any>((from, to) => {
+      let query = (client as any)
+        .from('staff_payroll_runs')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to);
 
-    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-    const { data, error } = await query;
-    if (error) return [];
-    return (data || []).map(mapPayrollRunFromDb);
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+      return query;
+    });
+    return rows.map(mapPayrollRunFromDb);
   },
 
   async upsertPayrollRun(run: StaffPayrollRunRecord, category = 'membership_session'): Promise<boolean> {
@@ -286,7 +322,7 @@ export const staffService = {
       businessId: run.businessId,
       branchId: run.branchId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('staff_payroll_runs', {
+    const payload = {
       id: toValidUuid(run.id),
       ...trace,
       category,
@@ -301,6 +337,12 @@ export const staffService = {
       total_net: run.totalNet,
       slips_count: run.slipsCount,
       approved_at: run.approvedAt || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff_payroll_runs', payload, {
+      expectedVersion: run.version,
+      entityType: 'StaffPayrollRun',
+      entityLabel: run.title,
+      localData: payload,
     });
     return res.success;
   },
@@ -309,18 +351,20 @@ export const staffService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    let query = (client as any)
-      .from('staff_payroll_slips')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
+    const rows = await fetchAllPages<any>((from, to) => {
+      let query = (client as any)
+        .from('staff_payroll_slips')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to);
 
-    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-    const { data, error } = await query;
-    if (error) return [];
-    return (data || []).map(mapPayrollSlipFromDb);
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+      return query;
+    });
+    return rows.map(mapPayrollSlipFromDb);
   },
 
   async upsertPayrollSlip(
@@ -333,7 +377,7 @@ export const staffService = {
       branchId: ctx.branchId,
       staffId: slip.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('staff_payroll_slips', {
+    const payload = {
       id: toValidUuid(slip.id),
       ...trace,
       payroll_run_id: toValidUuid(slip.payrollRunId),
@@ -366,6 +410,12 @@ export const staffService = {
       is_paid: slip.isPaid,
       paid_date: slip.paidDate || null,
       receipt_number: slip.receiptNumber,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('staff_payroll_slips', payload, {
+      expectedVersion: slip.version,
+      entityType: 'StaffPayrollSlip',
+      entityLabel: `${slip.staffFullName} (${slip.periodLabel})`,
+      localData: payload,
     });
     return res.success;
   },

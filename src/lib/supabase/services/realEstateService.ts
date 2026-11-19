@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   RealEstateProperty,
@@ -65,19 +66,21 @@ export const realEstateService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('re_properties')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('re_properties')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): RealEstateProperty => {
+      return data.map((row: any): RealEstateProperty => {
         const rawFeatures = row.features;
         let amenities: string[] = [];
         let meta: Record<string, any> = {};
@@ -123,6 +126,7 @@ export const realEstateService = {
           mandateNumber: meta.mandateNumber,
           photoUrls: meta.photoUrls,
           featuredPhotoUrl: meta.featuredPhotoUrl,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -138,7 +142,7 @@ export const realEstateService = {
       branchId: prop.branchId,
       staffId: prop.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('re_properties', {
+    const payload = {
       id: toValidUuid(prop.id),
       ...trace,
       reference_code: prop.mandateNumber || prop.id.slice(0, 10).toUpperCase(),
@@ -178,6 +182,12 @@ export const realEstateService = {
         photoUrls: prop.photoUrls,
         featuredPhotoUrl: prop.featuredPhotoUrl,
       },
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('re_properties', payload, {
+      expectedVersion: prop.version,
+      entityType: 'RealEstateProperty',
+      entityLabel: prop.title,
+      localData: payload,
     });
     return res.success;
   },
@@ -192,19 +202,21 @@ export const realEstateService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('re_mandates')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('re_mandates')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): RealEstateMandate => {
+      return data.map((row: any): RealEstateMandate => {
         const { plain: ownerFullName, meta } = unpackMeta(row.owner_name);
         return {
           id: row.id,
@@ -240,6 +252,7 @@ export const realEstateService = {
           isExclusive: Boolean(meta.isExclusive ?? row.mandate_type === 'Exclusif'),
           scannedDocumentUrl: meta.scannedDocumentUrl,
           notes: meta.notes,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
           updatedAt: row.updated_at,
         };
@@ -256,7 +269,7 @@ export const realEstateService = {
       branchId: mandate.branchId,
       staffId: mandate.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('re_mandates', {
+    const payload = {
       id: toValidUuid(mandate.id),
       ...trace,
       mandate_number: mandate.mandateNumber,
@@ -290,6 +303,12 @@ export const realEstateService = {
       start_date: mandate.startDate,
       end_date: mandate.endDate || null,
       status: mandate.status,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('re_mandates', payload, {
+      expectedVersion: mandate.version,
+      entityType: 'RealEstateMandate',
+      entityLabel: mandate.mandateNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -299,19 +318,21 @@ export const realEstateService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('re_leases')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('re_leases')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): RealEstateLease => {
+      return data.map((row: any): RealEstateLease => {
         const { plain: tenantName, meta } = unpackMeta(row.tenant_name);
         return {
           id: row.id,
@@ -339,6 +360,7 @@ export const realEstateService = {
           lastPaymentDate: meta.lastPaymentDate,
           arrearsDzd: Number(meta.arrearsDzd ?? 0),
           status: (meta.uiStatus || (row.status === 'Terminated' ? 'Terminated' : 'Active')) as RealEstateLease['status'],
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -354,7 +376,7 @@ export const realEstateService = {
       branchId: lease.branchId,
       staffId: lease.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('re_leases', {
+    const payload = {
       id: toValidUuid(lease.id),
       ...trace,
       lease_number: lease.leaseNumber || `BAIL-${lease.id.slice(0, 6).toUpperCase()}`,
@@ -380,6 +402,12 @@ export const realEstateService = {
       start_date: lease.startDate,
       end_date: lease.endDate || null,
       status: toDbLeaseStatus(lease.status),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('re_leases', payload, {
+      expectedVersion: lease.version,
+      entityType: 'RealEstateLease',
+      entityLabel: lease.leaseNumber || lease.propertyTitle,
+      localData: payload,
     });
     return res.success;
   },
@@ -389,22 +417,28 @@ export const realEstateService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('re_rent_schedules')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('re_rent_schedules')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): RentalQuittanceRecord | null => {
           const { meta } = unpackMeta(row.period_label);
-          return meta.quittance ? (meta.quittance as RentalQuittanceRecord) : null;
+          if (!meta.quittance) return null;
+          return {
+            ...(meta.quittance as RentalQuittanceRecord),
+            version: row.version != null ? Number(row.version) : (meta.quittance as RentalQuittanceRecord).version,
+          };
         })
         .filter((q: RentalQuittanceRecord | null): q is RentalQuittanceRecord => Boolean(q));
     } catch {
@@ -419,7 +453,7 @@ export const realEstateService = {
       branchId: q.branchId,
       staffId: q.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('re_rent_schedules', {
+    const payload = {
       id: toValidUuid(q.id),
       ...trace,
       lease_id: toValidUuid(q.leaseId),
@@ -429,6 +463,12 @@ export const realEstateService = {
       paid_amount_dzd: Number(q.totalCollectedDzd || 0),
       status: 'Paid',
       paid_at: q.paymentDate ? `${q.paymentDate}T12:00:00Z` : new Date().toISOString(),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('re_rent_schedules', payload, {
+      expectedVersion: q.version,
+      entityType: 'RentalQuittanceRecord',
+      entityLabel: `${String(q.periodMonth).padStart(2, '0')}/${q.periodYear}`,
+      localData: payload,
     });
     return res.success;
   },
@@ -438,19 +478,21 @@ export const realEstateService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('re_visits')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('re_visits')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): BonDeVisiteRecord => {
+      return data.map((row: any): BonDeVisiteRecord => {
         const { plain, meta } = unpackMeta(row.feedback);
         return {
           id: row.id,
@@ -475,6 +517,7 @@ export const realEstateService = {
           clientFeedbackNotes: plain || undefined,
           counterOfferDzd: meta.counterOfferDzd,
           whatsappConfirmationSent: Boolean(meta.whatsappConfirmationSent),
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -490,7 +533,7 @@ export const realEstateService = {
       branchId: visit.branchId,
       staffId: visit.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('re_visits', {
+    const payload = {
       id: toValidUuid(visit.id),
       ...trace,
       property_id: visit.propertyId ? toValidUuid(visit.propertyId) : null,
@@ -513,6 +556,12 @@ export const realEstateService = {
         counterOfferDzd: visit.counterOfferDzd,
         whatsappConfirmationSent: visit.whatsappConfirmationSent,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('re_visits', payload, {
+      expectedVersion: visit.version,
+      entityType: 'BonDeVisiteRecord',
+      entityLabel: `${visit.clientFullName} — ${visit.propertyTitle}`,
+      localData: payload,
     });
     return res.success;
   },
@@ -522,19 +571,21 @@ export const realEstateService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('re_inspections')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('re_inspections')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): RealEstateInspection => {
+      return data.map((row: any): RealEstateInspection => {
         const { plain, meta } = unpackMeta(row.notes);
         return {
           id: row.id,
@@ -560,6 +611,7 @@ export const realEstateService = {
           notes: plain || undefined,
           isSigned: meta.isSigned,
           signatureSvgData: meta.signatureSvgData,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -575,7 +627,7 @@ export const realEstateService = {
       branchId: insp.branchId,
       staffId: insp.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('re_inspections', {
+    const payload = {
       id: toValidUuid(insp.id),
       ...trace,
       lease_id: insp.leaseId ? toValidUuid(insp.leaseId) : null,
@@ -599,6 +651,12 @@ export const realEstateService = {
         isSigned: insp.isSigned,
         signatureSvgData: insp.signatureSvgData,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('re_inspections', payload, {
+      expectedVersion: insp.version,
+      entityType: 'RealEstateInspection',
+      entityLabel: insp.propertyTitle,
+      localData: payload,
     });
     return res.success;
   },
@@ -608,19 +666,21 @@ export const realEstateService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('re_leads')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('re_leads')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): BuyerDemandProfile => {
+      return data.map((row: any): BuyerDemandProfile => {
         const { plain, meta } = unpackMeta(row.notes);
         return {
           id: row.id,
@@ -641,6 +701,7 @@ export const realEstateService = {
           searchUrgency: meta.searchUrgency || 'Within3Months',
           activeStatus: meta.activeStatus || 'Active',
           notes: plain || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -656,7 +717,7 @@ export const realEstateService = {
       branchId: demand.branchId,
       staffId: demand.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('re_leads', {
+    const payload = {
       id: toValidUuid(demand.id),
       ...trace,
       full_name: demand.clientFullName,
@@ -675,7 +736,43 @@ export const realEstateService = {
         searchUrgency: demand.searchUrgency,
         activeStatus: demand.activeStatus,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('re_leads', payload, {
+      expectedVersion: demand.version,
+      entityType: 'BuyerDemandProfile',
+      entityLabel: demand.clientFullName,
+      localData: payload,
     });
+    return res.success;
+  },
+
+  async deleteMandate(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('re_mandates', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteLease(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('re_leases', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteQuittance(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('re_rent_schedules', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteBonDeVisite(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('re_visits', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteInspection(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('re_inspections', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteBuyerDemand(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('re_leads', id, deletedByStaffId);
     return res.success;
   },
 };

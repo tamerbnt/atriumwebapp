@@ -12,7 +12,7 @@ import {
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import type { Dispatch, SetStateAction } from 'react';
-import { isSupabaseConfigured, contractorService, realtimeService, syncCoordinator, runWithConcurrency } from '../../../lib/supabase';
+import { isSupabaseConfigured, contractorService, realtimeService, syncCoordinator, subscribeConcurrencyResolutions, runWithConcurrency } from '../../../lib/supabase';
 
 function mergeContractorById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
   if (remote.length === 0) return prev;
@@ -886,6 +886,66 @@ export const useContractorData = () => {
     });
   }, [activeBranchId]);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const unsub = subscribeConcurrencyResolutions((evt) => {
+      const tasks: Array<() => Promise<void>> = [];
+      if (evt.table === 'btp_projects') {
+        tasks.push(async () => {
+          const rows = await contractorService.fetchProjects(activeBranchId);
+          if (!cancelled && rows.length > 0) setProjects((prev) => mergeContractorById(prev, rows as ContractorProject[]));
+        });
+      } else if (evt.table === 'btp_boq_items') {
+        tasks.push(async () => {
+          const rows = await contractorService.fetchBoqItems(activeBranchId);
+          if (!cancelled && rows.length > 0) setBoqItems((prev) => mergeContractorById(prev, rows as ContractorBoqItem[]));
+        });
+      } else if (evt.table === 'btp_daily_logs') {
+        tasks.push(
+          async () => {
+            const rows = await contractorService.fetchDailyLogs(activeBranchId);
+            if (!cancelled && rows.length > 0) setDailyLogs((prev) => mergeContractorById(prev, rows as ContractorDailyLog[]));
+          },
+          async () => {
+            const rows = await contractorService.fetchServiceOrders(activeBranchId);
+            if (!cancelled && rows.length > 0) setServiceOrders((prev) => mergeContractorById(prev, rows as ContractorServiceOrder[]));
+          },
+          async () => {
+            const rows = await contractorService.fetchConcretePours(activeBranchId);
+            if (!cancelled && rows.length > 0) setConcretePours((prev) => mergeContractorById(prev, rows as ConcretePourRecord[]));
+          }
+        );
+      } else if (evt.table === 'btp_decomptes') {
+        tasks.push(async () => {
+          const rows = await contractorService.fetchDgps(activeBranchId);
+          if (!cancelled && rows.length > 0) setDgps((prev) => mergeContractorById(prev, rows as ContractorDgp[]));
+        });
+      } else if (evt.table === 'btp_subcontractors') {
+        tasks.push(async () => {
+          const rows = await contractorService.fetchSubcontractors(activeBranchId);
+          if (!cancelled && rows.length > 0) setSubcontractors((prev) => mergeContractorById(prev, rows as SubcontractorAgreement[]));
+        });
+      } else if (evt.table === 'btp_equipment') {
+        tasks.push(async () => {
+          const rows = await contractorService.fetchEquipmentLogs(activeBranchId);
+          if (!cancelled && rows.length > 0) setEquipmentLogs((prev) => mergeContractorById(prev, rows as EquipmentLogRecord[]));
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `contractor:res:${activeBranchId}:${evt.table}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+  }, [activeBranchId]);
+
   const addProject = (project: ContractorProject) => {
     const scoped = withBranch(project);
     setProjects((prev) => [scoped, ...prev]);
@@ -900,7 +960,7 @@ export const useContractorData = () => {
 
   const deleteProject = (id: string) => {
     setProjects((prev) => prev.filter((p) => p.id !== id));
-    void syncCoordinator.softDeleteRow('btp_projects', id, currentStaffId).catch(() => {});
+    void contractorService.deleteProject(id, currentStaffId).catch(() => {});
   };
 
   const addBoqItem = (item: ContractorBoqItem) => {
@@ -917,7 +977,7 @@ export const useContractorData = () => {
 
   const deleteBoqItem = (id: string) => {
     setBoqItems((prev) => prev.filter((b) => b.id !== id));
-    void syncCoordinator.softDeleteRow('btp_boq_items', id, currentStaffId).catch(() => {});
+    void contractorService.deleteBoqItem(id, currentStaffId).catch(() => {});
   };
 
   const addDailyLog = (log: ContractorDailyLog) => {

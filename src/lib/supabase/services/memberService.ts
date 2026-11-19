@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { mapMemberFromDb, mapLeadFromDb } from '../mappers';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
@@ -16,22 +17,25 @@ export const memberService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('gym_members')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>(
+        (from, to) => {
+          let query = (client as any)
+            .from('gym_members')
+            .select('*')
+            .eq('branch_id', toValidUuid(branchId))
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: false })
+            .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[memberService] fetchMembers failed:', error.message);
-        return [];
-      }
-      return (data || []).map(mapMemberFromDb);
-    } catch {
+          if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          return query;
+        },
+        { throwOnError: true }
+      );
+      return rows.map(mapMemberFromDb);
+    } catch (error: any) {
+      console.warn('[memberService] fetchMembers failed:', error?.message || error);
       return [];
     }
   },
@@ -45,7 +49,7 @@ export const memberService = {
       staffId: member.staffId,
     });
 
-    await syncCoordinator.mutateOrQueueUpsert('gym_members', {
+    const payload = {
       id,
       ...trace,
       plan_id: member.membershipPlanId ? toValidUuid(member.membershipPlanId) : null,
@@ -63,6 +67,13 @@ export const memberService = {
       notes: member.notes || null,
       emergency_contact_name: member.emergencyContactName || null,
       emergency_contact_phone: member.emergencyContactPhone || null,
+    };
+
+    await syncCoordinator.mutateOrQueueUpsert('gym_members', payload, {
+      expectedVersion: member.version,
+      entityType: 'Member',
+      entityLabel: member.fullName,
+      localData: payload,
     });
 
     return { ...member, id };
@@ -76,7 +87,7 @@ export const memberService = {
       staffId: member.staffId,
     });
 
-    const res = await syncCoordinator.mutateOrQueueUpsert('gym_members', {
+    const payload = {
       id: toValidUuid(member.id),
       ...trace,
       plan_id: member.membershipPlanId ? toValidUuid(member.membershipPlanId) : null,
@@ -94,6 +105,13 @@ export const memberService = {
       notes: member.notes || null,
       emergency_contact_name: member.emergencyContactName || null,
       emergency_contact_phone: member.emergencyContactPhone || null,
+    };
+
+    const res = await syncCoordinator.mutateOrQueueUpsert('gym_members', payload, {
+      expectedVersion: member.version,
+      entityType: 'Member',
+      entityLabel: member.fullName,
+      localData: payload,
     });
     return res.success;
   },
@@ -121,18 +139,20 @@ export const memberService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    let query = (client as any)
-      .from('gym_check_ins')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null)
-      .order('checked_in_at', { ascending: false });
+    const rows = await fetchAllPages<any>((from, to) => {
+      let query = (client as any)
+        .from('gym_check_ins')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('checked_in_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to);
 
-    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-    const { data, error } = await query;
-    if (error) return [];
-    return (data || []).map((row: any): MemberCheckInLog => ({
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+      return query;
+    });
+    return rows.map((row: any): MemberCheckInLog => ({
       id: row.id,
       accountId: row.account_id || '',
       businessId: row.business_id || '',
@@ -154,7 +174,7 @@ export const memberService = {
       businessId: ctx.businessId,
       branchId: ctx.branchId,
     });
-    return syncCoordinator.mutateOrQueueUpsert('gym_walk_in_tickets', {
+    const payload = {
       id: toValidUuid(ticket.id),
       ...trace,
       visitor_name: ticket.clientName,
@@ -164,6 +184,12 @@ export const memberService = {
       payment_method: ticket.paymentMethod || 'Cash',
       valid_date: (ticket.issuedAt || new Date().toISOString()).slice(0, 10),
       is_used: false,
+    };
+    return syncCoordinator.mutateOrQueueUpsert('gym_walk_in_tickets', payload, {
+      expectedVersion: ticket.version,
+      entityType: 'WalkInTicket',
+      entityLabel: ticket.ticketNumber || ticket.clientName,
+      localData: payload,
     });
   },
 
@@ -171,14 +197,16 @@ export const memberService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('gym_plans')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
-
-    if (error) return [];
-    return (data || []).map((row: any): MembershipPlan => ({
+    const rows = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('gym_plans')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
+    return rows.map((row: any): MembershipPlan => ({
       id: row.id,
       accountId: row.account_id,
       businessId: row.business_id,
@@ -194,12 +222,13 @@ export const memberService = {
       isWalkIn: false,
       isPersonalTraining: false,
       genderRule: 0,
+      version: row.version != null ? Number(row.version) : undefined,
     }));
   },
 
   async upsertPlan(plan: MembershipPlan, ctx: { accountId: string; businessId: string; branchId: string }) {
     const trace = buildTraceEnvelope(ctx);
-    return syncCoordinator.mutateOrQueueUpsert('gym_plans', {
+    const payload = {
       id: toValidUuid(plan.id),
       ...trace,
       name: plan.name,
@@ -209,6 +238,12 @@ export const memberService = {
       price_dzd: plan.price.amount,
       currency: plan.price.currency || 'DZD',
       is_active: plan.isActive,
+    };
+    return syncCoordinator.mutateOrQueueUpsert('gym_plans', payload, {
+      expectedVersion: plan.version,
+      entityType: 'MembershipPlan',
+      entityLabel: plan.name,
+      localData: payload,
     });
   },
 
@@ -216,15 +251,21 @@ export const memberService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('gym_schedule_events')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
-
-    if (error) return [];
-    return (data || []).map((row: any): ScheduleEvent => ({
+    const rows = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('gym_schedule_events')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
+    return rows.map((row: any): ScheduleEvent => ({
       id: row.id,
+      accountId: row.account_id,
+      businessId: row.business_id || undefined,
+      branchId: row.branch_id,
+      staffId: row.staff_id || undefined,
       tenantId: row.account_id,
       facilityId: row.branch_id,
       title: row.title,
@@ -236,7 +277,45 @@ export const memberService = {
       capacity: Number(row.capacity || 20),
       enrolledCount: Number(row.enrolled_count || 0),
       category: row.category || 'Class',
+      version: row.version != null ? Number(row.version) : undefined,
     }));
+  },
+
+  async upsertScheduleEvent(
+    ev: ScheduleEvent,
+    ctx?: { accountId?: string; businessId?: string; branchId?: string; staffId?: string }
+  ): Promise<boolean> {
+    const trace = buildTraceEnvelope({
+      accountId: ev.accountId || ctx?.accountId || ev.tenantId,
+      businessId: ev.businessId || ctx?.businessId,
+      branchId: ev.branchId || ctx?.branchId || ev.facilityId,
+      staffId: ev.staffId || ctx?.staffId,
+    });
+    const payload = {
+      id: toValidUuid(ev.id),
+      ...trace,
+      title: ev.title,
+      coach_name: ev.trainerOrStaff || null,
+      room_name: ev.roomOrArea || null,
+      day_of_week: ev.dayOfWeek,
+      start_time: ev.startTime,
+      end_time: ev.endTime,
+      capacity: ev.capacity,
+      enrolled_count: ev.enrolledCount,
+      category: ev.category || 'Class',
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('gym_schedule_events', payload, {
+      expectedVersion: ev.version,
+      entityType: 'ScheduleEvent',
+      entityLabel: ev.title,
+      localData: payload,
+    });
+    return res.success;
+  },
+
+  async deleteScheduleEvent(eventId: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('gym_schedule_events', eventId, deletedByStaffId);
+    return res.success;
   },
 
   async fetchRegistrationRequests(branchId: string, updatedAfter?: string | null): Promise<RegistrationLead[]> {
@@ -244,22 +323,25 @@ export const memberService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('gym_registration_leads')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('requested_at', { ascending: false });
+      const rows = await fetchAllPages<any>(
+        (from, to) => {
+          let query = (client as any)
+            .from('gym_registration_leads')
+            .select('*')
+            .eq('branch_id', toValidUuid(branchId))
+            .is('deleted_at', null)
+            .order('requested_at', { ascending: false })
+            .order('id', { ascending: false })
+            .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[memberService] fetchRegistrationRequests failed:', error.message);
-        return [];
-      }
-      return (data || []).map(mapLeadFromDb);
-    } catch {
+          if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          return query;
+        },
+        { throwOnError: true }
+      );
+      return rows.map(mapLeadFromDb);
+    } catch (error: any) {
+      console.warn('[memberService] fetchRegistrationRequests failed:', error?.message || error);
       return [];
     }
   },
@@ -275,7 +357,7 @@ export const memberService = {
       staffId: lead.staffId,
     });
 
-    await syncCoordinator.mutateOrQueueUpsert('gym_registration_leads', {
+    const payload = {
       id,
       ...trace,
       full_name: lead.fullName,
@@ -286,6 +368,13 @@ export const memberService = {
       notes: lead.notes || null,
       status: lead.status || 'Pending',
       requested_at: new Date().toISOString(),
+    };
+
+    await syncCoordinator.mutateOrQueueUpsert('gym_registration_leads', payload, {
+      expectedVersion: lead.version,
+      entityType: 'RegistrationLead',
+      entityLabel: lead.fullName,
+      localData: payload,
     });
 
     return {
@@ -298,11 +387,19 @@ export const memberService = {
 
   async updateLeadStatus(
     leadId: string,
-    status: 'Pending' | 'Approved' | 'Declined'
+    status: 'Pending' | 'Approved' | 'Declined',
+    expectedVersion?: number
   ): Promise<boolean> {
-    const res = await syncCoordinator.mutateOrQueueUpdate('gym_registration_leads', leadId, {
-      status,
-    });
+    const res = await syncCoordinator.mutateOrQueueUpdate(
+      'gym_registration_leads',
+      leadId,
+      { status },
+      {
+        expectedVersion,
+        entityType: 'RegistrationLead',
+        localData: { status },
+      }
+    );
     return res.success;
   },
 

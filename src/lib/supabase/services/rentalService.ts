@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   RentableUnit,
@@ -26,22 +27,21 @@ export const rentalService = {
     const safeBranchId = toValidUuid(branchId);
 
     try {
-      let query = (client as any)
-        .from('rental_units')
-        .select('*')
-        .eq('branch_id', safeBranchId)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('rental_units')
+          .select('*')
+          .eq('branch_id', safeBranchId)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[rentalService] fetchUnits warning:', error.message);
-        return [];
-      }
-
-      return (data || []).map((row: any): RentableUnit => ({
+      return data.map((row: any): RentableUnit => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -61,6 +61,7 @@ export const rentalService = {
         status: row.status || 'Available',
         description: row.description || '',
         colorHex: row.color_hex || '#8B5CF6',
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
       }));
     } catch {
@@ -93,7 +94,12 @@ export const rentalService = {
       color_hex: unit.colorHex || '#8B5CF6',
     };
 
-    const res = await syncCoordinator.mutateOrQueueUpsert('rental_units', payload);
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_units', payload, {
+      expectedVersion: unit.version,
+      entityType: 'RentableUnit',
+      entityLabel: unit.name,
+      localData: payload,
+    });
     return {
       success: res.success,
       queued: res.queued,
@@ -117,22 +123,21 @@ export const rentalService = {
     const safeBranchId = toValidUuid(branchId);
 
     try {
-      let query = (client as any)
-        .from('rental_renters')
-        .select('*')
-        .eq('branch_id', safeBranchId)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('rental_renters')
+          .select('*')
+          .eq('branch_id', safeBranchId)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[rentalService] fetchRenters warning:', error.message);
-        return [];
-      }
-
-      return (data || []).map((row: any): RentalRenter => ({
+      return data.map((row: any): RentalRenter => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -149,6 +154,7 @@ export const rentalService = {
         totalSpent: Number(row.total_spent || 0),
         currency: row.currency || 'DZD',
         notes: row.notes || undefined,
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
       }));
     } catch {
@@ -178,7 +184,12 @@ export const rentalService = {
       notes: renter.notes || null,
     };
 
-    const res = await syncCoordinator.mutateOrQueueUpsert('rental_renters', payload);
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_renters', payload, {
+      expectedVersion: renter.version,
+      entityType: 'RentalRenter',
+      entityLabel: renter.fullName,
+      localData: payload,
+    });
     return {
       success: res.success,
       queued: res.queued,
@@ -202,22 +213,21 @@ export const rentalService = {
     const safeBranchId = toValidUuid(branchId);
 
     try {
-      let query = (client as any)
-        .from('rental_bookings')
-        .select('*')
-        .eq('branch_id', safeBranchId)
-        .is('deleted_at', null)
-        .order('start_date_time', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('rental_bookings')
+          .select('*')
+          .eq('branch_id', safeBranchId)
+          .is('deleted_at', null)
+          .order('start_date_time', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[rentalService] fetchBookings warning:', error.message);
-        return [];
-      }
-
-      return (data || []).map((row: any): RentalBooking => ({
+      return data.map((row: any): RentalBooking => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -250,6 +260,7 @@ export const rentalService = {
         addons: Array.isArray(row.addons) ? row.addons : [],
         contractSigned: Boolean(row.contract_signed),
         notes: row.notes || undefined,
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       }));
@@ -296,7 +307,12 @@ export const rentalService = {
       notes: booking.notes || null,
     };
 
-    const res = await syncCoordinator.mutateOrQueueUpsert('rental_bookings', payload);
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_bookings', payload, {
+      expectedVersion: booking.version,
+      entityType: 'RentalBooking',
+      entityLabel: `${booking.renterName} — ${booking.unitName}`,
+      localData: payload,
+    });
     return {
       success: res.success,
       queued: res.queued,
@@ -320,22 +336,21 @@ export const rentalService = {
     const safeBranchId = toValidUuid(branchId);
 
     try {
-      let query = (client as any)
-        .from('rental_security_deposits')
-        .select('*')
-        .eq('branch_id', safeBranchId)
-        .is('deleted_at', null)
-        .order('collected_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('rental_security_deposits')
+          .select('*')
+          .eq('branch_id', safeBranchId)
+          .is('deleted_at', null)
+          .order('collected_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[rentalService] fetchDeposits warning:', error.message);
-        return [];
-      }
-
-      return (data || []).map((row: any): SecurityDepositRecord => ({
+      return data.map((row: any): SecurityDepositRecord => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -351,6 +366,7 @@ export const rentalService = {
         paymentMethod: row.payment_method || 'Cash',
         status: row.status || 'Held',
         deductionReason: row.deduction_reason || undefined,
+        version: row.version != null ? Number(row.version) : undefined,
         collectedAt: row.collected_at,
         releasedAt: row.released_at || undefined,
       }));
@@ -382,7 +398,12 @@ export const rentalService = {
       released_at: deposit.releasedAt || null,
     };
 
-    const res = await syncCoordinator.mutateOrQueueUpsert('rental_security_deposits', payload);
+    const res = await syncCoordinator.mutateOrQueueUpsert('rental_security_deposits', payload, {
+      expectedVersion: deposit.version,
+      entityType: 'SecurityDeposit',
+      entityLabel: deposit.renterName,
+      localData: payload,
+    });
     return {
       success: res.success,
       queued: res.queued,

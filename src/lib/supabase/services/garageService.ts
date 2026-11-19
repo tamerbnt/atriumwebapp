@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   WorkshopBay,
@@ -93,19 +94,24 @@ export const garageService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('garage_bays')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('bay_code', { ascending: true });
+      const data = await fetchAllPages<any>(
+        (from, to) => {
+          let query = (client as any)
+            .from('garage_bays')
+            .select('*')
+            .eq('branch_id', toValidUuid(branchId))
+            .is('deleted_at', null)
+            .order('bay_code', { ascending: true })
+            .order('id', { ascending: true })
+            .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          return query;
+        },
+        { throwOnError: true }
+      );
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any, idx: number): WorkshopBay => {
+      return data.map((row: any, idx: number): WorkshopBay => {
         const { plain: bayTypeStr, meta } = unpackMeta(row.bay_type);
         const bayNumMatch = String(row.bay_code || '').match(/(\d+)/);
         return {
@@ -118,6 +124,7 @@ export const garageService = {
           isOccupied: row.status === 'Occupied',
           activeOrderId: row.active_work_order_id || undefined,
           assignedTechnicianName: row.assigned_mechanic_name || undefined,
+          version: typeof row.version === 'number' ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -132,7 +139,7 @@ export const garageService = {
       branchId: bay.branchId || ctx.branchId,
       staffId: ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('garage_bays', {
+    const payload = {
       id: toValidUuid(bay.id),
       ...trace,
       bay_code: `BAY-${String(bay.bayNumber).padStart(2, '0')}`,
@@ -145,6 +152,12 @@ export const garageService = {
       status: bay.isOccupied ? 'Occupied' : 'Free',
       active_work_order_id: bay.activeOrderId ? toValidUuid(bay.activeOrderId) : null,
       assigned_mechanic_name: bay.assignedTechnicianName || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('garage_bays', payload, {
+      expectedVersion: bay.version,
+      entityType: 'WorkshopBay',
+      entityLabel: bay.name,
+      localData: payload,
     });
     return res.success;
   },
@@ -170,19 +183,24 @@ export const garageService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('garage_vehicles')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>(
+        (from, to) => {
+          let query = (client as any)
+            .from('garage_vehicles')
+            .select('*')
+            .eq('branch_id', toValidUuid(branchId))
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: false })
+            .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          return query;
+        },
+        { throwOnError: true }
+      );
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): VehicleAsset => {
+      return data.map((row: any): VehicleAsset => {
         const { plain, meta } = unpackMeta(row.notes);
         return {
           id: row.id,
@@ -209,6 +227,7 @@ export const garageService = {
           dailyAvgKm: meta.dailyAvgKm,
           carteGriseNumber: meta.carteGriseNumber,
           notes: plain || undefined,
+          version: typeof row.version === 'number' ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -223,7 +242,7 @@ export const garageService = {
       branchId: vehicle.branchId || ctx.branchId,
       staffId: vehicle.staffId || ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('garage_vehicles', {
+    const payload = {
       id: toValidUuid(vehicle.id),
       ...trace,
       plate_number: vehicle.plateNumber,
@@ -246,6 +265,12 @@ export const garageService = {
         dailyAvgKm: vehicle.dailyAvgKm,
         carteGriseNumber: vehicle.carteGriseNumber,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('garage_vehicles', payload, {
+      expectedVersion: vehicle.version,
+      entityType: 'VehicleAsset',
+      entityLabel: `${vehicle.brand} ${vehicle.model} (${vehicle.plateNumber})`,
+      localData: payload,
     });
     return res.success;
   },
@@ -260,19 +285,24 @@ export const garageService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('garage_work_orders')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>(
+        (from, to) => {
+          let query = (client as any)
+            .from('garage_work_orders')
+            .select('*')
+            .eq('branch_id', toValidUuid(branchId))
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: false })
+            .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          return query;
+        },
+        { throwOnError: true }
+      );
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): RepairOrder => {
+      return data.map((row: any): RepairOrder => {
         const { plain, meta } = unpackMeta(row.diagnostic_summary);
         return {
           id: row.id,
@@ -312,6 +342,7 @@ export const garageService = {
           billingType: meta.billingType || 'bon_caisse',
           isPaid: Boolean(meta.isPaid),
           invoiceId: meta.invoiceId,
+          version: typeof row.version === 'number' ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -326,7 +357,7 @@ export const garageService = {
       branchId: order.branchId || ctx.branchId,
       staffId: order.staffId || ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('garage_work_orders', {
+    const payload = {
       id: toValidUuid(order.id),
       ...trace,
       order_number: order.orderNumber,
@@ -365,6 +396,12 @@ export const garageService = {
         isPaid: order.isPaid,
         invoiceId: order.invoiceId,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('garage_work_orders', payload, {
+      expectedVersion: order.version,
+      entityType: 'RepairOrder',
+      entityLabel: `${order.orderNumber} (${order.vehiclePlate})`,
+      localData: payload,
     });
     return res.success;
   },
@@ -379,19 +416,24 @@ export const garageService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('garage_parts')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('name', { ascending: true });
+      const data = await fetchAllPages<any>(
+        (from, to) => {
+          let query = (client as any)
+            .from('garage_parts')
+            .select('*')
+            .eq('branch_id', toValidUuid(branchId))
+            .is('deleted_at', null)
+            .order('name', { ascending: true })
+            .order('id', { ascending: true })
+            .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          return query;
+        },
+        { throwOnError: true }
+      );
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): SparePart => {
+      return data.map((row: any): SparePart => {
         const { plain: binLocation, meta } = unpackMeta(row.bin_location);
         return {
           id: row.id,
@@ -413,6 +455,7 @@ export const garageService = {
           supplierName: meta.supplierName || undefined,
           compatibility: Array.isArray(meta.compatibility) ? meta.compatibility : [],
           createdAt: row.created_at,
+          version: typeof row.version === 'number' ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -427,7 +470,7 @@ export const garageService = {
       branchId: part.branchId || ctx.branchId,
       staffId: part.staffId || ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('garage_parts', {
+    const payload = {
       id: toValidUuid(part.id),
       ...trace,
       part_number: part.sku,
@@ -444,6 +487,12 @@ export const garageService = {
         supplierName: part.supplierName,
         compatibility: part.compatibility || [],
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('garage_parts', payload, {
+      expectedVersion: part.version,
+      entityType: 'SparePart',
+      entityLabel: `${part.name} (${part.sku})`,
+      localData: payload,
     });
     return res.success;
   },
@@ -467,19 +516,24 @@ export const garageService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('garage_fleet_contracts')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('company_name', { ascending: true });
+      const data = await fetchAllPages<any>(
+        (from, to) => {
+          let query = (client as any)
+            .from('garage_fleet_contracts')
+            .select('*')
+            .eq('branch_id', toValidUuid(branchId))
+            .is('deleted_at', null)
+            .order('company_name', { ascending: true })
+            .order('id', { ascending: true })
+            .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          return query;
+        },
+        { throwOnError: true }
+      );
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): CorporateFleetAccount => {
+      return data.map((row: any): CorporateFleetAccount => {
         const { plain: contactPerson, meta } = unpackMeta(row.contact_name);
         return {
           id: row.id,
@@ -503,6 +557,7 @@ export const garageService = {
           partsDiscountPercent: Number(row.discount_percent || 0),
           activeVehicleCount: Number(row.vehicles_count || 1),
           contractActive: row.status === 'Active',
+          version: typeof row.version === 'number' ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -517,7 +572,7 @@ export const garageService = {
       branchId: fleet.branchId,
       staffId: fleet.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('garage_fleet_contracts', {
+    const payload = {
       id: toValidUuid(fleet.id),
       ...trace,
       company_name: fleet.companyName,
@@ -538,6 +593,12 @@ export const garageService = {
       discount_percent: Number(fleet.partsDiscountPercent || 0),
       monthly_retainer_dzd: Number(fleet.creditLimitDzd || 0),
       status: fleet.contractActive ? 'Active' : 'Inactive',
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('garage_fleet_contracts', payload, {
+      expectedVersion: fleet.version,
+      entityType: 'CorporateFleetAccount',
+      entityLabel: fleet.companyName,
+      localData: payload,
     });
     return res.success;
   },
@@ -547,19 +608,24 @@ export const garageService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('garage_invoices')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>(
+        (from, to) => {
+          let query = (client as any)
+            .from('garage_invoices')
+            .select('*')
+            .eq('branch_id', toValidUuid(branchId))
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: false })
+            .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+          return query;
+        },
+        { throwOnError: true }
+      );
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): GarageInvoice => {
+      return data.map((row: any): GarageInvoice => {
         const { plain: clientName, meta } = unpackMeta(row.client_name);
         return {
           id: row.id,
@@ -593,6 +659,7 @@ export const garageService = {
           netToPayDzd: Number(meta.netToPayDzd ?? row.total_ttc_dzd ?? 0),
           issuedAt: meta.issuedAt || row.created_at,
           isPaid: row.status === 'Paid',
+          version: typeof row.version === 'number' ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -607,7 +674,7 @@ export const garageService = {
       branchId: inv.branchId,
       staffId: inv.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('garage_invoices', {
+    const payload = {
       id: toValidUuid(inv.id),
       ...trace,
       invoice_number: inv.invoiceNumber,
@@ -639,7 +706,23 @@ export const garageService = {
       paid_amount_dzd: inv.isPaid ? Number(inv.netToPayDzd || inv.totalTtc || 0) : 0,
       payment_method: inv.paymentMethod || 'especes',
       status: inv.isPaid ? 'Paid' : 'Unpaid',
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('garage_invoices', payload, {
+      expectedVersion: inv.version,
+      entityType: 'GarageInvoice',
+      entityLabel: inv.invoiceNumber,
+      localData: payload,
     });
+    return res.success;
+  },
+
+  async deleteFleetAccount(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('garage_fleet_contracts', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteInvoice(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('garage_invoices', id, deletedByStaffId);
     return res.success;
   },
 };

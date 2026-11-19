@@ -134,7 +134,7 @@ describe('syncCoordinator & offlineQueue', () => {
 
     // Without configured Supabase client, flushOfflineQueue leaves queue intact cleanly
     const flushRes = await flushOfflineQueue();
-    expect(flushRes).toEqual({ processed: 0, succeeded: 0, failed: 0 });
+    expect(flushRes).toEqual({ processed: 0, succeeded: 0, failed: 0, conflicts: 0 });
     expect(getOfflineQueueCount()).toBe(4);
   });
 });

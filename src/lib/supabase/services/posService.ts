@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { mapProductFromDb, mapSaleFromDb } from '../mappers';
 import { buildTraceEnvelope, getActiveDeviceId, syncCoordinator } from '../syncCoordinator';
 import type {
@@ -15,23 +16,22 @@ export const posService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pos_products')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .eq('is_active', true)
-        .is('deleted_at', null)
-        .order('name', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pos_products')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .eq('is_active', true)
+          .is('deleted_at', null)
+          .order('name', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[posService] fetchProducts notice:', error.message);
-        return [];
-      }
-
-      return (data || []).map(mapProductFromDb);
+      return data.map(mapProductFromDb);
     } catch {
       return [];
     }
@@ -45,7 +45,7 @@ export const posService = {
       staffId: product.staffId,
     });
 
-    const res = await syncCoordinator.mutateOrQueueUpsert('pos_products', {
+    const payload = {
       id: toValidUuid(product.id),
       ...trace,
       name: product.name,
@@ -59,6 +59,13 @@ export const posService = {
       image_url: product.imageUrl || null,
       is_pinned: Boolean(product.isPinned),
       is_active: product.isActive,
+    };
+
+    const res = await syncCoordinator.mutateOrQueueUpsert('pos_products', payload, {
+      expectedVersion: product.version,
+      entityType: 'Product',
+      entityLabel: product.name,
+      localData: payload,
     });
     return res.success;
   },
@@ -73,22 +80,21 @@ export const posService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pos_sales')
-        .select('*, pos_sale_items(*)')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('sold_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pos_sales')
+          .select('*, pos_sale_items(*)')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('sold_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[posService] fetchSales notice:', error.message);
-        return [];
-      }
-
-      return (data || []).map((row: any) =>
+      return data.map((row: any) =>
         mapSaleFromDb({
           ...row,
           items: Array.isArray(row.pos_sale_items)
@@ -131,15 +137,17 @@ export const posService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('pos_parked_orders')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-
-    if (error) return [];
-    return (data || []).map((row: any): ParkedOrder => ({
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('pos_parked_orders')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to)
+    );
+    return data.map((row: any): ParkedOrder => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -154,6 +162,7 @@ export const posService = {
       subtotal: Number(row.total_amount || 0),
       totalAmount: Number(row.total_amount || 0),
       notes: row.notes || undefined,
+      version: row.version != null ? Number(row.version) : undefined,
       createdAt: row.created_at,
     }));
   },
@@ -165,7 +174,7 @@ export const posService = {
       branchId: order.branchId || order.facilityId,
       staffId: order.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('pos_parked_orders', {
+    const payload = {
       id: toValidUuid(order.id),
       ...trace,
       label: order.referenceName,
@@ -174,6 +183,12 @@ export const posService = {
       discount: Number(order.discount || 0),
       total_amount: order.totalAmount,
       notes: order.notes || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pos_parked_orders', payload, {
+      expectedVersion: order.version,
+      entityType: 'ParkedOrder',
+      entityLabel: order.referenceName,
+      localData: payload,
     });
     return res.success;
   },
@@ -187,15 +202,17 @@ export const posService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('pos_stock_movements')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-
-    if (error) return [];
-    return (data || []).map((row: any): StockMovement => ({
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('pos_stock_movements')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to)
+    );
+    return data.map((row: any): StockMovement => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -215,17 +232,24 @@ export const posService = {
     ctx: { accountId: string; businessId: string; branchId: string }
   ): Promise<boolean> {
     const trace = buildTraceEnvelope(ctx);
+    const payload = {
+      ...trace,
+      header_title: config.headerTitle,
+      footer_message: config.footerMessage || null,
+      show_tax_breakdown: config.showTaxBreakdown,
+      paper_width_mm: 80,
+      nif: config.taxId || null,
+    };
     const res = await syncCoordinator.mutateOrQueueUpsert(
       'pos_receipt_configs',
+      payload,
       {
-        ...trace,
-        header_title: config.headerTitle,
-        footer_message: config.footerMessage || null,
-        show_tax_breakdown: config.showTaxBreakdown,
-        paper_width_mm: 80,
-        nif: config.taxId || null,
-      },
-      { onConflict: 'branch_id' }
+        onConflict: 'branch_id',
+        expectedVersion: config.version,
+        entityType: 'ReceiptConfig',
+        entityLabel: config.headerTitle,
+        localData: payload,
+      }
     );
     return res.success;
   },

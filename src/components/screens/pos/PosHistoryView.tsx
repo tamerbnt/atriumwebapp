@@ -472,6 +472,7 @@ export const PosHistoryView: React.FC = () => {
           keyExtractor={(m) => m.id}
           viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           defaultViewMode="list"
+          pageSize={50}
           hideToolbar
           openItemId={inspectingMovement?.id ?? null}
           isLoading={isSyncing || networkMode === 'force_skeleton'}

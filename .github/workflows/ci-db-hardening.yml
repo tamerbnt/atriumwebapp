@@ -1,0 +1,146 @@
+name: Enterprise CI & DB Hardening
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  app-quality:
+    name: TypeCheck, Tests & Production Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript lint check
+        run: npm run lint
+
+      - name: Run domain rule tests
+        run: npm run test
+
+      - name: Run Atrium & Supabase hardening test suites
+        run: npm run test:atrium
+
+      - name: Build production bundle
+        run: npm run build
+
+  postgres-migrations-and-rollback:
+    name: PostgreSQL Migrations, Hardening & Rollback Parity
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: atrium_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/atrium_ci
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/atrium_ci
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install PostgreSQL client tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Bootstrap Supabase auth/role stubs & base schemas
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+              CREATE ROLE anon NOLOGIN;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+              CREATE ROLE authenticated NOLOGIN;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+              CREATE ROLE service_role NOLOGIN BYPASSRLS;
+            END IF;
+          END $$;
+          CREATE SCHEMA IF NOT EXISTS auth;
+          CREATE TABLE IF NOT EXISTS auth.users (
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            email text
+          );
+          CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$
+            SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid;
+          $$;
+          SQL
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase_schema.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase_project_milestone.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase_trading_commercial.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase_traceability_migration.sql
+
+      - name: Apply sequential forward migrations (0001 -> 0005)
+        run: |
+          for f in $(ls -1 supabase/migrations/*.sql | sort); do
+            echo "Applying migration: $f"
+            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      - name: Verify Phase 5 optimistic triggers, partial unique indexes & RPCs
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          SELECT count(*) AS optimistic_triggers
+          FROM information_schema.triggers
+          WHERE trigger_schema = 'public' AND trigger_name LIKE '%_optimistic_version';
+
+          SELECT count(*) AS partial_unique_indexes
+          FROM pg_indexes
+          WHERE schemaname = 'public'
+            AND indexdef ILIKE '%UNIQUE INDEX%'
+            AND indexdef ILIKE '%deleted_at IS NULL%';
+
+          SELECT proname
+          FROM pg_proc p
+          JOIN pg_namespace n ON n.oid = p.pronamespace
+          WHERE n.nspname = 'public'
+            AND proname IN (
+              'mfg_upsert_bom_atomic',
+              'pm_generate_ccp_batch_slips_atomic',
+              'logistics_upsert_wilaya_tariffs_batch',
+              'get_audit_logs_page'
+            );
+          SQL
+
+      - name: Verify backup & restore drill round-trip
+        run: |
+          chmod +x scripts/db/backup_postgres.sh scripts/db/restore_drill.sh
+          BACKUP_DIR="/tmp/atrium_ci_backups" BACKUP_PASSPHRASE="ci_drill_passphrase" ./scripts/db/backup_postgres.sh
+          LATEST_BACKUP=$(ls -1t /tmp/atrium_ci_backups/*.dump.enc | head -n 1)
+          ADMIN_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres" \
+            BACKUP_PASSPHRASE="ci_drill_passphrase" \
+            ./scripts/db/restore_drill.sh "$LATEST_BACKUP"
+
+      - name: Verify Phase 5 rollback & re-apply parity
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/rollbacks/202611190005_enterprise_100pct_hardening.down.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/202611190005_enterprise_100pct_hardening.sql

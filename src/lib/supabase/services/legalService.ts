@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   LegalMatter,
@@ -70,19 +71,21 @@ export const legalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('legal_clients')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('legal_clients')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): LegalClientEntity => {
+      return data.map((row: any): LegalClientEntity => {
         const { plain: addressFr, meta } = unpackMeta(row.address);
         return {
           id: row.id,
@@ -103,6 +106,7 @@ export const legalService = {
           courtJurisdiction: meta.courtJurisdiction || 'Cour d\'Alger',
           activeMattersCount: Number(meta.activeMattersCount ?? 0),
           outstandingBalanceDzd: Number(meta.outstandingBalanceDzd ?? 0),
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -118,7 +122,7 @@ export const legalService = {
       branchId: entity.branchId,
       staffId: entity.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('legal_clients', {
+    const payload = {
       id: toValidUuid(entity.id),
       ...trace,
       full_name: entity.nameFr,
@@ -135,6 +139,12 @@ export const legalService = {
         activeMattersCount: entity.activeMattersCount,
         outstandingBalanceDzd: entity.outstandingBalanceDzd,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_clients', payload, {
+      expectedVersion: entity.version,
+      entityType: 'LegalClient',
+      entityLabel: entity.nameFr,
+      localData: payload,
     });
     return res.success;
   },
@@ -144,19 +154,21 @@ export const legalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('legal_matters')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('legal_matters')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): LegalMatter => {
+      return data.map((row: any): LegalMatter => {
         const { plain, meta } = unpackMeta(row.notes);
         return {
           id: row.id,
@@ -183,6 +195,7 @@ export const legalService = {
           nextHearingDate: meta.nextHearingDate,
           cpcaDeadlineId: meta.cpcaDeadlineId,
           notes: plain || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -198,7 +211,7 @@ export const legalService = {
       branchId: matter.branchId,
       staffId: matter.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('legal_matters', {
+    const payload = {
       id: toValidUuid(matter.id),
       ...trace,
       matter_number: matter.matterNumber,
@@ -225,6 +238,12 @@ export const legalService = {
         nextHearingDate: matter.nextHearingDate,
         cpcaDeadlineId: matter.cpcaDeadlineId,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_matters', payload, {
+      expectedVersion: matter.version,
+      entityType: 'LegalMatter',
+      entityLabel: matter.matterNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -239,19 +258,21 @@ export const legalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('legal_hearings')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('hearing_at', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('legal_hearings')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('hearing_at', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): LegalHearing => {
+      return data.map((row: any): LegalHearing => {
         const { plain, meta } = unpackMeta(row.outcome_notes);
         const isoDate = row.hearing_at ? String(row.hearing_at).split('T')[0] : '';
         return {
@@ -280,6 +301,7 @@ export const legalService = {
           isCompleted: Boolean(meta.isCompleted),
           nextDate: meta.nextDate,
           status: meta.uiStatus || row.status,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -295,7 +317,7 @@ export const legalService = {
       branchId: hearing.branchId,
       staffId: hearing.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('legal_hearings', {
+    const payload = {
       id: toValidUuid(hearing.id),
       ...trace,
       matter_id: toValidUuid(hearing.matterId),
@@ -322,6 +344,12 @@ export const legalService = {
         isCompleted: hearing.isCompleted,
         nextDate: hearing.nextDate,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_hearings', payload, {
+      expectedVersion: hearing.version,
+      entityType: 'LegalHearing',
+      entityLabel: hearing.matterTitle || hearing.matterNumber || hearing.id,
+      localData: payload,
     });
     return res.success;
   },
@@ -331,22 +359,29 @@ export const legalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('legal_deadlines')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('due_date', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('legal_deadlines')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('due_date', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): CPCADeadline | null => {
           const { meta } = unpackMeta(row.title);
-          return meta.deadline ? (meta.deadline as CPCADeadline) : null;
+          return meta.deadline
+            ? ({
+                ...(meta.deadline as CPCADeadline),
+                version: row.version != null ? Number(row.version) : (meta.deadline as CPCADeadline).version,
+              })
+            : null;
         })
         .filter((d: CPCADeadline | null): d is CPCADeadline => Boolean(d));
     } catch {
@@ -361,7 +396,7 @@ export const legalService = {
       branchId: dl.branchId,
       staffId: dl.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('legal_deadlines', {
+    const payload = {
       id: toValidUuid(dl.id),
       ...trace,
       matter_id: toValidUuid(dl.matterId),
@@ -371,6 +406,12 @@ export const legalService = {
       is_forclusion_critical: dl.status === 'critical' || dl.status === 'approaching',
       is_completed: dl.status === 'filed',
       completed_at: dl.appealFilingReceipt?.filingDate ? `${dl.appealFilingReceipt.filingDate}T12:00:00Z` : null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_deadlines', payload, {
+      expectedVersion: dl.version,
+      entityType: 'CPCADeadline',
+      entityLabel: `${dl.recourseType} — ${dl.caseNumber}`,
+      localData: payload,
     });
     return res.success;
   },
@@ -380,23 +421,30 @@ export const legalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('legal_documents')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .eq('doc_category', 'NotaryDeed')
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('legal_documents')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .eq('doc_category', 'NotaryDeed')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): NotaryDeed | null => {
           const { meta } = unpackMeta(row.file_url);
-          return meta.deed ? (meta.deed as NotaryDeed) : null;
+          return meta.deed
+            ? ({
+                ...(meta.deed as NotaryDeed),
+                version: row.version != null ? Number(row.version) : (meta.deed as NotaryDeed).version,
+              })
+            : null;
         })
         .filter((d: NotaryDeed | null): d is NotaryDeed => Boolean(d));
     } catch {
@@ -411,7 +459,7 @@ export const legalService = {
       branchId: deed.branchId,
       staffId: deed.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('legal_documents', {
+    const payload = {
       id: toValidUuid(deed.id),
       ...trace,
       matter_id: matterId ? toValidUuid(matterId) : null,
@@ -419,6 +467,12 @@ export const legalService = {
       doc_category: 'NotaryDeed',
       file_url: packMeta(deed.repertoireNumber, { deed }),
       confidentiality_level: 'NotarialMinute',
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_documents', payload, {
+      expectedVersion: deed.version,
+      entityType: 'NotaryDeed',
+      entityLabel: deed.title,
+      localData: payload,
     });
     return res.success;
   },
@@ -428,18 +482,19 @@ export const legalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('legal_escrow_movements')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      return await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('legal_escrow_movements')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-      const { data, error } = await query;
-      if (error) return [];
-      return data || [];
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
     } catch {
       return [];
     }
@@ -452,7 +507,7 @@ export const legalService = {
       branchId: escrow.branchId,
       staffId: escrow.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('legal_documents', {
+    const payload = {
       id: toValidUuid(`escrow_${escrow.id}`),
       ...trace,
       matter_id: toValidUuid(escrow.matterId),
@@ -460,6 +515,12 @@ export const legalService = {
       doc_category: 'EscrowAccount',
       file_url: packMeta(escrow.matterReference, { escrow }),
       confidentiality_level: 'Restricted',
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_documents', payload, {
+      expectedVersion: escrow.version,
+      entityType: 'EscrowAccount',
+      entityLabel: `CARPA ${escrow.matterReference}`,
+      localData: payload,
     });
     return res.success;
   },
@@ -488,23 +549,29 @@ export const legalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('legal_time_entries')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .ilike('description', '__atrium_legal__:%')
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('legal_time_entries')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .ilike('description', '__atrium_legal__:%')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): SCFJournalEntry | null => {
           const { meta } = unpackMeta(row.description);
-          return meta.scfEntry ? (meta.scfEntry as SCFJournalEntry) : null;
+          if (!meta.scfEntry) return null;
+          return {
+            ...(meta.scfEntry as SCFJournalEntry),
+            version: row.version != null ? Number(row.version) : (meta.scfEntry as SCFJournalEntry).version,
+          };
         })
         .filter((e: SCFJournalEntry | null): e is SCFJournalEntry => Boolean(e));
     } catch {
@@ -519,7 +586,7 @@ export const legalService = {
       branchId: entry.branchId,
       staffId: entry.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('legal_time_entries', {
+    const payload = {
       id: toValidUuid(entry.id),
       ...trace,
       matter_id: defaultMatterId ? toValidUuid(defaultMatterId) : null,
@@ -530,6 +597,12 @@ export const legalService = {
       is_billable: false,
       is_billed: entry.status === 'validated',
       entry_date: entry.date || new Date().toISOString().split('T')[0],
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_time_entries', payload, {
+      expectedVersion: entry.version,
+      entityType: 'SCFJournalEntry',
+      entityLabel: entry.entryNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -539,21 +612,28 @@ export const legalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('legal_cash_receipts')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('legal_cash_receipts')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): CashReceipt => {
+      return data.map((row: any): CashReceipt => {
         const { plain: notes, meta } = unpackMeta(row.notes);
-        if (meta.receipt) return meta.receipt as CashReceipt;
+        if (meta.receipt) {
+          return {
+            ...(meta.receipt as CashReceipt),
+            version: row.version != null ? Number(row.version) : (meta.receipt as CashReceipt).version,
+          };
+        }
         return {
           id: row.id,
           accountId: row.account_id,
@@ -569,6 +649,7 @@ export const legalService = {
           timbreFiscalDzd: 0,
           netCollectedDzd: Number(row.amount_dzd || 0),
           cashierName: 'Caissier',
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -584,7 +665,7 @@ export const legalService = {
       branchId: receipt.branchId,
       staffId: receipt.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('legal_cash_receipts', {
+    const payload = {
       id: toValidUuid(receipt.id),
       ...trace,
       receipt_number: receipt.receiptNumber,
@@ -594,7 +675,43 @@ export const legalService = {
       payment_method: receipt.paymentMethod,
       received_date: receipt.createdAt ? receipt.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],
       notes: packMeta(receipt.matterTitle, { receipt }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('legal_cash_receipts', payload, {
+      expectedVersion: receipt.version,
+      entityType: 'CashReceipt',
+      entityLabel: receipt.receiptNumber,
+      localData: payload,
     });
+    return res.success;
+  },
+
+  async deleteClient(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('legal_clients', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteHearing(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('legal_hearings', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteCpcaDeadline(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('legal_deadlines', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteNotaryDeed(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('legal_documents', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteScfEntry(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('legal_time_entries', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteCashReceipt(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('legal_cash_receipts', id, deletedByStaffId);
     return res.success;
   },
 };

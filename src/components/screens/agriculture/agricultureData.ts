@@ -12,7 +12,7 @@ import {
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import type { Dispatch, SetStateAction } from 'react';
-import { isSupabaseConfigured, agricultureService, realtimeService, syncCoordinator, runWithConcurrency } from '../../../lib/supabase';
+import { isSupabaseConfigured, agricultureService, realtimeService, syncCoordinator, subscribeConcurrencyResolutions, runWithConcurrency } from '../../../lib/supabase';
 
 function mergeAgriById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
   if (remote.length === 0) return prev;
@@ -791,6 +791,66 @@ export const useAgricultureData = () => {
     });
   }, [activeBranchId]);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const unsub = subscribeConcurrencyResolutions((evt) => {
+      const tasks: Array<() => Promise<void>> = [];
+      if (evt.table === 'agri_parcels') {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchParcels(activeBranchId);
+          if (!cancelled && rows.length > 0) setParcels((prev) => mergeAgriById(prev, rows as AgriParcel[]));
+        });
+      } else if (evt.table === 'agri_crop_cycles') {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchCropCycles(activeBranchId);
+          if (!cancelled && rows.length > 0) setCropCycles((prev) => mergeAgriById(prev, rows as AgriCropCycle[]));
+        });
+      } else if (evt.table === 'agri_treatments') {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchTreatments(activeBranchId);
+          if (!cancelled && rows.length > 0) setTreatmentLogs((prev) => mergeAgriById(prev, rows as AgriTreatmentLog[]));
+        });
+      } else if (evt.table === 'agri_staff') {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchWorkers(activeBranchId);
+          if (!cancelled && rows.length > 0) setWorkers((prev) => mergeAgriById(prev, rows as AgriWorker[]));
+        });
+      } else if (evt.table === 'agri_sales') {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchPointages(activeBranchId);
+          if (!cancelled && rows.length > 0) setPointages((prev) => mergeAgriById(prev, rows as AgriDailyPointage[]));
+        });
+      } else if (evt.table === 'agri_livestock') {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchLivestock(activeBranchId);
+          if (!cancelled && rows.length > 0) setDairyCows((prev) => mergeAgriById(prev, rows as AgriDairyCow[]));
+        });
+      } else if (evt.table === 'agri_milking_logs') {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchMilkingLogs(activeBranchId);
+          if (!cancelled && rows.length > 0) setMilkingRecords((prev) => mergeAgriById(prev, rows as AgriMilkingRecord[]));
+        });
+      } else if (evt.table === 'agri_harvests') {
+        tasks.push(async () => {
+          const rows = await agricultureService.fetchHarvestTickets(activeBranchId);
+          if (!cancelled && rows.length > 0) setWeighbridgeTickets((prev) => mergeAgriById(prev, rows as AgriWeighbridgeTicket[]));
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `agriculture:res:${activeBranchId}:${evt.table}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+  }, [activeBranchId]);
+
   // Parcel handlers
   const addParcel = (parcel: AgriParcel) => {
     const scoped = withBranch(parcel);
@@ -804,7 +864,7 @@ export const useAgricultureData = () => {
   };
   const deleteParcel = (id: string) => {
     setParcels((prev) => prev.filter((p) => p.id !== id));
-    void syncCoordinator.softDeleteRow('agri_parcels', id, currentStaffId).catch(() => {});
+    void agricultureService.deleteParcel(id, currentStaffId).catch(() => {});
   };
 
   // Crop cycle handlers
@@ -822,7 +882,7 @@ export const useAgricultureData = () => {
   };
   const deleteCropCycle = (id: string) => {
     setCropCycles((prev) => prev.filter((c) => c.id !== id));
-    void syncCoordinator.softDeleteRow('agri_crop_cycles', id, currentStaffId).catch(() => {});
+    void agricultureService.deleteCropCycle(id, currentStaffId).catch(() => {});
   };
 
   // Treatment handlers
@@ -860,7 +920,7 @@ export const useAgricultureData = () => {
   };
   const deleteTreatmentLog = (id: string) => {
     setTreatmentLogs((prev) => prev.filter((t) => t.id !== id));
-    void syncCoordinator.softDeleteRow('agri_treatments', id, currentStaffId).catch(() => {});
+    void agricultureService.deleteTreatment(id, currentStaffId).catch(() => {});
   };
 
   // Worker handlers
@@ -876,7 +936,7 @@ export const useAgricultureData = () => {
   };
   const deleteWorker = (id: string) => {
     setWorkers((prev) => prev.filter((w) => w.id !== id));
-    void syncCoordinator.softDeleteRow('agri_staff', id, currentStaffId).catch(() => {});
+    void agricultureService.deleteWorker(id, currentStaffId).catch(() => {});
   };
 
   // Pointage handlers
@@ -892,7 +952,7 @@ export const useAgricultureData = () => {
   };
   const deletePointage = (id: string) => {
     setPointages((prev) => prev.filter((p) => p.id !== id));
-    void syncCoordinator.softDeleteRow('agri_sales', `ptg_${id}`, currentStaffId).catch(() => {});
+    void agricultureService.deletePointage(id, currentStaffId).catch(() => {});
   };
 
   // Dairy herd handlers
@@ -908,7 +968,7 @@ export const useAgricultureData = () => {
   };
   const deleteDairyCow = (id: string) => {
     setDairyCows((prev) => prev.filter((c) => c.id !== id));
-    void syncCoordinator.softDeleteRow('agri_livestock', id, currentStaffId).catch(() => {});
+    void agricultureService.deleteLivestock(id, currentStaffId).catch(() => {});
   };
 
   // Milking record handlers
@@ -919,7 +979,7 @@ export const useAgricultureData = () => {
   };
   const deleteMilkingRecord = (id: string) => {
     setMilkingRecords((prev) => prev.filter((m) => m.id !== id));
-    void syncCoordinator.softDeleteRow('agri_milking_logs', id, currentStaffId).catch(() => {});
+    void agricultureService.deleteMilkingLog(id, currentStaffId).catch(() => {});
   };
 
   // Weighbridge ticket handlers
@@ -937,7 +997,7 @@ export const useAgricultureData = () => {
   };
   const deleteWeighbridgeTicket = (id: string) => {
     setWeighbridgeTickets((prev) => prev.filter((t) => t.id !== id));
-    void syncCoordinator.softDeleteRow('agri_harvests', id, currentStaffId).catch(() => {});
+    void agricultureService.deleteHarvestTicket(id, currentStaffId).catch(() => {});
   };
 
   // Reset active branch data to empty state

@@ -604,6 +604,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
           items={sortedSales}
           keyExtractor={(s) => s.id}
           viewMode={viewMode}
+          pageSize={50}
           hideToolbar
           openItemId={selectedSale?.id ?? null}
           sortBy={saleSortBy}

@@ -29,9 +29,16 @@ import {
   Moon,
   Layout,
   ChevronUp,
+  History,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../services/store';
+import {
+  useAtriumStore,
+  showToast,
+  validateBackupSnapshot,
+  type BackupValidationResult,
+} from '../../services/store';
 import { Modal } from '../ui/Modal';
+import { AuditLogViewerModal } from '../modals/AuditLogViewerModal';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { validateVoucherCode } from '../../utils/rules';
 import { LabelInput } from '../ui/LabelInput';
@@ -87,6 +94,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
   } = useAtriumStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
   const [pendingBackupContent, setPendingBackupContent] = useState<string | null>(null);
   const [pendingBackupMeta, setPendingBackupMeta] = useState<{
@@ -94,6 +102,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     businessesCount: number;
     primaryBusiness: string;
     membersCount: number;
+    validation: BackupValidationResult;
   } | null>(null);
 
   const [isAddBranchOpen, setIsAddBranchOpen] = useState(false);
@@ -144,32 +153,29 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
-      try {
-        const text = event.target?.result as string;
-        const parsed = JSON.parse(text);
-        if (!parsed || !Array.isArray(parsed.businesses) || !parsed.account) {
-          showToast({
-            type: 'error',
-            title: 'Invalid Backup File',
-            message: 'Expected a valid Atrium JSON database export containing businesses and account schemas.',
-          });
-          return;
-        }
-        setPendingBackupContent(text);
-        setPendingBackupMeta({
-          exportedAt: parsed.exportedAt || 'Unknown Date',
-          businessesCount: parsed.businesses?.length || 0,
-          primaryBusiness: parsed.businesses?.[0]?.name || 'Unknown Business',
-          membersCount: parsed.members?.length || 0,
-        });
-        setIsRestoreModalOpen(true);
-      } catch (err) {
+      const text = (event.target?.result as string) || '';
+      const validation = validateBackupSnapshot(text);
+      if (!validation.valid || !validation.parsed) {
         showToast({
           type: 'error',
-          title: 'Corrupted Backup File',
-          message: 'Could not parse JSON. Please ensure the file was not modified or corrupted.',
+          title: 'Invalid Backup File',
+          message:
+            validation.errors[0] ||
+            'Expected a valid Atrium JSON database export containing account, businesses, and branches.',
         });
+        return;
       }
+
+      const parsed = validation.parsed;
+      setPendingBackupContent(text);
+      setPendingBackupMeta({
+        exportedAt: validation.exportedAt || parsed.exportedAt || 'Unknown Date',
+        businessesCount: validation.entityCounts.businesses ?? parsed.businesses?.length ?? 0,
+        primaryBusiness: validation.primaryBusiness || parsed.businesses?.[0]?.name || 'Unknown Business',
+        membersCount: validation.entityCounts.members ?? parsed.members?.length ?? 0,
+        validation,
+      });
+      setIsRestoreModalOpen(true);
     };
     reader.readAsText(file);
     e.target.value = '';
@@ -924,9 +930,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
+              onClick={() => setIsAuditLogOpen(true)}
+              className="h-9 px-3.5 text-xs font-semibold rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs whitespace-nowrap shrink-0"
+            >
+              <History size={13} className="text-[#d4522f]" />
+              <span>
+                {language === 'ar' ? 'سجل التدقيق' : language === 'fr' ? 'Journal d’audit' : 'Audit Log'}
+              </span>
+            </button>
+            <button
+              type="button"
               onClick={() => syncWithSupabase()}
               disabled={isSyncing}
-              className="h-9 px-4 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
+              className="h-9 px-4 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60 whitespace-nowrap shrink-0"
             >
               <RotateCw size={13} className={isSyncing ? 'animate-spin text-[#d4522f]' : ''} />
               <span>
@@ -1465,39 +1481,70 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
 
           {pendingBackupMeta && (
-            <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
-              <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="text-black/65 dark:text-white/65">
-                  {language === 'ar' ? 'تاريخ تصدير النسخة:' : language === 'fr' ? 'Date de la sauvegarde :' : 'Backup Export Date:'}
-                </span>
-                <span className="font-semibold text-black dark:text-white tabular-nums">
-                  {new Date(pendingBackupMeta.exportedAt).toLocaleString()}
-                </span>
+            <div className="space-y-3">
+              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
+                <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
+                  <span className="text-black/65 dark:text-white/65">
+                    {language === 'ar' ? 'تاريخ تصدير النسخة:' : language === 'fr' ? 'Date de la sauvegarde :' : 'Backup Export Date:'}
+                  </span>
+                  <span className="font-semibold text-black dark:text-white tabular-nums">
+                    {pendingBackupMeta.exportedAt !== 'Unknown Date'
+                      ? new Date(pendingBackupMeta.exportedAt).toLocaleString()
+                      : pendingBackupMeta.exportedAt}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
+                  <span className="text-black/65 dark:text-white/65">
+                    {language === 'ar' ? 'المنشأة الرئيسية:' : language === 'fr' ? 'Entreprise principale :' : 'Primary Business:'}
+                  </span>
+                  <span className="font-semibold text-black dark:text-white">
+                    {pendingBackupMeta.primaryBusiness}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
+                  <span className="text-black/65 dark:text-white/65">
+                    {language === 'ar' ? 'نسخة المخطط / البصمة:' : language === 'fr' ? 'Schéma / Empreinte :' : 'Schema / Checksum:'}
+                  </span>
+                  <span className="font-mono text-[11px] font-semibold text-black dark:text-white tabular-nums">
+                    v{String(pendingBackupMeta.validation.schemaVersion)} · {pendingBackupMeta.validation.checksum}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
+                  <span className="text-black/65 dark:text-white/65">
+                    {language === 'ar' ? 'إجمالي السجلات:' : language === 'fr' ? 'Total des enregistrements :' : 'Total Records:'}
+                  </span>
+                  <span className="font-semibold text-black dark:text-white tabular-nums">
+                    {pendingBackupMeta.validation.totalRecords.toLocaleString()} ({pendingBackupMeta.businessesCount}{' '}
+                    {language === 'ar' ? 'منشأة' : language === 'fr' ? 'entités' : 'businesses'})
+                  </span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-black/65 dark:text-white/65">
+                    {language === 'ar' ? 'الأعضاء / جهات الاتصال:' : language === 'fr' ? 'Membres / Contacts :' : 'Members / Contacts:'}
+                  </span>
+                  <span className="font-semibold text-black dark:text-white tabular-nums">
+                    {pendingBackupMeta.membersCount} {language === 'ar' ? 'سجل' : language === 'fr' ? 'enregistrements' : 'records'}
+                  </span>
+                </div>
+                <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-black/65 dark:text-white/65 tabular-nums">
+                  {Object.entries(pendingBackupMeta.validation.entityCounts)
+                    .filter(([, count]) => count > 0)
+                    .slice(0, 8)
+                    .map(([key, count]) => (
+                      <span key={key}>
+                        {key}: <strong className="text-black dark:text-white">{count}</strong>
+                      </span>
+                    ))}
+                </div>
               </div>
-              <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="text-black/65 dark:text-white/65">
-                  {language === 'ar' ? 'المنشأة الرئيسية:' : language === 'fr' ? 'Entreprise principale :' : 'Primary Business:'}
-                </span>
-                <span className="font-semibold text-black dark:text-white">
-                  {pendingBackupMeta.primaryBusiness}
-                </span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="text-black/65 dark:text-white/65">
-                  {language === 'ar' ? 'إجمالي المنشآت:' : language === 'fr' ? 'Total des entreprises :' : 'Total Businesses:'}
-                </span>
-                <span className="font-semibold text-black dark:text-white tabular-nums">
-                  {pendingBackupMeta.businessesCount}
-                </span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="text-black/65 dark:text-white/65">
-                  {language === 'ar' ? 'الأعضاء / جهات الاتصال:' : language === 'fr' ? 'Membres / Contacts :' : 'Members / Contacts:'}
-                </span>
-                <span className="font-semibold text-black dark:text-white tabular-nums">
-                  {pendingBackupMeta.membersCount} {language === 'ar' ? 'سجل' : language === 'fr' ? 'enregistrements' : 'records'}
-                </span>
-              </div>
+
+              {pendingBackupMeta.validation.warnings.length > 0 && (
+                <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-800 dark:text-amber-300 space-y-1">
+                  {pendingBackupMeta.validation.warnings.map((w, idx) => (
+                    <div key={idx}>{w}</div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -1523,6 +1570,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
         </div>
       </Modal>
+
+      <AuditLogViewerModal
+        isOpen={isAuditLogOpen}
+        onClose={() => setIsAuditLogOpen(false)}
+      />
 
     </div>
   );

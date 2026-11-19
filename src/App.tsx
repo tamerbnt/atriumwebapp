@@ -40,6 +40,11 @@ const LeadModal = React.lazy(() =>
 const DesktopUpgradeModal = React.lazy(() =>
   import('./components/modals/DesktopUpgradeModal').then((m) => ({ default: m.DesktopUpgradeModal }))
 );
+const ConcurrencyConflictModal = React.lazy(() =>
+  import('./components/modals/ConcurrencyConflictModal').then((m) => ({
+    default: m.ConcurrencyConflictModal,
+  }))
+);
 
 // All 116 Screens lazy-loaded with Category Chunk Partitioning
 import {
@@ -199,6 +204,9 @@ export default function App() {
   const activeEducationRole = useAtriumSelector((s) => s.activeEducationRole);
   const isTopBarCollapsed = useAtriumSelector((s) => s.isTopBarCollapsed || false);
   const isTopBarAutoHide = useAtriumSelector((s) => s.isTopBarAutoHide ?? false);
+  const hasConcurrencyConflicts = useAtriumSelector(
+    (s) => (s.concurrencyConflicts?.length || 0) > 0
+  );
   const toggleTopBarCollapsed = toggleTopBarCollapsedAction;
   const setTopBarCollapsed = setTopBarCollapsedAction;
   const loginWithPin = loginWithPinAction;
@@ -1345,6 +1353,13 @@ export default function App() {
             onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
             reason={desktopUpgradeReason}
           />
+        </React.Suspense>
+      )}
+
+      {/* Optimistic Concurrency Conflict Resolution Modal */}
+      {hasConcurrencyConflicts && (
+        <React.Suspense fallback={null}>
+          <ConcurrencyConflictModal />
         </React.Suspense>
       )}
 

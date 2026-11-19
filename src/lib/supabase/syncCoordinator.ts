@@ -1,6 +1,11 @@
 import type { BusinessCategory } from '../../types/index';
 import { getSupabaseClient, isSupabaseConfigured, isUuid, toValidUuid } from './client';
-import { enqueueMutation, flushOfflineQueue } from './offlineQueue';
+import {
+  enqueueMutation,
+  flushOfflineQueue,
+  isStaleVersionError,
+  registerQueueConflictListener,
+} from './offlineQueue';
 
 export interface TraceEnvelopeContext {
   accountId?: string | null;
@@ -21,10 +26,117 @@ export interface DbTraceEnvelope {
   updated_at: string;
 }
 
+export interface ConcurrencyConflictEvent {
+  id: string;
+  table: string;
+  recordId: string;
+  entityType?: string;
+  entityLabel?: string;
+  expectedVersion: number;
+  serverVersion: number;
+  localData: Record<string, any>;
+  serverData: Record<string, any> | null;
+  versionColumn: string;
+  detectedAt: string;
+  onApplyResolution?: (
+    resolvedRecord: Record<string, any>,
+    strategy: 'server' | 'overwrite' | 'merge'
+  ) => Promise<void> | void;
+}
+
+export interface ConcurrencyResolutionEvent {
+  table: string;
+  recordId: string;
+  strategy: 'server' | 'overwrite' | 'merge';
+  resolvedVersion: number;
+  resolvedRecord: Record<string, any> | null;
+  resolvedAt: string;
+}
+
+export interface MutateOptions {
+  onConflict?: string;
+  expectedVersion?: number;
+  versionColumn?: string;
+  entityType?: string;
+  entityLabel?: string;
+  localData?: Record<string, any>;
+  onApplyResolution?: ConcurrencyConflictEvent['onApplyResolution'];
+}
+
+export interface MutateResult {
+  success: boolean;
+  queued: boolean;
+  conflict?: boolean;
+  serverData?: Record<string, any> | null;
+  newVersion?: number;
+  error?: string;
+}
+
 const DEVICE_STORAGE_KEY = 'atrium_client_device_id_v1';
 const CURSOR_STORAGE_KEY = 'atrium_delta_sync_cursors_v1';
 
 let fallbackDeviceId = `web_${Math.random().toString(36).slice(2, 10)}`;
+
+const conflictListeners = new Set<(event: ConcurrencyConflictEvent) => void>();
+
+export function subscribeConcurrencyConflicts(
+  listener: (event: ConcurrencyConflictEvent) => void
+): () => void {
+  conflictListeners.add(listener);
+  return () => {
+    conflictListeners.delete(listener);
+  };
+}
+
+export function emitConcurrencyConflict(event: ConcurrencyConflictEvent): void {
+  conflictListeners.forEach((listener) => {
+    try {
+      listener(event);
+    } catch {
+      // keep dispatching to remaining listeners
+    }
+  });
+}
+
+const resolutionListeners = new Set<(event: ConcurrencyResolutionEvent) => void>();
+
+export function subscribeConcurrencyResolutions(
+  listener: (event: ConcurrencyResolutionEvent) => void
+): () => void {
+  resolutionListeners.add(listener);
+  return () => {
+    resolutionListeners.delete(listener);
+  };
+}
+
+export function emitConcurrencyResolution(event: ConcurrencyResolutionEvent): void {
+  resolutionListeners.forEach((listener) => {
+    try {
+      listener(event);
+    } catch {
+      // keep dispatching to remaining listeners
+    }
+  });
+}
+
+// Forward offline replay conflicts into the unified concurrency conflict bus
+registerQueueConflictListener(({ item, serverData, serverVersion }) => {
+  const targetId = item.recordId || item.payload?.id || '';
+  if (!item.table || !targetId) return;
+  emitConcurrencyConflict({
+    id: `conflict_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    table: item.table,
+    recordId: targetId,
+    entityType: item.entityType,
+    entityLabel: item.entityLabel,
+    expectedVersion: Number(item.expectedVersion ?? 1),
+    serverVersion,
+    localData: item.payload || {},
+    serverData,
+    versionColumn: item.versionColumn || 'version',
+    detectedAt: new Date().toISOString(),
+  });
+});
 
 export function getActiveDeviceId(): string {
   try {
@@ -338,6 +450,19 @@ function writeCursors(map: Record<string, string>): void {
   }
 }
 
+async function fetchServerRowForConflict(
+  client: any,
+  table: string,
+  recordId: string
+): Promise<Record<string, any> | null> {
+  try {
+    const { data } = await client.from(table).select('*').eq('id', recordId).maybeSingle();
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export const syncCoordinator = {
   /**
    * Coalesces duplicate concurrent calls sharing the same sync key into a single promise.
@@ -381,69 +506,306 @@ export const syncCoordinator = {
   },
 
   /**
-   * Upserts a row with offline queue fallback on network/connection failure.
+   * Upserts a row with optimistic version checks and offline queue fallback on network failure.
+   * Stale-version conflicts (`40001` / `CONFLICT_STALE_VERSION`) NEVER enter the offline queue;
+   * instead they emit a `ConcurrencyConflictEvent` with the latest server snapshot.
    */
   async mutateOrQueueUpsert(
     table: string,
     payload: Record<string, any>,
-    options?: { onConflict?: string }
-  ): Promise<{ success: boolean; queued: boolean; error?: string }> {
+    options?: MutateOptions
+  ): Promise<MutateResult> {
+    const versionCol = options?.versionColumn || 'version';
+    const expectedVersion = options?.expectedVersion ?? payload?.[versionCol];
+    const effectivePayload =
+      expectedVersion !== undefined && payload[versionCol] === undefined
+        ? { ...payload, [versionCol]: expectedVersion }
+        : payload;
+
     const client = getSupabaseClient();
     if (!client || !isSupabaseConfigured()) {
-      enqueueMutation({ kind: 'upsert', table, payload, onConflict: options?.onConflict });
+      enqueueMutation({
+        kind: 'upsert',
+        table,
+        payload: effectivePayload,
+        onConflict: options?.onConflict,
+        expectedVersion: typeof expectedVersion === 'number' ? expectedVersion : undefined,
+        versionColumn: versionCol,
+        entityType: options?.entityType,
+        entityLabel: options?.entityLabel,
+      });
       return { success: false, queued: true };
     }
 
     try {
-      const { error } = await (client as any)
+      const { data, error } = await (client as any)
         .from(table)
-        .upsert(payload, options?.onConflict ? { onConflict: options.onConflict } : undefined);
+        .upsert(effectivePayload, options?.onConflict ? { onConflict: options.onConflict } : undefined)
+        .select(`id, ${versionCol}`)
+        .maybeSingle();
 
       if (error) {
-        enqueueMutation({ kind: 'upsert', table, payload, onConflict: options?.onConflict });
+        if (isStaleVersionError(error) && effectivePayload?.id) {
+          const serverData = await fetchServerRowForConflict(client, table, String(effectivePayload.id));
+          const serverVersion = Number(serverData?.[versionCol] ?? Number(expectedVersion ?? 1) + 1);
+          emitConcurrencyConflict({
+            id: `conflict_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            table,
+            recordId: String(effectivePayload.id),
+            entityType: options?.entityType,
+            entityLabel: options?.entityLabel,
+            expectedVersion: Number(expectedVersion ?? 1),
+            serverVersion,
+            localData: options?.localData || effectivePayload,
+            serverData,
+            versionColumn: versionCol,
+            detectedAt: new Date().toISOString(),
+            onApplyResolution: options?.onApplyResolution,
+          });
+          return {
+            success: false,
+            queued: false,
+            conflict: true,
+            serverData,
+            error: error.message || 'CONFLICT_STALE_VERSION',
+          };
+        }
+
+        enqueueMutation({
+          kind: 'upsert',
+          table,
+          payload: effectivePayload,
+          onConflict: options?.onConflict,
+          expectedVersion: typeof expectedVersion === 'number' ? expectedVersion : undefined,
+          versionColumn: versionCol,
+          entityType: options?.entityType,
+          entityLabel: options?.entityLabel,
+        });
         return { success: false, queued: true, error: error.message };
       }
-      return { success: true, queued: false };
+
+      const newVersion =
+        data && typeof data[versionCol] === 'number' ? Number(data[versionCol]) : undefined;
+      return { success: true, queued: false, newVersion };
     } catch (err: any) {
-      enqueueMutation({ kind: 'upsert', table, payload, onConflict: options?.onConflict });
+      if (isStaleVersionError(err) && effectivePayload?.id) {
+        const serverData = await fetchServerRowForConflict(client, table, String(effectivePayload.id));
+        const serverVersion = Number(serverData?.[versionCol] ?? Number(expectedVersion ?? 1) + 1);
+        emitConcurrencyConflict({
+          id: `conflict_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          table,
+          recordId: String(effectivePayload.id),
+          entityType: options?.entityType,
+          entityLabel: options?.entityLabel,
+          expectedVersion: Number(expectedVersion ?? 1),
+          serverVersion,
+          localData: options?.localData || effectivePayload,
+          serverData,
+          versionColumn: versionCol,
+          detectedAt: new Date().toISOString(),
+          onApplyResolution: options?.onApplyResolution,
+        });
+        return {
+          success: false,
+          queued: false,
+          conflict: true,
+          serverData,
+          error: err?.message || 'CONFLICT_STALE_VERSION',
+        };
+      }
+
+      enqueueMutation({
+        kind: 'upsert',
+        table,
+        payload: effectivePayload,
+        onConflict: options?.onConflict,
+        expectedVersion: typeof expectedVersion === 'number' ? expectedVersion : undefined,
+        versionColumn: versionCol,
+        entityType: options?.entityType,
+        entityLabel: options?.entityLabel,
+      });
       return { success: false, queued: true, error: err?.message || 'Network exception' };
     }
   },
 
   /**
-   * Performs a partial UPDATE by primary key (`id`) with offline queue fallback,
-   * avoiding NOT NULL violations triggered by incomplete UPSERT payloads.
+   * Single-request batch array upsert with offline queue fallback.
    */
-  async mutateOrQueueUpdate(
+  async mutateBatchUpsert(
     table: string,
-    id: string,
-    patch: Record<string, any>
-  ): Promise<{ success: boolean; queued: boolean; error?: string }> {
-    const recordId = toValidUuid(id);
-    const updatePayload = {
-      ...patch,
-      updated_at: patch.updated_at || new Date().toISOString(),
-    };
+    rows: Array<Record<string, any>>,
+    options?: { onConflict?: string }
+  ): Promise<{ success: boolean; queued: boolean; count: number; error?: string }> {
+    if (rows.length === 0) return { success: true, queued: false, count: 0 };
     const client = getSupabaseClient();
-
     if (!client || !isSupabaseConfigured()) {
-      enqueueMutation({ kind: 'update', table, recordId, payload: updatePayload });
-      return { success: false, queued: true };
+      rows.forEach((row) =>
+        enqueueMutation({ kind: 'upsert', table, payload: row, onConflict: options?.onConflict })
+      );
+      return { success: false, queued: true, count: rows.length };
     }
 
     try {
       const { error } = await (client as any)
         .from(table)
+        .upsert(rows, options?.onConflict ? { onConflict: options.onConflict } : undefined);
+      if (error) {
+        rows.forEach((row) =>
+          enqueueMutation({ kind: 'upsert', table, payload: row, onConflict: options?.onConflict })
+        );
+        return { success: false, queued: true, count: rows.length, error: error.message };
+      }
+      return { success: true, queued: false, count: rows.length };
+    } catch (err: any) {
+      rows.forEach((row) =>
+        enqueueMutation({ kind: 'upsert', table, payload: row, onConflict: options?.onConflict })
+      );
+      return {
+        success: false,
+        queued: true,
+        count: rows.length,
+        error: err?.message || 'Network exception',
+      };
+    }
+  },
+
+  /**
+   * Performs a partial UPDATE by primary key (`id`) with optimistic version guard
+   * and offline queue fallback, avoiding NOT NULL violations triggered by incomplete UPSERT payloads.
+   */
+  async mutateOrQueueUpdate(
+    table: string,
+    id: string,
+    patch: Record<string, any>,
+    options?: MutateOptions
+  ): Promise<MutateResult> {
+    const recordId = toValidUuid(id);
+    const versionCol = options?.versionColumn || 'version';
+    const expectedVersion = options?.expectedVersion;
+    const updatePayload: Record<string, any> = {
+      ...patch,
+      updated_at: patch.updated_at || new Date().toISOString(),
+    };
+    if (expectedVersion !== undefined && updatePayload[versionCol] === undefined) {
+      updatePayload[versionCol] = expectedVersion;
+    }
+
+    const client = getSupabaseClient();
+    if (!client || !isSupabaseConfigured()) {
+      enqueueMutation({
+        kind: 'update',
+        table,
+        recordId,
+        payload: updatePayload,
+        expectedVersion,
+        versionColumn: versionCol,
+        entityType: options?.entityType,
+        entityLabel: options?.entityLabel,
+      });
+      return { success: false, queued: true };
+    }
+
+    try {
+      let query = (client as any)
+        .from(table)
         .update(updatePayload)
         .eq('id', recordId);
 
+      if (expectedVersion !== undefined) {
+        query = query.eq(versionCol, expectedVersion).select(`id, ${versionCol}`);
+      }
+
+      const { data, error } = await query;
+
+      const isZeroRowMismatch =
+        !error && expectedVersion !== undefined && Array.isArray(data) && data.length === 0;
+
+      if (isZeroRowMismatch || isStaleVersionError(error)) {
+        const serverData = await fetchServerRowForConflict(client, table, recordId);
+        // Only treat 0-row mismatch as a conflict if the record actually exists on the server with a newer version
+        if (serverData || isStaleVersionError(error)) {
+          const serverVersion = Number(serverData?.[versionCol] ?? Number(expectedVersion ?? 1) + 1);
+          emitConcurrencyConflict({
+            id: `conflict_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            table,
+            recordId,
+            entityType: options?.entityType,
+            entityLabel: options?.entityLabel,
+            expectedVersion: Number(expectedVersion ?? 1),
+            serverVersion,
+            localData: options?.localData || updatePayload,
+            serverData,
+            versionColumn: versionCol,
+            detectedAt: new Date().toISOString(),
+            onApplyResolution: options?.onApplyResolution,
+          });
+          return {
+            success: false,
+            queued: false,
+            conflict: true,
+            serverData,
+            error: error?.message || 'CONFLICT_STALE_VERSION',
+          };
+        }
+      }
+
       if (error) {
-        enqueueMutation({ kind: 'update', table, recordId, payload: updatePayload });
+        enqueueMutation({
+          kind: 'update',
+          table,
+          recordId,
+          payload: updatePayload,
+          expectedVersion,
+          versionColumn: versionCol,
+          entityType: options?.entityType,
+          entityLabel: options?.entityLabel,
+        });
         return { success: false, queued: true, error: error.message };
       }
-      return { success: true, queued: false };
+
+      const firstRow = Array.isArray(data) ? data[0] : data;
+      const newVersion =
+        firstRow && typeof firstRow[versionCol] === 'number'
+          ? Number(firstRow[versionCol])
+          : undefined;
+      return { success: true, queued: false, newVersion };
     } catch (err: any) {
-      enqueueMutation({ kind: 'update', table, recordId, payload: updatePayload });
+      if (isStaleVersionError(err)) {
+        const serverData = await fetchServerRowForConflict(client, table, recordId);
+        const serverVersion = Number(serverData?.[versionCol] ?? Number(expectedVersion ?? 1) + 1);
+        emitConcurrencyConflict({
+          id: `conflict_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          table,
+          recordId,
+          entityType: options?.entityType,
+          entityLabel: options?.entityLabel,
+          expectedVersion: Number(expectedVersion ?? 1),
+          serverVersion,
+          localData: options?.localData || updatePayload,
+          serverData,
+          versionColumn: versionCol,
+          detectedAt: new Date().toISOString(),
+          onApplyResolution: options?.onApplyResolution,
+        });
+        return {
+          success: false,
+          queued: false,
+          conflict: true,
+          serverData,
+          error: err?.message || 'CONFLICT_STALE_VERSION',
+        };
+      }
+
+      enqueueMutation({
+        kind: 'update',
+        table,
+        recordId,
+        payload: updatePayload,
+        expectedVersion,
+        versionColumn: versionCol,
+        entityType: options?.entityType,
+        entityLabel: options?.entityLabel,
+      });
       return { success: false, queued: true, error: err?.message || 'Network exception' };
     }
   },
@@ -503,23 +865,111 @@ export const syncCoordinator = {
 
   async rpcOrQueue<T = any>(
     fn: string,
-    args: Record<string, any>
-  ): Promise<{ success: boolean; data?: T; queued: boolean; error?: string }> {
+    args: Record<string, any>,
+    conflictOptions?: {
+      table: string;
+      recordId: string;
+      versionColumn?: string;
+      expectedVersion?: number;
+      entityType?: string;
+      entityLabel?: string;
+      localData?: Record<string, any>;
+      onApplyResolution?: ConcurrencyConflictEvent['onApplyResolution'];
+    }
+  ): Promise<{
+    success: boolean;
+    data?: T;
+    queued: boolean;
+    conflict?: boolean;
+    serverData?: Record<string, any> | null;
+    error?: string;
+  }> {
     const client = getSupabaseClient();
     if (!client || !isSupabaseConfigured()) {
-      enqueueMutation({ kind: 'rpc', fn, args });
+      enqueueMutation({
+        kind: 'rpc',
+        fn,
+        args,
+        table: conflictOptions?.table,
+        recordId: conflictOptions?.recordId,
+        expectedVersion: conflictOptions?.expectedVersion,
+        versionColumn: conflictOptions?.versionColumn,
+        entityType: conflictOptions?.entityType,
+        entityLabel: conflictOptions?.entityLabel,
+      });
       return { success: false, queued: true };
     }
+
+    const handleRpcConflict = async (errObj: any) => {
+      let serverData: Record<string, any> | null = null;
+      if (conflictOptions?.table && conflictOptions?.recordId) {
+        serverData = await fetchServerRowForConflict(
+          client,
+          conflictOptions.table,
+          toValidUuid(conflictOptions.recordId)
+        );
+        const versionCol = conflictOptions.versionColumn || 'version';
+        const expectedVer = Number(conflictOptions.expectedVersion ?? 1);
+        const serverVer = Number(serverData?.[versionCol] ?? expectedVer + 1);
+        emitConcurrencyConflict({
+          id: `conflict_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          table: conflictOptions.table,
+          recordId: toValidUuid(conflictOptions.recordId),
+          entityType: conflictOptions.entityType,
+          entityLabel: conflictOptions.entityLabel,
+          expectedVersion: expectedVer,
+          serverVersion: serverVer,
+          localData: conflictOptions.localData || args,
+          serverData,
+          versionColumn: versionCol,
+          detectedAt: new Date().toISOString(),
+          onApplyResolution: conflictOptions.onApplyResolution,
+        });
+      }
+      return {
+        success: false,
+        queued: false,
+        conflict: true,
+        serverData,
+        error: errObj?.message || 'CONFLICT_STALE_VERSION',
+      };
+    };
 
     try {
       const { data, error } = await (client as any).rpc(fn, args);
       if (error) {
-        enqueueMutation({ kind: 'rpc', fn, args });
+        if (isStaleVersionError(error)) {
+          return await handleRpcConflict(error);
+        }
+        enqueueMutation({
+          kind: 'rpc',
+          fn,
+          args,
+          table: conflictOptions?.table,
+          recordId: conflictOptions?.recordId,
+          expectedVersion: conflictOptions?.expectedVersion,
+          versionColumn: conflictOptions?.versionColumn,
+          entityType: conflictOptions?.entityType,
+          entityLabel: conflictOptions?.entityLabel,
+        });
         return { success: false, queued: true, error: error.message };
       }
       return { success: true, data, queued: false };
     } catch (err: any) {
-      enqueueMutation({ kind: 'rpc', fn, args });
+      if (isStaleVersionError(err)) {
+        return await handleRpcConflict(err);
+      }
+      enqueueMutation({
+        kind: 'rpc',
+        fn,
+        args,
+        table: conflictOptions?.table,
+        recordId: conflictOptions?.recordId,
+        expectedVersion: conflictOptions?.expectedVersion,
+        versionColumn: conflictOptions?.versionColumn,
+        entityType: conflictOptions?.entityType,
+        entityLabel: conflictOptions?.entityLabel,
+      });
       return { success: false, queued: true, error: err?.message || 'Network exception' };
     }
   },

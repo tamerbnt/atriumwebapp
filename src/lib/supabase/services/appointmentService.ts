@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { mapAppointmentFromDb } from '../mappers';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
@@ -16,22 +17,21 @@ export const appointmentService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('salon_appointments')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('appointment_date', { ascending: true });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('salon_appointments')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('appointment_date', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[appointmentService] fetchAppointments notice:', error.message);
-        return [];
-      }
-
-      return (data || []).map(mapAppointmentFromDb);
+      return rows.map(mapAppointmentFromDb);
     } catch {
       return [];
     }
@@ -45,7 +45,7 @@ export const appointmentService = {
       staffId: apt.staffId,
     });
 
-    const res = await syncCoordinator.mutateOrQueueUpsert('salon_appointments', {
+    const payload = {
       id: toValidUuid(apt.id),
       ...trace,
       client_id: apt.clientId ? toValidUuid(apt.clientId) : null,
@@ -62,14 +62,32 @@ export const appointmentService = {
       price: apt.price,
       status: apt.status,
       notes: apt.notes || null,
+    };
+
+    const res = await syncCoordinator.mutateOrQueueUpsert('salon_appointments', payload, {
+      expectedVersion: apt.version,
+      entityType: 'Appointment',
+      entityLabel: `${apt.clientName} — ${apt.serviceName}`,
+      localData: payload,
     });
     return res.success;
   },
 
-  async updateStatus(id: string, status: AppointmentStatus): Promise<boolean> {
-    const res = await syncCoordinator.mutateOrQueueUpdate('salon_appointments', id, {
-      status,
-    });
+  async updateStatus(
+    id: string,
+    status: AppointmentStatus,
+    expectedVersion?: number
+  ): Promise<boolean> {
+    const res = await syncCoordinator.mutateOrQueueUpdate(
+      'salon_appointments',
+      id,
+      { status },
+      {
+        expectedVersion,
+        entityType: 'Appointment',
+        localData: { status },
+      }
+    );
     return res.success;
   },
 
@@ -94,17 +112,20 @@ export const appointmentService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    let query = (client as any)
-      .from('salon_services')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
+    const data = await fetchAllPages<any>((from, to) => {
+      let query = (client as any)
+        .from('salon_services')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('name', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, to);
 
-    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-    const { data, error } = await query;
-    if (error) return [];
-    return (data || []).map((row: any): ServiceItem => ({
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+      return query;
+    });
+    return data.map((row: any): ServiceItem => ({
       id: row.id,
       facilityId: row.branch_id,
       accountId: row.account_id,
@@ -117,6 +138,7 @@ export const appointmentService = {
       price: Number(row.price_dzd || 0),
       commissionRate: Number(row.commission_percent || 40),
       isActive: row.is_active ?? true,
+      version: row.version != null ? Number(row.version) : undefined,
     }));
   },
 
@@ -127,7 +149,7 @@ export const appointmentService = {
       branchId: srv.branchId || srv.facilityId,
       staffId: srv.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('salon_services', {
+    const payload = {
       id: toValidUuid(srv.id),
       ...trace,
       name: srv.name,
@@ -136,6 +158,12 @@ export const appointmentService = {
       price_dzd: srv.price,
       commission_percent: srv.commissionRate ?? 40,
       is_active: srv.isActive ?? true,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('salon_services', payload, {
+      expectedVersion: srv.version,
+      entityType: 'ServiceItem',
+      entityLabel: srv.name,
+      localData: payload,
     });
     return res.success;
   },
@@ -149,14 +177,16 @@ export const appointmentService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('salon_chair_stations')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
-
-    if (error) return [];
-    return (data || []).map((row: any): SalonChairStation => ({
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('salon_chair_stations')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
+    return data.map((row: any): SalonChairStation => ({
       workstationId: row.id,
       workstationName: row.chair_number,
       currentStylistName: row.stylist_name || '',
@@ -164,6 +194,7 @@ export const appointmentService = {
       serviceName: row.current_service_name || undefined,
       stage: row.status === 'Occupied' ? 'in_progress' : row.status === 'Free' ? 'waiting' : 'completed',
       startTime: row.started_at || undefined,
+      version: row.version != null ? Number(row.version) : undefined,
     }));
   },
 
@@ -174,7 +205,7 @@ export const appointmentService = {
     const trace = buildTraceEnvelope(ctx);
     const dbStatus =
       station.stage === 'in_progress' ? 'Occupied' : station.stage === 'waiting' ? 'Free' : 'Cleaning';
-    const res = await syncCoordinator.mutateOrQueueUpsert('salon_chair_stations', {
+    const payload = {
       id: toValidUuid(station.workstationId),
       ...trace,
       chair_number: station.workstationName,
@@ -183,6 +214,12 @@ export const appointmentService = {
       current_service_name: station.serviceName || null,
       status: dbStatus,
       started_at: station.startTime || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('salon_chair_stations', payload, {
+      expectedVersion: station.version,
+      entityType: 'SalonChairStation',
+      entityLabel: station.workstationName,
+      localData: payload,
     });
     return res.success;
   },
@@ -191,14 +228,16 @@ export const appointmentService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('salon_workstations')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
-
-    if (error) return [];
-    return (data || []).map((row: any): SalonWorkstation => ({
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('salon_workstations')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
+    return data.map((row: any): SalonWorkstation => ({
       id: row.id,
       name: row.name,
       type: (row.zone || 'StylingChair') as SalonWorkstation['type'],
@@ -211,15 +250,17 @@ export const appointmentService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('salon_stylist_payouts')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-
-    if (error) return [];
-    return (data || []).map((row: any): StylistPayout => {
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('salon_stylist_payouts')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to)
+    );
+    return data.map((row: any): StylistPayout => {
       const [periodStart = '', periodEnd = ''] = String(row.period_label || '').split('..');
       const commissionAmount = Number(row.commission_amount_dzd || 0);
       return {
@@ -242,6 +283,7 @@ export const appointmentService = {
         status: row.status || 'Pending',
         paymentMethod: row.payment_method || undefined,
         paidAt: row.paid_at || undefined,
+        version: row.version != null ? Number(row.version) : undefined,
       };
     });
   },
@@ -251,7 +293,7 @@ export const appointmentService = {
     ctx: { accountId: string; businessId: string; branchId: string }
   ): Promise<boolean> {
     const trace = buildTraceEnvelope(ctx);
-    const res = await syncCoordinator.mutateOrQueueUpsert('salon_stylist_payouts', {
+    const payload = {
       id: toValidUuid(payout.id),
       ...trace,
       stylist_id: payout.staffId ? toValidUuid(payout.staffId) : null,
@@ -264,6 +306,12 @@ export const appointmentService = {
       status: payout.status,
       payment_method: payout.paymentMethod || null,
       paid_at: payout.paidAt || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('salon_stylist_payouts', payload, {
+      expectedVersion: payout.version,
+      entityType: 'StylistPayout',
+      entityLabel: `${payout.staffName} (${payout.periodStart}..${payout.periodEnd})`,
+      localData: payload,
     });
     return res.success;
   },

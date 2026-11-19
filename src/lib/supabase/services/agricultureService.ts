@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   AgriParcel,
@@ -68,19 +69,21 @@ export const agricultureService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('agri_parcels')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('parcel_code', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('agri_parcels')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('parcel_code', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): AgriParcel => {
+      return data.map((row: any): AgriParcel => {
         const { plain: soilType, meta } = unpackMeta(row.soil_type);
         return {
           id: row.id,
@@ -106,6 +109,7 @@ export const agricultureService = {
           expectedHarvestDate: meta.expectedHarvestDate,
           status: (row.status || 'Planted') as AgriParcel['status'],
           notes: meta.notes,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -121,7 +125,7 @@ export const agricultureService = {
       branchId: parcel.branchId,
       staffId: parcel.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('agri_parcels', {
+    const payload = {
       id: toValidUuid(parcel.id),
       ...trace,
       parcel_code: parcel.code || parcel.id.slice(0, 8).toUpperCase(),
@@ -144,6 +148,12 @@ export const agricultureService = {
       }),
       irrigation_mode: parcel.irrigationType,
       status: parcel.status,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('agri_parcels', payload, {
+      expectedVersion: parcel.version,
+      entityType: 'AgriParcel',
+      entityLabel: parcel.name,
+      localData: payload,
     });
     return res.success;
   },
@@ -153,21 +163,28 @@ export const agricultureService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('agri_crop_cycles')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('sowing_date', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('agri_crop_cycles')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('sowing_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): AgriCropCycle => {
+      return data.map((row: any): AgriCropCycle => {
         const { plain: variety, meta } = unpackMeta(row.variety);
-        if (meta.cycle) return meta.cycle as AgriCropCycle;
+        if (meta.cycle) {
+          return {
+            ...(meta.cycle as AgriCropCycle),
+            version: row.version != null ? Number(row.version) : (meta.cycle as AgriCropCycle).version,
+          };
+        }
         return {
           id: row.id,
           accountId: row.account_id,
@@ -186,6 +203,7 @@ export const agricultureService = {
           totalInputCostDzd: 0,
           totalLaborCostDzd: 0,
           totalMachineryCostDzd: 0,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -201,7 +219,7 @@ export const agricultureService = {
       branchId: cycle.branchId,
       staffId: cycle.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('agri_crop_cycles', {
+    const payload = {
       id: toValidUuid(cycle.id),
       ...trace,
       parcel_id: toValidUuid(cycle.parcelId),
@@ -212,6 +230,12 @@ export const agricultureService = {
       expected_harvest_date: cycle.projectedHarvestDate || null,
       stage: toDbCropStage(cycle.currentPhase),
       estimated_yield_tons: Number(cycle.projectedYieldQtx || 0) / 10,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('agri_crop_cycles', payload, {
+      expectedVersion: cycle.version,
+      entityType: 'AgriCropCycle',
+      entityLabel: cycle.cropName,
+      localData: payload,
     });
     return res.success;
   },
@@ -221,19 +245,21 @@ export const agricultureService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('agri_treatments')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('application_date', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('agri_treatments')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('application_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .filter((row: any) => row.target_type === 'crop')
         .map((row: any): AgriTreatmentLog => {
           const { plain, meta } = unpackMeta(row.notes);
@@ -256,6 +282,7 @@ export const agricultureService = {
             operatorName: meta.operatorName || 'Agronome',
             safetyGearConfirmed: meta.safetyGearConfirmed,
             notes: plain || undefined,
+            version: row.version != null ? Number(row.version) : undefined,
             createdAt: row.created_at,
           };
         });
@@ -271,7 +298,7 @@ export const agricultureService = {
       branchId: log.branchId,
       staffId: log.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('agri_treatments', {
+    const payload = {
       id: toValidUuid(log.id),
       ...trace,
       target_type: 'crop',
@@ -291,6 +318,12 @@ export const agricultureService = {
         operatorName: log.operatorName,
         safetyGearConfirmed: log.safetyGearConfirmed,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('agri_treatments', payload, {
+      expectedVersion: log.version,
+      entityType: 'AgriTreatmentLog',
+      entityLabel: log.commercialProductName,
+      localData: payload,
     });
     return res.success;
   },
@@ -300,21 +333,28 @@ export const agricultureService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('agri_livestock')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('ear_tag', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('agri_livestock')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('ear_tag', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): AgriDairyCow => {
+      return data.map((row: any): AgriDairyCow => {
         const { plain: breed, meta } = unpackMeta(row.breed);
-        if (meta.cow) return meta.cow as AgriDairyCow;
+        if (meta.cow) {
+          return {
+            ...(meta.cow as AgriDairyCow),
+            version: row.version != null ? Number(row.version) : (meta.cow as AgriDairyCow).version,
+          };
+        }
         return {
           id: row.id,
           accountId: row.account_id,
@@ -330,6 +370,7 @@ export const agricultureService = {
           dailyAvgLiters: 20,
           isInWithholdingLockout: row.health_status === 'UnderTreatment' || row.health_status === 'Quarantine',
           withholdingLockoutUntil: row.antibiotic_withholding_until || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -345,7 +386,7 @@ export const agricultureService = {
       branchId: cow.branchId,
       staffId: cow.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('agri_livestock', {
+    const payload = {
       id: toValidUuid(cow.id),
       ...trace,
       ear_tag: cow.earTagNumber,
@@ -355,6 +396,12 @@ export const agricultureService = {
       gender: cow.gender || 'Female',
       health_status: toDbHealthStatus(cow),
       antibiotic_withholding_until: cow.withholdingLockoutUntil || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('agri_livestock', payload, {
+      expectedVersion: cow.version,
+      entityType: 'AgriDairyCow',
+      entityLabel: cow.earTagNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -364,21 +411,28 @@ export const agricultureService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('agri_milking_logs')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('milking_date', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('agri_milking_logs')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('milking_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): AgriMilkingRecord => {
+      return data.map((row: any): AgriMilkingRecord => {
         const { meta } = unpackMeta(row.lot_label);
-        if (meta.record) return meta.record as AgriMilkingRecord;
+        if (meta.record) {
+          return {
+            ...(meta.record as AgriMilkingRecord),
+            version: row.version != null ? Number(row.version) : (meta.record as AgriMilkingRecord).version,
+          };
+        }
         return {
           id: row.id,
           accountId: row.account_id,
@@ -396,6 +450,7 @@ export const agricultureService = {
           onilSubsidyRateDzd: 12,
           onilTotalSubsidyDzd: (row.is_tank_approved ? Number(row.volume_liters || 0) : 0) * 12,
           operatorStaffId: row.staff_id || 'staff_01',
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -411,7 +466,7 @@ export const agricultureService = {
       branchId: rec.branchId,
       staffId: rec.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('agri_milking_logs', {
+    const payload = {
       id: toValidUuid(rec.id),
       ...trace,
       animal_id: null,
@@ -423,6 +478,12 @@ export const agricultureService = {
       is_tank_approved: Number(rec.conformingLiters || 0) > 0,
       is_discarded: Number(rec.rejectedWithholdingLiters || 0) > 0 && Number(rec.conformingLiters || 0) <= 0,
       onil_bordereau_ref: rec.dairyDeliverySlipNo || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('agri_milking_logs', payload, {
+      expectedVersion: rec.version,
+      entityType: 'AgriMilkingRecord',
+      entityLabel: `${rec.sessionDate} (${rec.sessionPeriod})`,
+      localData: payload,
     });
     return res.success;
   },
@@ -432,22 +493,28 @@ export const agricultureService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('agri_harvests')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('harvest_date', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('agri_harvests')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('harvest_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): AgriWeighbridgeTicket | null => {
           const { meta } = unpackMeta(row.weighbridge_ticket_number);
-          return meta.ticket ? (meta.ticket as AgriWeighbridgeTicket) : null;
+          if (!meta.ticket) return null;
+          return {
+            ...(meta.ticket as AgriWeighbridgeTicket),
+            version: row.version != null ? Number(row.version) : (meta.ticket as AgriWeighbridgeTicket).version,
+          };
         })
         .filter((t: AgriWeighbridgeTicket | null): t is AgriWeighbridgeTicket => Boolean(t));
     } catch {
@@ -462,7 +529,7 @@ export const agricultureService = {
       branchId: ticket.branchId,
       staffId: ticket.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('agri_harvests', {
+    const payload = {
       id: toValidUuid(ticket.id),
       ...trace,
       parcel_id: toValidUuid(ticket.parcelId || fallbackParcelId),
@@ -473,6 +540,12 @@ export const agricultureService = {
       net_weight_kg: Number(ticket.netWeightKg || 0),
       grade: ticket.qualityGrade || 'Extra',
       weighbridge_ticket_number: packMeta(ticket.ticketNumber, { ticket }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('agri_harvests', payload, {
+      expectedVersion: ticket.version,
+      entityType: 'AgriWeighbridgeTicket',
+      entityLabel: ticket.ticketNumber || ticket.cropDesignation,
+      localData: payload,
     });
     return res.success;
   },
@@ -482,22 +555,28 @@ export const agricultureService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('agri_staff')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('full_name', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('agri_staff')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('full_name', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): AgriWorker | null => {
           const { meta } = unpackMeta(row.role);
-          return meta.worker ? (meta.worker as AgriWorker) : null;
+          if (!meta.worker) return null;
+          return {
+            ...(meta.worker as AgriWorker),
+            version: row.version != null ? Number(row.version) : (meta.worker as AgriWorker).version,
+          };
         })
         .filter((w: AgriWorker | null): w is AgriWorker => Boolean(w));
     } catch {
@@ -512,12 +591,18 @@ export const agricultureService = {
       branchId: worker.branchId,
       staffId: worker.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('agri_staff', {
+    const payload = {
       id: toValidUuid(worker.id),
       ...trace,
       full_name: worker.fullName,
       role: packMeta(worker.workerType, { worker }),
       is_active: worker.active,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('agri_staff', payload, {
+      expectedVersion: worker.version,
+      entityType: 'AgriWorker',
+      entityLabel: worker.fullName,
+      localData: payload,
     });
     return res.success;
   },
@@ -527,23 +612,29 @@ export const agricultureService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('agri_sales')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .ilike('sale_number', 'PTG-%')
-        .order('sale_date', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('agri_sales')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .ilike('sale_number', 'PTG-%')
+          .order('sale_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): AgriDailyPointage | null => {
           const { meta } = unpackMeta(row.buyer_name);
-          return meta.pointage ? (meta.pointage as AgriDailyPointage) : null;
+          if (!meta.pointage) return null;
+          return {
+            ...(meta.pointage as AgriDailyPointage),
+            version: row.version != null ? Number(row.version) : (meta.pointage as AgriDailyPointage).version,
+          };
         })
         .filter((p: AgriDailyPointage | null): p is AgriDailyPointage => Boolean(p));
     } catch {
@@ -558,7 +649,7 @@ export const agricultureService = {
       branchId: p.branchId,
       staffId: p.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('agri_sales', {
+    const payload = {
       id: toValidUuid(`ptg_${p.id}`),
       ...trace,
       sale_number: `PTG-${p.id.slice(0, 12)}`,
@@ -570,7 +661,53 @@ export const agricultureService = {
       total_amount_dzd: Number(p.netDueDzd || 0),
       payment_status: p.isPaid ? 'Paid' : 'Unpaid',
       sale_date: p.date || new Date().toISOString().split('T')[0],
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('agri_sales', payload, {
+      expectedVersion: p.version,
+      entityType: 'AgriDailyPointage',
+      entityLabel: `${p.workerName} (${p.date})`,
+      localData: payload,
     });
+    return res.success;
+  },
+
+  async deleteParcel(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('agri_parcels', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteCropCycle(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('agri_crop_cycles', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteTreatment(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('agri_treatments', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteWorker(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('agri_staff', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deletePointage(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('agri_sales', `ptg_${id}`, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteLivestock(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('agri_livestock', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteMilkingLog(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('agri_milking_logs', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteHarvestTicket(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('agri_harvests', id, deletedByStaffId);
     return res.success;
   },
 };

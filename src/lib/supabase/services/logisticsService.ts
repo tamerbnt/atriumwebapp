@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   LogisticsShipment,
@@ -83,19 +84,21 @@ export const logisticsService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('logistics_parcels')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('logistics_parcels')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): LogisticsShipment => {
+      return rows.map((row: any): LogisticsShipment => {
         const { plain: destinationAddress, meta } = unpackMeta(row.commune);
         return {
           id: row.id,
@@ -124,6 +127,7 @@ export const logisticsService = {
           stampDutyDzd: meta.stampDutyDzd,
           assignedDriverName: meta.assignedDriverName,
           podSignatureUrl: meta.podSignatureUrl,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -140,7 +144,7 @@ export const logisticsService = {
       staffId: ship.staffId,
     });
     const wilayaCodeMatch = String(ship.destinationWilaya || '').match(/^(\d{1,2})/);
-    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_parcels', {
+    const payload = {
       id: toValidUuid(ship.id),
       ...trace,
       tracking_code: ship.trackingCode,
@@ -171,6 +175,12 @@ export const logisticsService = {
       bag_id: ship.bagId ? toValidUuid(ship.bagId) : null,
       driver_id: null,
       status: toDbParcelStatus(ship.status),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_parcels', payload, {
+      expectedVersion: ship.version,
+      entityType: 'Shipment',
+      entityLabel: ship.trackingCode,
+      localData: payload,
     });
     return res.success;
   },
@@ -180,19 +190,21 @@ export const logisticsService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('logistics_courier_bags')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('logistics_courier_bags')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): TransportBag => {
+      return rows.map((row: any): TransportBag => {
         const { meta } = unpackMeta(row.driver_name);
         return {
           id: row.id,
@@ -210,6 +222,7 @@ export const logisticsService = {
           status: (meta.uiStatus || row.status || 'Open') as TransportBag['status'],
           sealedAt: row.sealed_at || undefined,
           receivedAt: row.discharged_at || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -224,7 +237,7 @@ export const logisticsService = {
       branchId: bag.branchId,
       staffId: bag.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_courier_bags', {
+    const payload = {
       id: toValidUuid(bag.id),
       ...trace,
       bag_code: bag.bagCode,
@@ -242,6 +255,12 @@ export const logisticsService = {
       status: toDbBagStatus(bag.status),
       sealed_at: bag.sealedAt || null,
       discharged_at: bag.receivedAt || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_courier_bags', payload, {
+      expectedVersion: bag.version,
+      entityType: 'TransportBag',
+      entityLabel: bag.bagCode,
+      localData: payload,
     });
     return res.success;
   },
@@ -260,22 +279,28 @@ export const logisticsService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('logistics_fleet')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('logistics_fleet')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return rows
         .map((row: any): LogisticsManifest | null => {
           const { meta } = unpackMeta(row.vehicle_model);
-          return meta.manifest ? (meta.manifest as LogisticsManifest) : null;
+          if (!meta.manifest) return null;
+          return {
+            ...(meta.manifest as LogisticsManifest),
+            version: row.version != null ? Number(row.version) : (meta.manifest as LogisticsManifest).version,
+          };
         })
         .filter((m: LogisticsManifest | null): m is LogisticsManifest => Boolean(m));
     } catch {
@@ -290,7 +315,7 @@ export const logisticsService = {
       branchId: manifest.branchId,
       staffId: manifest.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_fleet', {
+    const payload = {
       id: toValidUuid(manifest.id),
       ...trace,
       plate_number: manifest.vehiclePlate || manifest.manifestNumber,
@@ -298,6 +323,12 @@ export const logisticsService = {
       vehicle_type: manifest.zoneWilaya || 'Fourgon',
       capacity_kg: Number(manifest.totalGrossWeightKg || 1500),
       status: manifest.status === 'Dispatched' ? 'OnRoute' : 'Available',
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_fleet', payload, {
+      expectedVersion: manifest.version,
+      entityType: 'LogisticsManifest',
+      entityLabel: manifest.manifestNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -307,22 +338,28 @@ export const logisticsService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('logistics_discharges')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('discharged_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('logistics_discharges')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('discharged_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return rows
         .map((row: any): CourierCashDischarge | null => {
           const { meta } = unpackMeta(row.driver_name);
-          return meta.discharge ? (meta.discharge as CourierCashDischarge) : null;
+          if (!meta.discharge) return null;
+          return {
+            ...(meta.discharge as CourierCashDischarge),
+            version: row.version != null ? Number(row.version) : (meta.discharge as CourierCashDischarge).version,
+          };
         })
         .filter((d: CourierCashDischarge | null): d is CourierCashDischarge => Boolean(d));
     } catch {
@@ -345,7 +382,7 @@ export const logisticsService = {
       phone: '0550000000',
       is_active: true,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_discharges', {
+    const payload = {
       id: toValidUuid(discharge.id),
       ...trace,
       discharge_number: discharge.dischargeNumber,
@@ -355,6 +392,12 @@ export const logisticsService = {
       delivered_count: Number(discharge.deliveredCount || 0),
       returned_count: Number(discharge.returnedCount || 0),
       discharged_at: discharge.timestamp || new Date().toISOString(),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_discharges', payload, {
+      expectedVersion: discharge.version,
+      entityType: 'CourierCashDischarge',
+      entityLabel: discharge.dischargeNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -364,21 +407,28 @@ export const logisticsService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('logistics_remittances')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('remitted_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('logistics_remittances')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('remitted_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): MerchantRemittanceBatch => {
+      return rows.map((row: any): MerchantRemittanceBatch => {
         const { plain: merchantName, meta } = unpackMeta(row.merchant_name);
-        if (meta.batch) return meta.batch as MerchantRemittanceBatch;
+        if (meta.batch) {
+          return {
+            ...(meta.batch as MerchantRemittanceBatch),
+            version: row.version != null ? Number(row.version) : (meta.batch as MerchantRemittanceBatch).version,
+          };
+        }
         return {
           id: row.id,
           accountId: row.account_id,
@@ -396,6 +446,7 @@ export const logisticsService = {
           paymentChannel: (row.payment_method || 'AlgeriePoste_SFP01') as MerchantRemittanceBatch['paymentChannel'],
           status: (row.status || 'Draft') as MerchantRemittanceBatch['status'],
           executedAt: row.remitted_at || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -418,7 +469,7 @@ export const logisticsService = {
       phone: '0550000000',
       rib_ccp: `${batch.ccpAccount}${batch.ccpKey ? '-' + batch.ccpKey : ''}`,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_remittances', {
+    const payload = {
       id: toValidUuid(batch.id),
       ...trace,
       remittance_number: batch.batchNumber,
@@ -431,6 +482,12 @@ export const logisticsService = {
       payment_method: batch.paymentChannel,
       status: batch.status,
       remitted_at: batch.executedAt || new Date().toISOString(),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('logistics_remittances', payload, {
+      expectedVersion: batch.version,
+      entityType: 'MerchantRemittanceBatch',
+      entityLabel: batch.batchNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -440,16 +497,19 @@ export const logisticsService = {
     if (!client) return {};
 
     try {
-      const { data, error } = await (client as any)
-        .from('logistics_wilaya_tariffs')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null);
-
-      if (error) return {};
+      const rows = await fetchAllPages<any>((from, to) =>
+        (client as any)
+          .from('logistics_wilaya_tariffs')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('zone_id', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to)
+      );
 
       const map: Partial<Record<WilayaZone, TariffRule>> = {};
-      (data || []).forEach((row: any) => {
+      rows.forEach((row: any) => {
         const zone = row.zone_id as WilayaZone;
         map[zone] = {
           zone,
@@ -478,24 +538,51 @@ export const logisticsService = {
       staffId: ctx.staffId,
     });
     const entries = Object.values(rules);
-    let allOk = true;
-    for (const rule of entries) {
-      const res = await syncCoordinator.mutateOrQueueUpsert(
-        'logistics_wilaya_tariffs',
-        {
-          id: toValidUuid(`tariff_${ctx.branchId}_${rule.zone}`),
-          ...trace,
-          zone_id: rule.zone,
-          base_weight_kg: Number(rule.baseWeightKg || 5),
-          home_base_price_dzd: Number(rule.homeBasePriceDzd || 600),
-          stop_desk_base_price_dzd: Number(rule.stopDeskBasePriceDzd || 400),
-          overweight_per_kg_dzd: Number(rule.overweightPerKgDzd || 50),
-          fragile_handling_surcharge_dzd: Number(rule.fragileHandlingSurchargeDzd || 150),
-        },
-        { onConflict: 'branch_id,zone_id' }
-      );
-      if (!res.success) allOk = false;
-    }
-    return allOk;
+    if (entries.length === 0) return true;
+
+    const pRules = entries.map((rule) => ({
+      id: toValidUuid(`tariff_${ctx.branchId}_${rule.zone}`),
+      account_id: trace.account_id,
+      business_id: trace.business_id,
+      staff_id: trace.staff_id,
+      device_id: trace.device_id,
+      zone_id: rule.zone,
+      base_weight_kg: Number(rule.baseWeightKg || 5),
+      home_base_price_dzd: Number(rule.homeBasePriceDzd || 600),
+      stop_desk_base_price_dzd: Number(rule.stopDeskBasePriceDzd || 400),
+      overweight_per_kg_dzd: Number(rule.overweightPerKgDzd || 50),
+      fragile_handling_surcharge_dzd: Number(rule.fragileHandlingSurchargeDzd || 150),
+    }));
+
+    const res = await syncCoordinator.rpcOrQueue('logistics_upsert_wilaya_tariffs_batch', {
+      p_branch_id: toValidUuid(ctx.branchId),
+      p_rules: pRules,
+    });
+    return res.success;
+  },
+
+  async deleteShipment(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('logistics_parcels', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteBag(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('logistics_courier_bags', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteManifest(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('logistics_fleet', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteDischarge(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('logistics_discharges', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteRemittance(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('logistics_remittances', id, deletedByStaffId);
+    return res.success;
   },
 };

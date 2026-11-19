@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, normalizeUuidOrNull, syncCoordinator } from '../syncCoordinator';
 import type {
   PMClient,
@@ -29,6 +30,7 @@ export interface PMStaffMember {
   email?: string;
   phone?: string;
   isActive: boolean;
+  version?: number;
   createdAt: string;
 }
 
@@ -41,19 +43,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_staff')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('full_name', { ascending: true });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_staff')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('full_name', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMStaffMember => ({
+      return rows.map((row: any): PMStaffMember => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -64,6 +68,7 @@ export const projectMilestoneService = {
         email: row.email || undefined,
         phone: row.phone || undefined,
         isActive: row.is_active ?? true,
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
       }));
     } catch {
@@ -78,7 +83,7 @@ export const projectMilestoneService = {
       branchId: member.branchId,
       staffId: member.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('pm_staff', {
+    const payload = {
       id: toValidUuid(member.id),
       ...trace,
       full_name: member.fullName,
@@ -86,6 +91,12 @@ export const projectMilestoneService = {
       email: member.email || null,
       phone: member.phone || null,
       is_active: member.isActive,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_staff', payload, {
+      expectedVersion: member.version,
+      entityType: 'PMStaffMember',
+      entityLabel: member.fullName,
+      localData: payload,
     });
     return res.success;
   },
@@ -103,22 +114,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_clients')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_clients')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[projectMilestoneService] fetchClients warning:', error.message);
-        return [];
-      }
-
-      return (data || []).map((row: any): PMClient => ({
+      return rows.map((row: any): PMClient => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -134,6 +144,7 @@ export const projectMilestoneService = {
         wilaya: row.wilaya,
         address: row.address || undefined,
         isActive: row.is_active ?? true,
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
       }));
     } catch {
@@ -148,7 +159,7 @@ export const projectMilestoneService = {
       branchId: clientItem.branchId || clientItem.facilityId,
       staffId: clientItem.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('pm_clients', {
+    const payload = {
       id: toValidUuid(clientItem.id),
       ...trace,
       name: clientItem.name,
@@ -160,6 +171,12 @@ export const projectMilestoneService = {
       address: clientItem.address || null,
       is_active: clientItem.isActive,
       created_at: clientItem.createdAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_clients', payload, {
+      expectedVersion: clientItem.version,
+      entityType: 'PMClient',
+      entityLabel: clientItem.name,
+      localData: payload,
     });
     return res.success;
   },
@@ -177,22 +194,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_projects')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_projects')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) {
-        console.warn('[projectMilestoneService] fetchProjects warning:', error.message);
-        return [];
-      }
-
-      return (data || []).map((row: any): PMProject => ({
+      return rows.map((row: any): PMProject => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -217,6 +233,7 @@ export const projectMilestoneService = {
         leadCreativeId: row.lead_creative_id,
         leadCreativeName: row.lead_creative_name,
         status: row.status,
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       }));
@@ -232,7 +249,7 @@ export const projectMilestoneService = {
       branchId: project.branchId || project.facilityId,
       staffId: project.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('pm_projects', {
+    const payload = {
       id: toValidUuid(project.id),
       ...trace,
       client_id: project.clientId ? toValidUuid(project.clientId) : null,
@@ -253,6 +270,12 @@ export const projectMilestoneService = {
       lead_creative_name: project.leadCreativeName,
       status: project.status,
       created_at: project.createdAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_projects', payload, {
+      expectedVersion: project.version,
+      entityType: 'PMProject',
+      entityLabel: project.title,
+      localData: payload,
     });
     return res.success;
   },
@@ -267,19 +290,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_milestones')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('target_date', { ascending: true });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_milestones')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('target_date', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMMilestone => ({
+      return rows.map((row: any): PMMilestone => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -292,6 +317,7 @@ export const projectMilestoneService = {
         completedAt: row.completed_at || undefined,
         isCompleted: Boolean(row.is_completed),
         assignedRole: row.assigned_role || 'project_manager',
+        version: row.version != null ? Number(row.version) : undefined,
       }));
     } catch {
       return [];
@@ -308,7 +334,7 @@ export const projectMilestoneService = {
       branchId: milestone.branchId || ctx?.branchId,
       staffId: milestone.staffId || ctx?.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('pm_milestones', {
+    const payload = {
       id: toValidUuid(milestone.id),
       ...trace,
       project_id: toValidUuid(milestone.projectId),
@@ -318,6 +344,12 @@ export const projectMilestoneService = {
       completed_at: milestone.completedAt || null,
       is_completed: milestone.isCompleted,
       assigned_role: milestone.assignedRole,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_milestones', payload, {
+      expectedVersion: milestone.version,
+      entityType: 'PMMilestone',
+      entityLabel: milestone.title,
+      localData: payload,
     });
     return res.success;
   },
@@ -335,19 +367,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_collateral_catalog')
-        .select('*')
-        .is('deleted_at', null)
-        .order('title', { ascending: true });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_collateral_catalog')
+          .select('*')
+          .is('deleted_at', null)
+          .order('title', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (branchId) query = query.eq('branch_id', toValidUuid(branchId));
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (branchId) query = query.eq('branch_id', toValidUuid(branchId));
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMCollateralItem => ({
+      return rows.map((row: any): PMCollateralItem => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -372,19 +406,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_print_orders')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_print_orders')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMPrintOrder => ({
+      return rows.map((row: any): PMPrintOrder => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -398,6 +434,7 @@ export const projectMilestoneService = {
         items: row.items || [],
         totalCostDzd: Number(row.total_cost_dzd || 0),
         status: row.status,
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
       }));
     } catch {
@@ -412,7 +449,7 @@ export const projectMilestoneService = {
       branchId: order.branchId || order.facilityId,
       staffId: order.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('pm_print_orders', {
+    const payload = {
       id: toValidUuid(order.id),
       ...trace,
       project_id: toValidUuid(order.projectId),
@@ -422,6 +459,12 @@ export const projectMilestoneService = {
       total_cost_dzd: order.totalCostDzd,
       status: order.status,
       created_at: order.createdAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_print_orders', payload, {
+      expectedVersion: order.version,
+      entityType: 'PMPrintOrder',
+      entityLabel: order.orderNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -439,19 +482,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_bat_deliverables')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_bat_deliverables')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMBatDeliverable => ({
+      return rows.map((row: any): PMBatDeliverable => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -491,7 +536,7 @@ export const projectMilestoneService = {
       branchId: bat.branchId || bat.facilityId,
       staffId: bat.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('pm_bat_deliverables', {
+    const payload = {
       id: toValidUuid(bat.id),
       ...trace,
       project_id: toValidUuid(bat.projectId),
@@ -513,6 +558,12 @@ export const projectMilestoneService = {
       approval_status: bat.approvalStatus,
       revision_comments: bat.revisionComments || null,
       created_at: bat.createdAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_bat_deliverables', payload, {
+      expectedVersion: bat.version,
+      entityType: 'PMBatDeliverable',
+      entityLabel: bat.title,
+      localData: payload,
     });
     return res.success;
   },
@@ -530,19 +581,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_talents')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('consolidated_score', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_talents')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('consolidated_score', { ascending: false })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMTalent => ({
+      return rows.map((row: any): PMTalent => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -577,6 +630,7 @@ export const projectMilestoneService = {
         isHrVerified: Boolean(row.is_hr_verified),
         status: row.status,
         hrNotes: row.hr_notes || undefined,
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
       }));
     } catch {
@@ -591,7 +645,7 @@ export const projectMilestoneService = {
       branchId: talent.branchId || talent.facilityId,
       staffId: talent.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('pm_talents', {
+    const payload = {
       id: toValidUuid(talent.id),
       ...trace,
       full_name: talent.fullName,
@@ -622,6 +676,12 @@ export const projectMilestoneService = {
       status: talent.status,
       hr_notes: talent.hrNotes || null,
       created_at: talent.createdAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_talents', payload, {
+      expectedVersion: talent.version,
+      entityType: 'PMTalent',
+      entityLabel: talent.fullName,
+      localData: payload,
     });
     return res.success;
   },
@@ -639,19 +699,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_missions')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('start_date', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_missions')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('start_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMMission => ({
+      return rows.map((row: any): PMMission => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -677,6 +739,7 @@ export const projectMilestoneService = {
         supervisorName: row.supervisor_name,
         requiredStaffCount: Number(row.required_staff_count || 4),
         status: row.status,
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
       }));
     } catch {
@@ -691,7 +754,7 @@ export const projectMilestoneService = {
       branchId: mission.branchId || mission.facilityId,
       staffId: mission.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('pm_missions', {
+    const payload = {
       id: toValidUuid(mission.id),
       ...trace,
       project_id: toValidUuid(mission.projectId),
@@ -713,6 +776,12 @@ export const projectMilestoneService = {
       required_staff_count: mission.requiredStaffCount,
       status: mission.status,
       created_at: mission.createdAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_missions', payload, {
+      expectedVersion: mission.version,
+      entityType: 'PMMission',
+      entityLabel: mission.title,
+      localData: payload,
     });
     return res.success;
   },
@@ -727,19 +796,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_mission_staff')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_mission_staff')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMMissionStaff => ({
+      return rows.map((row: any): PMMissionStaff => ({
         id: row.id,
         missionId: row.mission_id,
         talentId: row.talent_id,
@@ -749,6 +820,7 @@ export const projectMilestoneService = {
         dayRateDzd: Number(row.day_rate_dzd || 3500),
         assignedRoleTitle: row.assigned_role_title || 'Animator',
         invitationStatus: row.invitation_status || 'confirmed',
+        version: row.version != null ? Number(row.version) : undefined,
       }));
     } catch {
       return [];
@@ -760,7 +832,7 @@ export const projectMilestoneService = {
     ctx: { accountId: string; businessId: string; branchId: string; staffId?: string }
   ): Promise<boolean> {
     const trace = buildTraceEnvelope(ctx);
-    const res = await syncCoordinator.mutateOrQueueUpsert('pm_mission_staff', {
+    const payload = {
       id: toValidUuid(item.id),
       ...trace,
       mission_id: toValidUuid(item.missionId),
@@ -771,6 +843,12 @@ export const projectMilestoneService = {
       day_rate_dzd: item.dayRateDzd,
       assigned_role_title: item.assignedRoleTitle,
       invitation_status: item.invitationStatus,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_mission_staff', payload, {
+      expectedVersion: item.version,
+      entityType: 'PMMissionStaff',
+      entityLabel: item.talentName,
+      localData: payload,
     });
     return res.success;
   },
@@ -792,23 +870,27 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_attendances')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null);
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_attendances')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null);
 
-      if (missionId) {
-        query = query.eq('mission_id', toValidUuid(missionId));
-      }
-      if (updatedAfter) {
-        query = query.gt('updated_at', updatedAfter);
-      }
+        if (missionId) {
+          query = query.eq('mission_id', toValidUuid(missionId));
+        }
+        if (updatedAfter) {
+          query = query.gt('updated_at', updatedAfter);
+        }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
-      if (error) return [];
+        return query
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
+      });
 
-      return (data || []).map((row: any): PMAttendance => ({
+      return rows.map((row: any): PMAttendance => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -865,19 +947,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_expenses')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_expenses')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMExpense => ({
+      return rows.map((row: any): PMExpense => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -902,6 +986,7 @@ export const projectMilestoneService = {
         directionApprovedAt: row.direction_approved_at || undefined,
         directionNotes: row.direction_notes || undefined,
         isEquipmentAutoCreated: Boolean(row.is_equipment_auto_created),
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
       }));
     } catch {
@@ -916,7 +1001,7 @@ export const projectMilestoneService = {
       branchId: expense.branchId || expense.facilityId,
       staffId: expense.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('pm_expenses', {
+    const payload = {
       id: toValidUuid(expense.id),
       ...trace,
       project_id: toValidUuid(expense.projectId),
@@ -937,6 +1022,12 @@ export const projectMilestoneService = {
       direction_notes: expense.directionNotes || null,
       is_equipment_auto_created: Boolean(expense.isEquipmentAutoCreated),
       created_at: expense.createdAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_expenses', payload, {
+      expectedVersion: expense.version,
+      entityType: 'PMExpense',
+      entityLabel: expense.title,
+      localData: payload,
     });
     return res.success;
   },
@@ -969,19 +1060,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_payroll_batches')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_payroll_batches')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMPayrollBatch => ({
+      return rows.map((row: any): PMPayrollBatch => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -1012,19 +1105,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_ccp_slips')
-        .select('*')
-        .eq('batch_id', toValidUuid(batchId))
-        .is('deleted_at', null)
-        .order('beneficiary_name', { ascending: true });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_ccp_slips')
+          .select('*')
+          .eq('batch_id', toValidUuid(batchId))
+          .is('deleted_at', null)
+          .order('beneficiary_name', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMCcpSlip => ({
+      return rows.map((row: any): PMCcpSlip => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -1088,31 +1183,6 @@ export const projectMilestoneService = {
       slips.push(slip);
     }
 
-    for (const s of slips) {
-      const trace = buildTraceEnvelope({
-        accountId: s.accountId || s.tenantId,
-        businessId: s.businessId || batch.businessId,
-        branchId: s.branchId || s.facilityId,
-        staffId: s.staffId || batch.staffId,
-      });
-      await syncCoordinator.mutateOrQueueUpsert('pm_ccp_slips', {
-        id: toValidUuid(s.id),
-        ...trace,
-        batch_id: toValidUuid(s.batchId),
-        talent_id: toValidUuid(s.talentId),
-        beneficiary_name: s.beneficiaryName,
-        ccp_number: s.ccpNumber,
-        ccp_key: s.ccpKey,
-        wilaya_name: s.wilayaName,
-        amount_dzd: s.amountDzd,
-        amount_in_words_fr: s.amountInWordsFr,
-        amount_in_words_ar: s.amountInWordsAr,
-        transaction_reference: s.transactionReference,
-        is_printed: s.isPrinted,
-        created_at: s.createdAt,
-      });
-    }
-
     if (slips.length > 0) {
       const trace = buildTraceEnvelope({
         accountId: batch.accountId || batch.tenantId,
@@ -1120,18 +1190,34 @@ export const projectMilestoneService = {
         branchId: batch.branchId || batch.facilityId,
         staffId: batch.staffId,
       });
-      await syncCoordinator.mutateOrQueueUpsert('pm_payroll_batches', {
-        id: toValidUuid(batch.id),
-        ...trace,
-        project_id: toValidUuid(batch.projectId),
-        project_title: batch.projectTitle,
-        mission_id: toValidUuid(batch.missionId),
-        mission_code: batch.missionCode,
-        batch_number: batch.batchNumber,
-        total_beneficiaries: batch.totalBeneficiaries,
-        total_amount_dzd: batch.totalAmountDzd,
-        status: 'ccp_generated',
-        ccp_generated_at: new Date().toISOString(),
+
+      await syncCoordinator.rpcOrQueue('pm_generate_ccp_batch_slips_atomic', {
+        p_batch: {
+          id: toValidUuid(batch.id),
+          ...trace,
+          project_id: toValidUuid(batch.projectId),
+          project_title: batch.projectTitle,
+          mission_id: toValidUuid(batch.missionId),
+          mission_code: batch.missionCode,
+          batch_number: batch.batchNumber,
+          total_beneficiaries: batch.totalBeneficiaries,
+          total_amount_dzd: batch.totalAmountDzd,
+          ccp_generated_at: new Date().toISOString(),
+        },
+        p_slips: slips.map((s) => ({
+          id: toValidUuid(s.id),
+          talent_id: toValidUuid(s.talentId),
+          beneficiary_name: s.beneficiaryName,
+          ccp_number: s.ccpNumber,
+          ccp_key: s.ccpKey,
+          wilaya_name: s.wilayaName,
+          amount_dzd: s.amountDzd,
+          amount_in_words_fr: s.amountInWordsFr,
+          amount_in_words_ar: s.amountInWordsAr,
+          transaction_reference: s.transactionReference,
+          is_printed: s.isPrinted,
+          created_at: s.createdAt,
+        })),
       });
     }
 
@@ -1146,19 +1232,21 @@ export const projectMilestoneService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('pm_equipment_stock')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('asset_code', { ascending: true });
+      const rows = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('pm_equipment_stock')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('asset_code', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PMEquipmentStock => ({
+      return rows.map((row: any): PMEquipmentStock => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -1176,6 +1264,7 @@ export const projectMilestoneService = {
         assignedMissionId: row.assigned_mission_id || undefined,
         conditionReport: row.condition_report,
         qrLabelCode: row.qr_label_code,
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
       }));
     } catch {
@@ -1190,7 +1279,7 @@ export const projectMilestoneService = {
       branchId: item.branchId || item.facilityId,
       staffId: item.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('pm_equipment_stock', {
+    const payload = {
       id: toValidUuid(item.id),
       ...trace,
       asset_code: item.assetCode,
@@ -1204,6 +1293,12 @@ export const projectMilestoneService = {
       condition_report: item.conditionReport,
       qr_label_code: item.qrLabelCode,
       created_at: item.createdAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('pm_equipment_stock', payload, {
+      expectedVersion: item.version,
+      entityType: 'PMEquipmentStock',
+      entityLabel: item.title,
+      localData: payload,
     });
     return res.success;
   },

@@ -13,6 +13,7 @@ import {
   manufacturingService,
   realtimeService,
   syncCoordinator,
+  subscribeConcurrencyResolutions,
   runWithConcurrency,
 } from '../../../lib/supabase/index';
 
@@ -792,6 +793,61 @@ export const useManufacturingData = () => {
     });
   }, [activeBranchId]);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const unsub = subscribeConcurrencyResolutions((evt) => {
+      const tasks: Array<() => Promise<void>> = [];
+      if (evt.table === 'mfg_bom_recipes' || evt.table === 'mfg_bom_ingredients') {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchBoms(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setBoms((prev) => mergeMfgById(prev, rows as ManufacturingBom[]));
+          }
+        });
+      } else if (evt.table === 'mfg_orders') {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchOrders(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setOrders((prev) => mergeMfgById(prev, rows as ManufacturingOrder[]));
+          }
+        });
+      } else if (evt.table === 'mfg_raw_materials') {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchRawMaterials(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setMaterials((prev) => mergeMfgById(prev, rows as RawMaterialStockItem[]));
+          }
+        });
+      } else if (evt.table === 'mfg_material_vouchers') {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchMaterialVouchers(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setVouchers((prev) => mergeMfgById(prev, rows as MaterialTransferVoucher[]));
+          }
+        });
+      } else if (evt.table === 'mfg_qc_inspections') {
+        tasks.push(async () => {
+          const rows = await manufacturingService.fetchQcInspections(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setQcRecords((prev) => mergeMfgById(prev, rows as QualityInspectionRecord[]));
+          }
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `manufacturing:res:${activeBranchId}:${evt.table}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+  }, [activeBranchId]);
+
   // Order CRUD
   const addOrder = (order: ManufacturingOrder) => {
     const scoped = withBranch(order);
@@ -807,7 +863,7 @@ export const useManufacturingData = () => {
 
   const deleteOrder = (id: string) => {
     setOrders((prev) => prev.filter((o) => o.id !== id));
-    void syncCoordinator.softDeleteRow('mfg_orders', id, currentStaffId).catch(() => {});
+    void manufacturingService.deleteOrder(id, currentStaffId).catch(() => {});
   };
 
   const updateOrderStatus = (id: string, status: ManufacturingOrder['status']) => {
@@ -836,7 +892,7 @@ export const useManufacturingData = () => {
 
   const deleteBom = (id: string) => {
     setBoms((prev) => prev.filter((b) => b.id !== id));
-    void syncCoordinator.softDeleteRow('mfg_bom_recipes', id, currentStaffId).catch(() => {});
+    void manufacturingService.deleteBom(id, currentStaffId).catch(() => {});
   };
 
   // Raw Materials CRUD

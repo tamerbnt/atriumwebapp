@@ -11,7 +11,7 @@ import { computeAlgerianFiscalStamp, calculateCcpKey } from '../../../utils/logi
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import type { Dispatch, SetStateAction } from 'react';
-import { isSupabaseConfigured, logisticsService, realtimeService, syncCoordinator, runWithConcurrency } from '../../../lib/supabase';
+import { isSupabaseConfigured, logisticsService, realtimeService, syncCoordinator, subscribeConcurrencyResolutions, runWithConcurrency } from '../../../lib/supabase';
 
 function mergeLogById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
   if (remote.length === 0) return prev;
@@ -699,6 +699,51 @@ export const useLogisticsData = () => {
     });
   }, [activeBranchId]);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const unsub = subscribeConcurrencyResolutions((evt) => {
+      const tasks: Array<() => Promise<void>> = [];
+      if (evt.table === 'logistics_parcels') {
+        tasks.push(async () => {
+          const rows = await logisticsService.fetchShipments(activeBranchId);
+          if (!cancelled && rows.length > 0) setShipments((prev) => mergeLogById(prev, rows as LogisticsShipment[]));
+        });
+      } else if (evt.table === 'logistics_courier_bags') {
+        tasks.push(async () => {
+          const rows = await logisticsService.fetchBags(activeBranchId);
+          if (!cancelled && rows.length > 0) setBags((prev) => mergeLogById(prev, rows as TransportBag[]));
+        });
+      } else if (evt.table === 'logistics_fleet') {
+        tasks.push(async () => {
+          const rows = await logisticsService.fetchManifests(activeBranchId);
+          if (!cancelled && rows.length > 0) setManifests((prev) => mergeLogById(prev, rows as LogisticsManifest[]));
+        });
+      } else if (evt.table === 'logistics_discharges') {
+        tasks.push(async () => {
+          const rows = await logisticsService.fetchDischarges(activeBranchId);
+          if (!cancelled && rows.length > 0) setDischarges((prev) => mergeLogById(prev, rows as CourierCashDischarge[]));
+        });
+      } else if (evt.table === 'logistics_remittances') {
+        tasks.push(async () => {
+          const rows = await logisticsService.fetchRemittances(activeBranchId);
+          if (!cancelled && rows.length > 0) setRemittances((prev) => mergeLogById(prev, rows as MerchantRemittanceBatch[]));
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `logistics:res:${activeBranchId}:${evt.table}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+  }, [activeBranchId]);
+
   const addShipment = (shipment: LogisticsShipment) => {
     const scoped = withBranch(shipment);
     setShipments((prev) => [scoped, ...prev]);
@@ -713,7 +758,7 @@ export const useLogisticsData = () => {
 
   const deleteShipment = (id: string) => {
     setShipments((prev) => prev.filter((s) => s.id !== id));
-    void syncCoordinator.softDeleteRow('logistics_parcels', id, currentStaffId).catch(() => {});
+    void logisticsService.deleteShipment(id, currentStaffId).catch(() => {});
   };
 
   const updateShipmentStatus = (id: string, status: LogisticsShipment['status']) => {
@@ -781,7 +826,7 @@ export const useLogisticsData = () => {
 
   const deleteManifest = (id: string) => {
     setManifests((prev) => prev.filter((m) => m.id !== id));
-    void syncCoordinator.softDeleteRow('logistics_fleet', id, currentStaffId).catch(() => {});
+    void logisticsService.deleteManifest(id, currentStaffId).catch(() => {});
   };
 
   const addDischarge = (discharge: CourierCashDischarge) => {

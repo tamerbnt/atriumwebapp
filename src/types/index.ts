@@ -152,6 +152,7 @@ export interface Member {
   balanceLabel?: string;
   segmentData?: Record<string, any>;
   lastVisitDate?: string;
+  version?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -173,6 +174,7 @@ export interface MembershipPlan {
   isWalkIn: boolean;
   isPersonalTraining: boolean;
   genderRule: 0 | 1 | 2; // 0=Both, 1=Male, 2=Female
+  version?: number;
 }
 
 export interface RegistrationLead {
@@ -193,6 +195,7 @@ export interface RegistrationLead {
   preferredPlanName?: string;
   preferredStartDate?: string;
   interestPayload?: Record<string, any>;
+  version?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -346,6 +349,7 @@ export interface StaffMember {
   eventAccessBadge?: string;
   dailyRate?: number;
   portfolioUrl?: string;
+  version?: number;
 }
 
 export interface Product {
@@ -388,6 +392,7 @@ export interface Product {
   isActive: boolean;
   isPinned: boolean;
   supplier?: string;
+  version?: number;
 }
 
 export interface SaleItem {
@@ -435,6 +440,7 @@ export interface Sale {
   status?: 'Completed' | 'Refunded' | 'Voided';
   refundReason?: string;
   refundedAt?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -456,6 +462,7 @@ export interface ParkedOrder {
   createdAt: string;
   subtotal: number;
   totalAmount: number;
+  version?: number;
 }
 
 export interface StockMovement {
@@ -487,10 +494,15 @@ export interface ReceiptConfig {
   showTaxBreakdown: boolean;
   showCashier: boolean;
   showBarcode: boolean;
+  version?: number;
 }
 
 export interface ScheduleEvent {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   title: string;
@@ -502,6 +514,7 @@ export interface ScheduleEvent {
   capacity: number;
   enrolledCount: number;
   category: string;
+  version?: number;
 }
 
 export interface CategoryTerminology {
@@ -561,6 +574,7 @@ export interface ServiceItem {
   commissionRate?: number;
   bufferMinutes?: number;
   isActive?: boolean;
+  version?: number;
 }
 
 export interface Appointment {
@@ -594,6 +608,7 @@ export interface Appointment {
   stylistCommission?: number;
   retailProductsTotal?: number;
   tipAmount?: number;
+  version?: number;
 }
 
 export interface StylistPayout {
@@ -617,6 +632,7 @@ export interface StylistPayout {
   status: 'Pending' | 'Approved' | 'Paid';
   paidAt?: string;
   paymentMethod?: string;
+  version?: number;
 }
 
 export interface SalonWorkstation {
@@ -662,6 +678,7 @@ export interface FreelanceClient {
   monthlyRetainerAmount?: number;
   notes?: string;
   lifetimeBilled: number;
+  version?: number;
   createdAt: string;
 }
 
@@ -684,6 +701,7 @@ export interface FreelanceDeliverable {
   loggedHours: number;
   dueDate: string;
   isCompleted: boolean;
+  version?: number;
 }
 
 export interface FreelanceProject {
@@ -708,6 +726,7 @@ export interface FreelanceProject {
   startDate: string;
   deadline: string;
   deliverables: FreelanceDeliverable[];
+  version?: number;
   createdAt: string;
 }
 
@@ -732,6 +751,7 @@ export interface TimeLogEntry {
   rateAtMoment: number;
   currency: CurrencyCode;
   date: string; // YYYY-MM-DD
+  version?: number;
   createdAt: string;
 }
 
@@ -775,6 +795,7 @@ export interface FreelanceInvoice {
     swift?: string;
   };
   paidAt?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -800,6 +821,7 @@ export interface FreelanceProposal {
   estimatedTimelineWeeks: number;
   validUntil: string;
   status: ProposalStatus;
+  version?: number;
   createdAt: string;
 }
 
@@ -827,6 +849,7 @@ export interface FreelanceExpense {
   date: string;
   isTaxDeductible: boolean;
   receiptUrl?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -875,6 +898,7 @@ export interface RentableUnit {
   status: RentableUnitStatus;
   description: string;
   colorHex?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -922,6 +946,7 @@ export interface RentalBooking {
   addons: BookingAddon[];
   contractSigned: boolean;
   notes?: string;
+  version?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -943,6 +968,7 @@ export interface RentalRenter {
   totalSpent: number;
   currency: 'DZD' | 'EUR' | 'USD' | string;
   notes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -964,6 +990,7 @@ export interface SecurityDepositRecord {
   deductionReason?: string;
   collectedAt: string;
   releasedAt?: string;
+  version?: number;
 }
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
@@ -1023,6 +1050,7 @@ export interface EduCourse {
   totalHours: number;
   defaultPrice: number;
   currency: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -1039,6 +1067,7 @@ export interface EduClassroom {
   hasProjector: boolean;
   hasComputers: boolean;
   colorHex: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -1069,6 +1098,7 @@ export interface EduCohort {
   scheduleSummary: string; // e.g. "Mon & Wed 18:00 - 20:00"
   status: CohortStatus;
   syllabusMilestones?: { title: string; completed: boolean }[];
+  version?: number;
   createdAt: string;
 }
 
@@ -1094,6 +1124,7 @@ export interface EduStudent {
   status: StudentStatus;
   attendanceRatePercent?: number;
   notes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -1126,6 +1157,7 @@ export interface EduEnrollment {
     isPaid: boolean;
     paidAt?: string;
   }[];
+  version?: number;
 }
 
 export interface EduSession {
@@ -1147,6 +1179,7 @@ export interface EduSession {
   endTime: string;   // "11:00"
   topic?: string;
   status: 'Scheduled' | 'InProgress' | 'Completed' | 'Cancelled';
+  version?: number;
   createdAt: string;
 }
 
@@ -1168,6 +1201,7 @@ export interface EduAttendance {
   minutesLate?: number;
   excuseNote?: string;
   recordedAt: string;
+  version?: number;
 }
 
 export interface EduGrade {
@@ -1187,6 +1221,7 @@ export interface EduGrade {
   weightPercent: number;
   teacherRemarks?: string;
   gradedAt: string;
+  version?: number;
 }
 
 export interface EduCertificate {
@@ -1208,6 +1243,7 @@ export interface EduCertificate {
   signatoryName: string;
   signatoryTitle: string;
   verificationHash: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -1231,6 +1267,7 @@ export interface EduAdmissionLead {
   placementScore?: string;
   source?: string;
   notes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -1318,6 +1355,7 @@ export interface PMClient {
   wilaya: string;
   address?: string;
   isActive: boolean;
+  version?: number;
   createdAt: string;
 }
 
@@ -1359,6 +1397,7 @@ export interface PMProject {
   leadCreativeId: string;
   leadCreativeName: string;
   status: PMProjectStatus;
+  version?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -1376,6 +1415,7 @@ export interface PMMilestone {
   completedAt?: string;
   isCompleted: boolean;
   assignedRole: PMRole;
+  version?: number;
 }
 
 export interface PMCollateralItem {
@@ -1415,6 +1455,7 @@ export interface PMPrintOrder {
   }>;
   totalCostDzd: number;
   status: 'sent_to_crea' | 'bat_in_progress' | 'bat_approved' | 'in_print' | 'delivered';
+  version?: number;
   createdAt: string;
 }
 
@@ -1444,6 +1485,7 @@ export interface PMBatDeliverable {
   uploadedByCreativeName: string;
   approvalStatus: 'pending_review' | 'approved' | 'revision_requested';
   revisionComments?: string;
+  rowVersion?: number;
   createdAt: string;
 }
 
@@ -1482,6 +1524,7 @@ export interface PMTalent {
   isHrVerified: boolean;
   status: 'active' | 'in_review' | 'paused' | 'blacklisted';
   hrNotes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -1511,6 +1554,7 @@ export interface PMMission {
   supervisorName: string;
   requiredStaffCount: number;
   status: 'upcoming' | 'live_today' | 'completed' | 'cancelled';
+  version?: number;
   createdAt: string;
 }
 
@@ -1524,6 +1568,7 @@ export interface PMMissionStaff {
   dayRateDzd: number;
   assignedRoleTitle: string;
   invitationStatus: 'confirmed' | 'standby' | 'declined';
+  version?: number;
 }
 
 export type AttendanceRollStatus = 'present' | 'late' | 'absent' | 'replacement';
@@ -1552,6 +1597,7 @@ export interface PMAttendance {
   isLocked: boolean;
   lockedAt?: string;
   supervisorNotes?: string;
+  version?: number;
 }
 
 export interface PMExpense {
@@ -1579,6 +1625,7 @@ export interface PMExpense {
   directionApprovedAt?: string;
   directionNotes?: string;
   isEquipmentAutoCreated?: boolean;
+  version?: number;
   createdAt: string;
 }
 
@@ -1602,6 +1649,7 @@ export interface PMPayrollBatch {
   directionApprovedBy?: string;
   ccpGeneratedAt?: string;
   disbursedAt?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -1625,6 +1673,7 @@ export interface PMCcpSlip {
   transactionReference: string;
   isPrinted: boolean;
   printedAt?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -1651,6 +1700,7 @@ export interface PMEquipmentStock {
     stage: 'Acheté & codé' | 'Affecté' | 'Retour stock' | 'En stock';
     detail: string;
   }>;
+  version?: number;
   createdAt: string;
 }
 
@@ -1695,6 +1745,7 @@ export interface B2bClient {
   outstandingBalance: number;
   paymentTermsDays: number;
   defaultPaymentMethod?: string;
+  version?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -1727,6 +1778,7 @@ export interface B2bSupplier {
   paymentTermsDays: number;
   outstandingPayable: number;
   tags?: string[];
+  version?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -1747,6 +1799,7 @@ export interface WarehouseDepot {
   isMain: boolean;
   totalSkusCount: number;
   totalValuationDzd: number;
+  version?: number;
   createdAt: string;
 }
 
@@ -1804,6 +1857,7 @@ export interface CommercialDocument {
   includeStampSignature: boolean;
   linkedDocId?: string; // e.g. Devis that spawned this BL, or BL that spawned this Facture
   linkedDocNumber?: string;
+  version?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -1846,6 +1900,7 @@ export interface PurchaseDocument {
   linkedPoId?: string;
   linkedPoNumber?: string;
   notes?: string;
+  version?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -1876,6 +1931,7 @@ export interface StockMovementVoucher {
   }>;
   totalValuationDzd: number;
   notes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -1898,6 +1954,7 @@ export interface MedicalPractitioner {
   color: string;
   isAvailable: boolean;
   avatarUrl?: string;
+  version?: number;
 }
 
 export interface DoctorOrdonnanceConfig {
@@ -1924,6 +1981,7 @@ export interface DoctorOrdonnanceConfig {
   qualifications?: string;
   councilOrderNumber?: string;
   digitalStampUrl?: string;
+  version?: number;
 }
 
 export interface BiometricVitalsPoint {
@@ -1966,6 +2024,7 @@ export interface MedicalPatient {
   emergencyPhone?: string;
   notes?: string;
   vitalsHistory?: BiometricVitalsPoint[];
+  version?: number;
   createdAt: string;
 }
 
@@ -2007,6 +2066,7 @@ export interface MedicalConsultation {
   isPaid: boolean;
   paymentMethod?: 'Cash' | 'BaridiMob' | 'Card' | 'ChifaDirect';
   notes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -2026,6 +2086,7 @@ export interface MedicalAppointmentSlot {
   isEmergencyBypass?: boolean;
   emergencyBypassReason?: string;
   notes?: string;
+  version?: number;
 }
 
 export interface MedicalPrescriptionItem {
@@ -2057,6 +2118,7 @@ export interface MedicalPrescription {
   isSigned?: boolean;
   doctorConfig?: Partial<DoctorOrdonnanceConfig>;
   notes?: string;
+  version?: number;
   createdAt?: string;
 }
 
@@ -2086,6 +2148,7 @@ export interface MedicalLabRecord {
   clinicalConclusion?: string;
   imagingReport?: string;
   imagingModality?: 'Échographie Doppler' | 'Radiographie Thoracique' | 'Scanner TDM' | 'Électrocardiogramme (ECG)' | string;
+  version?: number;
 }
 
 export interface MedicalCertificateRecord {
@@ -2109,6 +2172,7 @@ export interface MedicalCertificateRecord {
   clinicalFindings: string;
   qrHash: string;
   isSigned: boolean;
+  version?: number;
 }
 
 export interface ChifaClaimRecord {
@@ -2134,6 +2198,7 @@ export interface ChifaClaimRecord {
   isTransmitted?: boolean;
   status?: 'Pending' | 'Submitted' | 'Reimbursed' | 'Rejected' | string;
   batchNumber?: string;
+  version?: number;
 }
 
 export interface ClinicConsumableItem {
@@ -2147,6 +2212,7 @@ export interface ClinicConsumableItem {
   reorderThresholdUnits?: number;
   unit: string;
   unitCostDzd: number;
+  version?: number;
 }
 
 export interface DailyCashClosure {
@@ -2181,6 +2247,7 @@ export interface DailyCashClosure {
   isReconciled?: boolean;
   signedOffByOwner?: boolean;
   cashDrawerLimitDzd?: number;
+  version?: number;
 }
 
 // ==========================================
@@ -2202,6 +2269,7 @@ export interface GarageVehicle {
   ownerName: string;
   ownerPhone: string;
   currentOdometer: number;
+  version?: number;
   createdAt: string;
 }
 
@@ -2229,6 +2297,7 @@ export interface GarageWorkOrder {
   isPaid: boolean;
   startDate: string;
   completedDate?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -2246,6 +2315,7 @@ export interface AutoPart {
   compatibilities?: string[];
   supplier?: string;
   oemReference?: string;
+  version?: number;
 }
 
 // ==========================================
@@ -2298,6 +2368,7 @@ export interface RealEstateProperty {
   
   photoUrls?: string[];
   featuredPhotoUrl?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -2349,6 +2420,7 @@ export interface RealEstateMandate {
   isExclusive: boolean;
   scannedDocumentUrl?: string;
   notes?: string;
+  version?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -2379,6 +2451,7 @@ export interface RealEstateLease {
   lastPaymentDate?: string;
   arrearsDzd?: number;
   status: 'Active' | 'Expired' | 'Terminated';
+  version?: number;
   createdAt?: string;
 }
 
@@ -2415,6 +2488,7 @@ export interface RentalQuittanceRecord {
   paymentDate: string;
   cashierStaffName: string;
   notes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -2447,6 +2521,7 @@ export interface BonDeVisiteRecord {
   counterOfferDzd?: number;
   
   whatsappConfirmationSent: boolean;
+  version?: number;
   createdAt: string;
 }
 
@@ -2481,6 +2556,7 @@ export interface RealEstateInspection {
   notes?: string;
   isSigned?: boolean;
   signatureSvgData?: string;
+  version?: number;
   createdAt?: string;
 }
 
@@ -2503,6 +2579,7 @@ export interface BuyerDemandProfile {
   searchUrgency: 'Immediate' | 'Within3Months' | 'Flexible';
   activeStatus: 'Active' | 'UnderOffer' | 'Archived';
   notes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -2564,6 +2641,7 @@ export interface ManufacturingBom {
   isActive: boolean;
   status?: 'Draft' | 'UnderReview' | 'Active' | 'Archived';
   notes?: string;
+  rowVersion?: number;
   createdAt: string;
   updatedAt?: string;
 }
@@ -2599,6 +2677,7 @@ export interface ManufacturingOrder {
   clientOrderId?: string;
   clientName?: string;
   notes?: string;
+  version?: number;
   createdAt: string;
   updatedAt?: string;
 }
@@ -2625,6 +2704,7 @@ export interface WorkstationSessionLog {
   scrapQuantity: number;
   scrapReason?: 'SetupPiece' | 'DimensionError' | 'BurntMaterial' | 'Cracked';
   status: 'Active' | 'Paused' | 'Submitted';
+  version?: number;
   createdAt: string;
 }
 
@@ -2647,6 +2727,7 @@ export interface RawMaterialStockItem {
   warehouseLocation: string;
   supplierLotNumber?: string;
   onmlCertificateRef?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -2672,6 +2753,7 @@ export interface MaterialTransferVoucher {
   }>;
   totalValueDzd: number;
   notes?: string;
+  version?: number;
 }
 
 export interface QualityInspectionRecord {
@@ -2701,6 +2783,7 @@ export interface QualityInspectionRecord {
   inspectionDate: string;
   certificateOfConformityGenerated: boolean;
   notes?: string;
+  version?: number;
 }
 
 // ==========================================
@@ -2731,6 +2814,7 @@ export interface LegalMatter {
   nextHearingDate?: string;
   cpcaDeadlineId?: string;
   notes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -2760,6 +2844,7 @@ export interface LegalHearing {
   isCompleted?: boolean;
   nextDate?: string;
   status?: 'Scheduled' | 'Attended' | 'Postponed' | 'Ruled' | string;
+  version?: number;
   createdAt?: string;
 }
 
@@ -2789,6 +2874,7 @@ export interface CPCADeadline {
     greffierName: string;
   };
   notes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -2829,6 +2915,7 @@ export interface NotaryDeed {
   signedAt?: string;
   conservationVolume?: string;
   conservationNumber?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -2852,6 +2939,7 @@ export interface EscrowAccount {
     recordedAt: string;
   };
   transactions: EscrowTransaction[];
+  version?: number;
 }
 
 export interface EscrowTransaction {
@@ -2888,6 +2976,7 @@ export interface SCFJournalEntry {
   totalCreditDzd: number;
   isBalanced: boolean;
   status: 'validated' | 'draft' | 'closed_period';
+  version?: number;
 }
 
 export interface CashReceipt {
@@ -2905,6 +2994,7 @@ export interface CashReceipt {
   timbreFiscalDzd: number;
   netCollectedDzd: number;
   cashierName: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -2928,6 +3018,7 @@ export interface LegalClientEntity {
   courtJurisdiction: string;
   activeMattersCount: number;
   outstandingBalanceDzd: number;
+  version?: number;
   createdAt: string;
 }
 
@@ -2962,6 +3053,7 @@ export interface LogisticsShipment {
   stampDutyDzd?: number;
   assignedDriverName?: string;
   podSignatureUrl?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -2981,6 +3073,7 @@ export interface TransportBag {
   status: 'Open' | 'Sealed' | 'InTransit' | 'Received' | 'Discrepancy';
   sealedAt?: string;
   receivedAt?: string;
+  version?: number;
 }
 
 export interface LogisticsManifest {
@@ -3007,6 +3100,7 @@ export interface LogisticsManifest {
   totalCodCollectedDzd: number;
   totalGrossWeightKg?: number;
   status: 'Draft' | 'Dispatched' | 'Completed' | 'Reconciled';
+  version?: number;
   createdAt: string;
 }
 
@@ -3034,6 +3128,7 @@ export interface CourierCashDischarge {
   courierSignatureConfirmed: boolean;
   status: 'Clean' | 'Shortage' | 'Surplus';
   timestamp: string;
+  version?: number;
 }
 
 export interface StopDeskInventoryItem {
@@ -3068,6 +3163,7 @@ export interface MerchantRemittanceBatch {
   paymentChannel: 'AlgeriePoste_SFP01' | 'BaridiMob' | 'Virement_Bancaire' | 'Especes';
   status: 'Draft' | 'Approved' | 'Executed';
   executedAt?: string;
+  version?: number;
 }
 
 // ==========================================
@@ -3103,6 +3199,7 @@ export interface ContractorProject {
   supervisorName: string;
   progressPercent: number;
   status: 'Tendering' | 'SitePreparation' | 'InProgress' | 'ProvisionalHandover' | 'DefinitiveHandover' | 'Archived';
+  version?: number;
   createdAt: string;
 }
 
@@ -3125,6 +3222,7 @@ export interface ContractorBoqItem {
   totalExecutedDzd: number;
   isAdditionalWork?: boolean;
   avenantReference?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -3162,6 +3260,7 @@ export interface ContractorDailyLog {
   ctcObservationNotes?: string;
   isSignedByBet?: boolean;
   supervisorSignature: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -3188,6 +3287,7 @@ export interface ContractorDgp {
   status: 'Draft' | 'SubmittedClient' | 'ApprovedBE' | 'Paid';
   tresorMandatReference?: string;
   issuedDate: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -3207,6 +3307,7 @@ export interface ContractorServiceOrder {
   issuerName: string;
   hasReservationLetter?: boolean;
   status: 'Notified' | 'AcceptedWithReservations' | 'Executed';
+  version?: number;
   createdAt: string;
 }
 
@@ -3229,6 +3330,7 @@ export interface ConcretePourRecord {
   strength28DaysMpa?: number;
   ctcClearanceObtained: boolean;
   status: 'CastPending7D' | 'Passed7D' | 'Passed28D' | 'NonConforming';
+  version?: number;
   createdAt: string;
 }
 
@@ -3249,6 +3351,7 @@ export interface SubcontractorAgreement {
   progressPercent: number;
   quitusSigned: boolean;
   status: 'Active' | 'Completed' | 'Terminated';
+  version?: number;
   createdAt: string;
 }
 
@@ -3269,6 +3372,7 @@ export interface EquipmentLogRecord {
   hasOverconsumptionAlert: boolean;
   date: string;
   operatorName: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -3287,6 +3391,7 @@ export interface CaisseExpenseRecord {
   netCashDisbursedDzd: number;
   voucherNumber: string;
   approvedBy: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -3323,6 +3428,7 @@ export interface AgriParcel {
   expectedHarvestDate?: string;
   status: AgriParcelStatus;
   notes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -3351,6 +3457,7 @@ export interface AgriCropCycle {
   totalInputCostDzd: number;
   totalLaborCostDzd: number;
   totalMachineryCostDzd: number;
+  version?: number;
   createdAt: string;
   updatedAt?: string;
 }
@@ -3374,6 +3481,7 @@ export interface AgriTreatmentLog {
   operatorName: string;
   safetyGearConfirmed?: boolean;
   notes?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -3392,6 +3500,7 @@ export interface AgriWorker {
   defaultDailyRateDzd: number;
   defaultPieceRateDzd: number;
   active: boolean;
+  version?: number;
   createdAt: string;
 }
 
@@ -3413,6 +3522,7 @@ export interface AgriDailyPointage {
   isPaid: boolean;
   paidAt?: string;
   supervisorStaffId: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -3442,6 +3552,7 @@ export interface AgriDairyCow {
   gender?: 'Female' | 'Male';
   healthStatus?: 'Healthy' | 'InTreatment' | 'Quarantine' | 'Sick';
   dailyProductionLiters?: number;
+  version?: number;
   createdAt: string;
 }
 
@@ -3464,6 +3575,7 @@ export interface AgriMilkingRecord {
   onilSubsidyRateDzd: number; // 12 DZD/L
   onilTotalSubsidyDzd: number;
   operatorStaffId: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -3508,6 +3620,7 @@ export interface AgriWeighbridgeTicket {
   destinationStorage?: string;
   date: string;
   harvestDate?: string;
+  version?: number;
   createdAt: string;
 }
 
@@ -3552,6 +3665,7 @@ export interface WalkInTicket {
   paymentMethod: 'cash' | 'baridimob' | 'cib';
   timbreFiscalDzd: number;
   issuedAt: string;
+  version?: number;
 }
 
 export type SalonChairStage = 'waiting' | 'in_progress' | 'completed' | 'paid';
@@ -3568,6 +3682,7 @@ export interface SalonChairStation {
   stage: SalonChairStage;
   startTime?: string;
   elapsedMinutes?: number;
+  version?: number;
 }
 
 export interface EduQuickAttendanceRecord {
@@ -3609,6 +3724,7 @@ export interface StaffAttendanceLogRecord {
   terminalId?: string;
   notes?: string;
   lateMinutes?: number;
+  version?: number;
 }
 
 export interface StaffWeeklyAttendanceDay {
@@ -3646,6 +3762,7 @@ export interface StaffSalaryAdvance {
   voucherNumber: string;
   status: 'pending' | 'deducted' | 'waived';
   deductedInPeriod?: string; // e.g. "2026-11"
+  version?: number;
 }
 
 export interface StaffPayrollSlipRecord {
@@ -3681,6 +3798,7 @@ export interface StaffPayrollSlipRecord {
   isPaid: boolean;
   paidDate?: string;
   receiptNumber: string;
+  version?: number;
 }
 
 export interface StaffPayrollRunRecord {
@@ -3700,5 +3818,6 @@ export interface StaffPayrollRunRecord {
   slipsCount: number;
   createdAt: string;
   approvedAt?: string;
+  version?: number;
 }
 

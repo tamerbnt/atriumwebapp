@@ -1,4 +1,5 @@
 import { getSupabaseClient, isUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { mapBusinessFromDb, mapBranchFromDb } from '../mappers';
 import type { Business, Branch, BusinessCategory } from '../../../types/index';
 
@@ -41,39 +42,54 @@ export const tenantService = {
     const client = getSupabaseClient();
     if (!client || !isUuid(accountId)) return [];
 
-    const { data, error } = await client
-      .from('businesses')
-      .select('*')
-      .eq('account_id', accountId)
-      .eq('is_active', true);
-
-    if (error) {
+    try {
+      const rows = await fetchAllPages(
+        (from, to) =>
+          client
+            .from('businesses')
+            .select('*')
+            .eq('account_id', accountId)
+            .eq('is_active', true)
+            .is('deleted_at', null)
+            .order('id', { ascending: true })
+            .range(from, to),
+        { throwOnError: true }
+      );
+      return rows.map(mapBusinessFromDb);
+    } catch (error) {
       console.warn('[tenantService] fetchBusinesses failed:', error);
       return [];
     }
-    return (data || []).map(mapBusinessFromDb);
   },
 
   async fetchBranches(accountId: string, businessId?: string): Promise<Branch[]> {
     const client = getSupabaseClient();
     if (!client || !isUuid(accountId)) return [];
 
-    let query = client
-      .from('branches')
-      .select('*')
-      .eq('account_id', accountId)
-      .eq('is_active', true);
+    try {
+      const rows = await fetchAllPages(
+        (from, to) => {
+          let query = client
+            .from('branches')
+            .select('*')
+            .eq('account_id', accountId)
+            .eq('is_active', true)
+            .is('deleted_at', null)
+            .order('id', { ascending: true })
+            .range(from, to);
 
-    if (businessId && isUuid(businessId)) {
-      query = query.eq('business_id', businessId);
-    }
-
-    const { data, error } = await query;
-    if (error) {
+          if (businessId && isUuid(businessId)) {
+            query = query.eq('business_id', businessId);
+          }
+          return query;
+        },
+        { throwOnError: true }
+      );
+      return rows.map(mapBranchFromDb);
+    } catch (error) {
       console.warn('[tenantService] fetchBranches failed:', error);
       return [];
     }
-    return (data || []).map(mapBranchFromDb);
   },
 
   async fetchTenantFacilities(tenantId: string) {

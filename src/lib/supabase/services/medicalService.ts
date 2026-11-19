@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   MedicalPractitioner,
@@ -86,19 +87,21 @@ export const medicalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('medical_staff')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('full_name', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('medical_staff')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('full_name', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): MedicalPractitioner => {
+      return data.map((row: any): MedicalPractitioner => {
         const { plain: licenseNumber, meta } = unpackMeta(row.cnom_license);
         return {
           id: row.id,
@@ -113,6 +116,7 @@ export const medicalService = {
           color: meta.color || '#0D9488',
           isAvailable: row.is_active ?? true,
           avatarUrl: meta.avatarUrl || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -127,7 +131,7 @@ export const medicalService = {
       branchId: ctx.branchId,
       staffId: ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('medical_staff', {
+    const payload = {
       id: toValidUuid(doc.id),
       ...trace,
       full_name: doc.fullName,
@@ -142,6 +146,12 @@ export const medicalService = {
         avatarUrl: doc.avatarUrl,
       }),
       is_active: doc.isAvailable ?? true,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('medical_staff', payload, {
+      expectedVersion: doc.version,
+      entityType: 'MedicalPractitioner',
+      entityLabel: doc.fullName,
+      localData: payload,
     });
     return res.success;
   },
@@ -156,20 +166,25 @@ export const medicalService = {
     if (!client) return {};
 
     try {
-      const { data, error } = await (client as any)
-        .from('medical_departments')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .ilike('code', 'ORDCFG:%');
-
-      if (error) return {};
+      const data = await fetchAllPages<any>((from, to) =>
+        (client as any)
+          .from('medical_departments')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .ilike('code', 'ORDCFG:%')
+          .order('id', { ascending: true })
+          .range(from, to)
+      );
 
       const configs: Record<string, DoctorOrdonnanceConfig> = {};
-      (data || []).forEach((row: any) => {
+      data.forEach((row: any) => {
         const { meta } = unpackMeta(row.head_doctor_name);
         if (meta.config && meta.config.doctorId) {
-          configs[meta.config.doctorId] = meta.config as DoctorOrdonnanceConfig;
+          configs[meta.config.doctorId] = {
+            ...(meta.config as DoctorOrdonnanceConfig),
+            version: row.version != null ? Number(row.version) : (meta.config as DoctorOrdonnanceConfig).version,
+          };
         }
       });
       return configs;
@@ -185,13 +200,19 @@ export const medicalService = {
       branchId: ctx.branchId,
       staffId: ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('medical_departments', {
+    const payload = {
       id: toValidUuid(`ordcfg_${ctx.branchId}_${config.doctorId}`),
       ...trace,
       name: `Ordonnance Config — ${config.doctorName}`,
       code: `ORDCFG:${config.doctorId}`,
       head_doctor_name: packMeta(config.doctorName, { config }),
       room_count: 1,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('medical_departments', payload, {
+      expectedVersion: config.version,
+      entityType: 'DoctorOrdonnanceConfig',
+      entityLabel: config.doctorName,
+      localData: payload,
     });
     return res.success;
   },
@@ -201,19 +222,21 @@ export const medicalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('medical_patients')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('medical_patients')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): MedicalPatient => {
+      return data.map((row: any): MedicalPatient => {
         const { plain, meta } = unpackMeta(row.notes);
         const allergies = meta.allergies
           ? meta.allergies
@@ -247,6 +270,7 @@ export const medicalService = {
           emergencyPhone: meta.emergencyPhone || undefined,
           notes: plain || undefined,
           vitalsHistory: Array.isArray(meta.vitalsHistory) ? meta.vitalsHistory : [],
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -262,7 +286,7 @@ export const medicalService = {
       branchId: patient.branchId,
       staffId: patient.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('medical_patients', {
+    const payload = {
       id: toValidUuid(patient.id),
       ...trace,
       file_number: patient.id.slice(0, 12).toUpperCase(),
@@ -284,6 +308,12 @@ export const medicalService = {
         chronicConditions: patient.chronicConditions || [],
         vitalsHistory: patient.vitalsHistory || [],
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('medical_patients', payload, {
+      expectedVersion: patient.version,
+      entityType: 'MedicalPatient',
+      entityLabel: patient.fullName,
+      localData: payload,
     });
     return res.success;
   },
@@ -298,19 +328,21 @@ export const medicalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('medical_appointments')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('appointment_date', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('medical_appointments')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('appointment_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): MedicalAppointmentSlot => {
+      return data.map((row: any): MedicalAppointmentSlot => {
         const { plain, meta } = unpackMeta(row.notes);
         return {
           id: row.id,
@@ -328,6 +360,7 @@ export const medicalService = {
           isEmergencyBypass: Boolean(meta.isEmergencyBypass),
           emergencyBypassReason: meta.emergencyBypassReason || undefined,
           notes: plain || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -342,7 +375,7 @@ export const medicalService = {
       branchId: ctx.branchId,
       staffId: ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('medical_appointments', {
+    const payload = {
       id: toValidUuid(appt.id),
       ...trace,
       patient_id: appt.patientId ? toValidUuid(appt.patientId) : null,
@@ -362,6 +395,12 @@ export const medicalService = {
         isEmergencyBypass: appt.isEmergencyBypass,
         emergencyBypassReason: appt.emergencyBypassReason,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('medical_appointments', payload, {
+      expectedVersion: appt.version,
+      entityType: 'MedicalAppointment',
+      entityLabel: `${appt.patientName} — ${appt.doctorName}`,
+      localData: payload,
     });
     return res.success;
   },
@@ -376,19 +415,21 @@ export const medicalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('medical_consultations')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('medical_consultations')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .filter((row: any) => !String(row.chief_complaint || '').startsWith('__'))
         .map((row: any): MedicalConsultation => {
           const { plain, meta } = unpackMeta(row.notes);
@@ -422,6 +463,7 @@ export const medicalService = {
             isPaid: Boolean(meta.isPaid),
             paymentMethod: meta.paymentMethod || 'Cash',
             notes: plain || undefined,
+            version: row.version != null ? Number(row.version) : undefined,
             createdAt: row.created_at,
           };
         });
@@ -437,7 +479,7 @@ export const medicalService = {
       branchId: con.branchId,
       staffId: con.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('medical_consultations', {
+    const payload = {
       id: toValidUuid(con.id),
       ...trace,
       patient_id: con.patientId ? toValidUuid(con.patientId) : null,
@@ -467,6 +509,12 @@ export const medicalService = {
         isPaid: con.isPaid,
         paymentMethod: con.paymentMethod,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('medical_consultations', payload, {
+      expectedVersion: con.version,
+      entityType: 'MedicalConsultation',
+      entityLabel: con.patientName,
+      localData: payload,
     });
     return res.success;
   },
@@ -481,20 +529,22 @@ export const medicalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('medical_consultations')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .ilike('chief_complaint', '__rx__:%')
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('medical_consultations')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .ilike('chief_complaint', '__rx__:%')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): MedicalPrescription => {
+      return data.map((row: any): MedicalPrescription => {
         const { plain, meta } = unpackMeta(row.notes);
         return {
           id: meta.origId || row.id,
@@ -516,6 +566,7 @@ export const medicalService = {
           isSigned: row.icd10_code === 'SIGNED',
           doctorConfig: meta.doctorConfig,
           notes: plain || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -531,7 +582,7 @@ export const medicalService = {
       branchId: rx.branchId || ctx.branchId,
       staffId: rx.staffId || ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('medical_consultations', {
+    const payload = {
       id: toValidUuid(`rx_${rx.id}`),
       ...trace,
       patient_id: rx.patientId ? toValidUuid(rx.patientId) : null,
@@ -553,7 +604,18 @@ export const medicalService = {
         patientAge: rx.patientAge,
         doctorConfig: rx.doctorConfig,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('medical_consultations', payload, {
+      expectedVersion: rx.version,
+      entityType: 'MedicalPrescription',
+      entityLabel: rx.patientName,
+      localData: payload,
     });
+    return res.success;
+  },
+
+  async deletePrescription(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('medical_consultations', `rx_${id}`, deletedByStaffId);
     return res.success;
   },
 
@@ -562,20 +624,22 @@ export const medicalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('medical_consultations')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .ilike('chief_complaint', '__lab__:%')
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('medical_consultations')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .ilike('chief_complaint', '__lab__:%')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): MedicalLabRecord => {
+      return data.map((row: any): MedicalLabRecord => {
         const { meta } = unpackMeta(row.notes);
         return {
           id: meta.origId || row.id,
@@ -593,6 +657,7 @@ export const medicalService = {
           clinicalConclusion: meta.clinicalConclusion,
           imagingReport: meta.imagingReport,
           imagingModality: meta.imagingModality,
+          version: row.version != null ? Number(row.version) : undefined,
         };
       });
     } catch {
@@ -607,7 +672,7 @@ export const medicalService = {
       branchId: ctx.branchId,
       staffId: ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('medical_consultations', {
+    const payload = {
       id: toValidUuid(`lab_${lab.id}`),
       ...trace,
       patient_id: lab.patientId ? toValidUuid(lab.patientId) : null,
@@ -627,7 +692,18 @@ export const medicalService = {
         imagingReport: lab.imagingReport,
         imagingModality: lab.imagingModality,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('medical_consultations', payload, {
+      expectedVersion: lab.version,
+      entityType: 'MedicalLabRecord',
+      entityLabel: `${lab.patientName} — ${lab.panelName || lab.testCategory}`,
+      localData: payload,
     });
+    return res.success;
+  },
+
+  async deleteLabRecord(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('medical_consultations', `lab_${id}`, deletedByStaffId);
     return res.success;
   },
 
@@ -636,23 +712,29 @@ export const medicalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('medical_consultations')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .ilike('chief_complaint', '__cert__:%')
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('medical_consultations')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .ilike('chief_complaint', '__cert__:%')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): MedicalCertificateRecord | null => {
           const { meta } = unpackMeta(row.notes);
-          return meta.cert ? (meta.cert as MedicalCertificateRecord) : null;
+          if (!meta.cert) return null;
+          return {
+            ...(meta.cert as MedicalCertificateRecord),
+            version: row.version != null ? Number(row.version) : (meta.cert as MedicalCertificateRecord).version,
+          };
         })
         .filter((c: MedicalCertificateRecord | null): c is MedicalCertificateRecord => Boolean(c));
     } catch {
@@ -667,7 +749,7 @@ export const medicalService = {
       branchId: ctx.branchId,
       staffId: ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('medical_consultations', {
+    const payload = {
       id: toValidUuid(`cert_${cert.id}`),
       ...trace,
       patient_id: cert.patientId ? toValidUuid(cert.patientId) : null,
@@ -678,7 +760,18 @@ export const medicalService = {
       diagnosis: cert.certificateType,
       icd10_code: cert.qrHash,
       notes: packMeta(cert.clinicalFindings, { cert }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('medical_consultations', payload, {
+      expectedVersion: cert.version,
+      entityType: 'MedicalCertificateRecord',
+      entityLabel: `${cert.certificateType} — ${cert.patientName}`,
+      localData: payload,
     });
+    return res.success;
+  },
+
+  async deleteCertificate(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('medical_consultations', `cert_${id}`, deletedByStaffId);
     return res.success;
   },
 
@@ -687,19 +780,21 @@ export const medicalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('medical_consumables')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('name', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('medical_consumables')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('name', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): ClinicConsumableItem => ({
+      return data.map((row: any): ClinicConsumableItem => ({
         id: row.id,
         itemCode: row.sku,
         name: row.name,
@@ -710,6 +805,7 @@ export const medicalService = {
         reorderThresholdUnits: Number(row.min_stock_alert || 10),
         unit: row.unit || 'Boite',
         unitCostDzd: Number(row.unit_cost_dzd || 0),
+        version: row.version != null ? Number(row.version) : undefined,
       }));
     } catch {
       return [];
@@ -725,7 +821,7 @@ export const medicalService = {
     });
     const stock = Number(item.currentStock ?? item.currentStockUnits ?? 0);
     const threshold = Number(item.minStockAlert ?? item.reorderThresholdUnits ?? 10);
-    const res = await syncCoordinator.mutateOrQueueUpsert('medical_consumables', {
+    const payload = {
       id: toValidUuid(item.id),
       ...trace,
       sku: item.itemCode || item.id,
@@ -735,6 +831,12 @@ export const medicalService = {
       stock_quantity: stock,
       min_stock_alert: threshold,
       unit_cost_dzd: Number(item.unitCostDzd || 0),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('medical_consumables', payload, {
+      expectedVersion: item.version,
+      entityType: 'ClinicConsumable',
+      entityLabel: item.name,
+      localData: payload,
     });
     return res.success;
   },
@@ -749,23 +851,29 @@ export const medicalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('medical_invoices')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .ilike('invoice_number', 'CHIFA-%')
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('medical_invoices')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .ilike('invoice_number', 'CHIFA-%')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): ChifaClaimRecord | null => {
           const entry = Array.isArray(row.items) ? row.items[0] : null;
-          return entry && entry.kind === 'chifa_claim' ? (entry.claim as ChifaClaimRecord) : null;
+          if (!entry || entry.kind !== 'chifa_claim' || !entry.claim) return null;
+          return {
+            ...(entry.claim as ChifaClaimRecord),
+            version: row.version != null ? Number(row.version) : (entry.claim as ChifaClaimRecord).version,
+          };
         })
         .filter((c: ChifaClaimRecord | null): c is ChifaClaimRecord => Boolean(c));
     } catch {
@@ -780,7 +888,7 @@ export const medicalService = {
       branchId: ctx.branchId,
       staffId: ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('medical_invoices', {
+    const payload = {
       id: toValidUuid(`chifa_${claim.id}`),
       ...trace,
       invoice_number: `CHIFA-${claim.claimNumber || claim.id}`,
@@ -794,7 +902,18 @@ export const medicalService = {
       paid_amount_dzd: Number(claim.copayPaidDzd ?? claim.ticketModerateurDzd ?? 0),
       payment_method: 'Chifa',
       status: claim.status === 'Reimbursed' ? 'Paid' : 'Partial',
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('medical_invoices', payload, {
+      expectedVersion: claim.version,
+      entityType: 'ChifaClaimRecord',
+      entityLabel: claim.claimNumber || claim.patientName,
+      localData: payload,
     });
+    return res.success;
+  },
+
+  async deleteChifaClaim(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('medical_invoices', `chifa_${id}`, deletedByStaffId);
     return res.success;
   },
 
@@ -803,23 +922,29 @@ export const medicalService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('medical_invoices')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .ilike('invoice_number', 'CLOSE-%')
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('medical_invoices')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .ilike('invoice_number', 'CLOSE-%')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): DailyCashClosure | null => {
           const entry = Array.isArray(row.items) ? row.items[0] : null;
-          return entry && entry.kind === 'cash_closure' ? (entry.closure as DailyCashClosure) : null;
+          if (!entry || entry.kind !== 'cash_closure' || !entry.closure) return null;
+          return {
+            ...(entry.closure as DailyCashClosure),
+            version: row.version != null ? Number(row.version) : (entry.closure as DailyCashClosure).version,
+          };
         })
         .filter((c: DailyCashClosure | null): c is DailyCashClosure => Boolean(c));
     } catch {
@@ -834,7 +959,7 @@ export const medicalService = {
       branchId: closure.branchId || ctx.branchId,
       staffId: closure.staffId || ctx.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('medical_invoices', {
+    const payload = {
       id: toValidUuid(`close_${closure.id}`),
       ...trace,
       invoice_number: `CLOSE-${closure.closureDate || closure.date || closure.id}`,
@@ -845,7 +970,18 @@ export const medicalService = {
       paid_amount_dzd: Number(closure.countedCashDzd ?? closure.actualCashInDrawerDzd ?? 0),
       payment_method: 'Cash',
       status: 'Paid',
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('medical_invoices', payload, {
+      expectedVersion: closure.version,
+      entityType: 'DailyCashClosure',
+      entityLabel: closure.closureDate || closure.date || closure.id,
+      localData: payload,
     });
+    return res.success;
+  },
+
+  async deleteCashClosure(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('medical_invoices', `close_${id}`, deletedByStaffId);
     return res.success;
   },
 };

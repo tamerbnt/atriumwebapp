@@ -706,6 +706,7 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
           keyExtractor={(s) => s.id}
           viewMode={viewMode === 'grid' ? 'grid' : 'list'}
           defaultViewMode={viewMode === 'grid' ? 'grid' : 'list'}
+          pageSize={50}
           columns={columns}
           sortBy={sortBy}
           sortDirection={sortDir}

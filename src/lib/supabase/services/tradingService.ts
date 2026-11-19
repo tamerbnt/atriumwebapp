@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   B2bClient,
@@ -59,19 +60,21 @@ export const tradingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('trading_warehouses')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('trading_warehouses')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): WarehouseDepot => ({
+      return data.map((row: any): WarehouseDepot => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -87,6 +90,7 @@ export const tradingService = {
         isMain: Boolean(row.is_default),
         totalSkusCount: 0,
         totalValuationDzd: 0,
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
       }));
     } catch {
@@ -101,7 +105,7 @@ export const tradingService = {
       branchId: warehouse.branchId || warehouse.facilityId,
       staffId: warehouse.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('trading_warehouses', {
+    const payload = {
       id: toValidUuid(warehouse.id),
       ...trace,
       code: warehouse.code,
@@ -110,6 +114,12 @@ export const tradingService = {
       address: warehouse.address || null,
       manager_name: warehouse.managerName || null,
       is_default: Boolean(warehouse.isMain),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('trading_warehouses', payload, {
+      expectedVersion: warehouse.version,
+      entityType: 'WarehouseDepot',
+      entityLabel: warehouse.name,
+      localData: payload,
     });
     return res.success;
   },
@@ -124,19 +134,21 @@ export const tradingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('trading_b2b_clients')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('trading_b2b_clients')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): B2bClient => {
+      return data.map((row: any): B2bClient => {
         const { meta } = unpackNotesMeta(row.notes);
         const termsMatch = String(row.payment_terms || '').match(/(\d+)/);
         return {
@@ -170,6 +182,7 @@ export const tradingService = {
           outstandingBalance: Number(row.current_balance_dzd || 0),
           paymentTermsDays: meta.paymentTermsDays ?? (termsMatch ? Number(termsMatch[1]) : 0),
           defaultPaymentMethod: meta.defaultPaymentMethod || row.payment_terms || 'Virement',
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
           updatedAt: row.updated_at,
         };
@@ -186,7 +199,7 @@ export const tradingService = {
       branchId: clientItem.branchId || clientItem.facilityId,
       staffId: clientItem.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('trading_b2b_clients', {
+    const payload = {
       id: toValidUuid(clientItem.id),
       ...trace,
       company_name: clientItem.companyName,
@@ -218,6 +231,12 @@ export const tradingService = {
         paymentTermsDays: clientItem.paymentTermsDays,
         defaultPaymentMethod: clientItem.defaultPaymentMethod,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('trading_b2b_clients', payload, {
+      expectedVersion: clientItem.version,
+      entityType: 'B2bClient',
+      entityLabel: clientItem.companyName,
+      localData: payload,
     });
     return res.success;
   },
@@ -232,19 +251,21 @@ export const tradingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('trading_b2b_suppliers')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('trading_b2b_suppliers')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): B2bSupplier => {
+      return data.map((row: any): B2bSupplier => {
         const { meta } = unpackNotesMeta(row.notes);
         return {
           id: row.id,
@@ -274,6 +295,7 @@ export const tradingService = {
           paymentTermsDays: meta.paymentTermsDays ?? Number(row.lead_time_days || 7),
           outstandingPayable: Number(row.balance_payable_dzd || 0),
           tags: meta.tags || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
           updatedAt: row.updated_at,
         };
@@ -290,7 +312,7 @@ export const tradingService = {
       branchId: supplier.branchId || supplier.facilityId,
       staffId: supplier.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('trading_b2b_suppliers', {
+    const payload = {
       id: toValidUuid(supplier.id),
       ...trace,
       supplier_name: supplier.supplierName,
@@ -316,6 +338,12 @@ export const tradingService = {
         paymentTermsDays: supplier.paymentTermsDays,
         tags: supplier.tags,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('trading_b2b_suppliers', payload, {
+      expectedVersion: supplier.version,
+      entityType: 'B2bSupplier',
+      entityLabel: supplier.supplierName,
+      localData: payload,
     });
     return res.success;
   },
@@ -330,19 +358,21 @@ export const tradingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('trading_products')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('name', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('trading_products')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('name', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): Product => ({
+      return data.map((row: any): Product => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -363,6 +393,7 @@ export const tradingService = {
         reorderLevel: Number(row.min_stock_alert || 10),
         isActive: row.is_active ?? true,
         isPinned: false,
+        version: row.version != null ? Number(row.version) : undefined,
       }));
     } catch {
       return [];
@@ -376,7 +407,7 @@ export const tradingService = {
       branchId: product.branchId || product.facilityId,
       staffId: product.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('trading_products', {
+    const payload = {
       id: toValidUuid(product.id),
       ...trace,
       sku: product.sku || product.id,
@@ -390,6 +421,12 @@ export const tradingService = {
       min_stock_alert: Number(product.reorderLevel ?? 10),
       depot_id: depotId ? toValidUuid(depotId) : null,
       is_active: product.isActive ?? true,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('trading_products', payload, {
+      expectedVersion: product.version,
+      entityType: 'TradingProduct',
+      entityLabel: product.name,
+      localData: payload,
     });
     return res.success;
   },
@@ -404,19 +441,21 @@ export const tradingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('trading_commercial_docs')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('trading_commercial_docs')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): CommercialDocument => {
+      return data.map((row: any): CommercialDocument => {
         const { notes, meta } = unpackNotesMeta(row.notes);
         const totalHtFinal = Number(row.total_ht || 0);
         const totalTtc = Number(row.total_ttc || 0);
@@ -459,6 +498,7 @@ export const tradingService = {
           includeStampSignature: meta.includeStampSignature ?? true,
           linkedDocId: row.linked_doc_id || undefined,
           linkedDocNumber: row.linked_doc_number || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
           updatedAt: row.updated_at,
         };
@@ -475,7 +515,7 @@ export const tradingService = {
       branchId: doc.branchId || doc.facilityId,
       staffId: doc.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('trading_commercial_docs', {
+    const payload = {
       id: toValidUuid(doc.id),
       ...trace,
       doc_type: toDbCommercialType(doc.type),
@@ -513,6 +553,12 @@ export const tradingService = {
         notesBottom: doc.notesBottom,
         includeStampSignature: doc.includeStampSignature,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('trading_commercial_docs', payload, {
+      expectedVersion: doc.version,
+      entityType: 'CommercialDocument',
+      entityLabel: doc.docNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -547,19 +593,21 @@ export const tradingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('trading_purchase_docs')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('trading_purchase_docs')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): PurchaseDocument => {
+      return data.map((row: any): PurchaseDocument => {
         const { notes, meta } = unpackNotesMeta(row.notes);
         const mappedType: PurchaseDocType =
           meta.origType || (row.doc_type === 'facture_achat' ? 'facture_fournisseur' : row.doc_type) || 'po';
@@ -589,6 +637,7 @@ export const tradingService = {
           linkedPoId: row.linked_po_id || undefined,
           linkedPoNumber: row.linked_po_number || undefined,
           notes: notes || undefined,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
           updatedAt: row.updated_at,
         };
@@ -605,7 +654,7 @@ export const tradingService = {
       branchId: doc.branchId || doc.facilityId,
       staffId: doc.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('trading_purchase_docs', {
+    const payload = {
       id: toValidUuid(doc.id),
       ...trace,
       doc_type: toDbPurchaseType(doc.type),
@@ -628,6 +677,12 @@ export const tradingService = {
         origType: doc.type,
         currency: doc.currency,
       }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('trading_purchase_docs', payload, {
+      expectedVersion: doc.version,
+      entityType: 'PurchaseDocument',
+      entityLabel: doc.docNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -642,19 +697,21 @@ export const tradingService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('trading_stock_vouchers')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('trading_stock_vouchers')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): StockMovementVoucher => ({
+      return data.map((row: any): StockMovementVoucher => ({
         id: row.id,
         accountId: row.account_id,
         businessId: row.business_id,
@@ -674,6 +731,7 @@ export const tradingService = {
         items: Array.isArray(row.items) ? row.items : [],
         totalValuationDzd: Number(row.total_valuation_dzd || 0),
         notes: row.notes || undefined,
+        version: row.version != null ? Number(row.version) : undefined,
         createdAt: row.created_at,
       }));
     } catch {
@@ -688,7 +746,7 @@ export const tradingService = {
       branchId: voucher.branchId || voucher.facilityId,
       staffId: voucher.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('trading_stock_vouchers', {
+    const payload = {
       id: toValidUuid(voucher.id),
       ...trace,
       voucher_number: voucher.voucherNumber,
@@ -703,6 +761,12 @@ export const tradingService = {
       total_valuation_dzd: Number(voucher.totalValuationDzd || 0),
       items: voucher.items || [],
       notes: voucher.notes || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('trading_stock_vouchers', payload, {
+      expectedVersion: voucher.version,
+      entityType: 'StockMovementVoucher',
+      entityLabel: voucher.voucherNumber,
+      localData: payload,
     });
     return res.success;
   },

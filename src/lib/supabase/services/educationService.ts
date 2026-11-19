@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   EduCourse,
@@ -18,17 +19,20 @@ export const educationService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    let query = (client as any)
-      .from('edu_courses')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
+    const data = await fetchAllPages<any>((from, to) => {
+      let query = (client as any)
+        .from('edu_courses')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, to);
 
-    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-    const { data, error } = await query;
-    if (error) return [];
-    return (data || []).map((row: any): EduCourse => ({
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+      return query;
+    });
+    return data.map((row: any): EduCourse => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -44,6 +48,7 @@ export const educationService = {
       totalHours: Number(row.total_hours ?? row.duration_hours ?? 0),
       defaultPrice: Number(row.default_price ?? row.default_tuition_fee ?? 0),
       currency: row.currency || 'DZD',
+      version: row.version != null ? Number(row.version) : undefined,
       createdAt: row.created_at,
     }));
   },
@@ -55,7 +60,7 @@ export const educationService = {
       branchId: course.branchId || course.facilityId,
       staffId: course.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('edu_courses', {
+    const payload = {
       id: toValidUuid(course.id),
       ...trace,
       code: course.code,
@@ -66,6 +71,12 @@ export const educationService = {
       default_price: course.defaultPrice,
       currency: course.currency,
       description: course.description || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('edu_courses', payload, {
+      expectedVersion: course.version,
+      entityType: 'EduCourse',
+      entityLabel: course.title,
+      localData: payload,
     });
     return res.success;
   },
@@ -74,14 +85,16 @@ export const educationService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('edu_classrooms')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
-
-    if (error) return [];
-    return (data || []).map((row: any): EduClassroom => ({
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('edu_classrooms')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
+    return data.map((row: any): EduClassroom => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -94,6 +107,7 @@ export const educationService = {
       hasProjector: Boolean(row.has_projector),
       hasComputers: Boolean(row.has_computers),
       colorHex: row.color_hex || '#3B82F6',
+      version: row.version != null ? Number(row.version) : undefined,
       createdAt: row.created_at,
     }));
   },
@@ -105,7 +119,7 @@ export const educationService = {
       branchId: room.branchId || room.facilityId,
       staffId: room.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('edu_classrooms', {
+    const payload = {
       id: toValidUuid(room.id),
       ...trace,
       name: room.name,
@@ -113,6 +127,12 @@ export const educationService = {
       has_projector: room.hasProjector,
       has_computers: room.hasComputers,
       color_hex: room.colorHex,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('edu_classrooms', payload, {
+      expectedVersion: room.version,
+      entityType: 'EduClassroom',
+      entityLabel: room.name,
+      localData: payload,
     });
     return res.success;
   },
@@ -121,18 +141,20 @@ export const educationService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    let query = (client as any)
-      .from('edu_cohorts')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
+    const data = await fetchAllPages<any>((from, to) => {
+      let query = (client as any)
+        .from('edu_cohorts')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to);
 
-    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-    const { data, error } = await query;
-    if (error) return [];
-    return (data || []).map((row: any): EduCohort => ({
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+      return query;
+    });
+    return data.map((row: any): EduCohort => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -156,6 +178,7 @@ export const educationService = {
       currency: row.currency || 'DZD',
       scheduleSummary: row.schedule_summary || '',
       status: (row.status || 'Enrolling') as EduCohort['status'],
+      version: row.version != null ? Number(row.version) : undefined,
       createdAt: row.created_at,
     }));
   },
@@ -167,7 +190,7 @@ export const educationService = {
       branchId: cohort.branchId || cohort.facilityId,
       staffId: cohort.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('edu_cohorts', {
+    const payload = {
       id: toValidUuid(cohort.id),
       ...trace,
       code: cohort.cohortCode || cohort.id,
@@ -185,6 +208,12 @@ export const educationService = {
       currency: cohort.currency,
       schedule_summary: cohort.scheduleSummary,
       status: cohort.status,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('edu_cohorts', payload, {
+      expectedVersion: cohort.version,
+      entityType: 'EduCohort',
+      entityLabel: cohort.name,
+      localData: payload,
     });
     return res.success;
   },
@@ -198,18 +227,20 @@ export const educationService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    let query = (client as any)
-      .from('edu_students')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
+    const data = await fetchAllPages<any>((from, to) => {
+      let query = (client as any)
+        .from('edu_students')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to);
 
-    if (updatedAfter) query = query.gt('updated_at', updatedAfter);
-
-    const { data, error } = await query;
-    if (error) return [];
-    return (data || []).map((row: any): EduStudent => ({
+      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+      return query;
+    });
+    return data.map((row: any): EduStudent => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -229,6 +260,7 @@ export const educationService = {
       attendanceRatePercent: Number(row.attendance_rate_percent || 100),
       status: row.status || 'Active',
       notes: row.notes || undefined,
+      version: row.version != null ? Number(row.version) : undefined,
       createdAt: row.created_at,
     }));
   },
@@ -240,7 +272,7 @@ export const educationService = {
       branchId: student.branchId || student.facilityId,
       staffId: student.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('edu_students', {
+    const payload = {
       id: toValidUuid(student.id),
       ...trace,
       full_name: student.fullName,
@@ -255,6 +287,12 @@ export const educationService = {
       attendance_rate_percent: student.attendanceRatePercent ?? 100,
       status: student.status,
       notes: student.notes || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('edu_students', payload, {
+      expectedVersion: student.version,
+      entityType: 'EduStudent',
+      entityLabel: student.fullName,
+      localData: payload,
     });
     return res.success;
   },
@@ -268,14 +306,16 @@ export const educationService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('edu_enrollments')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
-
-    if (error) return [];
-    return (data || []).map((row: any): EduEnrollment => ({
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('edu_enrollments')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
+    return data.map((row: any): EduEnrollment => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -297,6 +337,7 @@ export const educationService = {
       paymentStatus: (row.payment_status || 'Pending') as EduEnrollment['paymentStatus'],
       status: (row.status || 'Active') as EduEnrollment['status'],
       installments: Array.isArray(row.installments) ? row.installments : [],
+      version: row.version != null ? Number(row.version) : undefined,
     }));
   },
 
@@ -307,7 +348,7 @@ export const educationService = {
       branchId: en.branchId || en.facilityId,
       staffId: en.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('edu_enrollments', {
+    const payload = {
       id: toValidUuid(en.id),
       ...trace,
       student_id: toValidUuid(en.studentId),
@@ -324,6 +365,12 @@ export const educationService = {
       payment_status: en.paymentStatus,
       status: en.status,
       installments: en.installments || [],
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('edu_enrollments', payload, {
+      expectedVersion: en.version,
+      entityType: 'EduEnrollment',
+      entityLabel: `${en.studentName} — ${en.cohortName}`,
+      localData: payload,
     });
     return res.success;
   },
@@ -332,14 +379,16 @@ export const educationService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('edu_sessions')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
-
-    if (error) return [];
-    return (data || []).map((row: any): EduSession => ({
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('edu_sessions')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
+    return data.map((row: any): EduSession => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -358,6 +407,7 @@ export const educationService = {
       startTime: row.start_time,
       endTime: row.end_time,
       status: (row.status || 'Scheduled') as EduSession['status'],
+      version: row.version != null ? Number(row.version) : undefined,
       createdAt: row.created_at,
     }));
   },
@@ -369,7 +419,7 @@ export const educationService = {
       branchId: se.branchId || se.facilityId,
       staffId: se.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('edu_sessions', {
+    const payload = {
       id: toValidUuid(se.id),
       ...trace,
       cohort_id: toValidUuid(se.cohortId),
@@ -383,6 +433,12 @@ export const educationService = {
       start_time: se.startTime,
       end_time: se.endTime,
       status: se.status,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('edu_sessions', payload, {
+      expectedVersion: se.version,
+      entityType: 'EduSession',
+      entityLabel: `${se.cohortName} (${se.date})`,
+      localData: payload,
     });
     return res.success;
   },
@@ -396,14 +452,16 @@ export const educationService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('edu_attendance')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
-
-    if (error) return [];
-    return (data || []).map((row: any): EduAttendance => ({
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('edu_attendance')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
+    return data.map((row: any): EduAttendance => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -419,6 +477,7 @@ export const educationService = {
       minutesLate: row.minutes_late ?? undefined,
       excuseNote: row.excuse_note || undefined,
       recordedAt: row.recorded_at,
+      version: row.version != null ? Number(row.version) : undefined,
     }));
   },
 
@@ -429,7 +488,7 @@ export const educationService = {
       branchId: att.branchId || att.facilityId,
       staffId: att.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('edu_attendance', {
+    const payload = {
       id: toValidUuid(att.id),
       ...trace,
       session_id: toValidUuid(att.sessionId),
@@ -440,6 +499,12 @@ export const educationService = {
       minutes_late: att.minutesLate ?? 0,
       excuse_note: att.excuseNote || null,
       recorded_at: att.recordedAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('edu_attendance', payload, {
+      expectedVersion: att.version,
+      entityType: 'EduAttendance',
+      entityLabel: att.studentName,
+      localData: payload,
     });
     return res.success;
   },
@@ -448,14 +513,16 @@ export const educationService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('edu_grades')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
-
-    if (error) return [];
-    return (data || []).map((row: any): EduGrade => ({
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('edu_grades')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
+    return data.map((row: any): EduGrade => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -472,6 +539,7 @@ export const educationService = {
       weightPercent: Number(row.weight_percent ?? row.coefficient ?? 100),
       teacherRemarks: row.teacher_remarks || row.feedback || undefined,
       gradedAt: row.graded_at,
+      version: row.version != null ? Number(row.version) : undefined,
     }));
   },
 
@@ -482,7 +550,7 @@ export const educationService = {
       branchId: grade.branchId || grade.facilityId,
       staffId: grade.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('edu_grades', {
+    const payload = {
       id: toValidUuid(grade.id),
       ...trace,
       cohort_id: toValidUuid(grade.cohortId),
@@ -494,6 +562,12 @@ export const educationService = {
       weight_percent: grade.weightPercent,
       teacher_remarks: grade.teacherRemarks || null,
       graded_at: grade.gradedAt,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('edu_grades', payload, {
+      expectedVersion: grade.version,
+      entityType: 'EduGrade',
+      entityLabel: `${grade.studentName} — ${grade.assessmentTitle}`,
+      localData: payload,
     });
     return res.success;
   },
@@ -507,14 +581,16 @@ export const educationService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('edu_certificates')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null);
-
-    if (error) return [];
-    return (data || []).map((row: any): EduCertificate => ({
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('edu_certificates')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
+    return data.map((row: any): EduCertificate => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -533,6 +609,7 @@ export const educationService = {
       honors: row.honors || undefined,
       signatoryName: row.signatory_name || 'Direction Académique',
       signatoryTitle: row.signatory_title || 'Directeur Pédagogique',
+      version: row.version != null ? Number(row.version) : undefined,
       createdAt: row.created_at,
     }));
   },
@@ -544,7 +621,7 @@ export const educationService = {
       branchId: cert.branchId || cert.facilityId,
       staffId: cert.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('edu_certificates', {
+    const payload = {
       id: toValidUuid(cert.id),
       ...trace,
       student_id: toValidUuid(cert.studentId),
@@ -558,6 +635,12 @@ export const educationService = {
       honors: cert.honors || null,
       signatory_name: cert.signatoryName,
       signatory_title: cert.signatoryTitle,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('edu_certificates', payload, {
+      expectedVersion: cert.version,
+      entityType: 'EduCertificate',
+      entityLabel: `${cert.studentName} — ${cert.certificateNumber}`,
+      localData: payload,
     });
     return res.success;
   },
@@ -566,15 +649,17 @@ export const educationService = {
     const client = getSupabaseClient();
     if (!client) return [];
 
-    const { data, error } = await (client as any)
-      .from('edu_admissions')
-      .select('*')
-      .eq('branch_id', toValidUuid(branchId))
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-
-    if (error) return [];
-    return (data || []).map((row: any): EduAdmissionLead => ({
+    const data = await fetchAllPages<any>((from, to) =>
+      (client as any)
+        .from('edu_admissions')
+        .select('*')
+        .eq('branch_id', toValidUuid(branchId))
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to)
+    );
+    return data.map((row: any): EduAdmissionLead => ({
       id: row.id,
       tenantId: row.account_id,
       facilityId: row.branch_id,
@@ -592,6 +677,7 @@ export const educationService = {
       placementScore: row.placement_score || undefined,
       source: row.source || 'Web Form',
       notes: row.notes || undefined,
+      version: row.version != null ? Number(row.version) : undefined,
       createdAt: row.created_at,
     }));
   },
@@ -603,7 +689,7 @@ export const educationService = {
       branchId: lead.branchId || lead.facilityId,
       staffId: lead.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('edu_admissions', {
+    const payload = {
       id: toValidUuid(lead.id),
       ...trace,
       student_name: lead.studentName,
@@ -616,6 +702,12 @@ export const educationService = {
       source: lead.source || null,
       stage: lead.stage,
       notes: lead.notes || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('edu_admissions', payload, {
+      expectedVersion: lead.version,
+      entityType: 'EduAdmissionLead',
+      entityLabel: lead.studentName,
+      localData: payload,
     });
     return res.success;
   },

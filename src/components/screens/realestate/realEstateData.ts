@@ -16,6 +16,7 @@ import {
   realEstateService,
   realtimeService,
   syncCoordinator,
+  subscribeConcurrencyResolutions,
   runWithConcurrency,
 } from '../../../lib/supabase/index';
 
@@ -959,6 +960,75 @@ export const useRealEstateData = () => {
     });
   }, [activeBranchId]);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let cancelled = false;
+    const unsub = subscribeConcurrencyResolutions((evt) => {
+      const tasks: Array<() => Promise<void>> = [];
+      if (evt.table === 're_properties') {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchProperties(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setProperties((prev) => mergeReById(prev, rows as RealEstateProperty[]));
+          }
+        });
+      } else if (evt.table === 're_mandates') {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchMandates(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setMandates((prev) => mergeReById(prev, rows as RealEstateMandate[]));
+          }
+        });
+      } else if (evt.table === 're_leases') {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchLeases(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setLeases((prev) => mergeReById(prev, rows as RealEstateLease[]));
+          }
+        });
+      } else if (evt.table === 're_rent_schedules') {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchQuittances(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setQuittances((prev) => mergeReById(prev, rows as RentalQuittanceRecord[]));
+          }
+        });
+      } else if (evt.table === 're_visits') {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchBonsDeVisite(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setVisits((prev) => mergeReById(prev, rows as BonDeVisiteRecord[]));
+          }
+        });
+      } else if (evt.table === 're_inspections') {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchInspections(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setInspections((prev) => mergeReById(prev, rows as RealEstateInspection[]));
+          }
+        });
+      } else if (evt.table === 're_leads') {
+        tasks.push(async () => {
+          const rows = await realEstateService.fetchBuyerDemands(activeBranchId);
+          if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+            setBuyers((prev) => mergeReById(prev, rows as BuyerDemandProfile[]));
+          }
+        });
+      }
+
+      if (tasks.length > 0) {
+        void syncCoordinator.runSingleFlight(
+          `realestate:res:${activeBranchId}:${evt.table}`,
+          () => runWithConcurrency(tasks, 4)
+        );
+      }
+    });
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+  }, [activeBranchId]);
+
   // Operations
   const addProperty = (prop: RealEstateProperty) => {
     const scoped = withBranch(prop);
@@ -991,7 +1061,7 @@ export const useRealEstateData = () => {
 
   const deleteMandate = (id: string) => {
     setMandates((prev) => prev.filter((m) => m.id !== id));
-    void syncCoordinator.softDeleteRow('re_mandates', id, currentStaffId).catch(() => {});
+    void realEstateService.deleteMandate(id, currentStaffId).catch(() => {});
   };
 
   const addLease = (lease: RealEstateLease) => {
@@ -1008,7 +1078,7 @@ export const useRealEstateData = () => {
 
   const deleteLease = (id: string) => {
     setLeases((prev) => prev.filter((l) => l.id !== id));
-    void syncCoordinator.softDeleteRow('re_leases', id, currentStaffId).catch(() => {});
+    void realEstateService.deleteLease(id, currentStaffId).catch(() => {});
   };
 
   const addQuittance = (quittance: RentalQuittanceRecord) => {

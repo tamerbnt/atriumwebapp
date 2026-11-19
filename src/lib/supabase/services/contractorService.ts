@@ -1,4 +1,5 @@
 import { getSupabaseClient, toValidUuid } from '../client';
+import { fetchAllPages } from '../pagination';
 import { buildTraceEnvelope, syncCoordinator } from '../syncCoordinator';
 import type {
   ContractorProject,
@@ -64,19 +65,21 @@ export const contractorService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('btp_projects')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('btp_projects')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): ContractorProject => {
+      return data.map((row: any): ContractorProject => {
         const { plain: location, meta } = unpackMeta(row.location);
         const contractAmount = Number(row.contract_amount_ht_dzd || 0);
         const retentionPct = Number(row.retention_guarantee_percent ?? 5);
@@ -102,6 +105,7 @@ export const contractorService = {
           supervisorName: meta.supervisorName || 'Chef de Chantier',
           progressPercent: Number(row.progress_percent || 0),
           status: (meta.uiStatus || 'InProgress') as ContractorProject['status'],
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -117,7 +121,7 @@ export const contractorService = {
       branchId: proj.branchId,
       staffId: proj.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('btp_projects', {
+    const payload = {
       id: toValidUuid(proj.id),
       ...trace,
       project_code: proj.projectCode,
@@ -139,6 +143,12 @@ export const contractorService = {
       start_date: proj.startDate || null,
       expected_end_date: proj.targetEndDate || null,
       status: toDbProjectStatus(proj.status),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('btp_projects', payload, {
+      expectedVersion: proj.version,
+      entityType: 'ContractorProject',
+      entityLabel: proj.projectName,
+      localData: payload,
     });
     return res.success;
   },
@@ -148,19 +158,21 @@ export const contractorService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('btp_boq_items')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('lot_code', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('btp_boq_items')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('lot_code', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): ContractorBoqItem => {
+      return data.map((row: any): ContractorBoqItem => {
         const { plain: lotCode, meta } = unpackMeta(row.lot_code);
         const plannedQty = Number(row.contract_qty || 0);
         const executedQty = Number(row.executed_qty || 0);
@@ -184,6 +196,7 @@ export const contractorService = {
           totalExecutedDzd: executedQty * unitPriceDzd,
           isAdditionalWork: meta.isAdditionalWork,
           avenantReference: meta.avenantReference,
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -199,7 +212,7 @@ export const contractorService = {
       branchId: item.branchId,
       staffId: item.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('btp_boq_items', {
+    const payload = {
       id: toValidUuid(item.id),
       ...trace,
       project_id: toValidUuid(item.projectId),
@@ -214,6 +227,12 @@ export const contractorService = {
       contract_qty: Number(item.plannedQty || 0),
       executed_qty: Number(item.executedQty || 0),
       unit_price_dzd: Number(item.unitPriceDzd || 0),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('btp_boq_items', payload, {
+      expectedVersion: item.version,
+      entityType: 'ContractorBoqItem',
+      entityLabel: item.designation,
+      localData: payload,
     });
     return res.success;
   },
@@ -223,26 +242,33 @@ export const contractorService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('btp_daily_logs')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('log_date', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('btp_daily_logs')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('log_date', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .filter((row: any) => {
           const { meta } = unpackMeta(row.activities_summary);
           return !meta.kind || meta.kind === 'daily_log';
         })
         .map((row: any): ContractorDailyLog => {
           const { plain: tasksAccomplished, meta } = unpackMeta(row.activities_summary);
-          if (meta.dailyLog) return meta.dailyLog as ContractorDailyLog;
+          if (meta.dailyLog) {
+            return {
+              ...(meta.dailyLog as ContractorDailyLog),
+              version: row.version != null ? Number(row.version) : (meta.dailyLog as ContractorDailyLog).version,
+            };
+          }
           return {
             id: row.id,
             accountId: row.account_id,
@@ -257,6 +283,7 @@ export const contractorService = {
             tasksAccomplished,
             incidentsSafety: row.incidents_noted || '',
             supervisorSignature: 'Chef de Chantier',
+            version: row.version != null ? Number(row.version) : undefined,
             createdAt: row.created_at,
           };
         });
@@ -272,7 +299,7 @@ export const contractorService = {
       branchId: log.branchId,
       staffId: log.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('btp_daily_logs', {
+    const payload = {
       id: toValidUuid(log.id),
       ...trace,
       project_id: toValidUuid(log.projectId),
@@ -284,6 +311,12 @@ export const contractorService = {
         dailyLog: log,
       }),
       incidents_noted: log.incidentsSafety || log.incidentsOrDelays || null,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('btp_daily_logs', payload, {
+      expectedVersion: log.version,
+      entityType: 'ContractorDailyLog',
+      entityLabel: log.date || log.logDate || log.id,
+      localData: payload,
     });
     return res.success;
   },
@@ -293,21 +326,28 @@ export const contractorService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('btp_decomptes')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('situation_number', { ascending: true });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('btp_decomptes')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('situation_number', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || []).map((row: any): ContractorDgp => {
+      return data.map((row: any): ContractorDgp => {
         const { plain: periodLabel, meta } = unpackMeta(row.period_label);
-        if (meta.dgp) return meta.dgp as ContractorDgp;
+        if (meta.dgp) {
+          return {
+            ...(meta.dgp as ContractorDgp),
+            version: row.version != null ? Number(row.version) : (meta.dgp as ContractorDgp).version,
+          };
+        }
         return {
           id: row.id,
           accountId: row.account_id,
@@ -328,6 +368,7 @@ export const contractorService = {
           netPayableDzd: Number(row.net_payable_ttc_dzd || 0),
           status: row.status === 'Paid' ? 'Paid' : row.status === 'Certified' ? 'ApprovedBE' : row.status === 'Submitted' ? 'SubmittedClient' : 'Draft',
           issuedDate: row.created_at ? row.created_at.split('T')[0] : '',
+          version: row.version != null ? Number(row.version) : undefined,
           createdAt: row.created_at,
         };
       });
@@ -344,7 +385,7 @@ export const contractorService = {
       staffId: dgp.staffId,
     });
     const numMatch = String(dgp.dgpNumber || '').match(/(\d+)/);
-    const res = await syncCoordinator.mutateOrQueueUpsert('btp_decomptes', {
+    const payload = {
       id: toValidUuid(dgp.id),
       ...trace,
       project_id: toValidUuid(dgp.projectId),
@@ -357,6 +398,12 @@ export const contractorService = {
       price_revision_dzd: 0,
       net_payable_ttc_dzd: Number(dgp.netPayableDzd || 0),
       status: toDbDecompteStatus(dgp.status),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('btp_decomptes', payload, {
+      expectedVersion: dgp.version,
+      entityType: 'ContractorDgp',
+      entityLabel: dgp.dgpNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -366,23 +413,29 @@ export const contractorService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('btp_daily_logs')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .ilike('activities_summary', '__atrium_btp__:%service_order%')
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('btp_daily_logs')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .ilike('activities_summary', '__atrium_btp__:%service_order%')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): ContractorServiceOrder | null => {
           const { meta } = unpackMeta(row.activities_summary);
-          return meta.kind === 'service_order' ? (meta.order as ContractorServiceOrder) : null;
+          if (meta.kind !== 'service_order' || !meta.order) return null;
+          return {
+            ...(meta.order as ContractorServiceOrder),
+            version: row.version != null ? Number(row.version) : (meta.order as ContractorServiceOrder).version,
+          };
         })
         .filter((o: ContractorServiceOrder | null): o is ContractorServiceOrder => Boolean(o));
     } catch {
@@ -397,12 +450,18 @@ export const contractorService = {
       branchId: os.branchId,
       staffId: os.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('btp_daily_logs', {
+    const payload = {
       id: toValidUuid(`os_${os.id}`),
       ...trace,
       project_id: toValidUuid(os.projectId),
       log_date: os.effectiveDate || new Date().toISOString().split('T')[0],
       activities_summary: packMeta(os.osNumber, { kind: 'service_order', order: os }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('btp_daily_logs', payload, {
+      expectedVersion: os.version,
+      entityType: 'ContractorServiceOrder',
+      entityLabel: os.osNumber,
+      localData: payload,
     });
     return res.success;
   },
@@ -412,23 +471,29 @@ export const contractorService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('btp_daily_logs')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .ilike('activities_summary', '__atrium_btp__:%concrete_pour%')
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('btp_daily_logs')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .ilike('activities_summary', '__atrium_btp__:%concrete_pour%')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): ConcretePourRecord | null => {
           const { meta } = unpackMeta(row.activities_summary);
-          return meta.kind === 'concrete_pour' ? (meta.pour as ConcretePourRecord) : null;
+          if (meta.kind !== 'concrete_pour' || !meta.pour) return null;
+          return {
+            ...(meta.pour as ConcretePourRecord),
+            version: row.version != null ? Number(row.version) : (meta.pour as ConcretePourRecord).version,
+          };
         })
         .filter((p: ConcretePourRecord | null): p is ConcretePourRecord => Boolean(p));
     } catch {
@@ -443,12 +508,18 @@ export const contractorService = {
       branchId: pour.branchId,
       staffId: pour.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('btp_daily_logs', {
+    const payload = {
       id: toValidUuid(`pour_${pour.id}`),
       ...trace,
       project_id: toValidUuid(pour.projectId),
       log_date: pour.pourDate || new Date().toISOString().split('T')[0],
       activities_summary: packMeta(pour.elementPoured, { kind: 'concrete_pour', pour }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('btp_daily_logs', payload, {
+      expectedVersion: pour.version,
+      entityType: 'ConcretePourRecord',
+      entityLabel: pour.elementPoured,
+      localData: payload,
     });
     return res.success;
   },
@@ -458,22 +529,28 @@ export const contractorService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('btp_subcontractors')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('btp_subcontractors')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): SubcontractorAgreement | null => {
           const { meta } = unpackMeta(row.nif);
-          return meta.agreement ? (meta.agreement as SubcontractorAgreement) : null;
+          if (!meta.agreement) return null;
+          return {
+            ...(meta.agreement as SubcontractorAgreement),
+            version: row.version != null ? Number(row.version) : (meta.agreement as SubcontractorAgreement).version,
+          };
         })
         .filter((s: SubcontractorAgreement | null): s is SubcontractorAgreement => Boolean(s));
     } catch {
@@ -488,13 +565,19 @@ export const contractorService = {
       branchId: sub.branchId,
       staffId: sub.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('btp_subcontractors', {
+    const payload = {
       id: toValidUuid(sub.id),
       ...trace,
       company_name: sub.subcontractorName,
       specialty: sub.tradeType,
       phone: sub.contactPhone || null,
       nif: packMeta(undefined, { agreement: sub }),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('btp_subcontractors', payload, {
+      expectedVersion: sub.version,
+      entityType: 'SubcontractorAgreement',
+      entityLabel: sub.subcontractorName,
+      localData: payload,
     });
     return res.success;
   },
@@ -504,22 +587,28 @@ export const contractorService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('btp_equipment')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('btp_equipment')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): EquipmentLogRecord | null => {
           const { meta } = unpackMeta(row.name);
-          return meta.log ? (meta.log as EquipmentLogRecord) : null;
+          if (!meta.log) return null;
+          return {
+            ...(meta.log as EquipmentLogRecord),
+            version: row.version != null ? Number(row.version) : (meta.log as EquipmentLogRecord).version,
+          };
         })
         .filter((e: EquipmentLogRecord | null): e is EquipmentLogRecord => Boolean(e));
     } catch {
@@ -534,7 +623,7 @@ export const contractorService = {
       branchId: log.branchId,
       staffId: log.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('btp_equipment', {
+    const payload = {
       id: toValidUuid(log.id),
       ...trace,
       asset_code: log.matriculeNumber || log.id,
@@ -543,6 +632,12 @@ export const contractorService = {
       assigned_project_id: log.projectId ? toValidUuid(log.projectId) : null,
       status: 'OnSite',
       hourly_rate_dzd: 0,
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('btp_equipment', payload, {
+      expectedVersion: log.version,
+      entityType: 'EquipmentLogRecord',
+      entityLabel: log.equipmentName,
+      localData: payload,
     });
     return res.success;
   },
@@ -552,23 +647,29 @@ export const contractorService = {
     if (!client) return [];
 
     try {
-      let query = (client as any)
-        .from('btp_materials')
-        .select('*')
-        .eq('branch_id', toValidUuid(branchId))
-        .is('deleted_at', null)
-        .ilike('name', '__atrium_btp__:%')
-        .order('created_at', { ascending: false });
+      const data = await fetchAllPages<any>((from, to) => {
+        let query = (client as any)
+          .from('btp_materials')
+          .select('*')
+          .eq('branch_id', toValidUuid(branchId))
+          .is('deleted_at', null)
+          .ilike('name', '__atrium_btp__:%')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to);
 
-      if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        if (updatedAfter) query = query.gt('updated_at', updatedAfter);
+        return query;
+      });
 
-      const { data, error } = await query;
-      if (error) return [];
-
-      return (data || [])
+      return data
         .map((row: any): CaisseExpenseRecord | null => {
           const { meta } = unpackMeta(row.name);
-          return meta.expense ? (meta.expense as CaisseExpenseRecord) : null;
+          if (!meta.expense) return null;
+          return {
+            ...(meta.expense as CaisseExpenseRecord),
+            version: row.version != null ? Number(row.version) : (meta.expense as CaisseExpenseRecord).version,
+          };
         })
         .filter((e: CaisseExpenseRecord | null): e is CaisseExpenseRecord => Boolean(e));
     } catch {
@@ -583,7 +684,7 @@ export const contractorService = {
       branchId: exp.branchId,
       staffId: exp.staffId,
     });
-    const res = await syncCoordinator.mutateOrQueueUpsert('btp_materials', {
+    const payload = {
       id: toValidUuid(`exp_${exp.id}`),
       ...trace,
       project_id: exp.projectId ? toValidUuid(exp.projectId) : null,
@@ -591,7 +692,58 @@ export const contractorService = {
       unit: exp.expenseCategory,
       stock_quantity: 1,
       unit_cost_dzd: Number(exp.netCashDisbursedDzd || exp.amountDzd || 0),
+    };
+    const res = await syncCoordinator.mutateOrQueueUpsert('btp_materials', payload, {
+      expectedVersion: exp.version,
+      entityType: 'CaisseExpenseRecord',
+      entityLabel: exp.beneficiaryName,
+      localData: payload,
     });
+    return res.success;
+  },
+
+  async deleteProject(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('btp_projects', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteBoqItem(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('btp_boq_items', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteDailyLog(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('btp_daily_logs', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteDgp(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('btp_decomptes', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteServiceOrder(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('btp_daily_logs', `os_${id}`, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteConcretePour(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('btp_daily_logs', `pour_${id}`, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteSubcontractor(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('btp_subcontractors', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteEquipmentLog(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('btp_equipment', id, deletedByStaffId);
+    return res.success;
+  },
+
+  async deleteCaisseExpense(id: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('btp_materials', `exp_${id}`, deletedByStaffId);
     return res.success;
   },
 };

@@ -206,11 +206,23 @@ import {
   projectMilestoneService,
   tradingService,
   syncCoordinator,
+  subscribeConcurrencyConflicts,
+  emitConcurrencyResolution,
+  mapMemberFromDb,
+  mapLeadFromDb,
+  mapStaffFromDb,
+  mapAttendanceLogFromDb,
+  mapSalaryAdvanceFromDb,
+  mapPayrollRunFromDb,
+  mapPayrollSlipFromDb,
+  mapProductFromDb,
+  mapAppointmentFromDb,
   runWithConcurrency,
   getActiveDeviceId,
   toValidUuid,
   normalizeUuidOrNull,
 } from '../lib/supabase/index';
+import type { ConcurrencyConflictEvent } from '../lib/supabase/index';
 
 
 export const ATRIUM_STORAGE_VERSION = 2;
@@ -400,6 +412,7 @@ interface AppState {
   // Toast & Notifications Center
   toasts: ToastNotification[];
   notifications: AppNotification[];
+  concurrencyConflicts: ConcurrencyConflictEvent[];
 }
 
 export const INITIAL_NOTIFICATIONS: AppNotification[] = [];
@@ -535,6 +548,7 @@ const DEFAULT_STATE: AppState = {
   stockVouchers: INITIAL_STOCK_VOUCHERS,
   toasts: [],
   notifications: INITIAL_NOTIFICATIONS,
+  concurrencyConflicts: [],
 };
 
 
@@ -782,6 +796,7 @@ let globalState: AppState = backfillTraceability((() => {
           supabaseStatus: isSupabaseConfigured() ? 'connecting' : 'unconfigured',
           isSyncing: false,
           notifications: Array.isArray(parsed.notifications) && parsed.notifications.length > 0 ? parsed.notifications : INITIAL_NOTIFICATIONS,
+          concurrencyConflicts: [],
         };
       }
     }
@@ -824,7 +839,7 @@ function isOnlyToastsChanged(prev: AppState, next: AppState): boolean {
   const keys = Object.keys(next) as (keyof AppState)[];
   for (let i = 0; i < keys.length; i++) {
     const k = keys[i];
-    if (k === 'toasts') continue;
+    if (k === 'toasts' || k === 'concurrencyConflicts') continue;
     if (prev[k] !== next[k]) return false;
   }
   return true;
@@ -3117,6 +3132,457 @@ function ensureBranchSubscription(
   );
 }
 
+export interface BackupValidationResult {
+  valid: boolean;
+  schemaVersion: number | string;
+  exportedAt?: string;
+  primaryBusiness?: string;
+  entityCounts: Record<string, number>;
+  totalRecords: number;
+  checksum: string;
+  warnings: string[];
+  errors: string[];
+  parsed?: Record<string, any>;
+}
+
+function computeFnv1aChecksum(input: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return `fnv1a-${(hash >>> 0).toString(16).padStart(8, '0')}`;
+}
+
+export function validateBackupSnapshot(
+  rawInput: string | Record<string, any>
+): BackupValidationResult {
+  const warnings: string[] = [];
+  const errors: string[] = [];
+  let parsed: any = null;
+  let normalizedText = '';
+
+  if (typeof rawInput === 'string') {
+    normalizedText = rawInput;
+    try {
+      parsed = JSON.parse(rawInput);
+    } catch {
+      return {
+        valid: false,
+        schemaVersion: 'unknown',
+        entityCounts: {},
+        totalRecords: 0,
+        checksum: computeFnv1aChecksum(rawInput || ''),
+        warnings,
+        errors: ['Invalid JSON syntax. The backup file appears corrupted or truncated.'],
+      };
+    }
+  } else if (rawInput && typeof rawInput === 'object') {
+    parsed = rawInput;
+    try {
+      normalizedText = JSON.stringify(rawInput);
+    } catch {
+      normalizedText = '';
+    }
+  }
+
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return {
+      valid: false,
+      schemaVersion: 'unknown',
+      entityCounts: {},
+      totalRecords: 0,
+      checksum: computeFnv1aChecksum(normalizedText),
+      warnings,
+      errors: ['Backup root payload must be a JSON object.'],
+    };
+  }
+
+  if (!parsed.account || typeof parsed.account !== 'object') {
+    errors.push('Missing account metadata object.');
+  }
+  if (!Array.isArray(parsed.businesses)) {
+    errors.push('Missing or invalid businesses array.');
+  }
+  if (!Array.isArray(parsed.branches)) {
+    errors.push('Missing or invalid branches array.');
+  }
+
+  const schemaVersion = parsed.storageVersion ?? parsed.version ?? 'legacy';
+  if (parsed.storageVersion !== undefined && parsed.storageVersion !== ATRIUM_STORAGE_VERSION) {
+    warnings.push(
+      `Snapshot schema v${String(parsed.storageVersion)} differs from current v${ATRIUM_STORAGE_VERSION}; defaults will backfill missing fields.`
+    );
+  }
+  if (!parsed.exportedAt) {
+    warnings.push('Snapshot does not contain an exportedAt timestamp.');
+  }
+  if (Array.isArray(parsed.businesses) && parsed.businesses.length === 0) {
+    warnings.push('Snapshot contains 0 businesses.');
+  }
+
+  const countKeys = [
+    'businesses',
+    'branches',
+    'staff',
+    'members',
+    'products',
+    'sales',
+    'appointments',
+    'freelanceClients',
+    'freelanceProjects',
+    'freelanceInvoices',
+    'rentableUnits',
+    'rentalBookings',
+    'eduStudents',
+    'eduCohorts',
+    'pmProjects',
+    'commercialDocs',
+    'purchaseDocs',
+  ] as const;
+
+  const entityCounts: Record<string, number> = {};
+  let totalRecords = 0;
+  for (const key of countKeys) {
+    const val = parsed[key];
+    const count = Array.isArray(val) ? val.length : 0;
+    entityCounts[key] = count;
+    totalRecords += count;
+  }
+
+  return {
+    valid: errors.length === 0,
+    schemaVersion,
+    exportedAt: typeof parsed.exportedAt === 'string' ? parsed.exportedAt : undefined,
+    primaryBusiness:
+      Array.isArray(parsed.businesses) && parsed.businesses[0]?.name
+        ? String(parsed.businesses[0].name)
+        : undefined,
+    entityCounts,
+    totalRecords,
+    checksum: computeFnv1aChecksum(normalizedText),
+    warnings,
+    errors,
+    parsed: errors.length === 0 ? parsed : undefined,
+  };
+}
+
+function applyResolvedRowToSlice(
+  table: string,
+  recordId: string,
+  row: Record<string, any> | null,
+  versionCol: string,
+  resolvedVersion: number
+): Partial<AppState> {
+  if (!row) return {};
+  const patchList = <T extends { id: string; version?: number }>(
+    list: T[],
+    mapper?: (r: any) => T
+  ): T[] => {
+    let found = false;
+    const mappedItem = mapper ? mapper(row) : null;
+    const next = list.map((item) => {
+      if (toValidUuid(item.id) !== toValidUuid(recordId) && item.id !== recordId) return item;
+      found = true;
+      if (mappedItem) {
+        return { ...item, ...mappedItem, id: item.id, version: resolvedVersion };
+      }
+      return { ...item, version: resolvedVersion };
+    });
+    return found ? next : list;
+  };
+
+  switch (table) {
+    case 'gym_members':
+      return { members: patchList(globalState.members, mapMemberFromDb) };
+    case 'staff':
+      return { staff: patchList(globalState.staff, (r) => mapStaffFromDb(r)) };
+    case 'pos_products':
+      return { products: patchList(globalState.products, mapProductFromDb) };
+    case 'salon_appointments':
+      return { appointments: patchList(globalState.appointments, mapAppointmentFromDb) };
+    case 'freelance_clients':
+      return {
+        freelanceClients: patchList(globalState.freelanceClients, (r) => ({
+          ...globalState.freelanceClients.find((x) => toValidUuid(x.id) === toValidUuid(recordId))!,
+          fullName: r.full_name ?? r.name,
+          company: r.company ?? undefined,
+          email: r.email ?? undefined,
+          phone: r.phone ?? undefined,
+          version: Number(r[versionCol] ?? resolvedVersion),
+        })),
+      };
+    case 'freelance_projects':
+      return {
+        freelanceProjects: patchList(globalState.freelanceProjects, (r) => ({
+          ...globalState.freelanceProjects.find((x) => toValidUuid(x.id) === toValidUuid(recordId))!,
+          title: r.title,
+          status: r.status,
+          version: Number(r[versionCol] ?? resolvedVersion),
+        })),
+      };
+    case 'freelance_invoices':
+      return {
+        freelanceInvoices: patchList(globalState.freelanceInvoices, (r) => ({
+          ...globalState.freelanceInvoices.find((x) => toValidUuid(x.id) === toValidUuid(recordId))!,
+          status: r.status,
+          totalAmount: Number(r.total_amount ?? 0),
+          version: Number(r[versionCol] ?? resolvedVersion),
+        })),
+      };
+    case 'rental_units':
+      return { rentableUnits: patchList(globalState.rentableUnits) };
+    case 'rental_renters':
+      return { rentalRenters: patchList(globalState.rentalRenters) };
+    case 'rental_bookings':
+      return { rentalBookings: patchList(globalState.rentalBookings) };
+    case 'rental_security_deposits':
+      return { securityDeposits: patchList(globalState.securityDeposits) };
+    case 'edu_courses':
+      return { eduCourses: patchList(globalState.eduCourses) };
+    case 'edu_cohorts':
+      return { eduCohorts: patchList(globalState.eduCohorts) };
+    case 'edu_students':
+      return { eduStudents: patchList(globalState.eduStudents) };
+    case 'pm_clients':
+      return { pmClients: patchList(globalState.pmClients) };
+    case 'pm_projects':
+      return { pmProjects: patchList(globalState.pmProjects) };
+    case 'pm_print_orders':
+      return { pmPrintOrders: patchList(globalState.pmPrintOrders) };
+    case 'pm_bat_deliverables':
+      return { pmBatDeliverables: patchList(globalState.pmBatDeliverables) };
+    case 'pm_talents':
+      return { pmTalents: patchList(globalState.pmTalents) };
+    case 'pm_equipment_stock':
+      return { pmEquipmentStock: patchList(globalState.pmEquipmentStock) };
+    case 'trading_b2b_clients':
+      return { b2bClients: patchList(globalState.b2bClients) };
+    case 'trading_commercial_docs':
+      return { commercialDocs: patchList(globalState.commercialDocs) };
+    case 'trading_purchase_docs':
+      return { purchaseDocs: patchList(globalState.purchaseDocs) };
+    case 'gym_registration_leads':
+      return { leads: patchList(globalState.leads, mapLeadFromDb) };
+    case 'gym_schedule_events':
+      return { schedule: patchList(globalState.schedule) };
+    case 'pos_sales':
+      return { sales: patchList(globalState.sales) };
+    case 'pos_parked_orders':
+      return { parkedOrders: patchList(globalState.parkedOrders) };
+    case 'salon_services':
+      return { servicesCatalog: patchList(globalState.servicesCatalog) };
+    case 'salon_stylist_payouts':
+      return { stylistPayouts: patchList(globalState.stylistPayouts) };
+    case 'staff_attendance_logs':
+      return { staffAttendanceLogs: patchList(globalState.staffAttendanceLogs, mapAttendanceLogFromDb) };
+    case 'staff_salary_advances':
+      return { staffSalaryAdvances: patchList(globalState.staffSalaryAdvances, mapSalaryAdvanceFromDb) };
+    case 'staff_payroll_runs':
+      return { staffPayrollRuns: patchList(globalState.staffPayrollRuns, mapPayrollRunFromDb) };
+    case 'staff_payroll_slips':
+      return { staffPayrollSlips: patchList(globalState.staffPayrollSlips, mapPayrollSlipFromDb) };
+    case 'freelance_time_logs':
+      return { timeLogs: patchList(globalState.timeLogs) };
+    case 'freelance_proposals':
+      return { freelanceProposals: patchList(globalState.freelanceProposals) };
+    case 'freelance_expenses':
+      return { freelanceExpenses: patchList(globalState.freelanceExpenses) };
+    case 'edu_classrooms':
+      return { eduClassrooms: patchList(globalState.eduClassrooms) };
+    case 'edu_enrollments':
+      return { eduEnrollments: patchList(globalState.eduEnrollments) };
+    case 'edu_sessions':
+      return { eduSessions: patchList(globalState.eduSessions) };
+    case 'edu_attendance':
+      return { eduAttendance: patchList(globalState.eduAttendance) };
+    case 'edu_grades':
+      return { eduGrades: patchList(globalState.eduGrades) };
+    case 'edu_certificates':
+      return { eduCertificates: patchList(globalState.eduCertificates) };
+    case 'edu_admissions':
+      return { eduAdmissions: patchList(globalState.eduAdmissions) };
+    case 'pm_milestones':
+      return { pmMilestones: patchList(globalState.pmMilestones) };
+    case 'pm_missions':
+      return { pmMissions: patchList(globalState.pmMissions) };
+    case 'pm_expenses':
+      return { pmExpenses: patchList(globalState.pmExpenses) };
+    case 'trading_b2b_suppliers':
+      return { b2bSuppliers: patchList(globalState.b2bSuppliers) };
+    case 'trading_warehouses':
+      return { warehouses: patchList(globalState.warehouses) };
+    case 'trading_stock_vouchers':
+      return { stockVouchers: patchList(globalState.stockVouchers) };
+    default:
+      return {};
+  }
+}
+
+export function dismissConcurrencyConflictAction(conflictId: string) {
+  globalState = {
+    ...globalState,
+    concurrencyConflicts: (globalState.concurrencyConflicts || []).filter(
+      (c) => c.id !== conflictId
+    ),
+  };
+  notify(false, true);
+}
+
+export async function resolveConcurrencyConflictAction(
+  conflictId: string,
+  strategy: 'server' | 'overwrite' | 'merge',
+  mergedPatch?: Record<string, any>
+): Promise<{ success: boolean; conflict?: boolean; error?: string }> {
+  const conflict = (globalState.concurrencyConflicts || []).find((c) => c.id === conflictId);
+  if (!conflict) {
+    return { success: false, error: 'Conflict no longer active.' };
+  }
+
+  const versionCol = conflict.versionColumn || 'version';
+  const lang = globalState.language || 'fr';
+
+  if (strategy === 'server') {
+    const serverPatch = applyResolvedRowToSlice(
+      conflict.table,
+      conflict.recordId,
+      conflict.serverData,
+      versionCol,
+      conflict.serverVersion
+    );
+    globalState = {
+      ...globalState,
+      ...serverPatch,
+      concurrencyConflicts: (globalState.concurrencyConflicts || []).filter(
+        (c) => c.id !== conflictId
+      ),
+    };
+    notify();
+    emitConcurrencyResolution({
+      table: conflict.table,
+      recordId: conflict.recordId,
+      strategy: 'server',
+      resolvedVersion: conflict.serverVersion,
+      resolvedRecord: conflict.serverData,
+      resolvedAt: new Date().toISOString(),
+    });
+    if (conflict.serverData && conflict.onApplyResolution) {
+      await conflict.onApplyResolution(conflict.serverData, 'server');
+    }
+    showToast({
+      type: 'info',
+      title:
+        lang === 'ar'
+          ? 'تم اعتماد نسخة الخادم'
+          : lang === 'fr'
+          ? 'Version serveur conservée'
+          : 'Server version applied',
+      message:
+        conflict.entityLabel ||
+        (lang === 'ar'
+          ? 'تم تحديث السجل بأحدث نسخة محفوظة.'
+          : lang === 'fr'
+          ? 'L’enregistrement a été rechargé depuis le serveur.'
+          : 'Record reloaded with the latest server snapshot.'),
+    });
+    return { success: true };
+  }
+
+  const resolvedPayload: Record<string, any> =
+    strategy === 'overwrite'
+      ? {
+          ...(conflict.serverData || {}),
+          ...conflict.localData,
+          id: toValidUuid(conflict.recordId),
+          [versionCol]: conflict.serverVersion,
+          updated_at: new Date().toISOString(),
+        }
+      : {
+          ...(conflict.serverData || {}),
+          ...conflict.localData,
+          ...(mergedPatch || {}),
+          id: toValidUuid(conflict.recordId),
+          [versionCol]: conflict.serverVersion,
+          updated_at: new Date().toISOString(),
+        };
+
+  // Remove stale pending conflict first; if another conflict triggers, listener re-adds the fresh one
+  globalState = {
+    ...globalState,
+    concurrencyConflicts: (globalState.concurrencyConflicts || []).filter(
+      (c) => c.id !== conflictId
+    ),
+  };
+  notify(false, true);
+
+  const res = await syncCoordinator.mutateOrQueueUpsert(conflict.table, resolvedPayload, {
+    expectedVersion: conflict.serverVersion,
+    versionColumn: versionCol,
+    entityType: conflict.entityType,
+    entityLabel: conflict.entityLabel,
+    localData: resolvedPayload,
+    onApplyResolution: conflict.onApplyResolution,
+  });
+
+  if (res.success) {
+    const nextVersion = res.newVersion ?? conflict.serverVersion + 1;
+    const slicePatch = applyResolvedRowToSlice(
+      conflict.table,
+      conflict.recordId,
+      { ...resolvedPayload, [versionCol]: nextVersion },
+      versionCol,
+      nextVersion
+    );
+    if (Object.keys(slicePatch).length > 0) {
+      globalState = { ...globalState, ...slicePatch };
+      notify();
+    }
+    emitConcurrencyResolution({
+      table: conflict.table,
+      recordId: conflict.recordId,
+      strategy,
+      resolvedVersion: nextVersion,
+      resolvedRecord: { ...resolvedPayload, [versionCol]: nextVersion },
+      resolvedAt: new Date().toISOString(),
+    });
+    if (conflict.onApplyResolution) {
+      await conflict.onApplyResolution(
+        { ...resolvedPayload, [versionCol]: nextVersion },
+        strategy
+      );
+    }
+    showToast({
+      type: 'success',
+      title:
+        lang === 'ar'
+          ? 'تم حل التعارض وحفظ التعديلات'
+          : lang === 'fr'
+          ? 'Conflit résolu et enregistré'
+          : 'Conflict resolved & saved',
+      message: `${conflict.entityLabel || conflict.table} (v${nextVersion})`,
+    });
+    return { success: true };
+  }
+
+  if (res.conflict) {
+    return { success: false, conflict: true, error: res.error };
+  }
+
+  return { success: res.queued ? true : false, error: res.error };
+}
+
+subscribeConcurrencyConflicts((event) => {
+  const existing = globalState.concurrencyConflicts || [];
+  const filtered = existing.filter(
+    (c) => !(c.table === event.table && c.recordId === event.recordId)
+  );
+  globalState = {
+    ...globalState,
+    concurrencyConflicts: [event, ...filtered],
+  };
+  notify(false, true);
+});
+
 function ensureTimerTick(isRunning: boolean, isPaused: boolean) {
   if (isRunning && !isPaused) {
     if (!activeTimerInterval) {
@@ -3565,6 +4031,7 @@ function createAtriumActions() {
   };
 
   const updateLeadStatus = (leadId: string, status: 'Pending' | 'Approved' | 'Declined') => {
+    const existingLead = globalState.leads.find((l) => l.id === leadId);
     globalState = {
       ...globalState,
       leads: globalState.leads.map((l) =>
@@ -3574,7 +4041,7 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      memberService.updateLeadStatus(leadId, status).catch(() => {});
+      memberService.updateLeadStatus(leadId, status, existingLead?.version).catch(() => {});
     }
   };
 
@@ -3637,7 +4104,7 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      memberService.updateLeadStatus(leadId, 'Approved').catch(() => {});
+      memberService.updateLeadStatus(leadId, 'Approved', lead.version).catch(() => {});
       memberService.createMember(newMember).catch((err) => {
         console.warn('[store] Failed to save converted member to Supabase:', err);
       });
@@ -3808,10 +4275,19 @@ function createAtriumActions() {
 
     if (isSupabaseConfigured()) {
       syncCoordinator
-        .mutateOrQueueUpdate('pos_sales', saleId, {
-          status: 'Refunded',
-          notes: reason ? `Refund: ${reason}` : 'Customer Return',
-        })
+        .mutateOrQueueUpdate(
+          'pos_sales',
+          saleId,
+          {
+            status: 'Refunded',
+            notes: reason ? `Refund: ${reason}` : 'Customer Return',
+          },
+          {
+            expectedVersion: sale.version,
+            entityType: 'Sale',
+            entityLabel: `Sale #${sale.id.slice(-6).toUpperCase()}`,
+          }
+        )
         .catch(() => {});
 
       const returnedProductIds = new Set(returnMovements.map((m) => m.productId));
@@ -4006,12 +4482,49 @@ function createAtriumActions() {
     }
   };
 
+  const upsertScheduleEvent = (event: ScheduleEvent) => {
+    const scoped: ScheduleEvent = {
+      ...getTraceContext(),
+      ...event,
+      tenantId:
+        (event.tenantId && event.tenantId !== 'acc_01' ? event.tenantId : undefined) ||
+        globalState.account.id,
+      facilityId: event.facilityId || globalState.currentBranchId,
+      businessId: event.businessId || globalState.currentBusinessId,
+      branchId: event.branchId || globalState.currentBranchId,
+      staffId: event.staffId || globalState.currentUser?.id,
+    };
+    const existing = (globalState.schedule || []).some((sc) => sc.id === scoped.id);
+    globalState = {
+      ...globalState,
+      schedule: existing
+        ? (globalState.schedule || []).map((sc) => (sc.id === scoped.id ? scoped : sc))
+        : [scoped, ...(globalState.schedule || [])],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      memberService
+        .upsertScheduleEvent(scoped, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+          staffId: globalState.currentUser?.id,
+        })
+        .catch(() => {});
+    }
+    return scoped;
+  };
+
   const deleteScheduleEvent = (eventId: string) => {
     globalState = {
       ...globalState,
       schedule: (globalState.schedule || []).filter((sc) => sc.id !== eventId),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      memberService.deleteScheduleEvent(eventId, globalState.currentUser?.id).catch(() => {});
+    }
   };
 
   const batchDeleteScheduleEvents = (eventIds: string[]) => {
@@ -4021,6 +4534,12 @@ function createAtriumActions() {
       schedule: (globalState.schedule || []).filter((sc) => !idSet.has(sc.id)),
     };
     notify();
+    if (isSupabaseConfigured()) {
+      runWithConcurrency(
+        eventIds.map((id) => () => memberService.deleteScheduleEvent(id, globalState.currentUser?.id)),
+        4
+      ).catch(() => {});
+    }
   };
 
   const createStaffMember = (staffData: Omit<StaffMember, 'id' | 'tenantId' | 'facilityId'>) => {
@@ -5010,7 +5529,7 @@ function createAtriumActions() {
     }
 
     if (isSupabaseConfigured()) {
-      appointmentService.updateStatus(id, status).catch((err) => {
+      appointmentService.updateStatus(id, status, apt?.version).catch((err) => {
         console.warn('[store] Failed to update appointment status in Supabase:', err);
       });
     }
@@ -5178,6 +5697,9 @@ function createAtriumActions() {
 
   const batchUpdateAppointmentStatus = (ids: string[], status: AppointmentStatus) => {
     const idSet = new Set(ids);
+    const prevVersionMap = new Map(
+      (globalState.appointments || []).map((a) => [a.id, a.version])
+    );
     globalState = {
       ...globalState,
       appointments: (globalState.appointments || []).map((a) =>
@@ -5187,7 +5709,7 @@ function createAtriumActions() {
     notify();
     if (isSupabaseConfigured()) {
       runWithConcurrency(
-        ids.map((id) => () => appointmentService.updateStatus(id, status)),
+        ids.map((id) => () => appointmentService.updateStatus(id, status, prevVersionMap.get(id))),
         4
       ).catch(() => {});
     }
@@ -9868,44 +10390,33 @@ function createAtriumActions() {
   };
 
   const importDatabase = (jsonString: string): boolean => {
-    try {
-      const parsed = JSON.parse(jsonString);
-      if (
-        !parsed ||
-        typeof parsed !== 'object' ||
-        !Array.isArray(parsed.businesses) ||
-        !Array.isArray(parsed.branches) ||
-        !parsed.account
-      ) {
-        showToast({
-          type: 'error',
-          title: 'Invalid Backup File',
-          message: 'The selected file is missing essential Atrium database structures.',
-        });
-        return false;
-      }
-
-      globalState = {
-        ...DEFAULT_STATE,
-        ...parsed,
-        storageVersion: ATRIUM_STORAGE_VERSION,
-        toasts: [],
-      };
-      notify();
-      showToast({
-        type: 'success',
-        title: 'Database Restored Successfully',
-        message: `Restored ${parsed.businesses.length} businesses, ${parsed.branches.length} branches, and all workspace records.`,
-      });
-      return true;
-    } catch (err: any) {
+    const report = validateBackupSnapshot(jsonString);
+    if (!report.valid || !report.parsed) {
       showToast({
         type: 'error',
-        title: 'Restore Failed',
-        message: err?.message || 'Failed to parse JSON backup file.',
+        title: 'Invalid Backup File',
+        message:
+          report.errors[0] ||
+          'The selected file is missing essential Atrium database structures.',
       });
       return false;
     }
+
+    const parsed = report.parsed;
+    globalState = {
+      ...DEFAULT_STATE,
+      ...parsed,
+      storageVersion: ATRIUM_STORAGE_VERSION,
+      toasts: [],
+      concurrencyConflicts: [],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Database Restored Successfully',
+      message: `Restored ${parsed.businesses.length} businesses, ${parsed.branches.length} branches, and ${report.totalRecords} records (${report.checksum}).`,
+    });
+    return true;
   };
 
   const setNetworkMode = setNetworkModeAction;
@@ -10034,6 +10545,7 @@ function createAtriumActions() {
     deleteProduct,
     deleteSale,
     batchDeleteSales,
+    upsertScheduleEvent,
     deleteScheduleEvent,
     batchDeleteScheduleEvents,
     createStaffMember,
@@ -10221,6 +10733,9 @@ function createAtriumActions() {
     resetTradingMockData,
     exportDatabase,
     importDatabase,
+    validateBackupSnapshot,
+    resolveConcurrencyConflict: resolveConcurrencyConflictAction,
+    dismissConcurrencyConflict: dismissConcurrencyConflictAction,
     setNetworkMode,
     retryCloudSync,
     syncWithSupabase,
@@ -10457,6 +10972,7 @@ export function useAtriumStore() {
     // Toast Notifications & Notification Center
     toasts: state.toasts || [],
     notifications: state.notifications || [],
+    concurrencyConflicts: state.concurrencyConflicts || [],
     unreadNotificationCount,
     // Universal Workforce & Staff Management Collections
     staffAttendanceLogs: state.staffAttendanceLogs || [],
