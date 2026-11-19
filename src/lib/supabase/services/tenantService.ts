@@ -74,14 +74,13 @@ export const tenantService = {
             .select('*')
             .eq('account_id', accountId)
             .eq('is_active', true)
-            .is('deleted_at', null)
-            .order('id', { ascending: true })
-            .range(from, to);
+            .is('deleted_at', null);
 
           if (businessId && isUuid(businessId)) {
             query = query.eq('business_id', businessId);
           }
-          return query;
+
+          return query.order('id', { ascending: true }).range(from, to);
         },
         { throwOnError: true }
       );

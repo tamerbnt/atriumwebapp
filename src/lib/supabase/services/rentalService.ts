@@ -16,6 +16,110 @@ export interface RentalSyncResult {
   queued?: boolean;
 }
 
+export const mapRentalUnitFromDb = (row: any): RentableUnit => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  name: row.name,
+  code: row.code,
+  type: row.type || 'Room',
+  capacity: Number(row.capacity || 10),
+  surfaceAreaSqm: row.surface_area_sqm ? Number(row.surface_area_sqm) : undefined,
+  hourlyRate: Number(row.hourly_rate || 0),
+  dailyRate: Number(row.daily_rate || 0),
+  currency: row.currency || 'DZD',
+  amenities: Array.isArray(row.amenities) ? row.amenities : [],
+  status: row.status || 'Available',
+  description: row.description || '',
+  colorHex: row.color_hex || '#8B5CF6',
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapRentalRenterFromDb = (row: any): RentalRenter => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  fullName: row.full_name,
+  companyName: row.company_name || undefined,
+  email: row.email,
+  phone: row.phone,
+  idDocNumber: row.id_doc_number || undefined,
+  totalBookings: Number(row.total_bookings || 0),
+  totalSpent: Number(row.total_spent || 0),
+  currency: row.currency || 'DZD',
+  notes: row.notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapRentalBookingFromDb = (row: any): RentalBooking => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  renterId: row.renter_id,
+  renterName: row.renter_name,
+  renterPhone: row.renter_phone,
+  renterEmail: row.renter_email || undefined,
+  renterCompany: row.renter_company || undefined,
+  unitId: row.unit_id,
+  unitName: row.unit_name,
+  unitType: row.unit_type || 'Room',
+  purpose: row.purpose,
+  startDateTime: row.start_date_time,
+  endDateTime: row.end_date_time,
+  durationHours: Number(row.duration_hours || 1),
+  attendeeCount: Number(row.attendee_count || 1),
+  status: row.status || 'Confirmed',
+  baseAmount: Number(row.base_amount || 0),
+  addonsAmount: Number(row.addons_amount || 0),
+  totalAmount: Number(row.total_amount || 0),
+  currency: row.currency || 'DZD',
+  depositAmount: Number(row.deposit_amount || 0),
+  depositStatus: row.deposit_status || 'Held',
+  paidAmount: Number(row.paid_amount || 0),
+  balanceDue: Number(row.balance_due || 0),
+  addons: Array.isArray(row.addons) ? row.addons : [],
+  contractSigned: Boolean(row.contract_signed),
+  notes: row.notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapRentalDepositFromDb = (row: any): SecurityDepositRecord => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  bookingId: row.booking_id,
+  renterName: row.renter_name,
+  unitName: row.unit_name,
+  amount: Number(row.amount || 0),
+  currency: row.currency || 'DZD',
+  paymentMethod: row.payment_method || 'Cash',
+  status: row.status || 'Held',
+  deductionReason: row.deduction_reason || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+  collectedAt: row.collected_at,
+  releasedAt: row.released_at || undefined,
+});
+
 export const rentalService = {
   // ============================================================
   // Rental Units (rental_units)
@@ -41,29 +145,7 @@ export const rentalService = {
         return query;
       });
 
-      return data.map((row: any): RentableUnit => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        name: row.name,
-        code: row.code,
-        type: row.type || 'Room',
-        capacity: Number(row.capacity || 10),
-        surfaceAreaSqm: row.surface_area_sqm ? Number(row.surface_area_sqm) : undefined,
-        hourlyRate: Number(row.hourly_rate || 0),
-        dailyRate: Number(row.daily_rate || 0),
-        currency: row.currency || 'DZD',
-        amenities: Array.isArray(row.amenities) ? row.amenities : [],
-        status: row.status || 'Available',
-        description: row.description || '',
-        colorHex: row.color_hex || '#8B5CF6',
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return data.map(mapRentalUnitFromDb);
     } catch {
       return [];
     }
@@ -137,26 +219,7 @@ export const rentalService = {
         return query;
       });
 
-      return data.map((row: any): RentalRenter => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        fullName: row.full_name,
-        companyName: row.company_name || undefined,
-        email: row.email,
-        phone: row.phone,
-        idDocNumber: row.id_doc_number || undefined,
-        totalBookings: Number(row.total_bookings || 0),
-        totalSpent: Number(row.total_spent || 0),
-        currency: row.currency || 'DZD',
-        notes: row.notes || undefined,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return data.map(mapRentalRenterFromDb);
     } catch {
       return [];
     }
@@ -227,43 +290,7 @@ export const rentalService = {
         return query;
       });
 
-      return data.map((row: any): RentalBooking => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        renterId: row.renter_id,
-        renterName: row.renter_name,
-        renterPhone: row.renter_phone,
-        renterEmail: row.renter_email || undefined,
-        renterCompany: row.renter_company || undefined,
-        unitId: row.unit_id,
-        unitName: row.unit_name,
-        unitType: row.unit_type || 'Room',
-        purpose: row.purpose,
-        startDateTime: row.start_date_time,
-        endDateTime: row.end_date_time,
-        durationHours: Number(row.duration_hours || 1),
-        attendeeCount: Number(row.attendee_count || 1),
-        status: row.status || 'Confirmed',
-        baseAmount: Number(row.base_amount || 0),
-        addonsAmount: Number(row.addons_amount || 0),
-        totalAmount: Number(row.total_amount || 0),
-        currency: row.currency || 'DZD',
-        depositAmount: Number(row.deposit_amount || 0),
-        depositStatus: row.deposit_status || 'Held',
-        paidAmount: Number(row.paid_amount || 0),
-        balanceDue: Number(row.balance_due || 0),
-        addons: Array.isArray(row.addons) ? row.addons : [],
-        contractSigned: Boolean(row.contract_signed),
-        notes: row.notes || undefined,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      }));
+      return data.map(mapRentalBookingFromDb);
     } catch {
       return [];
     }
@@ -350,26 +377,7 @@ export const rentalService = {
         return query;
       });
 
-      return data.map((row: any): SecurityDepositRecord => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        bookingId: row.booking_id,
-        renterName: row.renter_name,
-        unitName: row.unit_name,
-        amount: Number(row.amount || 0),
-        currency: row.currency || 'DZD',
-        paymentMethod: row.payment_method || 'Cash',
-        status: row.status || 'Held',
-        deductionReason: row.deduction_reason || undefined,
-        version: row.version != null ? Number(row.version) : undefined,
-        collectedAt: row.collected_at,
-        releasedAt: row.released_at || undefined,
-      }));
+      return data.map(mapRentalDepositFromDb);
     } catch {
       return [];
     }

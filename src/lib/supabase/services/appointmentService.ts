@@ -11,6 +11,58 @@ import type {
   StylistPayout,
 } from '../../../types/index';
 
+export const mapSalonServiceFromDb = (row: any): ServiceItem => ({
+  id: row.id,
+  facilityId: row.branch_id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  name: row.name,
+  category: (row.category || 'Hair') as ServiceItem['category'],
+  durationMinutes: Number(row.duration_minutes || 45),
+  price: Number(row.price_dzd || 0),
+  commissionRate: Number(row.commission_percent || 40),
+  isActive: row.is_active ?? true,
+  version: row.version != null ? Number(row.version) : undefined,
+});
+
+export const mapSalonWorkstationFromDb = (row: any): SalonWorkstation => ({
+  id: row.id,
+  name: row.name,
+  type: (row.zone || 'StylingChair') as SalonWorkstation['type'],
+  assignedStaffName: row.assigned_stylist_name || undefined,
+  isAvailable: row.status !== 'Occupied',
+  version: row.version != null ? Number(row.version) : undefined,
+});
+
+export const mapStylistPayoutFromDb = (row: any): StylistPayout => {
+  const [periodStart = '', periodEnd = ''] = String(row.period_label || '').split('..');
+  const commissionAmount = Number(row.commission_amount_dzd || 0);
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    businessId: row.business_id,
+    branchId: row.branch_id,
+    staffId: row.stylist_id || '',
+    staffName: row.stylist_name,
+    periodStart,
+    periodEnd: periodEnd || periodStart,
+    totalServicesCount: Number(row.services_count || 0),
+    totalServiceRevenue: Number(row.gross_revenue_dzd || 0),
+    commissionRate: Number(row.commission_rate || 40),
+    commissionAmount,
+    retailSalesCount: 0,
+    retailSalesRevenue: 0,
+    retailCommissionAmount: 0,
+    totalPayout: commissionAmount,
+    status: row.status || 'Pending',
+    paymentMethod: row.payment_method || undefined,
+    paidAt: row.paid_at || undefined,
+    version: row.version != null ? Number(row.version) : undefined,
+  };
+};
+
 export const appointmentService = {
   async fetchAppointments(branchId: string, updatedAfter?: string | null): Promise<Appointment[]> {
     const client = getSupabaseClient();
@@ -125,21 +177,7 @@ export const appointmentService = {
       if (updatedAfter) query = query.gt('updated_at', updatedAfter);
       return query;
     });
-    return data.map((row: any): ServiceItem => ({
-      id: row.id,
-      facilityId: row.branch_id,
-      accountId: row.account_id,
-      businessId: row.business_id,
-      branchId: row.branch_id,
-      staffId: row.staff_id || undefined,
-      name: row.name,
-      category: (row.category || 'Hair') as ServiceItem['category'],
-      durationMinutes: Number(row.duration_minutes || 45),
-      price: Number(row.price_dzd || 0),
-      commissionRate: Number(row.commission_percent || 40),
-      isActive: row.is_active ?? true,
-      version: row.version != null ? Number(row.version) : undefined,
-    }));
+    return data.map(mapSalonServiceFromDb);
   },
 
   async upsertService(srv: ServiceItem): Promise<boolean> {
@@ -237,13 +275,7 @@ export const appointmentService = {
         .order('id', { ascending: true })
         .range(from, to)
     );
-    return data.map((row: any): SalonWorkstation => ({
-      id: row.id,
-      name: row.name,
-      type: (row.zone || 'StylingChair') as SalonWorkstation['type'],
-      assignedStaffName: row.assigned_stylist_name || undefined,
-      isAvailable: row.status !== 'Occupied',
-    }));
+    return data.map(mapSalonWorkstationFromDb);
   },
 
   async fetchStylistPayouts(branchId: string): Promise<StylistPayout[]> {
@@ -260,32 +292,7 @@ export const appointmentService = {
         .order('id', { ascending: false })
         .range(from, to)
     );
-    return data.map((row: any): StylistPayout => {
-      const [periodStart = '', periodEnd = ''] = String(row.period_label || '').split('..');
-      const commissionAmount = Number(row.commission_amount_dzd || 0);
-      return {
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.stylist_id || '',
-        staffName: row.stylist_name,
-        periodStart,
-        periodEnd: periodEnd || periodStart,
-        totalServicesCount: Number(row.services_count || 0),
-        totalServiceRevenue: Number(row.gross_revenue_dzd || 0),
-        commissionRate: Number(row.commission_rate || 40),
-        commissionAmount,
-        retailSalesCount: 0,
-        retailSalesRevenue: 0,
-        retailCommissionAmount: 0,
-        totalPayout: commissionAmount,
-        status: row.status || 'Pending',
-        paymentMethod: row.payment_method || undefined,
-        paidAt: row.paid_at || undefined,
-        version: row.version != null ? Number(row.version) : undefined,
-      };
-    });
+    return data.map(mapStylistPayoutFromDb);
   },
 
   async upsertStylistPayout(

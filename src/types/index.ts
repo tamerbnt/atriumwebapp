@@ -57,6 +57,7 @@ export interface Business {
   phone?: string;
   logoUrl?: string;
   isActive: boolean;
+  version?: number;
   createdAt: string;
 }
 
@@ -70,6 +71,7 @@ export interface Branch {
   phone?: string;
   isMainBranch: boolean;
   isActive: boolean;
+  version?: number;
   createdAt: string;
 }
 
@@ -82,6 +84,7 @@ export interface Device {
   isActive: boolean;
   lastSeenAt: string;
   registeredAt: string;
+  version?: number;
 }
 
 export interface SubscriptionPlan {
@@ -482,6 +485,7 @@ export interface StockMovement {
   reason?: string;
   createdAt: string;
   createdBy?: string;
+  version?: number;
 }
 
 export interface ReceiptConfig {
@@ -642,6 +646,7 @@ export interface SalonWorkstation {
   assignedStaffId?: string;
   assignedStaffName?: string;
   isAvailable: boolean;
+  version?: number;
 }
 
 

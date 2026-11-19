@@ -34,6 +34,313 @@ export interface PMStaffMember {
   createdAt: string;
 }
 
+export const mapPmClientFromDb = (row: any): PMClient => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  name: row.name,
+  logoUrl: row.logo_url || undefined,
+  contactPerson: row.contact_person,
+  email: row.email,
+  phone: row.phone,
+  wilaya: row.wilaya,
+  address: row.address || undefined,
+  isActive: row.is_active ?? true,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapPmProjectFromDb = (row: any): PMProject => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  clientId: row.client_id,
+  clientName: row.client_name,
+  title: row.title,
+  scopeOfWork: row.scope_of_work,
+  budgetCapDzd: Number(row.budget_cap_dzd || 0),
+  maxFieldExpensesDzd: Number(row.max_field_expenses_dzd || 0),
+  targetGrossMarginPercent: Number(row.target_gross_margin_percent || 25),
+  startDate: row.start_date,
+  endDate: row.end_date,
+  kvDeadline: row.kv_deadline,
+  printDeadline: row.print_deadline,
+  executionStartDate: row.execution_start_date,
+  projectManagerId: row.project_manager_id,
+  projectManagerName: row.project_manager_name,
+  leadCreativeId: row.lead_creative_id,
+  leadCreativeName: row.lead_creative_name,
+  status: row.status,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export const mapPmMilestoneFromDb = (row: any): PMMilestone => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  projectId: row.project_id,
+  title: row.title,
+  phase: row.phase,
+  targetDate: row.target_date,
+  completedAt: row.completed_at || undefined,
+  isCompleted: Boolean(row.is_completed),
+  assignedRole: row.assigned_role || 'project_manager',
+  version: row.version != null ? Number(row.version) : undefined,
+});
+
+export const mapPmPrintOrderFromDb = (row: any): PMPrintOrder => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  projectId: row.project_id,
+  projectTitle: row.project_title,
+  orderNumber: row.order_number,
+  items: row.items || [],
+  totalCostDzd: Number(row.total_cost_dzd || 0),
+  status: row.status,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapPmBatDeliverableFromDb = (row: any): PMBatDeliverable => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  projectId: row.project_id,
+  projectTitle: row.project_title,
+  printOrderId: row.print_order_id || undefined,
+  title: row.title,
+  fileFormat: row.file_format,
+  colorSpace: row.color_space,
+  resolutionDpi: Number(row.resolution_dpi || 300),
+  bleedMm: Number(row.bleed_mm || 3),
+  hasBleedIncluded: Boolean(row.has_bleed_included),
+  version: Number(row.version || 1),
+  versionCode: row.version_code || 'v1',
+  previewUrl: row.preview_url,
+  masterSourceUrl: row.master_source_url || undefined,
+  fileSizeBytes: Number(row.file_size_bytes || 0),
+  uploadedByCreativeId: row.uploaded_by_creative_id,
+  uploadedByCreativeName: row.uploaded_by_creative_name,
+  approvalStatus: row.approval_status,
+  revisionComments: row.revision_comments || undefined,
+  createdAt: row.created_at,
+});
+
+export const mapPmTalentFromDb = (row: any): PMTalent => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  fullName: row.full_name,
+  gender: row.gender,
+  birthDate: row.birth_date,
+  age: Number(row.age || 22),
+  phone: row.phone,
+  email: row.email || undefined,
+  wilayaCode: row.wilaya_code,
+  wilayaName: row.wilaya_name,
+  commune: row.commune,
+  hasDriverLicense: Boolean(row.has_driver_license),
+  isVehicleOwner: Boolean(row.is_vehicle_owner),
+  desiredRoles: row.desired_roles || ['Animator'],
+  languages: row.languages || ['Arabic', 'French'],
+  portraitPhotoUrl: row.portrait_photo_url || undefined,
+  fullBodyPhotoUrl: row.full_body_photo_url || undefined,
+  cvDocumentUrl: row.cv_document_url || undefined,
+  cniDocumentUrl: row.cni_document_url || undefined,
+  ccpNumber: row.ccp_number,
+  ccpKey: row.ccp_key,
+  initialHrScore: Number(row.initial_hr_score || 4.0),
+  averageMissionRating: Number(row.average_mission_rating || 4.5),
+  consolidatedScore: Number(row.consolidated_score || 4.25),
+  completedMissionsCount: Number(row.completed_missions_count || 0),
+  absencesCount: Number(row.absences_count || 0),
+  isHrVerified: Boolean(row.is_hr_verified),
+  status: row.status,
+  hrNotes: row.hr_notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapPmMissionFromDb = (row: any): PMMission => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  projectId: row.project_id,
+  projectTitle: row.project_title,
+  clientName: row.client_name,
+  code: row.code,
+  title: row.title,
+  activationType: row.activation_type,
+  venueName: row.venue_name,
+  address: row.address,
+  wilayaCode: row.wilaya_code,
+  wilayaName: row.wilaya_name,
+  startDate: row.start_date,
+  endDate: row.end_date,
+  dailyStartHour: row.daily_start_hour,
+  dailyEndHour: row.daily_end_hour,
+  supervisorId: row.supervisor_id,
+  supervisorName: row.supervisor_name,
+  requiredStaffCount: Number(row.required_staff_count || 4),
+  status: row.status,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapPmAttendanceFromDb = (row: any): PMAttendance => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  missionId: row.mission_id,
+  talentId: row.talent_id,
+  talentName: row.talent_name,
+  talentPhoto: row.talent_photo || undefined,
+  date: row.date,
+  checkInTime: row.check_in_time || undefined,
+  status: row.status,
+  minutesLate: row.minutes_late ? Number(row.minutes_late) : 0,
+  replacementForTalentId: row.replacement_for_talent_id || undefined,
+  replacementTalentName: row.replacement_talent_name || undefined,
+  shiftRating: Number(row.shift_rating || 5),
+  dayRateDzd: Number(row.day_rate_dzd || 3500),
+  grossPayableDzd: Number(row.gross_payable_dzd || 3500),
+  isLocked: Boolean(row.is_locked),
+  lockedAt: row.locked_at || undefined,
+  supervisorNotes: row.supervisor_notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+});
+
+export const mapPmExpenseFromDb = (row: any): PMExpense => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  projectId: row.project_id,
+  projectTitle: row.project_title,
+  missionId: row.mission_id || undefined,
+  missionCode: row.mission_code || undefined,
+  title: row.title,
+  category: row.category,
+  amountDzd: Number(row.amount_dzd || 0),
+  declaredByUserId: row.declared_by_user_id,
+  declaredByUserName: row.declared_by_user_name,
+  declaredByRole: row.declared_by_role,
+  receiptPhotoUrl: row.receipt_photo_url || undefined,
+  hasFiscalInvoice: Boolean(row.has_fiscal_invoice),
+  fiscalNif: row.fiscal_nif || undefined,
+  status: row.status,
+  directionApprovedAt: row.direction_approved_at || undefined,
+  directionNotes: row.direction_notes || undefined,
+  isEquipmentAutoCreated: Boolean(row.is_equipment_auto_created),
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapPmPayrollBatchFromDb = (row: any): PMPayrollBatch => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  projectId: row.project_id,
+  projectTitle: row.project_title,
+  missionId: row.mission_id,
+  missionCode: row.mission_code,
+  batchNumber: row.batch_number,
+  totalBeneficiaries: Number(row.total_beneficiaries || 0),
+  totalAmountDzd: Number(row.total_amount_dzd || 0),
+  status: row.status,
+  directionApprovedAt: row.direction_approved_at || undefined,
+  ccpGeneratedAt: row.ccp_generated_at || undefined,
+  disbursedAt: row.disbursed_at || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapPmCcpSlipFromDb = (row: any): PMCcpSlip => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  batchId: row.batch_id,
+  talentId: row.talent_id,
+  beneficiaryName: row.beneficiary_name,
+  ccpNumber: row.ccp_number,
+  ccpKey: row.ccp_key,
+  wilayaName: row.wilaya_name,
+  amountDzd: Number(row.amount_dzd || 0),
+  amountInWordsFr: row.amount_in_words_fr,
+  amountInWordsAr: row.amount_in_words_ar,
+  transactionReference: row.transaction_reference,
+  isPrinted: Boolean(row.is_printed),
+  printedAt: row.printed_at || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapPmEquipmentStockFromDb = (row: any): PMEquipmentStock => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  assetCode: row.asset_code,
+  title: row.title,
+  category: row.category,
+  acquisitionCostDzd: Number(row.acquisition_cost_dzd || 0),
+  currentStatus: row.current_status,
+  currentCustodianId: row.current_custodian_id || undefined,
+  currentCustodianName: row.current_custodian_name || undefined,
+  assignedMissionId: row.assigned_mission_id || undefined,
+  conditionReport: row.condition_report,
+  qrLabelCode: row.qr_label_code,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
 export const projectMilestoneService = {
   // ============================================================
   // PM Staff
@@ -128,25 +435,7 @@ export const projectMilestoneService = {
         return query;
       });
 
-      return rows.map((row: any): PMClient => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        name: row.name,
-        logoUrl: row.logo_url || undefined,
-        contactPerson: row.contact_person,
-        email: row.email,
-        phone: row.phone,
-        wilaya: row.wilaya,
-        address: row.address || undefined,
-        isActive: row.is_active ?? true,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return rows.map(mapPmClientFromDb);
     } catch {
       return [];
     }
@@ -208,35 +497,7 @@ export const projectMilestoneService = {
         return query;
       });
 
-      return rows.map((row: any): PMProject => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        clientId: row.client_id,
-        clientName: row.client_name,
-        title: row.title,
-        scopeOfWork: row.scope_of_work,
-        budgetCapDzd: Number(row.budget_cap_dzd || 0),
-        maxFieldExpensesDzd: Number(row.max_field_expenses_dzd || 0),
-        targetGrossMarginPercent: Number(row.target_gross_margin_percent || 25),
-        startDate: row.start_date,
-        endDate: row.end_date,
-        kvDeadline: row.kv_deadline,
-        printDeadline: row.print_deadline,
-        executionStartDate: row.execution_start_date,
-        projectManagerId: row.project_manager_id,
-        projectManagerName: row.project_manager_name,
-        leadCreativeId: row.lead_creative_id,
-        leadCreativeName: row.lead_creative_name,
-        status: row.status,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      }));
+      return rows.map(mapPmProjectFromDb);
     } catch {
       return [];
     }
@@ -304,21 +565,7 @@ export const projectMilestoneService = {
         return query;
       });
 
-      return rows.map((row: any): PMMilestone => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        projectId: row.project_id,
-        title: row.title,
-        phase: row.phase,
-        targetDate: row.target_date,
-        completedAt: row.completed_at || undefined,
-        isCompleted: Boolean(row.is_completed),
-        assignedRole: row.assigned_role || 'project_manager',
-        version: row.version != null ? Number(row.version) : undefined,
-      }));
+      return rows.map(mapPmMilestoneFromDb);
     } catch {
       return [];
     }
@@ -420,23 +667,7 @@ export const projectMilestoneService = {
         return query;
       });
 
-      return rows.map((row: any): PMPrintOrder => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        projectId: row.project_id,
-        projectTitle: row.project_title,
-        orderNumber: row.order_number,
-        items: row.items || [],
-        totalCostDzd: Number(row.total_cost_dzd || 0),
-        status: row.status,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return rows.map(mapPmPrintOrderFromDb);
     } catch {
       return [];
     }
@@ -496,34 +727,7 @@ export const projectMilestoneService = {
         return query;
       });
 
-      return rows.map((row: any): PMBatDeliverable => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        projectId: row.project_id,
-        projectTitle: row.project_title,
-        printOrderId: row.print_order_id || undefined,
-        title: row.title,
-        fileFormat: row.file_format,
-        colorSpace: row.color_space,
-        resolutionDpi: Number(row.resolution_dpi || 300),
-        bleedMm: Number(row.bleed_mm || 3),
-        hasBleedIncluded: Boolean(row.has_bleed_included),
-        version: Number(row.version || 1),
-        versionCode: row.version_code || 'v1',
-        previewUrl: row.preview_url,
-        masterSourceUrl: row.master_source_url || undefined,
-        fileSizeBytes: Number(row.file_size_bytes || 0),
-        uploadedByCreativeId: row.uploaded_by_creative_id,
-        uploadedByCreativeName: row.uploaded_by_creative_name,
-        approvalStatus: row.approval_status,
-        revisionComments: row.revision_comments || undefined,
-        createdAt: row.created_at,
-      }));
+      return rows.map(mapPmBatDeliverableFromDb);
     } catch {
       return [];
     }
@@ -595,44 +799,7 @@ export const projectMilestoneService = {
         return query;
       });
 
-      return rows.map((row: any): PMTalent => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        fullName: row.full_name,
-        gender: row.gender,
-        birthDate: row.birth_date,
-        age: Number(row.age || 22),
-        phone: row.phone,
-        email: row.email || undefined,
-        wilayaCode: row.wilaya_code,
-        wilayaName: row.wilaya_name,
-        commune: row.commune,
-        hasDriverLicense: Boolean(row.has_driver_license),
-        isVehicleOwner: Boolean(row.is_vehicle_owner),
-        desiredRoles: row.desired_roles || ['Animator'],
-        languages: row.languages || ['Arabic', 'French'],
-        portraitPhotoUrl: row.portrait_photo_url || undefined,
-        fullBodyPhotoUrl: row.full_body_photo_url || undefined,
-        cvDocumentUrl: row.cv_document_url || undefined,
-        cniDocumentUrl: row.cni_document_url || undefined,
-        ccpNumber: row.ccp_number,
-        ccpKey: row.ccp_key,
-        initialHrScore: Number(row.initial_hr_score || 4.0),
-        averageMissionRating: Number(row.average_mission_rating || 4.5),
-        consolidatedScore: Number(row.consolidated_score || 4.25),
-        completedMissionsCount: Number(row.completed_missions_count || 0),
-        absencesCount: Number(row.absences_count || 0),
-        isHrVerified: Boolean(row.is_hr_verified),
-        status: row.status,
-        hrNotes: row.hr_notes || undefined,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return rows.map(mapPmTalentFromDb);
     } catch {
       return [];
     }
@@ -713,35 +880,7 @@ export const projectMilestoneService = {
         return query;
       });
 
-      return rows.map((row: any): PMMission => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        projectId: row.project_id,
-        projectTitle: row.project_title,
-        clientName: row.client_name,
-        code: row.code,
-        title: row.title,
-        activationType: row.activation_type,
-        venueName: row.venue_name,
-        address: row.address,
-        wilayaCode: row.wilaya_code,
-        wilayaName: row.wilaya_name,
-        startDate: row.start_date,
-        endDate: row.end_date,
-        dailyStartHour: row.daily_start_hour,
-        dailyEndHour: row.daily_end_hour,
-        supervisorId: row.supervisor_id,
-        supervisorName: row.supervisor_name,
-        requiredStaffCount: Number(row.required_staff_count || 4),
-        status: row.status,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return rows.map(mapPmMissionFromDb);
     } catch {
       return [];
     }
@@ -890,31 +1029,7 @@ export const projectMilestoneService = {
           .range(from, to);
       });
 
-      return rows.map((row: any): PMAttendance => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        missionId: row.mission_id,
-        talentId: row.talent_id,
-        talentName: row.talent_name,
-        talentPhoto: row.talent_photo || undefined,
-        date: row.date,
-        checkInTime: row.check_in_time || undefined,
-        status: row.status,
-        minutesLate: row.minutes_late ? Number(row.minutes_late) : 0,
-        replacementForTalentId: row.replacement_for_talent_id || undefined,
-        replacementTalentName: row.replacement_talent_name || undefined,
-        shiftRating: Number(row.shift_rating || 5),
-        dayRateDzd: Number(row.day_rate_dzd || 3500),
-        grossPayableDzd: Number(row.gross_payable_dzd || 3500),
-        isLocked: Boolean(row.is_locked),
-        lockedAt: row.locked_at || undefined,
-        supervisorNotes: row.supervisor_notes || undefined,
-      }));
+      return rows.map(mapPmAttendanceFromDb);
     } catch {
       return [];
     }
@@ -961,34 +1076,7 @@ export const projectMilestoneService = {
         return query;
       });
 
-      return rows.map((row: any): PMExpense => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        projectId: row.project_id,
-        projectTitle: row.project_title,
-        missionId: row.mission_id || undefined,
-        missionCode: row.mission_code || undefined,
-        title: row.title,
-        category: row.category,
-        amountDzd: Number(row.amount_dzd || 0),
-        declaredByUserId: row.declared_by_user_id,
-        declaredByUserName: row.declared_by_user_name,
-        declaredByRole: row.declared_by_role,
-        receiptPhotoUrl: row.receipt_photo_url || undefined,
-        hasFiscalInvoice: Boolean(row.has_fiscal_invoice),
-        fiscalNif: row.fiscal_nif || undefined,
-        status: row.status,
-        directionApprovedAt: row.direction_approved_at || undefined,
-        directionNotes: row.direction_notes || undefined,
-        isEquipmentAutoCreated: Boolean(row.is_equipment_auto_created),
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return rows.map(mapPmExpenseFromDb);
     } catch {
       return [];
     }
@@ -1074,27 +1162,7 @@ export const projectMilestoneService = {
         return query;
       });
 
-      return rows.map((row: any): PMPayrollBatch => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        projectId: row.project_id,
-        projectTitle: row.project_title,
-        missionId: row.mission_id,
-        missionCode: row.mission_code,
-        batchNumber: row.batch_number,
-        totalBeneficiaries: Number(row.total_beneficiaries || 0),
-        totalAmountDzd: Number(row.total_amount_dzd || 0),
-        status: row.status,
-        directionApprovedAt: row.direction_approved_at || undefined,
-        ccpGeneratedAt: row.ccp_generated_at || undefined,
-        disbursedAt: row.disbursed_at || undefined,
-        createdAt: row.created_at,
-      }));
+      return rows.map(mapPmPayrollBatchFromDb);
     } catch {
       return [];
     }
@@ -1119,28 +1187,7 @@ export const projectMilestoneService = {
         return query;
       });
 
-      return rows.map((row: any): PMCcpSlip => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        batchId: row.batch_id,
-        talentId: row.talent_id,
-        beneficiaryName: row.beneficiary_name,
-        ccpNumber: row.ccp_number,
-        ccpKey: row.ccp_key,
-        wilayaName: row.wilaya_name,
-        amountDzd: Number(row.amount_dzd || 0),
-        amountInWordsFr: row.amount_in_words_fr,
-        amountInWordsAr: row.amount_in_words_ar,
-        transactionReference: row.transaction_reference,
-        isPrinted: Boolean(row.is_printed),
-        printedAt: row.printed_at || undefined,
-        createdAt: row.created_at,
-      }));
+      return rows.map(mapPmCcpSlipFromDb);
     } catch {
       return [];
     }
@@ -1246,27 +1293,7 @@ export const projectMilestoneService = {
         return query;
       });
 
-      return rows.map((row: any): PMEquipmentStock => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        assetCode: row.asset_code,
-        title: row.title,
-        category: row.category,
-        acquisitionCostDzd: Number(row.acquisition_cost_dzd || 0),
-        currentStatus: row.current_status,
-        currentCustodianId: row.current_custodian_id || undefined,
-        currentCustodianName: row.current_custodian_name || undefined,
-        assignedMissionId: row.assigned_mission_id || undefined,
-        conditionReport: row.condition_report,
-        qrLabelCode: row.qr_label_code,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return rows.map(mapPmEquipmentStockFromDb);
     } catch {
       return [];
     }

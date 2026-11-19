@@ -10,6 +10,60 @@ import type {
   ReceiptConfig,
 } from '../../../types/index';
 
+export const mapParkedOrderFromDb = (row: any): ParkedOrder => ({
+  id: row.id,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  referenceName: row.label,
+  customerName: row.customer_name || undefined,
+  items: Array.isArray(row.items) ? row.items : [],
+  discount: Number(row.discount || 0),
+  subtotal: Number(row.total_amount || 0),
+  totalAmount: Number(row.total_amount || 0),
+  notes: row.notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapStockMovementFromDb = (row: any): StockMovement => {
+  const mt = String(row.movement_type || '').toLowerCase();
+  const mappedType: StockMovement['type'] =
+    mt === 'out' || mt === 'sale'
+      ? 'Sale'
+      : mt === 'refund' || mt === 'return'
+      ? 'Return'
+      : mt === 'adjustment'
+      ? 'Adjustment'
+      : mt === 'damage'
+      ? 'Damage'
+      : mt === 'initial'
+      ? 'Initial'
+      : 'Restock';
+
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    businessId: row.business_id || undefined,
+    branchId: row.branch_id,
+    staffId: row.staff_id || undefined,
+    tenantId: row.account_id,
+    facilityId: row.branch_id,
+    productId: row.product_id || '',
+    productName: row.product_name,
+    type: mappedType,
+    quantity: Number(row.quantity || 0),
+    previousStock: Number(row.previous_stock || 0),
+    newStock: Number(row.new_stock || 0),
+    reason: row.reason || undefined,
+    version: row.version != null ? Number(row.version) : undefined,
+    createdAt: row.created_at,
+  };
+};
+
 export const posService = {
   async fetchProducts(branchId: string, updatedAfter?: string | null): Promise<Product[]> {
     const client = getSupabaseClient();
@@ -147,24 +201,7 @@ export const posService = {
         .order('id', { ascending: false })
         .range(from, to)
     );
-    return data.map((row: any): ParkedOrder => ({
-      id: row.id,
-      tenantId: row.account_id,
-      facilityId: row.branch_id,
-      accountId: row.account_id,
-      businessId: row.business_id,
-      branchId: row.branch_id,
-      staffId: row.staff_id || undefined,
-      referenceName: row.label,
-      customerName: row.customer_name || undefined,
-      items: Array.isArray(row.items) ? row.items : [],
-      discount: Number(row.discount || 0),
-      subtotal: Number(row.total_amount || 0),
-      totalAmount: Number(row.total_amount || 0),
-      notes: row.notes || undefined,
-      version: row.version != null ? Number(row.version) : undefined,
-      createdAt: row.created_at,
-    }));
+    return data.map(mapParkedOrderFromDb);
   },
 
   async upsertParkedOrder(order: ParkedOrder): Promise<boolean> {
@@ -212,19 +249,7 @@ export const posService = {
         .order('id', { ascending: false })
         .range(from, to)
     );
-    return data.map((row: any): StockMovement => ({
-      id: row.id,
-      tenantId: row.account_id,
-      facilityId: row.branch_id,
-      productId: row.product_id || '',
-      productName: row.product_name,
-      type: row.movement_type === 'out' || row.movement_type === 'sale' ? 'Sale' : 'Restock',
-      quantity: Number(row.quantity || 0),
-      previousStock: Number(row.previous_stock || 0),
-      newStock: Number(row.new_stock || 0),
-      reason: row.reason || undefined,
-      createdAt: row.created_at,
-    }));
+    return data.map(mapStockMovementFromDb);
   },
 
   async upsertReceiptConfig(

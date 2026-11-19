@@ -11,6 +11,163 @@ import type {
   FreelanceDeliverable,
 } from '../../../types/index';
 
+export const mapFreelanceClientFromDb = (row: any): FreelanceClient => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  name: row.name,
+  company: row.company || undefined,
+  email: row.email,
+  phone: row.phone || undefined,
+  currency: row.currency || 'DZD',
+  hourlyRate: Number(row.hourly_rate || 0),
+  status: row.status || 'ProjectBased',
+  monthlyRetainerHours: row.monthly_retainer_hours ? Number(row.monthly_retainer_hours) : undefined,
+  monthlyRetainerAmount: row.monthly_retainer_amount ? Number(row.monthly_retainer_amount) : undefined,
+  notes: row.notes || undefined,
+  lifetimeBilled: Number(row.lifetime_billed || 0),
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapFreelanceProjectFromDb = (row: any): FreelanceProject => {
+  const createdDate = row.created_at ? String(row.created_at).split('T')[0] : new Date().toISOString().split('T')[0];
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    businessId: row.business_id,
+    branchId: row.branch_id,
+    staffId: row.staff_id,
+    tenantId: row.account_id,
+    facilityId: row.branch_id,
+    clientId: row.client_id,
+    clientName: row.client_name,
+    title: row.title,
+    description: row.description || '',
+    pricingModel: row.pricing_model || 'Fixed',
+    currency: row.currency || 'DZD',
+    budget: Number(row.budget || 0),
+    estimatedHours: Number(row.estimated_hours || 0),
+    loggedHours: Number(row.logged_hours || 0),
+    stage: row.stage || 'InProgress',
+    startDate: createdDate,
+    deadline: row.deadline || createdDate,
+    deliverables: row.deliverables || [],
+    version: row.version != null ? Number(row.version) : undefined,
+    createdAt: row.created_at,
+  };
+};
+
+export const mapTimeLogFromDb = (row: any): TimeLogEntry => {
+  const createdDate = row.created_at ? String(row.created_at).split('T')[0] : new Date().toISOString().split('T')[0];
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    businessId: row.business_id,
+    branchId: row.branch_id,
+    staffId: row.staff_id,
+    tenantId: row.account_id,
+    facilityId: row.branch_id,
+    clientId: row.client_id,
+    clientName: row.client_name,
+    projectId: row.project_id,
+    projectTitle: row.project_title,
+    deliverableId: row.deliverable_id || undefined,
+    taskDescription: row.task_description,
+    durationSeconds: Number(row.duration_seconds || 0),
+    isBillable: row.is_billable ?? true,
+    isInvoiced: row.is_invoiced ?? false,
+    rateAtMoment: Number(row.rate_at_moment || 0),
+    currency: row.currency || 'DZD',
+    date: row.date || createdDate,
+    version: row.version != null ? Number(row.version) : undefined,
+    createdAt: row.created_at,
+  };
+};
+
+export const mapFreelanceInvoiceFromDb = (row: any): FreelanceInvoice => {
+  const createdDate = row.created_at ? String(row.created_at).split('T')[0] : new Date().toISOString().split('T')[0];
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    businessId: row.business_id,
+    branchId: row.branch_id,
+    staffId: row.staff_id,
+    tenantId: row.account_id,
+    facilityId: row.branch_id,
+    clientId: row.client_id,
+    clientName: row.client_name,
+    clientCompany: row.client_company || undefined,
+    clientEmail: row.client_email,
+    invoiceNumber: row.invoice_number,
+    currency: row.currency || 'DZD',
+    issueDate: row.issue_date || createdDate,
+    dueDate: row.due_date,
+    status: row.status || 'Sent',
+    items: row.items || [],
+    subtotal: Number(row.subtotal || 0),
+    taxPercent: Number(row.tax_percent || 0),
+    taxAmount: Number(row.tax_amount || 0),
+    totalAmount: Number(row.total_amount || 0),
+    paymentDetails: row.payment_details || undefined,
+    notes: row.notes || undefined,
+    paidAt: row.paid_at || undefined,
+    version: row.version != null ? Number(row.version) : undefined,
+    createdAt: row.created_at,
+  };
+};
+
+export const mapFreelanceProposalFromDb = (row: any): FreelanceProposal => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  clientName: row.client_name,
+  clientCompany: row.client_company || undefined,
+  clientEmail: row.client_email,
+  title: row.title,
+  overview: row.overview || '',
+  scopeItems: row.scope_items || [],
+  pricingModel: row.pricing_model || 'Fixed',
+  proposedBudget: Number(row.proposed_budget || row.amount || 0),
+  currency: row.currency || 'DZD',
+  estimatedTimelineWeeks: Number(row.estimated_timeline_weeks || 4),
+  validUntil: row.valid_until || '',
+  status: row.status || 'Pending',
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapFreelanceExpenseFromDb = (row: any): FreelanceExpense => {
+  const createdDate = row.created_at ? String(row.created_at).split('T')[0] : new Date().toISOString().split('T')[0];
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    businessId: row.business_id,
+    branchId: row.branch_id,
+    staffId: row.staff_id,
+    tenantId: row.account_id,
+    facilityId: row.branch_id,
+    vendor: row.vendor || 'Vendor',
+    description: row.description,
+    category: row.category || 'Software',
+    amount: Number(row.amount || 0),
+    currency: row.currency || 'DZD',
+    date: row.expense_date || row.date || createdDate,
+    isTaxDeductible: row.is_tax_deductible ?? true,
+    receiptUrl: undefined,
+    version: row.version != null ? Number(row.version) : undefined,
+    createdAt: row.created_at,
+  };
+};
+
 export const freelanceService = {
   async fetchClients(branchId: string, updatedAfter?: string | null): Promise<FreelanceClient[]> {
     const client = getSupabaseClient();
@@ -31,28 +188,7 @@ export const freelanceService = {
         return query;
       });
 
-      return data.map((row: any): FreelanceClient => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        name: row.name,
-        company: row.company || undefined,
-        email: row.email,
-        phone: row.phone || undefined,
-        currency: row.currency || 'DZD',
-        hourlyRate: Number(row.hourly_rate || 0),
-        status: row.status || 'ProjectBased',
-        monthlyRetainerHours: row.monthly_retainer_hours ? Number(row.monthly_retainer_hours) : undefined,
-        monthlyRetainerAmount: row.monthly_retainer_amount ? Number(row.monthly_retainer_amount) : undefined,
-        notes: row.notes || undefined,
-        lifetimeBilled: Number(row.lifetime_billed || 0),
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return data.map(mapFreelanceClientFromDb);
     } catch {
       return [];
     }
@@ -108,30 +244,7 @@ export const freelanceService = {
         return query;
       });
 
-      return data.map((row: any): FreelanceProject => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        clientId: row.client_id,
-        clientName: row.client_name,
-        title: row.title,
-        description: row.description || '',
-        pricingModel: row.pricing_model || 'Fixed',
-        currency: row.currency || 'DZD',
-        budget: Number(row.budget || 0),
-        estimatedHours: Number(row.estimated_hours || 0),
-        loggedHours: Number(row.logged_hours || 0),
-        stage: row.stage || 'InProgress',
-        startDate: row.created_at.split('T')[0],
-        deadline: row.deadline || row.created_at.split('T')[0],
-        deliverables: row.deliverables || [],
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return data.map(mapFreelanceProjectFromDb);
     } catch {
       return [];
     }
@@ -214,29 +327,7 @@ export const freelanceService = {
         return query;
       });
 
-      return data.map((row: any): TimeLogEntry => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        clientId: row.client_id,
-        clientName: row.client_name,
-        projectId: row.project_id,
-        projectTitle: row.project_title,
-        deliverableId: row.deliverable_id || undefined,
-        taskDescription: row.task_description,
-        durationSeconds: Number(row.duration_seconds || 0),
-        isBillable: row.is_billable ?? true,
-        isInvoiced: row.is_invoiced ?? false,
-        rateAtMoment: Number(row.rate_at_moment || 0),
-        currency: row.currency || 'DZD',
-        date: row.date || row.created_at.split('T')[0],
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return data.map(mapTimeLogFromDb);
     } catch {
       return [];
     }
@@ -293,34 +384,7 @@ export const freelanceService = {
         return query;
       });
 
-      return data.map((row: any): FreelanceInvoice => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        clientId: row.client_id,
-        clientName: row.client_name,
-        clientCompany: row.client_company || undefined,
-        clientEmail: row.client_email,
-        invoiceNumber: row.invoice_number,
-        currency: row.currency || 'DZD',
-        issueDate: row.issue_date || row.created_at.split('T')[0],
-        dueDate: row.due_date,
-        status: row.status || 'Sent',
-        items: row.items || [],
-        subtotal: Number(row.subtotal || 0),
-        taxPercent: Number(row.tax_percent || 0),
-        taxAmount: Number(row.tax_amount || 0),
-        totalAmount: Number(row.total_amount || 0),
-        paymentDetails: row.payment_details || undefined,
-        notes: row.notes || undefined,
-        paidAt: row.paid_at || undefined,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return data.map(mapFreelanceInvoiceFromDb);
     } catch {
       return [];
     }
@@ -382,29 +446,7 @@ export const freelanceService = {
         return query;
       });
 
-      return data.map((row: any): FreelanceProposal => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        clientName: row.client_name,
-        clientCompany: row.client_company || undefined,
-        clientEmail: row.client_email,
-        title: row.title,
-        overview: row.overview || '',
-        scopeItems: row.scope_items || [],
-        pricingModel: row.pricing_model || 'Fixed',
-        proposedBudget: Number(row.proposed_budget || row.amount || 0),
-        currency: row.currency || 'DZD',
-        estimatedTimelineWeeks: Number(row.estimated_timeline_weeks || 4),
-        validUntil: row.valid_until || '',
-        status: row.status || 'Pending',
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return data.map(mapFreelanceProposalFromDb);
     } catch {
       return [];
     }
@@ -462,25 +504,7 @@ export const freelanceService = {
         return query;
       });
 
-      return data.map((row: any): FreelanceExpense => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        vendor: row.vendor || 'Vendor',
-        description: row.description,
-        category: row.category || 'Software',
-        amount: Number(row.amount || 0),
-        currency: row.currency || 'DZD',
-        date: row.expense_date || row.date || row.created_at.split('T')[0],
-        isTaxDeductible: row.is_tax_deductible ?? true,
-        receiptUrl: undefined,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return data.map(mapFreelanceExpenseFromDb);
     } catch {
       return [];
     }

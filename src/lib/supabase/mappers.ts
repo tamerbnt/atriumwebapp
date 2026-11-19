@@ -90,6 +90,7 @@ export const mapBusinessFromDb = (row: DbBusiness): Business => ({
   phone: row.phone || undefined,
   logoUrl: row.logo_url || undefined,
   isActive: row.is_active,
+  version: (row as any).version != null ? Number((row as any).version) : undefined,
   createdAt: row.created_at,
 });
 
@@ -103,6 +104,7 @@ export const mapBranchFromDb = (row: DbBranch): Branch => ({
   phone: row.phone || undefined,
   isMainBranch: row.is_main_branch,
   isActive: row.is_active,
+  version: (row as any).version != null ? Number((row as any).version) : undefined,
   createdAt: row.created_at,
 });
 
@@ -115,6 +117,7 @@ export const mapDeviceFromDb = (row: DbDevice): Device => ({
   isActive: row.is_active,
   lastSeenAt: row.last_seen_at || new Date().toISOString(),
   registeredAt: row.registered_at,
+  version: (row as any).version != null ? Number((row as any).version) : undefined,
 });
 
 export const mapStaffFromDb = (row: any, facilityId?: string): StaffMember => {

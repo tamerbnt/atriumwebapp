@@ -11,6 +11,45 @@ import type {
   ScheduleEvent,
 } from '../../../types/index';
 
+export const mapMembershipPlanFromDb = (row: any): MembershipPlan => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  name: row.name,
+  description: row.description || '',
+  durationDays: Number(row.duration_days || 30),
+  price: { amount: Number(row.price_dzd || 0), currency: row.currency || 'DZD' },
+  isActive: row.is_active ?? true,
+  sessionsPerWeek: Number(row.session_quota ?? 0),
+  isWalkIn: false,
+  isPersonalTraining: false,
+  genderRule: 0,
+  version: row.version != null ? Number(row.version) : undefined,
+});
+
+export const mapScheduleEventFromDb = (row: any): ScheduleEvent => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id || undefined,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  title: row.title,
+  trainerOrStaff: row.coach_name || '',
+  roomOrArea: row.room_name || '',
+  dayOfWeek: Number(row.day_of_week ?? 0),
+  startTime: row.start_time,
+  endTime: row.end_time,
+  capacity: Number(row.capacity || 20),
+  enrolledCount: Number(row.enrolled_count || 0),
+  category: row.category || 'Class',
+  version: row.version != null ? Number(row.version) : undefined,
+});
+
 export const memberService = {
   async fetchMembers(branchId: string, updatedAfter?: string | null): Promise<Member[]> {
     const client = getSupabaseClient();
@@ -206,24 +245,7 @@ export const memberService = {
         .order('id', { ascending: true })
         .range(from, to)
     );
-    return rows.map((row: any): MembershipPlan => ({
-      id: row.id,
-      accountId: row.account_id,
-      businessId: row.business_id,
-      branchId: row.branch_id,
-      tenantId: row.account_id,
-      facilityId: row.branch_id,
-      name: row.name,
-      description: row.description || '',
-      durationDays: Number(row.duration_days || 30),
-      price: { amount: Number(row.price_dzd || 0), currency: row.currency || 'DZD' },
-      isActive: row.is_active ?? true,
-      sessionsPerWeek: Number(row.session_quota ?? 0),
-      isWalkIn: false,
-      isPersonalTraining: false,
-      genderRule: 0,
-      version: row.version != null ? Number(row.version) : undefined,
-    }));
+    return rows.map(mapMembershipPlanFromDb);
   },
 
   async upsertPlan(plan: MembershipPlan, ctx: { accountId: string; businessId: string; branchId: string }) {
@@ -260,25 +282,7 @@ export const memberService = {
         .order('id', { ascending: true })
         .range(from, to)
     );
-    return rows.map((row: any): ScheduleEvent => ({
-      id: row.id,
-      accountId: row.account_id,
-      businessId: row.business_id || undefined,
-      branchId: row.branch_id,
-      staffId: row.staff_id || undefined,
-      tenantId: row.account_id,
-      facilityId: row.branch_id,
-      title: row.title,
-      trainerOrStaff: row.coach_name || '',
-      roomOrArea: row.room_name || '',
-      dayOfWeek: Number(row.day_of_week ?? 0),
-      startTime: row.start_time,
-      endTime: row.end_time,
-      capacity: Number(row.capacity || 20),
-      enrolledCount: Number(row.enrolled_count || 0),
-      category: row.category || 'Class',
-      version: row.version != null ? Number(row.version) : undefined,
-    }));
+    return rows.map(mapScheduleEventFromDb);
   },
 
   async upsertScheduleEvent(

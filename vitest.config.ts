@@ -10,6 +10,7 @@ export default defineConfig({
     environment: 'node',
     include: [
       'src/atrium/__tests__/**/*.test.{ts,tsx}',
+      'src/atrium/components/EmptyState/EmptyState.test.tsx',
       'src/lib/supabase/__tests__/**/*.test.ts',
     ],
   },

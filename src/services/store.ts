@@ -210,13 +210,62 @@ import {
   emitConcurrencyResolution,
   mapMemberFromDb,
   mapLeadFromDb,
+  mapBusinessFromDb,
+  mapBranchFromDb,
+  mapDeviceFromDb,
   mapStaffFromDb,
   mapAttendanceLogFromDb,
   mapSalaryAdvanceFromDb,
   mapPayrollRunFromDb,
   mapPayrollSlipFromDb,
   mapProductFromDb,
+  mapSaleFromDb,
   mapAppointmentFromDb,
+  mapScheduleEventFromDb,
+  mapParkedOrderFromDb,
+  mapStockMovementFromDb,
+  mapSalonServiceFromDb,
+  mapSalonWorkstationFromDb,
+  mapStylistPayoutFromDb,
+  mapFreelanceClientFromDb,
+  mapFreelanceProjectFromDb,
+  mapTimeLogFromDb,
+  mapFreelanceInvoiceFromDb,
+  mapFreelanceProposalFromDb,
+  mapFreelanceExpenseFromDb,
+  mapRentalUnitFromDb,
+  mapRentalRenterFromDb,
+  mapRentalBookingFromDb,
+  mapRentalDepositFromDb,
+  mapEduCourseFromDb,
+  mapEduClassroomFromDb,
+  mapEduCohortFromDb,
+  mapEduStudentFromDb,
+  mapEduEnrollmentFromDb,
+  mapEduSessionFromDb,
+  mapEduAttendanceFromDb,
+  mapEduGradeFromDb,
+  mapEduCertificateFromDb,
+  mapEduAdmissionFromDb,
+  mapPmClientFromDb,
+  mapPmProjectFromDb,
+  mapPmMilestoneFromDb,
+  mapPmPrintOrderFromDb,
+  mapPmBatDeliverableFromDb,
+  mapPmTalentFromDb,
+  mapPmMissionFromDb,
+  mapPmAttendanceFromDb,
+  mapPmExpenseFromDb,
+  mapPmPayrollBatchFromDb,
+  mapPmCcpSlipFromDb,
+  mapPmEquipmentStockFromDb,
+  mapWarehouseFromDb,
+  mapB2bClientFromDb,
+  mapB2bSupplierFromDb,
+  mapTradingProductFromDb,
+  mapCommercialDocFromDb,
+  mapPurchaseDocFromDb,
+  mapStockVoucherFromDb,
   runWithConcurrency,
   getActiveDeviceId,
   toValidUuid,
@@ -2156,6 +2205,10 @@ function getActiveCategoryForBranch(branchId: string): BusinessCategory {
   return biz?.category || 'membership_session';
 }
 
+function isTradingCategory(): boolean {
+  return getActiveCategoryForBranch(globalState.currentBranchId) === 'trading_commercial';
+}
+
 function pruneDeletedRecords(
   state: AppState,
   deletedIdsByTable?: Record<string, string[]>
@@ -2167,6 +2220,7 @@ function pruneDeletedRecords(
   const tableToStateKey: Record<string, keyof AppState> = {
     businesses: 'businesses',
     branches: 'branches',
+    devices: 'devices',
     staff: 'staff',
     staff_attendance_logs: 'staffAttendanceLogs',
     staff_salary_advances: 'staffSalaryAdvances',
@@ -2174,6 +2228,7 @@ function pruneDeletedRecords(
     staff_payroll_slips: 'staffPayrollSlips',
     gym_members: 'members',
     gym_registration_leads: 'leads',
+    gym_schedule_events: 'schedule',
     salon_appointments: 'appointments',
     salon_services: 'servicesCatalog',
     salon_workstations: 'salonWorkstations',
@@ -2213,6 +2268,7 @@ function pruneDeletedRecords(
     pm_attendances: 'pmAttendances',
     pm_expenses: 'pmExpenses',
     pm_payroll_batches: 'pmPayrollBatches',
+    pm_ccp_slips: 'pmCcpSlips',
     pm_equipment_stock: 'pmEquipmentStock',
     trading_warehouses: 'warehouses',
     trading_b2b_clients: 'b2bClients',
@@ -3018,7 +3074,7 @@ export function deleteMemberAction(id: string) {
   });
 
   if (isSupabaseConfigured()) {
-    memberService.deleteMember(id).catch((err) => {
+    memberService.deleteMember(id, globalState.currentUser?.id).catch((err) => {
       console.warn('[store] Failed to delete member in Supabase:', err);
     });
   }
@@ -3267,7 +3323,7 @@ export function validateBackupSnapshot(
   };
 }
 
-function applyResolvedRowToSlice(
+export function applyResolvedRowToSlice(
   table: string,
   recordId: string,
   row: Record<string, any> | null,
@@ -3281,99 +3337,45 @@ function applyResolvedRowToSlice(
   ): T[] => {
     let found = false;
     const mappedItem = mapper ? mapper(row) : null;
+    const cleanMapped: Record<string, any> = {};
+    if (mappedItem) {
+      for (const [k, v] of Object.entries(mappedItem as Record<string, any>)) {
+        if (v !== undefined && !(typeof v === 'number' && Number.isNaN(v))) {
+          cleanMapped[k] = v;
+        }
+      }
+    }
     const next = list.map((item) => {
       if (toValidUuid(item.id) !== toValidUuid(recordId) && item.id !== recordId) return item;
       found = true;
       if (mappedItem) {
-        return { ...item, ...mappedItem, id: item.id, version: resolvedVersion };
+        return {
+          ...item,
+          ...cleanMapped,
+          id: item.id,
+          version: Number(row[versionCol] ?? resolvedVersion),
+        };
       }
-      return { ...item, version: resolvedVersion };
+      return { ...item, version: Number(row[versionCol] ?? resolvedVersion) };
     });
     return found ? next : list;
   };
 
   switch (table) {
+    case 'businesses':
+      return { businesses: patchList(globalState.businesses, mapBusinessFromDb) };
+    case 'branches':
+      return { branches: patchList(globalState.branches, mapBranchFromDb) };
+    case 'devices':
+      return { devices: patchList(globalState.devices, mapDeviceFromDb) };
     case 'gym_members':
       return { members: patchList(globalState.members, mapMemberFromDb) };
-    case 'staff':
-      return { staff: patchList(globalState.staff, (r) => mapStaffFromDb(r)) };
-    case 'pos_products':
-      return { products: patchList(globalState.products, mapProductFromDb) };
-    case 'salon_appointments':
-      return { appointments: patchList(globalState.appointments, mapAppointmentFromDb) };
-    case 'freelance_clients':
-      return {
-        freelanceClients: patchList(globalState.freelanceClients, (r) => ({
-          ...globalState.freelanceClients.find((x) => toValidUuid(x.id) === toValidUuid(recordId))!,
-          fullName: r.full_name ?? r.name,
-          company: r.company ?? undefined,
-          email: r.email ?? undefined,
-          phone: r.phone ?? undefined,
-          version: Number(r[versionCol] ?? resolvedVersion),
-        })),
-      };
-    case 'freelance_projects':
-      return {
-        freelanceProjects: patchList(globalState.freelanceProjects, (r) => ({
-          ...globalState.freelanceProjects.find((x) => toValidUuid(x.id) === toValidUuid(recordId))!,
-          title: r.title,
-          status: r.status,
-          version: Number(r[versionCol] ?? resolvedVersion),
-        })),
-      };
-    case 'freelance_invoices':
-      return {
-        freelanceInvoices: patchList(globalState.freelanceInvoices, (r) => ({
-          ...globalState.freelanceInvoices.find((x) => toValidUuid(x.id) === toValidUuid(recordId))!,
-          status: r.status,
-          totalAmount: Number(r.total_amount ?? 0),
-          version: Number(r[versionCol] ?? resolvedVersion),
-        })),
-      };
-    case 'rental_units':
-      return { rentableUnits: patchList(globalState.rentableUnits) };
-    case 'rental_renters':
-      return { rentalRenters: patchList(globalState.rentalRenters) };
-    case 'rental_bookings':
-      return { rentalBookings: patchList(globalState.rentalBookings) };
-    case 'rental_security_deposits':
-      return { securityDeposits: patchList(globalState.securityDeposits) };
-    case 'edu_courses':
-      return { eduCourses: patchList(globalState.eduCourses) };
-    case 'edu_cohorts':
-      return { eduCohorts: patchList(globalState.eduCohorts) };
-    case 'edu_students':
-      return { eduStudents: patchList(globalState.eduStudents) };
-    case 'pm_clients':
-      return { pmClients: patchList(globalState.pmClients) };
-    case 'pm_projects':
-      return { pmProjects: patchList(globalState.pmProjects) };
-    case 'pm_print_orders':
-      return { pmPrintOrders: patchList(globalState.pmPrintOrders) };
-    case 'pm_bat_deliverables':
-      return { pmBatDeliverables: patchList(globalState.pmBatDeliverables) };
-    case 'pm_talents':
-      return { pmTalents: patchList(globalState.pmTalents) };
-    case 'pm_equipment_stock':
-      return { pmEquipmentStock: patchList(globalState.pmEquipmentStock) };
-    case 'trading_b2b_clients':
-      return { b2bClients: patchList(globalState.b2bClients) };
-    case 'trading_commercial_docs':
-      return { commercialDocs: patchList(globalState.commercialDocs) };
-    case 'trading_purchase_docs':
-      return { purchaseDocs: patchList(globalState.purchaseDocs) };
     case 'gym_registration_leads':
       return { leads: patchList(globalState.leads, mapLeadFromDb) };
     case 'gym_schedule_events':
-      return { schedule: patchList(globalState.schedule) };
-    case 'pos_sales':
-      return { sales: patchList(globalState.sales) };
-    case 'pos_parked_orders':
-      return { parkedOrders: patchList(globalState.parkedOrders) };
-    case 'salon_services':
-      return { servicesCatalog: patchList(globalState.servicesCatalog) };
-    case 'salon_stylist_payouts':
-      return { stylistPayouts: patchList(globalState.stylistPayouts) };
+      return { schedule: patchList(globalState.schedule, mapScheduleEventFromDb) };
+    case 'staff':
+      return { staff: patchList(globalState.staff, (r) => mapStaffFromDb(r)) };
     case 'staff_attendance_logs':
       return { staffAttendanceLogs: patchList(globalState.staffAttendanceLogs, mapAttendanceLogFromDb) };
     case 'staff_salary_advances':
@@ -3382,38 +3384,109 @@ function applyResolvedRowToSlice(
       return { staffPayrollRuns: patchList(globalState.staffPayrollRuns, mapPayrollRunFromDb) };
     case 'staff_payroll_slips':
       return { staffPayrollSlips: patchList(globalState.staffPayrollSlips, mapPayrollSlipFromDb) };
+    case 'pos_products':
+      return { products: patchList(globalState.products, mapProductFromDb) };
+    case 'pos_sales':
+      return {
+        sales: patchList(globalState.sales, (r) => {
+          const mapped = mapSaleFromDb(r);
+          if (!Array.isArray(r.items)) {
+            const { items: _omit, ...rest } = mapped;
+            return rest as Sale;
+          }
+          return mapped;
+        }),
+      };
+    case 'pos_parked_orders':
+      return { parkedOrders: patchList(globalState.parkedOrders, mapParkedOrderFromDb) };
+    case 'pos_stock_movements':
+      return { stockMovements: patchList(globalState.stockMovements || [], mapStockMovementFromDb) };
+    case 'salon_appointments':
+      return { appointments: patchList(globalState.appointments, mapAppointmentFromDb) };
+    case 'salon_services':
+      return { servicesCatalog: patchList(globalState.servicesCatalog, mapSalonServiceFromDb) };
+    case 'salon_workstations':
+      return { salonWorkstations: patchList(globalState.salonWorkstations || [], mapSalonWorkstationFromDb) };
+    case 'salon_stylist_payouts':
+      return { stylistPayouts: patchList(globalState.stylistPayouts, mapStylistPayoutFromDb) };
+    case 'freelance_clients':
+      return { freelanceClients: patchList(globalState.freelanceClients, mapFreelanceClientFromDb) };
+    case 'freelance_projects':
+      return { freelanceProjects: patchList(globalState.freelanceProjects, mapFreelanceProjectFromDb) };
     case 'freelance_time_logs':
-      return { timeLogs: patchList(globalState.timeLogs) };
+      return { timeLogs: patchList(globalState.timeLogs, mapTimeLogFromDb) };
+    case 'freelance_invoices':
+      return { freelanceInvoices: patchList(globalState.freelanceInvoices, mapFreelanceInvoiceFromDb) };
     case 'freelance_proposals':
-      return { freelanceProposals: patchList(globalState.freelanceProposals) };
+      return { freelanceProposals: patchList(globalState.freelanceProposals, mapFreelanceProposalFromDb) };
     case 'freelance_expenses':
-      return { freelanceExpenses: patchList(globalState.freelanceExpenses) };
+      return { freelanceExpenses: patchList(globalState.freelanceExpenses, mapFreelanceExpenseFromDb) };
+    case 'rental_units':
+      return { rentableUnits: patchList(globalState.rentableUnits, mapRentalUnitFromDb) };
+    case 'rental_renters':
+      return { rentalRenters: patchList(globalState.rentalRenters, mapRentalRenterFromDb) };
+    case 'rental_bookings':
+      return { rentalBookings: patchList(globalState.rentalBookings, mapRentalBookingFromDb) };
+    case 'rental_security_deposits':
+      return { securityDeposits: patchList(globalState.securityDeposits, mapRentalDepositFromDb) };
+    case 'edu_courses':
+      return { eduCourses: patchList(globalState.eduCourses, mapEduCourseFromDb) };
     case 'edu_classrooms':
-      return { eduClassrooms: patchList(globalState.eduClassrooms) };
+      return { eduClassrooms: patchList(globalState.eduClassrooms, mapEduClassroomFromDb) };
+    case 'edu_cohorts':
+      return { eduCohorts: patchList(globalState.eduCohorts, mapEduCohortFromDb) };
+    case 'edu_students':
+      return { eduStudents: patchList(globalState.eduStudents, mapEduStudentFromDb) };
     case 'edu_enrollments':
-      return { eduEnrollments: patchList(globalState.eduEnrollments) };
+      return { eduEnrollments: patchList(globalState.eduEnrollments, mapEduEnrollmentFromDb) };
     case 'edu_sessions':
-      return { eduSessions: patchList(globalState.eduSessions) };
+      return { eduSessions: patchList(globalState.eduSessions, mapEduSessionFromDb) };
     case 'edu_attendance':
-      return { eduAttendance: patchList(globalState.eduAttendance) };
+      return { eduAttendance: patchList(globalState.eduAttendance, mapEduAttendanceFromDb) };
     case 'edu_grades':
-      return { eduGrades: patchList(globalState.eduGrades) };
+      return { eduGrades: patchList(globalState.eduGrades, mapEduGradeFromDb) };
     case 'edu_certificates':
-      return { eduCertificates: patchList(globalState.eduCertificates) };
+      return { eduCertificates: patchList(globalState.eduCertificates, mapEduCertificateFromDb) };
     case 'edu_admissions':
-      return { eduAdmissions: patchList(globalState.eduAdmissions) };
+      return { eduAdmissions: patchList(globalState.eduAdmissions, mapEduAdmissionFromDb) };
+    case 'pm_clients':
+      return { pmClients: patchList(globalState.pmClients, mapPmClientFromDb) };
+    case 'pm_projects':
+      return { pmProjects: patchList(globalState.pmProjects, mapPmProjectFromDb) };
     case 'pm_milestones':
-      return { pmMilestones: patchList(globalState.pmMilestones) };
+      return { pmMilestones: patchList(globalState.pmMilestones, mapPmMilestoneFromDb) };
+    case 'pm_print_orders':
+      return { pmPrintOrders: patchList(globalState.pmPrintOrders, mapPmPrintOrderFromDb) };
+    case 'pm_bat_deliverables':
+      return { pmBatDeliverables: patchList(globalState.pmBatDeliverables, mapPmBatDeliverableFromDb) };
+    case 'pm_talents':
+      return { pmTalents: patchList(globalState.pmTalents, mapPmTalentFromDb) };
     case 'pm_missions':
-      return { pmMissions: patchList(globalState.pmMissions) };
+      return { pmMissions: patchList(globalState.pmMissions, mapPmMissionFromDb) };
+    case 'pm_attendances':
+      return { pmAttendances: patchList(globalState.pmAttendances, mapPmAttendanceFromDb) };
     case 'pm_expenses':
-      return { pmExpenses: patchList(globalState.pmExpenses) };
-    case 'trading_b2b_suppliers':
-      return { b2bSuppliers: patchList(globalState.b2bSuppliers) };
+      return { pmExpenses: patchList(globalState.pmExpenses, mapPmExpenseFromDb) };
+    case 'pm_payroll_batches':
+      return { pmPayrollBatches: patchList(globalState.pmPayrollBatches, mapPmPayrollBatchFromDb) };
+    case 'pm_ccp_slips':
+      return { pmCcpSlips: patchList(globalState.pmCcpSlips, mapPmCcpSlipFromDb) };
+    case 'pm_equipment_stock':
+      return { pmEquipmentStock: patchList(globalState.pmEquipmentStock, mapPmEquipmentStockFromDb) };
     case 'trading_warehouses':
-      return { warehouses: patchList(globalState.warehouses) };
+      return { warehouses: patchList(globalState.warehouses, mapWarehouseFromDb) };
+    case 'trading_b2b_clients':
+      return { b2bClients: patchList(globalState.b2bClients, mapB2bClientFromDb) };
+    case 'trading_b2b_suppliers':
+      return { b2bSuppliers: patchList(globalState.b2bSuppliers, mapB2bSupplierFromDb) };
+    case 'trading_products':
+      return { products: patchList(globalState.products, mapTradingProductFromDb) };
+    case 'trading_commercial_docs':
+      return { commercialDocs: patchList(globalState.commercialDocs, mapCommercialDocFromDb) };
+    case 'trading_purchase_docs':
+      return { purchaseDocs: patchList(globalState.purchaseDocs, mapPurchaseDocFromDb) };
     case 'trading_stock_vouchers':
-      return { stockVouchers: patchList(globalState.stockVouchers) };
+      return { stockVouchers: patchList(globalState.stockVouchers, mapStockVoucherFromDb) };
     default:
       return {};
   }
@@ -3920,7 +3993,7 @@ function createAtriumActions() {
     });
 
     if (isSupabaseConfigured()) {
-      memberService.deleteMember(id).catch((err) => {
+      memberService.deleteMember(id, globalState.currentUser?.id).catch((err) => {
         console.warn('[store] Failed to delete member in Supabase:', err);
       });
     }
@@ -4292,16 +4365,19 @@ function createAtriumActions() {
 
       const returnedProductIds = new Set(returnMovements.map((m) => m.productId));
       const touchedProducts = updatedProducts.filter((p) => returnedProductIds.has(p.id));
+      const tradingMode = isTradingCategory();
       if (touchedProducts.length > 0) {
         runWithConcurrency(
-          touchedProducts.map((p) => () => posService.upsertProduct(p)),
+          touchedProducts.map((p) => () =>
+            tradingMode ? tradingService.upsertProduct(p) : posService.upsertProduct(p)
+          ),
           4
         ).catch(() => {});
       }
       if (returnMovements.length > 0) {
         runWithConcurrency(
-          returnMovements.map((mv) => () =>
-            syncCoordinator.mutateOrQueueUpsert('pos_stock_movements', {
+          returnMovements.map((mv) => () => {
+            const mvPayload = {
               id: toValidUuid(mv.id),
               account_id: toValidUuid(globalState.account.id),
               business_id: toValidUuid(globalState.currentBusinessId),
@@ -4316,8 +4392,14 @@ function createAtriumActions() {
               previous_stock: mv.previousStock,
               new_stock: mv.newStock,
               reason: mv.reason || null,
-            })
-          ),
+            };
+            return syncCoordinator.mutateOrQueueUpsert('pos_stock_movements', mvPayload, {
+              expectedVersion: mv.version,
+              entityType: 'StockMovement',
+              entityLabel: mv.productName,
+              localData: mvPayload,
+            });
+          }),
           4
         ).catch(() => {});
       }
@@ -4367,7 +4449,10 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       const targetProd = updatedProducts.find((p) => p.id === productId);
       if (targetProd) {
-        posService.upsertProduct(targetProd).catch(() => {});
+        (isTradingCategory()
+          ? tradingService.upsertProduct(targetProd)
+          : posService.upsertProduct(targetProd)
+        ).catch(() => {});
       }
       if (movement) {
         const mv: StockMovement = movement;
@@ -4379,22 +4464,28 @@ function createAtriumActions() {
             : mv.type === 'Return'
             ? 'refund'
             : 'adjustment';
+        const mvPayload = {
+          id: toValidUuid(mv.id),
+          account_id: toValidUuid(globalState.account.id),
+          business_id: toValidUuid(globalState.currentBusinessId),
+          branch_id: toValidUuid(globalState.currentBranchId),
+          staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
+          updated_by_staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
+          device_id: getActiveDeviceId(),
+          product_id: toValidUuid(mv.productId),
+          product_name: mv.productName,
+          movement_type: dbMovementType,
+          quantity: mv.quantity,
+          previous_stock: mv.previousStock,
+          new_stock: mv.newStock,
+          reason: mv.reason || null,
+        };
         syncCoordinator
-          .mutateOrQueueUpsert('pos_stock_movements', {
-            id: toValidUuid(mv.id),
-            account_id: toValidUuid(globalState.account.id),
-            business_id: toValidUuid(globalState.currentBusinessId),
-            branch_id: toValidUuid(globalState.currentBranchId),
-            staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
-            updated_by_staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
-            device_id: getActiveDeviceId(),
-            product_id: toValidUuid(mv.productId),
-            product_name: mv.productName,
-            movement_type: dbMovementType,
-            quantity: mv.quantity,
-            previous_stock: mv.previousStock,
-            new_stock: mv.newStock,
-            reason: mv.reason || null,
+          .mutateOrQueueUpsert('pos_stock_movements', mvPayload, {
+            expectedVersion: mv.version,
+            entityType: 'StockMovement',
+            entityLabel: mv.productName,
+            localData: mvPayload,
           })
           .catch(() => {});
       }
@@ -4430,7 +4521,10 @@ function createAtriumActions() {
 
     const target = updatedProducts.find((p) => p.id === productId);
     if (target && isSupabaseConfigured()) {
-      posService.upsertProduct(target).catch(() => {});
+      (isTradingCategory()
+        ? tradingService.upsertProduct(target)
+        : posService.upsertProduct(target)
+      ).catch(() => {});
     }
   };
 
@@ -4443,7 +4537,10 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      posService.deleteProduct(productId, globalState.currentUser?.id).catch(() => {});
+      (isTradingCategory()
+        ? tradingService.deleteProduct(productId, globalState.currentUser?.id)
+        : posService.deleteProduct(productId, globalState.currentUser?.id)
+      ).catch(() => {});
     }
 
     showToast({
@@ -5299,8 +5396,13 @@ function createAtriumActions() {
     };
     notify();
     if (isSupabaseConfigured()) {
+      const tradingMode = isTradingCategory();
       runWithConcurrency(
-        productIds.map((id) => () => posService.deleteProduct(id, globalState.currentUser?.id)),
+        productIds.map((id) => () =>
+          tradingMode
+            ? tradingService.deleteProduct(id, globalState.currentUser?.id)
+            : posService.deleteProduct(id, globalState.currentUser?.id)
+        ),
         4
       ).catch(() => {});
     }
@@ -5350,13 +5452,16 @@ function createAtriumActions() {
 
     if (isSupabaseConfigured()) {
       const restocked = updated.filter((p) => idSet.has(p.id));
+      const tradingMode = isTradingCategory();
       runWithConcurrency(
-        restocked.map((p) => () => posService.upsertProduct(p)),
+        restocked.map((p) => () =>
+          tradingMode ? tradingService.upsertProduct(p) : posService.upsertProduct(p)
+        ),
         4
       ).catch(() => {});
       runWithConcurrency(
-        newMovements.map((mv) => () =>
-          syncCoordinator.mutateOrQueueUpsert('pos_stock_movements', {
+        newMovements.map((mv) => () => {
+          const mvPayload = {
             id: toValidUuid(mv.id),
             account_id: toValidUuid(globalState.account.id),
             business_id: toValidUuid(globalState.currentBusinessId),
@@ -5371,8 +5476,14 @@ function createAtriumActions() {
             previous_stock: mv.previousStock,
             new_stock: mv.newStock,
             reason: mv.reason || null,
-          })
-        ),
+          };
+          return syncCoordinator.mutateOrQueueUpsert('pos_stock_movements', mvPayload, {
+            expectedVersion: mv.version,
+            entityType: 'StockMovement',
+            entityLabel: mv.productName,
+            localData: mvPayload,
+          });
+        }),
         4
       ).catch(() => {});
     }
@@ -6016,20 +6127,26 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
+      const devPayload = {
+        id: toValidUuid(newDevice.id),
+        account_id: toValidUuid(newDevice.accountId),
+        business_id: toValidUuid(globalState.currentBusinessId),
+        branch_id: toValidUuid(newDevice.branchId),
+        hardware_id: newDevice.hardwareId,
+        label: newDevice.label,
+        is_active: true,
+        last_seen_at: newDevice.lastSeenAt,
+        registered_at: newDevice.registeredAt,
+        updated_by_staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
+        device_id: getActiveDeviceId(),
+        updated_at: new Date().toISOString(),
+      };
       syncCoordinator
-        .mutateOrQueueUpsert('devices', {
-          id: toValidUuid(newDevice.id),
-          account_id: toValidUuid(newDevice.accountId),
-          business_id: toValidUuid(globalState.currentBusinessId),
-          branch_id: toValidUuid(newDevice.branchId),
-          hardware_id: newDevice.hardwareId,
-          label: newDevice.label,
-          is_active: true,
-          last_seen_at: newDevice.lastSeenAt,
-          registered_at: newDevice.registeredAt,
-          updated_by_staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
-          device_id: getActiveDeviceId(),
-          updated_at: new Date().toISOString(),
+        .mutateOrQueueUpsert('devices', devPayload, {
+          expectedVersion: newDevice.version,
+          entityType: 'Device',
+          entityLabel: newDevice.label,
+          localData: devPayload,
         })
         .catch(() => {});
     }
@@ -6129,7 +6246,10 @@ function createAtriumActions() {
     });
 
     if (isSupabaseConfigured()) {
-      posService.upsertProduct(newProduct).catch((err) => {
+      (isTradingCategory()
+        ? tradingService.upsertProduct(newProduct)
+        : posService.upsertProduct(newProduct)
+      ).catch((err) => {
         console.warn('[store] Failed to save product to Supabase:', err);
       });
     }
@@ -6727,7 +6847,7 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      freelanceService.deleteClient(clientId).catch((err) => {
+      freelanceService.deleteClient(clientId, globalState.currentUser?.id).catch((err) => {
         console.warn('[store] Supabase deleteClient notice:', err);
       });
     }
@@ -6785,7 +6905,7 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      freelanceService.deleteProject(projectId).catch((err) => {
+      freelanceService.deleteProject(projectId, globalState.currentUser?.id).catch((err) => {
         console.warn('[store] Supabase deleteProject notice:', err);
       });
     }
@@ -7041,7 +7161,7 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      freelanceService.deleteTimeLog(id).catch((err) => {
+      freelanceService.deleteTimeLog(id, globalState.currentUser?.id).catch((err) => {
         console.warn('[store] Supabase deleteTimeLog notice:', err);
       });
     }
@@ -7245,7 +7365,7 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      freelanceService.deleteInvoice(invoiceId).catch((err) => {
+      freelanceService.deleteInvoice(invoiceId, globalState.currentUser?.id).catch((err) => {
         console.warn('[store] Supabase deleteInvoice notice:', err);
       });
       loggedIds.forEach((tId) => {
@@ -7307,7 +7427,7 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      freelanceService.deleteProposal(id).catch((err) => {
+      freelanceService.deleteProposal(id, globalState.currentUser?.id).catch((err) => {
         console.warn('[store] Supabase deleteProposal notice:', err);
       });
     }
@@ -7603,7 +7723,7 @@ function createAtriumActions() {
 
     if (isSupabaseConfigured()) {
       rentalService
-        .deleteBooking(id)
+        .deleteBooking(id, globalState.currentUser?.id)
         .then((res) => {
           showToast({
             type: 'info',
@@ -7799,7 +7919,7 @@ function createAtriumActions() {
 
     if (isSupabaseConfigured()) {
       rentalService
-        .deleteUnit(id)
+        .deleteUnit(id, globalState.currentUser?.id)
         .then((res) => {
           showToast({
             type: 'info',
@@ -7917,7 +8037,7 @@ function createAtriumActions() {
 
     if (isSupabaseConfigured()) {
       rentalService
-        .deleteRenter(id)
+        .deleteRenter(id, globalState.currentUser?.id)
         .then((res) => {
           showToast({
             type: 'info',
@@ -9087,13 +9207,19 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       const updatedAtt = globalState.pmAttendances.find((a) => a.id === attendanceId);
       if (updatedAtt) {
+        const patch = {
+          status: updatedAtt.status,
+          minutes_late: updatedAtt.minutesLate,
+          shift_rating: updatedAtt.shiftRating,
+          gross_payable_dzd: updatedAtt.grossPayableDzd,
+          check_in_time: updatedAtt.checkInTime || null,
+        };
         syncCoordinator
-          .mutateOrQueueUpdate('pm_attendances', attendanceId, {
-            status: updatedAtt.status,
-            minutes_late: updatedAtt.minutesLate,
-            shift_rating: updatedAtt.shiftRating,
-            gross_payable_dzd: updatedAtt.grossPayableDzd,
-            check_in_time: updatedAtt.checkInTime || null,
+          .mutateOrQueueUpdate('pm_attendances', attendanceId, patch, {
+            expectedVersion: updatedAtt.version,
+            entityType: 'PMAttendance',
+            entityLabel: updatedAtt.talentName,
+            localData: patch,
           })
           .catch(() => {});
       }
@@ -9277,6 +9403,7 @@ function createAtriumActions() {
   };
 
   const markPmCcpSlipPrinted = (slipId: string) => {
+    const targetSlip = (globalState.pmCcpSlips || []).find((s) => s.id === slipId);
     const printedAt = new Date().toISOString();
     globalState = {
       ...globalState,
@@ -9286,10 +9413,16 @@ function createAtriumActions() {
     };
     notify();
     if (isSupabaseConfigured()) {
+      const patch = {
+        is_printed: true,
+        printed_at: printedAt,
+      };
       syncCoordinator
-        .mutateOrQueueUpdate('pm_ccp_slips', slipId, {
-          is_printed: true,
-          printed_at: printedAt,
+        .mutateOrQueueUpdate('pm_ccp_slips', slipId, patch, {
+          expectedVersion: targetSlip?.version,
+          entityType: 'PMCcpSlip',
+          entityLabel: targetSlip?.beneficiaryName,
+          localData: patch,
         })
         .catch(() => {});
     }
@@ -9661,13 +9794,19 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       const affected = updatedAttendances.filter((a) => idSet.has(a.id));
       runWithConcurrency(
-        affected.map((a) => () =>
-          syncCoordinator.mutateOrQueueUpdate('pm_attendances', a.id, {
+        affected.map((a) => () => {
+          const patch = {
             status: a.status,
             gross_payable_dzd: a.grossPayableDzd,
             check_in_time: a.checkInTime || null,
-          })
-        ),
+          };
+          return syncCoordinator.mutateOrQueueUpdate('pm_attendances', a.id, patch, {
+            expectedVersion: a.version,
+            entityType: 'PMAttendance',
+            entityLabel: a.talentName,
+            localData: patch,
+          });
+        }),
         4
       ).catch(() => {});
     }
@@ -9681,6 +9820,7 @@ function createAtriumActions() {
 
   const batchMarkPmCcpSlipsPrinted = (slipIds: string[]) => {
     const idSet = new Set(slipIds);
+    const slipMap = new Map((globalState.pmCcpSlips || []).map((s) => [s.id, s]));
     const printedAt = new Date().toISOString();
     globalState = {
       ...globalState,
@@ -9691,12 +9831,19 @@ function createAtriumActions() {
     notify();
     if (isSupabaseConfigured()) {
       runWithConcurrency(
-        slipIds.map((id) => () =>
-          syncCoordinator.mutateOrQueueUpdate('pm_ccp_slips', id, {
+        slipIds.map((id) => () => {
+          const slip = slipMap.get(id);
+          const patch = {
             is_printed: true,
             printed_at: printedAt,
-          })
-        ),
+          };
+          return syncCoordinator.mutateOrQueueUpdate('pm_ccp_slips', id, patch, {
+            expectedVersion: slip?.version,
+            entityType: 'PMCcpSlip',
+            entityLabel: slip?.beneficiaryName,
+            localData: patch,
+          });
+        }),
         4
       ).catch(() => {});
     }

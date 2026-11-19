@@ -54,6 +54,235 @@ function toDbVoucherType(t: StockVoucherType): DbVoucherType {
   return t;
 }
 
+export const mapWarehouseFromDb = (row: any): WarehouseDepot => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  code: row.code,
+  name: row.name,
+  address: row.address || '',
+  city: row.wilaya || '',
+  managerName: row.manager_name || undefined,
+  isMain: Boolean(row.is_default),
+  totalSkusCount: 0,
+  totalValuationDzd: 0,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
+export const mapB2bClientFromDb = (row: any): B2bClient => {
+  const { meta } = unpackNotesMeta(row.notes);
+  const termsMatch = String(row.payment_terms || '').match(/(\d+)/);
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    businessId: row.business_id,
+    branchId: row.branch_id,
+    staffId: row.staff_id || undefined,
+    tenantId: row.account_id,
+    facilityId: row.branch_id,
+    companyName: row.company_name,
+    sector: meta.sector || undefined,
+    email: row.email || '',
+    phone: row.phone || '',
+    fax: meta.fax || undefined,
+    address: row.address || '',
+    city: row.wilaya || '',
+    postalCode: meta.postalCode || undefined,
+    country: meta.country || 'Algérie',
+    rc: row.rc_number || '',
+    nif: row.nif || '',
+    nis: row.nis || '',
+    ai: row.article_imposition || '',
+    ribCcp: meta.ribCcp || undefined,
+    tags: meta.tags || undefined,
+    contactName: row.contact_name || '',
+    contactEmail: meta.contactEmail || undefined,
+    contactPhone: meta.contactPhone || undefined,
+    contactRole: meta.contactRole || undefined,
+    creditLimit: Number(row.credit_limit_dzd || 0),
+    outstandingBalance: Number(row.current_balance_dzd || 0),
+    paymentTermsDays: meta.paymentTermsDays ?? (termsMatch ? Number(termsMatch[1]) : 0),
+    defaultPaymentMethod: meta.defaultPaymentMethod || row.payment_terms || 'Virement',
+    version: row.version != null ? Number(row.version) : undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+};
+
+export const mapB2bSupplierFromDb = (row: any): B2bSupplier => {
+  const { meta } = unpackNotesMeta(row.notes);
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    businessId: row.business_id,
+    branchId: row.branch_id,
+    staffId: row.staff_id || undefined,
+    tenantId: row.account_id,
+    facilityId: row.branch_id,
+    supplierName: row.supplier_name,
+    sector: meta.sector || undefined,
+    email: row.email || '',
+    phone: row.phone || '',
+    fax: meta.fax || undefined,
+    address: row.address || '',
+    city: row.wilaya || '',
+    postalCode: meta.postalCode || undefined,
+    country: meta.country || 'Algérie',
+    rc: row.rc_number || undefined,
+    nif: row.nif || undefined,
+    nis: row.nis || undefined,
+    ai: meta.ai || undefined,
+    ribCcp: meta.ribCcp || undefined,
+    contactName: row.contact_name || undefined,
+    contactEmail: meta.contactEmail || undefined,
+    contactPhone: meta.contactPhone || undefined,
+    paymentTermsDays: meta.paymentTermsDays ?? Number(row.lead_time_days || 7),
+    outstandingPayable: Number(row.balance_payable_dzd || 0),
+    tags: meta.tags || undefined,
+    version: row.version != null ? Number(row.version) : undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+};
+
+export const mapTradingProductFromDb = (row: any): Product => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  sku: row.sku,
+  name: row.name,
+  description: row.name,
+  category: row.category || 'General',
+  unit: row.unit || 'pcs',
+  price: { amount: Number(row.selling_price_ht || 0), currency: 'DZD' },
+  cost: { amount: Number(row.purchase_price_ht || 0), currency: 'DZD' },
+  costPrice: Number(row.purchase_price_ht || 0),
+  taxRate: Number(row.tva_rate ?? 19),
+  stockQuantity: Number(row.stock_quantity || 0),
+  reorderLevel: Number(row.min_stock_alert || 10),
+  isActive: row.is_active ?? true,
+  isPinned: false,
+  version: row.version != null ? Number(row.version) : undefined,
+});
+
+export const mapCommercialDocFromDb = (row: any): CommercialDocument => {
+  const { notes, meta } = unpackNotesMeta(row.notes);
+  const totalHtFinal = Number(row.total_ht || 0);
+  const totalTtc = Number(row.total_ttc || 0);
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    businessId: row.business_id,
+    branchId: row.branch_id,
+    staffId: row.staff_id || undefined,
+    tenantId: row.account_id,
+    facilityId: row.branch_id,
+    type: (meta.origType || row.doc_type || 'devis') as CommercialDocType,
+    docNumber: row.doc_number,
+    clientId: row.client_id || '',
+    clientName: row.client_name,
+    clientNif: meta.clientNif || undefined,
+    clientRc: meta.clientRc || undefined,
+    clientAi: meta.clientAi || undefined,
+    depotId: row.depot_id || '',
+    depotName: meta.depotName || undefined,
+    date: row.doc_date || (row.created_at ? String(row.created_at).split('T')[0] : ''),
+    validityDays: meta.validityDays,
+    dueDate: row.due_date || undefined,
+    paymentMethod: row.payment_method || 'Virement',
+    paymentTerms: meta.paymentTerms || 'Comptant',
+    status: (row.status || 'Draft') as CommercialDocument['status'],
+    items: Array.isArray(row.items) ? row.items : [],
+    totalHtRaw: meta.totalHtRaw ?? totalHtFinal,
+    generalDiscountPercent: meta.generalDiscountPercent ?? 0,
+    totalHtFinal,
+    totalTva: Number(row.total_tva || 0),
+    timbreFiscal: Number(row.timbre_fiscal || 0),
+    totalTtc,
+    guaranteeRetentionPercent: meta.guaranteeRetentionPercent ?? 0,
+    guaranteeRetentionAmount: meta.guaranteeRetentionAmount ?? 0,
+    netToPay: meta.netToPay ?? totalTtc,
+    currency: meta.currency || 'DZD',
+    notesTop: notes || undefined,
+    notesBottom: meta.notesBottom || undefined,
+    includeStampSignature: meta.includeStampSignature ?? true,
+    linkedDocId: row.linked_doc_id || undefined,
+    linkedDocNumber: row.linked_doc_number || undefined,
+    version: row.version != null ? Number(row.version) : undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+};
+
+export const mapPurchaseDocFromDb = (row: any): PurchaseDocument => {
+  const { notes, meta } = unpackNotesMeta(row.notes);
+  const mappedType: PurchaseDocType =
+    meta.origType || (row.doc_type === 'facture_achat' ? 'facture_fournisseur' : row.doc_type) || 'po';
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    businessId: row.business_id,
+    branchId: row.branch_id,
+    staffId: row.staff_id || undefined,
+    tenantId: row.account_id,
+    facilityId: row.branch_id,
+    type: mappedType,
+    docNumber: row.doc_number,
+    supplierId: row.supplier_id || '',
+    supplierName: row.supplier_name,
+    depotId: row.depot_id || '',
+    depotName: row.depot_name || undefined,
+    orderDate: row.doc_date || (row.created_at ? String(row.created_at).split('T')[0] : ''),
+    deliveryExpectedDate: row.expected_delivery_date || undefined,
+    actualDeliveryDate: row.actual_delivery_date || undefined,
+    status: (row.status || 'Draft') as PurchaseDocument['status'],
+    items: Array.isArray(row.items) ? row.items : [],
+    totalHt: Number(row.total_ht || 0),
+    totalTva: Number(row.total_tva || 0),
+    totalTtc: Number(row.total_ttc || 0),
+    currency: meta.currency || 'DZD',
+    linkedPoId: row.linked_po_id || undefined,
+    linkedPoNumber: row.linked_po_number || undefined,
+    notes: notes || undefined,
+    version: row.version != null ? Number(row.version) : undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+};
+
+export const mapStockVoucherFromDb = (row: any): StockMovementVoucher => ({
+  id: row.id,
+  accountId: row.account_id,
+  businessId: row.business_id,
+  branchId: row.branch_id,
+  staffId: row.staff_id || undefined,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  voucherNumber: row.voucher_number,
+  type: (row.voucher_type === 'inventaire' ? 'entree' : row.voucher_type) as StockVoucherType,
+  date: row.voucher_date || (row.created_at ? String(row.created_at).split('T')[0] : ''),
+  depotSourceId: row.depot_source_id || '',
+  depotSourceName: row.depot_source_name || '',
+  depotTargetId: row.depot_dest_id || undefined,
+  depotTargetName: row.depot_dest_name || undefined,
+  reason: (row.reason || 'ajustement_inventaire') as StockMovementVoucher['reason'],
+  operatorName: row.operator_name || 'Système',
+  items: Array.isArray(row.items) ? row.items : [],
+  totalValuationDzd: Number(row.total_valuation_dzd || 0),
+  notes: row.notes || undefined,
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at,
+});
+
 export const tradingService = {
   async fetchWarehouses(branchId: string, updatedAfter?: string | null): Promise<WarehouseDepot[]> {
     const client = getSupabaseClient();
@@ -74,25 +303,7 @@ export const tradingService = {
         return query;
       });
 
-      return data.map((row: any): WarehouseDepot => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        code: row.code,
-        name: row.name,
-        address: row.address || '',
-        city: row.wilaya || '',
-        managerName: row.manager_name || undefined,
-        isMain: Boolean(row.is_default),
-        totalSkusCount: 0,
-        totalValuationDzd: 0,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return data.map(mapWarehouseFromDb);
     } catch {
       return [];
     }
@@ -148,45 +359,7 @@ export const tradingService = {
         return query;
       });
 
-      return data.map((row: any): B2bClient => {
-        const { meta } = unpackNotesMeta(row.notes);
-        const termsMatch = String(row.payment_terms || '').match(/(\d+)/);
-        return {
-          id: row.id,
-          accountId: row.account_id,
-          businessId: row.business_id,
-          branchId: row.branch_id,
-          staffId: row.staff_id || undefined,
-          tenantId: row.account_id,
-          facilityId: row.branch_id,
-          companyName: row.company_name,
-          sector: meta.sector || undefined,
-          email: row.email || '',
-          phone: row.phone || '',
-          fax: meta.fax || undefined,
-          address: row.address || '',
-          city: row.wilaya || '',
-          postalCode: meta.postalCode || undefined,
-          country: meta.country || 'Algérie',
-          rc: row.rc_number || '',
-          nif: row.nif || '',
-          nis: row.nis || '',
-          ai: row.article_imposition || '',
-          ribCcp: meta.ribCcp || undefined,
-          tags: meta.tags || undefined,
-          contactName: row.contact_name || '',
-          contactEmail: meta.contactEmail || undefined,
-          contactPhone: meta.contactPhone || undefined,
-          contactRole: meta.contactRole || undefined,
-          creditLimit: Number(row.credit_limit_dzd || 0),
-          outstandingBalance: Number(row.current_balance_dzd || 0),
-          paymentTermsDays: meta.paymentTermsDays ?? (termsMatch ? Number(termsMatch[1]) : 0),
-          defaultPaymentMethod: meta.defaultPaymentMethod || row.payment_terms || 'Virement',
-          version: row.version != null ? Number(row.version) : undefined,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-        };
-      });
+      return data.map(mapB2bClientFromDb);
     } catch {
       return [];
     }
@@ -265,41 +438,7 @@ export const tradingService = {
         return query;
       });
 
-      return data.map((row: any): B2bSupplier => {
-        const { meta } = unpackNotesMeta(row.notes);
-        return {
-          id: row.id,
-          accountId: row.account_id,
-          businessId: row.business_id,
-          branchId: row.branch_id,
-          staffId: row.staff_id || undefined,
-          tenantId: row.account_id,
-          facilityId: row.branch_id,
-          supplierName: row.supplier_name,
-          sector: meta.sector || undefined,
-          email: row.email || '',
-          phone: row.phone || '',
-          fax: meta.fax || undefined,
-          address: row.address || '',
-          city: row.wilaya || '',
-          postalCode: meta.postalCode || undefined,
-          country: meta.country || 'Algérie',
-          rc: row.rc_number || undefined,
-          nif: row.nif || undefined,
-          nis: row.nis || undefined,
-          ai: meta.ai || undefined,
-          ribCcp: meta.ribCcp || undefined,
-          contactName: row.contact_name || undefined,
-          contactEmail: meta.contactEmail || undefined,
-          contactPhone: meta.contactPhone || undefined,
-          paymentTermsDays: meta.paymentTermsDays ?? Number(row.lead_time_days || 7),
-          outstandingPayable: Number(row.balance_payable_dzd || 0),
-          tags: meta.tags || undefined,
-          version: row.version != null ? Number(row.version) : undefined,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-        };
-      });
+      return data.map(mapB2bSupplierFromDb);
     } catch {
       return [];
     }
@@ -372,29 +511,7 @@ export const tradingService = {
         return query;
       });
 
-      return data.map((row: any): Product => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        sku: row.sku,
-        name: row.name,
-        description: row.name,
-        category: row.category || 'General',
-        unit: row.unit || 'pcs',
-        price: { amount: Number(row.selling_price_ht || 0), currency: 'DZD' },
-        cost: { amount: Number(row.purchase_price_ht || 0), currency: 'DZD' },
-        costPrice: Number(row.purchase_price_ht || 0),
-        taxRate: Number(row.tva_rate ?? 19),
-        stockQuantity: Number(row.stock_quantity || 0),
-        reorderLevel: Number(row.min_stock_alert || 10),
-        isActive: row.is_active ?? true,
-        isPinned: false,
-        version: row.version != null ? Number(row.version) : undefined,
-      }));
+      return data.map(mapTradingProductFromDb);
     } catch {
       return [];
     }
@@ -455,54 +572,7 @@ export const tradingService = {
         return query;
       });
 
-      return data.map((row: any): CommercialDocument => {
-        const { notes, meta } = unpackNotesMeta(row.notes);
-        const totalHtFinal = Number(row.total_ht || 0);
-        const totalTtc = Number(row.total_ttc || 0);
-        return {
-          id: row.id,
-          accountId: row.account_id,
-          businessId: row.business_id,
-          branchId: row.branch_id,
-          staffId: row.staff_id || undefined,
-          tenantId: row.account_id,
-          facilityId: row.branch_id,
-          type: (meta.origType || row.doc_type || 'devis') as CommercialDocType,
-          docNumber: row.doc_number,
-          clientId: row.client_id || '',
-          clientName: row.client_name,
-          clientNif: meta.clientNif || undefined,
-          clientRc: meta.clientRc || undefined,
-          clientAi: meta.clientAi || undefined,
-          depotId: row.depot_id || '',
-          depotName: meta.depotName || undefined,
-          date: row.doc_date || (row.created_at ? row.created_at.split('T')[0] : ''),
-          validityDays: meta.validityDays,
-          dueDate: row.due_date || undefined,
-          paymentMethod: row.payment_method || 'Virement',
-          paymentTerms: meta.paymentTerms || 'Comptant',
-          status: (row.status || 'Draft') as CommercialDocument['status'],
-          items: Array.isArray(row.items) ? row.items : [],
-          totalHtRaw: meta.totalHtRaw ?? totalHtFinal,
-          generalDiscountPercent: meta.generalDiscountPercent ?? 0,
-          totalHtFinal,
-          totalTva: Number(row.total_tva || 0),
-          timbreFiscal: Number(row.timbre_fiscal || 0),
-          totalTtc,
-          guaranteeRetentionPercent: meta.guaranteeRetentionPercent ?? 0,
-          guaranteeRetentionAmount: meta.guaranteeRetentionAmount ?? 0,
-          netToPay: meta.netToPay ?? totalTtc,
-          currency: meta.currency || 'DZD',
-          notesTop: notes || undefined,
-          notesBottom: meta.notesBottom || undefined,
-          includeStampSignature: meta.includeStampSignature ?? true,
-          linkedDocId: row.linked_doc_id || undefined,
-          linkedDocNumber: row.linked_doc_number || undefined,
-          version: row.version != null ? Number(row.version) : undefined,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-        };
-      });
+      return data.map(mapCommercialDocFromDb);
     } catch {
       return [];
     }
@@ -607,41 +677,7 @@ export const tradingService = {
         return query;
       });
 
-      return data.map((row: any): PurchaseDocument => {
-        const { notes, meta } = unpackNotesMeta(row.notes);
-        const mappedType: PurchaseDocType =
-          meta.origType || (row.doc_type === 'facture_achat' ? 'facture_fournisseur' : row.doc_type) || 'po';
-        return {
-          id: row.id,
-          accountId: row.account_id,
-          businessId: row.business_id,
-          branchId: row.branch_id,
-          staffId: row.staff_id || undefined,
-          tenantId: row.account_id,
-          facilityId: row.branch_id,
-          type: mappedType,
-          docNumber: row.doc_number,
-          supplierId: row.supplier_id || '',
-          supplierName: row.supplier_name,
-          depotId: row.depot_id || '',
-          depotName: row.depot_name || undefined,
-          orderDate: row.doc_date || (row.created_at ? row.created_at.split('T')[0] : ''),
-          deliveryExpectedDate: row.expected_delivery_date || undefined,
-          actualDeliveryDate: row.actual_delivery_date || undefined,
-          status: (row.status || 'Draft') as PurchaseDocument['status'],
-          items: Array.isArray(row.items) ? row.items : [],
-          totalHt: Number(row.total_ht || 0),
-          totalTva: Number(row.total_tva || 0),
-          totalTtc: Number(row.total_ttc || 0),
-          currency: meta.currency || 'DZD',
-          linkedPoId: row.linked_po_id || undefined,
-          linkedPoNumber: row.linked_po_number || undefined,
-          notes: notes || undefined,
-          version: row.version != null ? Number(row.version) : undefined,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-        };
-      });
+      return data.map(mapPurchaseDocFromDb);
     } catch {
       return [];
     }
@@ -711,29 +747,7 @@ export const tradingService = {
         return query;
       });
 
-      return data.map((row: any): StockMovementVoucher => ({
-        id: row.id,
-        accountId: row.account_id,
-        businessId: row.business_id,
-        branchId: row.branch_id,
-        staffId: row.staff_id || undefined,
-        tenantId: row.account_id,
-        facilityId: row.branch_id,
-        voucherNumber: row.voucher_number,
-        type: (row.voucher_type === 'inventaire' ? 'entree' : row.voucher_type) as StockVoucherType,
-        date: row.voucher_date || (row.created_at ? row.created_at.split('T')[0] : ''),
-        depotSourceId: row.depot_source_id || '',
-        depotSourceName: row.depot_source_name || '',
-        depotTargetId: row.depot_dest_id || undefined,
-        depotTargetName: row.depot_dest_name || undefined,
-        reason: (row.reason || 'ajustement_inventaire') as StockMovementVoucher['reason'],
-        operatorName: row.operator_name || 'Système',
-        items: Array.isArray(row.items) ? row.items : [],
-        totalValuationDzd: Number(row.total_valuation_dzd || 0),
-        notes: row.notes || undefined,
-        version: row.version != null ? Number(row.version) : undefined,
-        createdAt: row.created_at,
-      }));
+      return data.map(mapStockVoucherFromDb);
     } catch {
       return [];
     }
