@@ -28,6 +28,8 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useTranslation } from '../../../utils/useTranslation';
 import { compactFilterLabel } from '../../../utils/filterLexicon';
@@ -1046,23 +1048,20 @@ export const FreelanceDeliverablesView: React.FC = () => {
         )}
 
         {freelanceProjects.length === 0 ? (
-          <div className="p-12 text-center rounded-3xl border border-dashed border-neutral-200 dark:border-[#33302D] bg-white dark:bg-[#1C1B1A] space-y-3">
-            <Kanban size={36} className="mx-auto text-black/55 dark:text-white/55" />
-            <h3 className="text-base font-bold text-black dark:text-white">
-              {t('free_deliv_empty_column', language)}
-            </h3>
-            <p className="text-xs text-black/55 dark:text-white/55 max-w-sm mx-auto">
-              {t('free_deliv_modal_add_desc', language)}
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsAddProjectModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
-            >
-              <Plus size={14} />
-              <span>{t('free_deliv_field_project', language)}</span>
-            </button>
-          </div>
+          <KineticEmptyStateMotion motionKey="free-deliv-empty">
+            <EmptyState
+              variant="island"
+              icon={<Kanban />}
+              title={t('free_deliv_empty_column', language)}
+              description={t('free_deliv_modal_add_desc', language)}
+              primaryAction={{
+                label: t('free_deliv_field_project', language),
+                icon: <Plus />,
+                onClick: () => setIsAddProjectModalOpen(true),
+              }}
+              width={500}
+            />
+          </KineticEmptyStateMotion>
         ) : viewLayout === 'collection' ? (
           <UniversalDataCollection<FlatDeliverableItem>
             hideToolbar

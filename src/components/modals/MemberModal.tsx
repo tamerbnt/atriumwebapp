@@ -39,6 +39,7 @@ export interface MemberModalProps {
   isOpen: boolean;
   onClose: () => void;
   memberToEdit?: Member | null;
+  prefillName?: string;
   onCreatedSuccess?: (member: Member) => void;
   useKineticSpring?: boolean;
   originElement?: HTMLElement | null;
@@ -48,6 +49,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
   isOpen,
   onClose,
   memberToEdit,
+  prefillName,
   onCreatedSuccess,
   useKineticSpring = false,
   originElement,
@@ -134,7 +136,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
   }
 
   const applyFormForMember = useCallback(
-    (target: Member | null) => {
+    (target: Member | null, initialFullName?: string) => {
       if (target) {
         setFullName(target.fullName || '');
         setEmail(target.email || '');
@@ -150,7 +152,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         setNotes(target.notes || '');
         formPreparedKeyRef.current = target.id;
       } else {
-        setFullName('');
+        setFullName(initialFullName || '');
         setEmail('');
         setPhoneNumber('');
         setPlanId(plans[0]?.id || '');
@@ -162,7 +164,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         setEmergencyPhone('');
         setSource('Walk-in');
         setNotes('');
-        formPreparedKeyRef.current = 'create';
+        formPreparedKeyRef.current = initialFullName ? `create:${initialFullName}` : 'create';
       }
       formDirtyRef.current = false;
       setErrors({});
@@ -175,14 +177,18 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
   if (useKineticSpring) {
     if (isOpen) {
       retainedMemberRef.current = memberToEdit ?? null;
-      const targetKey = memberToEdit ? memberToEdit.id : 'create';
+      const targetKey = memberToEdit
+        ? memberToEdit.id
+        : prefillName
+        ? `create:${prefillName}`
+        : 'create';
       const isOpeningNow = !prevKineticOpenRef.current;
       const editChanged = (memberToEdit?.id ?? null) !== prevKineticEditIdRef.current;
       if (
         (isOpeningNow || editChanged) &&
         (formPreparedKeyRef.current !== targetKey || formDirtyRef.current || Boolean(memberToEdit))
       ) {
-        applyFormForMember(memberToEdit ?? null);
+        applyFormForMember(memberToEdit ?? null, prefillName);
       }
     }
     prevKineticOpenRef.current = isOpen;
@@ -618,15 +624,19 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
   // Zero-re-render imperative opener subscription for kinetic mode
   useEffect(() => {
     if (!useKineticSpring) return;
-    return registerKineticMemberModalOpener(({ member, originElement: reqOrigin }) => {
+    return registerKineticMemberModalOpener(({ member, originElement: reqOrigin, prefillName: reqPrefill }) => {
       originPropRef.current = reqOrigin ?? null;
       const targetMember = (member as Member | null) ?? null;
       retainedMemberRef.current = targetMember;
 
       if (targetMember) {
         applyFormForMember(targetMember);
-      } else if (formPreparedKeyRef.current !== 'create' || formDirtyRef.current) {
-        applyFormForMember(null);
+      } else if (
+        reqPrefill ||
+        formPreparedKeyRef.current !== 'create' ||
+        formDirtyRef.current
+      ) {
+        applyFormForMember(null, reqPrefill);
       }
 
       startKineticOpen();
@@ -723,8 +733,8 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
   // Populate or reset form fields (non-kinetic path only; kinetic path syncs pre-paint and resets after close)
   useEffect(() => {
     if (useKineticSpring || !isOpen) return;
-    applyFormForMember(memberToEdit ?? null);
-  }, [useKineticSpring, isOpen, memberToEdit, applyFormForMember]);
+    applyFormForMember(memberToEdit ?? null, prefillName);
+  }, [useKineticSpring, isOpen, memberToEdit, prefillName, applyFormForMember]);
 
   // Keyboard navigation: single-level Escape close & Tab trap inside dialog
   useLayoutEffect(() => {

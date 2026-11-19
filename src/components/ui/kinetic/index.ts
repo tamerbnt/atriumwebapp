@@ -10,6 +10,7 @@ export * from './KineticRowFan';
 export * from './KineticDetailIsland';
 export * from './KineticRow';
 export * from './KineticCollectionStage';
+export * from './KineticEmptyStateMotion';
 export * from './KineticFilterModal';
 export * from './KineticFloatingBulkBar';
 export * from './KineticSlideOverInspector';

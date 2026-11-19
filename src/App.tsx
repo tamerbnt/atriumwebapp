@@ -242,6 +242,7 @@ export default function App() {
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [memberToEdit, setMemberToEdit] = useState<Member | null>(null);
+  const [memberPrefillName, setMemberPrefillName] = useState<string>('');
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -305,18 +306,23 @@ export default function App() {
   const activeScreenRef = useRef(activeScreen);
   activeScreenRef.current = activeScreen;
 
-  const handleOpenAddMember = useCallback((originEl?: HTMLElement | null) => {
+  const handleOpenAddMember = useCallback((originOrEvent?: any, prefillName?: string) => {
+    const originEl =
+      originOrEvent && typeof originOrEvent === 'object' && 'currentTarget' in originOrEvent
+        ? (originOrEvent.currentTarget as HTMLElement | null)
+        : (originOrEvent as HTMLElement | null | undefined);
     const resolvedOrigin =
       originEl ?? (typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null);
     if (
       businessCategoryRef.current === 'membership_session' &&
       activeScreenRef.current === 'members' &&
-      triggerKineticMemberModal({ member: null, originElement: resolvedOrigin })
+      triggerKineticMemberModal({ member: null, originElement: resolvedOrigin, prefillName })
     ) {
       return;
     }
     memberModalOriginRef.current = resolvedOrigin;
     setMemberToEdit(null);
+    setMemberPrefillName(prefillName || '');
     setIsMemberModalOpen(true);
   }, []);
 
@@ -332,12 +338,14 @@ export default function App() {
     }
     memberModalOriginRef.current = resolvedOrigin;
     setMemberToEdit(member);
+    setMemberPrefillName('');
     setIsMemberModalOpen(true);
   }, []);
 
   const handleCloseMemberModal = useCallback(() => {
     setIsMemberModalOpen(false);
     setMemberToEdit(null);
+    setMemberPrefillName('');
   }, []);
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
@@ -1318,6 +1326,7 @@ export default function App() {
         isOpen={isMemberModalOpen}
         onClose={handleCloseMemberModal}
         memberToEdit={memberToEdit}
+        prefillName={memberPrefillName}
         useKineticSpring={
           currentBusiness?.category === 'membership_session' && activeScreen === 'members'
         }

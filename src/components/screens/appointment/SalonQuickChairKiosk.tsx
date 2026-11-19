@@ -25,7 +25,9 @@ import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import {
+  KineticEmptyStateMotion,
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
@@ -366,9 +368,16 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                         </div>
                       </div>
                     ) : (
-                      <div className="py-10 text-center text-black/55 dark:text-white/55">
-                        <Scissors size={26} className="mx-auto mb-2 opacity-30" />
-                        <p className="text-xs">{isRtl ? 'المحطة شاغرة حالياً' : 'Poste disponible'}</p>
+                      <div className="mt-3">
+                        <KineticEmptyStateMotion motionKey={`chair-free-${ws.id}`}>
+                          <EmptyState
+                            variant="compact"
+                            tone="neutral"
+                            icon={<Scissors size={20} />}
+                            title={isRtl ? 'المحطة شاغرة حالياً' : 'Poste disponible'}
+                            description={isRtl ? 'اضغط لتعيين عميل' : 'Cliquez pour affecter un client'}
+                          />
+                        </KineticEmptyStateMotion>
                       </div>
                     )}
                   </button>

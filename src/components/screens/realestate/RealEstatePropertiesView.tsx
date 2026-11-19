@@ -15,6 +15,7 @@ import { useRealEstateData } from './realEstateData';
 import { RealEstatePropertyModal } from './RealEstatePropertyModal';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -36,6 +37,7 @@ import {
   KineticRowData,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticEmptyStateMotion,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -787,23 +789,26 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
               {tab === 'leases' && (
                 <>
                   <InspectorSection index={1} title={isAr ? 'عقود الإيجار' : 'Bail Locatif Associé'}>
-                    <InspectorCard>
                       {activeLeaseForProp ? (
-                        <InspectorListItem
-                          title={activeLeaseForProp.tenantName}
-                          subtitle={`${activeLeaseForProp.startDate} → ${activeLeaseForProp.endDate}`}
-                          metaRight={formatMoney(activeLeaseForProp.monthlyRentDzd, language)}
-                          badge={{ label: isAr ? 'عقد سارٍ' : 'Bail Actif', tone: 'ok' }}
-                          isLast
-                        />
+                        <InspectorCard>
+                          <InspectorListItem
+                            title={activeLeaseForProp.tenantName}
+                            subtitle={`${activeLeaseForProp.startDate} → ${activeLeaseForProp.endDate}`}
+                            metaRight={formatMoney(activeLeaseForProp.monthlyRentDzd, language)}
+                            badge={{ label: isAr ? 'عقد سارٍ' : 'Bail Actif', tone: 'ok' }}
+                            isLast
+                          />
+                        </InspectorCard>
                       ) : (
-                        <InspectorListItem
-                          title={isAr ? 'لا يوجد عقد إيجار' : 'Aucun bail actif'}
-                          subtitle={isAr ? 'يمكنك تحرير عقد جديد من الأعلى' : 'Créez un bail via les actions rapides'}
-                          isLast
-                        />
+                        <KineticEmptyStateMotion motionKey={`re-prop-${p.id}`}>
+                          <EmptyState
+                            variant="compact"
+                            icon={<Key />}
+                            title={isAr ? 'لا يوجد عقد إيجار' : 'Aucun bail actif'}
+                            description={isAr ? 'يمكنك تحرير عقد جديد من الأعلى' : 'Créez un bail via les actions rapides'}
+                          />
+                        </KineticEmptyStateMotion>
                       )}
-                    </InspectorCard>
                   </InspectorSection>
                   <InspectorSection index={2} title={isAr ? 'ملاحظات الوكالة' : "Observations d'Agence"}>
                     <InspectorNotesField

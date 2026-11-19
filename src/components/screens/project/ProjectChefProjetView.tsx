@@ -40,7 +40,9 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import {
+  KineticEmptyStateMotion,
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
@@ -2233,11 +2235,21 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               </div>
               <div className="space-y-2 overflow-y-auto max-h-[50vh] pr-1">
                 {cartItems.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-black/55 dark:text-white/55">
-                    {isAr
-                      ? 'السلة فارغة. اختر دعائم من الكتالوج.'
-                      : 'Le panier est vide. Sélectionnez des supports dans le catalogue.'}
-                  </div>
+                  <KineticEmptyStateMotion motionKey={`chef-cart-empty-${language}`}>
+                    <EmptyState
+                      variant="compact"
+                      tone="neutral"
+                      icon={<ShoppingBag size={20} />}
+                      title={isAr ? 'السلة فارغة' : isEn ? 'Cart is empty' : 'Panier vide'}
+                      description={
+                        isAr
+                          ? 'اختر دعائم من الكتالوج لإضافتها إلى الطلب.'
+                          : isEn
+                          ? 'Select collateral items from the catalog to add to your order.'
+                          : 'Sélectionnez des supports dans le catalogue.'
+                      }
+                    />
+                  </KineticEmptyStateMotion>
                 ) : (
                   cartItems.map((ci) => (
                     <div

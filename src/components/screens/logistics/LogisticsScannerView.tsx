@@ -19,9 +19,11 @@ import { localizeStatus } from '../../../utils/rules';
 import { useLogisticsData } from './logisticsData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
+  KineticEmptyStateMotion,
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
@@ -762,9 +764,21 @@ export const LogisticsScannerView: React.FC = () => {
 
             <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
               {scanHistory.length === 0 ? (
-                <div className="p-6 text-center text-xs text-black/55 dark:text-white/55">
-                  {isAr ? 'في انتظار أول مسح ضوئي...' : 'En attente de lecture code-barres...'}
-                </div>
+                <KineticEmptyStateMotion motionKey={`scan-hist-empty-${language}`}>
+                  <EmptyState
+                    variant="compact"
+                    tone="neutral"
+                    icon={<Barcode size={20} />}
+                    title={isAr ? 'في انتظار أول مسح' : isEn ? 'Waiting for first scan' : 'En attente de scan'}
+                    description={
+                      isAr
+                        ? 'مرر الباركود أو أدخل رمز الطرد للتحقق الفوري.'
+                        : isEn
+                        ? 'Scan a barcode or enter a parcel tracking code.'
+                        : 'En attente de lecture code-barres sur le quai.'
+                    }
+                  />
+                </KineticEmptyStateMotion>
               ) : (
                 scanHistory.map((h, i) => (
                   <div

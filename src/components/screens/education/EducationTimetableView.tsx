@@ -21,6 +21,8 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCalendarTimeline } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -483,12 +485,13 @@ export const EducationTimetableView: React.FC = () => {
     const dates = Array.from(new Set(sortedSessions.map((s) => s.date))).sort();
     if (dates.length === 0) {
       return (
-        <div className="py-16 text-center text-black/55 dark:text-white/55">
-          <CalendarIcon size={32} className="mx-auto mb-2 opacity-40 text-[#d4522f]" />
-          <p className="text-xs font-semibold">
-            {isAr ? 'لا توجد حصص مجدولة حالياً' : 'Aucune séance programmée dans le planning'}
-          </p>
-        </div>
+        <KineticEmptyStateMotion motionKey="edu-cal-empty">
+          <EmptyState
+            variant="island"
+            icon={<CalendarIcon />}
+            title={isAr ? 'لا توجد حصص مجدولة حالياً' : 'Aucune séance programmée dans le planning'}
+          />
+        </KineticEmptyStateMotion>
       );
     }
     return (

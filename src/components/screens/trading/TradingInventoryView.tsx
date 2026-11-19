@@ -15,7 +15,9 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import {
+  KineticEmptyStateMotion,
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
@@ -919,11 +921,24 @@ export const TradingInventoryView: React.FC = () => {
             return (
               <div className="space-y-4">
                 <InspectorSection index={0} title="Derniers bons enregistrés">
-                  <InspectorCard>
-                    {relatedVouchers.length === 0 ? (
-                      <InspectorKeyValue label="Journal" value="Aucun bon enregistré" isLast />
-                    ) : (
-                      relatedVouchers.map((v, idx) => (
+                  {relatedVouchers.length === 0 ? (
+                    <KineticEmptyStateMotion motionKey={`tr-inv-mvt-empty-${activeProduct.id}`}>
+                      <EmptyState
+                        variant="compact"
+                        tone="neutral"
+                        icon={<Boxes size={20} />}
+                        title="Aucun bon enregistré"
+                        description="Les bons d’entrée, sortie et transfert de ce produit apparaîtront ici."
+                        secondaryAction={{
+                          label: 'Nouveau mouvement',
+                          icon: <Plus size={14} />,
+                          onClick: () => setIsMvtModalOpen(true),
+                        }}
+                      />
+                    </KineticEmptyStateMotion>
+                  ) : (
+                    <InspectorCard>
+                      {relatedVouchers.map((v, idx) => (
                         <InspectorListItem
                           key={v.id}
                           title={v.voucherNumber}
@@ -931,9 +946,9 @@ export const TradingInventoryView: React.FC = () => {
                           metaRight={formatMoney(v.totalValuationDzd)}
                           isLast={idx === relatedVouchers.length - 1}
                         />
-                      ))
-                    )}
-                  </InspectorCard>
+                      ))}
+                    </InspectorCard>
+                  )}
                 </InspectorSection>
                 <InspectorWideButton
                   label="Enregistrer un mouvement de stock"

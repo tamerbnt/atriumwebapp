@@ -20,9 +20,11 @@ export type EmptyStateCopyKey =
   | 'empty_tab_generic_title'
   | 'empty_tab_generic_description'
   | 'empty_tab_generic_secondary'
+  | 'empty_tab_generic_hint'
   | 'empty_filters_title'
   | 'empty_filters_description'
   | 'empty_filters_primary'
+  | 'empty_filters_hint'
   | 'empty_error_title'
   | 'empty_error_description'
   | 'empty_error_primary'
@@ -64,10 +66,12 @@ export const EMPTY_STATE_COPY: Record<EmptyStateLocale, Record<EmptyStateCopyKey
     empty_tab_generic_title: 'Aucun adhérent dans cet onglet',
     empty_tab_generic_description: 'Aucun adhérent sur {site} ne correspond à cet onglet.',
     empty_tab_generic_secondary: 'Voir tous les adhérents',
+    empty_tab_generic_hint: '{total} adhérents sur {site}',
 
     empty_filters_title: 'Aucun adhérent ne correspond',
     empty_filters_description: 'Aucun adhérent sur {site} avec les filtres actuels.',
     empty_filters_primary: 'Réinitialiser les filtres',
+    empty_filters_hint: '{total} adhérents sur {site} · {filters}',
 
     empty_error_title: 'Impossible de charger la liste',
     empty_error_description:
@@ -116,10 +120,12 @@ export const EMPTY_STATE_COPY: Record<EmptyStateLocale, Record<EmptyStateCopyKey
     empty_tab_generic_title: 'No members in this tab',
     empty_tab_generic_description: 'No members at {site} match this view.',
     empty_tab_generic_secondary: 'View all members',
+    empty_tab_generic_hint: '{total} members at {site}',
 
     empty_filters_title: 'No matching members',
     empty_filters_description: 'No members at {site} match the current filters.',
     empty_filters_primary: 'Reset filters',
+    empty_filters_hint: '{total} members at {site} · {filters}',
 
     empty_error_title: 'Unable to load list',
     empty_error_description:
@@ -164,10 +170,12 @@ export const EMPTY_STATE_COPY: Record<EmptyStateLocale, Record<EmptyStateCopyKey
     empty_tab_generic_title: 'لا يوجد مشتركون في هذا التبويب',
     empty_tab_generic_description: 'لا يوجد مشتركون في {site} ضمن هذا العرض.',
     empty_tab_generic_secondary: 'عرض كل المشتركين',
+    empty_tab_generic_hint: '{total} مشترك في {site}',
 
     empty_filters_title: 'لا يوجد مشتركون مطابقون',
     empty_filters_description: 'لا يوجد مشتركون في {site} وفق الفلاتر الحالية.',
     empty_filters_primary: 'إعادة ضبط الفلاتر',
+    empty_filters_hint: '{total} مشترك في {site} · {filters}',
 
     empty_error_title: 'تعذر تحميل القائمة',
     empty_error_description:
@@ -432,6 +440,12 @@ export function resolveEmptyState(context: EmptyStateContext): EmptyStateProps |
         label: getCopy('empty_filters_primary', locale, undefined, translate),
         onClick: handlers.resetFilters,
       },
+      hint: getCopy(
+        'empty_filters_hint',
+        locale,
+        { total, site, filters: (filters ?? []).join(' · ') },
+        translate
+      ),
     };
   }
 
@@ -468,6 +482,7 @@ export function resolveEmptyState(context: EmptyStateContext): EmptyStateProps |
         label: getCopy('empty_tab_generic_secondary', locale, undefined, translate),
         onClick: handlers.showAll,
       },
+      hint: getCopy('empty_tab_generic_hint', locale, { total, site }, translate),
     };
   }
 

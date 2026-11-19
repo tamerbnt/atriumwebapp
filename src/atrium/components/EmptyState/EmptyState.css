@@ -23,10 +23,14 @@
   width: 100%;
   font-family: var(--es-font-sans);
   color: var(--ink);
+  contain: layout style;
 }
 
 .es-root {
   position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0;
   height: 100%;
   min-height: 330px;
 }
@@ -51,14 +55,14 @@
 :where([data-theme='dark'], [data-atrium-theme='dark'], .dark) .es-root,
 :where([data-theme='dark'], [data-atrium-theme='dark'], .dark) .es-compact-root {
   --panel: #181716;
-  --pod: #1F1D1B;
+  --pod: #262422;
   --card: #1C1B1A;
-  --border: #33302D;
-  --ghost-border: #4A443E;
+  --border: #3A3734;
+  --ghost-border: #4A4540;
   --skeleton-1: #2C2926;
   --skeleton-2: #24211F;
-  --ink: #F5F2EE;
-  --muted: #B0A8A0;
+  --ink: #FFFFFF;
+  --muted: rgba(255, 255, 255, 0.72);
   --accent: #C9441F;
   --on-accent: #FFFFFF;
   --tone-positive: #10B981;
@@ -170,18 +174,18 @@
 
 /* 2) Centered message island */
 .es-island {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  position: relative;
+  z-index: 1;
   box-sizing: border-box;
   width: var(--es-width, 420px);
   max-width: calc(100% - 24px);
+  margin: 12px 0;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 24px;
   padding: 26px 28px 24px;
   text-align: center;
+  contain: layout style;
 }
 
 /* Icon tile & tone dot */

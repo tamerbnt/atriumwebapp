@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useContext, useSyncExternalStore } from 'react';
 import {
   Eye,
   Pencil,
@@ -25,6 +25,7 @@ import {
   ScreenCollectionToolbar,
   ActiveFilterChip,
 } from '../kinetic/ScreenCollectionToolbar';
+import { ScreenPodBridgeContext } from '../kinetic/ScreenPod';
 import {
   KineticCollectionStage,
   KineticColumnHeader,
@@ -248,6 +249,9 @@ function resolveRawFieldValue(item: any, col: ColumnDefinition<any> | undefined)
   }
   return item[field] ?? '';
 }
+
+const noopSubscribe = () => () => {};
+const getNullBridgeSnapshot = () => null;
 
 export function UniversalDataCollection<T>({
   items,
@@ -1082,7 +1086,10 @@ export function UniversalDataCollection<T>({
     onRetrySync !== undefined ? onRetrySync : retryCloudSyncAction;
 
   const shouldRenderSkeleton =
-    (effectiveIsLoading && actualItems.length === 0) ||
+    (effectiveIsLoading &&
+      !effectiveIsTimedOut &&
+      !effectiveIsOffline &&
+      actualItems.length === 0) ||
     storeNetworkMode === 'force_skeleton';
 
   if (shouldRenderSkeleton) {
@@ -1140,6 +1147,44 @@ export function UniversalDataCollection<T>({
     onSearchChange?.(val);
   };
 
+  const podBridge = useContext(ScreenPodBridgeContext);
+  const needsEmptyBridge = Boolean(hideToolbar && actualItems.length === 0 && podBridge);
+  const bridgeSnapshot = useSyncExternalStore(
+    needsEmptyBridge && podBridge ? podBridge.subscribe : noopSubscribe,
+    needsEmptyBridge && podBridge ? podBridge.getSnapshot : getNullBridgeSnapshot,
+    getNullBridgeSnapshot
+  );
+
+  const emptySearchQuery =
+    searchQuery !== undefined
+      ? searchQuery
+      : bridgeSnapshot?.searchQuery ?? internalSearchQuery;
+  const emptyTotalCount =
+    totalCount !== undefined ? totalCount : bridgeSnapshot?.totalCount;
+  const emptyFilterLabels =
+    activeChips?.map((c) => c.label) ?? bridgeSnapshot?.activeFilterLabels;
+  const emptyHasActiveFilters =
+    hasActiveFilters ||
+    Boolean(filterValue && filterValue !== 'All') ||
+    Boolean(
+      bridgeSnapshot?.statusValue &&
+        !/^(all|tous|tout|everything|overview)$/i.test(bridgeSnapshot.statusValue)
+    ) ||
+    Boolean(bridgeSnapshot?.hasActiveAdvancedFilters) ||
+    Boolean(emptyFilterLabels && emptyFilterLabels.length > 0);
+  const emptyOnResetFilters =
+    onResetFilters ??
+    (bridgeSnapshot?.hasReset && podBridge ? podBridge.resetFilters : undefined);
+  const emptyOnClearSearch =
+    emptySearchQuery.trim().length > 0
+      ? searchQuery === undefined && bridgeSnapshot?.hasSearchSetter && podBridge
+        ? podBridge.clearSearch
+        : () => toolbarSearchHandler('')
+      : undefined;
+  const emptySiteName = currentBranch?.name || undefined;
+  const emptyLocale: 'fr' | 'en' | 'ar' =
+    storeLanguage === 'ar' ? 'ar' : storeLanguage === 'en' ? 'en' : 'fr';
+
   return (
     <div className="w-full flex flex-col relative space-y-4">
       <OfflineRetryBanner
@@ -1165,7 +1210,11 @@ export function UniversalDataCollection<T>({
                   value: o.value,
                   label: o.label,
                   tooltip: o.tooltip,
-                  count: o.count,
+                  count:
+                    (effectiveIsTimedOut || (effectiveIsOffline && actualItems.length === 0)) &&
+                    o.count !== undefined
+                      ? '–'
+                      : o.count,
                 }))
               : undefined
           }
@@ -1189,27 +1238,40 @@ export function UniversalDataCollection<T>({
 
       {viewMode === 'calendar' && renderCalendarView ? (
         <div className="w-full">{renderCalendarView()}</div>
-      ) : actualItems.length === 0 && (onAddFirstItem || hasActiveFilters || emptyTitle) ? (
-        <CollectionEmptyState
-          title={emptyTitle}
-          description={emptyDescription}
-          icon={emptyIcon}
-          primaryActionLabel={primaryActionLabel}
-          onPrimaryAction={onAddFirstItem}
-          onResetFilters={onResetFilters}
-          hasActiveFilters={hasActiveFilters}
-        />
       ) : renderRow && viewMode === 'list' ? (
-        <div className="w-full flex flex-col gap-2">
-          {pagedItems.map((item, idx) => {
-            const id = String(keyExtractor(item) || `item_${idx}`);
-            return (
-              <React.Fragment key={id}>
-                {renderRow(item, effectiveSelectedIds.has(id), checkPinned(item))}
-              </React.Fragment>
-            );
-          })}
-        </div>
+        actualItems.length === 0 ? (
+          <div className="w-full min-h-[350px] flex flex-col">
+            <CollectionEmptyState
+              title={emptyTitle}
+              description={emptyDescription}
+              icon={emptyIcon}
+              primaryActionLabel={primaryActionLabel}
+              onPrimaryAction={onAddFirstItem}
+              onResetFilters={emptyOnResetFilters}
+              hasActiveFilters={emptyHasActiveFilters}
+              searchQuery={emptySearchQuery}
+              onClearSearch={emptyOnClearSearch}
+              totalCount={emptyTotalCount}
+              siteName={emptySiteName}
+              activeFilterLabels={emptyFilterLabels}
+              isError={effectiveIsTimedOut || (effectiveIsOffline && actualItems.length === 0)}
+              lastSyncedAt={effectiveLastSyncedAt}
+              onRetry={effectiveOnRetrySync}
+              locale={emptyLocale}
+            />
+          </div>
+        ) : (
+          <div className="w-full flex flex-col gap-2">
+            {pagedItems.map((item, idx) => {
+              const id = String(keyExtractor(item) || `item_${idx}`);
+              return (
+                <React.Fragment key={id}>
+                  {renderRow(item, effectiveSelectedIds.has(id), checkPinned(item))}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        )
       ) : (
         <KineticCollectionStage<T>
           items={pagedItems}
@@ -1227,6 +1289,28 @@ export function UniversalDataCollection<T>({
           language={storeLanguage}
           ariaLabel={title || 'Collection'}
           emptyMessage={emptyDescription || emptyTitle}
+          emptyState={
+            actualItems.length === 0 ? (
+              <CollectionEmptyState
+                title={emptyTitle}
+                description={emptyDescription}
+                icon={emptyIcon}
+                primaryActionLabel={primaryActionLabel}
+                onPrimaryAction={onAddFirstItem}
+                onResetFilters={emptyOnResetFilters}
+                hasActiveFilters={emptyHasActiveFilters}
+                searchQuery={emptySearchQuery}
+                onClearSearch={emptyOnClearSearch}
+                totalCount={emptyTotalCount}
+                siteName={emptySiteName}
+                activeFilterLabels={emptyFilterLabels}
+                isError={effectiveIsTimedOut || (effectiveIsOffline && actualItems.length === 0)}
+                lastSyncedAt={effectiveLastSyncedAt}
+                onRetry={effectiveOnRetrySync}
+                locale={emptyLocale}
+              />
+            ) : undefined
+          }
           onPruneSelection={handlePruneSelection}
           onToggleSelectAll={handleToggleSelectAll}
           onToggleSort={handleSort}

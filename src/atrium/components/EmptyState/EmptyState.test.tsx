@@ -300,4 +300,27 @@ describe('EmptyState DOM, accessibility, tone, icon slot & palette checks', () =
     expect(cssSource).toContain('--skeleton-1: #E6E6E6');
     expect(cssSource).toContain('--skeleton-2: #EEEEEE');
   });
+
+  it('includes filter/tab context hints, exports a React.memo component, and allows liquid button integration', () => {
+    const filt = resolveEmptyState(
+      baseCtx({
+        total: 8,
+        results: 0,
+        filters: ['Accès : Bloqué'],
+      })
+    );
+    expect(filt?.hint).toBe('8 adhérents sur Siège Principal · Accès : Bloqué');
+
+    const tabEmpty = resolveEmptyState(
+      baseCtx({
+        total: 8,
+        results: 0,
+        tab: 'active',
+      })
+    );
+    expect(tabEmpty?.hint).toBe('8 adhérents sur Siège Principal');
+
+    expect((EmptyState as { $$typeof?: symbol }).$$typeof).toBe(Symbol.for('react.memo'));
+    expect(tsxSource).not.toContain('data-no-liquid');
+  });
 });

@@ -49,6 +49,8 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState, EMPTY_STATE_ICONS } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { useCardFilters } from '../../../hooks/useCardFilters';
@@ -1642,15 +1644,17 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                       <InspectorKeyValue label="Progression" value={`${msPct}%`} tone="ok" isLast />
                       <InspectorProgressBar percent={msPct} tone="ok" animateKey={proj.id} />
                     </InspectorCard>
-                    <InspectorCard>
-                      {projMilestones.length === 0 ? (
-                        <InspectorListItem
+                    {projMilestones.length === 0 ? (
+                      <KineticEmptyStateMotion motionKey={`pm-ms-${proj.id}`}>
+                        <EmptyState
+                          variant="compact"
+                          icon={<Calendar />}
                           title="Aucun jalon configuré"
-                          badge={{ label: 'Standard', tone: 'neutral' }}
-                          isLast
                         />
-                      ) : (
-                        projMilestones.map((m, idx) => (
+                      </KineticEmptyStateMotion>
+                    ) : (
+                      <InspectorCard>
+                        {projMilestones.map((m, idx) => (
                           <InspectorListItem
                             key={m.id}
                             title={m.title}
@@ -1662,9 +1666,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                             }
                             isLast={idx === projMilestones.length - 1}
                           />
-                        ))
-                      )}
-                    </InspectorCard>
+                        ))}
+                      </InspectorCard>
+                    )}
                   </InspectorSection>
                 );
               }
@@ -1697,15 +1701,18 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                       </InspectorCard>
                     </InspectorSection>
                     <InspectorSection index={2} title={`Notes de Frais (${projExpenses.length})`}>
-                      <InspectorCard>
-                        {projExpenses.length === 0 ? (
-                          <InspectorListItem
+                      {projExpenses.length === 0 ? (
+                        <KineticEmptyStateMotion motionKey={`pm-exp-${proj.id}`}>
+                          <EmptyState
+                            variant="compact"
+                            tone="positive"
+                            icon={<EMPTY_STATE_ICONS.Receipt />}
                             title="Aucune dépense déclarée"
-                            badge={{ label: 'Clean', tone: 'ok' }}
-                            isLast
                           />
-                        ) : (
-                          projExpenses.map((e, idx) => (
+                        </KineticEmptyStateMotion>
+                      ) : (
+                        <InspectorCard>
+                          {projExpenses.map((e, idx) => (
                             <InspectorListItem
                               key={e.id}
                               title={e.title}
@@ -1728,8 +1735,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                               isLast={idx === projExpenses.length - 1}
                             />
                           ))
-                        )}
-                      </InspectorCard>
+                        </InspectorCard>
+                      )}
                     </InspectorSection>
                   </>
                 );
@@ -2036,9 +2043,14 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 )}
               </div>
               {pendingPayrollBatches.length === 0 ? (
-                <div className="p-8 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 text-xs text-black/55 dark:text-white/55">
-                  Aucun lot de paie en attente d'approbation.
-                </div>
+                <KineticEmptyStateMotion motionKey="pm-dir-pay-empty">
+                  <EmptyState
+                    variant="compact"
+                    tone="positive"
+                    icon={<CheckCircle />}
+                    title="Aucun lot de paie en attente d'approbation"
+                  />
+                </KineticEmptyStateMotion>
               ) : (
                 pendingPayrollBatches.map((batch) => (
                   <div
@@ -2102,9 +2114,14 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 )}
               </div>
               {pendingExpenses.length === 0 ? (
-                <div className="p-8 text-center bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 text-xs text-black/55 dark:text-white/55">
-                  Aucun frais d'activation en attente d'arbitrage.
-                </div>
+                <KineticEmptyStateMotion motionKey="pm-dir-exp-empty">
+                  <EmptyState
+                    variant="compact"
+                    tone="positive"
+                    icon={<CheckCircle />}
+                    title="Aucun frais d'activation en attente d'arbitrage"
+                  />
+                </KineticEmptyStateMotion>
               ) : (
                 pendingExpenses.map((expense) => (
                   <div

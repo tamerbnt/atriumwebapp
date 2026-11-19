@@ -34,6 +34,8 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonPosRegister } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -1265,15 +1267,15 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               />
 
               {products.length === 0 ? (
-                <div className="p-8 rounded-3xl bg-white/80 dark:bg-neutral-900 border border-dashed border-[#E6DED6] dark:border-neutral-700 text-center space-y-3">
-                  <Package size={36} className="text-[#d4522f] mx-auto opacity-70" />
-                  <h3 className="text-base font-bold text-black dark:text-white">
-                    {t('shop_empty_inventory_title', { branch: currentBranch.name })}
-                  </h3>
-                  <p className="text-xs text-black/55 dark:text-white/55 max-w-md mx-auto">
-                    {t('shop_empty_inventory_desc')}
-                  </p>
-                </div>
+                <KineticEmptyStateMotion motionKey="pos-reg-inv-empty">
+                  <EmptyState
+                    variant="island"
+                    icon={<Package />}
+                    title={t('shop_empty_inventory_title', { branch: currentBranch.name })}
+                    description={t('shop_empty_inventory_desc')}
+                    width={500}
+                  />
+                </KineticEmptyStateMotion>
               ) : (
                 <UniversalDataCollection<Product>
                   items={sortedInventory}
@@ -1425,13 +1427,14 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
 
             <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 divide-y divide-neutral-100 dark:divide-neutral-800/60">
               {cart.length === 0 ? (
-                <div className="py-12 text-center text-black/55 dark:text-white/55 space-y-2">
-                  <ShoppingBag size={32} className="mx-auto opacity-40" />
-                  <p className="text-xs font-semibold">{t('shop_cart_empty_title')}</p>
-                  <p className="text-[11px] text-black/55 dark:text-white/55 max-w-[200px] mx-auto">
-                    {t('shop_cart_empty_desc')}
-                  </p>
-                </div>
+                <KineticEmptyStateMotion motionKey="pos-reg-cart-empty">
+                  <EmptyState
+                    variant="compact"
+                    icon={<ShoppingBag />}
+                    title={t('shop_cart_empty_title')}
+                    description={t('shop_cart_empty_desc')}
+                  />
+                </KineticEmptyStateMotion>
               ) : (
                 cart.map((item) => {
                   const lineTotal = item.product.price.amount * item.quantity - item.discount;

@@ -4,6 +4,7 @@ import { ChartSegmented } from './ChartSegmented';
 import { useInViewReveal, useIsRtl } from '../hooks';
 import { getDefaultChartStrings } from '../math';
 import { ChartCardFilter, ChartLocale, ChartSkeletonKind, ChartState, ChartSurface } from '../types';
+import { EmptyState, EMPTY_STATE_ICONS } from '../../components/EmptyState';
 
 export interface ChartCardProps {
   title: string;
@@ -166,18 +167,29 @@ export const ChartCard: React.FC<ChartCardProps> = React.memo(({
           <ChartSkeleton kind={skeletonKind} />
         </div>
       ) : state === 'error' ? (
-        <div className="ax-err" role="alert">
-          <span>{errorMessage || strings.error}</span>
-          {onRetry && (
-            <button type="button" data-no-liquid="true" className="ax-retry" onClick={onRetry}>
-              {strings.retry}
-            </button>
-          )}
-        </div>
+        <EmptyState
+          variant="compact"
+          tone="error"
+          icon={<EMPTY_STATE_ICONS.WifiSlash />}
+          title={strings.error}
+          description={errorMessage}
+          primaryAction={
+            onRetry
+              ? {
+                  label: strings.retry,
+                  icon: <EMPTY_STATE_ICONS.ArrowClockwise />,
+                  onClick: onRetry,
+                }
+              : undefined
+          }
+        />
       ) : state === 'empty' ? (
-        <div className="ax-emp" role="status">
-          <span>{emptyMessage || strings.empty}</span>
-        </div>
+        <EmptyState
+          variant="compact"
+          tone="neutral"
+          icon={<EMPTY_STATE_ICONS.Receipt />}
+          title={emptyMessage || strings.empty}
+        />
       ) : (
         children
       )}

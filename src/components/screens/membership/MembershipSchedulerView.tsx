@@ -28,7 +28,9 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { t } from '../../../utils/i18n';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import {
+  KineticEmptyStateMotion,
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
@@ -595,10 +597,29 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {currentDayEvents.length === 0 ? (
-          <div className="col-span-full py-16 text-center text-xs text-black/62 dark:text-white/65">
-            {isAr
-              ? 'لا توجد حصص مجدولة لهذا اليوم'
-              : `No sessions planned for ${days.find((d) => d.id === selectedDay)?.label}.`}
+          <div className="col-span-full min-h-[330px] flex flex-col">
+            <KineticEmptyStateMotion motionKey={`sched-empty-${selectedDay}-${language}`}>
+              <EmptyState
+                variant="island"
+                tone="neutral"
+                width={420}
+                icon={<Calendar size={24} />}
+                title={
+                  isAr
+                    ? 'لا توجد حصص مجدولة لهذا اليوم'
+                    : isEn
+                    ? 'No sessions planned'
+                    : 'Aucune séance planifiée'
+                }
+                description={
+                  isAr
+                    ? 'اختر يوماً آخر أو أضف حصة جديدة لهذا الجدول.'
+                    : isEn
+                    ? `No sessions planned for ${days.find((d) => d.id === selectedDay)?.label}.`
+                    : `Aucune séance prévue pour ${days.find((d) => d.id === selectedDay)?.label}.`
+                }
+              />
+            </KineticEmptyStateMotion>
           </div>
         ) : (
           currentDayEvents.map((event) => {

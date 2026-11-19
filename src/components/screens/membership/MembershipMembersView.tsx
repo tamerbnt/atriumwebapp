@@ -23,11 +23,15 @@ import {
   selectSelectedMemberFromState,
   selectMemberAction,
   closeDetailAction,
+  addMemberAction,
   updateMemberAction,
   deleteMemberAction,
   checkInMemberAction,
+  retryCloudSyncAction,
+  openFastSwitchAction,
   showToast as showToastAction,
 } from '../../../services/store';
+import { resolveEmptyState } from '../../../atrium/components/EmptyState';
 import { Member } from '../../../types/index';
 import { calculateDaysRemaining, formatMoney, localizeStatus } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
@@ -121,12 +125,19 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
   const isDetailOpen = useAtriumSelector((s) => s.isDetailOpen);
   const isSyncing = useAtriumSelector((s) => s.isSyncing);
   const networkMode = useAtriumSelector((s) => s.networkMode || 'online');
+  const lastSyncedAt = useAtriumSelector((s) => s.lastSyncedAt);
+  const syncErrorMessage = useAtriumSelector((s) => s.syncErrorMessage);
+  const isSyncTimeout = useAtriumSelector((s) => s.isSyncTimeout);
+  const currentUser = useAtriumSelector((s) => s.currentUser);
 
   const selectMember = selectMemberAction;
   const closeDetail = closeDetailAction;
+  const addMember = addMemberAction;
   const updateMember = updateMemberAction;
   const deleteMember = deleteMemberAction;
   const checkInMember = checkInMemberAction;
+  const retryCloudSync = retryCloudSyncAction;
+  const openFastSwitch = openFastSwitchAction;
   const showToast = showToastAction;
 
   const [statusFilter, setStatusFilter] = useState('All');
@@ -157,6 +168,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
   const lastSelectedIdxRef = useRef(-1);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const csvInputRef = useRef<HTMLInputElement | null>(null);
 
   const toggleExpandMember = useCallback((id: string) => {
     const key = String(id);
@@ -516,6 +528,22 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 
   const displayMembers = sortedMembers;
 
+  const isErrorState =
+    isSyncTimeout ||
+    Boolean(syncErrorMessage) ||
+    (networkMode === 'offline' && members.length === 0);
+
+  const isBranchForbidden = useMemo(() => {
+    if (!currentBranch) return false;
+    const allowed: string[] | undefined = (currentUser as any)?.allowedBranchIds;
+    const restricted: string[] | undefined = (currentUser as any)?.restrictedBranchIds;
+    if (Array.isArray(restricted) && restricted.includes(currentBranch.id)) return true;
+    if (Array.isArray(allowed) && !allowed.includes(currentBranch.id)) return true;
+    return false;
+  }, [currentBranch, currentUser]);
+
+  const hideCountsForIssue = isErrorState || isBranchForbidden;
+
   const quickStatusOptions = useMemo(
     () => [
       {
@@ -527,7 +555,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
             : language === 'fr'
             ? 'Tous les adhérents'
             : 'All Members',
-        count: members.length,
+        count: hideCountsForIssue ? '–' : members.length,
       },
       {
         value: 'Active',
@@ -538,7 +566,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
             : language === 'fr'
             ? 'Abonnements actifs'
             : 'Active Subscriptions',
-        count: activeMembersCount,
+        count: hideCountsForIssue ? '–' : activeMembersCount,
       },
       {
         value: 'Expiring',
@@ -549,10 +577,10 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
             : language === 'fr'
             ? 'À renouveler sous 14 jours'
             : 'Expiring within 14 days',
-        count: expiringCount,
+        count: hideCountsForIssue ? '–' : expiringCount,
       },
     ],
-    [language, members.length, activeMembersCount, expiringCount]
+    [language, hideCountsForIssue, members.length, activeMembersCount, expiringCount]
   );
 
   const extendedStatusOptions = useMemo(
@@ -1213,7 +1241,191 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
     hasCachedData: members.length > 0,
   });
 
-  if (showSkeleton && (members.length === 0 || networkMode === 'force_skeleton')) {
+  const nextExpiry = useMemo(() => {
+    if (statusFilter !== 'Expiring') return undefined;
+    let best: { date: string; name: string; days: number } | undefined;
+    for (let i = 0; i < preparedMembers.length; i++) {
+      const item = preparedMembers[i];
+      if (item.member.status !== 'Active' || item.daysRemaining <= 0) continue;
+      if (!best || item.daysRemaining < best.days) {
+        best = {
+          date: item.expStr || item.member.expirationDate,
+          name: item.member.fullName,
+          days: item.daysRemaining,
+        };
+      }
+    }
+    return best;
+  }, [preparedMembers, statusFilter]);
+
+  const handleImportCsv = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = '';
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = typeof reader.result === 'string' ? reader.result : '';
+        const lines = text
+          .split(/\r?\n/)
+          .map((l) => l.trim())
+          .filter(Boolean);
+        if (lines.length === 0) return;
+
+        const defaultPlan = plans[0];
+        const todayIso = new Date().toISOString().split('T')[0];
+        const expIso = new Date(Date.now() + (defaultPlan?.durationDays || 30) * 864e5)
+          .toISOString()
+          .split('T')[0];
+
+        let imported = 0;
+        lines.forEach((line, idx) => {
+          const cols = line.split(/[;,]/).map((c) => c.trim().replace(/^"|"$/g, ''));
+          if (idx === 0 && /nom|name|id/i.test(cols[0] || '') && /nom|name|phone|tel/i.test(cols[1] || '')) {
+            return;
+          }
+          const cardId = cols[0] && cols.length >= 2 ? cols[0] : `RFID-${Date.now()}-${idx}`;
+          const fullName = cols.length >= 2 ? cols[1] : cols[0];
+          const phoneNumber = cols[2] || '';
+          const planName = cols[3] || defaultPlan?.name || 'Standard';
+          if (!fullName) return;
+          const matchedPlan = plans.find((p) => p.name.toLowerCase() === planName.toLowerCase()) || defaultPlan;
+          addMember({
+            fullName,
+            email: '',
+            phoneNumber,
+            cardId,
+            status: 'Active',
+            startDate: todayIso,
+            expirationDate: expIso,
+            membershipPlanId: matchedPlan?.id,
+            membershipPlanName: matchedPlan?.name || planName,
+            remainingSessions: 30,
+            gender: 'Male',
+          });
+          imported++;
+        });
+
+        if (imported > 0) {
+          showToast({
+            type: 'success',
+            title: language === 'ar' ? 'تم الاستيراد' : language === 'fr' ? 'Import réussi' : 'Import complete',
+            message: `${imported} ${terminology.members.toLowerCase()}`,
+          });
+        }
+      };
+      reader.readAsText(file);
+    },
+    [plans, addMember, showToast, language, terminology.members]
+  );
+
+  const formattedLastSync = useMemo(() => {
+    if (!lastSyncedAt) return undefined;
+    try {
+      return new Date(lastSyncedAt).toLocaleTimeString(
+        language === 'ar' ? 'ar-DZ' : language === 'en' ? 'en-US' : 'fr-FR',
+        { hour: '2-digit', minute: '2-digit' }
+      );
+    } catch {
+      return lastSyncedAt;
+    }
+  }, [lastSyncedAt, language]);
+
+  const emptyStateProps = useMemo(() => {
+    if (!isErrorState && !isBranchForbidden && sortedMembers.length > 0) {
+      return undefined;
+    }
+    const esLocale = language === 'ar' ? 'ar' : language === 'en' ? 'en' : 'fr';
+    const siteName = currentBranch?.name || 'Siège Principal';
+    const tabParam =
+      statusFilter === 'Expiring'
+        ? 'renewals'
+        : statusFilter !== 'All' && statusFilter !== 'Expired' && statusFilter !== 'Archived'
+        ? statusFilter.toLowerCase()
+        : undefined;
+
+    return resolveEmptyState({
+      error: isErrorState
+        ? {
+            status: networkMode === 'offline' ? 503 : 500,
+            lastSync: formattedLastSync,
+          }
+        : undefined,
+      forbidden: isBranchForbidden ? { site: siteName } : undefined,
+      total: members.length,
+      results: sortedMembers.length,
+      query: searchQuery,
+      tab: tabParam,
+      filters: activeChips.map((c) => c.label),
+      site: siteName,
+      nextExpiry,
+      locale: esLocale,
+      handlers: {
+        retry: () => {
+          retry();
+          void retryCloudSync();
+        },
+        clearSearch: () => setSearchQuery(''),
+        addMember: (prefill) => onAddMember(undefined, prefill),
+        importFile: () => csvInputRef.current?.click(),
+        resetFilters: handleResetFilters,
+        showAll: () => setStatusFilter('All'),
+        requestAccess: () =>
+          showToast({
+            type: 'info',
+            title:
+              language === 'ar'
+                ? 'تم إرسال طلب الصلاحية'
+                : language === 'fr'
+                ? 'Demande envoyée'
+                : 'Access request sent',
+            message: siteName,
+          }),
+        changeSite: () => openFastSwitch(),
+        report: () =>
+          showToast({
+            type: 'info',
+            title:
+              language === 'ar'
+                ? 'تم الإبلاغ عن المشكلة'
+                : language === 'fr'
+                ? 'Incident signalé'
+                : 'Issue reported',
+            message: syncErrorMessage || 'Code 503',
+          }),
+      },
+    });
+  }, [
+    language,
+    currentBranch?.name,
+    statusFilter,
+    isErrorState,
+    networkMode,
+    formattedLastSync,
+    isBranchForbidden,
+    members.length,
+    sortedMembers.length,
+    searchQuery,
+    activeChips,
+    nextExpiry,
+    retry,
+    retryCloudSync,
+    onAddMember,
+    handleResetFilters,
+    showToast,
+    openFastSwitch,
+    syncErrorMessage,
+  ]);
+
+  const filterKey = `${deferredStatusFilter}|${deferredPlanFilter}|${deferredGenderFilter}|${deferredAgeGroupFilter}|${deferredBranchFilter}|${deferredSearchQuery}`;
+  const membersLower = terminology.members.toLowerCase();
+
+  if (
+    showSkeleton &&
+    !isTimedOut &&
+    (!isErrorState || networkMode === 'force_skeleton') &&
+    (members.length === 0 || networkMode === 'force_skeleton')
+  ) {
     return (
       <SkeletonCollectionScreen
         kpiCount={3}
@@ -1233,11 +1445,15 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
     );
   }
 
-  const filterKey = `${deferredStatusFilter}|${deferredPlanFilter}|${deferredGenderFilter}|${deferredAgeGroupFilter}|${deferredBranchFilter}|${deferredSearchQuery}`;
-  const membersLower = terminology.members.toLowerCase();
-
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">
+      <input
+        ref={csvInputRef}
+        type="file"
+        accept=".csv,text/csv"
+        className="hidden"
+        onChange={handleImportCsv}
+      />
       <ScreenHeaderBar
         icon={<Users size={22} />}
         title={terminology.members}
@@ -1367,7 +1583,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 
         <KineticCollectionStage<Member>
           scrollContainerRef={scrollContainerRef}
-          items={sortedMembers}
+          items={isErrorState || isBranchForbidden ? [] : sortedMembers}
           keyExtractor={(m) => m.id}
           columns={stageColumns}
           getRowData={getRowData}
@@ -1388,6 +1604,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
               ? 'Aucun adhérent ne correspond. Modifiez la recherche ou les filtres.'
               : 'No members match. Adjust search or filters.'
           }
+          emptyState={emptyStateProps}
           onPruneSelection={handlePruneSelection}
           onToggleSelectAll={handleToggleSelectAll}
           onToggleSort={handleToggleSort}

@@ -110,6 +110,7 @@ export function shouldCloseOnScrimMouseUp(
 export interface KineticMemberModalTriggerPayload<T = any> {
   member: T | null;
   originElement?: HTMLElement | null;
+  prefillName?: string;
 }
 
 type KineticModalHandler = (payload: KineticMemberModalTriggerPayload) => void;

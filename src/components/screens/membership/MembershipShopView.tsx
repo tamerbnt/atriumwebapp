@@ -26,6 +26,8 @@ import { formatMoney } from '../../../utils/rules';
 import { compactFilterLabel } from '../../../utils/filterLexicon';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import {
   ScreenHeaderBar,
   ScreenKpiBanner,
@@ -711,13 +713,14 @@ export const MembershipShopView: React.FC = React.memo(() => {
 
             <div className="flex-1 overflow-y-auto p-3.5 space-y-2 min-h-[200px]">
               {cart.length === 0 ? (
-                <div className="h-44 flex flex-col items-center justify-center text-center text-black/62 dark:text-white/65 text-xs px-4">
-                  <ShoppingBag size={28} className="text-black/35 dark:text-white/35 mb-2" />
-                  <p>{isAr ? 'السلة فارغة' : isEn ? 'Cart is empty' : 'Le panier est vide.'}</p>
-                  <span className="text-[11px] mt-1">
-                    {isAr ? 'أضف منتجات عبر الصفوف أو البطاقات' : 'Ajoutez un article pour encaisser'}
-                  </span>
-                </div>
+                <KineticEmptyStateMotion motionKey="mem-shop-cart-empty">
+                  <EmptyState
+                    variant="compact"
+                    icon={<ShoppingBag />}
+                    title={isAr ? 'السلة فارغة' : isEn ? 'Cart is empty' : 'Le panier est vide.'}
+                    description={isAr ? 'أضف منتجات عبر الصفوف أو البطاقات' : 'Ajoutez un article pour encaisser'}
+                  />
+                </KineticEmptyStateMotion>
               ) : (
                 cart.map((item) => (
                   <div

@@ -27,6 +27,8 @@ import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -1554,11 +1556,17 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 </InspectorCard>
               </InspectorSection>
               <InspectorSection index={1} title={isAr ? 'الفريق المعين' : `Équipe Pointée (${attList.length})`}>
-                <InspectorCard>
-                  {attList.length === 0 ? (
-                    <InspectorListItem title="Aucun animateur affecté" badge={{ label: 'Vide', tone: 'neutral' }} isLast />
-                  ) : (
-                    attList.map((a, idx) => (
+                {attList.length === 0 ? (
+                  <KineticEmptyStateMotion motionKey={`pm-sup-team-${m.id}`}>
+                    <EmptyState
+                      variant="compact"
+                      icon={<Users />}
+                      title="Aucun animateur affecté"
+                    />
+                  </KineticEmptyStateMotion>
+                ) : (
+                  <InspectorCard>
+                    {attList.map((a, idx) => (
                       <InspectorListItem
                         key={a.id}
                         title={a.talentName}
@@ -1569,9 +1577,9 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                         }}
                         isLast={idx === attList.length - 1}
                       />
-                    ))
-                  )}
-                </InspectorCard>
+                    ))}
+                  </InspectorCard>
+                )}
               </InspectorSection>
               <InspectorSection index={2}>
                 <InspectorWideButton

@@ -21,6 +21,7 @@ import { useManufacturingData } from './manufacturingData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { ManufacturingOrderModal } from './ManufacturingOrderModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -35,6 +36,7 @@ import {
   KineticRowData,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticEmptyStateMotion,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -921,10 +923,13 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                     );
                   })()
                 ) : (
-                  <div className="text-center py-8 text-black/55 dark:text-white/55">
-                    <Boxes size={28} className="mx-auto mb-2 opacity-40" />
-                    <p>{isAr ? 'لا توجد تركيبة مرتبطة' : 'Aucune nomenclature liée.'}</p>
-                  </div>
+                  <KineticEmptyStateMotion motionKey={`mfg-bom-${inspectingOrder.id}`}>
+                    <EmptyState
+                      variant="compact"
+                      icon={<Boxes />}
+                      title={isAr ? 'لا توجد تركيبة مرتبطة' : 'Aucune nomenclature liée.'}
+                    />
+                  </KineticEmptyStateMotion>
                 )}
               </div>
             )}

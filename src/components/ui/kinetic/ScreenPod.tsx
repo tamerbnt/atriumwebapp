@@ -1,4 +1,77 @@
-import React from 'react';
+import React, { createContext, useMemo } from 'react';
+
+export interface ScreenPodToolbarSnapshot {
+  searchQuery: string;
+  hasSearchSetter: boolean;
+  statusValue?: string;
+  hasActiveAdvancedFilters: boolean;
+  activeFilterLabels: string[];
+  chipKey: string;
+  hasReset: boolean;
+  totalCount?: number;
+}
+
+export interface ScreenPodBridgeStore {
+  getSnapshot: () => ScreenPodToolbarSnapshot | null;
+  subscribe: (listener: () => void) => () => void;
+  syncToolbar: (
+    ownerId: symbol,
+    snapshot: ScreenPodToolbarSnapshot,
+    callbacks: { onSearchChange?: (q: string) => void; onResetAllFilters?: () => void }
+  ) => void;
+  clearToolbar: (ownerId: symbol) => void;
+  clearSearch: () => void;
+  resetFilters: () => void;
+}
+
+export const ScreenPodBridgeContext = createContext<ScreenPodBridgeStore | null>(null);
+
+function createScreenPodBridgeStore(): ScreenPodBridgeStore {
+  let activeOwner: symbol | null = null;
+  let current: ScreenPodToolbarSnapshot | null = null;
+  let callbacks: { onSearchChange?: (q: string) => void; onResetAllFilters?: () => void } = {};
+  const listeners = new Set<() => void>();
+
+  return {
+    getSnapshot: () => current,
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    syncToolbar: (ownerId, next, nextCallbacks) => {
+      activeOwner = ownerId;
+      callbacks = nextCallbacks;
+      const changed =
+        !current ||
+        current.searchQuery !== next.searchQuery ||
+        current.hasSearchSetter !== next.hasSearchSetter ||
+        current.statusValue !== next.statusValue ||
+        current.hasActiveAdvancedFilters !== next.hasActiveAdvancedFilters ||
+        current.chipKey !== next.chipKey ||
+        current.hasReset !== next.hasReset ||
+        current.totalCount !== next.totalCount;
+      if (changed) {
+        current = next;
+        listeners.forEach((l) => l());
+      }
+    },
+    clearToolbar: (ownerId) => {
+      if (activeOwner === ownerId) {
+        activeOwner = null;
+        current = null;
+        callbacks = {};
+      }
+    },
+    clearSearch: () => {
+      callbacks.onSearchChange?.('');
+    },
+    resetFilters: () => {
+      callbacks.onResetAllFilters?.();
+    },
+  };
+}
 
 export interface ScreenPodProps {
   children: React.ReactNode;
@@ -6,12 +79,16 @@ export interface ScreenPodProps {
 }
 
 export const ScreenPod: React.FC<ScreenPodProps> = React.memo(({ children, className = '' }) => {
+  const store = useMemo(() => createScreenPodBridgeStore(), []);
+
   return (
-    <div
-      className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs ${className}`}
-    >
-      {children}
-    </div>
+    <ScreenPodBridgeContext.Provider value={store}>
+      <div
+        className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs ${className}`}
+      >
+        {children}
+      </div>
+    </ScreenPodBridgeContext.Provider>
   );
 });
 

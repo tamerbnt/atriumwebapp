@@ -15,6 +15,7 @@ import { useRealEstateData } from './realEstateData';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
 import { QuittanceModal } from './QuittanceModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -37,6 +38,7 @@ import {
   KineticRowData,
   KineticRowFanAction,
   KineticDetailAction,
+  KineticEmptyStateMotion,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -758,11 +760,18 @@ export const RealEstateLeasesView: React.FC<any> = () => {
               {tab === 'quittances' && (
                 <>
                   <InspectorSection index={1} title={isAr ? 'سجل المخالصات' : 'Quittances émises'}>
-                    <InspectorCard>
-                      {leaseReceipts.length === 0 ? (
-                        <InspectorListItem title={isAr ? 'لا توجد مخالصات' : 'Aucune quittance émise'} subtitle="Émettez la première quittance ci-dessous" isLast />
-                      ) : (
-                        leaseReceipts.map((q, idx) => (
+                    {leaseReceipts.length === 0 ? (
+                      <KineticEmptyStateMotion motionKey={`re-quit-${l.id}`}>
+                        <EmptyState
+                          variant="compact"
+                          icon={<FileText />}
+                          title={isAr ? 'لا توجد مخالصات' : 'Aucune quittance émise'}
+                          description="Émettez la première quittance ci-dessous"
+                        />
+                      </KineticEmptyStateMotion>
+                    ) : (
+                      <InspectorCard>
+                        {leaseReceipts.map((q, idx) => (
                           <InspectorListItem
                             key={q.id}
                             title={`${q.quittanceNumber} · Mois ${q.periodMonth}/${q.periodYear}`}
@@ -771,9 +780,9 @@ export const RealEstateLeasesView: React.FC<any> = () => {
                             badge={{ label: q.paymentMethod, tone: 'ok' }}
                             isLast={idx === leaseReceipts.length - 1}
                           />
-                        ))
-                      )}
-                    </InspectorCard>
+                        ))}
+                      </InspectorCard>
+                    )}
                   </InspectorSection>
                   <InspectorSection index={2}>
                     <InspectorWideButton

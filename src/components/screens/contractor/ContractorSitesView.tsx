@@ -23,6 +23,8 @@ import { ContractorProject, ContractorDailyLog } from '../../../types';
 import { useContractorData } from './contractorData';
 import { ContractorProjectModal } from './ContractorProjectModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -828,6 +830,9 @@ export const ContractorSitesView: React.FC = () => {
           onAddFirstItem={handleOpenAdd}
           onResetFilters={resetAllFilters}
           hasActiveFilters={searchQuery.length > 0 || activeFiltersCount > 0}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          totalCount={projects.length}
           customActions={(p) => [
             {
               id: 'dailyLog',
@@ -908,13 +913,13 @@ export const ContractorSitesView: React.FC = () => {
             return (
               <InspectorSection index={0} title={isAr ? 'بنود المقايسة' : `Postes BOQ (${currentBoqItems.length})`}>
                 {currentBoqItems.length === 0 ? (
-                  <InspectorCard>
-                    <InspectorListItem
+                  <KineticEmptyStateMotion motionKey={`ctr-boq-${p.id}`}>
+                    <EmptyState
+                      variant="compact"
+                      icon={<FileSpreadsheet />}
                       title={isAr ? 'لا توجد مقايسة مسجلة' : 'Aucun article BOQ lié à ce chantier'}
-                      badge={{ label: 'Vide', tone: 'neutral' }}
-                      isLast
                     />
-                  </InspectorCard>
+                  </KineticEmptyStateMotion>
                 ) : (
                   <InspectorCard>
                     {currentBoqItems.map((item, idx) => (
@@ -937,13 +942,17 @@ export const ContractorSitesView: React.FC = () => {
               <>
                 <InspectorSection index={0} title={isAr ? 'التقارير اليومية' : `Journaux de chantier (${currentDailyLogs.length})`}>
                   {currentDailyLogs.length === 0 ? (
-                    <InspectorCard>
-                      <InspectorListItem
+                    <KineticEmptyStateMotion motionKey={`ctr-log-${p.id}`}>
+                      <EmptyState
+                        variant="compact"
+                        icon={<BookOpen />}
                         title={isAr ? 'لا توجد تقارير مسجلة' : 'Aucun journal quotidien consigné'}
-                        badge={{ label: 'Vide', tone: 'neutral' }}
-                        isLast
+                        secondaryAction={{
+                          label: isAr ? 'إضافة تقرير يومي' : 'Nouveau journal',
+                          onClick: () => handleCreateDailyLogQuick(p),
+                        }}
                       />
-                    </InspectorCard>
+                    </KineticEmptyStateMotion>
                   ) : (
                     <InspectorCard>
                       {currentDailyLogs.map((log, idx) => (

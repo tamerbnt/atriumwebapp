@@ -17,7 +17,9 @@ import { PayslipPrintModal } from './PayslipPrintModal';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { compactFilterLabel } from '../../../utils/filterLexicon';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import {
+  KineticEmptyStateMotion,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorCard,
@@ -257,12 +259,21 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
       {historyMode === 'salaires' && (
         <div className="space-y-4">
           {payrollRuns.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734]">
-              <FileText className="w-8 h-8 text-black/50 dark:text-white/55 mx-auto mb-2" />
-              <p className="text-xs text-black/62 dark:text-white/65">
-                {isAr ? 'لا يوجد أرشيف' : isEn ? 'No history' : 'Aucun historique'}
-              </p>
-            </div>
+            <KineticEmptyStateMotion motionKey={`staff-hist-empty-${language}`}>
+              <EmptyState
+                variant="compact"
+                tone="neutral"
+                icon={<FileText className="w-5 h-5" />}
+                title={isAr ? 'لا يوجد أرشيف' : isEn ? 'No payroll history' : 'Aucun historique de paie'}
+                description={
+                  isAr
+                    ? 'ستظهر مسيرات الرواتب المعتمدة هنا بعد إغلاقها.'
+                    : isEn
+                    ? 'Approved payroll runs will appear here once finalized.'
+                    : 'Les clôtures de paie validées apparaîtront ici.'
+                }
+              />
+            </KineticEmptyStateMotion>
           ) : (
             payrollRuns.map((run) => {
               const runSlips = payrollSlips.filter((s) => s.payrollRunId === run.id);

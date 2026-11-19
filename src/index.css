@@ -2713,7 +2713,49 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
   contain-intrinsic-size: auto 260px;
 }
 
+/* Atrium Motion Engine host styles for hosted EmptyState buttons */
+.es-motion-host .es-btn {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
 
+.es-motion-host .es-btn--primary {
+  --q: var(--atr-accq, rgba(255, 255, 255, 0.22));
+}
 
+.es-motion-host .es-btn--secondary {
+  --q: var(--atr-hl, rgba(212, 82, 47, 0.1));
+}
 
+.es-motion-host .es-btn > .es-atr-lq {
+  position: absolute;
+  inset: 0;
+  background: var(--q);
+  clip-path: circle(0px at 50% 50%);
+  pointer-events: none;
+}
+
+.es-motion-host .es-btn > .es-btn-icon,
+.es-motion-host .es-btn > .es-btn-label {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ChartCard compact EmptyState token inheritance (handles light, dark, and data-surface="dark") */
+.ax-card .es-compact-root {
+  --panel: var(--ax-bg);
+  --pod: var(--ax-slab);
+  --card: var(--ax-slab);
+  --border: var(--ax-bdr);
+  --ghost-border: var(--ax-bdr);
+  --ink: var(--ax-on);
+  --muted: var(--ax-sub);
+  --accent: var(--ax-c1);
+  --on-accent: var(--ax-tc1);
+}
 

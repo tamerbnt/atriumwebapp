@@ -18,7 +18,9 @@ import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import {
+  KineticEmptyStateMotion,
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
@@ -979,11 +981,34 @@ export const TradingDirectoryView: React.FC = () => {
                     ) : undefined
                   }
                 >
-                  <InspectorCard>
-                    {entityHistory.length === 0 ? (
-                      <InspectorKeyValue label="Transactions" value="Aucune pièce enregistrée" isLast />
-                    ) : (
-                      entityHistory.slice(0, 8).map((d, idx) => (
+                  {entityHistory.length === 0 ? (
+                    <KineticEmptyStateMotion motionKey={`tr-dir-hist-empty-${activeEntity.id}`}>
+                      <EmptyState
+                        variant="compact"
+                        tone="neutral"
+                        icon={<FileText size={20} />}
+                        title={isAr ? 'لا توجد مستندات' : isEn ? 'No documents yet' : 'Aucune pièce enregistrée'}
+                        description={
+                          isAr
+                            ? 'ستظهر عروض الأسعار والفواتير المرتبطة بهذا الحساب هنا.'
+                            : isEn
+                            ? 'Quotes, orders, and invoices for this partner will appear here.'
+                            : 'Les devis, BL et factures de ce tiers apparaîtront ici.'
+                        }
+                        secondaryAction={
+                          directoryTab === 'clients'
+                            ? {
+                                label: isAr ? 'إنشاء مستند' : isEn ? 'Create document' : 'Créer document',
+                                icon: <Plus size={14} />,
+                                onClick: () => setIsDocComposerOpen(true),
+                              }
+                            : undefined
+                        }
+                      />
+                    </KineticEmptyStateMotion>
+                  ) : (
+                    <InspectorCard>
+                      {entityHistory.slice(0, 8).map((d, idx) => (
                         <InspectorListItem
                           key={d.id}
                           title={d.docNumber}
@@ -991,9 +1016,9 @@ export const TradingDirectoryView: React.FC = () => {
                           metaRight={formatMoney(d.netToPay)}
                           isLast={idx === Math.min(entityHistory.length, 8) - 1}
                         />
-                      ))
-                    )}
-                  </InspectorCard>
+                      ))}
+                    </InspectorCard>
+                  )}
                 </InspectorSection>
               </div>
             );

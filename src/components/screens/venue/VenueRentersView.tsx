@@ -17,6 +17,7 @@ import { BookingModal } from './BookingModal';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -36,6 +37,7 @@ import {
   InspectorListItem,
   InspectorNotesField,
   InspectorWideButton,
+  KineticEmptyStateMotion,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -784,18 +786,21 @@ export const VenueRentersView: React.FC = () => {
                   index={0}
                   title={`${isAr ? 'الحجوزات' : 'Historique & Prévues'} (${renterBookings.length})`}
                 >
-                  <InspectorCard>
-                    {renterBookings.length === 0 ? (
-                      <InspectorListItem
+                  {renterBookings.length === 0 ? (
+                    <KineticEmptyStateMotion motionKey={`venue-renter-${renter.id}`}>
+                      <EmptyState
+                        variant="compact"
+                        icon={<Calendar />}
                         title={
                           isAr
                             ? 'لا توجد حجوزات حالياً'
                             : 'Aucune réservation active pour le moment.'
                         }
-                        isLast
                       />
-                    ) : (
-                      renterBookings.map((b, idx) => (
+                    </KineticEmptyStateMotion>
+                  ) : (
+                    <InspectorCard>
+                      {renterBookings.map((b, idx) => (
                         <InspectorListItem
                           key={b.id}
                           title={b.purpose || 'Séance de réservation'}
@@ -807,9 +812,9 @@ export const VenueRentersView: React.FC = () => {
                           }}
                           isLast={idx === renterBookings.length - 1}
                         />
-                      ))
-                    )}
-                  </InspectorCard>
+                      ))}
+                    </InspectorCard>
+                  )}
                 </InspectorSection>
 
                 <InspectorWideButton

@@ -25,6 +25,7 @@ import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import {
   ScreenHeaderBar,
   ScreenKpiBanner,
@@ -36,6 +37,7 @@ import {
   InspectorKeyValue,
   InspectorProgressBar,
   InspectorListItem,
+  KineticEmptyStateMotion,
   buildBranchesByIdMap,
   resolveRecordBranch,
 } from '../../ui/kinetic';
@@ -541,14 +543,15 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
           </div>
           <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
             {visibleLogs.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-black/62 dark:text-white/65">
-                <UserCheck size={36} className="text-black/45 dark:text-white/45 mb-2" />
-                <p className="text-xs font-semibold text-black/75 dark:text-white/80">
-                  {isRtl ? 'لا توجد عمليات دخول مسجلة اليوم بعد' : "Aucun passage enregistré aujourd'hui"}
-                </p>
-                <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">
-                  {isRtl ? 'امسح الباركود للبدء في التسجيل' : 'Scannez un badge pour voir les entrées en direct'}
-                </p>
+              <div className="h-full flex flex-col justify-center">
+                <KineticEmptyStateMotion motionKey="kiosk-logs-empty">
+                  <EmptyState
+                    variant="compact"
+                    icon={<UserCheck />}
+                    title={isRtl ? 'لا توجد عمليات دخول مسجلة اليوم بعد' : "Aucun passage enregistré aujourd'hui"}
+                    description={isRtl ? 'امسح الباركود للبدء في التسجيل' : 'Scannez un badge pour voir les entrées en direct'}
+                  />
+                </KineticEmptyStateMotion>
               </div>
             ) : (
               visibleLogs.map((log) => (

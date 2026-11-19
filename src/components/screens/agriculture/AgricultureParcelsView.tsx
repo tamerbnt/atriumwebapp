@@ -22,6 +22,8 @@ import { AgriParcel, AgriParcelStatus, AgriTreatmentLog, AgriHarvestTicket } fro
 import { useAgricultureData } from './agricultureData';
 import { AgricultureParcelModal } from './AgricultureParcelModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -957,14 +959,19 @@ export const AgricultureParcelsView: React.FC = () => {
               <>
                 <InspectorSection index={0} title={isAr ? 'السجل النباتي' : isEn ? 'Phytosanitary Log' : 'Traitements & DAR'}>
                   {currentTreatments.length === 0 ? (
-                    <InspectorCard>
-                      <InspectorListItem
+                    <KineticEmptyStateMotion motionKey={`agri-treat-${item.id}`}>
+                      <EmptyState
+                        variant="compact"
+                        tone="positive"
+                        icon={<ShieldCheck />}
                         title={isAr ? 'لا توجد معالجات مسجلة' : 'Aucun traitement phytosanitaire consigné'}
-                        subtitle="Historique INPV vierge"
-                        badge={{ label: 'RAS', tone: 'ok' }}
-                        isLast
+                        description="Historique INPV vierge"
+                        secondaryAction={{
+                          label: isAr ? 'قيد معالجة' : 'Consigner un traitement',
+                          onClick: () => handleQuickTreatmentLog(item),
+                        }}
                       />
-                    </InspectorCard>
+                    </KineticEmptyStateMotion>
                   ) : (
                     <InspectorCard>
                       {currentTreatments.map((t, idx) => (
@@ -980,12 +987,14 @@ export const AgricultureParcelsView: React.FC = () => {
                     </InspectorCard>
                   )}
                 </InspectorSection>
-                <InspectorSection index={1}>
-                  <InspectorWideButton
-                    label={isAr ? '+ قيد معالجة جديدة' : '+ Consigner un traitement phyto'}
-                    onClick={() => handleQuickTreatmentLog(item)}
-                  />
-                </InspectorSection>
+                {currentTreatments.length > 0 && (
+                  <InspectorSection index={1}>
+                    <InspectorWideButton
+                      label={isAr ? '+ قيد معالجة جديدة' : '+ Consigner un traitement phyto'}
+                      onClick={() => handleQuickTreatmentLog(item)}
+                    />
+                  </InspectorSection>
+                )}
               </>
             );
           }
@@ -994,14 +1003,14 @@ export const AgricultureParcelsView: React.FC = () => {
             return (
               <InspectorSection index={0} title={isAr ? 'تذاكر الحصاد' : isEn ? 'Harvest Tickets' : 'Bons de récolte'}>
                 {currentHarvests.length === 0 ? (
-                  <InspectorCard>
-                    <InspectorListItem
+                  <KineticEmptyStateMotion motionKey={`agri-harv-${item.id}`}>
+                    <EmptyState
+                      variant="compact"
+                      icon={<Package />}
                       title={isAr ? 'لا توجد تذاكر جني مسجلة' : 'Aucun bon de pesée consigné'}
-                      subtitle="Aucune expédition rattachée à cette parcelle"
-                      badge={{ label: 'Vide', tone: 'neutral' }}
-                      isLast
+                      description="Aucune expédition rattachée à cette parcelle"
                     />
-                  </InspectorCard>
+                  </KineticEmptyStateMotion>
                 ) : (
                   <InspectorCard>
                     {currentHarvests.map((h, idx) => (

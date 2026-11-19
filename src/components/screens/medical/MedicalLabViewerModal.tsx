@@ -15,6 +15,8 @@ import { MedicalLabRecord, MedicalPatient, MedicalPractitioner } from '../../../
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 
 interface MedicalLabViewerModalProps {
   isOpen: boolean;
@@ -183,11 +185,20 @@ Rapport d'Imagerie (
 {lab.imagingReport}
 </div>}
 </div>)}
-</div> : /* @__PURE__ */ <div className="py-16 text-center text-black/55 dark:text-white/55 space-y-2">
-<Microscope size={36} className="mx-auto text-black/55 dark:text-white/55" />
-<p className="text-xs">Aucun bilan biologique enregistré pour ce patient.</p>
-<AtriumButton variant="secondary" size="sm" onClick={() => setActiveTab("create")}>Saisir le premier bilan</AtriumButton>
-</div> : /* @__PURE__ */ <form onSubmit={handleCreateLab} className="space-y-4">
+</div> : <KineticEmptyStateMotion motionKey={`med-lab-empty-${patient.id}`}>
+  <EmptyState
+    variant="compact"
+    tone="neutral"
+    icon={<Microscope size={20} />}
+    title="Aucun bilan biologique"
+    description="Aucun bilan biologique enregistré pour ce patient."
+    secondaryAction={{
+      label: 'Saisir le premier bilan',
+      icon: <Plus size={14} />,
+      onClick: () => setActiveTab('create'),
+    }}
+  />
+</KineticEmptyStateMotion> : /* @__PURE__ */ <form onSubmit={handleCreateLab} className="space-y-4">
 <div className="grid grid-cols-2 gap-3">
 <LabelSelect label="Type de Bilan" value={testCategory} onChange={(val) => setTestCategory(val)} options={[
 									{

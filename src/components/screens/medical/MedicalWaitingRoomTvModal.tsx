@@ -15,6 +15,8 @@ import {
 import { MedicalConsultation, MedicalPractitioner } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useMedicalData } from './medicalData';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 
 interface MedicalWaitingRoomTvModalProps {
   isOpen: boolean;
@@ -302,12 +304,16 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                 </div>
               </div>
             ) : (
-              <div className="rounded-[32px] p-12 bg-[#18181B] border border-white/10 min-h-[380px] flex flex-col items-center justify-center text-center">
-                <Clock size={48} className="text-white/50 mb-4 animate-spin" />
-                <h3 className="text-xl font-semibold text-white/70">Salle d'attente calme</h3>
-                <p className="text-sm text-white/60 mt-1 max-w-md">
-                  Aucun patient en cours d'examen. Les prochains numéros seront appelés dès disponibilité des cabinets.
-                </p>
+              <div data-theme="dark" className="rounded-[32px] p-6 bg-[#18181B] border border-white/10 min-h-[380px] flex flex-col justify-center">
+                <KineticEmptyStateMotion motionKey="tv-calm">
+                  <EmptyState
+                    variant="compact"
+                    tone="positive"
+                    icon={<Clock size={20} />}
+                    title="Salle d'attente calme"
+                    description="Aucun patient en cours d'examen. Les prochains numéros seront appelés dès disponibilité des cabinets."
+                  />
+                </KineticEmptyStateMotion>
               </div>
             )}
           </div>
@@ -398,8 +404,16 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
               ))}
 
               {waitingQueue.length === 0 && (
-                <div className="py-12 text-center text-white/55 text-xs">
-                  Aucun patient en file d'attente immédiate.
+                <div data-theme="dark">
+                  <KineticEmptyStateMotion motionKey="tv-queue-empty">
+                    <EmptyState
+                      variant="compact"
+                      tone="neutral"
+                      icon={<Clock size={20} />}
+                      title="File d'attente vide"
+                      description="Aucun patient en file d'attente immédiate."
+                    />
+                  </KineticEmptyStateMotion>
                 </div>
               )}
             </div>

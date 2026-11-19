@@ -19,6 +19,8 @@ import { MedicalPatientModal } from './MedicalPatientModal';
 import { MedicalConsultationModal } from './MedicalConsultationModal';
 import { MedicalLabViewerModal } from './MedicalLabViewerModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -1301,23 +1303,28 @@ export const MedicalPatientsView: React.FC<any> = () => {
                           })}
                         </InspectorCard>
                       ) : (
-                        <InspectorCard>
-                          <div className="py-4 text-center text-xs text-black/55 dark:text-white/55">
-                            <Microscope size={22} className="mx-auto mb-1.5 opacity-40" />
-                            <p>
-                              {isAr ? 'لا توجد تحاليل بيولوجية مسجلة' : 'Aucun bilan biologique pour ce patient.'}
-                            </p>
-                          </div>
-                        </InspectorCard>
+                        <KineticEmptyStateMotion motionKey={`med-lab-${patient.id}`}>
+                          <EmptyState
+                            variant="compact"
+                            icon={<Microscope />}
+                            title={isAr ? 'لا توجد تحاليل بيولوجية مسجلة' : 'Aucun bilan biologique pour ce patient.'}
+                            secondaryAction={{
+                              label: isAr ? 'تحليل مخبري جديد' : 'Ouvrir / Nouveau Bilan Labo',
+                              onClick: () => setIsLabModalOpen(true),
+                            }}
+                          />
+                        </KineticEmptyStateMotion>
                       )}
-                      <div className="mt-3">
-                        <InspectorWideButton
-                          label={isAr ? 'تحليل مخبري جديد' : 'Ouvrir / Nouveau Bilan Labo'}
-                          icon={<Microscope size={14} />}
-                          tone="accent"
-                          onClick={() => setIsLabModalOpen(true)}
-                        />
-                      </div>
+                      {patientLabs.length > 0 && (
+                        <div className="mt-3">
+                          <InspectorWideButton
+                            label={isAr ? 'تحليل مخبري جديد' : 'Ouvrir / Nouveau Bilan Labo'}
+                            icon={<Microscope size={14} />}
+                            tone="accent"
+                            onClick={() => setIsLabModalOpen(true)}
+                          />
+                        </div>
+                      )}
                     </InspectorSection>
                   </>
                 );
@@ -1329,41 +1336,48 @@ export const MedicalPatientsView: React.FC<any> = () => {
                   index={0}
                 >
                   {patientConsults.length > 0 ? (
-                    <InspectorCard>
-                      {patientConsults.map((c, idx) => (
-                        <InspectorListItem
-                          key={c.id}
-                          title={c.diagnosis || c.chiefComplaint}
-                          subtitle={
-                            c.vitals
-                              ? `${c.chiefComplaint} · TA ${c.vitals.bloodPressure || '120/80'} · ${c.vitals.temperatureCelsius ?? 37}°C`
-                              : c.chiefComplaint
-                          }
-                          metaRight={c.consultationDate?.split('T')[0]}
-                          badge={{
-                            label: c.status === 'Completed' ? (isAr ? 'مكتمل' : 'Clôturé') : c.status,
-                            tone: c.status === 'Completed' ? 'ok' : 'warn',
-                          }}
-                          isLast={idx === patientConsults.length - 1}
+                    <>
+                      <InspectorCard>
+                        {patientConsults.map((c, idx) => (
+                          <InspectorListItem
+                            key={c.id}
+                            title={c.diagnosis || c.chiefComplaint}
+                            subtitle={
+                              c.vitals
+                                ? `${c.chiefComplaint} · TA ${c.vitals.bloodPressure || '120/80'} · ${c.vitals.temperatureCelsius ?? 37}°C`
+                                : c.chiefComplaint
+                            }
+                            metaRight={c.consultationDate?.split('T')[0]}
+                            badge={{
+                              label: c.status === 'Completed' ? (isAr ? 'مكتمل' : 'Clôturé') : c.status,
+                              tone: c.status === 'Completed' ? 'ok' : 'warn',
+                            }}
+                            isLast={idx === patientConsults.length - 1}
+                          />
+                        ))}
+                      </InspectorCard>
+                      <div className="mt-3">
+                        <InspectorWideButton
+                          label={isAr ? 'إضافة فحص سريري' : 'Nouvelle Consultation'}
+                          icon={<Stethoscope size={14} />}
+                          tone="accent"
+                          onClick={() => handleOpenConsultation(patient)}
                         />
-                      ))}
-                    </InspectorCard>
-                  ) : (
-                    <InspectorCard>
-                      <div className="py-6 text-center text-xs text-black/55 dark:text-white/55">
-                        <Stethoscope size={24} className="mx-auto mb-2 opacity-40" />
-                        <p>{isAr ? 'لا توجد فحوصات سابقة لهذا المريض' : 'Aucune consultation enregistrée.'}</p>
                       </div>
-                    </InspectorCard>
+                    </>
+                  ) : (
+                    <KineticEmptyStateMotion motionKey={`med-hist-${patient.id}`}>
+                      <EmptyState
+                        variant="compact"
+                        icon={<Stethoscope />}
+                        title={isAr ? 'لا توجد فحوصات سابقة لهذا المريض' : 'Aucune consultation enregistrée.'}
+                        secondaryAction={{
+                          label: isAr ? 'إضافة فحص سريري' : 'Nouvelle Consultation',
+                          onClick: () => handleOpenConsultation(patient),
+                        }}
+                      />
+                    </KineticEmptyStateMotion>
                   )}
-                  <div className="mt-3">
-                    <InspectorWideButton
-                      label={isAr ? 'إضافة فحص سريري' : 'Nouvelle Consultation'}
-                      icon={<Stethoscope size={14} />}
-                      tone="accent"
-                      onClick={() => handleOpenConsultation(patient)}
-                    />
-                  </div>
                 </InspectorSection>
               )}
             </div>

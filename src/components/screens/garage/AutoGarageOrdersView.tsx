@@ -21,6 +21,8 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AutoOrderModal } from './AutoOrderModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -852,9 +854,13 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                   </div>
                   <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[550px] pr-1">
                     {colOrders.length === 0 ? (
-                      <div className="text-center py-8 text-black/55 dark:text-white/55 text-xs italic">
-                        {isAr ? 'لا توجد سيارات' : 'Aucun véhicule'}
-                      </div>
+                      <KineticEmptyStateMotion motionKey={`garage-col-${col.id}`}>
+                        <EmptyState
+                          variant="compact"
+                          icon={<Wrench />}
+                          title={isAr ? 'لا توجد سيارات' : 'Aucun véhicule'}
+                        />
+                      </KineticEmptyStateMotion>
                     ) : (
                       colOrders.map((order) => (
                         <div
@@ -1049,9 +1055,26 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 </InspectorSection>
                 <InspectorSection index={1} title={isAr ? 'قطع الغيار المصروفة' : 'Pièces Utilisées'}>
                   {order.partsUsed.length === 0 ? (
-                    <InspectorCard>
-                      <InspectorKeyValue label="Réquisitions" value="Aucune pièce réquisitionnée" mono={false} isLast />
-                    </InspectorCard>
+                    <KineticEmptyStateMotion motionKey={`garage-parts-empty-${order.id}`}>
+                      <EmptyState
+                        variant="compact"
+                        tone="neutral"
+                        icon={<Package size={20} />}
+                        title={isAr ? 'لا توجد قطع مصروفة' : isEn ? 'No parts issued' : 'Aucune pièce réquisitionnée'}
+                        description={
+                          isAr
+                            ? 'قم بصرف قطع الغيار المطلوبة لأمر الإصلاح.'
+                            : isEn
+                            ? 'Issue spare parts from inventory for this repair order.'
+                            : 'Sortez les pièces nécessaires depuis le magasin.'
+                        }
+                        secondaryAction={{
+                          label: isAr ? 'صرف قطعة' : isEn ? 'Issue part' : 'Sortir une pièce',
+                          icon: <Plus size={14} />,
+                          onClick: () => setIsRequisitionModalOpen(true),
+                        }}
+                      />
+                    </KineticEmptyStateMotion>
                   ) : (
                     <InspectorCard>
                       {order.partsUsed.map((p, i) => (

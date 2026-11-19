@@ -16,10 +16,12 @@ import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
+  KineticEmptyStateMotion,
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
@@ -815,11 +817,25 @@ export const EducationCohortsView: React.FC = () => {
                 index={0}
                 title={`${isAr ? 'الطلبة المسجلون' : isEn ? 'Enrolled Roster' : 'Étudiants Inscrits'} (${cohortEnrolledStudents.length})`}
               >
-                <InspectorCard>
-                  {cohortEnrolledStudents.length === 0 ? (
-                    <InspectorListItem title={isAr ? 'لا يوجد طلبة مسجلون' : 'No students enrolled yet'} isLast />
-                  ) : (
-                    cohortEnrolledStudents.map(({ enrollment, student }, idx) => (
+                {cohortEnrolledStudents.length === 0 ? (
+                  <KineticEmptyStateMotion motionKey={`cohort-roster-empty-${ch.id}`}>
+                    <EmptyState
+                      variant="compact"
+                      tone="neutral"
+                      icon={<GraduationCap size={20} />}
+                      title={isAr ? 'لا يوجد طلبة مسجلون' : isEn ? 'No students enrolled' : 'Aucun étudiant inscrit'}
+                      description={
+                        isAr
+                          ? 'أضف أول متدرب إلى هذا الفوج للبدء بالمتابعة.'
+                          : isEn
+                          ? 'Enroll the first student into this cohort to get started.'
+                          : 'Inscrivez le premier étudiant dans cette cohorte.'
+                      }
+                    />
+                  </KineticEmptyStateMotion>
+                ) : (
+                  <InspectorCard>
+                    {cohortEnrolledStudents.map(({ enrollment, student }, idx) => (
                       <InspectorListItem
                         key={enrollment.id}
                         title={enrollment.studentName}
@@ -830,9 +846,9 @@ export const EducationCohortsView: React.FC = () => {
                         }}
                         isLast={idx === cohortEnrolledStudents.length - 1}
                       />
-                    ))
-                  )}
-                </InspectorCard>
+                    ))}
+                  </InspectorCard>
+                )}
               </InspectorSection>
             );
           }

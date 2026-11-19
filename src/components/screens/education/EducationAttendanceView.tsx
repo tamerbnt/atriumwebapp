@@ -17,11 +17,13 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import { EduStudent, AttendanceStatus } from '../../../types';
 import { localizeStatus } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
+  KineticEmptyStateMotion,
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
@@ -1077,11 +1079,25 @@ export const EducationAttendanceView: React.FC = () => {
             return (
               <>
                 <InspectorSection index={0} title={t('edu_tab_gradebook')}>
-                  <InspectorCard>
-                    {stGrades.length === 0 ? (
-                      <InspectorListItem title="No grades recorded yet." isLast />
-                    ) : (
-                      stGrades.map((g, idx) => (
+                  {stGrades.length === 0 ? (
+                    <KineticEmptyStateMotion motionKey={`att-grades-empty-${st.id}`}>
+                      <EmptyState
+                        variant="compact"
+                        tone="neutral"
+                        icon={<Award size={20} />}
+                        title={isAr ? 'لا توجد علامات مسجلة' : isEn ? 'No grades recorded' : 'Aucune note enregistrée'}
+                        description={
+                          isAr
+                            ? 'لم يتم إدخال تقييمات لهذا الطالب بعد.'
+                            : isEn
+                            ? 'No assessments have been recorded for this student yet.'
+                            : 'Aucune évaluation saisie pour cet étudiant.'
+                        }
+                      />
+                    </KineticEmptyStateMotion>
+                  ) : (
+                    <InspectorCard>
+                      {stGrades.map((g, idx) => (
                         <InspectorListItem
                           key={g.id}
                           title={g.assessmentTitle}
@@ -1089,9 +1105,9 @@ export const EducationAttendanceView: React.FC = () => {
                           metaRight={`${g.score} / ${g.maxScore}`}
                           isLast={idx === stGrades.length - 1}
                         />
-                      ))
-                    )}
-                  </InspectorCard>
+                      ))}
+                    </InspectorCard>
+                  )}
                 </InspectorSection>
                 <InspectorSection index={1}>
                   <InspectorWideButton

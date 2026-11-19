@@ -26,6 +26,8 @@ import {
 } from '../../../services/store';
 import { Member } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -899,11 +901,18 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                   </InspectorSection>
 
                   <InspectorSection index={1} title={`Historique formules (${formulas.length})`}>
-                    <InspectorCard>
-                      {formulas.length === 0 ? (
-                        <InspectorListItem title="Aucune formulation enregistrée" subtitle="Ajoutez le dosage couleur ci-dessus" isLast />
-                      ) : (
-                        formulas.map((f: any, idx: number, arr: any[]) => (
+                    {formulas.length === 0 ? (
+                      <KineticEmptyStateMotion motionKey={`apt-form-${client.id}`}>
+                        <EmptyState
+                          variant="compact"
+                          icon={<Scissors />}
+                          title="Aucune formulation enregistrée"
+                          description="Ajoutez le dosage couleur ci-dessus"
+                        />
+                      </KineticEmptyStateMotion>
+                    ) : (
+                      <InspectorCard>
+                        {formulas.map((f: any, idx: number, arr: any[]) => (
                           <InspectorListItem
                             key={f.id}
                             title={f.formula}
@@ -911,9 +920,9 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                             badge={{ label: 'Tech', tone: 'warn' }}
                             isLast={idx === arr.length - 1}
                           />
-                        ))
-                      )}
-                    </InspectorCard>
+                        ))}
+                      </InspectorCard>
+                    )}
                   </InspectorSection>
                 </>
               );
@@ -937,11 +946,18 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                   </InspectorSection>
 
                   <InspectorSection index={1} title={`Historique prestations (${clientAppointments.length})`}>
-                    <InspectorCard>
-                      {clientAppointments.length === 0 ? (
-                        <InspectorListItem title="Aucun rendez-vous récent" subtitle="Premier dossier enregistré" isLast />
-                      ) : (
-                        clientAppointments.slice(0, 6).map((apt, idx, arr) => (
+                    {clientAppointments.length === 0 ? (
+                      <KineticEmptyStateMotion motionKey={`apt-hist-${client.id}`}>
+                        <EmptyState
+                          variant="compact"
+                          icon={<Calendar />}
+                          title="Aucun rendez-vous récent"
+                          description="Premier dossier enregistré"
+                        />
+                      </KineticEmptyStateMotion>
+                    ) : (
+                      <InspectorCard>
+                        {clientAppointments.slice(0, 6).map((apt, idx, arr) => (
                           <InspectorListItem
                             key={apt.id}
                             title={apt.serviceName}
@@ -949,9 +965,9 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                             metaRight={formatMoney(apt.price)}
                             isLast={idx === arr.length - 1}
                           />
-                        ))
-                      )}
-                    </InspectorCard>
+                        ))}
+                      </InspectorCard>
+                    )}
                   </InspectorSection>
 
                   <InspectorSection index={2} title="Notes & Préférences">

@@ -19,10 +19,12 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKanbanPipeline, SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
+  KineticEmptyStateMotion,
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
@@ -925,9 +927,21 @@ export const EducationAdmissionsView: React.FC = () => {
                       </div>
                     ))}
                     {leadsInStage.length === 0 && (
-                      <div className="py-8 text-center text-black/55 dark:text-white/55 text-[11px]">
-                        No leads in this stage
-                      </div>
+                      <KineticEmptyStateMotion motionKey={`adm-stage-empty-${stage}`}>
+                        <EmptyState
+                          variant="compact"
+                          tone="neutral"
+                          icon={<ClipboardList size={20} />}
+                          title={isAr ? 'لا توجد طلبات' : isEn ? 'No leads in this stage' : 'Aucun dossier'}
+                          description={
+                            isAr
+                              ? 'لا يوجد مرشحون في هذه المرحلة حالياً.'
+                              : isEn
+                              ? 'No candidates currently in this stage.'
+                              : 'Aucun candidat dans cette étape pour le moment.'
+                          }
+                        />
+                      </KineticEmptyStateMotion>
                     )}
                   </div>
                 </div>

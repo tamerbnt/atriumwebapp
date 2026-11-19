@@ -21,7 +21,18 @@ import { Member } from '../../../types/index';
 import { calculateDaysRemaining } from '../../../utils/rules';
 import { Sp, TUNES, subscribeFrame, wake } from './motion/adherentsMotion';
 import { clamp, computePanelMetrics } from './motion/adherentsMath';
-import { useAtriumSelector, shallowEqualObjects } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentMemberCheckInsFromState,
+  selectCurrentSalesFromState,
+} from '../../../services/store';
+import {
+  EmptyState,
+  resolveCompactCheckinsEmptyState,
+  resolveCompactInvoicesEmptyState,
+} from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic/KineticEmptyStateMotion';
 import { buildBranchesByIdMap, resolveRecordBranch } from '../../ui/kinetic/branchUtils';
 
 export interface MemberSlideOverInspectorProps {
@@ -72,9 +83,13 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       branches: s.branches,
       currentBranchId: s.currentBranchId,
       language: s.language,
+      memberCheckIns: selectCurrentMemberCheckInsFromState(s),
+      sales: selectCurrentSalesFromState(s),
     }),
     shallowEqualObjects
   );
+  const esLocale =
+    branchState.language === 'ar' ? 'ar' : branchState.language === 'en' ? 'en' : 'fr';
 
   // Retain the last displayed member during close bounce so content stays visible until settled
   const retainedMemberRef = useRef<Member | null>(member);
@@ -100,6 +115,21 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
         : null,
     [activeMember, branchesById, currentBranch, branchState.language]
   );
+
+  const memberCheckInHistory = useMemo(() => {
+    if (!activeMember) return [];
+    return branchState.memberCheckIns.filter((log) => log.memberId === activeMember.id);
+  }, [activeMember, branchState.memberCheckIns]);
+
+  const memberInvoiceHistory = useMemo(() => {
+    if (!activeMember) return [];
+    const nameLower = (activeMember.fullName || '').trim().toLowerCase();
+    return branchState.sales.filter(
+      (sale) =>
+        sale.memberId === activeMember.id ||
+        (nameLower.length > 0 && sale.memberName?.trim().toLowerCase() === nameLower)
+    );
+  }, [activeMember, branchState.sales]);
 
   // DOM refs for direct rAF style writes (zero per-frame React state updates)
   const scrimRef = useRef<HTMLDivElement | null>(null);
@@ -878,44 +908,76 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
                   <section style={{ '--k': 1 } as React.CSSProperties}>
                     <h3>Passages récents</h3>
-                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
-                      {[
-                        { gate: 'Portique A (Principal)', time: 'Aujourd’hui · 18:42', ok: !isBlocked },
-                        { gate: 'Portique B (Musculation)', time: 'Il y a 2 jours · 07:55', ok: true },
-                        { gate: 'Portique A (Principal)', time: 'Il y a 4 jours · 19:10', ok: true },
-                        { gate: 'Portique B (Musculation)', time: 'Il y a 7 jours · 12:31', ok: true },
-                      ].map((p, idx) => (
-                        <div
-                          key={idx}
-                          className="li flex justify-between items-center py-[11px] border-b last:border-b-0 border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]"
-                        >
-                          <span>
-                            <span className="font-medium block">{p.gate}</span>
-                            <small className="font-mono text-[11px] tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68">{p.time}</small>
-                          </span>
-                          <span
-                            className={`pill px-2.5 py-[3px] rounded-md text-[12px] font-medium ${
-                              p.ok
-                                ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3]'
-                                : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#c0283d] dark:text-[#FF8D7A]'
-                            }`}
-                          >
-                            {p.ok ? 'Accepté' : 'Refusé'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                    {memberCheckInHistory.length > 0 ? (
+                      <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                        {memberCheckInHistory.slice(0, 8).map((log) => {
+                          const ok =
+                            log.accessStatus === 'Granted' ||
+                            log.accessStatus === 'Warning_Expiring';
+                          const tsLabel = (() => {
+                            try {
+                              return new Date(log.timestamp).toLocaleString(
+                                esLocale === 'ar' ? 'ar-DZ' : esLocale === 'en' ? 'en-US' : 'fr-FR',
+                                { dateStyle: 'short', timeStyle: 'short' }
+                              );
+                            } catch {
+                              return log.timestamp;
+                            }
+                          })();
+                          return (
+                            <div
+                              key={log.id}
+                              className="li flex justify-between items-center py-[11px] border-b last:border-b-0 border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]"
+                            >
+                              <span>
+                                <span className="font-medium block">
+                                  {log.checkInMethod === 'nfc_card'
+                                    ? 'Portique RFID'
+                                    : log.checkInMethod === 'barcode_scanner'
+                                    ? 'Scanner Accueil'
+                                    : 'Validation Accueil'}
+                                </span>
+                                <small className="font-mono text-[11px] tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68">
+                                  {tsLabel}
+                                </small>
+                              </span>
+                              <span
+                                className={`pill px-2.5 py-[3px] rounded-md text-[12px] font-medium ${
+                                  ok
+                                    ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3]'
+                                    : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#c0283d] dark:text-[#FF8D7A]'
+                                }`}
+                              >
+                                {ok ? 'Accepté' : 'Refusé'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <KineticEmptyStateMotion motionKey={`member-checkins-empty-${activeMember.id}-${esLocale}`}>
+                        <EmptyState
+                          {...resolveCompactCheckinsEmptyState({
+                            name: memberName,
+                            onAction: () => onCheckIn(activeMember),
+                            locale: esLocale,
+                          })}
+                        />
+                      </KineticEmptyStateMotion>
+                    )}
                   </section>
 
-                  <section style={{ '--k': 2 } as React.CSSProperties}>
-                    <button
-                      type="button"
-                      onClick={() => onCheckIn(activeMember)}
-                      className="wide w-full h-[42px] border-0 rounded-[12px] bg-[var(--atr-acc,#d4522f)] text-white font-semibold text-[13.5px] cursor-pointer"
-                    >
-                      Enregistrer une présence
-                    </button>
-                  </section>
+                  {memberCheckInHistory.length > 0 && (
+                    <section style={{ '--k': 2 } as React.CSSProperties}>
+                      <button
+                        type="button"
+                        onClick={() => onCheckIn(activeMember)}
+                        className="wide w-full h-[42px] border-0 rounded-[12px] bg-[var(--atr-acc,#d4522f)] text-white font-semibold text-[13.5px] cursor-pointer"
+                      >
+                        Enregistrer une présence
+                      </button>
+                    </section>
+                  )}
                 </>
               )}
 
@@ -947,53 +1009,64 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   <section style={{ '--k': 1 } as React.CSSProperties}>
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="!m-0">Factures</h3>
-                      <button
-                        type="button"
-                        onClick={() => showToast(`Nouvelle facture pour ${memberName}`)}
-                        className="h-8 px-3 rounded-[9px] border-0 bg-[var(--atr-acc,#d4522f)] text-white font-semibold text-[12px] flex items-center gap-1 cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        Nouvelle
-                      </button>
-                    </div>
-                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
-                      {[
-                        {
-                          ref: `F-26-${activeMember.id.slice(0, 4).toUpperCase()} · ${planName}`,
-                          date: memberExp || '2026-11-05',
-                          amount: balanceAmount > 0 ? `${balanceAmount.toLocaleString('en-US')} DZD` : '6,500 DZD',
-                          paid: balanceAmount === 0,
-                        },
-                        {
-                          ref: `F-26-PREV · Renouvellement`,
-                          date: '2026-10-05',
-                          amount: '6,500 DZD',
-                          paid: true,
-                        },
-                      ].map((inv, idx) => (
-                        <div
-                          key={idx}
-                          className="li flex justify-between items-center py-[11px] border-b last:border-b-0 border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px] gap-2"
+                      {memberInvoiceHistory.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => showToast(`Nouvelle facture pour ${memberName}`)}
+                          className="h-8 px-3 rounded-[9px] border-0 bg-[var(--atr-acc,#d4522f)] text-white font-semibold text-[12px] flex items-center gap-1 cursor-pointer"
                         >
-                          <span>
-                            <span className="font-medium block">{inv.ref}</span>
-                            <small className="font-mono text-[11px] tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68">{inv.date}</small>
-                          </span>
-                          <span className="flex items-center gap-2 shrink-0">
-                            <b className="font-mono text-[12px] tabular-nums">{inv.amount}</b>
-                            <span
-                              className={`pill px-2 py-[2px] rounded-md text-[11px] font-medium ${
-                                inv.paid
-                                  ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3]'
-                                  : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
-                              }`}
-                            >
-                              {inv.paid ? 'Payée' : 'À régler'}
-                            </span>
-                          </span>
-                        </div>
-                      ))}
+                          <Plus className="w-3.5 h-3.5" />
+                          Nouvelle
+                        </button>
+                      )}
                     </div>
+                    {memberInvoiceHistory.length > 0 ? (
+                      <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                        {memberInvoiceHistory.slice(0, 8).map((inv) => {
+                          const paid = inv.status !== 'Voided' && inv.paymentMethod !== 'Credit';
+                          const label =
+                            inv.items?.[0]?.productName ||
+                            `${inv.id.slice(0, 8).toUpperCase()} · ${planName}`;
+                          const dateStr = inv.createdAt ? inv.createdAt.split('T')[0] : '—';
+                          return (
+                            <div
+                              key={inv.id}
+                              className="li flex justify-between items-center py-[11px] border-b last:border-b-0 border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px] gap-2"
+                            >
+                              <span>
+                                <span className="font-medium block">{label}</span>
+                                <small className="font-mono text-[11px] tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68">
+                                  {dateStr}
+                                </small>
+                              </span>
+                              <span className="flex items-center gap-2 shrink-0">
+                                <b className="font-mono text-[12px] tabular-nums">
+                                  {Math.round(inv.totalAmount).toLocaleString('en-US')} DZD
+                                </b>
+                                <span
+                                  className={`pill px-2 py-[2px] rounded-md text-[11px] font-medium ${
+                                    paid
+                                      ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3]'
+                                      : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+                                  }`}
+                                >
+                                  {paid ? 'Payée' : 'À régler'}
+                                </span>
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <KineticEmptyStateMotion motionKey={`member-billing-empty-${activeMember.id}-${esLocale}`}>
+                        <EmptyState
+                          {...resolveCompactInvoicesEmptyState({
+                            onAction: () => showToast(`Nouvelle vente pour ${memberName}`),
+                            locale: esLocale,
+                          })}
+                        />
+                      </KineticEmptyStateMotion>
+                    )}
                   </section>
                 </>
               )}

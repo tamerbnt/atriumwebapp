@@ -19,6 +19,8 @@ import { CertificateModal } from './CertificateModal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -1004,14 +1006,22 @@ export const EducationStudentsView: React.FC = () => {
                     </button>
                   }
                 >
-                  <InspectorCard>
-                    {studentCerts.length === 0 ? (
-                      <InspectorListItem
+                  {studentCerts.length === 0 ? (
+                    <KineticEmptyStateMotion motionKey={`edu-cert-${student.id}`}>
+                      <EmptyState
+                        variant="compact"
+                        icon={<Award />}
                         title={isAr ? 'لا توجد شهادات بعد' : isEn ? 'No certificates issued yet' : 'Aucun certificat délivré'}
-                        isLast
+                        secondaryAction={{
+                          label: t('edu_btn_issue_certificate'),
+                          icon: <Plus />,
+                          onClick: () => setIsCertModalOpen(true),
+                        }}
                       />
-                    ) : (
-                      studentCerts.map((c, idx) => (
+                    </KineticEmptyStateMotion>
+                  ) : (
+                    <InspectorCard>
+                      {studentCerts.map((c, idx) => (
                         <InspectorListItem
                           key={c.id}
                           title={c.courseTitle}
@@ -1019,9 +1029,9 @@ export const EducationStudentsView: React.FC = () => {
                           badge={{ label: 'Verified', tone: 'ok' }}
                           isLast={idx === studentCerts.length - 1}
                         />
-                      ))
-                    )}
-                  </InspectorCard>
+                      ))}
+                    </InspectorCard>
+                  )}
                 </InspectorSection>
               </>
             );
@@ -1066,11 +1076,25 @@ export const EducationStudentsView: React.FC = () => {
               </InspectorSection>
 
               <InspectorSection index={2} title={t('edu_cohorts_title')}>
-                <InspectorCard>
-                  {studentEnrollments.length === 0 ? (
-                    <InspectorListItem title={isAr ? 'لا يوجد تسجيل نشط' : 'No current enrollments'} isLast />
-                  ) : (
-                    studentEnrollments.map((enr, idx) => (
+                {studentEnrollments.length === 0 ? (
+                  <KineticEmptyStateMotion motionKey={`st-enr-empty-${st.id}`}>
+                    <EmptyState
+                      variant="compact"
+                      tone="neutral"
+                      icon={<Users size={20} />}
+                      title={isAr ? 'لا يوجد تسجيل نشط' : isEn ? 'No current enrollments' : 'Aucune inscription active'}
+                      description={
+                        isAr
+                          ? 'لم يتم إلحاق هذا الطالب بأي فوج بعد.'
+                          : isEn
+                          ? 'This student is not enrolled in any cohort yet.'
+                          : 'Cet étudiant n’est inscrit à aucune cohorte.'
+                      }
+                    />
+                  </KineticEmptyStateMotion>
+                ) : (
+                  <InspectorCard>
+                    {studentEnrollments.map((enr, idx) => (
                       <InspectorListItem
                         key={enr.id}
                         title={enr.cohortName}
@@ -1078,17 +1102,31 @@ export const EducationStudentsView: React.FC = () => {
                         badge={{ label: enr.status, tone: 'ok' }}
                         isLast={idx === studentEnrollments.length - 1}
                       />
-                    ))
-                  )}
-                </InspectorCard>
+                    ))}
+                  </InspectorCard>
+                )}
               </InspectorSection>
 
               <InspectorSection index={3} title={t('edu_tab_rollcall')}>
-                <InspectorCard>
-                  {studentAttendance.length === 0 ? (
-                    <InspectorListItem title={t('edu_no_sessions')} isLast />
-                  ) : (
-                    studentAttendance.slice(0, 5).map((att, idx) => (
+                {studentAttendance.length === 0 ? (
+                  <KineticEmptyStateMotion motionKey={`st-att-empty-${st.id}`}>
+                    <EmptyState
+                      variant="compact"
+                      tone="neutral"
+                      icon={<Check size={20} />}
+                      title={t('edu_no_sessions')}
+                      description={
+                        isAr
+                          ? 'ستظهر سجلات الحضور هنا بعد أول حصة.'
+                          : isEn
+                          ? 'Attendance logs will appear after the first session.'
+                          : 'Les relevés d’appel apparaîtront après la première séance.'
+                      }
+                    />
+                  </KineticEmptyStateMotion>
+                ) : (
+                  <InspectorCard>
+                    {studentAttendance.slice(0, 5).map((att, idx) => (
                       <InspectorListItem
                         key={att.id}
                         title={att.recordedAt ? att.recordedAt.split('T')[0] : 'Recent Session'}
@@ -1099,17 +1137,31 @@ export const EducationStudentsView: React.FC = () => {
                         }}
                         isLast={idx === Math.min(4, studentAttendance.length - 1)}
                       />
-                    ))
-                  )}
-                </InspectorCard>
+                    ))}
+                  </InspectorCard>
+                )}
               </InspectorSection>
 
               <InspectorSection index={4} title={t('edu_tab_gradebook')}>
-                <InspectorCard>
-                  {studentGrades.length === 0 ? (
-                    <InspectorListItem title={isAr ? 'لا توجد درجات مسجلة' : 'No grades recorded yet'} isLast />
-                  ) : (
-                    studentGrades.map((g, idx) => (
+                {studentGrades.length === 0 ? (
+                  <KineticEmptyStateMotion motionKey={`st-grades-empty-${st.id}`}>
+                    <EmptyState
+                      variant="compact"
+                      tone="neutral"
+                      icon={<Award size={20} />}
+                      title={isAr ? 'لا توجد درجات مسجلة' : isEn ? 'No grades recorded' : 'Aucune note enregistrée'}
+                      description={
+                        isAr
+                          ? 'لم يتم تسجيل أي تقييم لهذا الطالب حتى الآن.'
+                          : isEn
+                          ? 'No evaluations have been logged for this student yet.'
+                          : 'Aucune évaluation saisie pour le moment.'
+                      }
+                    />
+                  </KineticEmptyStateMotion>
+                ) : (
+                  <InspectorCard>
+                    {studentGrades.map((g, idx) => (
                       <InspectorListItem
                         key={g.id}
                         title={g.assessmentTitle}
@@ -1117,9 +1169,9 @@ export const EducationStudentsView: React.FC = () => {
                         metaRight={`${g.score} / ${g.maxScore}`}
                         isLast={idx === studentGrades.length - 1}
                       />
-                    ))
-                  )}
-                </InspectorCard>
+                    ))}
+                  </InspectorCard>
+                )}
               </InspectorSection>
             </>
           );

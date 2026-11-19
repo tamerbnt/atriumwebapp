@@ -19,7 +19,9 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { PayslipPrintModal } from './PayslipPrintModal';
 import { SalaryAdvanceModal } from './SalaryAdvanceModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import {
+  KineticEmptyStateMotion,
   KineticSlideOverInspector,
   InspectorSection,
   InspectorQuickActions,
@@ -468,9 +470,26 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         </div>
 
         {salaryAdvances.length === 0 ? (
-          <p className="text-xs text-black/62 dark:text-white/65 py-3 text-center">
-            {isAr ? 'لا توجد سلفيات' : isEn ? 'No advances' : 'Aucun acompte'}
-          </p>
+          <KineticEmptyStateMotion motionKey={`staff-adv-empty-${language}`}>
+            <EmptyState
+              variant="compact"
+              tone="neutral"
+              icon={<CreditCard className="w-5 h-5" />}
+              title={isAr ? 'لا توجد سلفيات' : isEn ? 'No salary advances' : 'Aucun acompte'}
+              description={
+                isAr
+                  ? 'أضف سلفة راتب ليتم خصمها تلقائياً من مسير الشهر.'
+                  : isEn
+                  ? 'Record a salary advance to deduct it automatically from payroll.'
+                  : 'Enregistrez un acompte sur salaire pour le déduire à la paie.'
+              }
+              secondaryAction={{
+                label: isAr ? 'سلفة جديدة' : isEn ? 'New Advance' : 'Nouvel acompte',
+                icon: <Plus className="w-4 h-4" />,
+                onClick: () => setIsAdvanceModalOpen(true),
+              }}
+            />
+          </KineticEmptyStateMotion>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {salaryAdvances.map((adv) => (

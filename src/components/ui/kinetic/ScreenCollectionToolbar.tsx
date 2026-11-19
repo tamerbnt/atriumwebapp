@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useContext, useLayoutEffect, useMemo, useRef } from 'react';
 import { SlidersHorizontal, ChevronDown, List, LayoutGrid, Calendar, X } from 'lucide-react';
 import { Seek } from '../Seek';
 import { LiveSegmentedControl, SegmentedOption } from '../live/LiveSegmentedControl';
 import { LiquidButton } from '@/atrium';
+import { ScreenPodBridgeContext } from './ScreenPod';
 
 export interface ActiveFilterChip {
   key: string;
@@ -107,6 +108,70 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
       await onExport();
     };
   }, [onExport]);
+
+  const podBridge = useContext(ScreenPodBridgeContext);
+  const ownerIdRef = useRef<symbol | null>(null);
+  if (ownerIdRef.current === null) {
+    ownerIdRef.current = Symbol('ScreenCollectionToolbar');
+  }
+
+  const inferredTotalCount = useMemo(() => {
+    const firstOpt = statusOptions?.[0];
+    if (
+      firstOpt &&
+      typeof firstOpt.count === 'number' &&
+      /^(all|tous|tout|everything|overview)$/i.test(String(firstOpt.value))
+    ) {
+      return firstOpt.count;
+    }
+    return undefined;
+  }, [statusOptions]);
+
+  const activeFilterLabels = useMemo(
+    () => activeChips.map((c) => c.label).filter(Boolean),
+    [activeChips]
+  );
+  const chipKey = activeFilterLabels.join('\u0001');
+
+  useLayoutEffect(() => {
+    if (!podBridge) return;
+    const ownerId = ownerIdRef.current!;
+    podBridge.syncToolbar(
+      ownerId,
+      {
+        searchQuery,
+        hasSearchSetter: Boolean(onSearchChange),
+        statusValue,
+        hasActiveAdvancedFilters,
+        activeFilterLabels,
+        chipKey,
+        hasReset: Boolean(onResetAllFilters),
+        totalCount: inferredTotalCount,
+      },
+      {
+        onSearchChange,
+        onResetAllFilters,
+      }
+    );
+  }, [
+    podBridge,
+    searchQuery,
+    onSearchChange,
+    statusValue,
+    hasActiveAdvancedFilters,
+    activeFilterLabels,
+    chipKey,
+    onResetAllFilters,
+    inferredTotalCount,
+  ]);
+
+  useLayoutEffect(() => {
+    if (!podBridge) return;
+    const ownerId = ownerIdRef.current!;
+    return () => {
+      podBridge.clearToolbar(ownerId);
+    };
+  }, [podBridge]);
 
   const defaultSearchPlaceholder =
     searchPlaceholder ||

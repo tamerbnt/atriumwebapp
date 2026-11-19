@@ -18,6 +18,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -38,6 +39,7 @@ import {
   InspectorListItem,
   InspectorNotesField,
   InspectorWideButton,
+  KineticEmptyStateMotion,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -993,9 +995,11 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                   index={0}
                   title={`${t('venue_modal_sec_addons')} (${booking.addons?.length || 0})`}
                 >
-                  <InspectorCard>
-                    {!booking.addons || booking.addons.length === 0 ? (
-                      <InspectorListItem
+                  {!booking.addons || booking.addons.length === 0 ? (
+                    <KineticEmptyStateMotion motionKey={`venue-addons-${booking.id}`}>
+                      <EmptyState
+                        variant="compact"
+                        icon={<Plus />}
                         title={
                           isAr
                             ? 'لا توجد إضافات مرتبطة بهذا الحجز'
@@ -1003,10 +1007,11 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                             ? 'Aucune prestation additionnelle.'
                             : 'No add-ons attached to this booking.'
                         }
-                        isLast
                       />
-                    ) : (
-                      booking.addons.map((a, idx) => (
+                    </KineticEmptyStateMotion>
+                  ) : (
+                    <InspectorCard>
+                      {booking.addons.map((a, idx) => (
                         <InspectorListItem
                           key={a.id}
                           title={a.name}
@@ -1014,9 +1019,9 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                           metaRight={formatCurrencyAmount(a.totalPrice, booking.currency)}
                           isLast={idx === booking.addons!.length - 1}
                         />
-                      ))
-                    )}
-                  </InspectorCard>
+                      ))}
+                    </InspectorCard>
+                  )}
                 </InspectorSection>
               </div>
             );

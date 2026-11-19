@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import './EmptyState.css';
 
@@ -88,7 +88,7 @@ function renderActionButton(
           {action.icon}
         </span>
       )}
-      <span>{action.label}</span>
+      <span className="es-btn-label">{action.label}</span>
     </>
   );
 
@@ -109,7 +109,6 @@ function renderActionButton(
     <button
       ref={ref as React.RefObject<HTMLButtonElement | null>}
       type="button"
-      data-no-liquid="true"
       onClick={action.onClick}
       className={classes}
     >
@@ -118,7 +117,7 @@ function renderActionButton(
   );
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+const EmptyStateInner: React.FC<EmptyStateProps> = ({
   variant = 'island',
   icon,
   tone = 'neutral',
@@ -137,43 +136,100 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   const rootRef = useRef<HTMLDivElement | null>(null);
   const primaryRef = useRef<HTMLButtonElement | HTMLAnchorElement | null>(null);
 
-  const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({
-    width: 1000,
-    height: 330,
-  });
+  const needsWidthObserver = variant === 'island' && ghostTracks === 'auto';
+  const needsHeightObserver = variant === 'island' && ghostRows === 'auto';
+  const needsObserver = needsWidthObserver || needsHeightObserver;
+
+  const [quantizedLayout, setQuantizedLayout] = useState<{
+    trackCount: 3 | 4 | 6;
+    rowCount: number;
+  }>(() => ({
+    trackCount: resolveGhostTrackCount(1000, ghostTracks),
+    rowCount: computeGhostRowCount(330, ghostRows),
+  }));
 
   useLayoutEffect(() => {
-    if (variant !== 'island') return;
+    if (!needsObserver) return;
     const el = rootRef.current;
     if (!el) return;
 
-    const updateSize = (w: number, h: number) => {
+    const updateLayout = (w: number, h: number) => {
       if (w <= 0 && h <= 0) return;
-      setContainerSize((prev) =>
-        prev.width === Math.round(w) && prev.height === Math.round(h)
+      const nextTrackCount = resolveGhostTrackCount(w > 0 ? w : 1000, ghostTracks);
+      const nextRowCount = computeGhostRowCount(h > 0 ? h : 330, ghostRows);
+      setQuantizedLayout((prev) =>
+        prev.trackCount === nextTrackCount && prev.rowCount === nextRowCount
           ? prev
-          : { width: Math.round(w), height: Math.round(h) }
+          : { trackCount: nextTrackCount, rowCount: nextRowCount }
       );
     };
 
     const rect = el.getBoundingClientRect();
-    updateSize(rect.width, rect.height);
+    updateLayout(rect.width, rect.height);
 
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        updateSize(entry.contentRect.width, entry.contentRect.height);
+      const entry = entries[entries.length - 1];
+      if (entry) {
+        updateLayout(entry.contentRect.width, entry.contentRect.height);
       }
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [variant]);
+  }, [needsObserver, ghostTracks, ghostRows]);
 
   useEffect(() => {
     if (autoFocusPrimary && tone === 'error') {
       primaryRef.current?.focus();
     }
   }, [autoFocusPrimary, tone]);
+
+  const trackCount =
+    ghostTracks === 'auto' ? quantizedLayout.trackCount : ghostTracks;
+  const rowCount =
+    typeof ghostRows === 'number'
+      ? Math.max(0, Math.floor(ghostRows))
+      : quantizedLayout.rowCount;
+
+  const ghostRowElements = useMemo(() => {
+    if (variant !== 'island' || rowCount <= 0) return null;
+    const gridTemplateColumns = GHOST_TRACK_TEMPLATES[trackCount];
+    return (
+      <div className="es-ghost" aria-hidden="true">
+        {Array.from({ length: rowCount }).map((_, idx) => {
+          const [primaryBarW, secondaryBarW] =
+            GHOST_TEXT_BAR_WIDTHS[idx % GHOST_TEXT_BAR_WIDTHS.length];
+          return (
+            <div
+              key={idx}
+              className="es-ghost-row"
+              style={{ gridTemplateColumns }}
+            >
+              <span className="es-gc" />
+              <span className="es-ga" />
+              <span className="es-gl">
+                <span className="es-gl-bar" style={{ width: `${primaryBarW}px` }} />
+                <span
+                  className="es-gl-bar es-gl-bar--sub"
+                  style={{ width: `${secondaryBarW}px` }}
+                />
+              </span>
+              {trackCount >= 4 && <span className="es-gp" />}
+              {trackCount === 6 && (
+                <>
+                  <span className="es-gd">
+                    <span className="es-gd-bar" />
+                    <span className="es-gd-bar es-gd-bar--sub" />
+                  </span>
+                  <span className="es-gb" />
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }, [variant, rowCount, trackCount]);
 
   const Heading = titleAs;
   const isError = tone === 'error';
@@ -216,10 +272,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     );
   }
 
-  const trackCount = resolveGhostTrackCount(containerSize.width, ghostTracks);
-  const gridTemplateColumns = GHOST_TRACK_TEMPLATES[trackCount];
-  const rowCount = computeGhostRowCount(containerSize.height, ghostRows);
-
   return (
     <div
       ref={rootRef}
@@ -227,41 +279,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       data-es-tracks={trackCount}
       className={['es-root', className].filter(Boolean).join(' ')}
     >
-      {rowCount > 0 && (
-        <div className="es-ghost" aria-hidden="true">
-          {Array.from({ length: rowCount }).map((_, idx) => {
-            const [primaryBarW, secondaryBarW] =
-              GHOST_TEXT_BAR_WIDTHS[idx % GHOST_TEXT_BAR_WIDTHS.length];
-            return (
-              <div
-                key={idx}
-                className="es-ghost-row"
-                style={{ gridTemplateColumns }}
-              >
-                <span className="es-gc" />
-                <span className="es-ga" />
-                <span className="es-gl">
-                  <span className="es-gl-bar" style={{ width: `${primaryBarW}px` }} />
-                  <span
-                    className="es-gl-bar es-gl-bar--sub"
-                    style={{ width: `${secondaryBarW}px` }}
-                  />
-                </span>
-                {trackCount >= 4 && <span className="es-gp" />}
-                {trackCount === 6 && (
-                  <>
-                    <span className="es-gd">
-                      <span className="es-gd-bar" />
-                      <span className="es-gd-bar es-gd-bar--sub" />
-                    </span>
-                    <span className="es-gb" />
-                  </>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {ghostRowElements}
 
       <div
         className="es-island"
@@ -282,5 +300,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     </div>
   );
 };
+
+export const EmptyState = React.memo(EmptyStateInner);
+EmptyState.displayName = 'EmptyState';
 
 export default EmptyState;

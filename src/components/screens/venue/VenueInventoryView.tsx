@@ -17,6 +17,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -36,6 +37,7 @@ import {
   InspectorListItem,
   InspectorNotesField,
   InspectorWideButton,
+  KineticEmptyStateMotion,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -950,18 +952,21 @@ export const VenueInventoryView: React.FC = () => {
                   index={0}
                   title={`${isFr ? 'Créneaux réservés' : 'Reserved Slots'} (${unitBookings.length})`}
                 >
-                  <InspectorCard>
-                    {unitBookings.length === 0 ? (
-                      <InspectorListItem
+                  {unitBookings.length === 0 ? (
+                    <KineticEmptyStateMotion motionKey={`venue-inv-plan-${unit.id}`}>
+                      <EmptyState
+                        variant="compact"
+                        icon={<Calendar />}
                         title={
                           isFr
                             ? 'Aucun créneau planifié sur cet espace.'
                             : 'No scheduled slots for this space.'
                         }
-                        isLast
                       />
-                    ) : (
-                      unitBookings.map((b, idx) => (
+                    </KineticEmptyStateMotion>
+                  ) : (
+                    <InspectorCard>
+                      {unitBookings.map((b, idx) => (
                         <InspectorListItem
                           key={b.id}
                           title={b.purpose || 'Session'}
@@ -973,9 +978,9 @@ export const VenueInventoryView: React.FC = () => {
                           }}
                           isLast={idx === unitBookings.length - 1}
                         />
-                      ))
-                    )}
-                  </InspectorCard>
+                      ))}
+                    </InspectorCard>
+                  )}
                 </InspectorSection>
 
                 <InspectorWideButton

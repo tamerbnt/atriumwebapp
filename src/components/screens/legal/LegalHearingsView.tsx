@@ -22,6 +22,8 @@ import { LegalHearing } from '../../../types';
 import { useLegalData } from './legalData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -838,19 +840,26 @@ export const LegalHearingsView: React.FC<any> = () => {
         {hybridView === 'docket' ? (
           <div className="space-y-5">
             {Object.keys(hearingsByDate).length === 0 ? (
-              <div className="p-12 text-center bg-white/70 dark:bg-neutral-900/40 rounded-[22px] border border-dashed border-[#E6DED6] dark:border-[#33302D]">
-                <Gavel size={36} className="mx-auto text-black/55 dark:text-white/55 mb-3" />
-                <p className="text-sm font-semibold text-black/75 dark:text-white/80">
-                  {isAr
-                    ? 'لا توجد جلسات قضائية مطابقة لمعايير البحث'
-                    : "Aucune audience inscrite à l'audiencier"}
-                </p>
-                <p className="text-xs text-black/55 dark:text-white/55 mt-1">
-                  {isAr
-                    ? 'قم ببرمجة جلسة جديدة أو تعديل معايير التصفية'
-                    : 'Cliquez sur "Nouvelle Audience" pour inscrire une date.'}
-                </p>
-              </div>
+              <KineticEmptyStateMotion motionKey="legal-docket-empty">
+                <EmptyState
+                  variant="island"
+                  icon={<Gavel />}
+                  title={
+                    isAr
+                      ? 'لا توجد جلسات قضائية مطابقة لمعايير البحث'
+                      : "Aucune audience inscrite à l'audiencier"
+                  }
+                  description={
+                    isAr
+                      ? 'قم ببرمجة جلسة جديدة أو تعديل معايير التصفية'
+                      : 'Cliquez sur « Nouvelle Audience » pour inscrire une date.'
+                  }
+                  primaryAction={{
+                    label: isAr ? 'إعادة ضبط' : 'Réinitialiser',
+                    onClick: resetAllFilters,
+                  }}
+                />
+              </KineticEmptyStateMotion>
             ) : (
               Object.entries(hearingsByDate).map(([date, dateHearings]) => (
                 <div

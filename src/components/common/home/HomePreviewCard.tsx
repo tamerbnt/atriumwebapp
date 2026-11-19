@@ -5,7 +5,8 @@ import {
   setScreenAction,
 } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic/KineticEmptyStateMotion';
 import type {
   HomeCardTone,
   HomeCompactStripConfig,
@@ -93,7 +94,7 @@ export interface HomePreviewCardProps {
   className?: string;
 }
 
-export const HomePreviewCard: React.FC<HomePreviewCardProps> = ({
+export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
   config,
   className = '',
 }) => {
@@ -223,20 +224,20 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = ({
             ))}
           </ul>
         ) : (
-          <div className="flex-1 flex flex-col justify-center items-start gap-2 py-2">
-            <p className="text-[12px] text-black/62 dark:text-white/62 leading-snug">
-              {config.emptyTitle}
-            </p>
-            <AtriumButton
-              variant="outline"
-              size="xs"
-              onClick={config.onEmptyAction || navigate}
-              icon={<ArrowUpRight size={13} className="rtl:-scale-x-100" />}
-              iconPosition="right"
-              className="whitespace-nowrap shrink-0"
-            >
-              {config.emptyCtaLabel}
-            </AtriumButton>
+          <div className="flex-1 flex flex-col justify-center py-1">
+            <KineticEmptyStateMotion motionKey={`home-${config.id}-${language}`}>
+              <EmptyState
+                variant="compact"
+                tone="neutral"
+                icon={config.icon}
+                title={config.emptyTitle}
+                secondaryAction={{
+                  label: config.emptyCtaLabel,
+                  icon: <ArrowUpRight size={14} className="rtl:-scale-x-100" />,
+                  onClick: config.onEmptyAction || navigate,
+                }}
+              />
+            </KineticEmptyStateMotion>
           </div>
         )}
       </div>
@@ -263,7 +264,9 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = ({
       </div>
     </div>
   );
-};
+});
+
+HomePreviewCard.displayName = 'HomePreviewCard';
 
 export interface HomeCompactStripProps {
   config: HomeCompactStripConfig;

@@ -11,6 +11,8 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { EmptyState } from '../../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../../ui/kinetic';
 import { useTranslation } from '../../../utils/useTranslation';
 import {
   Users,
@@ -1010,9 +1012,17 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-black/55 dark:text-white/55 text-center py-8">
-                {t('pm_rh_no_talent_selected')}
-              </p>
+              <KineticEmptyStateMotion motionKey="pm-rh-no-talent">
+                <EmptyState
+                  variant="island"
+                  icon={<Users />}
+                  title={t('pm_rh_no_talent_selected')}
+                  primaryAction={{
+                    label: t('pm_rh_btn_back_pool'),
+                    onClick: () => setActiveTab('talents'),
+                  }}
+                />
+              </KineticEmptyStateMotion>
             )}
           </div>
         </ScreenPod>

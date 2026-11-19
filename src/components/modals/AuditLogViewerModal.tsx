@@ -5,6 +5,8 @@ import { AtriumButton } from '../ui/AtriumButton';
 import { auditService, type AuditLogRecord } from '../../lib/supabase/services/auditService';
 import { isSupabaseConfigured } from '../../lib/supabase/client';
 import { useAtriumSelector } from '../../services/store';
+import { EmptyState } from '../../atrium/components/EmptyState';
+import { KineticEmptyStateMotion } from '../ui/kinetic';
 
 interface AuditLogViewerModalProps {
   isOpen: boolean;
@@ -177,29 +179,33 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
             ))}
           </div>
         ) : logs.length === 0 ? (
-          <div className="py-10 px-4 text-center rounded-xl border border-[var(--atr-line)] bg-[var(--atr-soft)] space-y-2">
-            <Shield size={24} className="mx-auto text-[var(--atr-ink-4)]" />
-            <p className="text-sm font-semibold text-[var(--atr-ink)]">
-              {isSupabaseConfigured()
-                ? isAr
-                  ? 'لا توجد سجلات تدقيق مطابقة'
+          <KineticEmptyStateMotion motionKey={`audit-empty-${language}-${isSupabaseConfigured()}`}>
+            <EmptyState
+              variant="compact"
+              tone={isSupabaseConfigured() ? 'neutral' : 'warning'}
+              icon={<Shield size={20} />}
+              title={
+                isSupabaseConfigured()
+                  ? isAr
+                    ? 'لا توجد سجلات تدقيق مطابقة'
+                    : isFr
+                    ? "Aucune entrée d'audit correspondante"
+                    : 'No matching audit entries found'
+                  : isAr
+                  ? 'سجل التدقيق السحابي يتطلب ربط Supabase'
                   : isFr
-                  ? "Aucune entrée d'audit correspondante"
-                  : 'No matching audit entries found'
-                : isAr
-                ? 'سجل التدقيق السحابي يتطلب ربط Supabase'
-                : isFr
-                ? "Le journal d'audit requiert une connexion Supabase active"
-                : 'Cloud audit log requires an active Supabase connection'}
-            </p>
-            <p className="text-xs text-[var(--atr-ink-3)]">
-              {isAr
-                ? 'سيتم تسجيل كل عملية إدراج أو تعديل أو حذف ناعم تلقائياً هنا.'
-                : isFr
-                ? 'Toutes les insertions, mises à jour et suppressions logiques sont journalisées automatiquement.'
-                : 'Inserts, updates, and soft deletes are captured automatically by database triggers.'}
-            </p>
-          </div>
+                  ? "Le journal d'audit requiert une connexion Supabase active"
+                  : 'Cloud audit log requires an active Supabase connection'
+              }
+              description={
+                isAr
+                  ? 'سيتم تسجيل كل عملية إدراج أو تعديل أو حذف ناعم تلقائياً هنا.'
+                  : isFr
+                  ? 'Toutes les insertions, mises à jour et suppressions logiques sont journalisées automatiquement.'
+                  : 'Inserts, updates, and soft deletes are captured automatically by database triggers.'
+              }
+            />
+          </KineticEmptyStateMotion>
         ) : (
           <div className="rounded-xl border border-[var(--atr-line)] divide-y divide-[var(--atr-line)] max-h-[380px] overflow-y-auto bg-[var(--atr-card)]">
             {logs.map((entry) => {

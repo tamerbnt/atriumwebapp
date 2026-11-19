@@ -4044,6 +4044,23 @@ function createAtriumActions() {
 
     // 4. Access Granted
     const updatedSessions = member.remainingSessions !== undefined ? Math.max(0, member.remainingSessions - 1) : undefined;
+    const nowIso = new Date().toISOString();
+    const checkInLog: MemberCheckInLog = {
+      id: `chk_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      staffId: globalState.currentUser?.id || 'stf_01',
+      memberId: member.id,
+      memberName: member.fullName,
+      planId: member.membershipPlanId || 'standard',
+      planName: member.membershipPlanName || 'Standard',
+      timestamp: nowIso,
+      accessStatus: daysLeft <= 14 ? 'Warning_Expiring' : 'Granted',
+      remainingSessionsBefore: member.remainingSessions,
+      remainingSessionsAfter: updatedSessions,
+      checkInMethod: 'manual_click',
+    };
     globalState = {
       ...globalState,
       members: globalState.members.map((m) =>
@@ -4051,10 +4068,12 @@ function createAtriumActions() {
           ? {
               ...m,
               remainingSessions: updatedSessions !== undefined ? updatedSessions : m.remainingSessions,
-              updatedAt: new Date().toISOString(),
+              lastVisitDate: nowIso,
+              updatedAt: nowIso,
             }
           : m
       ),
+      memberCheckIns: [checkInLog, ...(globalState.memberCheckIns || [])],
     };
     notify();
 
