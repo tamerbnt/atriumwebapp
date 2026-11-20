@@ -58,6 +58,7 @@ export const FreelanceFinanceView: React.FC = () => {
     deleteFreelanceExpense,
     branches,
     currentBranch,
+    currentBusinessConfig,
     isSyncing,
     networkMode,
     isSyncTimeout,
@@ -65,7 +66,11 @@ export const FreelanceFinanceView: React.FC = () => {
     retryCloudSync,
   } = useAtriumStore();
 
-  const [taxRate, setTaxRate] = useState(20);
+  const defaultTaxReserve = currentBusinessConfig.categorySettings?.taxReservePercent ?? 20;
+  const defaultCurrency = (currentBusinessConfig.currency as CurrencyCode) || 'EUR';
+  const configuredHourlyRate = currentBusinessConfig.categorySettings?.defaultHourlyRate ?? 85;
+
+  const [taxRate, setTaxRate] = useState(defaultTaxReserve);
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -90,7 +95,7 @@ export const FreelanceFinanceView: React.FC = () => {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<ExpenseCategory>('Software');
   const [amount, setAmount] = useState(25);
-  const [currency, setCurrency] = useState<CurrencyCode>('EUR');
+  const [currency, setCurrency] = useState<CurrencyCode>(defaultCurrency);
   const [isTaxDeductible, setIsTaxDeductible] = useState(true);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
@@ -136,9 +141,9 @@ export const FreelanceFinanceView: React.FC = () => {
     ).toFixed(1)
   );
   const grossEhr =
-    totalBillableHours > 0 ? Math.round(currencyTotals.totalEurEquiv / totalBillableHours) : 85;
+    totalBillableHours > 0 ? Math.round(currencyTotals.totalEurEquiv / totalBillableHours) : configuredHourlyRate;
   const netEhr =
-    totalBillableHours > 0 ? Math.round(netTakeHomeEur / totalBillableHours) : 60;
+    totalBillableHours > 0 ? Math.round(netTakeHomeEur / totalBillableHours) : Math.round(configuredHourlyRate * (1 - taxRate / 100));
 
   const filteredExpenses = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();

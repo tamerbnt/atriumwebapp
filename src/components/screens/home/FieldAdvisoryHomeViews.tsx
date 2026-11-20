@@ -22,18 +22,24 @@ import {
 import {
   useAtriumSelector,
   shallowEqualObjects,
+  selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
   setScreenAction,
 } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { formatMoney } from '../../../utils/rules';
-import { DashboardPod } from '../../common/dashboard';
 import {
   HomeShell,
-  HomePodGrid,
+  HomeHeroRow,
+  HomeOperationalRow,
+  HomeLiveHistoryPod,
+  HomeSetupPod,
   HomePreviewCard,
+  HomeCompactStrip,
   HomeAnchorCard,
   HomePreviewRow,
   HomeQuickAction,
+  HomePreviewCardConfig,
   CATEGORY_HOME_RATIO,
   l3,
 } from '../../common/home';
@@ -42,16 +48,23 @@ import { useLogisticsData } from '../logistics/logisticsData';
 import { useContractorData } from '../contractor/contractorData';
 import { useAgricultureData } from '../agriculture/agricultureData';
 import type { HomeViewProps } from './CoreServiceHomeViews';
+import {
+  buildAgricultureHistorique,
+  buildContractorHistorique,
+  buildLegalHistorique,
+  buildLogisticsHistorique,
+} from './homeActivityAdapters';
 
 // ============================================================================
-// 13. LEGAL & ACCOUNTING CABINETS (legal_accounting) — 4 Roles — Ratio 42 / 58
+// 13. LEGAL & ACCOUNTING CABINETS (legal_accounting) — 4-Row Bento Home (42 / 58)
 // ============================================================================
 export const LegalHomeView: React.FC<HomeViewProps> = () => {
   const { language } = useTranslation();
-  const { role, currency } = useAtriumSelector(
+  const { role, currency, branchName } = useAtriumSelector(
     (s) => ({
       role: s.activeLegalRole || 'avocat_associe',
-      currency: 'DZD',
+      currency: selectCurrentBusinessConfigFromState(s).currency || 'DZD',
+      branchName: selectCurrentBranchFromState(s)?.name || 'Cabinet',
     }),
     shallowEqualObjects
   );
@@ -67,7 +80,8 @@ export const LegalHomeView: React.FC<HomeViewProps> = () => {
   } = useLegalData();
 
   const urgentDeadlines = useMemo(
-    () => deadlines.filter((d) => d.status === 'critical' || d.status === 'approaching').length,
+    () =>
+      deadlines.filter((d) => d.status === 'critical' || d.status === 'approaching').length,
     [deadlines]
   );
 
@@ -76,11 +90,19 @@ export const LegalHomeView: React.FC<HomeViewProps> = () => {
       matters.slice(0, 4).map((m) => ({
         id: m.id,
         primary: `${m.matterNumber} · ${language === 'ar' && m.titleAr ? m.titleAr : m.title}`,
-        secondary: [language === 'ar' && m.clientNameAr ? m.clientNameAr : m.clientName, m.courtJurisdiction]
+        secondary: [
+          language === 'ar' && m.clientNameAr ? m.clientNameAr : m.clientName,
+          m.courtJurisdiction,
+        ]
           .filter(Boolean)
           .join(' · '),
         trailing: formatMoney(m.retainerAmountDzd, currency),
-        statusTone: m.status === 'Closed' ? 'neutral' : m.status === 'PendingHearing' ? 'warning' : 'positive',
+        statusTone:
+          m.status === 'Closed'
+            ? 'neutral'
+            : m.status === 'PendingHearing'
+            ? 'warning'
+            : 'positive',
       })),
     [matters, currency, language]
   );
@@ -89,10 +111,14 @@ export const LegalHomeView: React.FC<HomeViewProps> = () => {
     () =>
       hearings.slice(0, 4).map((h) => ({
         id: h.id,
-        primary: (language === 'ar' && h.matterTitleAr ? h.matterTitleAr : h.matterTitle) || h.matterNumber || 'Audience',
+        primary:
+          (language === 'ar' && h.matterTitleAr ? h.matterTitleAr : h.matterTitle) ||
+          h.matterNumber ||
+          'Audience',
         secondary: [h.courtName, h.hearingDate, h.hearingTime].filter(Boolean).join(' · '),
         trailing: h.chamber || h.status || '',
-        statusTone: h.status === 'Postponed' ? 'warning' : h.status === 'Ruled' ? 'positive' : 'neutral',
+        statusTone:
+          h.status === 'Postponed' ? 'warning' : h.status === 'Ruled' ? 'positive' : 'neutral',
       })),
     [hearings, language]
   );
@@ -111,7 +137,7 @@ export const LegalHomeView: React.FC<HomeViewProps> = () => {
 
   const escrowRows: HomePreviewRow[] = useMemo(
     () =>
-      escrowAccounts.slice(0, 3).map((e) => ({
+      escrowAccounts.slice(0, 4).map((e) => ({
         id: e.id,
         primary: `${e.matterReference} · ${e.clientName}`,
         secondary: e.beneficiaryName,
@@ -123,12 +149,17 @@ export const LegalHomeView: React.FC<HomeViewProps> = () => {
 
   const deadlineRows: HomePreviewRow[] = useMemo(
     () =>
-      deadlines.slice(0, 3).map((dl) => ({
+      deadlines.slice(0, 4).map((dl) => ({
         id: dl.id,
         primary: `${dl.caseNumber} · ${dl.recourseType}`,
         secondary: [dl.courtJurisdiction, dl.terminalExpiryDate].filter(Boolean).join(' · '),
         trailing: dl.status,
-        statusTone: dl.status === 'critical' ? 'danger' : dl.status === 'approaching' ? 'warning' : 'positive',
+        statusTone:
+          dl.status === 'critical'
+            ? 'danger'
+            : dl.status === 'approaching'
+            ? 'warning'
+            : 'positive',
       })),
     [deadlines]
   );
@@ -155,6 +186,34 @@ export const LegalHomeView: React.FC<HomeViewProps> = () => {
         statusTone: 'positive',
       })),
     [cashReceipts, currency]
+  );
+
+  const historique = useMemo(
+    () =>
+      buildLegalHistorique({
+        language,
+        currency,
+        branchName,
+        role,
+        hearings,
+        deadlines,
+        matters,
+        notaryDeeds,
+        scfEntries,
+        cashReceipts,
+      }),
+    [
+      language,
+      currency,
+      branchName,
+      role,
+      hearings,
+      deadlines,
+      matters,
+      notaryDeeds,
+      scfEntries,
+      cashReceipts,
+    ]
   );
 
   const isNotary = role === 'notaire_titulaire';
@@ -202,41 +261,68 @@ export const LegalHomeView: React.FC<HomeViewProps> = () => {
       }
       testId={`home-legal-${role}`}
     >
-      <HomePodGrid ratio={CATEGORY_HOME_RATIO.legal_accounting}>
-        <DashboardPod title={l3(language, 'Délais & Alertes Étude', 'Critical Deadlines', 'الآجال والتنبيهات')}
-        >
-          <HomeAnchorCard
-            title={
-              isNotary
-                ? l3(language, 'Actes au Répertoire', 'Registered Notary Deeds', 'العقود المقيدة')
-                : isAccountant
-                ? l3(language, 'Écritures SCF Validées', 'SCF Journal Entries', 'القيود المحاسبية')
-                : isSecretary
-                ? l3(language, 'Encaissements Enregistrés', 'Cashier Receipts', 'الوصولات المحصلة')
-                : l3(language, 'Délais CPCA Critiques', 'Urgent CPCA Deadlines', 'الآجال القانونية الحرجة')
-            }
-            value={
-              isNotary
-                ? notaryDeeds.length
-                : isAccountant
-                ? scfEntries.length
-                : isSecretary
-                ? cashReceipts.length
-                : urgentDeadlines
-            }
-            badgeText={`${matters.length} ${l3(language, 'dossiers', 'matters', 'ملف')}`}
-            badgeVariant={urgentDeadlines > 0 && !isNotary && !isAccountant ? 'red' : 'orange'}
-            sublabel={
-              isSecretary
-                ? l3(language, 'Ouvrir le poste caisse et formalités', 'Open cashier receipts & stamp register', 'فتح صندوق المكتب والرسوم')
-                : l3(language, 'Ouvrir le tableau de bord du cabinet', 'Open practice KPIs & billing view', 'فتح لوحة قيادة المكتب')
-            }
-            targetScreen={isSecretary ? 'finance' : 'dashboard'}
-          />
-
+      <HomeHeroRow
+        ratio={CATEGORY_HOME_RATIO.legal_accounting}
+        heroTitle={l3(language, 'Délais & Activité Étude', 'Critical Deadlines & Pulse', 'الآجال والتنبيهات')}
+        heroChildren={
+          <>
+            <HomeAnchorCard
+              title={
+                isNotary
+                  ? l3(language, 'Actes au Répertoire', 'Registered Notary Deeds', 'العقود المقيدة')
+                  : isAccountant
+                  ? l3(language, 'Écritures SCF Validées', 'SCF Journal Entries', 'القيود المحاسبية')
+                  : isSecretary
+                  ? l3(language, 'Encaissements Enregistrés', 'Cashier Receipts', 'الوصولات المحصلة')
+                  : l3(language, 'Délais CPCA Critiques', 'Urgent CPCA Deadlines', 'الآجال القانونية الحرجة')
+              }
+              value={
+                isNotary
+                  ? notaryDeeds.length
+                  : isAccountant
+                  ? scfEntries.length
+                  : isSecretary
+                  ? cashReceipts.length
+                  : urgentDeadlines
+              }
+              badgeText={`${matters.length} ${l3(language, 'dossiers', 'matters', 'ملف')}`}
+              badgeVariant={urgentDeadlines > 0 && !isNotary && !isAccountant ? 'red' : 'orange'}
+              sublabel={
+                isSecretary
+                  ? l3(language, 'Ouvrir le poste caisse et formalités', 'Open cashier receipts & stamp register', 'فتح صندوق المكتب والرسوم')
+                  : l3(language, 'Ouvrir le tableau de bord du cabinet', 'Open practice KPIs & billing view', 'فتح لوحة قيادة المكتب')
+              }
+              targetScreen={isSecretary ? 'finance' : 'dashboard'}
+            />
+            <HomeCompactStrip
+              config={{
+                id: 'legal-escrow-strip',
+                tone: 'lavender',
+                title: isNotary
+                  ? l3(language, 'Comptes Séquestre & Trésor', 'Escrow Accounts', 'حسابات الضمان')
+                  : l3(language, 'Audiences & Recettes', 'Hearings & Cashier', 'الجلسات والتحصيل'),
+                subtitle: `${hearings.length} ${l3(language, 'audiences', 'hearings', 'جلسات')} · ${cashReceipts.length} ${l3(language, 'reçus', 'receipts', 'وصولات')}`,
+                icon: <Scale size={17} />,
+                count: isNotary ? escrowAccounts.length : hearings.length,
+                statusText:
+                  urgentDeadlines > 0
+                    ? `${urgentDeadlines} ${l3(language, 'CPCA urgents', 'urgent', 'حرجة')}`
+                    : l3(language, 'Délais suivis', 'Tracked', 'تحت المتابعة'),
+                targetScreen: isNotary ? 'finance' : 'scheduler',
+              }}
+            />
+          </>
+        }
+        priorityTitle={
+          isNotary
+            ? l3(language, 'Comptes Séquestre Actifs', 'Active Escrow Accounts', 'حسابات الضمان النشطة')
+            : l3(language, 'Délais de Recours CPCA', 'Statutory Deadlines CPCA', 'آجال الطعن القانونية')
+        }
+        priorityChildren={
           <HomePreviewCard
             config={{
               id: 'legal-deadlines',
+              tone: 'brown',
               title: isNotary
                 ? l3(language, 'Comptes Séquestre', 'Escrow Accounts', 'حسابات الضمان')
                 : l3(language, 'Délais de Recours CPCA', 'Statutory Deadlines', 'آجال الطعن القانونية'),
@@ -251,94 +337,103 @@ export const LegalHomeView: React.FC<HomeViewProps> = () => {
               emptyCtaLabel: l3(language, 'Ouvrir suivi', 'Open schedule', 'فتح المتابعة'),
             }}
           />
-        </DashboardPod>
+        }
+      />
 
-        <DashboardPod title={l3(language, 'Espaces du Cabinet', 'Cabinet Spaces', 'أقسام المكتب')}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <HomePreviewCard
-              config={{
-                id: 'legal-matters',
-                title: isNotary
-                  ? l3(language, 'Répertoire des Actes', 'Notary Deeds Registry', 'فهرس العقود')
-                  : isAccountant
-                  ? l3(language, 'Mandats & Sociétés', 'Client Mandates', 'الشركات الموكلة')
-                  : l3(language, 'Dossiers & Contentieux', 'Matters & Cases', 'القضايا والملفات'),
-                subtitle: l3(language, 'Affaires actives et parties', 'Active files & parties', 'الملفات النشطة والأطراف'),
-                icon: isNotary ? <BookOpen size={18} /> : <Briefcase size={18} />,
-                count: isNotary ? notaryDeeds.length : matters.length,
-                items: isNotary ? deedRows : matterRows,
-                targetScreen: 'members',
-                emptyTitle: l3(language, 'Aucun dossier ouvert.', 'No active matters.', 'لا توجد ملفات.'),
-                emptyCtaLabel: l3(language, 'Nouveau dossier', 'Open registry', 'فتح السجل'),
-              }}
-            />
+      <HomeOperationalRow title={l3(language, 'Espaces du Cabinet', 'Cabinet Spaces', 'أقسام المكتب')}>
+        <HomePreviewCard
+          config={{
+            id: 'legal-matters',
+            tone: 'terracotta',
+            title: isNotary
+              ? l3(language, 'Répertoire des Actes', 'Notary Deeds Registry', 'فهرس العقود')
+              : isAccountant
+              ? l3(language, 'Mandats & Sociétés', 'Client Mandates', 'الشركات الموكلة')
+              : l3(language, 'Dossiers & Contentieux', 'Matters & Cases', 'القضايا والملفات'),
+            subtitle: l3(language, 'Affaires actives et parties', 'Active files & parties', 'الملفات النشطة والأطراف'),
+            icon: isNotary ? <BookOpen size={18} /> : <Briefcase size={18} />,
+            count: isNotary ? notaryDeeds.length : matters.length,
+            items: isNotary ? deedRows : matterRows,
+            targetScreen: 'members',
+            emptyTitle: l3(language, 'Aucun dossier ouvert.', 'No active matters.', 'لا توجد ملفات.'),
+            emptyCtaLabel: l3(language, 'Nouveau dossier', 'Open registry', 'فتح السجل'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'legal-hearings',
-                title: isNotary
-                  ? l3(language, 'Conservation & Cadastre', 'Land & Registry', 'الشهر العقاري')
-                  : isAccountant
-                  ? l3(language, 'Échéances G50 & Bilans', 'Tax & Audit Dates', 'مواعيد الجباية')
-                  : l3(language, 'Audiences & Rôles', 'Court Calendar', 'جدول الجلسات'),
-                subtitle: l3(language, 'Juridictions et chambres', 'Chambers & dates', 'المحاكم والتواريخ'),
-                icon: isNotary ? <Landmark size={18} /> : <Calendar size={18} />,
-                count: hearings.length,
-                items: hearingRows,
-                targetScreen: 'scheduler',
-                emptyTitle: l3(language, 'Aucune audience planifiée.', 'No scheduled hearings.', 'لا توجد جلسات.'),
-                emptyCtaLabel: l3(language, 'Voir calendrier', 'Open calendar', 'فتح التقويم'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'legal-hearings',
+            tone: 'lavender',
+            title: isNotary
+              ? l3(language, 'Conservation & Cadastre', 'Land & Registry', 'الشهر العقاري')
+              : isAccountant
+              ? l3(language, 'Échéances G50 & Bilans', 'Tax & Audit Dates', 'مواعيد الجباية')
+              : l3(language, 'Audiences & Rôles', 'Court Calendar', 'جدول الجلسات'),
+            subtitle: l3(language, 'Juridictions et chambres', 'Chambers & dates', 'المحاكم والتواريخ'),
+            icon: isNotary ? <Landmark size={18} /> : <Calendar size={18} />,
+            count: hearings.length,
+            items: hearingRows,
+            targetScreen: 'scheduler',
+            emptyTitle: l3(language, 'Aucune audience planifiée.', 'No scheduled hearings.', 'لا توجد جلسات.'),
+            emptyCtaLabel: l3(language, 'Voir calendrier', 'Open calendar', 'فتح التقويم'),
+          }}
+        />
 
-            {!isSecretary && (
-              <HomePreviewCard
-                config={{
-                  id: 'legal-vault',
-                  title: l3(language, 'Coffre & Pièces', 'Document Vault', 'أرشيف المستندات'),
-                  subtitle: l3(language, 'Actes signés & pièces justificatives', 'Verified legal archive', 'الوثائق الرسمية'),
-                  icon: <FileText size={18} />,
-                  count: isAccountant ? scfEntries.length : notaryDeeds.length + matters.length,
-                  items: isAccountant ? scfRows : deedRows.slice(0, 3),
-                  targetScreen: 'registrations',
-                  emptyTitle: l3(language, 'Aucun document archivé.', 'No archived files.', 'لا توجد وثائق.'),
-                  emptyCtaLabel: l3(language, 'Ouvrir coffre', 'Open vault', 'فتح الأرشيف'),
-                }}
-              />
-            )}
+        {!isSecretary && (
+          <HomePreviewCard
+            config={{
+              id: 'legal-vault',
+              tone: 'brown',
+              title: l3(language, 'Coffre & Pièces', 'Document Vault', 'أرشيف المستندات'),
+              subtitle: l3(language, 'Actes signés & pièces justificatives', 'Verified legal archive', 'الوثائق الرسمية'),
+              icon: <FileText size={18} />,
+              count: isAccountant ? scfEntries.length : notaryDeeds.length + matters.length,
+              items: isAccountant ? scfRows : deedRows.slice(0, 3),
+              targetScreen: 'registrations',
+              emptyTitle: l3(language, 'Aucun document archivé.', 'No archived files.', 'لا توجد وثائق.'),
+              emptyCtaLabel: l3(language, 'Ouvrir coffre', 'Open vault', 'فتح الأرشيف'),
+            }}
+          />
+        )}
 
-            <HomePreviewCard
-              config={{
-                id: 'legal-finance',
-                title: isAccountant
-                  ? l3(language, 'Grand Livre SCF', 'SCF General Ledger', 'اليومية العامة SCF')
-                  : l3(language, 'Honoraires, Séquestre & Caisse', 'Trust & Cashier', 'الأتعاب والصندوق'),
-                subtitle: l3(language, 'Reçus Art. 317 & soldes', 'Receipts & client trust', 'الوصولات والأرصدة'),
-                icon: <Scale size={18} />,
-                count: isAccountant ? scfEntries.length : cashReceipts.length,
-                items: isAccountant ? scfRows : receiptRows,
-                targetScreen: 'finance',
-                emptyTitle: l3(language, 'Aucune écriture comptable.', 'No accounting entries.', 'لا توجد قيود مالية.'),
-                emptyCtaLabel: l3(language, 'Ouvrir caisse', 'Open trust desk', 'فتح المالية'),
-              }}
-            />
-          </div>
-        </DashboardPod>
-      </HomePodGrid>
+        <HomePreviewCard
+          config={{
+            id: 'legal-finance',
+            tone: 'sage',
+            title: isAccountant
+              ? l3(language, 'Grand Livre SCF', 'SCF General Ledger', 'اليومية العامة SCF')
+              : l3(language, 'Honoraires, Séquestre & Caisse', 'Trust & Cashier', 'الأتعاب والصندوق'),
+            subtitle: l3(language, 'Reçus Art. 317 & soldes', 'Receipts & client trust', 'الوصولات والأرصدة'),
+            icon: <Scale size={18} />,
+            count: isAccountant ? scfEntries.length : cashReceipts.length,
+            items: isAccountant ? scfRows : receiptRows,
+            targetScreen: 'finance',
+            emptyTitle: l3(language, 'Aucune écriture comptable.', 'No accounting entries.', 'لا توجد قيود مالية.'),
+            emptyCtaLabel: l3(language, 'Ouvrir caisse', 'Open trust desk', 'فتح المالية'),
+          }}
+        />
+      </HomeOperationalRow>
+
+      <HomeLiveHistoryPod events={historique.events} filters={historique.filters} />
+
+      <HomeSetupPod
+        roleKey={role}
+        setupOverrides={{ legalMatters: matters }}
+      />
     </HomeShell>
   );
 };
 
 // ============================================================================
-// 14. LOGISTICS & COURIER DISPATCH (logistics_delivery) — 4 Roles — Ratio 44 / 56
+// 14. LOGISTICS & COURIER DISPATCH (logistics_delivery) — 4-Row Bento Home (44 / 56)
 // ============================================================================
 export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
   const { language } = useTranslation();
-  const { role, currency } = useAtriumSelector(
+  const { role, currency, branchName } = useAtriumSelector(
     (s) => ({
       role: s.activeLogisticsRole || 'gerant',
-      currency: 'DZD',
+      currency: selectCurrentBusinessConfigFromState(s).currency || 'DZD',
+      branchName: selectCurrentBranchFromState(s)?.name || 'Hub',
     }),
     shallowEqualObjects
   );
@@ -353,12 +448,19 @@ export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
     [shipments]
   );
 
+  const outForDeliveryCount = useMemo(
+    () => shipments.filter((s) => s.status === 'OutForDelivery').length,
+    [shipments]
+  );
+
   const shipmentRows: HomePreviewRow[] = useMemo(
     () =>
       shipments.slice(0, 4).map((s) => ({
         id: s.id,
         primary: `${s.trackingCode} · ${s.recipientName}`,
-        secondary: [s.destinationWilaya, s.merchantName, s.deliveryMode].filter(Boolean).join(' · '),
+        secondary: [s.destinationWilaya, s.merchantName, s.deliveryMode]
+          .filter(Boolean)
+          .join(' · '),
         trailing: formatMoney(s.codAmountDzd, currency),
         statusTone:
           s.status === 'Delivered'
@@ -375,7 +477,9 @@ export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
       manifests.slice(0, 4).map((m) => ({
         id: m.id,
         primary: `${m.manifestNumber} · ${m.driverName}`,
-        secondary: [m.zoneWilaya, m.vehiclePlate, `${m.totalShipmentsCount} colis`].filter(Boolean).join(' · '),
+        secondary: [m.zoneWilaya, m.vehiclePlate, `${m.totalShipmentsCount} colis`]
+          .filter(Boolean)
+          .join(' · '),
         trailing: formatMoney(m.totalCodExpectedDzd, currency),
         statusTone: m.status === 'Reconciled' ? 'positive' : 'warning',
       })),
@@ -384,19 +488,20 @@ export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
 
   const bagRows: HomePreviewRow[] = useMemo(
     () =>
-      bags.slice(0, 3).map((b) => ({
+      bags.slice(0, 4).map((b) => ({
         id: b.id,
         primary: `${b.bagCode} · #${b.securitySealNumber}`,
         secondary: `W${b.originHubWilaya} → W${b.destinationHubWilaya} · ${b.totalItemCount} colis`,
         trailing: `${b.totalWeightKg} kg`,
-        statusTone: b.status === 'Discrepancy' ? 'danger' : b.status === 'Received' ? 'positive' : 'warning',
+        statusTone:
+          b.status === 'Discrepancy' ? 'danger' : b.status === 'Received' ? 'positive' : 'warning',
       })),
     [bags]
   );
 
   const remittanceRows: HomePreviewRow[] = useMemo(
     () =>
-      remittances.slice(0, 3).map((r) => ({
+      remittances.slice(0, 4).map((r) => ({
         id: r.id,
         primary: `${r.batchNumber} · ${r.merchantName}`,
         secondary: r.paymentChannel,
@@ -404,6 +509,20 @@ export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
         statusTone: r.status === 'Executed' ? 'positive' : 'warning',
       })),
     [remittances, currency]
+  );
+
+  const historique = useMemo(
+    () =>
+      buildLogisticsHistorique({
+        language,
+        currency,
+        branchName,
+        shipments,
+        manifests,
+        bags,
+        remittances,
+      }),
+    [language, currency, branchName, shipments, manifests, bags, remittances]
   );
 
   const isFieldScanRole = role === 'hub_sorter' || role === 'stop_desk_agent';
@@ -441,37 +560,55 @@ export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
       }
       testId={`home-logistics-${role}`}
     >
-      <HomePodGrid ratio={CATEGORY_HOME_RATIO.logistics_delivery}>
-        <DashboardPod title={l3(language, 'Activité Réseau & Hub', 'Network & Hub Pulse', 'نبض الشبكة والمركز')}
-        >
-          <HomeAnchorCard
-            title={
-              role === 'dispatcher'
-                ? l3(language, 'Tournées Actives', 'Dispatched Manifests', 'المسارات الموزعة')
-                : role === 'hub_sorter'
-                ? l3(language, 'Sacs-Navette Hub', 'Shuttle Bags at Hub', 'أكياس الفرز بالمركز')
-                : l3(language, 'Volume COD en Transit', 'COD Volume in Transit', 'تحصيل الدفع عند الاستلام')
-            }
-            value={
-              role === 'dispatcher'
-                ? manifests.length
-                : role === 'hub_sorter'
-                ? bags.length
-                : formatMoney(totalPendingCod, currency)
-            }
-            badgeText={`${shipments.length} ${l3(language, 'colis', 'parcels', 'طرد')}`}
-            badgeVariant="orange"
-            sublabel={
-              isFieldScanRole
-                ? l3(language, 'Lancer le poste de scan & rayonnement', 'Launch live parcel barcode scanner', 'فتح محطة المسح السريع')
-                : l3(language, 'Ouvrir le tableau de bord 58 Wilayas', 'Open 58-wilaya delivery rate & COD dashboard', 'فتح لوحة تحكم الـ58 ولاية')
-            }
-            targetScreen={isFieldScanRole ? 'registrations' : 'dashboard'}
-          />
-
+      <HomeHeroRow
+        ratio={CATEGORY_HOME_RATIO.logistics_delivery}
+        heroTitle={l3(language, 'Activité Réseau & Hub', 'Network & Hub Pulse', 'نبض الشبكة والمركز')}
+        heroChildren={
+          <>
+            <HomeAnchorCard
+              title={
+                role === 'dispatcher'
+                  ? l3(language, 'Tournées Actives', 'Dispatched Manifests', 'المسارات الموزعة')
+                  : role === 'hub_sorter'
+                  ? l3(language, 'Sacs-Navette Hub', 'Shuttle Bags at Hub', 'أكياس الفرز بالمركز')
+                  : l3(language, 'Volume COD en Transit', 'COD Volume in Transit', 'تحصيل الدفع عند الاستلام')
+              }
+              value={
+                role === 'dispatcher'
+                  ? manifests.length
+                  : role === 'hub_sorter'
+                  ? bags.length
+                  : formatMoney(totalPendingCod, currency)
+              }
+              badgeText={`${shipments.length} ${l3(language, 'colis', 'parcels', 'طرد')}`}
+              badgeVariant="orange"
+              sublabel={
+                isFieldScanRole
+                  ? l3(language, 'Lancer le poste de scan & rayonnement', 'Launch live parcel barcode scanner', 'فتح محطة المسح السريع')
+                  : l3(language, 'Ouvrir le tableau de bord 58 Wilayas', 'Open 58-wilaya delivery rate & COD dashboard', 'فتح لوحة تحكم الـ58 ولاية')
+              }
+              targetScreen={isFieldScanRole ? 'registrations' : 'dashboard'}
+            />
+            <HomeCompactStrip
+              config={{
+                id: 'log-discharges-strip',
+                tone: 'lavender',
+                title: l3(language, 'Décharges Livreurs & CCP', 'Driver Cash & CCP Batches', 'التسويات والتحصيل'),
+                subtitle: `${discharges.length} ${l3(language, 'décharges', 'discharges', 'تسويات')} · ${outForDeliveryCount} ${l3(language, 'en tournée', 'out now', 'قيد التوصيل')}`,
+                icon: <Truck size={17} />,
+                count: outForDeliveryCount,
+                statusText: `${remittances.length} ${l3(language, 'lots SFP-01', 'CCP batches', 'دفعات CCP')}`,
+                targetScreen: 'finance',
+              }}
+            />
+          </>
+        }
+        priorityTitle={l3(language, 'Sacs-Navette & Scanner', 'Shuttle Bags Priority', 'أولويات الأكياس والفرز')}
+        priorityChildren={
           <HomePreviewCard
             config={{
               id: 'log-bags',
+              tone: 'brown',
               title: l3(language, 'Sacs-Navette & Scanner', 'Shuttle Bags & Scanner', 'الأكياس والماسح'),
               subtitle: l3(language, 'Scellés de sécurité & tri hub', 'Sealed transit bags', 'الأختام الأمنية والفرز'),
               icon: <Boxes size={18} />,
@@ -482,69 +619,79 @@ export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
               emptyCtaLabel: l3(language, 'Ouvrir scanner', 'Open scanner', 'فتح الماسح'),
             }}
           />
-        </DashboardPod>
+        }
+      />
 
-        <DashboardPod title={l3(language, 'Espaces Dispatch & Guichet', 'Dispatch Spaces', 'أقسام التوزيع')}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <HomePreviewCard
-              config={{
-                id: 'log-shipments',
-                title: l3(language, 'Colis & Stop-Desk', 'Parcels & Stop-Desk', 'الطرود ونقاط الاستلام'),
-                subtitle: l3(language, 'Suivi 58 wilayas & codes OTP', 'Live shipment tracking', 'متابعة الطرود والتسليم'),
-                icon: <Package size={18} />,
-                count: shipments.length,
-                countLabel: `${shipments.filter((s) => s.status === 'OutForDelivery').length} ${l3(language, 'en tournée', 'out', 'قيد التوصيل')}`,
-                items: shipmentRows,
-                targetScreen: 'members',
-                emptyTitle: l3(language, 'Aucun colis enregistré.', 'No parcels logged.', 'لا توجد طرود.'),
-                emptyCtaLabel: l3(language, 'Nouvel envoi', 'View parcels', 'عرض الطرود'),
-              }}
-            />
+      <HomeOperationalRow title={l3(language, 'Espaces Dispatch & Guichet', 'Dispatch Spaces', 'أقسام التوزيع')}>
+        <HomePreviewCard
+          config={{
+            id: 'log-shipments',
+            tone: 'terracotta',
+            title: l3(language, 'Colis & Stop-Desk', 'Parcels & Stop-Desk', 'الطرود ونقاط الاستلام'),
+            subtitle: l3(language, 'Suivi 58 wilayas & codes OTP', 'Live shipment tracking', 'متابعة الطرود والتسليم'),
+            icon: <Package size={18} />,
+            count: shipments.length,
+            countLabel: `${outForDeliveryCount} ${l3(language, 'en tournée', 'out', 'قيد التوصيل')}`,
+            items: shipmentRows,
+            targetScreen: 'members',
+            emptyTitle: l3(language, 'Aucun colis enregistré.', 'No parcels logged.', 'لا توجد طرود.'),
+            emptyCtaLabel: l3(language, 'Nouvel envoi', 'View parcels', 'عرض الطرود'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'log-manifests',
-                title: l3(language, 'Feuilles de Route Chauffeurs', 'Driver Manifests', 'جداول السائقين'),
-                subtitle: l3(language, 'Tournées assignées & chargements', 'Runs & expected COD', 'المسارات والمبالغ المتوقعة'),
-                icon: <Truck size={18} />,
-                count: manifests.length,
-                items: manifestRows,
-                targetScreen: 'scheduler',
-                emptyTitle: l3(language, 'Aucune tournée émise.', 'No manifests created.', 'لا توجد جداول توصيل.'),
-                emptyCtaLabel: l3(language, 'Créer tournée', 'Open manifests', 'فتح المسارات'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'log-manifests',
+            tone: 'lavender',
+            title: l3(language, 'Feuilles de Route Chauffeurs', 'Driver Manifests', 'جداول السائقين'),
+            subtitle: l3(language, 'Tournées assignées & chargements', 'Runs & expected COD', 'المسارات والمبالغ المتوقعة'),
+            icon: <Truck size={18} />,
+            count: manifests.length,
+            items: manifestRows,
+            targetScreen: 'scheduler',
+            emptyTitle: l3(language, 'Aucune tournée émise.', 'No manifests created.', 'لا توجد جداول توصيل.'),
+            emptyCtaLabel: l3(language, 'Créer tournée', 'Open manifests', 'فتح المسارات'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'log-cod',
-                title: l3(language, 'Décharges & Virements COD', 'COD Settlement & CCP', 'تحصيل وتسوية التجار'),
-                subtitle: l3(language, `${discharges.length} décharges · lots SFP-01`, `${discharges.length} cash discharges`, `${discharges.length} تسويات مالية`),
-                icon: <CreditCard size={18} />,
-                count: remittances.length,
-                items: remittanceRows,
-                targetScreen: 'finance',
-                emptyTitle: l3(language, 'Aucun règlement marchand.', 'No COD settlements yet.', 'لا توجد تسويات.'),
-                emptyCtaLabel: l3(language, 'Ouvrir caisse COD', 'Open COD finance', 'فتح التحصيل'),
-              }}
-            />
-          </div>
-        </DashboardPod>
-      </HomePodGrid>
+        <HomePreviewCard
+          config={{
+            id: 'log-cod',
+            tone: 'sage',
+            title: l3(language, 'Décharges & Virements COD', 'COD Settlement & CCP', 'تحصيل وتسوية التجار'),
+            subtitle: l3(
+              language,
+              `${discharges.length} décharges · lots SFP-01`,
+              `${discharges.length} cash discharges`,
+              `${discharges.length} تسويات مالية`
+            ),
+            icon: <CreditCard size={18} />,
+            count: remittances.length,
+            items: remittanceRows,
+            targetScreen: 'finance',
+            emptyTitle: l3(language, 'Aucun règlement marchand.', 'No COD settlements yet.', 'لا توجد تسويات.'),
+            emptyCtaLabel: l3(language, 'Ouvrir caisse COD', 'Open COD finance', 'فتح التحصيل'),
+          }}
+        />
+      </HomeOperationalRow>
+
+      <HomeLiveHistoryPod events={historique.events} filters={historique.filters} />
+
+      <HomeSetupPod roleKey={role} />
     </HomeShell>
   );
 };
 
 // ============================================================================
-// 15. CONSTRUCTION & BTP (construction_contractor) — 5 Roles — Ratio 44 / 56
+// 15. CONSTRUCTION & BTP (construction_contractor) — 4-Row Bento Home (44 / 56)
 // ============================================================================
 export const ContractorHomeView: React.FC<HomeViewProps> = () => {
   const { language } = useTranslation();
-  const { role, currency } = useAtriumSelector(
+  const { role, currency, branchName } = useAtriumSelector(
     (s) => ({
       role: s.activeContractorRole || 'gerant',
-      currency: 'DZD',
+      currency: selectCurrentBusinessConfigFromState(s).currency || 'DZD',
+      branchName: selectCurrentBranchFromState(s)?.name || 'BTP',
     }),
     shallowEqualObjects
   );
@@ -605,6 +752,20 @@ export const ContractorHomeView: React.FC<HomeViewProps> = () => {
     [dgps, currency]
   );
 
+  const historique = useMemo(
+    () =>
+      buildContractorHistorique({
+        language,
+        currency,
+        branchName,
+        dailyLogs,
+        dgps,
+        serviceOrders,
+        concretePours,
+      }),
+    [language, currency, branchName, dailyLogs, dgps, serviceOrders, concretePours]
+  );
+
   const isForeman = role === 'chef_chantier';
   const quickActions: HomeQuickAction[] = [
     {
@@ -639,30 +800,53 @@ export const ContractorHomeView: React.FC<HomeViewProps> = () => {
       }
       testId={`home-contractor-${role}`}
     >
-      <HomePodGrid ratio={CATEGORY_HOME_RATIO.construction_contractor}>
-        <DashboardPod title={l3(language, 'Portefeuille Marchés BTP', 'Contract Portfolio', 'محفظة المقاولات')}
-        >
-          <HomeAnchorCard
-            title={l3(language, 'Volume Marchés Actifs', 'Active Contract Volume', 'حجم الصفقات الجارية')}
-            value={formatMoney(totalContractValue, currency)}
-            badgeText={`${projects.length} ${l3(language, 'chantiers', 'sites', 'ورشات')}`}
-            badgeVariant="orange"
-            sublabel={
-              isForeman
-                ? l3(language, 'Ouvrir le journal quotidien et pointage ouvriers', 'Open daily site log and concrete pour tracker', 'فتح يومية الورشة وتتبع الخرسانة')
-                : l3(language, 'Ouvrir l’avancement physique & financier BTP', 'Open physical vs financial progress & retention KPIs', 'فتح مؤشرات التقدم المادي والمالي')
-            }
-            targetScreen={isForeman ? 'scheduler' : 'dashboard'}
-          />
-
+      <HomeHeroRow
+        ratio={CATEGORY_HOME_RATIO.construction_contractor}
+        heroTitle={l3(language, 'Portefeuille Marchés BTP', 'Contract Portfolio', 'محفظة المقاولات')}
+        heroChildren={
+          <>
+            <HomeAnchorCard
+              title={l3(language, 'Volume Marchés Actifs', 'Active Contract Volume', 'حجم الصفقات الجارية')}
+              value={formatMoney(totalContractValue, currency)}
+              badgeText={`${projects.length} ${l3(language, 'chantiers', 'sites', 'ورشات')}`}
+              badgeVariant="orange"
+              sublabel={
+                isForeman
+                  ? l3(language, 'Ouvrir le journal quotidien et pointage ouvriers', 'Open daily site log and concrete pour tracker', 'فتح يومية الورشة وتتبع الخرسانة')
+                  : l3(language, 'Ouvrir l’avancement physique & financier BTP', 'Open physical vs financial progress & retention KPIs', 'فتح مؤشرات التقدم المادي والمالي')
+              }
+              targetScreen={isForeman ? 'scheduler' : 'dashboard'}
+            />
+            <HomeCompactStrip
+              config={{
+                id: 'btp-dgp-strip',
+                tone: 'lavender',
+                title: l3(language, 'Situations DGP & Béton', 'Progress Billings & Concrete', 'الكشوف والخرسانة'),
+                subtitle: `${dgps.length} ${l3(language, 'décomptes DGP', 'DGP statements', 'كشوف')} · ${concretePours.length} ${l3(language, 'coulages', 'pours', 'عمليات صب')}`,
+                icon: <Wallet size={17} />,
+                count: dgps.filter((d) => d.status !== 'Paid').length,
+                statusText: `${boqItems.length} ${l3(language, 'postes DQE', 'BOQ lines', 'بنود DQE')}`,
+                targetScreen: 'finance',
+              }}
+            />
+          </>
+        }
+        priorityTitle={l3(language, 'Ordres de Service & Béton', 'Service Orders & Concrete', 'أوامر الخدمة والخرسانة')}
+        priorityChildren={
           <HomePreviewCard
             config={{
               id: 'btp-os-concrete',
+              tone: 'brown',
               title: l3(language, 'Ordres de Service & Béton', 'Service Orders & Concrete', 'أوامر الخدمة والخرسانة'),
-              subtitle: l3(language, `${serviceOrders.length} OS · ${concretePours.length} coulages`, `${serviceOrders.length} OS · ${concretePours.length} pours`, `${serviceOrders.length} أوامر · ${concretePours.length} صب خرسانة`),
+              subtitle: l3(
+                language,
+                `${serviceOrders.length} OS · ${concretePours.length} coulages`,
+                `${serviceOrders.length} OS · ${concretePours.length} pours`,
+                `${serviceOrders.length} أوامر · ${concretePours.length} صب خرسانة`
+              ),
               icon: <FileText size={18} />,
               count: serviceOrders.length + concretePours.length,
-              items: serviceOrders.slice(0, 3).map((os) => ({
+              items: serviceOrders.slice(0, 4).map((os) => ({
                 id: os.id,
                 primary: `${os.osNumber} · ${os.osType}`,
                 secondary: os.effectiveDate,
@@ -674,82 +858,91 @@ export const ContractorHomeView: React.FC<HomeViewProps> = () => {
               emptyCtaLabel: l3(language, 'Voir chantiers', 'Open sites', 'فتح الورشات'),
             }}
           />
-        </DashboardPod>
+        }
+      />
 
-        <DashboardPod title={l3(language, 'Espaces Chantiers & Études', 'Site Workspaces', 'أقسام الأشغال')}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <HomePreviewCard
-              config={{
-                id: 'btp-projects',
-                title: l3(language, 'Chantiers & Marchés', 'Active Sites', 'الورشات الجارية'),
-                subtitle: l3(language, 'Avancement & retenues de garantie', 'Progress & milestones', 'نسب التقدم والضمانات'),
-                icon: <HardHat size={18} />,
-                count: projects.length,
-                items: projectRows,
-                targetScreen: 'members',
-                emptyTitle: l3(language, 'Aucun chantier actif.', 'No active projects.', 'لا توجد ورشات.'),
-                emptyCtaLabel: l3(language, 'Nouveau marché', 'Open sites', 'فتح المشاريع'),
-              }}
-            />
+      <HomeOperationalRow title={l3(language, 'Espaces Chantiers & Études', 'Site Workspaces', 'أقسام الأشغال')}>
+        <HomePreviewCard
+          config={{
+            id: 'btp-projects',
+            tone: 'terracotta',
+            title: l3(language, 'Chantiers & Marchés', 'Active Sites', 'الورشات الجارية'),
+            subtitle: l3(language, 'Avancement & retenues de garantie', 'Progress & milestones', 'نسب التقدم والضمانات'),
+            icon: <HardHat size={18} />,
+            count: projects.length,
+            items: projectRows,
+            targetScreen: 'members',
+            emptyTitle: l3(language, 'Aucun chantier actif.', 'No active projects.', 'لا توجد ورشات.'),
+            emptyCtaLabel: l3(language, 'Nouveau marché', 'Open sites', 'فتح المشاريع'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'btp-boq',
-                title: l3(language, 'DQE & Attachements', 'BOQ & Quantities', 'جدول الكميات والأسعار'),
-                subtitle: l3(language, 'Quantités réalisées vs marché', 'Executed vs planned', 'الكميات المنجزة والمخططة'),
-                icon: <ClipboardList size={18} />,
-                count: boqItems.length,
-                items: boqRows,
-                targetScreen: 'shop',
-                emptyTitle: l3(language, 'Aucun poste DQE saisi.', 'No BOQ lines added.', 'لا توجد بنود كمية.'),
-                emptyCtaLabel: l3(language, 'Ouvrir DQE', 'Open BOQ', 'فتح الكميات'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'btp-boq',
+            tone: 'lavender',
+            title: l3(language, 'DQE & Attachements', 'BOQ & Quantities', 'جدول الكميات والأسعار'),
+            subtitle: l3(language, 'Quantités réalisées vs marché', 'Executed vs planned', 'الكميات المنجزة والمخططة'),
+            icon: <ClipboardList size={18} />,
+            count: boqItems.length,
+            items: boqRows,
+            targetScreen: 'shop',
+            emptyTitle: l3(language, 'Aucun poste DQE saisi.', 'No BOQ lines added.', 'لا توجد بنود كمية.'),
+            emptyCtaLabel: l3(language, 'Ouvrir DQE', 'Open BOQ', 'فتح الكميات'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'btp-logs',
-                title: l3(language, 'Journal de Chantier & Météo', 'Daily Logs & CACOBATPH', 'يومية الورشة والأحوال'),
-                subtitle: l3(language, 'Effectifs, arrêts intempéries & BET', 'Headcount & weather', 'العمال والتوقفات الجوية'),
-                icon: <CheckCircle2 size={18} />,
-                count: dailyLogs.length,
-                items: logRows,
-                targetScreen: 'scheduler',
-                emptyTitle: l3(language, 'Aucun rapport journalier.', 'No daily site logs.', 'لا توجد تقارير يومية.'),
-                emptyCtaLabel: l3(language, 'Saisir journal', 'Log daily report', 'إضافة يومية'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'btp-logs',
+            tone: 'brown',
+            title: l3(language, 'Journal de Chantier & Météo', 'Daily Logs & CACOBATPH', 'يومية الورشة والأحوال'),
+            subtitle: l3(language, 'Effectifs, arrêts intempéries & BET', 'Headcount & weather', 'العمال والتوقفات الجوية'),
+            icon: <CheckCircle2 size={18} />,
+            count: dailyLogs.length,
+            items: logRows,
+            targetScreen: 'scheduler',
+            emptyTitle: l3(language, 'Aucun rapport journalier.', 'No daily site logs.', 'لا توجد تقارير يومية.'),
+            emptyCtaLabel: l3(language, 'Saisir journal', 'Log daily report', 'إضافة يومية'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'btp-billing',
-                title: l3(language, 'Situations Mensuelles (DGP)', 'Progress Billings (DGP)', 'كشوف الأشغال الشهرية'),
-                subtitle: l3(language, 'Décomptes & mandats Trésor', 'Monthly certificates', 'الفواتير والمستحقات'),
-                icon: <Wallet size={18} />,
-                count: dgps.length,
-                items: dgpRows,
-                targetScreen: 'finance',
-                emptyTitle: l3(language, 'Aucune situation émise.', 'No DGP statements.', 'لا توجد كشوف شهرية.'),
-                emptyCtaLabel: l3(language, 'Ouvrir décomptes', 'Open billing', 'فتح الكشوف'),
-              }}
-            />
-          </div>
-        </DashboardPod>
-      </HomePodGrid>
+        <HomePreviewCard
+          config={{
+            id: 'btp-billing',
+            tone: 'sage',
+            title: l3(language, 'Situations Mensuelles (DGP)', 'Progress Billings (DGP)', 'كشوف الأشغال الشهرية'),
+            subtitle: l3(language, 'Décomptes & mandats Trésor', 'Monthly certificates', 'الفواتير والمستحقات'),
+            icon: <Wallet size={18} />,
+            count: dgps.length,
+            items: dgpRows,
+            targetScreen: 'finance',
+            emptyTitle: l3(language, 'Aucune situation émise.', 'No DGP statements.', 'لا توجد كشوف شهرية.'),
+            emptyCtaLabel: l3(language, 'Ouvrir décomptes', 'Open billing', 'فتح الكشوف'),
+          }}
+        />
+      </HomeOperationalRow>
+
+      <HomeLiveHistoryPod events={historique.events} filters={historique.filters} />
+
+      <HomeSetupPod
+        roleKey={role}
+        setupOverrides={{ btpProjects: projects }}
+      />
     </HomeShell>
   );
 };
 
 // ============================================================================
-// 16. AGRICULTURE & LIVESTOCK (agriculture_farming) — 4 Roles — Ratio 58 / 42
+// 16. AGRICULTURE & LIVESTOCK (agriculture_farming) — Standardized 4-Row Bento Home (42 / 58)
 // ============================================================================
 export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
   const { language } = useTranslation();
-  const { role, currency } = useAtriumSelector(
+  const { role, currency, branchName } = useAtriumSelector(
     (s) => ({
       role: s.activeAgriRole || 'gerant',
-      currency: 'DZD',
+      currency: selectCurrentBusinessConfigFromState(s).currency || 'DZD',
+      branchName: selectCurrentBranchFromState(s)?.name || 'Exploitation',
     }),
     shallowEqualObjects
   );
@@ -769,6 +962,11 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
     [parcels]
   );
 
+  const darLockoutsCount = useMemo(
+    () => cropCycles.filter((c) => c.currentPhase === 'treatment_locked').length,
+    [cropCycles]
+  );
+
   const parcelRows: HomePreviewRow[] = useMemo(
     () =>
       parcels.slice(0, 4).map((p) => ({
@@ -776,7 +974,12 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
         primary: p.name,
         secondary: [p.currentCrop || p.soilType, p.irrigationType].filter(Boolean).join(' · '),
         trailing: `${p.surfaceHectares} ha`,
-        statusTone: p.status === 'Harvesting' || p.status === 'Growing' ? 'positive' : p.status === 'Damaged' ? 'danger' : 'warning',
+        statusTone:
+          p.status === 'Harvesting' || p.status === 'Growing'
+            ? 'positive'
+            : p.status === 'Damaged'
+            ? 'danger'
+            : 'warning',
       })),
     [parcels]
   );
@@ -786,11 +989,19 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
       cropCycles.slice(0, 4).map((c) => ({
         id: c.id,
         primary: `${c.cropName} · ${c.variety}`,
-        secondary: [c.projectedHarvestDate, c.activeDarLockoutUntil ? `DAR ${c.activeDarLockoutUntil}` : '']
+        secondary: [
+          c.projectedHarvestDate,
+          c.activeDarLockoutUntil ? `DAR ${c.activeDarLockoutUntil}` : '',
+        ]
           .filter(Boolean)
           .join(' · '),
         trailing: `${c.projectedYieldQtx} Qx`,
-        statusTone: c.currentPhase === 'treatment_locked' ? 'danger' : c.currentPhase === 'ready_harvest' ? 'positive' : 'warning',
+        statusTone:
+          c.currentPhase === 'treatment_locked'
+            ? 'danger'
+            : c.currentPhase === 'ready_harvest'
+            ? 'positive'
+            : 'warning',
       })),
     [cropCycles]
   );
@@ -821,14 +1032,31 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
 
   const pointageRows: HomePreviewRow[] = useMemo(
     () =>
-      pointages.slice(0, 3).map((pt) => ({
+      pointages.slice(0, 4).map((pt) => ({
         id: pt.id,
         primary: pt.workerName,
-        secondary: [pt.parcelName, `${pt.cratesCollected} caisses`, pt.date].filter(Boolean).join(' · '),
+        secondary: [pt.parcelName, `${pt.cratesCollected} caisses`, pt.date]
+          .filter(Boolean)
+          .join(' · '),
         trailing: formatMoney(pt.netDueDzd, currency),
         statusTone: pt.isPaid ? 'positive' : 'warning',
       })),
     [pointages, currency]
+  );
+
+  const historique = useMemo(
+    () =>
+      buildAgricultureHistorique({
+        language,
+        currency,
+        branchName,
+        role,
+        pointages,
+        milkingRecords,
+        weighbridgeTickets,
+        cropCycles,
+      }),
+    [language, currency, branchName, role, pointages, milkingRecords, weighbridgeTickets, cropCycles]
   );
 
   const isGerant = role === 'gerant';
@@ -853,7 +1081,7 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
           },
         ]
       : []),
-    ...((isGerant || isZootech)
+    ...(isGerant || isZootech
       ? [
           {
             id: 'agri-livestock',
@@ -863,7 +1091,7 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
           },
         ]
       : []),
-    ...((isGerant || isMagasinier)
+    ...(isGerant || isMagasinier
       ? [
           {
             id: 'agri-weighbridge',
@@ -875,29 +1103,31 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
       : []),
   ];
 
-  const primaryCards = useMemo(() => {
-    const cards = [];
+  const primaryCards: HomePreviewCardConfig[] = useMemo(() => {
+    const cards: HomePreviewCardConfig[] = [];
     if (isGerant || isChefCulture) {
       cards.push({
         id: 'agri-parcels',
+        tone: 'terracotta',
         title: l3(language, 'Parcelles & Eau ANRH', 'Parcels & Irrigation', 'القطع الفلاحية والسقي'),
         subtitle: l3(language, 'Surface, sols & quotas hydriques', 'Hectares & water meters', 'المساحة وحصص المياه'),
         icon: <Sprout size={18} />,
         count: parcels.length,
         countLabel: `${totalHectares.toFixed(1)} ha`,
         items: parcelRows,
-        targetScreen: 'members' as const,
+        targetScreen: 'members',
         emptyTitle: l3(language, 'Aucune parcelle enregistrée.', 'No parcels added.', 'لا توجد قطع أرضية.'),
         emptyCtaLabel: l3(language, 'Voir parcelles', 'Open parcels', 'فتح القطع'),
       });
       cards.push({
         id: 'agri-cycles',
+        tone: 'lavender',
         title: l3(language, 'Cultures & Traitements DAR', 'Crops & Treatments', 'المواسم والمعالجة'),
         subtitle: l3(language, 'Phases végétatives & délais avant récolte', 'Crop stages & DAR locks', 'مراحل النمو وفترة الأمان'),
         icon: <Calendar size={18} />,
         count: cropCycles.length,
         items: cycleRows,
-        targetScreen: 'scheduler' as const,
+        targetScreen: 'scheduler',
         emptyTitle: l3(language, 'Aucun cycle cultural.', 'No crop cycles yet.', 'لا توجد مواسم مزروعة.'),
         emptyCtaLabel: l3(language, 'Voir cultures', 'Open cycles', 'فتح المحاصيل'),
       });
@@ -905,12 +1135,18 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
     if (isGerant || isChefCulture || isMagasinier) {
       cards.push({
         id: 'agri-harvest',
+        tone: 'brown',
         title: l3(language, 'Récoltes & Pointage Saisonnier', 'Harvest & Piecework', 'الجني وعمال الموسم'),
-        subtitle: l3(language, `${workers.length} saisonniers · caisses & acomptes`, `${workers.length} seasonal workers`, `${workers.length} عامل موسمي`),
+        subtitle: l3(
+          language,
+          `${workers.length} saisonniers · caisses & acomptes`,
+          `${workers.length} seasonal workers`,
+          `${workers.length} عامل موسمي`
+        ),
         icon: <Layers size={18} />,
         count: pointages.length,
         items: pointageRows,
-        targetScreen: 'shop' as const,
+        targetScreen: 'shop',
         emptyTitle: l3(language, 'Aucun pointage de récolte.', 'No harvest logs yet.', 'لا توجد سجلات جني.'),
         emptyCtaLabel: l3(language, 'Ouvrir pointage', 'Open harvest', 'فتح الجني'),
       });
@@ -918,12 +1154,18 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
     if (isGerant || isZootech) {
       cards.push({
         id: 'agri-livestock',
+        tone: 'sage',
         title: l3(language, 'Cheptel Bovin & Collecte Lait', 'Dairy Herd & ONIL', 'تربية الأبقار والحليب'),
-        subtitle: l3(language, `${milkingRecords.length} collectes · primes ONIL`, `${milkingRecords.length} milking logs`, `${milkingRecords.length} سجلات حلب`),
+        subtitle: l3(
+          language,
+          `${milkingRecords.length} collectes · primes ONIL`,
+          `${milkingRecords.length} milking logs`,
+          `${milkingRecords.length} سجلات حلب`
+        ),
         icon: <Layers size={18} />,
         count: dairyCows.length,
         items: cowRows,
-        targetScreen: 'registrations' as const,
+        targetScreen: 'registrations',
         emptyTitle: l3(language, 'Aucune tête enregistrée.', 'No livestock records.', 'لا يوجد قطيع مسجل.'),
         emptyCtaLabel: l3(language, 'Voir cheptel', 'Open livestock', 'فتح القطيع'),
       });
@@ -931,12 +1173,13 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
     if (isGerant || isMagasinier) {
       cards.push({
         id: 'agri-weighbridge',
+        tone: 'terracotta',
         title: l3(language, 'Pont-Bascule & Mandataires', 'Weighbridge & Market', 'جسر الوزن والأسواق'),
         subtitle: l3(language, 'Pesées nettes & ventes gros', 'Net weight tickets', 'تذاكر الوزن والبيع بالجملة'),
         icon: <Wallet size={18} />,
         count: weighbridgeTickets.length,
         items: weighRows,
-        targetScreen: 'finance' as const,
+        targetScreen: 'finance',
         emptyTitle: l3(language, 'Aucun ticket de pesée.', 'No weighbridge tickets.', 'لا توجد تذاكر وزن.'),
         emptyCtaLabel: l3(language, 'Ouvrir bascule', 'Open weighbridge', 'فتح الميزان'),
       });
@@ -983,51 +1226,67 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
       }
       testId={`home-agriculture-${role}`}
     >
-      {/* 58/42 Agrarian Ratio: Left Wide Field Operations Grid / Right Estate Anchor */}
-      <HomePodGrid ratio={CATEGORY_HOME_RATIO.agriculture_farming}>
-        <DashboardPod title={l3(language, 'Espaces du Domaine', 'Estate Workspaces', 'أقسام المزرعة')}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {primaryCards.map((card) => (
-              <HomePreviewCard key={card.id} config={card} />
-            ))}
-          </div>
-        </DashboardPod>
-
-        <DashboardPod title={l3(language, 'Repères Exploitation', 'Estate Pulse', 'مؤشرات الاستغلالية')}
-        >
-          <HomeAnchorCard
-            title={
-              isZootech
-                ? l3(language, 'Têtes de Cheptel', 'Active Dairy Herd', 'رؤوس الماشية')
-                : isMagasinier
-                ? l3(language, 'Tickets Pont-Bascule', 'Weighbridge Tickets', 'تذاكر الميزان')
-                : l3(language, 'Surface Cultivée', 'Managed Acreage', 'المساحة المستغلة')
-            }
-            value={
-              isZootech
-                ? dairyCows.length
-                : isMagasinier
-                ? weighbridgeTickets.length
-                : `${totalHectares.toFixed(1)} ha`
-            }
-            badgeText={
-              isZootech
-                ? `${milkingRecords.length} ${l3(language, 'traites', 'milkings', 'حلبات')}`
-                : `${cropCycles.length} ${l3(language, 'cultures', 'cycles', 'مواسم')}`
-            }
-            badgeVariant="orange"
-            sublabel={
-              isGerant
-                ? l3(language, 'Ouvrir le tableau de bord agro-industriel', 'Open yield, water quota and ONIL milk dashboard', 'فتح لوحة تحكم المردودية والإنتاج')
-                : l3(language, 'Accéder directement à votre espace opérationnel', 'Open your active operational workspace', 'الانتقال المباشر لمساحة عملك')
-            }
-            targetScreen={roleTargetScreen}
-          />
-
+      {/* Standardized 42/58 Hero Left / Priority Right */}
+      <HomeHeroRow
+        ratio={CATEGORY_HOME_RATIO.agriculture_farming}
+        heroTitle={l3(language, 'Repères Exploitation', 'Estate Pulse', 'مؤشرات الاستغلالية')}
+        heroChildren={
+          <>
+            <HomeAnchorCard
+              title={
+                isZootech
+                  ? l3(language, 'Têtes de Cheptel', 'Active Dairy Herd', 'رؤوس الماشية')
+                  : isMagasinier
+                  ? l3(language, 'Tickets Pont-Bascule', 'Weighbridge Tickets', 'تذاكر الميزان')
+                  : l3(language, 'Surface Cultivée', 'Managed Acreage', 'المساحة المستغلة')
+              }
+              value={
+                isZootech
+                  ? dairyCows.length
+                  : isMagasinier
+                  ? weighbridgeTickets.length
+                  : `${totalHectares.toFixed(1)} ha`
+              }
+              badgeText={
+                isZootech
+                  ? `${milkingRecords.length} ${l3(language, 'traites', 'milkings', 'حلبات')}`
+                  : `${cropCycles.length} ${l3(language, 'cultures', 'cycles', 'مواسم')}`
+              }
+              badgeVariant="orange"
+              sublabel={
+                isGerant
+                  ? l3(language, 'Ouvrir le tableau de bord agro-industriel', 'Open yield, water quota and ONIL milk dashboard', 'فتح لوحة تحكم المردودية والإنتاج')
+                  : l3(language, 'Accéder directement à votre espace opérationnel', 'Open your active operational workspace', 'الانتقال المباشر لمساحة عملك')
+              }
+              targetScreen={roleTargetScreen}
+            />
+            <HomeCompactStrip
+              config={{
+                id: 'agri-team-strip',
+                tone: 'lavender',
+                title: l3(language, 'Saisonniers & Délais DAR', 'Seasonal Crew & DAR Locks', 'العمال وفترة الأمان'),
+                subtitle: `${workers.length} ${l3(language, 'ouvriers saisonniers', 'workers', 'عمال موسميين')} · ${parcels.length} ${l3(language, 'parcelles', 'parcels', 'قطع')}`,
+                icon: <Sprout size={17} />,
+                count: darLockoutsCount,
+                statusText:
+                  darLockoutsCount > 0
+                    ? `${darLockoutsCount} ${l3(language, 'DAR actifs', 'DAR locks', 'تحت الحظر')}`
+                    : l3(language, 'Récoltes ouvertes', 'Harvest open', 'مفتوح للجني'),
+                targetScreen: 'scheduler',
+              }}
+            />
+          </>
+        }
+        priorityTitle={
+          isZootech
+            ? l3(language, 'Collecte Lait ONIL', 'ONIL Milk Deliveries', 'تسليم الحليب')
+            : l3(language, 'Expéditions Gros & Bascule', 'Wholesale Weighbridge', 'مبيعات الجملة والميزان')
+        }
+        priorityChildren={
           <HomePreviewCard
             config={{
               id: 'agri-side-highlight',
+              tone: 'brown',
               title: isZootech
                 ? l3(language, 'Collecte Lait ONIL', 'ONIL Milk Deliveries', 'تسليم الحليب')
                 : l3(language, 'Expéditions Gros & Bascule', 'Wholesale Weighbridge', 'مبيعات الجملة والميزان'),
@@ -1037,21 +1296,34 @@ export const AgricultureHomeView: React.FC<HomeViewProps> = () => {
               icon: <Wallet size={18} />,
               count: isZootech ? milkingRecords.length : weighbridgeTickets.length,
               items: isZootech
-                ? milkingRecords.slice(0, 3).map((m) => ({
+                ? milkingRecords.slice(0, 4).map((m) => ({
                     id: m.id,
                     primary: `${m.sessionDate} · ${m.destinationDairy}`,
                     secondary: `${m.conformingLiters} L`,
                     trailing: formatMoney(m.onilTotalSubsidyDzd, currency),
                     statusTone: m.rejectedWithholdingLiters > 0 ? 'warning' : 'positive',
                   }))
-                : weighRows.slice(0, 3),
+                : weighRows,
               targetScreen: isZootech ? 'registrations' : 'finance',
               emptyTitle: l3(language, 'Aucune opération récente.', 'No recent activity.', 'لا توجد عمليات حديثة.'),
               emptyCtaLabel: l3(language, 'Ouvrir module', 'Open workspace', 'فتح القسم'),
             }}
           />
-        </DashboardPod>
-      </HomePodGrid>
+        }
+      />
+
+      <HomeOperationalRow title={l3(language, 'Espaces du Domaine', 'Estate Workspaces', 'أقسام المزرعة')}>
+        {primaryCards.map((card) => (
+          <HomePreviewCard key={card.id} config={card} />
+        ))}
+      </HomeOperationalRow>
+
+      <HomeLiveHistoryPod events={historique.events} filters={historique.filters} />
+
+      <HomeSetupPod
+        roleKey={role}
+        setupOverrides={{ agriParcels: parcels }}
+      />
     </HomeShell>
   );
 };

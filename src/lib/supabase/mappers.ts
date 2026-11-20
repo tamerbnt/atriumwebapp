@@ -15,6 +15,12 @@ import type {
   StaffSalaryAdvance,
   StaffPayrollRunRecord,
   StaffPayrollSlipRecord,
+  BusinessCategoryConfig,
+  CategoryFormule,
+  BusinessCategory,
+  CurrencyCode,
+  CategoryFormuleType,
+  FormuleDurationUnit,
 } from '../../types/index';
 
 type DbBusiness = Database['public']['Tables']['businesses']['Row'];
@@ -375,3 +381,45 @@ export const mapPayrollSlipFromDb = (row: any): StaffPayrollSlipRecord => ({
   receiptNumber: row.receipt_number,
   version: row.version != null ? Number(row.version) : undefined,
 });
+
+export const mapBusinessConfigFromDb = (row: any): BusinessCategoryConfig => ({
+  id: row.id,
+  accountId: row.account_id || undefined,
+  businessId: row.business_id,
+  branchId: row.branch_id || undefined,
+  category: (row.category || 'membership_session') as BusinessCategory,
+  currency: (row.currency || 'DZD') as CurrencyCode,
+  defaultTvaRate: Number(row.default_tva_rate ?? 19),
+  applyTimbreFiscal: Boolean(row.apply_timbre_fiscal ?? true),
+  fiscalProfile: (row.fiscal_ids && typeof row.fiscal_ids === 'object' ? row.fiscal_ids : {}) as any,
+  onboardingContext: (row.onboarding_context && typeof row.onboarding_context === 'object' ? row.onboarding_context : {}) as any,
+  categorySettings: (row.category_settings && typeof row.category_settings === 'object' ? row.category_settings : {}) as any,
+  setupState: (row.setup_state && typeof row.setup_state === 'object' ? row.setup_state : { dismissed: false }) as any,
+  version: row.version != null ? Number(row.version) : undefined,
+  updatedAt: row.updated_at || undefined,
+});
+
+export const mapCategoryFormuleFromDb = (row: any): CategoryFormule => ({
+  id: row.id,
+  accountId: row.account_id || undefined,
+  businessId: row.business_id,
+  branchId: row.branch_id || undefined,
+  category: (row.category || 'membership_session') as BusinessCategory,
+  formuleType: (row.formule_type || 'pos_combo') as CategoryFormuleType,
+  code: row.code || undefined,
+  name: row.name,
+  description: row.description || undefined,
+  priceAmount: Number(row.price_amount ?? 0),
+  ratePercent: Number(row.rate_percent ?? 0),
+  durationValue: Number(row.duration_value ?? 0),
+  durationUnit: (row.duration_unit || 'days') as FormuleDurationUnit,
+  currency: (row.currency || 'DZD') as CurrencyCode,
+  taxRate: Number(row.tax_rate ?? 19),
+  metadata: (row.metadata && typeof row.metadata === 'object' ? row.metadata : {}) as Record<string, any>,
+  isActive: row.is_active ?? true,
+  sortOrder: Number(row.sort_order ?? 0),
+  version: row.version != null ? Number(row.version) : undefined,
+  createdAt: row.created_at || undefined,
+  updatedAt: row.updated_at || undefined,
+});
+

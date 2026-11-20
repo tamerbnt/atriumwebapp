@@ -58,6 +58,7 @@ export const TradingCatalogView: React.FC = () => {
     updateProduct,
     deleteProduct,
     currentBranch,
+    currentBusinessConfig,
     branches,
     isSyncing,
     networkMode,
@@ -65,6 +66,7 @@ export const TradingCatalogView: React.FC = () => {
     isSyncTimeout,
     retryCloudSync,
   } = useAtriumStore();
+  const configuredDefaultTva = currentBusinessConfig.defaultTvaRate ?? 19;
 
   const [activeTab, setActiveTab] = useState<CatalogTab>('products');
   const [branchFilter, setBranchFilter] = useState<string>('All');
@@ -91,7 +93,7 @@ export const TradingCatalogView: React.FC = () => {
   const [costAmount, setCostAmount] = useState(700);
   const [sku, setSku] = useState('');
   const [unit, setUnit] = useState('u');
-  const [taxRate, setTaxRate] = useState(19);
+  const [taxRate, setTaxRate] = useState(configuredDefaultTva);
   const [category, setCategory] = useState('Matériaux BTP');
   const [reorderLevel, setReorderLevel] = useState(10);
   const [stockQuantity, setStockQuantity] = useState(50);
@@ -259,12 +261,12 @@ export const TradingCatalogView: React.FC = () => {
     setCostAmount(700);
     setSku('');
     setUnit(activeTab === 'services' ? 'forfait' : 'u');
-    setTaxRate(activeTab === 'services' ? 9 : 19);
+    setTaxRate(activeTab === 'services' ? (configuredDefaultTva === 0 ? 0 : 9) : configuredDefaultTva);
     setCategory(activeTab === 'services' ? 'Prestations & Services' : 'Matériaux BTP');
     setReorderLevel(10);
     setStockQuantity(50);
     setModalOpen(true);
-  }, [activeTab]);
+  }, [activeTab, configuredDefaultTva]);
 
   const handleEdit = useCallback((p: Product) => {
     setEditingProduct(p);
@@ -274,7 +276,7 @@ export const TradingCatalogView: React.FC = () => {
     setCostAmount(p.cost?.amount || p.costPrice || 0);
     setSku(p.sku || '');
     setUnit(p.unit || 'u');
-    setTaxRate(p.taxRate ?? 19);
+    setTaxRate(p.taxRate ?? configuredDefaultTva);
     setCategory(p.category || 'Général');
     setReorderLevel(p.reorderLevel || 10);
     setStockQuantity(p.stockQuantity || 0);

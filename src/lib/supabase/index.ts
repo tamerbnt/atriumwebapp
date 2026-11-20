@@ -26,3 +26,4 @@ export * from './services/legalService';
 export * from './services/logisticsService';
 export * from './services/contractorService';
 export * from './services/agricultureService';
+export * from './services/configService';

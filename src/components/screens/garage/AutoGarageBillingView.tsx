@@ -15,6 +15,7 @@ import {
   useAtriumActions,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
   showToast,
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -55,6 +56,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
   const {
     language,
     currentBranch,
+    currentBusinessConfig,
     branches,
     isSyncing,
     networkMode,
@@ -63,6 +65,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
     (s) => ({
       language: s.language,
       currentBranch: selectCurrentBranchFromState(s),
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode,
@@ -71,6 +74,10 @@ export const AutoGarageBillingView: React.FC<any> = () => {
     shallowEqualObjects
   );
   const { retryCloudSync } = useAtriumActions();
+  const configuredTvaRate = currentBusinessConfig.defaultTvaRate ?? 19;
+  const applyTimbre = currentBusinessConfig.applyTimbreFiscal !== false;
+  const workshopHourlyRate = currentBusinessConfig.categorySettings?.workshopHourlyRateDzd ?? 2500;
+  const defaultLaborFallback = Math.round(workshopHourlyRate * 1.5);
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -278,14 +285,14 @@ export const AutoGarageBillingView: React.FC<any> = () => {
     e.preventDefault();
     if (!orderToSettle) return;
     const laborHt =
-      orderToSettle.laborCostDzd || (orderToSettle.finalCostDzd ? orderToSettle.finalCostDzd * 0.25 : 3750);
+      orderToSettle.laborCostDzd || (orderToSettle.finalCostDzd ? orderToSettle.finalCostDzd * 0.25 : defaultLaborFallback);
     const partsHt =
       orderToSettle.partsCostDzd || (orderToSettle.finalCostDzd ? orderToSettle.finalCostDzd * 0.75 : 15500);
     const disc = parseFloat(discountAmount) || 0;
     const subtotalHt = Math.max(0, laborHt + partsHt - disc);
-    const tva = billingType === 'facture_dgi' ? Math.round(subtotalHt * 0.19) : 0;
+    const tva = billingType === 'facture_dgi' ? Math.round(subtotalHt * (configuredTvaRate / 100)) : 0;
     const ttc = subtotalHt + tva;
-    const timbre = computeAlgerianTimbreFiscal(ttc, paymentMethod);
+    const timbre = applyTimbre ? computeAlgerianTimbreFiscal(ttc, paymentMethod) : 0;
     const net = ttc + timbre;
     const newInvoice: GarageInvoice = {
       id: `inv_${Date.now()}`,
@@ -313,7 +320,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
       partsTotalHt: partsHt,
       discountHt: disc,
       subtotalHt,
-      tvaRate: billingType === 'facture_dgi' ? 19 : 0,
+      tvaRate: billingType === 'facture_dgi' ? configuredTvaRate : 0,
       tvaAmount: tva,
       totalTtc: ttc,
       timbreFiscal: timbre,
@@ -470,7 +477,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         title: `${inv.invoiceNumber} · ${inv.clientName}`,
         subline: `${inv.vehiclePlate} · ${inv.orderNumber}`,
         categoryLabel: inv.billingType === 'facture_dgi' ? 'Facture DGI' : 'Bon Caisse',
-        statusLabel: inv.billingType === 'facture_dgi' ? 'DGI 19%' : 'Bon Caisse',
+        statusLabel: inv.billingType === 'facture_dgi' ? `DGI ${inv.tvaRate}%` : 'Bon Caisse',
         statusVariant: inv.billingType === 'facture_dgi' ? 'info' : 'neutral',
         metricPrimary: formatMoney(inv.netToPayDzd, language),
         metricSecondary: br.name,
@@ -1442,27 +1449,28 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               >
                 <div className="flex justify-between text-black/55 dark:text-white/55">
                   <span>Main d'œuvre :</span>
-                  <span>{formatMoney(orderToSettle.laborCostDzd || 3750, language)}</span>
+                  <span>{formatMoney(orderToSettle.laborCostDzd || defaultLaborFallback, language)}</span>
                 </div>
                 <div className="flex justify-between text-black/55 dark:text-white/55">
                   <span>Pièces utilisées :</span>
                   <span>{formatMoney(orderToSettle.partsCostDzd || 15500, language)}</span>
                 </div>
-                {billingType === 'facture_dgi' && (
+                {billingType === 'facture_dgi' && configuredTvaRate > 0 && (
                   <div className="flex justify-between text-black/55 dark:text-white/55">
-                    <span>TVA Réglementaire (19%) :</span>
+                    <span>TVA Réglementaire ({configuredTvaRate}%) :</span>
                     <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
-                      {formatMoney((orderToSettle.finalCostDzd || 19250) * 0.19, language)}
+                      {formatMoney((orderToSettle.finalCostDzd || defaultLaborFallback + 15500) * (configuredTvaRate / 100), language)}
                     </span>
                   </div>
                 )}
-                {paymentMethod === 'especes' && (
+                {applyTimbre && paymentMethod === 'especes' && (
                   <div className="flex justify-between text-amber-700 dark:text-amber-400">
                     <span>Droit de Timbre Fiscal (Espèces) :</span>
                     <span className="font-semibold">
                       {formatMoney(
                         computeAlgerianTimbreFiscal(
-                          (orderToSettle.finalCostDzd || 19250) * (billingType === 'facture_dgi' ? 1.19 : 1),
+                          (orderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
+                            (billingType === 'facture_dgi' ? 1 + configuredTvaRate / 100 : 1),
                           'especes'
                         ),
                         language
@@ -1474,10 +1482,12 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                   <span>Net à Payer Client :</span>
                   <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     {formatMoney(
-                      (orderToSettle.finalCostDzd || 19250) * (billingType === 'facture_dgi' ? 1.19 : 1) +
-                        (paymentMethod === 'especes'
+                      (orderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
+                        (billingType === 'facture_dgi' ? 1 + configuredTvaRate / 100 : 1) +
+                        (applyTimbre && paymentMethod === 'especes'
                           ? computeAlgerianTimbreFiscal(
-                              (orderToSettle.finalCostDzd || 19250) * (billingType === 'facture_dgi' ? 1.19 : 1),
+                              (orderToSettle.finalCostDzd || defaultLaborFallback + 15500) *
+                                (billingType === 'facture_dgi' ? 1 + configuredTvaRate / 100 : 1),
                               'especes'
                             )
                           : 0),
@@ -1574,7 +1584,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 </div>
                 {activePrintInvoice.tvaAmount > 0 && (
                   <div className="flex justify-between text-black/55">
-                    <span>TVA (19%) :</span>
+                    <span>TVA ({activePrintInvoice.tvaRate}%) :</span>
                     <span>{activePrintInvoice.tvaAmount.toLocaleString()} DA</span>
                   </div>
                 )}

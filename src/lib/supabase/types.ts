@@ -1852,9 +1852,142 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['pm_equipment_stock']['Insert']>;
         Relationships: [];
       };
+      business_configs: {
+        Row: {
+          id: string;
+          account_id: string;
+          business_id: string;
+          branch_id: string | null;
+          category: BusinessCategory;
+          currency: string;
+          default_tva_rate: number;
+          apply_timbre_fiscal: boolean;
+          fiscal_ids: Json;
+          onboarding_context: Json;
+          category_settings: Json;
+          setup_state: Json;
+          is_active: boolean;
+          version: number;
+          staff_id: string | null;
+          updated_by_staff_id: string | null;
+          device_id: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          business_id: string;
+          branch_id?: string | null;
+          category: BusinessCategory;
+          currency?: string;
+          default_tva_rate?: number;
+          apply_timbre_fiscal?: boolean;
+          fiscal_ids?: Json;
+          onboarding_context?: Json;
+          category_settings?: Json;
+          setup_state?: Json;
+          is_active?: boolean;
+          version?: number;
+          staff_id?: string | null;
+          updated_by_staff_id?: string | null;
+          device_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database['public']['Tables']['business_configs']['Insert']>;
+        Relationships: [];
+      };
+      category_formules: {
+        Row: {
+          id: string;
+          account_id: string;
+          business_id: string;
+          branch_id: string | null;
+          category: BusinessCategory;
+          formule_type: string;
+          code: string | null;
+          name: string;
+          description: string | null;
+          price_amount: number;
+          rate_percent: number;
+          duration_value: number;
+          duration_unit: string;
+          currency: string;
+          tax_rate: number;
+          metadata: Json;
+          is_active: boolean;
+          sort_order: number;
+          version: number;
+          staff_id: string | null;
+          updated_by_staff_id: string | null;
+          device_id: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          business_id: string;
+          branch_id?: string | null;
+          category: BusinessCategory;
+          formule_type: string;
+          code?: string | null;
+          name: string;
+          description?: string | null;
+          price_amount?: number;
+          rate_percent?: number;
+          duration_value?: number;
+          duration_unit?: string;
+          currency?: string;
+          tax_rate?: number;
+          metadata?: Json;
+          is_active?: boolean;
+          sort_order?: number;
+          version?: number;
+          staff_id?: string | null;
+          updated_by_staff_id?: string | null;
+          device_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: Partial<Database['public']['Tables']['category_formules']['Insert']>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
+      upsert_business_config: {
+        Args: {
+          p_business_id: string;
+          p_branch_id?: string | null;
+          p_category?: string;
+          p_currency?: string;
+          p_default_tva_rate?: number;
+          p_apply_timbre_fiscal?: boolean;
+          p_fiscal_ids?: Json;
+          p_onboarding_context?: Json;
+          p_category_settings?: Json;
+          p_setup_state?: Json;
+          p_expected_version?: number | null;
+          p_device_id?: string | null;
+        };
+        Returns: Json;
+      };
+      update_business_identity: {
+        Args: {
+          p_business_id: string;
+          p_name: string;
+          p_display_name?: string | null;
+          p_address?: string | null;
+          p_phone?: string | null;
+        };
+        Returns: Json;
+      };
       check_device_registration: {
         Args: { p_hardware_id: string };
         Returns: {

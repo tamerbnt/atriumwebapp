@@ -1605,7 +1605,7 @@ export const SkeletonAnalytics: React.FC<{
 };
 
 // ==========================================
-// 31. Asymmetric Two-Column Pod Home Reception Skeleton
+// 31. 4-Row Multi-Pod Home Reception Skeleton
 // ==========================================
 const HOME_RATIO_CLASS_MAP: Record<string, string> = {
   membership_session: 'lg:grid-cols-[38fr_62fr]',
@@ -1624,7 +1624,7 @@ const HOME_RATIO_CLASS_MAP: Record<string, string> = {
   legal_accounting: 'lg:grid-cols-[42fr_58fr]',
   logistics_delivery: 'lg:grid-cols-[44fr_56fr]',
   construction_contractor: 'lg:grid-cols-[44fr_56fr]',
-  agriculture_farming: 'lg:grid-cols-[58fr_42fr]',
+  agriculture_farming: 'lg:grid-cols-[42fr_58fr]',
 };
 
 const SkeletonHomePreviewBlock: React.FC<{ rows?: number }> = ({ rows = 3 }) => (
@@ -1676,7 +1676,7 @@ export const SkeletonHomeView: React.FC<{
     <div
       role="status"
       aria-label="Loading reception hall"
-      className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200"
+      className="min-h-full flex flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200"
     >
       <span className="sr-only">Loading home screen...</span>
       <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
@@ -1696,9 +1696,8 @@ export const SkeletonHomeView: React.FC<{
         </div>
       </div>
 
-      {/* Fixed-Viewport Asymmetric Two-Column Pods */}
-      <div className={`lg:flex-1 lg:min-h-0 grid grid-cols-1 ${ratioClass} gap-[var(--pod-gap,16px)] items-stretch`}>
-        {/* Left Pulse Pod (Warm Sandstone/Brown) */}
+      {/* Row 1: Hero Anchor Pod + Priority Action Pod */}
+      <div className={`grid grid-cols-1 ${ratioClass} gap-[var(--pod-gap,16px)] items-stretch`}>
         <div
           data-sq="panel"
           data-sq-border="solid"
@@ -1710,17 +1709,27 @@ export const SkeletonHomeView: React.FC<{
           <div
             data-sq="card"
             data-sq-border="none"
-            className="bg-[#231914] p-[var(--card-pad,20px)] min-h-[108px] flex flex-col justify-between shrink-0"
+            className="bg-[#231914] p-[var(--card-pad,20px)] min-h-[118px] flex flex-col justify-between shrink-0"
           >
             <SkeletonText size="xs" width="45%" />
             <SkeletonText size="xl" width="60%" />
           </div>
-          <div className="flex-1 min-h-0">
-            <SkeletonHomePreviewBlock rows={3} />
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="bg-white dark:bg-[#161413] [--sq-stroke:#DDD4EC] dark:[--sq-stroke:#312A44] p-[var(--s3,12px)] flex items-center justify-between gap-3"
+          >
+            <div className="flex items-center gap-3 flex-1">
+              <SkeletonBox width={36} height={36} sq="tile" className="shrink-0" />
+              <div className="flex flex-col gap-1.5 flex-1">
+                <SkeletonText size="sm" width="52%" />
+                <SkeletonText size="xs" width="70%" />
+              </div>
+            </div>
+            <SkeletonText size="xs" width="54px" />
           </div>
         </div>
 
-        {/* Right Workspaces Pod (Soft Lavender-Linen 2x2) */}
         <div
           data-sq="panel"
           data-sq-border="solid"
@@ -1729,17 +1738,85 @@ export const SkeletonHomeView: React.FC<{
           <div className="px-[var(--s3,12px)] pt-[var(--s1,4px)]">
             <SkeletonText size="base" width="165px" />
           </div>
-          <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-[var(--card-gap,12px)] auto-rows-fr">
-            <SkeletonHomePreviewBlock rows={3} />
-            <SkeletonHomePreviewBlock rows={3} />
-            <SkeletonHomePreviewBlock rows={3} />
-            <SkeletonHomePreviewBlock rows={3} />
+          <SkeletonHomePreviewBlock rows={4} />
+        </div>
+      </div>
+
+      {/* Row 2: Full-Width Operational Modules Row */}
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-[#EFEBF7] dark:bg-[#171420] [--sq-stroke:#DDD4EC] dark:[--sq-stroke:#312A44] p-[var(--pod-pad,12px)] gap-[var(--s3,12px)] flex flex-col"
+      >
+        <div className="px-[var(--s3,12px)] pt-[var(--s1,4px)]">
+          <SkeletonText size="base" width="180px" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--card-gap,12px)] auto-rows-fr">
+          <SkeletonHomePreviewBlock rows={3} />
+          <SkeletonHomePreviewBlock rows={3} />
+          <SkeletonHomePreviewBlock rows={3} />
+        </div>
+      </div>
+
+      {/* Row 3: Live Daily Historique Feed Skeleton */}
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-[#FAF6F1] dark:bg-[#141312] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#2E2B28] p-[var(--pod-pad,12px)] gap-[var(--s3,12px)] flex flex-col"
+      >
+        <div className="px-[var(--s3,12px)] pt-[var(--s1,4px)] flex flex-wrap items-center justify-between gap-3">
+          <SkeletonText size="base" width="190px" />
+          <div className="flex items-center gap-2">
+            <SkeletonButton width={160} height={32} />
+            <SkeletonButton width={76} height={28} />
+            <SkeletonButton width={76} height={28} />
           </div>
+        </div>
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#161413] [--sq-stroke:#E2D6CC] dark:[--sq-stroke:#2E2724] divide-y divide-[#EFE6DF] dark:divide-[#27211E] px-[var(--card-pad,16px)]"
+        >
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={`hhist_${i}`} className="py-[var(--s3,12px)] flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <SkeletonBox width={34} height={34} sq="tile" className="shrink-0" />
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <SkeletonText size="sm" width="54%" />
+                  <SkeletonText size="xs" width="38%" />
+                </div>
+              </div>
+              <SkeletonText size="sm" width="76px" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Row 4: Category Setup Checklist Strip Skeleton */}
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-[#F7F2EC] dark:bg-[#161311] [--sq-stroke:#E5D9CD] dark:[--sq-stroke:#332C25] p-[var(--pod-pad,12px)] gap-[var(--s3,12px)] flex flex-col"
+      >
+        <div className="px-[var(--s3,12px)] pt-[var(--s1,4px)] flex items-center justify-between gap-3">
+          <SkeletonText size="base" width="210px" />
+          <SkeletonButton width={130} height={32} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-[var(--card-gap,12px)]">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={`hstep_${i}`}
+              data-sq="card"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1917] [--sq-stroke:#E4D8CF] dark:[--sq-stroke:#322B26] p-[var(--s3,14px)] flex flex-col gap-2"
+            >
+              <SkeletonText size="xs" width="52%" />
+              <SkeletonText size="sm" width="84%" />
+              <SkeletonText size="xs" width="66%" />
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 };
-
-
-

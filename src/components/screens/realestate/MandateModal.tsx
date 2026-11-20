@@ -5,6 +5,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { RealEstateProperty, RealEstateMandate, MandateType } from '../../../types';
 import { calculateMandateCommission } from '../../../utils/realEstateRules';
+import { useAtriumSelector, selectCurrentBusinessConfigFromState } from '../../../services/store';
 
 interface MandateModalProps {
   isOpen: boolean;
@@ -19,6 +20,9 @@ interface MandateModalProps {
 const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
 
 export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onSave, properties, selectedProperty }) => {
+	const businessConfig = useAtriumSelector(selectCurrentBusinessConfigFromState);
+	const defaultSaleCommission = businessConfig.categorySettings?.defaultSaleCommissionPercent ?? 2;
+	const configuredTvaRate = businessConfig.defaultTvaRate ?? 19;
 	const [propertyId, setPropertyId] = React.useState(selectedProperty?.id || (properties[0]?.id ?? ""));
 	const activeProp = properties.find((p: any) => p.id === propertyId) || selectedProperty || properties[0];
 	const [mandateType, setMandateType] = React.useState<MandateType>("Vente_Simple");
@@ -30,7 +34,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 	const [askingPriceDzd, setAskingPriceDzd] = React.useState(activeProp?.priceDzd || 15e6);
 	const [minimumAcceptablePriceDzd, setMinimumAcceptablePriceDzd] = React.useState(activeProp ? Math.round(activeProp.priceDzd * .95) : 1425e4);
 	const [commissionMode, setCommissionMode] = React.useState<'DecreeTranches' | 'FlatPercent' | 'FixedAmount'>("DecreeTranches");
-	const [commissionRatePercent, setCommissionRatePercent] = React.useState(1);
+	const [commissionRatePercent, setCommissionRatePercent] = React.useState(defaultSaleCommission);
 	const [commissionPayer, setCommissionPayer] = React.useState<'Seller' | 'Buyer' | 'Split50_50'>("Split50_50");
 	const [startDate, setStartDate] = React.useState((/* @__PURE__ */ new Date()).toISOString().split("T")[0]);
 	const [durationMonths, setDurationMonths] = React.useState(3);
@@ -40,7 +44,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 	const start = new Date(startDate);
 	start.setMonth(start.getMonth() + Number(durationMonths));
 	const endDate = start.toISOString().split("T")[0];
-	const commissionCalc = calculateMandateCommission(askingPriceDzd, commissionMode as any, commissionRatePercent);
+	const commissionCalc = calculateMandateCommission(askingPriceDzd, commissionMode as any, commissionRatePercent, 0, configuredTvaRate);
 	const handlePropertyChange = (rawVal: any) => {
 		const newPropId = extractStr(rawVal);
 		setPropertyId(newPropId);
@@ -201,7 +205,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 {commissionCalc.baseHt.toLocaleString()}
 {" DZD"}
 </span>
-{" · TVA (19%): "}
+{" · TVA (" + configuredTvaRate + "%): "}
 <span className="tabular-nums">
 {commissionCalc.tva.toLocaleString()}
 {" DZD"}

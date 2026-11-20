@@ -553,9 +553,11 @@ export interface OnboardingParams {
   branchName: string;
   branchAddress?: string;
   branchPhone?: string;
+  wilayaCode?: string;
   voucherCode?: string;
   planTier?: 'free' | 'starter' | 'pro' | 'enterprise';
   isTrial?: boolean;
+  onboardingContext?: OnboardingContext;
 }
 
 export type AppointmentStatus = 'Confirmed' | 'InChair' | 'Completed' | 'Cancelled' | 'NoShow' | 'Booked';
@@ -3826,4 +3828,226 @@ export interface StaffPayrollRunRecord {
   approvedAt?: string;
   version?: number;
 }
+
+// ============================================================================
+// PER-CATEGORY CONFIGURATION, FISCAL RULES, FORMULES & HOME SETUP ENGINE
+// ============================================================================
+
+export type SettingsTabId =
+  | 'preferences'
+  | 'business_fiscal'
+  | 'formules'
+  | 'branches_devices'
+  | 'license'
+  | 'cloud_backup';
+
+export interface FiscalProfile {
+  nif?: string; // Numéro d'Identification Fiscale (15 digits)
+  nis?: string; // Numéro d'Identification Statistique
+  rc?: string; // Registre du Commerce
+  ai?: string; // Article d'Imposition
+  ifu?: string; // Impôt Forfaitaire Unique (Auto-entrepreneur / solo / TPE)
+  licenseNumber?: string; // CNOM / N° Ordre / Barreau / Carte Pro / CACOBATPH / ANRH
+  licenseLabel?: string;
+  legalForm?: 'SARL' | 'EURL' | 'SPA' | 'SNC' | 'AutoEntrepreneur' | 'Liberal' | 'PersonnePhysique';
+  wilayaCode?: string;
+  ccp?: string;
+  rib?: string;
+}
+
+export interface OnboardingContext {
+  primaryFrustration?:
+    | 'manual_tracking'
+    | 'lost_revenue'
+    | 'staff_coordination'
+    | 'compliance_invoicing'
+    | 'scheduling'
+    | 'inventory'
+    | 'billing_creep'
+    | 'postal_payments'
+    | 'paper_records'
+    | 'commercial_invoicing';
+  selectedGoalId?: string;
+  dailyWorkflow?: 'walkin_pos' | 'appointment_schedule' | 'membership_turnstile' | 'project_deliverables' | 'patient_queue' | 'wholesale_dispatch';
+  teamScale?: 'solo' | 'small' | 'mid' | 'large';
+  settlementStyle?: 'pos_cash' | 'b2b_tva' | 'ccp_postal' | 'recurring_retainer';
+  selectedTradeId?: string;
+  referralSource?: string;
+  wilayaCode?: string;
+  capturedAt?: string;
+}
+
+export interface CategorySpecificSettings {
+  // 1. membership_session
+  rfidExpiryWarningDays?: number;
+  maxFreezeDaysPerYear?: number;
+  defaultDayPassDzd?: number;
+  studioCapacity?: number;
+  // 2. appointment_service
+  defaultCommissionPercent?: number;
+  slotIntervalMinutes?: 15 | 30 | 60;
+  cancellationWindowHours?: number;
+  // 3. pos_inventory
+  openingCashFloatDzd?: number;
+  lowStockThreshold?: number;
+  allowNegativeStock?: boolean;
+  // 4. project_milestone
+  directionApprovalThresholdDzd?: number;
+  targetMarginPercent?: number;
+  requireBatBeforePrint?: boolean;
+  // 5. rental_booking
+  defaultSecurityDepositPercent?: number;
+  turnoverBufferHours?: number;
+  overtimeHourlyFeeDzd?: number;
+  // 6. education_cohort
+  registrationFeeDzd?: number;
+  passingGradeOutOf20?: number;
+  minAttendancePercentForCertificate?: number;
+  // 7. freelance_solo
+  defaultHourlyRate?: number;
+  taxReservePercent?: number;
+  invoicePaymentTermsDays?: number;
+  // 8. trading_commercial
+  defaultCreditLimitDzd?: number;
+  defaultNetDays?: number;
+  requireLegalIdsOnFacture?: boolean;
+  // 9. medical_clinic
+  cnasChifaEnabled?: boolean;
+  ordonnancePaperSize?: 'A4' | 'A5';
+  queueTicketPrefix?: string;
+  // 10. auto_garage
+  workshopHourlyRateDzd?: number;
+  warrantyDays?: number;
+  warrantyKm?: number;
+  // 11. real_estate
+  defaultAgencyManagementFeePercent?: number;
+  defaultSaleCommissionPercent?: number;
+  quittanceBillingDay?: number;
+  // 12. manufacturing_production
+  overheadPercent?: number;
+  scrapTolerancePercent?: number;
+  batchCodePrefix?: string;
+  // 13. legal_accounting
+  legalPracticeMode?: 'Avocat' | 'Notaire' | 'Comptable';
+  cpcaAlertDays?: number;
+  defaultRetainerPercent?: number;
+  // 14. logistics_delivery
+  codRemittanceFeePercent?: number;
+  baseWeightThresholdKg?: number;
+  parcelTrackingPrefix?: string;
+  // 15. construction_contractor
+  retenueGarantiePercent?: number;
+  avanceForfaitairePercent?: number;
+  defaultSituationsUnit?: 'm2' | 'm3' | 'ml' | 'forfait';
+  // 16. agriculture_farming
+  waterQuotaM3PerHa?: number;
+  onilMilkPricePerLiterDzd?: number;
+  onilSubsidyPerLiterDzd?: number;
+}
+
+export interface HomeSetupState {
+  dismissed?: boolean;
+  dismissedAt?: string;
+  completedStepIds?: string[];
+}
+
+export interface BusinessCategoryConfig {
+  id: string;
+  accountId?: string;
+  businessId: string;
+  branchId?: string;
+  category: BusinessCategory;
+  currency: CurrencyCode;
+  defaultTvaRate: number; // 0, 9, or 19
+  applyTimbreFiscal: boolean;
+  fiscalProfile: FiscalProfile;
+  onboardingContext: OnboardingContext;
+  categorySettings: CategorySpecificSettings;
+  setupState: HomeSetupState;
+  version?: number;
+  updatedAt?: string;
+}
+
+export type CategoryFormuleType =
+  | 'membership_plan'
+  | 'salon_service'
+  | 'pos_combo'
+  | 'agency_retainer'
+  | 'venue_addon'
+  | 'tuition_installment'
+  | 'freelance_package'
+  | 'wholesale_tier'
+  | 'medical_act'
+  | 'garage_pack'
+  | 'realestate_commission'
+  | 'mfg_preset'
+  | 'legal_honoraire'
+  | 'courier_tier'
+  | 'btp_boq_rate'
+  | 'agri_piecework';
+
+export type FormuleDurationUnit = 'minutes' | 'hours' | 'days' | 'months' | 'sessions' | 'unit';
+
+export interface CategoryFormule {
+  id: string;
+  accountId?: string;
+  businessId: string;
+  branchId?: string;
+  category: BusinessCategory;
+  formuleType: CategoryFormuleType;
+  code?: string;
+  name: string;
+  description?: string;
+  priceAmount: number;
+  ratePercent: number;
+  durationValue: number;
+  durationUnit: FormuleDurationUnit;
+  currency: CurrencyCode;
+  taxRate: number;
+  metadata?: Record<string, any>;
+  isActive: boolean;
+  sortOrder?: number;
+  version?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface HomeDailyActivityItem {
+  id: string;
+  timestamp: string;
+  displayTime: string;
+  title: string;
+  subtitle: string;
+  actorOrClient: string;
+  filterKey: string;
+  filterLabel: string;
+  statusLabel: string;
+  tone: 'neutral' | 'emerald' | 'amber' | 'rose' | 'brand';
+  amountText?: string;
+  secondaryDetail?: string;
+  locationOrRef?: string;
+  targetScreen?: string;
+  targetActionLabel?: string;
+}
+
+export interface HomeSetupStep {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  targetTab: SettingsTabId;
+  targetSection?: string;
+  actionLabel: string;
+  modalId?: string;
+}
+
+export interface HomeSetupProgress {
+  completedCount: number;
+  totalCount: number;
+  percent: number;
+  isComplete: boolean;
+  isDismissed: boolean;
+  steps: HomeSetupStep[];
+}
+
 

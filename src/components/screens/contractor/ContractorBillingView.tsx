@@ -17,6 +17,7 @@ import {
   shallowEqualObjects,
   selectCurrentBranchFromState,
   selectCurrentBusinessFromState,
+  selectCurrentBusinessConfigFromState,
   showToast,
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -66,6 +67,7 @@ export const ContractorBillingView: React.FC<any> = () => {
   const {
     language,
     currentBusiness,
+    currentBusinessConfig,
     currentBranch,
     branches,
     currentUser,
@@ -76,6 +78,7 @@ export const ContractorBillingView: React.FC<any> = () => {
     (s) => ({
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       currentUser: s.currentUser,
@@ -86,6 +89,8 @@ export const ContractorBillingView: React.FC<any> = () => {
     shallowEqualObjects
   );
   const { retryCloudSync } = useAtriumActions();
+  const defaultRetPct = currentBusinessConfig.categorySettings?.retenueGarantiePercent ?? 5;
+  const defaultTvaPct = currentBusinessConfig.defaultTvaRate ?? 19;
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
@@ -115,11 +120,11 @@ export const ContractorBillingView: React.FC<any> = () => {
 
   const [periodLabel, setPeriodLabel] = useState('Situation Travaux - Mois Courant');
   const [periodGross, setPeriodGross] = useState('15000000');
-  const [retentionPct, setRetentionPct] = useState('5');
+  const [retentionPct, setRetentionPct] = useState(String(defaultRetPct));
   const [advanceAmort, setAdvanceAmort] = useState('1500000');
   const [hasBankCaution, setHasBankCaution] = useState(false);
   const [penaltiesDzd, setPenaltiesDzd] = useState('0');
-  const [vatRate, setVatRate] = useState('19');
+  const [vatRate, setVatRate] = useState(String(defaultTvaPct));
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
   const selectedProject = projects.find((p) => p.id === selectedProjectId) || projects[0];
@@ -676,12 +681,12 @@ export const ContractorBillingView: React.FC<any> = () => {
         darkCard={{
           label: isAr ? 'إجمالي الصافي المستحق' : isEn ? 'Net Situations TTC' : 'Net des Situations Travaux',
           badgeCount: totalRetention,
-          badgePrefix: 'Ret. 5% ',
+          badgePrefix: `Ret. ${defaultRetPct}% `,
           badgeSuffix: ' DZD',
           formatBadgeValue: (v) => Math.round(v).toLocaleString(),
           valueCount: totalNetPayable,
           formatValue: (v) => formatMoney(Math.round(v), language),
-          caption: isAr ? 'بعد خصم التسبيق واقتطاع الضمان (TVA 19%)' : 'Déduction avances & TVA 19% incluse',
+          caption: isAr ? `بعد خصم التسبيق واقتطاع الضمان (TVA ${defaultTvaPct}%)` : `Déduction avances & TVA ${defaultTvaPct}% incluse`,
         }}
       />
 

@@ -43,7 +43,7 @@ export const CATEGORY_HOME_RATIO: Record<BusinessCategory, HomeColumnRatio> = {
   legal_accounting: '42_58',
   logistics_delivery: '44_56',
   construction_contractor: '44_56',
-  agriculture_farming: '58_42',
+  agriculture_farming: '42_58',
 };
 
 export function getCategoryHomeTitle(
@@ -198,4 +198,62 @@ export const getHomeStrings = (language: SupportedLanguage) => ({
   operationsPod: l3(language, 'Activité en direct', 'Live operations', 'النشاط المباشر'),
   todayPulse: l3(language, 'Aperçu du jour', 'Today snapshot', 'ملخص اليوم'),
   noItemsYet: l3(language, 'Aucun élément actif pour le moment.', 'No active items yet.', 'لا توجد عناصر نشطة حالياً.'),
+  // Row 2: Operational Modules
+  operationalModulesTitle: l3(language, 'Modules Opérationnels', 'Operational Modules', 'الوحدات التشغيلية'),
+  operationalModulesSubtitle: l3(
+    language,
+    'Accès rapide aux flux et registres du jour',
+    'Direct workspaces & live category queues',
+    'دخول سريع لأقسام وسجلات اليوم'
+  ),
+  // Row 3: Kinetic Live Daily Historique
+  historiqueTitle: l3(language, 'Historique du Jour en Direct', 'Live Daily Historique', 'السجل اليومي المباشر'),
+  historiqueSubtitle: l3(
+    language,
+    'Flux chronologique des opérations enregistrées',
+    'Real-time chronological workspace activity',
+    'التدفق الزمني المباشر لعمليات اليوم'
+  ),
+  historiqueSearchPlaceholder: l3(
+    language,
+    'Filtrer par nom, référence ou statut…',
+    'Search by name, ref or status…',
+    'ابحث بالاسم أو المرجع أو الحالة…'
+  ),
+  historiqueReset: l3(language, 'Réinitialiser', 'Reset', 'إعادة ضبط'),
+  historiqueAllFilter: l3(language, 'Tout', 'All', 'الكل'),
+  historiqueEventsCount: l3(language, 'événements', 'events', 'أحداث'),
+  historiqueShowAll: l3(language, 'Afficher tout', 'Show all', 'عرض الكل'),
+  historiqueShowLess: l3(language, 'Réduire', 'Show fewer', 'تقليص'),
+  historiqueEmptyTitle: l3(
+    language,
+    'Aucune activité enregistrée pour ces critères.',
+    'No recorded activity matches your filter.',
+    'لا توجد عمليات مسجلة مطابقة للبحث.'
+  ),
+  historiqueEmptyCta: l3(language, 'Effacer les filtres', 'Clear filters', 'مسح الفلاتر'),
+  // Row 4: Executive Setup Progress
+  setupPodTitle: l3(language, 'Configuration de l’Espace', 'Workspace Configuration', 'إعداد مساحة العمل'),
+  setupPodSubtitle: l3(
+    language,
+    'Finalisez vos formules, paramètres métier et identifiants fiscaux',
+    'Complete formules, category rules, and fiscal IDs',
+    'استكمل الصيغ وإعدادات النشاط والمعرفات الجبائية'
+  ),
+  setupConfiguredBadge: l3(language, 'Configuré', 'Configured', 'مهيأ'),
+  setupActionNeededBadge: l3(language, 'À configurer', 'Action needed', 'يحتاج إعداد'),
+  setupBannerCompleteTitle: l3(
+    language,
+    'Espace prêt et configuré (5/5)',
+    'Workspace fully configured (5/5)',
+    'تم إعداد مساحة العمل بالكامل (5/5)'
+  ),
+  setupBannerCompleteSubtitle: l3(
+    language,
+    'Formules, TVA et règles métier opérationnelles.',
+    'Formules, fiscal rules, and category defaults are active.',
+    'الصيغ والقواعد الجبائية وإعدادات الفئة مفعلة وجاهزة.'
+  ),
+  setupEditInSettings: l3(language, 'Modifier dans Paramètres', 'Edit in Settings', 'تعديل في الإعدادات'),
+  setupDismiss: l3(language, 'Masquer', 'Dismiss', 'إخفاء'),
 });

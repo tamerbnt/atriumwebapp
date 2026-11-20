@@ -78,6 +78,20 @@ const TONE_STYLES: Record<HomeCardTone, ToneStyles> = {
     ring: 'focus-visible:ring-[#684DA8]',
     footerLink: 'text-[#5B41A1] dark:text-[#C4B5FD]',
   },
+  sage: {
+    card: 'bg-[#FAFDFB] dark:bg-[#121916] border-[#CFE3D6] dark:border-[#24392D] [--sq-stroke:#CFE3D6] dark:[--sq-stroke:#24392D] hover:[--sq-stroke:rgba(21,128,61,0.55)] dark:hover:[--sq-stroke:rgba(74,222,128,0.5)]',
+    topAccent: 'bg-[#15803D]/80 dark:bg-[#4ADE80]/75',
+    iconWell:
+      'bg-[#EAF6EE] dark:bg-[#192E22] border-[#C6E6D1] dark:border-[#2B4B38] [--sq-stroke:#C6E6D1] dark:[--sq-stroke:#2B4B38] text-[#166534] dark:text-[#4ADE80]',
+    accentText: 'text-[#166534] dark:text-[#4ADE80]',
+    titleHover: 'group-hover/card:text-[#166534] dark:group-hover/card:text-[#4ADE80]',
+    divider: 'divide-[#E4EFE7] dark:divide-[#213328] border-[#E4EFE7] dark:border-[#213328]',
+    rowHover: 'hover:bg-[#F2FAF5] dark:hover:bg-[#1A2A20]/70',
+    neButton:
+      'bg-[#EAF6EE] dark:bg-[#1A2A20] border-[#C6E6D1] dark:border-[#2B4B38] text-[#14532D]/85 dark:text-[#BBF7D0] hover:bg-[#15803D] hover:border-[#15803D] hover:text-white dark:hover:bg-[#4ADE80] dark:hover:border-[#4ADE80] dark:hover:text-[#151413]',
+    ring: 'focus-visible:ring-[#15803D]',
+    footerLink: 'text-[#166534] dark:text-[#4ADE80]',
+  },
 };
 
 function resolveTone(id: string, tone?: HomeCardTone): HomeCardTone {

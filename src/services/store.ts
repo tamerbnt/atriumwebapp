@@ -107,6 +107,11 @@ import {
   StaffSalaryAdvance,
   StaffPayrollSlipRecord,
   StaffPayrollRunRecord,
+  SettingsTabId,
+  BusinessCategoryConfig,
+  CategoryFormule,
+  HomeSetupProgress,
+  OnboardingContext,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -190,6 +195,14 @@ import {
   getCategoryPerformanceMetricLabel,
 } from '../utils/staffRules';
 import { calculateAlgerianGrossToNet } from '../utils/algerianPayroll';
+import {
+  isExecutiveRole,
+  createDefaultBusinessConfig,
+  createStarterFormulesForCategory,
+  deriveCategoryConfigDefaultsFromOnboarding,
+  computeHomeSetupProgress,
+  type SetupEvaluationContext,
+} from '../utils/businessConfig';
 
 import {
   isSupabaseConfigured,
@@ -206,11 +219,15 @@ import {
   educationService,
   projectMilestoneService,
   tradingService,
+  configService,
   syncCoordinator,
   subscribeConcurrencyConflicts,
   emitConcurrencyResolution,
   mapMemberFromDb,
   mapLeadFromDb,
+  mapMembershipPlanFromDb,
+  mapBusinessConfigFromDb,
+  mapCategoryFormuleFromDb,
   mapBusinessFromDb,
   mapBranchFromDb,
   mapDeviceFromDb,
@@ -460,6 +477,11 @@ interface AppState {
   commercialDocs: CommercialDocument[];
   purchaseDocs: PurchaseDocument[];
   stockVouchers: StockMovementVoucher[];
+  // Business Configuration & Formules Engine
+  businessConfigs: Record<string, BusinessCategoryConfig>;
+  categoryFormules: CategoryFormule[];
+  settingsTab: SettingsTabId;
+  settingsFocusSection: string | null;
   // Toast & Notifications Center
   toasts: ToastNotification[];
   notifications: AppNotification[];
@@ -467,6 +489,42 @@ interface AppState {
 }
 
 export const INITIAL_NOTIFICATIONS: AppNotification[] = [];
+
+const buildInitialBusinessConfigs = (): Record<string, BusinessCategoryConfig> => {
+  const result: Record<string, BusinessCategoryConfig> = {};
+  for (const biz of INITIAL_BUSINESSES) {
+    const mainBranch =
+      INITIAL_BRANCHES.find((br) => br.businessId === biz.id && br.isMainBranch) ||
+      INITIAL_BRANCHES.find((br) => br.businessId === biz.id);
+    result[biz.id] = createDefaultBusinessConfig(biz, undefined, mainBranch?.id);
+  }
+  return result;
+};
+
+const buildInitialCategoryFormules = (
+  configs: Record<string, BusinessCategoryConfig>
+): CategoryFormule[] => {
+  const all: CategoryFormule[] = [];
+  for (const biz of INITIAL_BUSINESSES) {
+    const mainBranch =
+      INITIAL_BRANCHES.find((br) => br.businessId === biz.id && br.isMainBranch) ||
+      INITIAL_BRANCHES.find((br) => br.businessId === biz.id);
+    const cfg = configs[biz.id];
+    const items = createStarterFormulesForCategory(
+      biz.category,
+      biz.id,
+      biz.accountId,
+      mainBranch?.id,
+      cfg?.currency || 'DZD',
+      cfg?.defaultTvaRate ?? 19
+    );
+    all.push(...items);
+  }
+  return all;
+};
+
+const INITIAL_BUSINESS_CONFIGS = buildInitialBusinessConfigs();
+const INITIAL_CATEGORY_FORMULES = buildInitialCategoryFormules(INITIAL_BUSINESS_CONFIGS);
 
 const DEFAULT_USER: CurrentUser = {
   id: 'stf_01',
@@ -598,6 +656,10 @@ const DEFAULT_STATE: AppState = {
   commercialDocs: INITIAL_COMMERCIAL_DOCS,
   purchaseDocs: INITIAL_PURCHASE_DOCS,
   stockVouchers: INITIAL_STOCK_VOUCHERS,
+  businessConfigs: INITIAL_BUSINESS_CONFIGS,
+  categoryFormules: INITIAL_CATEGORY_FORMULES,
+  settingsTab: 'preferences',
+  settingsFocusSection: null,
   toasts: [],
   notifications: INITIAL_NOTIFICATIONS,
   concurrencyConflicts: [],
@@ -848,6 +910,18 @@ let globalState: AppState = backfillTraceability((() => {
           desktopUpgradeReason: 'general',
           supabaseStatus: isSupabaseConfigured() ? 'connecting' : 'unconfigured',
           isSyncing: false,
+          businessConfigs: {
+            ...INITIAL_BUSINESS_CONFIGS,
+            ...(parsed.businessConfigs && typeof parsed.businessConfigs === 'object'
+              ? parsed.businessConfigs
+              : {}),
+          },
+          categoryFormules:
+            Array.isArray(parsed.categoryFormules) && parsed.categoryFormules.length > 0
+              ? parsed.categoryFormules
+              : INITIAL_CATEGORY_FORMULES,
+          settingsTab: parsed.settingsTab || 'preferences',
+          settingsFocusSection: null,
           notifications: Array.isArray(parsed.notifications) && parsed.notifications.length > 0 ? parsed.notifications : INITIAL_NOTIFICATIONS,
           concurrencyConflicts: [],
         };
@@ -1323,6 +1397,100 @@ export function selectUnreadNotificationCountFromState(state: AppState): number 
   return count;
 }
 
+const safeReadLocalArray = (key: string): any[] => {
+  try {
+    if (typeof localStorage === 'undefined') return [];
+    const raw = localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+export function selectCurrentBusinessConfigFromState(state: AppState): BusinessCategoryConfig {
+  const biz = selectCurrentBusinessFromState(state);
+  const base = createDefaultBusinessConfig(biz, undefined, state.currentBranchId);
+  const stored = state.businessConfigs?.[biz.id];
+  if (!stored) return base;
+  return {
+    ...base,
+    ...stored,
+    fiscalProfile: {
+      ...base.fiscalProfile,
+      ...(stored.fiscalProfile || {}),
+    },
+    onboardingContext: {
+      ...base.onboardingContext,
+      ...(stored.onboardingContext || {}),
+    },
+    categorySettings: {
+      ...base.categorySettings,
+      ...(stored.categorySettings || {}),
+    },
+    setupState: {
+      ...base.setupState,
+      ...(stored.setupState || {}),
+    },
+  };
+}
+
+export function selectCurrentFormulesFromState(state: AppState): CategoryFormule[] {
+  const biz = selectCurrentBusinessFromState(state);
+  return (state.categoryFormules || []).filter((f) => f.businessId === biz.id);
+}
+
+export function selectHomeSetupProgressFromState(
+  state: AppState,
+  overrides?: Partial<SetupEvaluationContext>
+): HomeSetupProgress {
+  const biz = selectCurrentBusinessFromState(state);
+  const config = selectCurrentBusinessConfigFromState(state);
+  const staff = selectCurrentStaffFromState(state);
+  const plans = selectCurrentPlansFromState(state);
+  const schedule = selectCurrentScheduleFromState(state);
+  const servicesCatalog = selectCurrentServicesFromState(state);
+  const products = selectCurrentProductsFromState(state);
+  const rentableUnits = selectCurrentRentableUnitsFromState(state);
+  const eduCourses = selectCurrentEduCoursesFromState(state);
+  const eduClassrooms = selectCurrentEduClassroomsFromState(state);
+  const freelanceClients = selectCurrentFreelanceClientsFromState(state);
+  const warehouses = selectCurrentWarehousesFromState(state);
+
+  const ctx: SetupEvaluationContext = {
+    business: biz,
+    config,
+    staff,
+    plans,
+    schedule,
+    servicesCatalog,
+    salonWorkstations: state.salonWorkstations || INITIAL_SALON_WORKSTATIONS,
+    products,
+    receiptConfig: state.receiptConfig || DEFAULT_RECEIPT_CONFIG,
+    categoryFormules: state.categoryFormules || [],
+    pmCollateralCatalog: state.pmCollateralCatalog || [],
+    rentableUnits,
+    eduCourses,
+    eduClassrooms,
+    freelanceClients,
+    warehouses,
+    medicalConsultations: overrides?.medicalConsultations ?? safeReadLocalArray('atrium_medical_consultations_v2'),
+    garageOrders: overrides?.garageOrders ?? safeReadLocalArray('atrium_garage_orders_v2'),
+    reProperties: overrides?.reProperties ?? safeReadLocalArray('atrium_realestate_props_v2'),
+    mfgWorkstations: overrides?.mfgWorkstations ?? [],
+    mfgBomRecipes: overrides?.mfgBomRecipes ?? safeReadLocalArray('atrium_mfg_boms'),
+    legalMatters: overrides?.legalMatters ?? safeReadLocalArray('atrium_legal_matters'),
+    logisticsTariffs: overrides?.logisticsTariffs ?? [],
+    btpProjects: overrides?.btpProjects ?? safeReadLocalArray('atrium_contractor_projects'),
+    agriParcels: overrides?.agriParcels ?? safeReadLocalArray('atrium_agri_parcels_v2'),
+    language: state.language || 'fr',
+    ...overrides,
+  };
+
+  return computeHomeSetupProgress(ctx);
+}
+
 export function setSystemDefaultLanguageAction() {
   const sysLang = getSystemDefaultLanguage();
   try {
@@ -1550,6 +1718,31 @@ export function setTopBarCollapsedAction(collapsed: boolean) {
 export function toggleTopBarAutoHideAction() {
   globalState = { ...globalState, isTopBarAutoHide: !globalState.isTopBarAutoHide };
   notify();
+}
+
+export function openSettingsTabAction(tab: SettingsTabId, focusSection?: string | null) {
+  globalState = {
+    ...globalState,
+    activeScreen: 'settings',
+    settingsTab: tab,
+    settingsFocusSection: focusSection ?? null,
+  };
+  notify();
+}
+
+export function setSettingsTabAction(tab: SettingsTabId) {
+  globalState = {
+    ...globalState,
+    settingsTab: tab,
+    settingsFocusSection: null,
+  };
+  notify(false, true);
+}
+
+export function clearSettingsFocusSectionAction() {
+  if (!globalState.settingsFocusSection) return;
+  globalState = { ...globalState, settingsFocusSection: null };
+  notify(false, true);
 }
 
 function resolveSubRolesForUserGlobal(user: CurrentUser) {
@@ -2294,10 +2487,23 @@ function pruneDeletedRecords(
     trading_commercial_docs: 'commercialDocs',
     trading_purchase_docs: 'purchaseDocs',
     trading_stock_vouchers: 'stockVouchers',
+    category_formules: 'categoryFormules',
   };
 
   const patch: Partial<AppState> = {};
   for (const [table, ids] of entries) {
+    if (table === 'gym_plans') {
+      const idSet = new Set(ids);
+      const nextByBranch: Record<string, MembershipPlan[]> = {};
+      let changed = false;
+      for (const [brId, plans] of Object.entries(state.plansByBranch || {})) {
+        const filtered = plans.filter((p) => !idSet.has(p.id));
+        if (filtered.length !== plans.length) changed = true;
+        nextByBranch[brId] = filtered;
+      }
+      if (changed) patch.plansByBranch = nextByBranch;
+      continue;
+    }
     const key = tableToStateKey[table];
     if (!key) continue;
     const currentList = state[key];
@@ -2419,7 +2625,43 @@ export async function syncWithSupabaseAction(options?: SyncActionOptions) {
       });
     }
 
+    if (shouldSyncTable('business_configs')) {
+      tasks.push(async () => {
+        const cfgs = await configService.fetchBusinessConfigs(accountId);
+        if (cfgs.length > 0) {
+          const nextMap: Record<string, BusinessCategoryConfig> = {
+            ...(globalState.businessConfigs || {}),
+          };
+          for (const c of cfgs) {
+            nextMap[c.businessId] = c;
+          }
+          updates.businessConfigs = nextMap;
+        }
+      });
+    }
+    if (shouldSyncTable('category_formules')) {
+      tasks.push(async () => {
+        const formules = await configService.fetchCategoryFormules(accountId, undefined, updatedAfter);
+        if (formules.length > 0) {
+          updates.categoryFormules = updatedAfter
+            ? mergeById(globalState.categoryFormules || [], formules)
+            : formules;
+        }
+      });
+    }
+
     if (activeCategory === 'membership_session') {
+      if (shouldSyncTable('gym_plans')) {
+        tasks.push(async () => {
+          const plans = await memberService.fetchPlans(branchId);
+          if (plans.length > 0) {
+            updates.plansByBranch = {
+              ...(globalState.plansByBranch || {}),
+              [branchId]: plans,
+            };
+          }
+        });
+      }
       if (shouldSyncTable('gym_members')) {
         tasks.push(async () => {
           const members = await memberService.fetchMembers(branchId, updatedAfter);
@@ -3312,6 +3554,7 @@ export function validateBackupSnapshot(
     'pmProjects',
     'commercialDocs',
     'purchaseDocs',
+    'categoryFormules',
   ] as const;
 
   const entityCounts: Record<string, number> = {};
@@ -3504,6 +3747,28 @@ export function applyResolvedRowToSlice(
       return { purchaseDocs: patchList(globalState.purchaseDocs, mapPurchaseDocFromDb) };
     case 'trading_stock_vouchers':
       return { stockVouchers: patchList(globalState.stockVouchers, mapStockVoucherFromDb) };
+    case 'business_configs': {
+      const mapped = mapBusinessConfigFromDb(row);
+      return {
+        businessConfigs: {
+          ...(globalState.businessConfigs || {}),
+          [mapped.businessId]: {
+            ...mapped,
+            version: Number(row[versionCol] ?? resolvedVersion),
+          },
+        },
+      };
+    }
+    case 'category_formules':
+      return { categoryFormules: patchList(globalState.categoryFormules || [], mapCategoryFormuleFromDb) };
+    case 'gym_plans': {
+      const mapped = mapMembershipPlanFromDb(row);
+      const nextByBranch: Record<string, MembershipPlan[]> = { ...(globalState.plansByBranch || {}) };
+      for (const brId of Object.keys(nextByBranch)) {
+        nextByBranch[brId] = patchList(nextByBranch[brId], mapMembershipPlanFromDb);
+      }
+      return { plansByBranch: nextByBranch };
+    }
     default:
       return {};
   }
@@ -6567,7 +6832,15 @@ function createAtriumActions() {
       allowedModules: ['all'],
     };
 
-    // Bootstrap initial category plans
+    // Build derived business config from captured onboarding data
+    const onboardingCtx: OnboardingContext = {
+      ...(params.onboardingContext || {}),
+      wilayaCode: params.wilayaCode || params.onboardingContext?.wilayaCode || '16',
+      capturedAt: new Date().toISOString(),
+    };
+    const newBusinessConfig = createDefaultBusinessConfig(newBusiness, onboardingCtx, branchId);
+
+    // Bootstrap category plans + category formules across ALL 16 categories
     const samplePlans: MembershipPlan[] = [
       {
         id: `plan_${Date.now()}_1`,
@@ -6587,7 +6860,7 @@ function createAtriumActions() {
             : 'Cohort Standard Tuition',
         description: 'Standard plan with core amenities and priority booking',
         durationDays: 30,
-        price: { amount: 6500, currency: 'DZD' },
+        price: { amount: 6500, currency: newBusinessConfig.currency || 'DZD' },
         isActive: true,
         sessionsPerWeek: 3,
         isWalkIn: false,
@@ -6612,7 +6885,7 @@ function createAtriumActions() {
             : 'Quarterly Masterclass Program',
         description: 'Comprehensive tier with unlimited amenities',
         durationDays: 90,
-        price: { amount: 18000, currency: 'DZD' },
+        price: { amount: 18000, currency: newBusinessConfig.currency || 'DZD' },
         isActive: true,
         sessionsPerWeek: 0,
         isWalkIn: false,
@@ -6620,6 +6893,15 @@ function createAtriumActions() {
         genderRule: 0,
       },
     ];
+
+    const starterFormules = createStarterFormulesForCategory(
+      params.category,
+      businessId,
+      accountId,
+      branchId,
+      newBusinessConfig.currency,
+      newBusinessConfig.defaultTvaRate
+    );
 
     const sampleMembers: Member[] = params.category === 'pos_inventory'
       ? [
@@ -6741,8 +7023,8 @@ function createAtriumActions() {
             ? 'Specialty Roast Espresso'
             : 'Billable Consulting Hour',
         description: 'Standard retail item',
-        price: { amount: 150, currency: 'DZD' },
-        cost: { amount: 70, currency: 'DZD' },
+        price: { amount: 150, currency: newBusinessConfig.currency || 'DZD' },
+        cost: { amount: 70, currency: newBusinessConfig.currency || 'DZD' },
         stockQuantity: 48,
         sku: 'AT-RET-01',
         category: 'Beverage',
@@ -6774,6 +7056,14 @@ function createAtriumActions() {
         ...globalState.plansByBranch,
         [branchId]: samplePlans,
       },
+      businessConfigs: {
+        ...(globalState.businessConfigs || {}),
+        [businessId]: newBusinessConfig,
+      },
+      categoryFormules: [
+        ...starterFormules,
+        ...(globalState.categoryFormules || []),
+      ],
       members: [...sampleMembers, ...globalState.members],
       leads: [...sampleLeads, ...globalState.leads],
       products: [...sampleProducts, ...globalState.products],
@@ -6796,6 +7086,19 @@ function createAtriumActions() {
           branchName: params.branchName,
           category: params.category,
           voucherCode: params.voucherCode,
+        })
+        .then(() => {
+          configService.upsertBusinessConfig(newBusinessConfig).catch(() => {});
+          starterFormules.forEach((frm) => {
+            configService
+              .upsertCategoryFormule(frm, {
+                accountId,
+                businessId: newBusiness.id,
+                branchId: newBranch.id,
+                staffId: newOwnerStaff.id,
+              })
+              .catch(() => {});
+          });
         })
         .catch((err) => {
           console.warn('[store] Supabase onboard_owner_account RPC notice:', err);
@@ -10592,6 +10895,15 @@ function createAtriumActions() {
       ...DEFAULT_STATE,
       ...parsed,
       storageVersion: ATRIUM_STORAGE_VERSION,
+      businessConfigs: {
+        ...INITIAL_BUSINESS_CONFIGS,
+        ...(parsed.businessConfigs && typeof parsed.businessConfigs === 'object'
+          ? parsed.businessConfigs
+          : {}),
+      },
+      categoryFormules: Array.isArray(parsed.categoryFormules)
+        ? parsed.categoryFormules
+        : INITIAL_CATEGORY_FORMULES,
       toasts: [],
       concurrencyConflicts: [],
     };
@@ -10704,6 +11016,364 @@ function createAtriumActions() {
     canAccessStaffScreen(cat, role || globalState.currentUser?.role);
   const canViewSensitivePayrollFn = (role?: string) =>
     canViewSensitivePayroll(role || globalState.currentUser?.role);
+
+  const ensureExecutiveGuard = (): boolean => {
+    const allowed = isExecutiveRole(globalState.currentUser?.role, globalState.currentUser?.roleRank);
+    if (!allowed) {
+      const lang = globalState.language || 'fr';
+      showToast({
+        type: 'warning',
+        title:
+          lang === 'ar'
+            ? 'صلاحية محصورة بالإدارة'
+            : lang === 'fr'
+            ? 'Accès réservé à la direction'
+            : 'Executive role required',
+        message:
+          lang === 'ar'
+            ? 'تعديل الإعدادات والباقات مخصص للمالك أو المدير فقط.'
+            : lang === 'fr'
+            ? 'Seuls le gérant ou le propriétaire peuvent modifier les formules et paramètres fiscaux.'
+            : 'Only owners or managers can edit fiscal rules and formules.',
+      });
+    }
+    return allowed;
+  };
+
+  const updateBusinessIdentityAction = (updates: {
+    name?: string;
+    displayName?: string;
+    address?: string;
+    phone?: string;
+  }) => {
+    if (!ensureExecutiveGuard()) return false;
+    const biz = selectCurrentBusinessFromState(globalState);
+    const updatedBusinesses = globalState.businesses.map((b) =>
+      b.id === biz.id
+        ? {
+            ...b,
+            name: updates.name !== undefined ? updates.name : b.name,
+            displayName: updates.displayName !== undefined ? updates.displayName : b.displayName,
+            address: updates.address !== undefined ? updates.address : b.address,
+            phone: updates.phone !== undefined ? updates.phone : b.phone,
+          }
+        : b
+    );
+    const updatedBranches = globalState.branches.map((br) =>
+      br.businessId === biz.id && (br.isMainBranch || br.id === globalState.currentBranchId)
+        ? {
+            ...br,
+            address: updates.address !== undefined ? updates.address : br.address,
+            phone: updates.phone !== undefined ? updates.phone : br.phone,
+          }
+        : br
+    );
+    globalState = {
+      ...globalState,
+      businesses: updatedBusinesses,
+      branches: updatedBranches,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      const targetBiz = updatedBusinesses.find((b) => b.id === biz.id) || biz;
+      configService
+        .updateBusinessIdentity({
+          businessId: biz.id,
+          name: targetBiz.name,
+          displayName: targetBiz.displayName,
+          address: targetBiz.address,
+          phone: targetBiz.phone,
+        })
+        .catch(() => {});
+    }
+    return true;
+  };
+
+  const updateBusinessConfigAction = (
+    patch: Partial<
+      Pick<
+        BusinessCategoryConfig,
+        'currency' | 'defaultTvaRate' | 'applyTimbreFiscal' | 'fiscalProfile' | 'categorySettings' | 'setupState'
+      >
+    >
+  ) => {
+    if (!ensureExecutiveGuard()) return null;
+    const biz = selectCurrentBusinessFromState(globalState);
+    const current = selectCurrentBusinessConfigFromState(globalState);
+    const nextConfig: BusinessCategoryConfig = {
+      ...current,
+      ...patch,
+      fiscalProfile: {
+        ...current.fiscalProfile,
+        ...(patch.fiscalProfile || {}),
+      },
+      categorySettings: {
+        ...current.categorySettings,
+        ...(patch.categorySettings || {}),
+      },
+      setupState: {
+        ...current.setupState,
+        ...(patch.setupState || {}),
+      },
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      businessConfigs: {
+        ...(globalState.businessConfigs || {}),
+        [biz.id]: nextConfig,
+      },
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      configService.upsertBusinessConfig(nextConfig).catch(() => {});
+    }
+    return nextConfig;
+  };
+
+  const dismissSetupBannerAction = () => {
+    const current = selectCurrentBusinessConfigFromState(globalState);
+    return updateBusinessConfigAction({
+      setupState: {
+        ...current.setupState,
+        dismissed: true,
+        dismissedAt: new Date().toISOString(),
+      },
+    });
+  };
+
+  const restoreSetupBannerAction = () => {
+    const current = selectCurrentBusinessConfigFromState(globalState);
+    return updateBusinessConfigAction({
+      setupState: {
+        ...current.setupState,
+        dismissed: false,
+      },
+    });
+  };
+
+  const addMembershipPlanAction = (
+    input: Omit<MembershipPlan, 'id' | 'tenantId' | 'facilityId'>
+  ) => {
+    if (!ensureExecutiveGuard()) return null;
+    const biz = selectCurrentBusinessFromState(globalState);
+    const branchId = globalState.currentBranchId;
+    const plan: MembershipPlan = {
+      ...input,
+      id: `plan_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      tenantId: globalState.account.id,
+      facilityId: branchId,
+      accountId: globalState.account.id,
+      businessId: biz.id,
+      branchId,
+    };
+    const existing = globalState.plansByBranch[branchId] || [];
+    globalState = {
+      ...globalState,
+      plansByBranch: {
+        ...globalState.plansByBranch,
+        [branchId]: [plan, ...existing],
+      },
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      memberService
+        .upsertPlan(plan, {
+          accountId: globalState.account.id,
+          businessId: biz.id,
+          branchId,
+        })
+        .catch(() => {});
+    }
+    return plan;
+  };
+
+  const updateMembershipPlanAction = (id: string, updates: Partial<MembershipPlan>) => {
+    if (!ensureExecutiveGuard()) return null;
+    const biz = selectCurrentBusinessFromState(globalState);
+    const branchId = globalState.currentBranchId;
+    const existing = globalState.plansByBranch[branchId] || [];
+    let updatedTarget: MembershipPlan | null = null;
+    const nextList = existing.map((p) => {
+      if (p.id !== id) return p;
+      updatedTarget = { ...p, ...updates };
+      return updatedTarget;
+    });
+    globalState = {
+      ...globalState,
+      plansByBranch: {
+        ...globalState.plansByBranch,
+        [branchId]: nextList,
+      },
+    };
+    notify();
+    if (updatedTarget && isSupabaseConfigured()) {
+      memberService
+        .upsertPlan(updatedTarget, {
+          accountId: globalState.account.id,
+          businessId: biz.id,
+          branchId,
+        })
+        .catch(() => {});
+    }
+    return updatedTarget;
+  };
+
+  const toggleMembershipPlanActiveAction = (id: string) => {
+    const existing = globalState.plansByBranch[globalState.currentBranchId] || [];
+    const target = existing.find((p) => p.id === id);
+    if (!target) return null;
+    return updateMembershipPlanAction(id, { isActive: !target.isActive });
+  };
+
+  const deleteMembershipPlanAction = (
+    id: string
+  ): { success: boolean; blockedByReferences?: boolean; referenceCount?: number } => {
+    if (!ensureExecutiveGuard()) return { success: false };
+    const branchId = globalState.currentBranchId;
+    const refMembers = (globalState.members || []).filter((m) => m.membershipPlanId === id).length;
+    const refLeads = (globalState.leads || []).filter((l) => l.preferredPlanId === id).length;
+    const totalRefs = refMembers + refLeads;
+    if (totalRefs > 0) {
+      return { success: false, blockedByReferences: true, referenceCount: totalRefs };
+    }
+    const existing = globalState.plansByBranch[branchId] || [];
+    globalState = {
+      ...globalState,
+      plansByBranch: {
+        ...globalState.plansByBranch,
+        [branchId]: existing.filter((p) => p.id !== id),
+      },
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      memberService.deletePlan(id, globalState.currentUser?.id).catch(() => {});
+    }
+    return { success: true };
+  };
+
+  const addCategoryFormuleAction = (
+    input: Omit<CategoryFormule, 'id' | 'accountId' | 'businessId' | 'branchId' | 'category'>
+  ) => {
+    if (!ensureExecutiveGuard()) return null;
+    const biz = selectCurrentBusinessFromState(globalState);
+    const frm: CategoryFormule = {
+      ...input,
+      id: `frm_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: globalState.account.id,
+      businessId: biz.id,
+      branchId: globalState.currentBranchId,
+      category: biz.category,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      categoryFormules: [frm, ...(globalState.categoryFormules || [])],
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      configService
+        .upsertCategoryFormule(frm, {
+          accountId: frm.accountId || globalState.account.id,
+          businessId: frm.businessId || biz.id,
+          branchId: frm.branchId || globalState.currentBranchId,
+          staffId: globalState.currentUser?.id,
+        })
+        .catch(() => {});
+    }
+    return frm;
+  };
+
+  const updateCategoryFormuleAction = (id: string, updates: Partial<CategoryFormule>) => {
+    if (!ensureExecutiveGuard()) return null;
+    const existing = (globalState.categoryFormules || []).find((f) => f.id === id);
+    if (!existing) return null;
+    const updatedTarget: CategoryFormule = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    const nextList = (globalState.categoryFormules || []).map((f) =>
+      f.id === id ? updatedTarget : f
+    );
+    globalState = {
+      ...globalState,
+      categoryFormules: nextList,
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      configService
+        .upsertCategoryFormule(updatedTarget, {
+          accountId: updatedTarget.accountId || globalState.account.id,
+          businessId:
+            updatedTarget.businessId || selectCurrentBusinessFromState(globalState).id,
+          branchId: updatedTarget.branchId || globalState.currentBranchId,
+          staffId: globalState.currentUser?.id,
+        })
+        .catch(() => {});
+    }
+    return updatedTarget;
+  };
+
+  const toggleCategoryFormuleActiveAction = (id: string) => {
+    const target = (globalState.categoryFormules || []).find((f) => f.id === id);
+    if (!target) return null;
+    return updateCategoryFormuleAction(id, { isActive: !target.isActive });
+  };
+
+  const duplicateCategoryFormuleAction = (id: string) => {
+    const target = (globalState.categoryFormules || []).find((f) => f.id === id);
+    if (!target) return null;
+    const lang = globalState.language || 'fr';
+    const copySuffix = lang === 'ar' ? ' (نسخة)' : lang === 'fr' ? ' (Copie)' : ' (Copy)';
+    return addCategoryFormuleAction({
+      formuleType: target.formuleType,
+      code: target.code ? `${target.code}-COPY` : undefined,
+      name: `${target.name}${copySuffix}`,
+      description: target.description,
+      priceAmount: target.priceAmount,
+      ratePercent: target.ratePercent,
+      durationValue: target.durationValue,
+      durationUnit: target.durationUnit,
+      currency: target.currency,
+      taxRate: target.taxRate,
+      metadata: target.metadata ? { ...target.metadata } : {},
+      isActive: target.isActive,
+      sortOrder: (target.sortOrder || 0) + 1,
+    });
+  };
+
+  const deleteCategoryFormuleAction = (
+    id: string
+  ): { success: boolean; blockedByReferences?: boolean; referenceCount?: number } => {
+    if (!ensureExecutiveGuard()) return { success: false };
+    const target = (globalState.categoryFormules || []).find((f) => f.id === id);
+    if (!target) return { success: false };
+
+    let refs = 0;
+    if (target.metadata?.referencedCount && Number(target.metadata.referencedCount) > 0) {
+      refs += Number(target.metadata.referencedCount);
+    }
+    if ((globalState.freelanceProjects || []).some((p) => (p as any).formuleId === id)) refs += 1;
+    if ((globalState.commercialDocs || []).some((d) => (d as any).formuleId === id)) refs += 1;
+    if ((globalState.sales || []).some((s) => s.items?.some((it) => it.productId === id))) refs += 1;
+
+    if (refs > 0) {
+      return { success: false, blockedByReferences: true, referenceCount: refs };
+    }
+
+    globalState = {
+      ...globalState,
+      categoryFormules: (globalState.categoryFormules || []).filter((f) => f.id !== id),
+    };
+    notify();
+    if (isSupabaseConfigured()) {
+      configService.deleteCategoryFormule(id, globalState.currentUser?.id).catch(() => {});
+    }
+    return { success: true };
+  };
 
   return {
     setScreen,
@@ -10939,6 +11609,22 @@ function createAtriumActions() {
     toggleTopBarAutoHide,
     setTopBarAutoHide,
     setTopBarCollapsed,
+    openSettingsTab: openSettingsTabAction,
+    setSettingsTab: setSettingsTabAction,
+    clearSettingsFocusSection: clearSettingsFocusSectionAction,
+    updateBusinessIdentity: updateBusinessIdentityAction,
+    updateBusinessConfig: updateBusinessConfigAction,
+    dismissSetupBanner: dismissSetupBannerAction,
+    restoreSetupBanner: restoreSetupBannerAction,
+    addMembershipPlan: addMembershipPlanAction,
+    updateMembershipPlan: updateMembershipPlanAction,
+    toggleMembershipPlanActive: toggleMembershipPlanActiveAction,
+    deleteMembershipPlan: deleteMembershipPlanAction,
+    addCategoryFormule: addCategoryFormuleAction,
+    updateCategoryFormule: updateCategoryFormuleAction,
+    toggleCategoryFormuleActive: toggleCategoryFormuleActiveAction,
+    duplicateCategoryFormule: duplicateCategoryFormuleAction,
+    deleteCategoryFormule: deleteCategoryFormuleAction,
     canAccessStaffScreen: canAccessStaffScreenFn,
     canViewSensitivePayroll: canViewSensitivePayrollFn,
   };
@@ -11030,6 +11716,9 @@ export function useAtriumStore() {
   const currentMemberCheckIns = selectCurrentMemberCheckInsFromState(state);
   const unreadNotificationCount = selectUnreadNotificationCountFromState(state);
   const selectedMember = selectSelectedMemberFromState(state);
+  const currentBusinessConfig = selectCurrentBusinessConfigFromState(state);
+  const currentCategoryFormules = selectCurrentFormulesFromState(state);
+  const homeSetupProgress = selectHomeSetupProgressFromState(state);
 
   return {
     ...atriumActions,
@@ -11041,6 +11730,13 @@ export function useAtriumStore() {
     currentBranchId: state.currentBranchId,
     currentBusiness,
     currentBranch,
+    businessConfigs: state.businessConfigs || {},
+    currentBusinessConfig,
+    categoryFormules: state.categoryFormules || [],
+    currentCategoryFormules,
+    homeSetupProgress,
+    settingsTab: state.settingsTab || 'preferences',
+    settingsFocusSection: state.settingsFocusSection || null,
     activeScreen: state.activeScreen,
     theme: state.theme,
     density: state.density || 'default',

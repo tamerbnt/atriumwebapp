@@ -25,20 +25,22 @@ export function calculateMandateCommission(
   priceDzd: number,
   mode: 'DecreeTranches' | 'FlatPercent' | 'FixedAmount' = 'DecreeTranches',
   flatPercent = 1.0,
-  fixedAmount = 0
+  fixedAmount = 0,
+  tvaRatePercent = 19
 ): MandateCommissionResult {
   const safePrice = Math.max(0, Number(priceDzd) || 0);
+  const tvaFactor = Math.max(0, Number(tvaRatePercent) || 0) / 100;
 
   if (mode === 'FixedAmount') {
     const baseHt = Math.round(Math.max(0, fixedAmount));
-    const tva = Math.round(baseHt * 0.19);
+    const tva = Math.round(baseHt * tvaFactor);
     return { baseHt, tva, totalTtc: baseHt + tva };
   }
 
   if (mode === 'FlatPercent') {
     const rate = Math.max(0, flatPercent) / 100;
     const baseHt = Math.round(safePrice * rate);
-    const tva = Math.round(baseHt * 0.19);
+    const tva = Math.round(baseHt * tvaFactor);
     return { baseHt, tva, totalTtc: baseHt + tva };
   }
 
@@ -62,7 +64,7 @@ export function calculateMandateCommission(
   }
 
   const baseHt = Math.round(t1 + t2 + t3);
-  const tva = Math.round(baseHt * 0.19);
+  const tva = Math.round(baseHt * tvaFactor);
 
   return {
     baseHt,

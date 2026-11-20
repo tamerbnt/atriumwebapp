@@ -269,6 +269,11 @@ export const memberService = {
     });
   },
 
+  async deletePlan(planId: string, deletedByStaffId?: string): Promise<boolean> {
+    const res = await syncCoordinator.softDeleteRow('gym_plans', planId, deletedByStaffId);
+    return res.success;
+  },
+
   async fetchScheduleEvents(branchId: string): Promise<ScheduleEvent[]> {
     const client = getSupabaseClient();
     if (!client) return [];

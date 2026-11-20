@@ -5,6 +5,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { RealEstateLease, RentalQuittanceRecord } from '../../../types';
 import { computeRentalTimbreFiscal } from '../../../utils/realEstateRules';
+import { useAtriumSelector, selectCurrentBusinessConfigFromState } from '../../../services/store';
 
 interface QuittanceModalProps {
   isOpen: boolean;
@@ -48,15 +49,20 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
     }
   };
 
-  // Timbre fiscal on total collected if cash
+  const businessConfig = useAtriumSelector(selectCurrentBusinessConfigFromState);
+  const configuredMgmtFee = businessConfig.categorySettings?.defaultAgencyManagementFeePercent ?? 7.0;
+  const configuredTvaRate = businessConfig.defaultTvaRate ?? 19;
+  const applyTimbre = businessConfig.applyTimbreFiscal !== false;
+
+  // Timbre fiscal on total collected if cash and enabled
   const subTotal = Number(rentAmountDzd) + Number(chargesDzd);
-  const timbreFiscalDzd = computeRentalTimbreFiscal(subTotal, paymentMethod);
+  const timbreFiscalDzd = applyTimbre ? computeRentalTimbreFiscal(subTotal, paymentMethod) : 0;
   const totalCollectedDzd = subTotal + timbreFiscalDzd;
 
-  // Agency management fee (e.g. 7% + 19% TVA)
-  const managementRate = activeLease?.agencyManagementRatePercent || 7.0;
+  // Agency management fee (configured rate + configured TVA)
+  const managementRate = activeLease?.agencyManagementRatePercent || configuredMgmtFee;
   const agencyCommissionFeeDzd = Math.round(rentAmountDzd * (managementRate / 100));
-  const agencyCommissionTvaDzd = Math.round(agencyCommissionFeeDzd * 0.19);
+  const agencyCommissionTvaDzd = Math.round(agencyCommissionFeeDzd * (configuredTvaRate / 100));
   const netDisbursedToOwnerDzd = rentAmountDzd - (agencyCommissionFeeDzd + agencyCommissionTvaDzd);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -226,7 +232,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             </div>
 
             <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] t-cap text-black/70 dark:text-white/75 flex items-center justify-between">
-              <span>Commission Agence ({managementRate}% + TVA 19%): <strong className="text-black dark:text-white">{(agencyCommissionFeeDzd + agencyCommissionTvaDzd).toLocaleString()} DZD</strong></span>
+              <span>Commission Agence ({managementRate}% + TVA {configuredTvaRate}%): <strong className="text-black dark:text-white">{(agencyCommissionFeeDzd + agencyCommissionTvaDzd).toLocaleString()} DZD</strong></span>
               <span>Reversé au Propriétaire: <strong className="text-emerald-600 dark:text-emerald-400 tabular-nums">{netDisbursedToOwnerDzd.toLocaleString()} DZD</strong></span>
             </div>
           </div>

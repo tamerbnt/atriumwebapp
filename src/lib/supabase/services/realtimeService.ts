@@ -195,7 +195,7 @@ export const realtimeService = {
       }
 
       if (normalizedAccountId) {
-        for (const accountTable of ['businesses', 'branches'] as const) {
+        for (const accountTable of ['businesses', 'branches', 'business_configs', 'category_formules'] as const) {
           channel = channel.on(
             'postgres_changes',
             {

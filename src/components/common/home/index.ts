@@ -2,10 +2,27 @@ export {
   HomeShell,
   HomePodGrid,
   HomeCardsGrid,
+  useHomeRole,
   HOME_POD_PULSE_CLASS,
   HOME_POD_DIRECTORY_CLASS,
+  HOME_POD_HISTORIQUE_CLASS,
 } from './HomeShell';
 export type { HomeShellProps, HomePodGridProps, HomeCardsGridProps } from './HomeShell';
+
+export { HomeHeroRow } from './HomeHeroRow';
+export type { HomeHeroRowProps } from './HomeHeroRow';
+
+export { HomeOperationalRow } from './HomeOperationalRow';
+export type { HomeOperationalRowProps } from './HomeOperationalRow';
+
+export { HomeKineticEventRow } from './HomeKineticEventRow';
+export type { HomeKineticEventRowProps } from './HomeKineticEventRow';
+
+export { HomeLiveHistoryPod } from './HomeLiveHistoryPod';
+export type { HomeLiveHistoryPodProps } from './HomeLiveHistoryPod';
+
+export { HomeSetupPod } from './HomeSetupPod';
+export type { HomeSetupPodProps } from './HomeSetupPod';
 
 export { HomePreviewCard, HomeCompactStrip } from './HomePreviewCard';
 export type { HomePreviewCardProps, HomeCompactStripProps } from './HomePreviewCard';
@@ -20,6 +37,11 @@ export type {
   HomeColumnRatio,
   HomeCardTone,
   HomeRowStatusTone,
+  HomeHistoriqueTone,
+  HomeHistoriqueDetailPair,
+  HomeHistoriqueAction,
+  HomeDailyEvent,
+  HomeHistoriqueFilterOption,
   HomePreviewRow,
   HomePreviewCardConfig,
   HomeCompactStripConfig,

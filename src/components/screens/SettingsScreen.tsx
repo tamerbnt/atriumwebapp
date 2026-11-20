@@ -30,6 +30,8 @@ import {
   Layout,
   ChevronUp,
   History,
+  Layers,
+  Receipt,
 } from 'lucide-react';
 import {
   useAtriumStore,
@@ -37,6 +39,7 @@ import {
   validateBackupSnapshot,
   type BackupValidationResult,
 } from '../../services/store';
+import { SettingsTabId } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { AuditLogViewerModal } from '../modals/AuditLogViewerModal';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
@@ -48,6 +51,8 @@ import { t, getSystemDefaultLanguage, SUPPORTED_LANGUAGES } from '../../utils/i1
 import { useSkeletonLoading } from '../../hooks/useSkeletonLoading';
 import { SkeletonPageHeader } from '../ui/skeleton/StructuralSkeletons';
 import { SkeletonBox, SkeletonText } from '../ui/skeleton/SkeletonPrimitives';
+import { SettingsBusinessFiscalTab } from './settings/SettingsBusinessFiscalTab';
+import { SettingsFormulesTab } from './settings/SettingsFormulesTab';
 
 interface SettingsScreenProps {
   onOpenVoucherModal: () => void;
@@ -93,6 +98,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     importDatabase,
     networkMode,
     retryCloudSync,
+    settingsTab,
+    setSettingsTab,
+    settingsFocusSection,
+    clearSettingsFocusSection,
+    currentBusinessConfig,
+    restoreSetupBanner,
   } = useAtriumStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -253,8 +264,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         <SkeletonPageHeader hasIcon hasActionBtn={false} hasFacility={false} />
         {/* Tab pills */}
         <div className="flex gap-[var(--s2,8px)] overflow-x-auto pb-[var(--s1,4px)]">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <SkeletonBox key={i} width={112} height={36} rounded="rounded-full" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonBox key={i} width={120} height={36} rounded="rounded-full" />
           ))}
         </div>
         {/* Settings Card 1 */}
@@ -374,7 +385,93 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         </div>
       )}
 
+      {/* Single-line Horizontal Tab Bar */}
+      {(() => {
+        const tabs: Array<{ id: SettingsTabId; label: string; icon: React.ReactNode }> = [
+          {
+            id: 'preferences',
+            label: language === 'ar' ? 'التفضيلات' : language === 'fr' ? 'Préférences' : 'Preferences',
+            icon: <Globe size={15} strokeWidth={1.5} />,
+          },
+          {
+            id: 'business_fiscal',
+            label: language === 'ar' ? 'المنشأة والضرائب' : language === 'fr' ? 'Entreprise & Fiscalité' : 'Business & Fiscal',
+            icon: <Receipt size={15} strokeWidth={1.5} />,
+          },
+          {
+            id: 'formules',
+            label: language === 'ar' ? 'الصيغ والباقات' : language === 'fr' ? 'Formules & Tarifs' : 'Formules & Catalog',
+            icon: <Layers size={15} strokeWidth={1.5} />,
+          },
+          {
+            id: 'branches_devices',
+            label: language === 'ar' ? 'الفروع والأجهزة' : language === 'fr' ? 'Sites & Terminaux' : 'Branches & Terminals',
+            icon: <Monitor size={15} strokeWidth={1.5} />,
+          },
+          {
+            id: 'license',
+            label: language === 'ar' ? 'الترخيص والاشتراك' : language === 'fr' ? 'Licence & Offre' : 'License & Billing',
+            icon: <ShieldCheck size={15} strokeWidth={1.5} />,
+          },
+          {
+            id: 'cloud_backup',
+            label: language === 'ar' ? 'السحابة والنسخ' : language === 'fr' ? 'Cloud & Sauvegardes' : 'Cloud & Backup',
+            icon: <Cloud size={15} strokeWidth={1.5} />,
+          },
+        ];
+
+        return (
+          <div
+            role="tablist"
+            aria-label={language === 'ar' ? 'أقسام الإعدادات' : language === 'fr' ? 'Onglets des paramètres' : 'Settings sections'}
+            className="flex items-center gap-[var(--s2,8px)] overflow-x-auto pb-[2px] border-b border-[#E6DED6] dark:border-neutral-800"
+          >
+            {tabs.map((tab, idx) => {
+              const isSelected = settingsTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={isSelected}
+                  type="button"
+                  data-sq="ctl-sm"
+                  onClick={() => setSettingsTab(tab.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowRight') {
+                      const next = tabs[(idx + 1) % tabs.length];
+                      setSettingsTab(next.id);
+                    } else if (e.key === 'ArrowLeft') {
+                      const prev = tabs[(idx - 1 + tabs.length) % tabs.length];
+                      setSettingsTab(prev.id);
+                    }
+                  }}
+                  className={`h-[38px] px-[var(--s3,12px)] t-small font-semibold inline-flex items-center gap-[var(--s2,8px)] whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-[var(--brand-fill)] text-white'
+                      : 'bg-[#F3EDE7] dark:bg-neutral-800/80 text-[var(--text-2)] hover:text-[var(--text-1)] dark:hover:text-white'
+                  }`}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        );
+      })()}
+
       <div className="flex flex-col gap-[var(--pod-gap,16px)]">
+      {settingsTab === 'business_fiscal' && (
+        <SettingsBusinessFiscalTab
+          focusSection={settingsFocusSection}
+          onClearFocus={clearSettingsFocusSection}
+        />
+      )}
+
+      {settingsTab === 'formules' && <SettingsFormulesTab />}
+
+      {settingsTab === 'preferences' && (
+        <>
       {/* Row 1: Language & Regional Localization */}
       <div className="sq-elev-card">
         <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
@@ -868,10 +965,48 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </p>
             </div>
           </div>
+
+          {currentBusinessConfig.setupState?.dismissed && (
+            <div data-sq="card" className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex items-center justify-between gap-[var(--s3,12px)]">
+              <div className="flex flex-col gap-[2px]">
+                <span className="t-small font-semibold text-[var(--text-1)]">
+                  {language === 'ar'
+                    ? 'دليل الإعداد في الصفحة الرئيسية مخفي'
+                    : language === 'fr'
+                    ? "Bannière de configuration sur l'accueil masquée"
+                    : 'Home setup checklist banner is dismissed'}
+                </span>
+                <span className="t-cap text-[var(--text-2)]">
+                  {language === 'ar'
+                    ? 'يمكنك إظهارها مجدداً لمراجعة جاهزية الإعدادات.'
+                    : language === 'fr'
+                    ? "Réaffichez le module de configuration sur l'écran d'accueil."
+                    : 'Restore the 5-step configuration pod on your Home hall.'}
+                </span>
+              </div>
+              <AtriumButton
+                size="xs"
+                variant="secondary"
+                onClick={() => {
+                  restoreSetupBanner();
+                  showToast({
+                    type: 'info',
+                    title: language === 'ar' ? 'تم استعادة شريط الإعداد' : language === 'fr' ? 'Bannière restaurée' : 'Setup pod restored',
+                    message: language === 'ar' ? 'ستظهر بطاقة الإعداد في الرئيسية.' : language === 'fr' ? "Le bloc de configuration s'affichera à l'accueil." : 'Configuration pod is visible on Home again.',
+                  });
+                }}
+              >
+                {language === 'ar' ? 'إظهار في الرئيسية' : language === 'fr' ? 'Réafficher' : 'Restore'}
+              </AtriumButton>
+            </div>
+          )}
         </div>
       </div>
+        </>
+      )}
 
-      {/* Row 2: License Status Banner */}
+      {settingsTab === 'license' && (
+      /* Row 2: License Status Banner */
       <div className="sq-elev-card">
         <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-[var(--s4,16px)] pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
@@ -1002,7 +1137,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
         </div>
       </div>
+      )}
 
+      {settingsTab === 'cloud_backup' && (
+        <>
       {/* Row 1.5: Cloud Sync */}
       <div className="sq-elev-card">
         <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
@@ -1271,7 +1409,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           )}
         </div>
       </div>
+        </>
+      )}
 
+      {settingsTab === 'branches_devices' && (
+        <>
       {/* Row 2: Branches Management */}
       <div className="sq-elev-card">
         <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
@@ -1455,6 +1597,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
         </div>
       </div>
+        </>
+      )}
 
       {/* Add Branch Modal */}
       <Modal

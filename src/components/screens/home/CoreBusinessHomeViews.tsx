@@ -23,6 +23,8 @@ import {
 import {
   useAtriumSelector,
   shallowEqualObjects,
+  selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
   selectCurrentPmProjectsFromState,
   selectCurrentPmPrintOrdersFromState,
   selectCurrentPmBatDeliverablesFromState,
@@ -54,13 +56,12 @@ import {
 } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { formatMoney } from '../../../utils/rules';
-import { DashboardPod } from '../../common/dashboard';
 import {
   HomeShell,
-  HomePodGrid,
-  HomeCardsGrid,
-  HOME_POD_PULSE_CLASS,
-  HOME_POD_DIRECTORY_CLASS,
+  HomeHeroRow,
+  HomeOperationalRow,
+  HomeLiveHistoryPod,
+  HomeSetupPod,
   HomePreviewCard,
   HomeAnchorCard,
   HomePreviewRow,
@@ -69,16 +70,23 @@ import {
   CATEGORY_HOME_RATIO,
   l3,
 } from '../../common/home';
+import {
+  buildFreelanceHistorique,
+  buildProjectMilestoneHistorique,
+  buildTradingHistorique,
+  buildVenueHistorique,
+} from './homeActivityAdapters';
 import type { HomeViewProps } from './CoreServiceHomeViews';
 
 // ============================================================================
-// 4. PROJECT & MILESTONE / AGENCY (project_milestone) — 6 Roles — Ratio 42 / 58
+// 5. PROJECT & MILESTONE / AGENCY (project_milestone) — 6 Roles — 4-Row Home
 // ============================================================================
 export const ProjectHomeView: React.FC<HomeViewProps> = () => {
   const { language } = useTranslation();
   const {
     role,
     currency,
+    branchName,
     projects,
     printOrders,
     bats,
@@ -92,7 +100,8 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
   } = useAtriumSelector(
     (s) => ({
       role: s.activePmRole || 'direction',
-      currency: 'DZD',
+      currency: selectCurrentBusinessConfigFromState(s).currency || 'DZD',
+      branchName: selectCurrentBranchFromState(s)?.name || 'Agence',
       projects: selectCurrentPmProjectsFromState(s),
       printOrders: selectCurrentPmPrintOrdersFromState(s),
       bats: selectCurrentPmBatDeliverablesFromState(s),
@@ -222,7 +231,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
       targetScreen: ActiveScreen;
       targetPmSubScreen: string;
     };
-    secondaryCards: HomePreviewCardConfig[];
+    priorityCard: HomePreviewCardConfig;
     primaryCards: HomePreviewCardConfig[];
     quickActions: HomeQuickAction[];
   }>(() => {
@@ -233,28 +242,26 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
 
     if (role === 'chef_projet') {
       return {
-        dashboardTarget: null as null | 'pm_dir_dashboard',
+        dashboardTarget: null,
         anchor: {
           title: l3(language, 'Portefeuille Projets', 'Managed Projects', 'محفظة المشاريع'),
           value: projects.length,
           badgeText: `${printOrders.length} ${l3(language, 'impressions', 'print orders', 'طباعة')}`,
-          targetScreen: 'pm_cp_projects' as const,
+          targetScreen: 'pm_cp_projects',
           targetPmSubScreen: 'portfolio',
         },
-        secondaryCards: [
-          {
-            id: 'pm-cp-catalog',
-            title: l3(language, 'Catalogue PLV & Stands', 'Collateral Catalog', 'كتالوج الدعامات'),
-            subtitle: l3(language, 'Supports événementiels & tarifs', 'Event collateral & POS specs', 'المعدات والمواصفات'),
-            icon: <ShoppingBag size={18} />,
-            count: printOrders.length,
-            items: printRows,
-            targetScreen: 'pm_cp_catalog' as const,
-            targetPmSubScreen: 'catalog',
-            emptyTitle: l3(language, 'Aucune commande catalogue.', 'No collateral orders.', 'لا توجد طلبات طباعة.'),
-            emptyCtaLabel: l3(language, 'Ouvrir catalogue', 'Open catalog', 'فتح الكتالوج'),
-          },
-        ],
+        priorityCard: {
+          id: 'pm-cp-catalog',
+          title: l3(language, 'Catalogue PLV & Stands', 'Collateral Catalog', 'كتالوج الدعامات'),
+          subtitle: l3(language, 'Supports événementiels & tarifs', 'Event collateral & POS specs', 'المعدات والمواصفات'),
+          icon: <ShoppingBag size={18} />,
+          count: printOrders.length,
+          items: printRows,
+          targetScreen: 'pm_cp_catalog',
+          targetPmSubScreen: 'catalog',
+          emptyTitle: l3(language, 'Aucune commande catalogue.', 'No collateral orders.', 'لا توجد طلبات طباعة.'),
+          emptyCtaLabel: l3(language, 'Ouvrir catalogue', 'Open catalog', 'فتح الكتالوج'),
+        },
         primaryCards: [
           {
             id: 'pm-cp-projects',
@@ -263,7 +270,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <Kanban size={18} />,
             count: projects.length,
             items: projectRows,
-            targetScreen: 'pm_cp_projects' as const,
+            targetScreen: 'pm_cp_projects',
             targetPmSubScreen: 'portfolio',
             emptyTitle: l3(language, 'Aucun projet actif.', 'No active projects.', 'لا توجد مشاريع نشطة.'),
             emptyCtaLabel: l3(language, 'Voir projets', 'View projects', 'عرض المشاريع'),
@@ -275,7 +282,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <Sparkles size={18} />,
             count: printOrders.length,
             items: printRows,
-            targetScreen: 'pm_cp_orders' as const,
+            targetScreen: 'pm_cp_orders',
             targetPmSubScreen: 'orders',
             emptyTitle: l3(language, 'Aucune commande en cours.', 'No print orders yet.', 'لا توجد طلبات طباعة.'),
             emptyCtaLabel: l3(language, 'Nouvelle commande', 'Create order', 'إنشاء طلب'),
@@ -287,7 +294,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <FileText size={18} />,
             count: bats.length,
             items: batRows,
-            targetScreen: 'pm_cp_files' as const,
+            targetScreen: 'pm_cp_files',
             targetPmSubScreen: 'bat',
             emptyTitle: l3(language, 'Aucun BAT soumis.', 'No BAT proofs yet.', 'لا توجد ملفات مرسلة.'),
             emptyCtaLabel: l3(language, 'Ouvrir BAT', 'Review BAT', 'مراجعة الملفات'),
@@ -299,7 +306,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <Wallet size={18} />,
             count: expenses.length,
             items: expenseRows,
-            targetScreen: 'pm_cp_expenses' as const,
+            targetScreen: 'pm_cp_expenses',
             targetPmSubScreen: 'expenses',
             emptyTitle: l3(language, 'Aucune note de frais.', 'No project expenses.', 'لا توجد مصاريف.'),
             emptyCtaLabel: l3(language, 'Saisir dépense', 'Log expense', 'إضافة مصروف'),
@@ -329,23 +336,21 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
           title: l3(language, 'Livrables BAT Studio', 'Studio BAT Proofs', 'ملفات الاستوديو'),
           value: bats.length,
           badgeText: `${bats.filter((b) => b.approvalStatus === 'revision_requested').length} ${l3(language, 'révisions', 'revisions', 'تعديلات')}`,
-          targetScreen: 'pm_crea_kanban' as const,
+          targetScreen: 'pm_crea_kanban',
           targetPmSubScreen: 'demandes',
         },
-        secondaryCards: [
-          {
-            id: 'pm-crea-briefs',
-            title: l3(language, 'Briefs Créatifs', 'Client Briefs', 'موجزات العملاء'),
-            subtitle: l3(language, 'Cahiers des charges & KPI créa', 'Project briefs', 'متطلبات التصاميم'),
-            icon: <FileText size={18} />,
-            count: projects.length,
-            items: projectRows.slice(0, 3),
-            targetScreen: 'pm_crea_briefs' as const,
-            targetPmSubScreen: 'briefs',
-            emptyTitle: l3(language, 'Aucun brief actif.', 'No active briefs.', 'لا توجد موجزات.'),
-            emptyCtaLabel: l3(language, 'Lire briefs', 'Open briefs', 'عرض الموجزات'),
-          },
-        ],
+        priorityCard: {
+          id: 'pm-crea-briefs',
+          title: l3(language, 'Briefs Créatifs', 'Client Briefs', 'موجزات العملاء'),
+          subtitle: l3(language, 'Cahiers des charges & KPI créa', 'Project briefs', 'متطلبات التصاميم'),
+          icon: <FileText size={18} />,
+          count: projects.length,
+          items: projectRows.slice(0, 3),
+          targetScreen: 'pm_crea_briefs',
+          targetPmSubScreen: 'briefs',
+          emptyTitle: l3(language, 'Aucun brief actif.', 'No active briefs.', 'لا توجد موجزات.'),
+          emptyCtaLabel: l3(language, 'Lire briefs', 'Open briefs', 'عرض الموجزات'),
+        },
         primaryCards: [
           {
             id: 'pm-crea-kanban',
@@ -354,7 +359,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <Layers size={18} />,
             count: printOrders.length,
             items: printRows,
-            targetScreen: 'pm_crea_kanban' as const,
+            targetScreen: 'pm_crea_kanban',
             targetPmSubScreen: 'demandes',
             emptyTitle: l3(language, 'Aucune demande créa.', 'No incoming requests.', 'لا توجد طلبات حالية.'),
             emptyCtaLabel: l3(language, 'Voir demandes', 'Open queue', 'فتح الطابور'),
@@ -366,7 +371,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <Sparkles size={18} />,
             count: bats.length,
             items: batRows,
-            targetScreen: 'pm_crea_production' as const,
+            targetScreen: 'pm_crea_production',
             targetPmSubScreen: 'production',
             emptyTitle: l3(language, 'Aucun rendu en cours.', 'No artworks in progress.', 'لا توجد تصاميم قيد العمل.'),
             emptyCtaLabel: l3(language, 'Voir production', 'Open studio', 'فتح الاستوديو'),
@@ -378,7 +383,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <FileText size={18} />,
             count: bats.filter((b) => b.approvalStatus === 'pending_review').length,
             items: batRows,
-            targetScreen: 'pm_crea_upload' as const,
+            targetScreen: 'pm_crea_upload',
             targetPmSubScreen: 'upload',
             emptyTitle: l3(language, 'Aucun fichier déposé.', 'No files uploaded yet.', 'لم يتم رفع ملفات.'),
             emptyCtaLabel: l3(language, 'Déposer un BAT', 'Upload proof', 'رفع ملف'),
@@ -408,23 +413,21 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
           title: l3(language, 'Missions Terrain', 'Field Activations', 'المهمات الميدانية'),
           value: missions.length,
           badgeText: `${missions.filter((m) => m.status === 'live_today').length} ${l3(language, 'en direct', 'live', 'مباشرة')}`,
-          targetScreen: 'pm_sup_missions' as const,
+          targetScreen: 'pm_sup_missions',
           targetPmSubScreen: 'missions',
         },
-        secondaryCards: [
-          {
-            id: 'pm-sup-expenses',
-            title: l3(language, 'Frais Terrain', 'Field Expenses', 'مصاريف الميدان'),
-            subtitle: l3(language, 'Justificatifs et transport', 'On-site disbursements', 'فواتير التنقل والميدان'),
-            icon: <Wallet size={18} />,
-            count: expenses.length,
-            items: expenseRows.slice(0, 3),
-            targetScreen: 'pm_sup_expenses' as const,
-            targetPmSubScreen: 'expense',
-            emptyTitle: l3(language, 'Aucun frais déclaré.', 'No expenses logged.', 'لا توجد مصاريف.'),
-            emptyCtaLabel: l3(language, 'Déclarer frais', 'Log expense', 'تسجيل مصروف'),
-          },
-        ],
+        priorityCard: {
+          id: 'pm-sup-expenses',
+          title: l3(language, 'Frais Terrain', 'Field Expenses', 'مصاريف الميدان'),
+          subtitle: l3(language, 'Justificatifs et transport', 'On-site disbursements', 'فواتير التنقل والميدان'),
+          icon: <Wallet size={18} />,
+          count: expenses.length,
+          items: expenseRows.slice(0, 3),
+          targetScreen: 'pm_sup_expenses',
+          targetPmSubScreen: 'expense',
+          emptyTitle: l3(language, 'Aucun frais déclaré.', 'No expenses logged.', 'لا توجد مصاريف.'),
+          emptyCtaLabel: l3(language, 'Déclarer frais', 'Log expense', 'تسجيل مصروف'),
+        },
         primaryCards: [
           {
             id: 'pm-sup-missions',
@@ -433,7 +436,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <Radio size={18} />,
             count: missions.length,
             items: missionRows,
-            targetScreen: 'pm_sup_missions' as const,
+            targetScreen: 'pm_sup_missions',
             targetPmSubScreen: 'missions',
             emptyTitle: l3(language, 'Aucune mission planifiée.', 'No field missions yet.', 'لا توجد مهمات ميدانية.'),
             emptyCtaLabel: l3(language, 'Voir missions', 'Open missions', 'عرض المهمات'),
@@ -451,7 +454,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
               trailing: formatMoney(a.grossPayableDzd, currency),
               statusTone: a.status === 'present' ? 'positive' : a.status === 'late' ? 'warning' : 'danger',
             })),
-            targetScreen: 'pm_sup_attendance' as const,
+            targetScreen: 'pm_sup_attendance',
             targetPmSubScreen: 'attendance',
             emptyTitle: l3(language, 'Aucun pointage saisi.', 'No attendance logs yet.', 'لا توجد سجلات حضور.'),
             emptyCtaLabel: l3(language, 'Faire le pointage', 'Open roll call', 'فتح كشف الحضور'),
@@ -463,7 +466,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <Users size={18} />,
             count: talents.length,
             items: talentRows.slice(0, 3),
-            targetScreen: 'pm_sup_staffing' as const,
+            targetScreen: 'pm_sup_staffing',
             targetPmSubScreen: 'staffing',
             emptyTitle: l3(language, 'Aucune équipe affectée.', 'No crew assigned yet.', 'لا توجد تعيينات.'),
             emptyCtaLabel: l3(language, 'Gérer équipes', 'Assign crew', 'إدارة الطواقم'),
@@ -493,23 +496,21 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
           title: l3(language, 'Vivier des Talents', 'Verified Talent Pool', 'بنك المواهب'),
           value: talents.length,
           badgeText: `${talents.filter((t) => t.isHrVerified).length} ${l3(language, 'vérifiés', 'verified', 'موثق')}`,
-          targetScreen: 'pm_rh_talents' as const,
+          targetScreen: 'pm_rh_talents',
           targetPmSubScreen: 'talents',
         },
-        secondaryCards: [
-          {
-            id: 'pm-rh-walkin',
-            title: l3(language, 'Entretiens & Accueil RH', 'Walk-in Candidates', 'مقابلات التوظيف'),
-            subtitle: l3(language, 'Candidats à évaluer', 'Intake & screening', 'ملفات بانتظار التقييم'),
-            icon: <DoorOpen size={18} />,
-            count: talents.filter((t) => t.status === 'in_review').length,
-            items: talentRows.filter((r) => r.statusTone === 'warning').slice(0, 3),
-            targetScreen: 'pm_rh_walkin' as const,
-            targetPmSubScreen: 'walkin',
-            emptyTitle: l3(language, 'Aucun candidat en attente.', 'No pending interviews.', 'لا توجد مقابلات منتظرة.'),
-            emptyCtaLabel: l3(language, 'Ouvrir accueil RH', 'Open intake', 'فتح الاستقبال'),
-          },
-        ],
+        priorityCard: {
+          id: 'pm-rh-walkin',
+          title: l3(language, 'Entretiens & Accueil RH', 'Walk-in Candidates', 'مقابلات التوظيف'),
+          subtitle: l3(language, 'Candidats à évaluer', 'Intake & screening', 'ملفات بانتظار التقييم'),
+          icon: <DoorOpen size={18} />,
+          count: talents.filter((t) => t.status === 'in_review').length,
+          items: talentRows.filter((r) => r.statusTone === 'warning').slice(0, 3),
+          targetScreen: 'pm_rh_walkin',
+          targetPmSubScreen: 'walkin',
+          emptyTitle: l3(language, 'Aucun candidat en attente.', 'No pending interviews.', 'لا توجد مقابلات منتظرة.'),
+          emptyCtaLabel: l3(language, 'Ouvrir accueil RH', 'Open intake', 'فتح الاستقبال'),
+        },
         primaryCards: [
           {
             id: 'pm-rh-talents',
@@ -518,7 +519,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <Users size={18} />,
             count: talents.length,
             items: talentRows,
-            targetScreen: 'pm_rh_talents' as const,
+            targetScreen: 'pm_rh_talents',
             targetPmSubScreen: 'talents',
             emptyTitle: l3(language, 'Vivier vide.', 'No talents registered.', 'قاعدة المواهب فارغة.'),
             emptyCtaLabel: l3(language, 'Ajouter un profil', 'Add talent', 'إضافة منشط'),
@@ -530,7 +531,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <FileText size={18} />,
             count: talents.length,
             items: talentRows.slice(0, 3),
-            targetScreen: 'pm_rh_dossier' as const,
+            targetScreen: 'pm_rh_dossier',
             targetPmSubScreen: 'dossier',
             emptyTitle: l3(language, 'Aucun dossier.', 'No dossiers yet.', 'لا توجد ملفات.'),
             emptyCtaLabel: l3(language, 'Voir dossiers', 'Open dossiers', 'فتح الملفات'),
@@ -542,7 +543,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <Calendar size={18} />,
             count: missions.length,
             items: missionRows.slice(0, 3),
-            targetScreen: 'pm_rh_portal' as const,
+            targetScreen: 'pm_rh_portal',
             targetPmSubScreen: 'portal',
             emptyTitle: l3(language, 'Aucune session active.', 'No active training.', 'لا توجد دورات.'),
             emptyCtaLabel: l3(language, 'Ouvrir portail', 'Open portal', 'فتح البوابة'),
@@ -572,34 +573,32 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
           title: l3(language, 'Lots Paie & CCP', 'Payroll Batches', 'حزم الأجور'),
           value: payrollBatches.length,
           badgeText: `${ccpSlips.length} ${l3(language, 'fiches CCP', 'CCP slips', 'كشوف بريدية')}`,
-          targetScreen: 'pm_compta_payroll' as const,
+          targetScreen: 'pm_compta_payroll',
           targetPmSubScreen: 'payroll',
         },
-        secondaryCards: [
-          {
-            id: 'pm-compta-stock',
-            title: l3(language, 'Stock Matériel', 'Equipment Inventory', 'مخزون العتاد'),
-            subtitle: l3(language, 'Tenues, totems & sonorisation', 'Field kit allocation', 'التجهيزات والعتاد'),
-            icon: <Boxes size={18} />,
-            count: equipment.length,
-            items: equipment.slice(0, 3).map((eq) => ({
-              id: eq.id,
-              primary: eq.title,
-              secondary: [eq.assetCode, eq.category].filter(Boolean).join(' · '),
-              trailing:
-                eq.currentStatus === 'in_stock'
-                  ? l3(language, 'En stock', 'In stock', 'متوفر')
-                  : eq.currentStatus === 'deployed_on_mission'
-                  ? l3(language, 'En mission', 'Deployed', 'في مهمة')
-                  : l3(language, 'Maintenance', 'Maintenance', 'صيانة'),
-              statusTone: eq.currentStatus === 'in_stock' ? 'positive' : 'warning',
-            })),
-            targetScreen: 'pm_compta_stock' as const,
-            targetPmSubScreen: 'stock',
-            emptyTitle: l3(language, 'Aucun équipement suivi.', 'No equipment tracked.', 'لا يوجد عتاد مسجل.'),
-            emptyCtaLabel: l3(language, 'Voir stock', 'View equipment', 'عرض المخزون'),
-          },
-        ],
+        priorityCard: {
+          id: 'pm-compta-stock',
+          title: l3(language, 'Stock Matériel', 'Equipment Inventory', 'مخزون العتاد'),
+          subtitle: l3(language, 'Tenues, totems & sonorisation', 'Field kit allocation', 'التجهيزات والعتاد'),
+          icon: <Boxes size={18} />,
+          count: equipment.length,
+          items: equipment.slice(0, 3).map((eq) => ({
+            id: eq.id,
+            primary: eq.title,
+            secondary: [eq.assetCode, eq.category].filter(Boolean).join(' · '),
+            trailing:
+              eq.currentStatus === 'in_stock'
+                ? l3(language, 'En stock', 'In stock', 'متوفر')
+                : eq.currentStatus === 'deployed_on_mission'
+                ? l3(language, 'En mission', 'Deployed', 'في مهمة')
+                : l3(language, 'Maintenance', 'Maintenance', 'صيانة'),
+            statusTone: eq.currentStatus === 'in_stock' ? 'positive' : 'warning',
+          })),
+          targetScreen: 'pm_compta_stock',
+          targetPmSubScreen: 'stock',
+          emptyTitle: l3(language, 'Aucun équipement suivi.', 'No equipment tracked.', 'لا يوجد عتاد مسجل.'),
+          emptyCtaLabel: l3(language, 'Voir stock', 'View equipment', 'عرض المخزون'),
+        },
         primaryCards: [
           {
             id: 'pm-compta-payroll',
@@ -608,7 +607,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <Wallet size={18} />,
             count: payrollBatches.length,
             items: payrollRows,
-            targetScreen: 'pm_compta_payroll' as const,
+            targetScreen: 'pm_compta_payroll',
             targetPmSubScreen: 'payroll',
             emptyTitle: l3(language, 'Aucun lot de paie.', 'No payroll batches.', 'لا توجد حزم أجور.'),
             emptyCtaLabel: l3(language, 'Ouvrir paie', 'Open payroll', 'فتح الأجور'),
@@ -626,7 +625,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
               trailing: formatMoney(c.amountDzd, currency),
               statusTone: 'positive',
             })),
-            targetScreen: 'pm_compta_ccp' as const,
+            targetScreen: 'pm_compta_ccp',
             targetPmSubScreen: 'ccp',
             emptyTitle: l3(language, 'Aucun bordereau CCP.', 'No CCP slips generated.', 'لا توجد حوالات.'),
             emptyCtaLabel: l3(language, 'Générer CCP', 'Open CCP', 'فتح الحوالات'),
@@ -638,7 +637,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             icon: <Receipt size={18} />,
             count: expenses.length,
             items: expenseRows,
-            targetScreen: 'pm_compta_expenses' as const,
+            targetScreen: 'pm_compta_expenses',
             targetPmSubScreen: 'expenses',
             emptyTitle: l3(language, 'Aucune dépense.', 'No expenses.', 'لا توجد مصاريف.'),
             emptyCtaLabel: l3(language, 'Auditer frais', 'Audit expenses', 'تدقيق المصاريف'),
@@ -663,28 +662,26 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
 
     // Default: direction
     return {
-      dashboardTarget: 'pm_dir_dashboard' as const,
+      dashboardTarget: 'pm_dir_dashboard',
       anchor: {
         title: l3(language, 'Validations en Attente', 'Pending Approvals', 'بانتظار الموافقة'),
         value: pendingApprovals,
         badgeText: `${projects.length} ${l3(language, 'projets', 'projects', 'مشروع')}`,
-        targetScreen: 'pm_dir_dashboard' as const,
+        targetScreen: 'pm_dir_dashboard',
         targetPmSubScreen: 'dashboard',
       },
-      secondaryCards: [
-        {
-          id: 'pm-dir-approvals',
-          title: l3(language, 'Circuit Approbations', 'Direction Approvals', 'اعتماد المدفوعات'),
-          subtitle: l3(language, 'Frais & lots de paie à signer', 'Expenses & payroll sign-off', 'موافقات الصرف'),
-          icon: <ShieldCheck size={18} />,
-          count: pendingApprovals,
-          items: expenseRows.slice(0, 3),
-          targetScreen: 'pm_dir_approvals' as const,
-          targetPmSubScreen: 'approvals',
-          emptyTitle: l3(language, 'Tout est validé.', 'No pending approvals.', 'لا توجد موافقات معلقة.'),
-          emptyCtaLabel: l3(language, 'Voir historique', 'View approvals', 'عرض الموافقات'),
-        },
-      ],
+      priorityCard: {
+        id: 'pm-dir-approvals',
+        title: l3(language, 'Circuit Approbations', 'Direction Approvals', 'اعتماد المدفوعات'),
+        subtitle: l3(language, 'Frais & lots de paie à signer', 'Expenses & payroll sign-off', 'موافقات الصرف'),
+        icon: <ShieldCheck size={18} />,
+        count: pendingApprovals,
+        items: expenseRows.slice(0, 3),
+        targetScreen: 'pm_dir_approvals',
+        targetPmSubScreen: 'approvals',
+        emptyTitle: l3(language, 'Tout est validé.', 'No pending approvals.', 'لا توجد موافقات معلقة.'),
+        emptyCtaLabel: l3(language, 'Voir historique', 'View approvals', 'عرض الموافقات'),
+      },
       primaryCards: [
         {
           id: 'pm-dir-projects',
@@ -693,7 +690,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
           icon: <Kanban size={18} />,
           count: projects.length,
           items: projectRows,
-          targetScreen: 'pm_dir_projects' as const,
+          targetScreen: 'pm_dir_projects',
           targetPmSubScreen: 'dashboard',
           emptyTitle: l3(language, 'Aucun projet créé.', 'No projects created.', 'لا توجد مشاريع بعد.'),
           emptyCtaLabel: l3(language, 'Nouveau projet', 'New project', 'مشروع جديد'),
@@ -706,7 +703,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
           icon: <Radio size={18} />,
           count: missions.length,
           items: missionRows,
-          targetScreen: 'pm_sup_missions' as const,
+          targetScreen: 'pm_sup_missions',
           targetPmSubScreen: 'missions',
           emptyTitle: l3(language, 'Aucune mission active.', 'No active missions.', 'لا توجد مهمات.'),
           emptyCtaLabel: l3(language, 'Voir missions', 'Open missions', 'فتح المهمات'),
@@ -718,7 +715,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
           icon: <Layers size={18} />,
           count: bats.length,
           items: batRows,
-          targetScreen: 'pm_crea_kanban' as const,
+          targetScreen: 'pm_crea_kanban',
           targetPmSubScreen: 'demandes',
           emptyTitle: l3(language, 'Aucun livrable BAT.', 'No BAT proofs yet.', 'لا توجد ملفات BAT.'),
           emptyCtaLabel: l3(language, 'Ouvrir studio', 'Open studio', 'فتح الاستوديو'),
@@ -730,7 +727,7 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
           icon: <FileText size={18} />,
           count: payrollBatches.length,
           items: payrollRows,
-          targetScreen: 'pm_dir_reports' as const,
+          targetScreen: 'pm_dir_reports',
           targetPmSubScreen: 'reports',
           emptyTitle: l3(language, 'Aucun rapport disponible.', 'No reports available.', 'لا توجد تقارير.'),
           emptyCtaLabel: l3(language, 'Ouvrir rapports', 'Open reports', 'فتح التقارير'),
@@ -775,6 +772,24 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
     expenseRows,
   ]);
 
+  const historique = useMemo(
+    () =>
+      buildProjectMilestoneHistorique({
+        language,
+        currency,
+        branchName,
+        role,
+        projects,
+        printOrders,
+        bats,
+        missions,
+        attendances,
+        expenses,
+        payrollBatches,
+      }),
+    [language, currency, branchName, role, projects, printOrders, bats, missions, attendances, expenses, payrollBatches]
+  );
+
   return (
     <HomeShell
       roleKey={role}
@@ -790,11 +805,10 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
       }
       testId={`home-project-${role}`}
     >
-      <HomePodGrid ratio={CATEGORY_HOME_RATIO.project_milestone}>
-        <DashboardPod
-          title={l3(language, 'Priorités du Rôle', 'Role Anchor & Queue', 'أولويات الدور')}
-          className={HOME_POD_PULSE_CLASS}
-        >
+      <HomeHeroRow
+        ratio={CATEGORY_HOME_RATIO.project_milestone}
+        heroTitle={l3(language, 'Repères du Rôle', 'Role Anchor', 'مؤشرات الدور')}
+        heroChildren={
           <HomeAnchorCard
             title={roleConfig.anchor.title}
             value={roleConfig.anchor.value}
@@ -809,42 +823,41 @@ export const ProjectHomeView: React.FC<HomeViewProps> = () => {
             targetScreen={roleConfig.anchor.targetScreen}
             targetPmSubScreen={roleConfig.anchor.targetPmSubScreen}
           />
-          {roleConfig.secondaryCards.map((card) => (
-            <div key={card.id} className="flex-1 min-h-0">
-              <HomePreviewCard config={{ ...card, tone: card.tone || 'brown' }} />
-            </div>
-          ))}
-        </DashboardPod>
+        }
+        priorityTitle={l3(language, 'Priorités Immédiates', 'Role Priority Queue', 'الأولويات العاجلة')}
+        priorityChildren={
+          <HomePreviewCard config={{ ...roleConfig.priorityCard, tone: 'brown' }} />
+        }
+      />
 
-        <DashboardPod
-          title={l3(language, 'Espaces Opérationnels', 'Agency Spaces', 'أقسام الوكالة')}
-          className={HOME_POD_DIRECTORY_CLASS}
-        >
-          <HomeCardsGrid>
-            {roleConfig.primaryCards.map((card, idx) => (
-              <HomePreviewCard
-                key={card.id}
-                config={{
-                  ...card,
-                  tone: card.tone || (idx === 0 ? 'terracotta' : idx % 2 === 1 ? 'lavender' : 'brown'),
-                }}
-              />
-            ))}
-          </HomeCardsGrid>
-        </DashboardPod>
-      </HomePodGrid>
+      <HomeOperationalRow title={l3(language, 'Espaces Opérationnels', 'Agency Spaces', 'أقسام الوكالة')}>
+        {roleConfig.primaryCards.map((card, idx) => (
+          <HomePreviewCard
+            key={card.id}
+            config={{
+              ...card,
+              tone: card.tone || (idx === 0 ? 'terracotta' : idx % 2 === 1 ? 'lavender' : 'brown'),
+            }}
+          />
+        ))}
+      </HomeOperationalRow>
+
+      <HomeLiveHistoryPod events={historique.events} filters={historique.filters} />
+
+      <HomeSetupPod roleKey={role} />
     </HomeShell>
   );
 };
 
 // ============================================================================
-// 5. VENUE & RENTALS (rental_booking) — Ratio 40 / 60
+// 6. VENUE & RENTALS (rental_booking) — 4-Row Bento Home
 // ============================================================================
 export const VenueHomeView: React.FC<HomeViewProps> = () => {
   const { language } = useTranslation();
-  const { currency, units, bookings, renters, deposits } = useAtriumSelector(
+  const { currency, branchName, units, bookings, renters, deposits } = useAtriumSelector(
     (s) => ({
-      currency: 'DZD',
+      currency: selectCurrentBusinessConfigFromState(s).currency || 'DZD',
+      branchName: selectCurrentBranchFromState(s)?.name || 'Espaces',
       units: selectCurrentRentableUnitsFromState(s),
       bookings: selectCurrentRentalBookingsFromState(s),
       renters: selectCurrentRentalRentersFromState(s),
@@ -906,6 +919,18 @@ export const VenueHomeView: React.FC<HomeViewProps> = () => {
     [deposits, currency]
   );
 
+  const historique = useMemo(
+    () =>
+      buildVenueHistorique({
+        language,
+        currency,
+        branchName,
+        bookings,
+        deposits,
+      }),
+    [language, currency, branchName, bookings, deposits]
+  );
+
   const quickActions: HomeQuickAction[] = [
     {
       id: 'venue-booking',
@@ -928,11 +953,10 @@ export const VenueHomeView: React.FC<HomeViewProps> = () => {
       dashboardTarget="dashboard"
       testId="home-venue"
     >
-      <HomePodGrid ratio={CATEGORY_HOME_RATIO.rental_booking}>
-        <DashboardPod
-          title={l3(language, 'Occupation & Cautions', 'Occupancy & Deposits', 'الإشغال والضمانات')}
-          className={HOME_POD_PULSE_CLASS}
-        >
+      <HomeHeroRow
+        ratio={CATEGORY_HOME_RATIO.rental_booking}
+        heroTitle={l3(language, 'Occupation & Cautions', 'Occupancy & Deposits', 'الإشغال والضمانات')}
+        heroChildren={
           <HomeAnchorCard
             title={l3(language, 'Cautions Détenues', 'Held Security Deposits', 'مبالغ الضمان المحجوزة')}
             value={formatMoney(heldDepositsTotal, currency)}
@@ -946,108 +970,108 @@ export const VenueHomeView: React.FC<HomeViewProps> = () => {
             )}
             targetScreen="dashboard"
           />
+        }
+        priorityTitle={l3(language, 'Planning Chronologique', 'Booking Timeline', 'الجدول الزمني')}
+        priorityChildren={
+          <HomePreviewCard
+            config={{
+              id: 'venue-timeline',
+              tone: 'brown',
+              title: l3(language, 'Planning Chronologique', 'Booking Timeline', 'الجدول الزمني'),
+              subtitle: l3(language, 'Créneaux horaires & arrivées', 'Check-ins & hall turnover', 'مواعيد التسليم والاستلام'),
+              icon: <Calendar size={18} />,
+              count: bookings.length,
+              countLabel: `${bookings.filter((b) => b.status === 'Confirmed' || b.status === 'CheckedIn').length} ${l3(language, 'confirmées', 'confirmed', 'مؤكدة')}`,
+              items: bookingRows.slice(0, 3),
+              targetScreen: 'scheduler',
+              emptyTitle: l3(language, 'Aucune occupation prévue.', 'No scheduled slots.', 'لا توجد حجوزات مبرمجة.'),
+              emptyCtaLabel: l3(language, 'Voir planning', 'Open timeline', 'عرض الجدول'),
+            }}
+          />
+        }
+      />
 
-          <div className="flex-1 min-h-0">
-            <HomePreviewCard
-              config={{
-                id: 'venue-timeline',
-                tone: 'brown',
-                title: l3(language, 'Planning Chronologique', 'Booking Timeline', 'الجدول الزمني'),
-                subtitle: l3(language, 'Créneaux horaires & arrivées', 'Check-ins & hall turnover', 'مواعيد التسليم والاستلام'),
-                icon: <Calendar size={18} />,
-                count: bookings.length,
-                countLabel: `${bookings.filter((b) => b.status === 'Confirmed' || b.status === 'CheckedIn').length} ${l3(language, 'confirmées', 'confirmed', 'مؤكدة')}`,
-                items: bookingRows.slice(0, 3),
-                targetScreen: 'scheduler',
-                emptyTitle: l3(language, 'Aucune occupation prévue.', 'No scheduled slots.', 'لا توجد حجوزات مبرمجة.'),
-                emptyCtaLabel: l3(language, 'Voir planning', 'Open timeline', 'عرض الجدول'),
-              }}
-            />
-          </div>
-        </DashboardPod>
+      <HomeOperationalRow title={l3(language, 'Espaces & Locations', 'Venue Spaces', 'مساحات التأجير')}>
+        <HomePreviewCard
+          config={{
+            id: 'venue-bookings',
+            tone: 'terracotta',
+            title: l3(language, 'Réservations', 'Bookings', 'الحجوزات'),
+            subtitle: l3(language, 'Contrats & soldes à régler', 'Active reservations', 'العقود والأرصدة'),
+            icon: <ClipboardList size={18} />,
+            count: bookings.length,
+            countLabel: `${bookings.length} ${l3(language, 'dossiers', 'bookings', 'حجز')}`,
+            items: bookingRows,
+            targetScreen: 'registrations',
+            emptyTitle: l3(language, 'Aucune réservation.', 'No bookings yet.', 'لا توجد حجوزات بعد.'),
+            emptyCtaLabel: l3(language, 'Créer réservation', 'New booking', 'إنشاء حجز'),
+          }}
+        />
 
-        <DashboardPod
-          title={l3(language, 'Espaces & Locations', 'Venue Spaces', 'مساحات التأجير')}
-          className={HOME_POD_DIRECTORY_CLASS}
-        >
-          <HomeCardsGrid>
-            <HomePreviewCard
-              config={{
-                id: 'venue-bookings',
-                tone: 'terracotta',
-                title: l3(language, 'Réservations', 'Bookings', 'الحجوزات'),
-                subtitle: l3(language, 'Contrats & soldes à régler', 'Active reservations', 'العقود والأرصدة'),
-                icon: <ClipboardList size={18} />,
-                count: bookings.length,
-                countLabel: `${bookings.length} ${l3(language, 'dossiers', 'bookings', 'حجز')}`,
-                items: bookingRows,
-                targetScreen: 'registrations',
-                emptyTitle: l3(language, 'Aucune réservation.', 'No bookings yet.', 'لا توجد حجوزات بعد.'),
-                emptyCtaLabel: l3(language, 'Créer réservation', 'New booking', 'إنشاء حجز'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'venue-units',
+            tone: 'lavender',
+            title: l3(language, 'Salles & Équipements', 'Rentable Units', 'القاعات والوحدات'),
+            subtitle: l3(language, 'Disponibilité & tarification', 'Spaces & hourly rates', 'التوفر والتسعيرة'),
+            icon: <DoorOpen size={18} />,
+            count: units.length,
+            countLabel: `${units.filter((u) => u.status === 'Available').length} ${l3(language, 'disponibles', 'available', 'متاحة')}`,
+            items: unitRows,
+            targetScreen: 'shop',
+            emptyTitle: l3(language, 'Aucun espace configuré.', 'No rentable units yet.', 'لا توجد قاعات مضافة.'),
+            emptyCtaLabel: l3(language, 'Ajouter espace', 'Add unit', 'إضافة وحدة'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'venue-units',
-                tone: 'lavender',
-                title: l3(language, 'Salles & Équipements', 'Rentable Units', 'القاعات والوحدات'),
-                subtitle: l3(language, 'Disponibilité & tarification', 'Spaces & hourly rates', 'التوفر والتسعيرة'),
-                icon: <DoorOpen size={18} />,
-                count: units.length,
-                countLabel: `${units.filter((u) => u.status === 'Available').length} ${l3(language, 'disponibles', 'available', 'متاحة')}`,
-                items: unitRows,
-                targetScreen: 'shop',
-                emptyTitle: l3(language, 'Aucun espace configuré.', 'No rentable units yet.', 'لا توجد قاعات مضافة.'),
-                emptyCtaLabel: l3(language, 'Ajouter espace', 'Add unit', 'إضافة وحدة'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'venue-renters',
+            tone: 'brown',
+            title: l3(language, 'Locataires & Organisateurs', 'Renters Directory', 'دليل المستأجرين'),
+            subtitle: l3(language, 'Clients récurrents & sociétés', 'Corporate & event hosts', 'الأفراد والشركات'),
+            icon: <Users size={18} />,
+            count: renters.length,
+            countLabel: `${renters.length} ${l3(language, 'comptes', 'renters', 'مستأجر')}`,
+            items: renterRows,
+            targetScreen: 'members',
+            emptyTitle: l3(language, 'Aucun locataire.', 'No renters listed.', 'لا يوجد مستأجرون.'),
+            emptyCtaLabel: l3(language, 'Voir répertoire', 'Open directory', 'فتح الدليل'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'venue-renters',
-                tone: 'brown',
-                title: l3(language, 'Locataires & Organisateurs', 'Renters Directory', 'دليل المستأجرين'),
-                subtitle: l3(language, 'Clients récurrents & sociétés', 'Corporate & event hosts', 'الأفراد والشركات'),
-                icon: <Users size={18} />,
-                count: renters.length,
-                countLabel: `${renters.length} ${l3(language, 'comptes', 'renters', 'مستأجر')}`,
-                items: renterRows,
-                targetScreen: 'members',
-                emptyTitle: l3(language, 'Aucun locataire.', 'No renters listed.', 'لا يوجد مستأجرون.'),
-                emptyCtaLabel: l3(language, 'Voir répertoire', 'Open directory', 'فتح الدليل'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'venue-finance',
+            tone: 'lavender',
+            title: l3(language, 'Cautions & Finance', 'Deposits & Cash', 'الضمانات والمالية'),
+            subtitle: l3(language, 'Suivi des dépôts de garantie', 'Escrow & releases', 'حالة الضمانات المالية'),
+            icon: <ShieldCheck size={18} />,
+            count: deposits.length,
+            countLabel: formatMoney(heldDepositsTotal, currency),
+            items: depositRows,
+            targetScreen: 'finance',
+            emptyTitle: l3(language, 'Aucune caution active.', 'No deposits recorded.', 'لا توجد ضمانات.'),
+            emptyCtaLabel: l3(language, 'Gérer cautions', 'Open finance', 'فتح المالية'),
+          }}
+        />
+      </HomeOperationalRow>
 
-            <HomePreviewCard
-              config={{
-                id: 'venue-finance',
-                tone: 'lavender',
-                title: l3(language, 'Cautions & Finance', 'Deposits & Cash', 'الضمانات والمالية'),
-                subtitle: l3(language, 'Suivi des dépôts de garantie', 'Escrow & releases', 'حالة الضمانات المالية'),
-                icon: <ShieldCheck size={18} />,
-                count: deposits.length,
-                countLabel: formatMoney(heldDepositsTotal, currency),
-                items: depositRows,
-                targetScreen: 'finance',
-                emptyTitle: l3(language, 'Aucune caution active.', 'No deposits recorded.', 'لا توجد ضمانات.'),
-                emptyCtaLabel: l3(language, 'Gérer cautions', 'Open finance', 'فتح المالية'),
-              }}
-            />
-          </HomeCardsGrid>
-        </DashboardPod>
-      </HomePodGrid>
+      <HomeLiveHistoryPod events={historique.events} filters={historique.filters} />
+
+      <HomeSetupPod roleKey="owner" />
     </HomeShell>
   );
 };
 
 // ============================================================================
-// 7. FREELANCE & SOLO STUDIO (freelance_solo) — Ratio 40 / 60
+// 7. FREELANCE & SOLO STUDIO (freelance_solo) — 4-Row Bento Home
 // ============================================================================
 export const FreelanceHomeView: React.FC<HomeViewProps> = () => {
   const { language } = useTranslation();
   const {
     currency,
+    branchName,
     clients,
     projects,
     timeLogs,
@@ -1057,7 +1081,8 @@ export const FreelanceHomeView: React.FC<HomeViewProps> = () => {
     activeTimer,
   } = useAtriumSelector(
     (s) => ({
-      currency: 'DZD',
+      currency: selectCurrentBusinessConfigFromState(s).currency || 'EUR',
+      branchName: selectCurrentBranchFromState(s)?.name || 'Studio Solo',
       clients: selectCurrentFreelanceClientsFromState(s),
       projects: selectCurrentFreelanceProjectsFromState(s),
       timeLogs: selectCurrentTimeLogsFromState(s),
@@ -1125,6 +1150,20 @@ export const FreelanceHomeView: React.FC<HomeViewProps> = () => {
     [proposals, currency]
   );
 
+  const historique = useMemo(
+    () =>
+      buildFreelanceHistorique({
+        language,
+        currency,
+        branchName,
+        timeLogs,
+        invoices,
+        proposals,
+        projects,
+      }),
+    [language, currency, branchName, timeLogs, invoices, proposals, projects]
+  );
+
   const quickActions: HomeQuickAction[] = [
     {
       id: 'solo-timer',
@@ -1155,11 +1194,10 @@ export const FreelanceHomeView: React.FC<HomeViewProps> = () => {
       dashboardTarget="dashboard"
       testId="home-freelance"
     >
-      <HomePodGrid ratio={CATEGORY_HOME_RATIO.freelance_solo}>
-        <DashboardPod
-          title={l3(language, 'Chrono & Encours', 'Focus Timer & Cash', 'مؤقت التركيز والتحصيل')}
-          className={HOME_POD_PULSE_CLASS}
-        >
+      <HomeHeroRow
+        ratio={CATEGORY_HOME_RATIO.freelance_solo}
+        heroTitle={l3(language, 'Chrono & Encours', 'Focus Timer & Cash', 'مؤقت التركيز والتحصيل')}
+        heroChildren={
           <HomeAnchorCard
             title={
               activeTimer?.isRunning
@@ -1185,114 +1223,114 @@ export const FreelanceHomeView: React.FC<HomeViewProps> = () => {
             )}
             targetScreen={activeTimer?.isRunning ? 'analytics' : 'dashboard'}
           />
+        }
+        priorityTitle={l3(language, 'Chronomètre & Feuilles de Temps', 'Recent Billable Hours', 'سجل الساعات')}
+        priorityChildren={
+          <HomePreviewCard
+            config={{
+              id: 'solo-timelogs',
+              tone: 'brown',
+              title: l3(language, 'Chronomètre & Feuilles', 'Time Logs', 'سجل الساعات'),
+              subtitle: l3(language, 'Heures facturables enregistrées', 'Recent billable hours', 'الساعات المسجلة للفوترة'),
+              icon: <Clock size={18} />,
+              count: timeLogs.length,
+              countLabel: `${timeLogs.filter((t) => !t.isInvoiced).length} ${l3(language, 'à facturer', 'unbilled', 'غير مفوترة')}`,
+              items: timeLogs.slice(0, 3).map((tl) => ({
+                id: tl.id,
+                primary: tl.taskDescription,
+                secondary: `${tl.projectTitle} · ${tl.date}`,
+                trailing: `${(tl.durationSeconds / 3600).toFixed(1)}h`,
+                statusTone: tl.isInvoiced ? 'positive' : 'warning',
+              })),
+              targetScreen: 'analytics',
+              emptyTitle: l3(language, 'Aucune session chronométrée.', 'No time logs yet.', 'لا توجد ساعات مسجلة.'),
+              emptyCtaLabel: l3(language, 'Lancer chrono', 'Start timer', 'بدء المؤقت'),
+            }}
+          />
+        }
+      />
 
-          <div className="flex-1 min-h-0">
-            <HomePreviewCard
-              config={{
-                id: 'solo-timelogs',
-                tone: 'brown',
-                title: l3(language, 'Chronomètre & Feuilles', 'Time Logs', 'سجل الساعات'),
-                subtitle: l3(language, 'Heures facturables enregistrées', 'Recent billable hours', 'الساعات المسجلة للفوترة'),
-                icon: <Clock size={18} />,
-                count: timeLogs.length,
-                countLabel: `${timeLogs.filter((t) => !t.isInvoiced).length} ${l3(language, 'à facturer', 'unbilled', 'غير مفوترة')}`,
-                items: timeLogs.slice(0, 3).map((tl) => ({
-                  id: tl.id,
-                  primary: tl.taskDescription,
-                  secondary: `${tl.projectTitle} · ${tl.date}`,
-                  trailing: `${(tl.durationSeconds / 3600).toFixed(1)}h`,
-                  statusTone: tl.isInvoiced ? 'positive' : 'warning',
-                })),
-                targetScreen: 'analytics',
-                emptyTitle: l3(language, 'Aucune session chronométrée.', 'No time logs yet.', 'لا توجد ساعات مسجلة.'),
-                emptyCtaLabel: l3(language, 'Lancer chrono', 'Start timer', 'بدء المؤقت'),
-              }}
-            />
-          </div>
-        </DashboardPod>
+      <HomeOperationalRow title={l3(language, 'Espaces Studio Solo', 'Studio Spaces', 'أقسام المكتب')}>
+        <HomePreviewCard
+          config={{
+            id: 'solo-projects',
+            tone: 'terracotta',
+            title: l3(language, 'Projets & Livrables', 'Projects & Deliverables', 'المشاريع والتسليمات'),
+            subtitle: l3(language, 'Jalons en cours', 'Active engagements', 'المشاريع النشطة'),
+            icon: <Briefcase size={18} />,
+            count: projects.length,
+            countLabel: `${projects.length} ${l3(language, 'projets', 'projects', 'مشروع')}`,
+            items: projectRows,
+            targetScreen: 'scheduler',
+            emptyTitle: l3(language, 'Aucun projet actif.', 'No active projects.', 'لا توجد مشاريع.'),
+            emptyCtaLabel: l3(language, 'Voir livrables', 'Open projects', 'فتح المشاريع'),
+          }}
+        />
 
-        <DashboardPod
-          title={l3(language, 'Espaces Studio Solo', 'Studio Spaces', 'أقسام المكتب')}
-          className={HOME_POD_DIRECTORY_CLASS}
-        >
-          <HomeCardsGrid>
-            <HomePreviewCard
-              config={{
-                id: 'solo-projects',
-                tone: 'terracotta',
-                title: l3(language, 'Projets & Livrables', 'Projects & Deliverables', 'المشاريع والتسليمات'),
-                subtitle: l3(language, 'Jalons en cours', 'Active engagements', 'المشاريع النشطة'),
-                icon: <Briefcase size={18} />,
-                count: projects.length,
-                countLabel: `${projects.length} ${l3(language, 'projets', 'projects', 'مشروع')}`,
-                items: projectRows,
-                targetScreen: 'scheduler',
-                emptyTitle: l3(language, 'Aucun projet actif.', 'No active projects.', 'لا توجد مشاريع.'),
-                emptyCtaLabel: l3(language, 'Voir livrables', 'Open projects', 'فتح المشاريع'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'solo-invoices',
+            tone: 'lavender',
+            title: l3(language, 'Factures Clients', 'Invoices & Payments', 'فواتير العملاء'),
+            subtitle: l3(language, 'Multi-devises DZD / EUR / USD', 'Billing & settlements', 'الفوترة والتحصيل'),
+            icon: <FileText size={18} />,
+            count: invoices.length,
+            countLabel: formatMoney(unpaidTotal, currency),
+            items: invoiceRows,
+            targetScreen: 'shop',
+            emptyTitle: l3(language, 'Aucune facture émise.', 'No invoices issued.', 'لا توجد فواتير.'),
+            emptyCtaLabel: l3(language, 'Créer facture', 'Open invoices', 'فتح الفواتير'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'solo-invoices',
-                tone: 'lavender',
-                title: l3(language, 'Factures Clients', 'Invoices & Payments', 'فواتير العملاء'),
-                subtitle: l3(language, 'Multi-devises DZD / EUR / USD', 'Billing & settlements', 'الفوترة والتحصيل'),
-                icon: <FileText size={18} />,
-                count: invoices.length,
-                countLabel: formatMoney(unpaidTotal, currency),
-                items: invoiceRows,
-                targetScreen: 'shop',
-                emptyTitle: l3(language, 'Aucune facture émise.', 'No invoices issued.', 'لا توجد فواتير.'),
-                emptyCtaLabel: l3(language, 'Créer facture', 'Open invoices', 'فتح الفواتير'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'solo-proposals',
+            tone: 'brown',
+            title: l3(language, 'Devis & Propositions', 'Proposals & Quotes', 'عروض الأسعار'),
+            subtitle: l3(language, 'Offres envoyées aux prospects', 'Pending client quotes', 'العروض المرسلة'),
+            icon: <ClipboardList size={18} />,
+            count: proposals.length,
+            countLabel: `${proposals.filter((p) => p.status === 'Pending').length} ${l3(language, 'en attente', 'pending', 'قيد الانتظار')}`,
+            items: proposalRows,
+            targetScreen: 'registrations',
+            emptyTitle: l3(language, 'Aucun devis actif.', 'No proposals yet.', 'لا توجد عروض.'),
+            emptyCtaLabel: l3(language, 'Nouveau devis', 'Create proposal', 'إنشاء عرض'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'solo-proposals',
-                tone: 'brown',
-                title: l3(language, 'Devis & Propositions', 'Proposals & Quotes', 'عروض الأسعار'),
-                subtitle: l3(language, 'Offres envoyées aux prospects', 'Pending client quotes', 'العروض المرسلة'),
-                icon: <ClipboardList size={18} />,
-                count: proposals.length,
-                countLabel: `${proposals.filter((p) => p.status === 'Pending').length} ${l3(language, 'en attente', 'pending', 'قيد الانتظار')}`,
-                items: proposalRows,
-                targetScreen: 'registrations',
-                emptyTitle: l3(language, 'Aucun devis actif.', 'No proposals yet.', 'لا توجد عروض.'),
-                emptyCtaLabel: l3(language, 'Nouveau devis', 'Create proposal', 'إنشاء عرض'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'solo-clients-fin',
+            tone: 'lavender',
+            title: l3(language, 'Clients & Dépenses', 'Clients & Finance', 'العملاء والمالية'),
+            subtitle: l3(language, 'Comptes clients & frais pros', `${expenses.length} notes de frais`, `${expenses.length} مصاريف مهنية`),
+            icon: <Users size={18} />,
+            count: clients.length,
+            countLabel: `${clients.length} ${l3(language, 'clients', 'clients', 'عملاء')}`,
+            items: clientRows,
+            targetScreen: 'members',
+            emptyTitle: l3(language, 'Aucun client enregistré.', 'No clients added.', 'لا يوجد عملاء.'),
+            emptyCtaLabel: l3(language, 'Voir clients', 'Open clients', 'عرض العملاء'),
+          }}
+        />
+      </HomeOperationalRow>
 
-            <HomePreviewCard
-              config={{
-                id: 'solo-clients-fin',
-                tone: 'lavender',
-                title: l3(language, 'Clients & Dépenses', 'Clients & Finance', 'العملاء والمالية'),
-                subtitle: l3(language, 'Comptes clients & frais pros', `${expenses.length} notes de frais`, `${expenses.length} مصاريف مهنية`),
-                icon: <Users size={18} />,
-                count: clients.length,
-                countLabel: `${clients.length} ${l3(language, 'clients', 'clients', 'عملاء')}`,
-                items: clientRows,
-                targetScreen: 'members',
-                emptyTitle: l3(language, 'Aucun client enregistré.', 'No clients added.', 'لا يوجد عملاء.'),
-                emptyCtaLabel: l3(language, 'Voir clients', 'Open clients', 'عرض العملاء'),
-              }}
-            />
-          </HomeCardsGrid>
-        </DashboardPod>
-      </HomePodGrid>
+      <HomeLiveHistoryPod events={historique.events} filters={historique.filters} />
+
+      <HomeSetupPod roleKey="owner" />
     </HomeShell>
   );
 };
 
 // ============================================================================
-// 8. B2B TRADING & WHOLESALE (trading_commercial) — Ratio 45 / 55
+// 8. B2B TRADING & WHOLESALE (trading_commercial) — 4-Row Bento Home
 // ============================================================================
 export const TradingHomeView: React.FC<HomeViewProps> = () => {
   const { language } = useTranslation();
   const {
     currency,
+    branchName,
     salesDocs,
     purchaseDocs,
     warehouses,
@@ -1300,7 +1338,8 @@ export const TradingHomeView: React.FC<HomeViewProps> = () => {
     products,
   } = useAtriumSelector(
     (s) => ({
-      currency: 'DZD',
+      currency: selectCurrentBusinessConfigFromState(s).currency || 'DZD',
+      branchName: selectCurrentBranchFromState(s)?.name || 'Négoce',
       salesDocs: selectCurrentCommercialDocsFromState(s),
       purchaseDocs: selectCurrentPurchaseDocsFromState(s),
       warehouses: selectCurrentWarehousesFromState(s),
@@ -1363,6 +1402,19 @@ export const TradingHomeView: React.FC<HomeViewProps> = () => {
     [clients, currency]
   );
 
+  const historique = useMemo(
+    () =>
+      buildTradingHistorique({
+        language,
+        currency,
+        branchName,
+        salesDocs,
+        purchaseDocs,
+        warehouses,
+      }),
+    [language, currency, branchName, salesDocs, purchaseDocs, warehouses]
+  );
+
   const quickActions: HomeQuickAction[] = [
     {
       id: 'trd-sales',
@@ -1391,11 +1443,10 @@ export const TradingHomeView: React.FC<HomeViewProps> = () => {
       dashboardTarget="trading_dashboard"
       testId="home-trading"
     >
-      <HomePodGrid ratio={CATEGORY_HOME_RATIO.trading_commercial}>
-        <DashboardPod
-          title={l3(language, 'Encours & Dépôts B2B', 'Receivables & Depots', 'المستحقات والمخازن')}
-          className={HOME_POD_PULSE_CLASS}
-        >
+      <HomeHeroRow
+        ratio={CATEGORY_HOME_RATIO.trading_commercial}
+        heroTitle={l3(language, 'Encours Clients B2B', 'Receivables Anchor', 'مستحقات العملاء')}
+        heroChildren={
           <HomeAnchorCard
             title={l3(language, 'Créances Clients B2B', 'Open B2B Receivables', 'مستحقات العملاء')}
             value={formatMoney(receivablesTotal, currency)}
@@ -1409,97 +1460,96 @@ export const TradingHomeView: React.FC<HomeViewProps> = () => {
             )}
             targetScreen="trading_dashboard"
           />
+        }
+        priorityTitle={l3(language, 'Dépôts & Valorisation Stock', 'Warehouses & Stock', 'المخازن والسلع')}
+        priorityChildren={
+          <HomePreviewCard
+            config={{
+              id: 'trd-warehouses',
+              tone: 'brown',
+              title: l3(language, 'Dépôts & Stocks', 'Warehouses & Stock', 'المخازن والسلع'),
+              subtitle: l3(language, 'Valorisation par entrepôt', 'Multi-depot stock balance', 'قيمة المخزون حسب المستودع'),
+              icon: <Boxes size={18} />,
+              count: warehouses.length,
+              countLabel: `${products.length} ${l3(language, 'articles', 'SKUs', 'صنف')}`,
+              items: warehouseRows,
+              targetScreen: 'trading_inventory',
+              emptyTitle: l3(language, 'Aucun dépôt configuré.', 'No warehouses configured.', 'لا توجد مخازن.'),
+              emptyCtaLabel: l3(language, 'Gérer dépôts', 'Open stock', 'فتح المخزون'),
+            }}
+          />
+        }
+      />
 
-          <div className="flex-1 min-h-0">
-            <HomePreviewCard
-              config={{
-                id: 'trd-warehouses',
-                tone: 'brown',
-                title: l3(language, 'Dépôts & Stocks', 'Warehouses & Stock', 'المخازن والسلع'),
-                subtitle: l3(language, 'Valorisation par entrepôt', 'Multi-depot stock balance', 'قيمة المخزون حسب المستودع'),
-                icon: <Boxes size={18} />,
-                count: warehouses.length,
-                countLabel: `${products.length} ${l3(language, 'articles', 'SKUs', 'صنف')}`,
-                items: warehouseRows,
-                targetScreen: 'trading_inventory',
-                emptyTitle: l3(language, 'Aucun dépôt configuré.', 'No warehouses configured.', 'لا توجد مخازن.'),
-                emptyCtaLabel: l3(language, 'Gérer dépôts', 'Open stock', 'فتح المخزون'),
-              }}
-            />
-          </div>
-        </DashboardPod>
+      <HomeOperationalRow title={l3(language, 'Cycle Commercial B2B', 'Commercial Modules', 'أقسام التجارة والجملة')}>
+        <HomePreviewCard
+          config={{
+            id: 'trd-sales',
+            tone: 'terracotta',
+            title: l3(language, 'Ventes · Devis / BL / Factures', 'Commercial Sales Docs', 'المبيعات والفواتير'),
+            subtitle: l3(language, 'Chaîne devis vers facture DGI', 'Quotes, BLs & DGI invoices', 'عروض الأسعار ووصل التسليم'),
+            icon: <FileText size={18} />,
+            count: salesDocs.length,
+            countLabel: `${salesDocs.length} ${l3(language, 'documents', 'docs', 'وثيقة')}`,
+            items: salesRows,
+            targetScreen: 'trading_sales',
+            emptyTitle: l3(language, 'Aucune pièce de vente.', 'No sales documents.', 'لا توجد فواتير بيع.'),
+            emptyCtaLabel: l3(language, 'Créer facture', 'New document', 'وثيقة جديدة'),
+          }}
+        />
 
-        <DashboardPod
-          title={l3(language, 'Cycle Commercial B2B', 'Commercial Modules', 'أقسام التجارة والجملة')}
-          className={HOME_POD_DIRECTORY_CLASS}
-        >
-          <HomeCardsGrid>
-            <HomePreviewCard
-              config={{
-                id: 'trd-sales',
-                tone: 'terracotta',
-                title: l3(language, 'Ventes · Devis / BL / Factures', 'Commercial Sales Docs', 'المبيعات والفواتير'),
-                subtitle: l3(language, 'Chaîne devis vers facture DGI', 'Quotes, BLs & DGI invoices', 'عروض الأسعار ووصل التسليم'),
-                icon: <FileText size={18} />,
-                count: salesDocs.length,
-                countLabel: `${salesDocs.length} ${l3(language, 'documents', 'docs', 'وثيقة')}`,
-                items: salesRows,
-                targetScreen: 'trading_sales',
-                emptyTitle: l3(language, 'Aucune pièce de vente.', 'No sales documents.', 'لا توجد فواتير بيع.'),
-                emptyCtaLabel: l3(language, 'Créer facture', 'New document', 'وثيقة جديدة'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'trd-purchases',
+            tone: 'lavender',
+            title: l3(language, 'Achats & Fournisseurs', 'Purchases & Receiving', 'المشتريات والموردون'),
+            subtitle: l3(language, 'Bons de commande & réception', 'POs & goods receipts', 'طلبات الشراء والاستلام'),
+            icon: <Truck size={18} />,
+            count: purchaseDocs.length,
+            countLabel: `${purchaseDocs.length} ${l3(language, 'commandes', 'POs', 'طلب شراء')}`,
+            items: purchaseRows,
+            targetScreen: 'trading_purchases',
+            emptyTitle: l3(language, 'Aucun bon d’achat.', 'No purchase orders yet.', 'لا توجد مشتريات.'),
+            emptyCtaLabel: l3(language, 'Nouvel achat', 'New PO', 'طلب شراء'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'trd-purchases',
-                tone: 'lavender',
-                title: l3(language, 'Achats & Fournisseurs', 'Purchases & Receiving', 'المشتريات والموردون'),
-                subtitle: l3(language, 'Bons de commande & réception', 'POs & goods receipts', 'طلبات الشراء والاستلام'),
-                icon: <Truck size={18} />,
-                count: purchaseDocs.length,
-                countLabel: `${purchaseDocs.length} ${l3(language, 'commandes', 'POs', 'طلب شراء')}`,
-                items: purchaseRows,
-                targetScreen: 'trading_purchases',
-                emptyTitle: l3(language, 'Aucun bon d’achat.', 'No purchase orders yet.', 'لا توجد مشتريات.'),
-                emptyCtaLabel: l3(language, 'Nouvel achat', 'New PO', 'طلب شراء'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'trd-directory',
+            tone: 'brown',
+            title: l3(language, 'Répertoire Clients & NIF', 'B2B Partners Directory', 'دليل الشركاء'),
+            subtitle: l3(language, 'Plafonds de crédit & RC/NIF', 'Credit limits & tax IDs', 'السجلات التجارية والضرائب'),
+            icon: <Building2 size={18} />,
+            count: clients.length,
+            countLabel: `${clients.length} ${l3(language, 'comptes', 'partners', 'شريك')}`,
+            items: partnerRows,
+            targetScreen: 'trading_directory',
+            emptyTitle: l3(language, 'Aucun partenaire B2B.', 'No B2B partners yet.', 'لا يوجد شركاء.'),
+            emptyCtaLabel: l3(language, 'Ajouter partenaire', 'Open directory', 'فتح الدليل'),
+          }}
+        />
 
-            <HomePreviewCard
-              config={{
-                id: 'trd-directory',
-                tone: 'brown',
-                title: l3(language, 'Répertoire Clients & NIF', 'B2B Partners Directory', 'دليل الشركاء'),
-                subtitle: l3(language, 'Plafonds de crédit & RC/NIF', 'Credit limits & tax IDs', 'السجلات التجارية والضرائب'),
-                icon: <Building2 size={18} />,
-                count: clients.length,
-                countLabel: `${clients.length} ${l3(language, 'comptes', 'partners', 'شريك')}`,
-                items: partnerRows,
-                targetScreen: 'trading_directory',
-                emptyTitle: l3(language, 'Aucun partenaire B2B.', 'No B2B partners yet.', 'لا يوجد شركاء.'),
-                emptyCtaLabel: l3(language, 'Ajouter partenaire', 'Open directory', 'فتح الدليل'),
-              }}
-            />
+        <HomePreviewCard
+          config={{
+            id: 'trd-finance',
+            tone: 'lavender',
+            title: l3(language, 'Trésorerie & Échéances', 'Treasury & Catalog', 'الخزينة والكتالوج'),
+            subtitle: l3(language, 'Règlements, chèques & tarifs', 'Cheques, balances & SKUs', 'الشيكات والأرصدة'),
+            icon: <Wallet size={18} />,
+            count: formatMoney(receivablesTotal, currency),
+            countLabel: l3(language, 'À recouvrer', 'Outstanding', 'مستحق التحصيل'),
+            items: salesRows.slice(0, 3),
+            targetScreen: 'trading_finance',
+            emptyTitle: l3(language, 'Aucune écriture active.', 'No treasury entries.', 'لا توجد قيود.'),
+            emptyCtaLabel: l3(language, 'Ouvrir trésorerie', 'Open finance', 'فتح الخزينة'),
+          }}
+        />
+      </HomeOperationalRow>
 
-            <HomePreviewCard
-              config={{
-                id: 'trd-finance',
-                tone: 'lavender',
-                title: l3(language, 'Trésorerie & Échéances', 'Treasury & Catalog', 'الخزينة والكتالوج'),
-                subtitle: l3(language, 'Règlements, chèques & tarifs', 'Cheques, balances & SKUs', 'الشيكات والأرصدة'),
-                icon: <Wallet size={18} />,
-                count: formatMoney(receivablesTotal, currency),
-                countLabel: l3(language, 'À recouvrer', 'Outstanding', 'مستحق التحصيل'),
-                items: salesRows.slice(0, 3),
-                targetScreen: 'trading_finance',
-                emptyTitle: l3(language, 'Aucune écriture active.', 'No treasury entries.', 'لا توجد قيود.'),
-                emptyCtaLabel: l3(language, 'Ouvrir trésorerie', 'Open finance', 'فتح الخزينة'),
-              }}
-            />
-          </HomeCardsGrid>
-        </DashboardPod>
-      </HomePodGrid>
+      <HomeLiveHistoryPod events={historique.events} filters={historique.filters} />
+
+      <HomeSetupPod roleKey="owner" />
     </HomeShell>
   );
 };

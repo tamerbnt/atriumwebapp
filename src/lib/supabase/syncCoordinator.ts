@@ -416,6 +416,8 @@ export const CATEGORY_TABLE_MAP: Record<BusinessCategory, string[]> = {
 export const CORE_SYNC_TABLES = [
   'businesses',
   'branches',
+  'business_configs',
+  'category_formules',
   'staff',
   'staff_attendance_logs',
   'staff_salary_advances',

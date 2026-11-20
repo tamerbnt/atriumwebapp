@@ -63,6 +63,7 @@ import {
 } from '../modals/FeatureBlueprintModal';
 import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
+import { deriveCategoryConfigDefaultsFromOnboarding } from '../../utils/businessConfig';
 import { OnboardingBackdrop } from './OnboardingBackdrop';
 import { LiquidContinueButton } from '../ui/liquid/LiquidContinueButton';
 import { AtriumButton } from '../ui/AtriumButton';
@@ -298,7 +299,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   // Step 8 State: Deferred Workspace Naming, Phone & Subscription Plan Switcher
   const [workspaceName, setWorkspaceName] = useState('Atlas Creative Studio');
   const [phone, setPhone] = useState('+213 550 12 34 56');
-  const [branchAddress] = useState('14 Boulevard Didouche Mourad, Alger');
+  const [branchAddress, setBranchAddress] = useState('14 Boulevard Didouche Mourad, Alger');
+  const [wilayaCode, setWilayaCode] = useState('16');
   const [selectedPlanTier, setSelectedPlanTier] = useState<SubscriptionPlanTier>('free');
   const [voucherCode, setVoucherCode] = useState('');
   const [showLicenseModal, setShowLicenseModal] = useState(false);
@@ -488,10 +490,21 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       businessName: finalBusinessName,
       category: activeCategory,
       branchName: finalBranchName,
-      branchAddress: branchAddress.trim(),
+      branchAddress: branchAddress.trim() || '14 Boulevard Didouche Mourad, Alger',
+      wilayaCode,
       voucherCode: isVoucherValid ? voucherCode.trim() : undefined,
       planTier: selectedPlanTier,
       isTrial,
+      onboardingContext: {
+        primaryFrustration,
+        selectedGoalId,
+        dailyWorkflow,
+        teamScale,
+        settlementStyle,
+        selectedTradeId,
+        referralSource,
+        wilayaCode,
+      },
     };
 
     completeOnboarding(params);
@@ -2008,23 +2021,74 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     />
                   </div>
 
-                  {/* Branch Address Summary */}
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="solid"
-                    className="px-[var(--s3,12px)] py-[var(--s2,8px)] bg-white/[0.03] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-between gap-[var(--s2,8px)] t-small"
-                  >
-                    <div className="flex items-center gap-[var(--s2,8px)] text-[var(--text-dark-2,#A99E92)] min-w-0">
-                      <MapPin className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)] shrink-0" strokeWidth={1.5} />
-                      <span className="truncate">
-                        {isAr ? 'الفرع التشغيلي الرئيسي :' : isFr ? 'Siège & Établissement principal :' : 'Headquarters & Branch :'}{' '}
-                        <span className="text-[#FFF5EE] font-medium">{branchAddress}</span>
-                      </span>
-                    </div>
-                    <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small text-emerald-400 rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
-                      {isAr ? 'معتمد' : isFr ? 'Siège Actif' : 'Active Site'}
-                    </span>
-                  </div>
+                  {/* Editable Branch Address, Wilaya & Derived Fiscal Preview */}
+                  {(() => {
+                    const derivedPreview = deriveCategoryConfigDefaultsFromOnboarding(activeCategory, {
+                      teamScale,
+                      settlementStyle,
+                      wilayaCode,
+                    });
+                    return (
+                      <div className="space-y-[var(--s2,8px)]">
+                        <div className="grid grid-cols-1 md:grid-cols-[1fr_170px] gap-[var(--s2,8px)]">
+                          <LabelInput
+                            field="branchAddress"
+                            label={isAr ? 'عنوان الفرع الرئيسي' : isFr ? 'Adresse du siège / établissement' : 'Headquarters Address'}
+                            value={branchAddress}
+                            onChange={(val) => setBranchAddress(String(val))}
+                            prefix={<MapPin className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
+                            height={40}
+                            corner={12}
+                          />
+                          <div
+                            data-sq="ctl"
+                            data-sq-border="solid"
+                            className="h-[40px] px-[var(--s3,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.14)] flex items-center justify-between gap-[var(--s2,8px)]"
+                          >
+                            <span className="t-cap text-[var(--text-dark-2,#A99E92)] shrink-0">
+                              {isAr ? 'الولاية' : 'Wilaya'}
+                            </span>
+                            <select
+                              aria-label={isAr ? 'الولاية' : 'Wilaya'}
+                              value={wilayaCode}
+                              onChange={(e) => setWilayaCode(e.target.value)}
+                              className="bg-transparent text-[#FFF5EE] t-small font-medium focus:outline-none text-end cursor-pointer"
+                            >
+                              <option value="16" className="bg-[#231F1D] text-[#FFF5EE]">16 · Alger</option>
+                              <option value="31" className="bg-[#231F1D] text-[#FFF5EE]">31 · Oran</option>
+                              <option value="25" className="bg-[#231F1D] text-[#FFF5EE]">25 · Constantine</option>
+                              <option value="09" className="bg-[#231F1D] text-[#FFF5EE]">09 · Blida</option>
+                              <option value="19" className="bg-[#231F1D] text-[#FFF5EE]">19 · Sétif</option>
+                              <option value="06" className="bg-[#231F1D] text-[#FFF5EE]">06 · Béjaïa</option>
+                              <option value="23" className="bg-[#231F1D] text-[#FFF5EE]">23 · Annaba</option>
+                              <option value="15" className="bg-[#231F1D] text-[#FFF5EE]">15 · Tizi Ouzou</option>
+                              <option value="13" className="bg-[#231F1D] text-[#FFF5EE]">13 · Tlemcen</option>
+                              <option value="30" className="bg-[#231F1D] text-[#FFF5EE]">30 · Ouargla</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div
+                          data-sq="ctl"
+                          data-sq-border="solid"
+                          className="px-[var(--s3,12px)] py-[var(--s2,8px)] bg-white/[0.03] [--sq-stroke:rgba(255,255,255,0.1)] flex flex-wrap items-center justify-between gap-[var(--s2,8px)] t-small"
+                        >
+                          <span className="text-[var(--text-dark-2,#A99E92)]">
+                            {isAr
+                              ? `التكوين المبدئي: ${derivedPreview.currency} · TVA ${derivedPreview.defaultTvaRate}%`
+                              : isFr
+                              ? `Pré-configuration : ${derivedPreview.currency} · TVA ${derivedPreview.defaultTvaRate}% · Formules prêtes`
+                              : `Preset: ${derivedPreview.currency} · TVA ${derivedPreview.defaultTvaRate}% · Starter Formules ready`}
+                          </span>
+                          <span className="text-emerald-400 font-medium tabular-nums">
+                            {derivedPreview.applyTimbreFiscal
+                              ? isAr ? 'طابع جبائي مفعّل' : isFr ? 'Timbre Fiscal DGI actif' : 'Timbre Fiscal On'
+                              : isAr ? 'بدون طابع جبائي' : isFr ? 'Exonéré Timbre' : 'Timbre Exempt'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 

@@ -99,6 +99,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     members,
     staff,
     currentBranch,
+    currentBusinessConfig,
     branches,
     processSale,
     adjustStock,
@@ -119,6 +120,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     lastSyncedAt,
     retryCloudSync,
   } = useAtriumStore();
+  const configuredDefaultTva = currentBusinessConfig.defaultTvaRate ?? 19;
 
   const [activeTab, setActiveTab] = useState<'register' | 'parked' | 'receipt_settings' | 'inventory'>(initialTab);
   useEffect(() => {
@@ -177,7 +179,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
   const [formStock, setFormStock] = useState(25);
   const [formReorder, setFormReorder] = useState(5);
   const [formUnit, setFormUnit] = useState('pcs');
-  const [formTaxRate, setFormTaxRate] = useState(19);
+  const [formTaxRate, setFormTaxRate] = useState(configuredDefaultTva);
 
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedProductIds, setPinnedProductIds] = useState<Set<string>>(() => new Set<string>());
@@ -313,9 +315,15 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
   }, [cartSubtotal, orderDiscountType, orderDiscountValue]);
 
   const taxAmount = useMemo(() => {
-    if (!receiptConfig.showTaxBreakdown) return 0;
-    return Math.round((cartSubtotal - discountAmount) * 0.09);
-  }, [cartSubtotal, discountAmount, receiptConfig.showTaxBreakdown]);
+    if (!receiptConfig.showTaxBreakdown || cartSubtotal <= 0) return 0;
+    const discountRatio = Math.max(0, 1 - discountAmount / cartSubtotal);
+    const totalTax = cart.reduce((acc, item) => {
+      const lineNet = (item.product.price.amount * item.quantity - item.discount) * discountRatio;
+      const itemRate = item.product.taxRate ?? configuredDefaultTva;
+      return acc + lineNet * (Math.max(0, itemRate) / 100);
+    }, 0);
+    return Math.round(totalTax);
+  }, [cart, cartSubtotal, discountAmount, receiptConfig.showTaxBreakdown, configuredDefaultTva]);
 
   const cartTotal = useMemo(
     () => Math.max(0, cartSubtotal - discountAmount + taxAmount),
@@ -676,7 +684,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     setFormStock(prod.stockQuantity);
     setFormReorder(prod.reorderLevel || 5);
     setFormUnit(prod.unit || 'pcs');
-    setFormTaxRate(prod.taxRate || 19);
+    setFormTaxRate(prod.taxRate ?? configuredDefaultTva);
     setIsProductFormModalOpen(true);
   };
 
@@ -691,7 +699,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     setFormStock(25);
     setFormReorder(5);
     setFormUnit('pcs');
-    setFormTaxRate(19);
+    setFormTaxRate(configuredDefaultTva);
     setIsProductFormModalOpen(true);
   };
 

@@ -12,7 +12,9 @@ export type HomeColumnRatio =
 
 export type HomeRowStatusTone = 'positive' | 'warning' | 'danger' | 'neutral';
 
-export type HomeCardTone = 'terracotta' | 'brown' | 'lavender';
+export type HomeHistoriqueTone = 'positive' | 'warning' | 'danger' | 'info' | 'neutral';
+
+export type HomeCardTone = 'terracotta' | 'brown' | 'lavender' | 'sage';
 
 export interface HomePreviewRow {
   id: string;
@@ -86,4 +88,50 @@ export interface HomeAnchorMetricConfig {
   sublabel?: string;
   targetScreen?: ActiveScreen;
   onNavigate?: () => void;
+}
+
+export interface HomeHistoriqueDetailPair {
+  label: string;
+  value: string;
+}
+
+export interface HomeHistoriqueAction {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  isDanger?: boolean;
+  onClick: () => void;
+}
+
+export interface HomeDailyEvent {
+  id: string;
+  title: string;
+  subtitle: string;
+  categoryKey: string;
+  categoryBadge: string;
+  statusLabel: string;
+  statusTone: HomeHistoriqueTone;
+  metricPrimary: string;
+  metricSecondary?: string;
+  timeLabel: string;
+  sortKey: string;
+  actorOrBranch: string;
+  avatarText?: string;
+  avatarColor?: string;
+  targetScreen?: ActiveScreen;
+  targetPmSubScreen?: string;
+  detailCols?: [
+    HomeHistoriqueDetailPair,
+    HomeHistoriqueDetailPair,
+    HomeHistoriqueDetailPair
+  ];
+  notes?: string;
+  ctaLabel?: string;
+  onNavigate?: () => void;
+  actions?: HomeHistoriqueAction[];
+}
+
+export interface HomeHistoriqueFilterOption {
+  id: string;
+  label: string;
 }
