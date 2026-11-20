@@ -173,6 +173,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: t('nav_pm_dir_reports', language),
         },
         {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
+        },
+        {
           id: 'settings',
           icon: <Settings size={19} />,
           title: t('nav_settings', language),
@@ -367,6 +373,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         label: t('nav_finance', language),
       },
       {
+        id: 'history',
+        icon: <History size={19} />,
+        title: t('nav_history', language),
+        label: t('nav_history', language),
+      },
+      {
         id: 'settings',
         icon: <Settings size={19} />,
         title: t('nav_settings', language),
@@ -554,6 +566,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         label: t('nav_finance', language),
       },
       {
+        id: 'history',
+        icon: <History size={19} />,
+        title: t('nav_history', language),
+        label: t('nav_history', language),
+      },
+      {
         id: 'settings',
         icon: <Settings size={19} />,
         title: t('nav_settings', language),
@@ -633,6 +651,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: t('nav_finance', language),
         },
         {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
+        },
+        {
           id: 'settings',
           icon: <Settings size={19} />,
           title: t('nav_settings', language),
@@ -685,6 +709,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         label: t('nav_finance', language),
       },
       {
+        id: 'history',
+        icon: <History size={19} />,
+        title: t('nav_history', language),
+        label: t('nav_history', language),
+      },
+      {
         id: 'settings',
         icon: <Settings size={19} />,
         title: t('nav_settings', language),
@@ -734,6 +764,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         icon: <CreditCard size={19} />,
         title: t('nav_finance', language),
         label: t('nav_finance', language),
+      },
+      {
+        id: 'history',
+        icon: <History size={19} />,
+        title: t('nav_history', language),
+        label: t('nav_history', language),
       },
       {
         id: 'settings',
@@ -890,6 +926,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: t('nav_finance', language),
         },
         {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
+        },
+        {
           id: 'settings',
           icon: <Settings size={19} />,
           title: t('nav_settings', language),
@@ -1022,6 +1064,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: <Receipt size={19} />,
           title: language === 'ar' ? 'الوصولات' : language === 'fr' ? 'Quittances' : 'Receipts',
           label: language === 'ar' ? 'الوصولات' : language === 'fr' ? 'Quittances' : 'Receipts',
+        },
+        {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
         },
         {
           id: 'settings',
@@ -1161,6 +1209,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: language === 'ar' ? 'الجودة' : language === 'fr' ? 'Qualité' : 'Quality',
         },
         {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
+        },
+        {
           id: 'settings',
           icon: <Settings size={19} />,
           title: t('nav_settings', language),
@@ -1202,6 +1256,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: language === 'ar' ? 'الودائع' : language === 'fr' ? 'Dépôts' : 'Escrow',
         },
         {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
+        },
+        {
           id: 'settings',
           icon: <Settings size={19} />,
           title: t('nav_settings', language),
@@ -1239,6 +1299,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: <Scale size={19} />,
           title: language === 'ar' ? 'المحاسبة' : language === 'fr' ? 'Comptabilité' : 'Ledger',
           label: language === 'ar' ? 'المحاسبة' : language === 'fr' ? 'Comptabilité' : 'Ledger',
+        },
+        {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
         },
         {
           id: 'settings',
@@ -1317,6 +1383,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: <Scale size={19} />,
           title: language === 'ar' ? 'الأتعاب' : language === 'fr' ? 'Honoraires' : 'Fees',
           label: language === 'ar' ? 'الأتعاب' : language === 'fr' ? 'Honoraires' : 'Fees',
+        },
+        {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
         },
         {
           id: 'settings',
@@ -1447,6 +1519,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: language === 'ar' ? 'التحصيل' : language === 'fr' ? 'Encaissements' : 'Payouts',
         },
         {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
+        },
+        {
           id: 'settings',
           icon: <Settings size={19} />,
           title: t('nav_settings', language),
@@ -1480,6 +1558,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: <Landmark size={19} />,
           title: language === 'ar' ? 'الخزينة' : language === 'fr' ? 'Trésorerie' : 'Treasury',
           label: language === 'ar' ? 'الخزينة' : language === 'fr' ? 'Trésorerie' : 'Treasury',
+        },
+        {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
         },
         {
           id: 'settings',
@@ -1704,6 +1788,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: <Wallet size={19} />,
           title: language === 'ar' ? 'الميزان' : language === 'fr' ? 'Bascule' : 'Weighbridge',
           label: language === 'ar' ? 'الميزان' : language === 'fr' ? 'Bascule' : 'Weighbridge',
+        },
+        {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
         },
         {
           id: 'settings',

@@ -18,7 +18,7 @@ import {
   selectCurrentBusinessConfigFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import {
   useGarageData,
@@ -340,17 +340,17 @@ export const AutoGarageBillingView: React.FC<any> = () => {
     runUndoBatch(
       {
         operationType: 'create',
-        vertical: 'garage',
-        label: {
+        vertical: 'auto_garage',
+        summary: pickLocalizedText(language, {
           fr: `Facture ${newInvoice.invoiceNumber} émise & OR soldé`,
           en: `Invoice ${newInvoice.invoiceNumber} issued & RO settled`,
           ar: `تم إصدار الفاتورة ${newInvoice.invoiceNumber} وتسوية الأمر`,
-        },
-        moduleLabel: {
+        }),
+        toastTitle: pickLocalizedText(language, {
           fr: 'Facturation & Caisse',
           en: 'Garage Billing',
           ar: 'الفوترة والصندوق',
-        },
+        }),
       },
       () => {
         createInvoice(newInvoice);

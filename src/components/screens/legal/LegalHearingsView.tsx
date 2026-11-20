@@ -18,7 +18,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { LegalHearing } from '../../../types';
 import { useLegalData } from './legalData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -967,16 +967,17 @@ export const LegalHearingsView: React.FC<any> = () => {
                 {
                   operationType: 'bulk',
                   vertical: 'legal_accounting',
-                  label: {
+                  affectedCount: count,
+                  summary: pickLocalizedText(language, {
                     fr: `${count} audiences retirées du rôle`,
                     en: `${count} hearings deleted`,
                     ar: `تم حذف ${count} جلسات`,
-                  },
-                  moduleLabel: {
+                  }),
+                  toastTitle: pickLocalizedText(language, {
                     fr: 'Rôle des Audiences',
                     en: 'Hearings Docket',
                     ar: 'جدول الجلسات',
-                  },
+                  }),
                 },
                 () => {
                   ids.forEach((id) => deleteHearing(id));

@@ -11,7 +11,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { LogisticsShipment } from '../../../types';
 import { useLogisticsData } from './logisticsData';
@@ -733,17 +733,18 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
             runUndoBatch(
               {
                 operationType: 'bulk',
-                vertical: 'logistics',
-                label: {
+                vertical: 'logistics_delivery',
+                affectedCount: count,
+                summary: pickLocalizedText(language, {
                   fr: `${count} colis supprimés`,
                   en: `${count} shipments deleted`,
                   ar: `تم حذف ${count} شحنات`,
-                },
-                moduleLabel: {
+                }),
+                toastTitle: pickLocalizedText(language, {
                   fr: 'Expéditions & Colis',
                   en: 'Shipments',
                   ar: 'إدارة الشحنات',
-                },
+                }),
               },
               () => {
                 ids.forEach((id) => deleteShipment(id));

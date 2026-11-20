@@ -16,7 +16,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import {
   useGarageData,
@@ -746,17 +746,18 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
             runUndoBatch(
               {
                 operationType: 'bulk',
-                vertical: 'garage',
-                label: {
+                vertical: 'auto_garage',
+                affectedCount: count,
+                summary: pickLocalizedText(language, {
                   fr: `${count} véhicules supprimés`,
                   en: `${count} vehicles deleted`,
                   ar: `تم حذف ${count} مركبات`,
-                },
-                moduleLabel: {
+                }),
+                toastTitle: pickLocalizedText(language, {
                   fr: 'Parc Véhicules',
                   en: 'Vehicle Fleet',
                   ar: 'حظيرة المركبات',
-                },
+                }),
               },
               () => {
                 ids.forEach((id) => deleteVehicle(id));

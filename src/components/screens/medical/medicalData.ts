@@ -1892,31 +1892,42 @@ export const useMedicalData = () => {
   };
 
   const applyDepleteConsumable = (itemCode: string, quantity: number) => {
-    let matchedPrev: ClinicConsumableItem | null = null;
-    let matchedNext: ClinicConsumableItem | null = null;
+    const existing = latestRef.current.consumables.find(
+      (item) => item.itemCode === itemCode || item.id === itemCode
+    );
+    if (!existing) {
+      return {
+        matchedPrev: null as ClinicConsumableItem | null,
+        matchedNext: null as ClinicConsumableItem | null,
+      };
+    }
+    const matchedPrev = cloneSnapshot(existing);
+    const prevQty = existing.currentStockUnits ?? existing.currentStock ?? 0;
+    const newQty = Math.max(0, prevQty - quantity);
+    const matchedNext: ClinicConsumableItem = cloneSnapshot({
+      ...existing,
+      currentStock: newQty,
+      currentStockUnits: newQty,
+    });
     setConsumables((prev) =>
       prev.map((item) => {
         if (item.itemCode === itemCode || item.id === itemCode) {
-          matchedPrev = cloneSnapshot(item);
-          const prevQty = item.currentStockUnits ?? item.currentStock ?? 0;
-          const newQty = Math.max(0, prevQty - quantity);
-          const next = { ...item, currentStock: newQty, currentStockUnits: newQty };
-          matchedNext = cloneSnapshot(next);
-          void medicalService.upsertConsumable(next, medCtx).catch(() => {});
-          return next;
+          const itemPrevQty = item.currentStockUnits ?? item.currentStock ?? 0;
+          const itemNewQty = Math.max(0, itemPrevQty - quantity);
+          return { ...item, currentStock: itemNewQty, currentStockUnits: itemNewQty };
         }
         return item;
       })
     );
-    return { matchedPrev, matchedNext };
+    void medicalService.upsertConsumable(matchedNext, medCtx).catch(() => {});
+    return {
+      matchedPrev: matchedPrev as ClinicConsumableItem | null,
+      matchedNext: matchedNext as ClinicConsumableItem | null,
+    };
   };
 
   const depleteConsumable = (itemCode: string, quantity: number) => {
-    const existing = latestRef.current.consumables.find(
-      (item) => item.itemCode === itemCode || item.id === itemCode
-    );
-    const prevSnap = existing ? cloneSnapshot(existing) : null;
-    const { matchedNext } = applyDepleteConsumable(itemCode, quantity);
+    const { matchedPrev: prevSnap, matchedNext } = applyDepleteConsumable(itemCode, quantity);
 
     if (prevSnap && matchedNext) {
       const nextSnap = matchedNext;
@@ -1949,47 +1960,49 @@ export const useMedicalData = () => {
     const existing = latestRef.current.consumables.find(
       (item) => item.itemCode === itemCode || item.id === itemCode
     );
-    const prevSnap = existing ? cloneSnapshot(existing) : null;
-    let nextSnap: ClinicConsumableItem | null = null;
+    if (!existing) return;
+    const prevSnap = cloneSnapshot(existing);
+    const prevQty = existing.currentStockUnits ?? existing.currentStock ?? 0;
+    const newQty = prevQty + quantity;
+    const capturedNext: ClinicConsumableItem = cloneSnapshot({
+      ...existing,
+      currentStock: newQty,
+      currentStockUnits: newQty,
+    });
     setConsumables((prev) =>
       prev.map((item) => {
         if (item.itemCode === itemCode || item.id === itemCode) {
-          const prevQty = item.currentStockUnits ?? item.currentStock ?? 0;
-          const newQty = prevQty + quantity;
-          const next = { ...item, currentStock: newQty, currentStockUnits: newQty };
-          nextSnap = cloneSnapshot(next);
-          void medicalService.upsertConsumable(next, medCtx).catch(() => {});
-          return next;
+          const itemPrevQty = item.currentStockUnits ?? item.currentStock ?? 0;
+          const itemNewQty = itemPrevQty + quantity;
+          return { ...item, currentStock: itemNewQty, currentStockUnits: itemNewQty };
         }
         return item;
       })
     );
+    void medicalService.upsertConsumable(capturedNext, medCtx).catch(() => {});
 
-    if (prevSnap && nextSnap) {
-      const capturedNext = nextSnap;
-      registerUndoEntry({
-        vertical: 'medical_clinic',
-        operationType: 'edit',
-        businessId: medCtx.businessId,
-        branchId: activeBranchId,
-        entityLabel: prevSnap.name,
-        summary: pickLocalizedText(language, {
-          fr: `Réapprovisionnement ${prevSnap.name} (+${quantity})`,
-          en: `Restocked ${prevSnap.name} (+${quantity})`,
-          ar: `تم تزويد ${prevSnap.name} (+${quantity})`,
-        }),
-        undo: () => {
-          const prevCopy = cloneSnapshot(prevSnap);
-          setConsumables((prev) => prev.map((c) => (c.id === prevCopy.id ? prevCopy : c)));
-          void medicalService.upsertConsumable(prevCopy, medCtx).catch(() => {});
-        },
-        redo: () => {
-          const nextCopy = cloneSnapshot(capturedNext);
-          setConsumables((prev) => prev.map((c) => (c.id === nextCopy.id ? nextCopy : c)));
-          void medicalService.upsertConsumable(nextCopy, medCtx).catch(() => {});
-        },
-      });
-    }
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'edit',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: prevSnap.name,
+      summary: pickLocalizedText(language, {
+        fr: `Réapprovisionnement ${prevSnap.name} (+${quantity})`,
+        en: `Restocked ${prevSnap.name} (+${quantity})`,
+        ar: `تم تزويد ${prevSnap.name} (+${quantity})`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevSnap);
+        setConsumables((prev) => prev.map((c) => (c.id === prevCopy.id ? prevCopy : c)));
+        void medicalService.upsertConsumable(prevCopy, medCtx).catch(() => {});
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(capturedNext);
+        setConsumables((prev) => prev.map((c) => (c.id === nextCopy.id ? nextCopy : c)));
+        void medicalService.upsertConsumable(nextCopy, medCtx).catch(() => {});
+      },
+    });
   };
 
   const depleteForAct = (actCode: string) => {

@@ -16,7 +16,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { LegalMatter, NotaryDeed } from '../../../types';
 import { useLegalData } from './legalData';
@@ -1159,16 +1159,17 @@ export const LegalMattersView: React.FC<any> = () => {
                 {
                   operationType: 'bulk',
                   vertical: 'legal_accounting',
-                  label: {
+                  affectedCount: count,
+                  summary: pickLocalizedText(language, {
                     fr: `${count} dossiers supprimés`,
                     en: `${count} legal matters deleted`,
                     ar: `تم حذف ${count} ملفات قضايا`,
-                  },
-                  moduleLabel: {
+                  }),
+                  toastTitle: pickLocalizedText(language, {
                     fr: 'Dossiers & Actes',
                     en: 'Matters & Deeds',
                     ar: 'ملفات القضايا',
-                  },
+                  }),
                 },
                 () => {
                   ids.forEach((id) => deleteMatter(id));

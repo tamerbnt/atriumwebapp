@@ -18,7 +18,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { ContractorProject, ContractorDailyLog } from '../../../types';
 import { useContractorData } from './contractorData';
@@ -794,17 +794,18 @@ export const ContractorSitesView: React.FC = () => {
             runUndoBatch(
               {
                 operationType: 'bulk',
-                vertical: 'contractor',
-                label: {
+                vertical: 'construction_contractor',
+                affectedCount: count,
+                summary: pickLocalizedText(language, {
                   fr: `${count} chantiers supprimés`,
                   en: `${count} construction sites deleted`,
                   ar: `تم حذف ${count} مشاريع`,
-                },
-                moduleLabel: {
+                }),
+                toastTitle: pickLocalizedText(language, {
                   fr: 'Chantiers BTP',
                   en: 'Construction Sites',
                   ar: 'إدارة الورشات',
-                },
+                }),
               },
               () => {
                 ids.forEach((id) => deleteProject(id));

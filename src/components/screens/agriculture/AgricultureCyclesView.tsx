@@ -15,7 +15,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { AgriTreatmentLog, AgriCropCycle, AgriCyclePhase } from '../../../types';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -1185,17 +1185,18 @@ export const AgricultureCyclesView: React.FC = () => {
               runUndoBatch(
                 {
                   operationType: 'bulk',
-                  vertical: 'agriculture',
-                  label: {
+                  vertical: 'agriculture_farming',
+                  affectedCount: count,
+                  summary: pickLocalizedText(language, {
                     fr: `${count} cycles supprimés`,
                     en: `${count} crop cycles deleted`,
                     ar: `تم حذف ${count} دورات محاصيل`,
-                  },
-                  moduleLabel: {
+                  }),
+                  toastTitle: pickLocalizedText(language, {
                     fr: 'Cycles & Phyto',
                     en: 'Crop Cycles',
                     ar: 'دورات المحاصيل',
-                  },
+                  }),
                 },
                 () => {
                   ids.forEach((id) => deleteCropCycle(id));
@@ -1258,17 +1259,18 @@ export const AgricultureCyclesView: React.FC = () => {
               runUndoBatch(
                 {
                   operationType: 'bulk',
-                  vertical: 'agriculture',
-                  label: {
+                  vertical: 'agriculture_farming',
+                  affectedCount: count,
+                  summary: pickLocalizedText(language, {
                     fr: `${count} traitements supprimés`,
                     en: `${count} treatments deleted`,
                     ar: `تم حذف ${count} معالجات`,
-                  },
-                  moduleLabel: {
+                  }),
+                  toastTitle: pickLocalizedText(language, {
                     fr: 'Registre Phytosanitaire',
                     en: 'Phytosanitary Log',
                     ar: 'السجل الصحي النباتي',
-                  },
+                  }),
                 },
                 () => {
                   ids.forEach((id) => deleteTreatmentLog(id));

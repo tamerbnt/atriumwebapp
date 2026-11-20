@@ -625,14 +625,14 @@ export const FreelanceClientsView: React.FC = () => {
     const count = selectedClientIds.size;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: count,
+        summary: isAr
           ? `تفعيل عقد شهري (${count})`
           : isFr
           ? `Passage forfait (${count})`
           : `Set Active Retainer (${count})`,
-        entityType: 'freelanceClient',
       },
       () => {
         selectedClientIds.forEach((id) => {
@@ -648,14 +648,14 @@ export const FreelanceClientsView: React.FC = () => {
     const count = selectedClientIds.size;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: count,
+        summary: isAr
           ? `تحويل للمشاريع (${count})`
           : isFr
           ? `Passage au projet (${count})`
           : `Set Project Based (${count})`,
-        entityType: 'freelanceClient',
       },
       () => {
         selectedClientIds.forEach((id) => {
@@ -671,14 +671,14 @@ export const FreelanceClientsView: React.FC = () => {
     const count = selectedClientIds.size;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: count,
+        summary: isAr
           ? `حذف عملاء (${count})`
           : isFr
           ? `Suppression clients (${count})`
           : `Delete clients (${count})`,
-        entityType: 'freelanceClient',
       },
       () => {
         selectedClientIds.forEach((id) => {

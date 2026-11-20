@@ -552,12 +552,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
     if (selectedOrderId) {
       runUndoBatch(
         {
-          category: 'project_management',
+          vertical: 'project_milestone',
           operationType: 'create',
-          label: isAr
+          summary: isAr
             ? `إيداع BAT: ${nextTitle}`
             : `Dépôt BAT : ${nextTitle}`,
-          entityType: 'pmBatDeliverable',
+          entityLabel: nextTitle,
         },
         commitUpload
       );

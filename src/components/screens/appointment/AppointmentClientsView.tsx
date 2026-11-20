@@ -296,14 +296,14 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
       if (count === 0) return;
       runUndoBatch(
         {
-          category: 'appointment_service',
+          vertical: 'appointment_service',
           operationType: 'bulk',
-          label: isAr
+          affectedCount: count,
+          summary: isAr
             ? `ترقية VIP (${count})`
             : isEn
             ? `Promote VIP (${count})`
             : `Promotion VIP (${count})`,
-          entityType: 'member',
         },
         () => {
           selectedClientIds.forEach((id) => {
@@ -325,14 +325,14 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
       if (count === 0) return;
       runUndoBatch(
         {
-          category: 'appointment_service',
+          vertical: 'appointment_service',
           operationType: 'bulk',
-          label: isAr
+          affectedCount: count,
+          summary: isAr
             ? `حذف ملفات (${count})`
             : isEn
             ? `Remove clients (${count})`
             : `Suppression dossiers (${count})`,
-          entityType: 'member',
         },
         () => {
           selectedClientIds.forEach((id) => deleteMember(id));

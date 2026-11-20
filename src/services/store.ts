@@ -112,6 +112,7 @@ import {
   CategoryFormule,
   HomeSetupProgress,
   OnboardingContext,
+  UndoOperationType,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -3631,173 +3632,19 @@ export function closeDetailAction() {
 export function addMemberAction(
   newMember: Omit<Member, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>
 ) {
-  const trace = getTraceContextFromGlobal();
-  const member: Member = {
-    ...trace,
-    ...newMember,
-    id: `mem_${Date.now()}`,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  globalState = {
-    ...globalState,
-    members: [member, ...globalState.members],
-    selectedMemberId: member.id,
-    isDetailOpen: true,
-  };
-  notify();
-
-  const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
-  const cat = currentBiz?.category || 'membership_session';
-  const lang = globalState.language || 'fr';
-  const terms = getCategoryTerminology(cat, lang);
-
-  showToast({
-    type: 'success',
-    title: `${terms.memberSingle} : ${t('toast_member_enrolled_title', lang)}`,
-    message: `${member.fullName} ${t('toast_member_enrolled_msg', lang)} ${member.membershipPlanName || 'Standard'}.`,
-    category: cat,
-    action: {
-      label: t('nav_members', lang),
-      onClick: () => {
-        globalState = {
-          ...globalState,
-          selectedMemberId: member.id,
-          isDetailOpen: true,
-          activeScreen: 'members',
-        };
-        notify();
-      },
-    },
-  });
-
-  if (isSupabaseConfigured()) {
-    memberService.createMember(member).catch((err) => {
-      console.warn('[store] Failed to save member to Supabase:', err);
-    });
-  }
-
-  return member;
+  return atriumActions.addMember(newMember);
 }
 
 export function updateMemberAction(id: string, updates: Partial<Member>) {
-  const target = globalState.members.find((m) => m.id === id);
-  globalState = {
-    ...globalState,
-    members: globalState.members.map((m) =>
-      m.id === id ? { ...m, ...updates, updatedAt: new Date().toISOString() } : m
-    ),
-  };
-  notify();
-
-  const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
-  const cat = currentBiz?.category || 'membership_session';
-  const lang = globalState.language || 'fr';
-  showToast({
-    type: 'info',
-    title: t('toast_profile_updated_title', lang),
-    message: `${updates.fullName || target?.fullName || 'Record'} : ${t('toast_profile_updated_msg', lang)}`,
-    category: cat,
-  });
-
-  if (isSupabaseConfigured()) {
-    if (target) {
-      memberService.updateMember({ ...target, ...updates }).catch((err) => {
-        console.warn('[store] Failed to update member in Supabase:', err);
-      });
-    }
-  }
+  return atriumActions.updateMember(id, updates);
 }
 
 export function deleteMemberAction(id: string) {
-  const target = globalState.members.find((m) => m.id === id);
-  globalState = {
-    ...globalState,
-    members: globalState.members.filter((m) => m.id !== id),
-    selectedMemberId: globalState.selectedMemberId === id ? null : globalState.selectedMemberId,
-    isDetailOpen: globalState.selectedMemberId === id ? false : globalState.isDetailOpen,
-  };
-  notify();
-
-  const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
-  const cat = currentBiz?.category || 'membership_session';
-  const lang = globalState.language || 'fr';
-  const terms = getCategoryTerminology(cat, lang);
-  showToast({
-    type: 'warning',
-    title: `${terms.memberSingle} : ${t('toast_member_removed_title', lang)}`,
-    message: `${target?.fullName || 'Record'} ${t('toast_member_removed_msg', lang)}`,
-    category: cat,
-  });
-
-  if (isSupabaseConfigured()) {
-    memberService.deleteMember(id, globalState.currentUser?.id).catch((err) => {
-      console.warn('[store] Failed to delete member in Supabase:', err);
-    });
-  }
+  return atriumActions.deleteMember(id);
 }
 
 export function checkInMemberAction(id: string) {
-  const member = globalState.members.find((m) => m.id === id);
-  if (!member) return;
-
-  const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
-  const cat = currentBiz?.category || 'membership_session';
-  const lang = globalState.language || 'fr';
-
-  if (member.status === 'Banned' || member.status === 'Suspended' || member.status === 'Frozen') {
-    showToast({
-      type: 'error',
-      title: t('toast_checkin_blocked_title', lang),
-      message: `${member.fullName}: ${t('toast_checkin_blocked_msg', lang)}`,
-      category: cat,
-    });
-    return;
-  }
-
-  const daysLeft = calculateDaysRemaining(false, member.expirationDate);
-  const isExpiredDate = member.expirationDate ? new Date(member.expirationDate).getTime() < Date.now() : false;
-  if (daysLeft <= 0 || member.status === 'Expired' || isExpiredDate) {
-    showToast({
-      type: 'warning',
-      title: t('toast_checkin_expired_title', lang),
-      message: `${member.fullName}: ${t('toast_checkin_expired_msg', lang)}`,
-      category: cat,
-    });
-    return;
-  }
-
-  if (member.remainingSessions !== undefined && member.remainingSessions <= 0) {
-    showToast({
-      type: 'warning',
-      title: t('toast_checkin_expired_title', lang),
-      message: `${member.fullName}: ${t('toast_checkin_quota_exhausted', lang)}`,
-      category: cat,
-    });
-    return;
-  }
-
-  const updatedSessions = member.remainingSessions !== undefined ? Math.max(0, member.remainingSessions - 1) : undefined;
-  globalState = {
-    ...globalState,
-    members: globalState.members.map((m) =>
-      m.id === id
-        ? {
-            ...m,
-            remainingSessions: updatedSessions !== undefined ? updatedSessions : m.remainingSessions,
-            updatedAt: new Date().toISOString(),
-          }
-        : m
-    ),
-  };
-  notify();
-
-  showToast({
-    type: 'success',
-    title: t('toast_checkin_granted_title', lang),
-    message: `${member.fullName} (${member.cardId || 'RFID'}): ${t('toast_checkin_granted_msg', lang)}`,
-    category: cat,
-  });
+  return atriumActions.checkInMember(id);
 }
 
 const EMPTY_PLANS: MembershipPlan[] = [];
@@ -6930,11 +6777,11 @@ function createAtriumActions() {
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
       operationType: 'create',
       summary: ul(
-        `Parked order: ${parked.label || parked.id.slice(-4)}`,
-        `Commande mise en attente : ${parked.label || parked.id.slice(-4)}`,
-        `تعليق طلب: ${parked.label || parked.id.slice(-4)}`
+        `Parked order: ${parked.referenceName || parked.customerName || parked.id.slice(-4)}`,
+        `Commande mise en attente : ${parked.referenceName || parked.customerName || parked.id.slice(-4)}`,
+        `تعليق طلب: ${parked.referenceName || parked.customerName || parked.id.slice(-4)}`
       ),
-      entityLabel: parked.label,
+      entityLabel: parked.referenceName || parked.customerName,
       toastType: 'info',
       undo: () => {
         restoreStoreSlices(before);
@@ -6971,11 +6818,11 @@ function createAtriumActions() {
         vertical: getActiveCategoryForBranch(globalState.currentBranchId),
         operationType: 'status',
         summary: ul(
-          `Resumed parked order: ${target.label || orderId.slice(-4)}`,
-          `Commande reprise : ${target.label || orderId.slice(-4)}`,
-          `استئناف طلب معلق: ${target.label || orderId.slice(-4)}`
+          `Resumed parked order: ${target.referenceName || target.customerName || orderId.slice(-4)}`,
+          `Commande reprise : ${target.referenceName || target.customerName || orderId.slice(-4)}`,
+          `استئناف طلب معلق: ${target.referenceName || target.customerName || orderId.slice(-4)}`
         ),
-        entityLabel: target.label,
+        entityLabel: target.referenceName || target.customerName,
         toastType: 'info',
         undo: () => {
           restoreStoreSlices(before);
@@ -7011,11 +6858,11 @@ function createAtriumActions() {
       vertical: getActiveCategoryForBranch(globalState.currentBranchId),
       operationType: 'delete',
       summary: ul(
-        `Deleted parked order: ${target.label || orderId.slice(-4)}`,
-        `Commande en attente supprimée : ${target.label || orderId.slice(-4)}`,
-        `حذف طلب معلق: ${target.label || orderId.slice(-4)}`
+        `Deleted parked order: ${target.referenceName || target.customerName || orderId.slice(-4)}`,
+        `Commande en attente supprimée : ${target.referenceName || target.customerName || orderId.slice(-4)}`,
+        `حذف طلب معلق: ${target.referenceName || target.customerName || orderId.slice(-4)}`
       ),
-      entityLabel: target.label,
+      entityLabel: target.referenceName || target.customerName,
       toastType: 'warning',
       undo: () => {
         restoreStoreSlices(before);

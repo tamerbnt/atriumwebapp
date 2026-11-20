@@ -256,14 +256,13 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
         affectedCount: targetIds.length,
         toastType: 'info',
         summary: pickLocalizedText(language, {
-          en: deleteLead ? `Deleted ${targetIds.length} registration(s)` : `Declined ${targetIds.length} registration(s)`,
-          fr: deleteLead ? `${targetIds.length} demande(s) supprimée(s)` : `${targetIds.length} demande(s) refusée(s)`,
-          ar: deleteLead ? `تم حذف ${targetIds.length} طلبات` : `تم رفض ${targetIds.length} طلبات`,
+          en: `Deleted ${targetIds.length} registration(s)`,
+          fr: `${targetIds.length} demande(s) supprimée(s)`,
+          ar: `تم حذف ${targetIds.length} طلبات`,
         }),
       },
       () => {
-        if (deleteLead) targetIds.forEach((id) => deleteLead(id));
-        else targetIds.forEach((id) => updateLeadStatus(id, 'Declined'));
+        targetIds.forEach((id) => deleteLead(id));
       }
     );
     setSelectedLeadIds(new Set<string>());

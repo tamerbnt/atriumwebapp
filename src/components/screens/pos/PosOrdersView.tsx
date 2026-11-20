@@ -1069,14 +1069,14 @@ export const PosOrdersView: React.FC = () => {
               if (ids.size === 0) return;
               runUndoBatch(
                 {
-                  category: 'pos_inventory',
+                  vertical: 'pos_inventory',
                   operationType: 'bulk',
-                  label: isAr
+                  affectedCount: ids.size,
+                  summary: isAr
                     ? `حذف تذاكر معلقة (${ids.size})`
                     : isEn
                     ? `Delete parked orders (${ids.size})`
                     : `Suppression tickets en attente (${ids.size})`,
-                  entityType: 'parkedOrder',
                 },
                 () => {
                   ids.forEach((id) => deleteParkedOrder(id));

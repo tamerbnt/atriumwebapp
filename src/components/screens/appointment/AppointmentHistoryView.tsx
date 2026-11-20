@@ -20,6 +20,8 @@ import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { useUndoHistory } from '../../../services/undoEngine';
+import { EmbeddedUndoHistoryPanel } from '../../ui/EmbeddedUndoHistoryPanel';
 import {
   ScreenHeaderBar,
   ScreenKpiBanner,
@@ -48,6 +50,8 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
   const {
     appointments,
     branches,
+    currentBusinessId,
+    currentBranchId,
     currentBranch,
     language,
     isSyncing,
@@ -58,6 +62,8 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
     (s) => ({
       appointments: selectCurrentAppointmentsFromState(s),
       branches: s.branches,
+      currentBusinessId: s.currentBusinessId,
+      currentBranchId: s.currentBranchId,
       currentBranch: selectCurrentBranchFromState(s),
       language: s.language,
       isSyncing: s.isSyncing,
@@ -71,10 +77,20 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
   const { deleteAppointment, batchDeleteAppointments, retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
+  const { entries: undoEntries } = useUndoHistory(currentBusinessId, currentBranchId);
+  const appointmentUndoCount = useMemo(
+    () =>
+      undoEntries.filter(
+        (e) =>
+          (e.vertical === 'appointment_service' || e.vertical === 'settings') &&
+          e.status === 'available'
+      ).length,
+    [undoEntries]
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMethodFilter, setSelectedMethodFilter] = useState('All');
-  const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'Active'>('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'Active' | 'Annulations'>('All');
   const [branchFilter, setBranchFilter] = useState('All');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -200,8 +216,9 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
       { value: 'All', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous', count: historyStats.totalCount },
       { value: 'Completed', label: isAr ? 'مكتمل' : isEn ? 'Completed' : 'Terminés', count: historyStats.completedCount },
       { value: 'Active', label: isAr ? 'قيد التنفيذ' : isEn ? 'In Progress' : 'En cours', count: historyStats.activeCount },
+      { value: 'Annulations', label: isAr ? 'الإلغاءات' : isEn ? 'Undos' : 'Annulations', count: appointmentUndoCount },
     ],
-    [isAr, isEn, historyStats.totalCount, historyStats.completedCount, historyStats.activeCount]
+    [isAr, isEn, historyStats.totalCount, historyStats.completedCount, historyStats.activeCount, appointmentUndoCount]
   );
 
   const filterSections = useMemo<KineticFilterSection[]>(
@@ -505,72 +522,84 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
           statusOptions={statusOptions}
           statusValue={statusFilter}
           onStatusChange={(v) => setStatusFilter(v as any)}
-          hasActiveAdvancedFilters={hasActiveAdvancedFilters}
-          activeFiltersCount={activeFiltersCount}
-          isFilterModalOpen={isFilterModalOpen}
+          hasActiveAdvancedFilters={statusFilter !== 'Annulations' && hasActiveAdvancedFilters}
+          activeFiltersCount={statusFilter === 'Annulations' ? 0 : activeFiltersCount}
+          isFilterModalOpen={statusFilter !== 'Annulations' && isFilterModalOpen}
           filterButtonRef={filterButtonRef}
-          onToggleFilterModal={() => setIsFilterModalOpen((p) => !p)}
+          onToggleFilterModal={statusFilter === 'Annulations' ? undefined : () => setIsFilterModalOpen((p) => !p)}
           viewMode={viewMode}
           onViewModeChange={(m) => setViewMode(m === 'grid' ? 'grid' : 'list')}
-          onExport={handleExportCSV}
-          activeChips={activeChips}
-          onResetAllFilters={handleResetFilters}
+          showViewToggle={statusFilter !== 'Annulations'}
+          onExport={statusFilter === 'Annulations' ? undefined : handleExportCSV}
+          activeChips={statusFilter === 'Annulations' ? [] : activeChips}
+          onResetAllFilters={statusFilter === 'Annulations' ? undefined : handleResetFilters}
         />
 
-        <UniversalDataCollection<Appointment>
-          items={sortedAppointments}
-          columns={columns}
-          getRowMeta={getRowMeta}
-          getFanActions={getFanActions}
-          getDetailActions={getDetailActions}
-          keyExtractor={(a) => a.id}
-          viewMode={viewMode}
-          hideToolbar
-          openItemId={receiptAppointment?.id ?? null}
-          isLoading={isSyncing || networkMode === 'force_skeleton'}
-          isOffline={networkMode === 'offline'}
-          isTimedOut={isSyncTimeout}
-          lastSyncedAt={lastSyncedAt}
-          onRetrySync={retryCloudSync}
-          sortBy={sortBy}
-          sortDirection={sortDir}
-          onSortChange={(key, dir) => {
-            setSortBy(key);
-            setSortDir(dir);
-          }}
-          selectedIds={selectedHistoryIds}
-          onSelectionChange={setSelectedHistoryIds}
-          pinnedIds={pinnedHistoryIds}
-          onPinToggle={(a: any) => {
-            const id = typeof a === 'string' ? a : a.id;
-            setPinnedHistoryIds((prev) => {
-              const next = new Set(prev);
-              if (next.has(id)) next.delete(id);
-              else next.add(id);
-              return next;
-            });
-          }}
-          onItemClick={(apt, opener) => {
-            setDrawerOpenerEl(opener || null);
-            setReceiptAppointment(apt);
-          }}
-          onViewDetails={(apt, opener) => {
-            setDrawerOpenerEl(opener || null);
-            setReceiptAppointment(apt);
-          }}
-          onDelete={(apt) => {
-            deleteAppointment(apt.id);
-            if (receiptAppointment?.id === apt.id) setReceiptAppointment(null);
-          }}
-          onBulkDelete={(ids) => {
-            batchDeleteAppointments(Array.from(ids));
-            setSelectedHistoryIds(new Set());
-          }}
-          emptyTitle={isAr ? 'لا يوجد سجل' : 'Aucun historique trouvé'}
-          emptyDescription={isAr ? 'ستظهر المواعيد المكتملة هنا' : 'Les rendez-vous terminés apparaîtront ici.'}
-          onResetFilters={handleResetFilters}
-          hasActiveFilters={hasActiveAdvancedFilters || statusFilter !== 'All' || searchQuery.trim().length > 0}
-        />
+        {statusFilter === 'Annulations' ? (
+          <EmbeddedUndoHistoryPanel
+            businessId={currentBusinessId}
+            branchId={currentBranchId}
+            vertical="appointment_service"
+            language={language}
+            externalSearchQuery={searchQuery}
+            onExternalSearchChange={setSearchQuery}
+          />
+        ) : (
+          <UniversalDataCollection<Appointment>
+            items={sortedAppointments}
+            columns={columns}
+            getRowMeta={getRowMeta}
+            getFanActions={getFanActions}
+            getDetailActions={getDetailActions}
+            keyExtractor={(a) => a.id}
+            viewMode={viewMode}
+            hideToolbar
+            openItemId={receiptAppointment?.id ?? null}
+            isLoading={isSyncing || networkMode === 'force_skeleton'}
+            isOffline={networkMode === 'offline'}
+            isTimedOut={isSyncTimeout}
+            lastSyncedAt={lastSyncedAt}
+            onRetrySync={retryCloudSync}
+            sortBy={sortBy}
+            sortDirection={sortDir}
+            onSortChange={(key, dir) => {
+              setSortBy(key);
+              setSortDir(dir);
+            }}
+            selectedIds={selectedHistoryIds}
+            onSelectionChange={setSelectedHistoryIds}
+            pinnedIds={pinnedHistoryIds}
+            onPinToggle={(a: any) => {
+              const id = typeof a === 'string' ? a : a.id;
+              setPinnedHistoryIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(id)) next.delete(id);
+                else next.add(id);
+                return next;
+              });
+            }}
+            onItemClick={(apt, opener) => {
+              setDrawerOpenerEl(opener || null);
+              setReceiptAppointment(apt);
+            }}
+            onViewDetails={(apt, opener) => {
+              setDrawerOpenerEl(opener || null);
+              setReceiptAppointment(apt);
+            }}
+            onDelete={(apt) => {
+              deleteAppointment(apt.id);
+              if (receiptAppointment?.id === apt.id) setReceiptAppointment(null);
+            }}
+            onBulkDelete={(ids) => {
+              batchDeleteAppointments(Array.from(ids));
+              setSelectedHistoryIds(new Set());
+            }}
+            emptyTitle={isAr ? 'لا يوجد سجل' : 'Aucun historique trouvé'}
+            emptyDescription={isAr ? 'ستظهر المواعيد المكتملة هنا' : 'Les rendez-vous terminés apparaîtront ici.'}
+            onResetFilters={handleResetFilters}
+            hasActiveFilters={hasActiveAdvancedFilters || statusFilter !== 'All' || searchQuery.trim().length > 0}
+          />
+        )}
       </ScreenPod>
 
       <KineticFilterModal

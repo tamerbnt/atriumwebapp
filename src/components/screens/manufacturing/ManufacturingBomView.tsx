@@ -14,7 +14,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { ManufacturingBom } from '../../../types';
 import { useManufacturingData } from './manufacturingData';
@@ -259,17 +259,18 @@ export const ManufacturingBomView: React.FC<any> = () => {
       runUndoBatch(
         {
           operationType: 'bulk',
-          vertical: 'manufacturing',
-          label: {
+          vertical: 'manufacturing_production',
+          affectedCount: count,
+          summary: pickLocalizedText(language, {
             fr: `${count} nomenclatures BOM supprimées`,
             en: `${count} BOMs deleted`,
             ar: `تم حذف ${count} جداول مكونات`,
-          },
-          moduleLabel: {
+          }),
+          toastTitle: pickLocalizedText(language, {
             fr: 'Nomenclatures BOM',
             en: 'Bills of Materials',
             ar: 'جداول المكونات BOM',
-          },
+          }),
         },
         () => {
           ids.forEach((id) => deleteBom(id));
@@ -278,7 +279,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
       if (selectedBom && ids.has(selectedBom.id)) setSelectedBom(null);
       setSelectedIds(new Set());
     },
-    [deleteBom, selectedBom]
+    [deleteBom, selectedBom, language]
   );
 
   const handleToggleActive = useCallback(

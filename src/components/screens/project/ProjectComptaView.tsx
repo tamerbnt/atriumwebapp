@@ -353,14 +353,14 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
     if (readyBatches.length > 0) {
       runUndoBatch(
         {
-          category: 'project_management',
+          vertical: 'project_milestone',
           operationType: 'bulk',
-          label: isAr
+          affectedCount: readyBatches.length,
+          summary: isAr
             ? `إصدار صكوك CCP (${readyBatches.length})`
             : isEn
             ? `Generate CCP slips (${readyBatches.length})`
             : `Génération bordereaux CCP (${readyBatches.length})`,
-          entityType: 'pmCcpSlip',
         },
         () => {
           readyBatches.forEach((batch) => {

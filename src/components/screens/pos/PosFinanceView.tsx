@@ -241,15 +241,14 @@ export const PosFinanceView: React.FC = () => {
     const nextExpenses = [newExp, ...prevExpenses];
     setExpenses(nextExpenses);
     registerUndoEntry({
-      category: 'pos_inventory',
+      vertical: 'pos_inventory',
       operationType: 'create',
-      label: isAr
+      summary: isAr
         ? `صرف صندوق: ${newExp.payee}`
         : isEn
         ? `Petty cash payout: ${newExp.payee}`
         : `Sortie de caisse : ${newExp.payee}`,
-      entityType: 'posExpense',
-      entityId: newExp.id,
+      entityLabel: newExp.payee,
       branchId: currentBranch.id,
       undo: () => {
         setExpenses(cloneSnapshot(prevExpenses));
@@ -274,15 +273,14 @@ export const PosFinanceView: React.FC = () => {
     setExpenses(nextExpenses);
     if (inspectingExpense?.id === id) setInspectingExpense(null);
     registerUndoEntry({
-      category: 'pos_inventory',
+      vertical: 'pos_inventory',
       operationType: 'delete',
-      label: isAr
+      summary: isAr
         ? `حذف صرف: ${target.payee}`
         : isEn
         ? `Delete payout: ${target.payee}`
         : `Suppression sortie : ${target.payee}`,
-      entityType: 'posExpense',
-      entityId: id,
+      entityLabel: target.payee,
       branchId: currentBranch.id,
       undo: () => {
         setExpenses(cloneSnapshot(prevExpenses));

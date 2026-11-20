@@ -6,6 +6,8 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { useUndoHistory } from '../../../services/undoEngine';
+import { EmbeddedUndoHistoryPanel } from '../../ui/EmbeddedUndoHistoryPanel';
 import {
   ScreenHeaderBar,
   ScreenKpiBanner,
@@ -47,6 +49,8 @@ export const PosHistoryView: React.FC = () => {
   const isEn = language === 'en';
   const {
     stockMovements,
+    currentBusinessId,
+    currentBranchId,
     currentBranch,
     branches,
     isSyncing,
@@ -55,6 +59,17 @@ export const PosHistoryView: React.FC = () => {
     lastSyncedAt,
     isSyncTimeout,
   } = useAtriumStore();
+
+  const { entries: undoEntries } = useUndoHistory(currentBusinessId, currentBranchId);
+  const posUndoCount = useMemo(
+    () =>
+      undoEntries.filter(
+        (e) =>
+          (e.vertical === 'pos_inventory' || e.vertical === 'settings') &&
+          e.status === 'available'
+      ).length,
+    [undoEntries]
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [movementTypeFilter, setMovementTypeFilter] = useState<string>('all');
@@ -206,8 +221,9 @@ export const PosHistoryView: React.FC = () => {
       { value: 'Sale', label: isAr ? 'مبيعات' : isEn ? 'Sales' : 'Ventes' },
       { value: 'Restock', label: isAr ? 'تموين' : isEn ? 'Restock' : 'Réassort' },
       { value: 'Adjustment', label: isAr ? 'تعديل' : isEn ? 'Adjust' : 'Ajustement' },
+      { value: 'annulations', label: isAr ? 'الإلغاءات' : isEn ? 'Undos' : 'Annulations', count: posUndoCount },
     ],
-    [isAr, isEn, allMovements.length]
+    [isAr, isEn, allMovements.length, posUndoCount]
   );
 
   const filterSections = useMemo<KineticFilterSection[]>(
@@ -455,19 +471,30 @@ export const PosHistoryView: React.FC = () => {
           statusOptions={statusOptions}
           statusValue={movementTypeFilter}
           onStatusChange={setMovementTypeFilter}
-          hasActiveAdvancedFilters={hasActiveAdvancedFilters}
-          activeFiltersCount={activeFiltersCount}
-          isFilterModalOpen={isFilterModalOpen}
+          hasActiveAdvancedFilters={movementTypeFilter !== 'annulations' && hasActiveAdvancedFilters}
+          activeFiltersCount={movementTypeFilter === 'annulations' ? 0 : activeFiltersCount}
+          isFilterModalOpen={movementTypeFilter !== 'annulations' && isFilterModalOpen}
           filterButtonRef={filterButtonRef}
-          onToggleFilterModal={() => setIsFilterModalOpen((p) => !p)}
+          onToggleFilterModal={movementTypeFilter === 'annulations' ? undefined : () => setIsFilterModalOpen((p) => !p)}
           viewMode={viewMode}
           onViewModeChange={(m) => setViewMode(m === 'grid' ? 'grid' : 'list')}
-          onExport={handleExportMovementsCSV}
-          activeChips={activeChips}
-          onResetAllFilters={handleResetFilters}
+          showViewToggle={movementTypeFilter !== 'annulations'}
+          onExport={movementTypeFilter === 'annulations' ? undefined : handleExportMovementsCSV}
+          activeChips={movementTypeFilter === 'annulations' ? [] : activeChips}
+          onResetAllFilters={movementTypeFilter === 'annulations' ? undefined : handleResetFilters}
         />
 
-        <UniversalDataCollection<StockMovement>
+        {movementTypeFilter === 'annulations' ? (
+          <EmbeddedUndoHistoryPanel
+            businessId={currentBusinessId}
+            branchId={currentBranchId}
+            vertical="pos_inventory"
+            language={language}
+            externalSearchQuery={searchQuery}
+            onExternalSearchChange={setSearchQuery}
+          />
+        ) : (
+          <UniversalDataCollection<StockMovement>
           items={sortedMovements}
           keyExtractor={(m) => m.id}
           viewMode={viewMode === 'grid' ? 'grid' : 'list'}
@@ -582,6 +609,7 @@ export const PosHistoryView: React.FC = () => {
           onResetFilters={handleResetFilters}
           hasActiveFilters={hasActiveAdvancedFilters || directionFilter !== 'all' || movementTypeFilter !== 'all' || searchQuery.trim().length > 0}
         />
+        )}
       </ScreenPod>
 
       <KineticFilterModal

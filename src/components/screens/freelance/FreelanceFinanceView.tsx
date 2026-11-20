@@ -225,14 +225,14 @@ export const FreelanceFinanceView: React.FC = () => {
     if (targetIds.length === 0) return;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: targetIds.length,
+        summary: isAr
           ? `حذف مصاريف (${targetIds.length})`
           : isFr
           ? `Suppression dépenses (${targetIds.length})`
           : `Delete expenses (${targetIds.length})`,
-        entityType: 'freelanceExpense',
       },
       () => {
         targetIds.forEach((id) => {

@@ -263,14 +263,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
     }
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: deletableIds.length,
+        summary: isAr
           ? `حذف جلسات (${deletableIds.length})`
           : isFr
           ? `Suppression sessions (${deletableIds.length})`
           : `Delete time logs (${deletableIds.length})`,
-        entityType: 'timeLogEntry',
       },
       () => {
         deletableIds.forEach((id) => {
@@ -290,14 +290,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
     const clientIds = Array.from(new Set(unbilledSelected.map((l) => l.clientId)));
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: unbilledSelected.length,
+        summary: isAr
           ? `فوترة جلسات (${unbilledSelected.length})`
           : isFr
           ? `Facturation sessions (${unbilledSelected.length})`
           : `Bill selected hours (${unbilledSelected.length})`,
-        entityType: 'freelanceInvoice',
       },
       () => {
         clientIds.forEach((cId) => billUnbilledHours(cId, 0));

@@ -166,6 +166,19 @@ import {
   TradingStaffView,
   VenueStaffView,
   FreelanceStaffView,
+  ProjectHistoryView,
+  FreelanceHistoryView,
+  VenueHistoryView,
+  EducationHistoryView,
+  TradingHistoryView,
+  MedicalHistoryView,
+  AutoGarageHistoryView,
+  RealEstateHistoryView,
+  ManufacturingHistoryView,
+  LegalHistoryView,
+  LogisticsHistoryView,
+  ContractorHistoryView,
+  AgricultureHistoryView,
 } from './components/screens/lazyScreens';
 import { ToastStack } from './components/ui/ToastStack';
 import { ScrollJumpPill } from './components/ui/ScrollJumpPill';
@@ -173,7 +186,11 @@ import { AtriumIntroOverlay } from './components/ui/AtriumIntroOverlay';
 import { AppleOverscrollProvider } from './components/common/AppleOverscrollProvider';
 import { ChevronDown } from 'lucide-react';
 import { useTranslation } from './utils/useTranslation';
-import { applyFacilityAccentCssVars, undoLatestForBranch } from './services/undoEngine';
+import {
+  applyFacilityAccentCssVars,
+  redoLatestForBranch,
+  undoLatestForBranch,
+} from './services/undoEngine';
 
 export default function App() {
   useAtriumStoreLifecycle();
@@ -202,6 +219,7 @@ export default function App() {
   const activeRealEstateRole = useAtriumSelector((s) => s.activeRealEstateRole);
   const activeManufacturingRole = useAtriumSelector((s) => s.activeManufacturingRole);
   const activeAgriRole = useAtriumSelector((s) => s.activeAgriRole);
+  const activePmRole = useAtriumSelector((s) => s.activePmRole);
   const activeMembershipRole = useAtriumSelector((s) => s.activeMembershipRole);
   const activeAppointmentRole = useAtriumSelector((s) => s.activeAppointmentRole);
   const activePosRole = useAtriumSelector((s) => s.activePosRole);
@@ -271,6 +289,14 @@ export default function App() {
       ) {
         e.preventDefault();
         void undoLatestForBranch(currentBusinessId, currentBranchId);
+      } else if (
+        (e.metaKey || e.ctrlKey) &&
+        e.shiftKey &&
+        e.key.toLowerCase() === 'z' &&
+        !isEditingInput
+      ) {
+        e.preventDefault();
+        void redoLatestForBranch(currentBusinessId, currentBranchId);
       } else if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
         e.preventDefault();
         toggleTopBarCollapsed();
@@ -490,7 +516,11 @@ export default function App() {
         case 'shop':
           return <ProjectComptaView initialTab="payroll" />;
         case 'history':
-          return <ProjectSuperviseurView initialTab="attendance" />;
+          return activePmRole === 'direction' ? (
+            <ProjectHistoryView />
+          ) : (
+            <ProjectDirectionView initialTab="dashboard" />
+          );
         case 'settings':
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
@@ -515,7 +545,7 @@ export default function App() {
         case 'finance':
           return <FreelanceFinanceView />;
         case 'history':
-          return <FreelanceTimeTrackerView />;
+          return <FreelanceHistoryView />;
         case 'settings':
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
@@ -539,7 +569,7 @@ export default function App() {
         case 'finance':
           return <VenueFinanceView />;
         case 'history':
-          return <VenueBookingsView />;
+          return <VenueHistoryView />;
         case 'analytics':
           return <VenueDashboardView />;
         case 'settings':
@@ -587,7 +617,7 @@ export default function App() {
         case 'finance':
           return <EducationFinanceView />;
         case 'history':
-          return <EducationAttendanceView />;
+          return <EducationHistoryView />;
         case 'settings':
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
@@ -618,6 +648,8 @@ export default function App() {
         case 'trading_finance':
         case 'finance':
           return <TradingFinanceView />;
+        case 'history':
+          return <TradingHistoryView />;
         case 'analytics':
           return <TradingDashboardView />;
         case 'settings':
@@ -646,6 +678,8 @@ export default function App() {
           return <MedicalCertificatesView />;
         case 'finance':
           return <MedicalBillingView />;
+        case 'history':
+          return <MedicalHistoryView />;
         default:
           return <MedicalDashboardView />;
       }
@@ -693,6 +727,12 @@ export default function App() {
           return <AutoGaragePartsView />;
         case 'finance':
           return <AutoGarageBillingView />;
+        case 'history':
+          return activeGarageRole === 'reception' || activeGarageRole === 'caisse' ? (
+            <AutoGarageDashboardView />
+          ) : (
+            <AutoGarageHistoryView />
+          );
         default:
           return <AutoGarageDashboardView />;
       }
@@ -735,6 +775,12 @@ export default function App() {
           return <RealEstateInspectionsView />;
         case 'finance':
           return <RealEstateFinanceView />;
+        case 'history':
+          return activeRealEstateRole !== 'direction' ? (
+            <RealEstateDashboardView />
+          ) : (
+            <RealEstateHistoryView />
+          );
         default:
           return <RealEstateDashboardView />;
       }
@@ -819,6 +865,8 @@ export default function App() {
           return <ManufacturingMaterialsView />;
         case 'finance':
           return <ManufacturingQcView />;
+        case 'history':
+          return <ManufacturingHistoryView />;
         default:
           return <ManufacturingDashboardView />;
       }
@@ -852,6 +900,8 @@ export default function App() {
           return <LegalVaultView />;
         case 'finance':
           return <LegalTrustView />;
+        case 'history':
+          return <LegalHistoryView />;
         default:
           return <LegalDashboardView />;
       }
@@ -887,6 +937,12 @@ export default function App() {
           return <LogisticsScannerView />;
         case 'finance':
           return <LogisticsCodView />;
+        case 'history':
+          return activeLogisticsRole === 'dispatcher' ? (
+            <LogisticsDashboardView />
+          ) : (
+            <LogisticsHistoryView />
+          );
         default:
           return <LogisticsDashboardView />;
       }
@@ -924,6 +980,12 @@ export default function App() {
           return <ContractorDailyLogsView />;
         case 'finance':
           return <ContractorBillingView />;
+        case 'history':
+          return activeContractorRole === 'gerant' ? (
+            <ContractorHistoryView />
+          ) : (
+            <ContractorDashboardView />
+          );
         default:
           return <ContractorDashboardView />;
       }
@@ -985,6 +1047,8 @@ export default function App() {
           return <AgricultureLivestockView />;
         case 'finance':
           return <AgricultureWholesaleView />;
+        case 'history':
+          return <AgricultureHistoryView />;
         default:
           return <AgricultureDashboardView />;
       }

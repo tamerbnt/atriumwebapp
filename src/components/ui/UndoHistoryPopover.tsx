@@ -269,6 +269,24 @@ export const UndoHistoryPopover: React.FC<UndoHistoryPopoverProps> = ({
                 'Creates, edits, status changes, and deletes appear here for instant rollback.'
               )}
             </p>
+            {(verticalFilter !== 'all' || opFilter !== 'all' || statusFilter !== 'all' || searchQuery.trim().length > 0) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setVerticalFilter('all');
+                  setOpFilter('all');
+                  setStatusFilter('all');
+                  setSearchQuery('');
+                }}
+                className="mt-1 h-7 px-3 rounded-[8px] t-small font-medium cursor-pointer transition-colors"
+                style={{
+                  color: 'var(--facility-accent, var(--brand-fill, #C9461F))',
+                  background: 'var(--facility-accent-dim, rgba(201, 70, 31, 0.12))',
+                }}
+              >
+                {l3('إعادة ضبط الفلاتر', 'Réinitialiser les filtres', 'Reset filters')}
+              </button>
+            )}
           </div>
         ) : (
           filteredEntries.map((entry) => {
@@ -302,7 +320,10 @@ export const UndoHistoryPopover: React.FC<UndoHistoryPopoverProps> = ({
                     {isError && (
                       <>
                         <span aria-hidden="true">·</span>
-                        <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400">
+                        <span
+                          title={entry.lastError}
+                          className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400"
+                        >
                           <AlertCircle size={11} />
                           {l3('خطأ', 'Erreur', 'Error')}
                         </span>

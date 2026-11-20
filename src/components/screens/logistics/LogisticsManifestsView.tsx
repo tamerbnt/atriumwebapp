@@ -12,7 +12,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { LogisticsManifest } from '../../../types';
 import { useLogisticsData } from './logisticsData';
@@ -751,17 +751,18 @@ export const LogisticsManifestsView: React.FC<any> = () => {
               runUndoBatch(
                 {
                   operationType: 'bulk',
-                  vertical: 'logistics',
-                  label: {
+                  vertical: 'logistics_delivery',
+                  affectedCount: count,
+                  summary: pickLocalizedText(language, {
                     fr: `${count} tournées clôturées`,
                     en: `${count} routes closed`,
                     ar: `تم إغلاق ${count} مسارات`,
-                  },
-                  moduleLabel: {
+                  }),
+                  toastTitle: pickLocalizedText(language, {
                     fr: 'Feuilles de Route',
                     en: 'Dispatch Manifests',
                     ar: 'أوراق الطريق',
-                  },
+                  }),
                 },
                 () => {
                   ids.forEach((id) => {
@@ -778,17 +779,18 @@ export const LogisticsManifestsView: React.FC<any> = () => {
             runUndoBatch(
               {
                 operationType: 'bulk',
-                vertical: 'logistics',
-                label: {
+                vertical: 'logistics_delivery',
+                affectedCount: count,
+                summary: pickLocalizedText(language, {
                   fr: `${count} manifestes supprimés`,
                   en: `${count} manifests deleted`,
                   ar: `تم حذف ${count} أوراق طريق`,
-                },
-                moduleLabel: {
+                }),
+                toastTitle: pickLocalizedText(language, {
                   fr: 'Feuilles de Route',
                   en: 'Dispatch Manifests',
                   ar: 'أوراق الطريق',
-                },
+                }),
               },
               () => {
                 ids.forEach((id) => deleteManifest(id));
@@ -1144,17 +1146,17 @@ export const LogisticsManifestsView: React.FC<any> = () => {
             runUndoBatch(
               {
                 operationType: 'status',
-                vertical: 'logistics',
-                label: {
+                vertical: 'logistics_delivery',
+                summary: pickLocalizedText(language, {
                   fr: `Décharge ${d.dischargeNumber} & clôture ${manifestToDischarge.manifestNumber}`,
                   en: `Discharge ${d.dischargeNumber} & closed ${manifestToDischarge.manifestNumber}`,
                   ar: `تصفية ${d.dischargeNumber} وإغلاق ${manifestToDischarge.manifestNumber}`,
-                },
-                moduleLabel: {
+                }),
+                toastTitle: pickLocalizedText(language, {
                   fr: 'Feuilles de Route',
                   en: 'Dispatch Manifests',
                   ar: 'أوراق الطريق',
-                },
+                }),
               },
               () => {
                 addDischarge(d);

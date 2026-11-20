@@ -18,7 +18,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, SparePart } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -779,17 +779,18 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             runUndoBatch(
               {
                 operationType: 'bulk',
-                vertical: 'garage',
-                label: {
+                vertical: 'auto_garage',
+                affectedCount: count,
+                summary: pickLocalizedText(language, {
                   fr: `${count} pièces retirées du stock`,
                   en: `${count} spare parts deleted`,
                   ar: `تم حذف ${count} قطع غيار`,
-                },
-                moduleLabel: {
+                }),
+                toastTitle: pickLocalizedText(language, {
                   fr: 'Magasin Pièces',
                   en: 'Spare Parts',
                   ar: 'مخزن القطع',
-                },
+                }),
               },
               () => {
                 ids.forEach((id) => deletePart(id));

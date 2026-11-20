@@ -681,14 +681,14 @@ export const TradingSalesView: React.FC = () => {
             if (ids.size === 0) return;
             runUndoBatch(
               {
-                category: 'b2b_commercial',
+                vertical: 'trading_commercial',
                 operationType: 'bulk',
-                label: isAr
+                affectedCount: ids.size,
+                summary: isAr
                   ? `حذف مستندات (${ids.size})`
                   : isEn
                   ? `Delete documents (${ids.size})`
                   : `Suppression documents (${ids.size})`,
-                entityType: 'commercialDoc',
               },
               () => {
                 ids.forEach((id) => deleteCommercialDoc(id));

@@ -19,7 +19,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -1181,17 +1181,18 @@ export const AgricultureLivestockView: React.FC = () => {
               runUndoBatch(
                 {
                   operationType: 'bulk',
-                  vertical: 'agriculture',
-                  label: {
+                  vertical: 'agriculture_farming',
+                  affectedCount: count,
+                  summary: pickLocalizedText(language, {
                     fr: `${count} têtes retirées du cheptel`,
                     en: `${count} livestock records deleted`,
                     ar: `تم حذف ${count} رؤوس ماشية`,
-                  },
-                  moduleLabel: {
+                  }),
+                  toastTitle: pickLocalizedText(language, {
                     fr: 'Cheptel & Lait',
                     en: 'Livestock & Dairy',
                     ar: 'الثروة الحيوانية',
-                  },
+                  }),
                 },
                 () => {
                   ids.forEach((id) => deleteLivestock(id));
@@ -1264,17 +1265,18 @@ export const AgricultureLivestockView: React.FC = () => {
               runUndoBatch(
                 {
                   operationType: 'bulk',
-                  vertical: 'agriculture',
-                  label: {
+                  vertical: 'agriculture_farming',
+                  affectedCount: count,
+                  summary: pickLocalizedText(language, {
                     fr: `${count} sessions de traite supprimées`,
                     en: `${count} milking sessions deleted`,
                     ar: `تم حذف ${count} جلسات حلب`,
-                  },
-                  moduleLabel: {
+                  }),
+                  toastTitle: pickLocalizedText(language, {
                     fr: 'Cheptel & Lait',
                     en: 'Livestock & Dairy',
                     ar: 'الثروة الحيوانية',
-                  },
+                  }),
                 },
                 () => {
                   ids.forEach((id) => deleteMilkingRecord(id));

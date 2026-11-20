@@ -736,14 +736,14 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               if (ids.size === 0) return;
               runUndoBatch(
                 {
-                  category: 'rental_booking',
+                  vertical: 'rental_booking',
                   operationType: 'bulk',
-                  label: isAr
+                  affectedCount: ids.size,
+                  summary: isAr
                     ? `تأكيد حجوزات (${ids.size})`
                     : isFr
                     ? `Confirmation réservations (${ids.size})`
                     : `Confirm bookings (${ids.size})`,
-                  entityType: 'rentalBooking',
                 },
                 () => {
                   ids.forEach((id) => updateRentalBooking(id, { status: 'Confirmed' as BookingStatus }));
@@ -756,14 +756,14 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
             if (ids.size === 0) return;
             runUndoBatch(
               {
-                category: 'rental_booking',
+                vertical: 'rental_booking',
                 operationType: 'bulk',
-                label: isAr
+                affectedCount: ids.size,
+                summary: isAr
                   ? `حذف حجوزات (${ids.size})`
                   : isFr
                   ? `Suppression réservations (${ids.size})`
                   : `Delete bookings (${ids.size})`,
-                entityType: 'rentalBooking',
               },
               () => {
                 ids.forEach((id) => deleteRentalBooking(id));

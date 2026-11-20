@@ -6,13 +6,18 @@ import {
   CheckCircle2,
   Pin,
   Eye,
+  Undo2,
 } from 'lucide-react';
 import {
   StaffMember,
   StaffPayrollRunRecord,
   StaffPayrollSlipRecord,
   StaffAttendanceLogRecord,
+  SupportedLanguage,
 } from '../../../types/index';
+import { useAtriumSelector, shallowEqualObjects } from '../../../services/store';
+import { useUndoHistory } from '../../../services/undoEngine';
+import { EmbeddedUndoHistoryPanel } from '../../ui/EmbeddedUndoHistoryPanel';
 import { PayslipPrintModal } from './PayslipPrintModal';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { compactFilterLabel } from '../../../utils/filterLexicon';
@@ -49,7 +54,20 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const [historyMode, setHistoryMode] = useState<'salaires' | 'pointages'>('salaires');
+  const { currentBusinessId, currentBranchId } = useAtriumSelector(
+    (s) => ({
+      currentBusinessId: s.currentBusinessId,
+      currentBranchId: s.currentBranchId,
+    }),
+    shallowEqualObjects
+  );
+  const { entries: staffUndoEntries } = useUndoHistory(currentBusinessId, currentBranchId);
+  const staffUndoCount = useMemo(
+    () => staffUndoEntries.filter((e) => e.vertical === 'staff' && e.status === 'available').length,
+    [staffUndoEntries]
+  );
+
+  const [historyMode, setHistoryMode] = useState<'salaires' | 'pointages' | 'annulations'>('salaires');
   const [selectedStaffFilter, setSelectedStaffFilter] = useState<string>('all');
   const [searchPunchQuery, setSearchPunchQuery] = useState<string>('');
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
@@ -234,7 +252,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
         <LiveSegmentedControl
           size="md"
           value={historyMode}
-          onValueChange={(val) => setHistoryMode(val as 'salaires' | 'pointages')}
+          onValueChange={(val) => setHistoryMode(val as 'salaires' | 'pointages' | 'annulations')}
           options={[
             {
               value: 'salaires',
@@ -250,6 +268,13 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
               icon: <Clock className="w-4 h-4" strokeWidth={1.5} />,
               count: attendanceLogs.length,
             },
+            {
+              value: 'annulations',
+              label: isAr ? 'الإلغاءات' : isEn ? 'Undos' : 'Annulations',
+              tooltip: isAr ? 'سجل التراجع عن عمليات الموظفين' : isEn ? 'Staff undo & rollback log' : 'Annulations équipe & RH',
+              icon: <Undo2 className="w-4 h-4" strokeWidth={1.5} />,
+              count: staffUndoCount,
+            },
           ]}
           aria-label="Staff History Mode"
         />
@@ -257,10 +282,22 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
         <div className="t-label text-[var(--text-2)] dark:text-white/75 px-[var(--s2,8px)]">
           {historyMode === 'salaires'
             ? isAr ? 'أرشيف الرواتب' : isEn ? 'Payroll archive' : 'Archives paie'
-            : isAr ? 'سجل الحضور' : isEn ? 'Attendance logs' : 'Journal pointages'}
+            : historyMode === 'pointages'
+            ? isAr ? 'سجل الحضور' : isEn ? 'Attendance logs' : 'Journal pointages'
+            : isAr ? 'سجل الإلغاءات' : isEn ? 'Staff undo log' : 'Annulations RH'}
         </div>
         </div>
       </div>
+
+      {historyMode === 'annulations' && (
+        <EmbeddedUndoHistoryPanel
+          businessId={currentBusinessId}
+          branchId={currentBranchId}
+          vertical="staff"
+          language={(language as SupportedLanguage) || 'fr'}
+          lockVerticalScope
+        />
+      )}
 
       {historyMode === 'salaires' && (
         <div className="flex flex-col gap-[var(--pod-gap,16px)]">

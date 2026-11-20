@@ -1451,11 +1451,10 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     const prevVal = notesByTalent[talent.id];
                     setNotesByTalent((prev) => ({ ...prev, [talent.id]: next }));
                     registerUndoEntry({
-                      category: 'project_management',
+                      vertical: 'project_milestone',
                       operationType: 'edit',
-                      label: `Note RH : ${talent.fullName}`,
-                      entityType: 'pmTalent',
-                      entityId: talent.id,
+                      summary: `Note RH : ${talent.fullName}`,
+                      entityLabel: talent.fullName,
                       branchId: talent.facilityId || currentBranch?.id,
                       undo: () => {
                         setNotesByTalent((prev) => {

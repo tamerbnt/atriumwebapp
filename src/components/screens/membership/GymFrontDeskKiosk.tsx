@@ -22,6 +22,7 @@ import {
   showToast,
 } from '../../../services/store';
 import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
@@ -182,16 +183,14 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
 
       const remainingBefore = member.remainingSessions;
       let remainingAfter = remainingBefore;
+      let shouldDecrementSession = false;
       if (remainingBefore !== undefined && remainingBefore !== null) {
         if (remainingBefore <= 0) {
           status = 'Denied_Expired';
           message = isRtl ? 'نفدت جميع الحصص المتاحة في الباقة' : 'Nombre de séances épuisé';
         } else {
           remainingAfter = remainingBefore - 1;
-          updateMember(member.id, {
-            remainingSessions: remainingAfter,
-            status: remainingAfter === 0 ? 'Expired' : member.status,
-          });
+          shouldDecrementSession = true;
         }
       }
 
@@ -199,11 +198,12 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
       else if (status === 'Warning_Expiring') playChime('warning');
       else playChime('error');
 
+      const resolvedBranchId = currentBranchId || member.branchId || 'branch_gym_main';
       const checkInLog = {
         id: `chk_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         accountId: account?.id || 'acc_01',
         businessId: currentBusinessId || 'biz_01',
-        branchId: currentBranchId || member.branchId || 'branch_gym_main',
+        branchId: resolvedBranchId,
         staffId: currentUser?.id || 'staff_01',
         memberId: member.id,
         memberName: member.fullName,
@@ -216,7 +216,30 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
         checkInMethod: 'barcode_scanner',
       };
 
-      addMemberCheckIn(checkInLog as any);
+      runUndoBatch(
+        {
+          vertical: 'membership_session',
+          operationType: shouldDecrementSession ? 'bulk' : 'create',
+          entityLabel: member.fullName,
+          affectedCount: shouldDecrementSession ? 2 : 1,
+          businessId: currentBusinessId || 'biz_01',
+          branchId: resolvedBranchId,
+          toastType: status === 'Granted' ? 'success' : status === 'Warning_Expiring' ? 'warning' : 'info',
+          summary: isRtl
+            ? `تسجيل دخول: ${member.fullName}`
+            : `Passage enregistré : ${member.fullName}`,
+        },
+        () => {
+          if (shouldDecrementSession) {
+            updateMember(member.id, {
+              remainingSessions: remainingAfter,
+              status: remainingAfter === 0 ? 'Expired' : member.status,
+            });
+          }
+          addMemberCheckIn(checkInLog as any);
+        }
+      );
+
       setLastCheckInResult({ status, message, member });
       setScanInput('');
     },

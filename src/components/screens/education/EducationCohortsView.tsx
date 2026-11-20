@@ -688,14 +688,14 @@ export const EducationCohortsView: React.FC = () => {
               if (ids.size === 0) return;
               runUndoBatch(
                 {
-                  category: 'education_cohort',
+                  vertical: 'education_cohort',
                   operationType: 'bulk',
-                  label: isAr
+                  affectedCount: ids.size,
+                  summary: isAr
                     ? `بدء أفواج (${ids.size})`
                     : isEn
                     ? `Start cohorts (${ids.size})`
                     : `Lancement cohortes (${ids.size})`,
-                  entityType: 'eduCohort',
                 },
                 () => {
                   ids.forEach((id) => updateEduCohort(id, { status: 'InProgress' }));
@@ -709,14 +709,14 @@ export const EducationCohortsView: React.FC = () => {
             if (ids.size === 0) return;
             runUndoBatch(
               {
-                category: 'education_cohort',
+                vertical: 'education_cohort',
                 operationType: 'bulk',
-                label: isAr
+                affectedCount: ids.size,
+                summary: isAr
                   ? `حذف أفواج (${ids.size})`
                   : isEn
                   ? `Delete cohorts (${ids.size})`
                   : `Suppression cohortes (${ids.size})`,
-                entityType: 'eduCohort',
               },
               () => {
                 ids.forEach((id) => deleteEduCohort(id));

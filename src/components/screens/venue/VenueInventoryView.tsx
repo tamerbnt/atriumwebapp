@@ -757,14 +757,14 @@ export const VenueInventoryView: React.FC = () => {
               if (ids.size === 0) return;
               runUndoBatch(
                 {
-                  category: 'rental_booking',
+                  vertical: 'rental_booking',
                   operationType: 'bulk',
-                  label: isAr
+                  affectedCount: ids.size,
+                  summary: isAr
                     ? `تفعيل فضاءات (${ids.size})`
                     : isFr
                     ? `Mise à disposition (${ids.size})`
                     : `Mark spaces available (${ids.size})`,
-                  entityType: 'rentableUnit',
                 },
                 () => {
                   ids.forEach((id) => updateRentableUnit(id, { status: 'Available' }));
@@ -777,14 +777,14 @@ export const VenueInventoryView: React.FC = () => {
             if (ids.size === 0) return;
             runUndoBatch(
               {
-                category: 'rental_booking',
+                vertical: 'rental_booking',
                 operationType: 'bulk',
-                label: isAr
+                affectedCount: ids.size,
+                summary: isAr
                   ? `حذف فضاءات (${ids.size})`
                   : isFr
                   ? `Suppression espaces (${ids.size})`
                   : `Delete spaces (${ids.size})`,
-                entityType: 'rentableUnit',
               },
               () => {
                 ids.forEach((id) => deleteRentableUnit(id));

@@ -15,7 +15,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, RepairOrder } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -940,17 +940,18 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 runUndoBatch(
                   {
                     operationType: 'bulk',
-                    vertical: 'garage',
-                    label: {
+                    vertical: 'auto_garage',
+                    affectedCount: count,
+                    summary: pickLocalizedText(language, {
                       fr: `${count} ordres avancés à l'étape suivante`,
                       en: `${count} repair orders advanced`,
                       ar: `تمت ترقية مرحلة ${count} أوامر إصلاح`,
-                    },
-                    moduleLabel: {
+                    }),
+                    toastTitle: pickLocalizedText(language, {
                       fr: 'Ordres de Réparation',
                       en: 'Repair Orders',
                       ar: 'أوامر التصليح',
-                    },
+                    }),
                   },
                   () => {
                     ids.forEach((id) => {
@@ -967,17 +968,18 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
               runUndoBatch(
                 {
                   operationType: 'bulk',
-                  vertical: 'garage',
-                  label: {
+                  vertical: 'auto_garage',
+                  affectedCount: count,
+                  summary: pickLocalizedText(language, {
                     fr: `${count} ordres de réparation supprimés`,
                     en: `${count} repair orders deleted`,
                     ar: `تم حذف ${count} أوامر تصليح`,
-                  },
-                  moduleLabel: {
+                  }),
+                  toastTitle: pickLocalizedText(language, {
                     fr: 'Ordres de Réparation',
                     en: 'Repair Orders',
                     ar: 'أوامر التصليح',
-                  },
+                  }),
                 },
                 () => {
                   ids.forEach((id) => deleteOrder(id));

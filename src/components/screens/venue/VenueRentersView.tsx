@@ -639,14 +639,14 @@ export const VenueRentersView: React.FC = () => {
             if (ids.size === 0) return;
             runUndoBatch(
               {
-                category: 'rental_booking',
+                vertical: 'rental_booking',
                 operationType: 'bulk',
-                label: isAr
+                affectedCount: ids.size,
+                summary: isAr
                   ? `حذف مستأجرين (${ids.size})`
                   : isFr
                   ? `Suppression locataires (${ids.size})`
                   : `Delete renters (${ids.size})`,
-                entityType: 'rentalRenter',
               },
               () => {
                 ids.forEach((id) => deleteRentalRenter(id));

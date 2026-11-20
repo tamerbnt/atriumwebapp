@@ -494,14 +494,14 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
             if (pending.length === 0) return;
             runUndoBatch(
               {
-                category: 'appointment_service',
+                vertical: 'appointment_service',
                 operationType: 'bulk',
-                label: isAr
+                affectedCount: pending.length,
+                summary: isAr
                   ? `اعتماد العمولات (${pending.length})`
                   : isEn
                   ? `Approve commissions (${pending.length})`
                   : `Validation commissions (${pending.length})`,
-                entityType: 'stylistPayout',
               },
               () => {
                 pending.forEach((p) => updateStylistPayoutStatus(p.id, 'Approved'));
@@ -584,14 +584,14 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
               if (ids.size === 0) return;
               runUndoBatch(
                 {
-                  category: 'appointment_service',
+                  vertical: 'appointment_service',
                   operationType: 'bulk',
-                  label: isAr
+                  affectedCount: ids.size,
+                  summary: isAr
                     ? `دفع الكشوفات (${ids.size})`
                     : isEn
                     ? `Mark payouts paid (${ids.size})`
                     : `Règlement bordereaux (${ids.size})`,
-                  entityType: 'stylistPayout',
                 },
                 () => {
                   ids.forEach((id) => updateStylistPayoutStatus(id, 'Paid', 'BaridiMob'));

@@ -193,15 +193,14 @@ export const TradingFinanceView: React.FC = () => {
     if (!settlementDoc) return;
     runUndoBatch(
       {
-        category: 'b2b_commercial',
+        vertical: 'trading_commercial',
         operationType: 'status',
-        label: isAr
+        summary: isAr
           ? `تحصيل فاتورة ${settlementDoc.docNumber}`
           : isEn
           ? `Settle invoice ${settlementDoc.docNumber}`
           : `Règlement ${settlementDoc.docNumber}`,
-        entityType: 'commercialDoc',
-        entityId: settlementDoc.id,
+        entityLabel: settlementDoc.docNumber,
       },
       () => {
         updateCommercialDoc(settlementDoc.id, {

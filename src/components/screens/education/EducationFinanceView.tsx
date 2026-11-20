@@ -199,14 +199,14 @@ export const EducationFinanceView: React.FC = () => {
     }
     runUndoBatch(
       {
-        category: 'education_cohort',
+        vertical: 'education_cohort',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: targets.length,
+        summary: isAr
           ? `تسجيل دفعات (${targets.length})`
           : isEn
           ? `Log payments (${targets.length})`
           : `Encaissement échéances (${targets.length})`,
-        entityType: 'eduEnrollment',
       },
       () => {
         targets.forEach((enr) => {

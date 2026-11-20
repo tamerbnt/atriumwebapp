@@ -235,14 +235,14 @@ export const EducationAdmissionsView: React.FC = () => {
     const count = selectedLeadIds.size;
     runUndoBatch(
       {
-        category: 'education_cohort',
+        vertical: 'education_cohort',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: count,
+        summary: isAr
           ? `تحديث المرحلة (${count})`
           : isEn
           ? `Update stage (${count})`
           : `Mise à jour statut (${count})`,
-        entityType: 'eduAdmissionLead',
       },
       () => {
         selectedLeadIds.forEach((id) => updateAdmissionStage(id, stage));
@@ -256,14 +256,14 @@ export const EducationAdmissionsView: React.FC = () => {
     const count = selectedLeadIds.size;
     runUndoBatch(
       {
-        category: 'education_cohort',
+        vertical: 'education_cohort',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: count,
+        summary: isAr
           ? `حذف مترشحين (${count})`
           : isEn
           ? `Delete leads (${count})`
           : `Suppression prospects (${count})`,
-        entityType: 'eduAdmissionLead',
       },
       () => {
         selectedLeadIds.forEach((id) => deleteEduAdmissionLead(id));

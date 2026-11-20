@@ -22,7 +22,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { calculateWorkerPieceworkWage } from '../../../utils/agriRules';
 import { AgriHarvestTicket, AgriDailyPointage } from '../../../types';
@@ -1058,17 +1058,18 @@ export const AgricultureHarvestView: React.FC = () => {
               runUndoBatch(
                 {
                   operationType: 'bulk',
-                  vertical: 'agriculture',
-                  label: {
+                  vertical: 'agriculture_farming',
+                  affectedCount: count,
+                  summary: pickLocalizedText(language, {
                     fr: `${count} bons de pesée supprimés`,
                     en: `${count} weighbridge tickets deleted`,
                     ar: `تم حذف ${count} وصولات وزن`,
-                  },
-                  moduleLabel: {
+                  }),
+                  toastTitle: pickLocalizedText(language, {
                     fr: 'Récolte & Pesée',
                     en: 'Harvest & Weighbridge',
                     ar: 'الحصاد والوزن',
-                  },
+                  }),
                 },
                 () => {
                   ids.forEach((id) => deleteHarvestTicket(id));

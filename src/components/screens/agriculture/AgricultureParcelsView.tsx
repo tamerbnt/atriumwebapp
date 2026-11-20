@@ -18,7 +18,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { AgriParcel, AgriParcelStatus, AgriTreatmentLog, AgriHarvestTicket } from '../../../types';
 import { useAgricultureData } from './agricultureData';
 import { AgricultureParcelModal } from './AgricultureParcelModal';
@@ -834,17 +834,18 @@ export const AgricultureParcelsView: React.FC = () => {
             runUndoBatch(
               {
                 operationType: 'bulk',
-                vertical: 'agriculture',
-                label: {
+                vertical: 'agriculture_farming',
+                affectedCount: count,
+                summary: pickLocalizedText(language, {
                   fr: `${count} parcelles supprimées`,
                   en: `${count} parcels deleted`,
                   ar: `تم حذف ${count} قطع فلاحية`,
-                },
-                moduleLabel: {
+                }),
+                toastTitle: pickLocalizedText(language, {
                   fr: 'Parcellaire agricole',
                   en: 'Farm Parcels',
                   ar: 'سجل القطع الفلاحية',
-                },
+                }),
               },
               () => {
                 ids.forEach((id) => deleteParcel(id));

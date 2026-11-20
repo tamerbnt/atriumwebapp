@@ -618,14 +618,14 @@ export const FreelanceProposalsView: React.FC = () => {
     const count = selectedProposalIds.size;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: count,
+        summary: isAr
           ? `قبول عروض (${count})`
           : isFr
           ? `Acceptation devis (${count})`
           : `Accept proposals (${count})`,
-        entityType: 'freelanceProposal',
       },
       () => {
         selectedProposalIds.forEach((id) => {
@@ -641,14 +641,14 @@ export const FreelanceProposalsView: React.FC = () => {
     const count = selectedProposalIds.size;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: count,
+        summary: isAr
           ? `رفض عروض (${count})`
           : isFr
           ? `Refus devis (${count})`
           : `Decline proposals (${count})`,
-        entityType: 'freelanceProposal',
       },
       () => {
         selectedProposalIds.forEach((id) => {
@@ -664,14 +664,14 @@ export const FreelanceProposalsView: React.FC = () => {
     const count = selectedProposalIds.size;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: count,
+        summary: isAr
           ? `حذف عروض (${count})`
           : isFr
           ? `Suppression devis (${count})`
           : `Delete proposals (${count})`,
-        entityType: 'freelanceProposal',
       },
       () => {
         selectedProposalIds.forEach((id) => {

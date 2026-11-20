@@ -277,14 +277,14 @@ export const FreelanceInvoicesView: React.FC = () => {
     if (clientsWithUnbilled.length > 0) {
       runUndoBatch(
         {
-          category: 'freelance_solo',
+          vertical: 'freelance_solo',
           operationType: 'bulk',
-          label: isAr
+          affectedCount: clientsWithUnbilled.length,
+          summary: isAr
             ? `فوترة ساعات (${clientsWithUnbilled.length})`
             : isFr
             ? `Facturation heures (${clientsWithUnbilled.length})`
             : `Bill unbilled hours (${clientsWithUnbilled.length})`,
-          entityType: 'freelanceInvoice',
         },
         () => {
           clientsWithUnbilled.forEach((c) => {
@@ -576,14 +576,14 @@ export const FreelanceInvoicesView: React.FC = () => {
     const count = selectedInvoiceIds.size;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: count,
+        summary: isAr
           ? `تسوية فواتير (${count})`
           : isFr
           ? `Règlement factures (${count})`
           : `Mark invoices Paid (${count})`,
-        entityType: 'freelanceInvoice',
       },
       () => {
         selectedInvoiceIds.forEach((id) => {
@@ -599,14 +599,14 @@ export const FreelanceInvoicesView: React.FC = () => {
     const count = selectedInvoiceIds.size;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: count,
+        summary: isAr
           ? `إرسال فواتير (${count})`
           : isFr
           ? `Envoi factures (${count})`
           : `Mark invoices Sent (${count})`,
-        entityType: 'freelanceInvoice',
       },
       () => {
         selectedInvoiceIds.forEach((id) => {
@@ -622,14 +622,14 @@ export const FreelanceInvoicesView: React.FC = () => {
     const count = selectedInvoiceIds.size;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: count,
+        summary: isAr
           ? `حذف فواتير (${count})`
           : isFr
           ? `Suppression factures (${count})`
           : `Delete invoices (${count})`,
-        entityType: 'freelanceInvoice',
       },
       () => {
         selectedInvoiceIds.forEach((id) => {

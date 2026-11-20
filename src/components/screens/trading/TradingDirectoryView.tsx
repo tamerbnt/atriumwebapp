@@ -675,14 +675,14 @@ export const TradingDirectoryView: React.FC = () => {
               if (ids.size === 0) return;
               runUndoBatch(
                 {
-                  category: 'b2b_commercial',
+                  vertical: 'trading_commercial',
                   operationType: 'bulk',
-                  label: isAr
+                  affectedCount: ids.size,
+                  summary: isAr
                     ? `حذف عملاء (${ids.size})`
                     : isEn
                     ? `Delete clients (${ids.size})`
                     : `Suppression clients (${ids.size})`,
-                  entityType: 'b2bClient',
                 },
                 () => {
                   ids.forEach((id) => deleteB2bClient(id));
@@ -817,14 +817,14 @@ export const TradingDirectoryView: React.FC = () => {
               if (ids.size === 0) return;
               runUndoBatch(
                 {
-                  category: 'b2b_commercial',
+                  vertical: 'trading_commercial',
                   operationType: 'bulk',
-                  label: isAr
+                  affectedCount: ids.size,
+                  summary: isAr
                     ? `حذف موردين (${ids.size})`
                     : isEn
                     ? `Delete suppliers (${ids.size})`
                     : `Suppression fournisseurs (${ids.size})`,
-                  entityType: 'b2bSupplier',
                 },
                 () => {
                   ids.forEach((id) => deleteB2bSupplier(id));

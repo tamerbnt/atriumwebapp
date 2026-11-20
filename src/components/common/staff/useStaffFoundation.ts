@@ -8,6 +8,7 @@ import {
   showToast,
 } from '../../../services/store';
 import { StaffMember, StaffLifecycleStatus, BusinessCategory } from '../../../types/index';
+import { runUndoBatch } from '../../../services/undoEngine';
 import {
   canAccessStaffScreen,
   canViewSensitivePayroll,
@@ -30,6 +31,7 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     (s) => ({
       allStaff: s.staff,
       branches: s.branches,
+      currentBusinessId: s.currentBusinessId,
       currentBranchId: s.currentBranchId,
       currentUser: s.currentUser,
       staffAttendanceLogs: s.staffAttendanceLogs,
@@ -307,26 +309,38 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
   const handleBulkStatusChange = useCallback(
     (status: StaffLifecycleStatus) => {
       if (selectedStaffIds.size === 0) return;
-      selectedStaffIds.forEach((id) => {
-        if (status === 'frozen') freezeStaffMember(id);
-        else if (status === 'vacation' || status === 'on_leave') vacationStaffMember(id);
-        else if (status === 'terminated') terminateStaffMember(id);
-        else updateStaffMember(id, { status, isActive: status === 'active' });
-      });
       const count = selectedStaffIds.size;
+      const ids = Array.from(selectedStaffIds);
+      runUndoBatch(
+        {
+          vertical: 'staff',
+          operationType: 'bulk',
+          affectedCount: count,
+          businessId: storeSlice.currentBusinessId,
+          branchId: storeSlice.currentBranchId,
+          toastType: 'success',
+          toastTitle: isAr ? 'تحديث الحالة' : isEn ? 'Status Updated' : 'Statut actualisé',
+          summary: isAr
+            ? `تم تحديث حالة ${count} موظف`
+            : isEn
+            ? `Status updated for ${count} staff members`
+            : `Statut mis à jour pour ${count} collaborateurs`,
+        },
+        () => {
+          ids.forEach((id) => {
+            if (status === 'frozen') freezeStaffMember(id);
+            else if (status === 'vacation' || status === 'on_leave') vacationStaffMember(id);
+            else if (status === 'terminated') terminateStaffMember(id);
+            else updateStaffMember(id, { status, isActive: status === 'active' });
+          });
+        }
+      );
       setSelectedStaffIds(new Set());
-      showToast({
-        title: isAr ? 'تحديث الحالة' : isEn ? 'Status Updated' : 'Statut actualisé',
-        message: isAr
-          ? `تم تحديث حالة ${count} موظف`
-          : isEn
-          ? `Status updated for ${count} staff members`
-          : `Statut mis à jour pour ${count} collaborateurs`,
-        type: 'success',
-      });
     },
     [
       selectedStaffIds,
+      storeSlice.currentBusinessId,
+      storeSlice.currentBranchId,
       freezeStaffMember,
       vacationStaffMember,
       terminateStaffMember,
@@ -339,20 +353,37 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
   const handleBulkDelete = useCallback(() => {
     if (selectedStaffIds.size === 0) return;
     const count = selectedStaffIds.size;
-    selectedStaffIds.forEach((id) => {
-      deleteStaffMember(id);
-    });
+    const ids = Array.from(selectedStaffIds);
+    runUndoBatch(
+      {
+        vertical: 'staff',
+        operationType: 'bulk',
+        affectedCount: count,
+        businessId: storeSlice.currentBusinessId,
+        branchId: storeSlice.currentBranchId,
+        toastType: 'warning',
+        toastTitle: isAr ? 'حذف جماعي' : isEn ? 'Bulk Deletion' : 'Suppression groupée',
+        summary: isAr
+          ? `تم حذف ${count} موظف بنجاح`
+          : isEn
+          ? `Deleted ${count} staff members`
+          : `${count} collaborateurs supprimés avec succès`,
+      },
+      () => {
+        ids.forEach((id) => {
+          deleteStaffMember(id);
+        });
+      }
+    );
     setSelectedStaffIds(new Set());
-    showToast({
-      title: isAr ? 'حذف جماعي' : isEn ? 'Bulk Deletion' : 'Suppression groupée',
-      message: isAr
-        ? `تم حذف ${count} موظف بنجاح`
-        : isEn
-        ? `Deleted ${count} staff members`
-        : `${count} collaborateurs supprimés avec succès`,
-      type: 'warning',
-    });
-  }, [selectedStaffIds, deleteStaffMember, isAr, isEn]);
+  }, [
+    selectedStaffIds,
+    storeSlice.currentBusinessId,
+    storeSlice.currentBranchId,
+    deleteStaffMember,
+    isAr,
+    isEn,
+  ]);
 
   const handleDeleteStaff = useCallback(
     (member: StaffMember) => {
@@ -371,21 +402,38 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
 
   const handleBulkPointage = useCallback(() => {
     if (selectedStaffIds.size === 0) return;
-    selectedStaffIds.forEach((id) => {
-      punchStaffAttendance(id);
-    });
     const count = selectedStaffIds.size;
+    const ids = Array.from(selectedStaffIds);
+    runUndoBatch(
+      {
+        vertical: 'staff',
+        operationType: 'bulk',
+        affectedCount: count,
+        businessId: storeSlice.currentBusinessId,
+        branchId: storeSlice.currentBranchId,
+        toastType: 'success',
+        toastTitle: isAr ? 'تسجيل جماعي' : isEn ? 'Bulk Pointage' : 'Pointage groupé',
+        summary: isAr
+          ? `تم تسجيل الحضور جماعياً لـ ${count} موظف`
+          : isEn
+          ? `Bulk check-in logged for ${count} staff`
+          : `Pointage d'entrée enregistré pour ${count} collaborateurs`,
+      },
+      () => {
+        ids.forEach((id) => {
+          punchStaffAttendance(id);
+        });
+      }
+    );
     setSelectedStaffIds(new Set());
-    showToast({
-      title: isAr ? 'تسجيل جماعي' : isEn ? 'Bulk Pointage' : 'Pointage groupé',
-      message: isAr
-        ? `تم تسجيل الحضور جماعياً لـ ${count} موظف`
-        : isEn
-        ? `Bulk check-in logged for ${count} staff`
-        : `Pointage d'entrée enregistré pour ${count} collaborateurs`,
-      type: 'success',
-    });
-  }, [selectedStaffIds, punchStaffAttendance, isAr, isEn]);
+  }, [
+    selectedStaffIds,
+    storeSlice.currentBusinessId,
+    storeSlice.currentBranchId,
+    punchStaffAttendance,
+    isAr,
+    isEn,
+  ]);
 
   const handleResetFilters = useCallback(() => {
     setStatusFilter('all');

@@ -663,14 +663,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
     if (targets.length === 0) return;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: targets.length,
+        summary: isAr
           ? `تحديث المهام (${targets.length})`
           : isFr
           ? `Mise à jour livrables (${targets.length})`
           : `Move deliverables (${targets.length})`,
-        entityType: 'freelanceDeliverable',
       },
       () => {
         targets.forEach((item) => {
@@ -687,14 +687,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
     if (targets.length === 0) return;
     runUndoBatch(
       {
-        category: 'freelance_solo',
+        vertical: 'freelance_solo',
         operationType: 'bulk',
-        label: isAr
+        affectedCount: targets.length,
+        summary: isAr
           ? `حذف المهام (${targets.length})`
           : isFr
           ? `Suppression livrables (${targets.length})`
           : `Delete deliverables (${targets.length})`,
-        entityType: 'freelanceDeliverable',
       },
       () => {
         targets.forEach((item) => {

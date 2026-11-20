@@ -64,7 +64,6 @@ import {
   Building,
   User,
   LayoutDashboard,
-  Undo2,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -99,8 +98,6 @@ import { NotificationDropdown } from './NotificationDropdown';
 import { Menu, MenuTriggerProps } from '@/atrium';
 import { isSupabaseConfigured as checkSupabaseConfigured } from '../../lib/supabase/client';
 import { LiveButton, LiveIconButton } from '../ui/live';
-import { UndoHistoryPopover } from '../ui/UndoHistoryPopover';
-import { useUndoHistory } from '../../services/undoEngine';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -228,11 +225,9 @@ export const TopBar: React.FC<TopBarProps> = ({
     shallowEqualObjects
   );
   const isSupabaseConfigured = checkSupabaseConfigured();
-  const { availableCount: undoAvailableCount } = useUndoHistory(currentBusinessId, currentBranchId);
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [undoHistoryOpen, setUndoHistoryOpen] = useState(false);
   const [networkMenuOpen, setNetworkMenuOpen] = useState(false);
   const [topBarSearch, setTopBarSearch] = useState('');
 
@@ -258,7 +253,6 @@ export const TopBar: React.FC<TopBarProps> = ({
   const userButtonRef = useRef<HTMLButtonElement>(null);
   const networkMenuRef = useRef<HTMLDivElement>(null);
   const notificationMenuRef = useRef<HTMLDivElement>(null);
-  const undoMenuRef = useRef<HTMLDivElement>(null);
 
   // Exclusive toggle handlers: opening one closes all other dropdowns
   const toggleUserMenu = (e?: React.MouseEvent) => {
@@ -268,7 +262,6 @@ export const TopBar: React.FC<TopBarProps> = ({
       if (next) {
         setNetworkMenuOpen(false);
         setNotificationsOpen(false);
-        setUndoHistoryOpen(false);
       }
       return next;
     });
@@ -281,7 +274,6 @@ export const TopBar: React.FC<TopBarProps> = ({
       if (next) {
         setUserMenuOpen(false);
         setNotificationsOpen(false);
-        setUndoHistoryOpen(false);
       }
       return next;
     });
@@ -294,20 +286,6 @@ export const TopBar: React.FC<TopBarProps> = ({
       if (next) {
         setUserMenuOpen(false);
         setNetworkMenuOpen(false);
-        setUndoHistoryOpen(false);
-      }
-      return next;
-    });
-  };
-
-  const toggleUndoHistory = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setUndoHistoryOpen((prev) => {
-      const next = !prev;
-      if (next) {
-        setUserMenuOpen(false);
-        setNetworkMenuOpen(false);
-        setNotificationsOpen(false);
       }
       return next;
     });
@@ -315,7 +293,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   // Auto-close any open dropdown when clicking or touching anywhere outside, or when pressing Escape
   useEffect(() => {
-    const isAnyOpen = userMenuOpen || networkMenuOpen || notificationsOpen || undoHistoryOpen;
+    const isAnyOpen = userMenuOpen || networkMenuOpen || notificationsOpen;
     if (!isAnyOpen) return;
 
     const handlePointerDown = (e: MouseEvent | TouchEvent) => {
@@ -339,10 +317,6 @@ export const TopBar: React.FC<TopBarProps> = ({
           setNotificationsOpen(false);
         }
       }
-
-      if (undoHistoryOpen && undoMenuRef.current && !undoMenuRef.current.contains(target)) {
-        setUndoHistoryOpen(false);
-      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -350,7 +324,6 @@ export const TopBar: React.FC<TopBarProps> = ({
         setUserMenuOpen(false);
         setNetworkMenuOpen(false);
         setNotificationsOpen(false);
-        setUndoHistoryOpen(false);
       }
     };
 
@@ -527,7 +500,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         members: { roleKey: 'rh', role: t('pm_role_rh_name'), screen: t('pm_screen_rh_talents'), icon: Users },
         finance: { roleKey: 'compta', role: t('pm_role_compta_name'), screen: t('pm_screen_compta_payroll'), icon: Wallet },
         shop: { roleKey: 'compta', role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock'), icon: Boxes },
-        history: { roleKey: 'superviseur', role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_attendance'), icon: Clock },
+        history: { roleKey: 'direction', role: t('pm_role_direction_name'), screen: t('nav_history', language), icon: History },
       };
 
       const fallbackRoleKey: keyof typeof pmRoleLandings =
@@ -648,10 +621,12 @@ export const TopBar: React.FC<TopBarProps> = ({
           case 'shop': return { label: l3('الوصفات', 'Ordonnances', 'Prescriptions'), icon: Stethoscope };
           case 'registrations': return { label: l3('الشهادات', 'Certificats', 'Certificates'), icon: FileText };
           case 'finance': return { label: t('nav_finance', language), icon: CreditCard };
+          case 'history': return { label: t('nav_history', language), icon: History };
           default: return null;
         }
       }
       if (cat === 'auto_garage') {
+        if (activeScreen === 'history') return { label: t('nav_history', language), icon: History };
         if (activeScreen === 'scheduler') {
           if (activeGarageRole === 'reception') return { label: l3('الاستقبال', 'Réception', 'Intake'), icon: Wrench };
           if (activeGarageRole === 'mecanicien') return { label: l3('الأرصفة', 'Ponts', 'Bays'), icon: Wrench };
@@ -691,6 +666,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             return activeRealEstateRole === 'notaire_compta'
               ? { label: l3('الحسابات', 'Comptes', 'Closing'), icon: Scale }
               : { label: l3('الوصولات', 'Quittances', 'Receipts'), icon: Receipt };
+          case 'history': return { label: t('nav_history', language), icon: History };
           default: return null;
         }
       }
@@ -723,8 +699,10 @@ export const TopBar: React.FC<TopBarProps> = ({
           if (activeManufacturingRole === 'qualite') return { label: l3('الجودة', 'Contrôle', 'Quality'), icon: ShieldCheck };
           return { label: l3('الجودة', 'Qualité', 'Quality'), icon: ShieldCheck };
         }
+        if (activeScreen === 'history') return { label: t('nav_history', language), icon: History };
       }
       if (cat === 'legal_accounting') {
+        if (activeScreen === 'history') return { label: t('nav_history', language), icon: History };
         if (activeLegalRole === 'notaire_titulaire') {
           switch (activeScreen) {
             case 'members': return { label: l3('العقود', 'Actes', 'Deeds'), icon: BookOpen };
@@ -756,6 +734,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         }
       }
       if (cat === 'logistics_delivery') {
+        if (activeScreen === 'history') return { label: t('nav_history', language), icon: History };
         if (activeScreen === 'members') {
           return {
             label:
@@ -794,6 +773,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         }
       }
       if (cat === 'construction_contractor') {
+        if (activeScreen === 'history') return { label: t('nav_history', language), icon: History };
         if (activeContractorRole === 'gerant') {
           switch (activeScreen) {
             case 'members': return { label: l3('المشاريع', 'Projets', 'Projects'), icon: Building };
@@ -843,6 +823,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             };
           case 'registrations': return { label: l3('المواشي', 'Cheptel', 'Livestock'), icon: Layers };
           case 'finance': return { label: l3('الميزان', 'Bascule', 'Weighbridge'), icon: Wallet };
+          case 'history': return { label: t('nav_history', language), icon: History };
           default: return null;
         }
       }
@@ -864,6 +845,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           case 'registrations': return { label: terminology.registration, icon: ClipboardList };
           case 'analytics': return { label: t('nav_edu_attendance', language), icon: Award };
           case 'finance': return { label: t('nav_finance', language), icon: Wallet };
+          case 'history': return { label: t('nav_history', language), icon: History };
           default: return null;
         }
       }
@@ -875,6 +857,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           case 'shop': return { label: terminology.shop, icon: DoorOpen };
           case 'members': return { label: terminology.members, icon: Users };
           case 'finance': return { label: t('nav_finance', language), icon: ShieldCheck };
+          case 'history': return { label: t('nav_history', language), icon: History };
           default: return null;
         }
       }
@@ -1023,34 +1006,6 @@ export const TopBar: React.FC<TopBarProps> = ({
           }
           aria-label="Refresh and sync"
         />
-
-        {/* TopBar Global Undo History & Filter Trigger */}
-        <div ref={undoMenuRef} className="relative">
-          <LiveIconButton
-            icon={<Undo2 size={18} strokeWidth={1.6} />}
-            badge={undoAvailableCount > 0 ? (undoAvailableCount > 9 ? '9+' : undoAvailableCount) : null}
-            tone={undoHistoryOpen ? 'accent' : 'soft'}
-            onClick={toggleUndoHistory}
-            title={
-              language === 'ar'
-                ? 'سجل التراجع (Ctrl+Z)'
-                : language === 'fr'
-                ? "Historique d'annulation (Ctrl+Z)"
-                : 'Undo History (Ctrl+Z)'
-            }
-            aria-label="Open undo history and filter"
-            className="!w-[var(--top-ctl-h,40px)] !h-[var(--top-ctl-h,40px)] !rounded-full"
-          />
-
-          <UndoHistoryPopover
-            isOpen={undoHistoryOpen}
-            onClose={() => setUndoHistoryOpen(false)}
-            businessId={currentBusinessId}
-            branchId={currentBranchId}
-            currentCategory={currentBusiness?.category}
-            language={language}
-          />
-        </div>
 
         {/* TopBar Notification Bell & Center Trigger */}
         <div ref={notificationMenuRef} className="relative">

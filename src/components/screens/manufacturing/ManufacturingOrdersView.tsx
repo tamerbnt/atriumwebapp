@@ -15,7 +15,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { ManufacturingOrder } from '../../../types';
 import { useManufacturingData } from './manufacturingData';
@@ -203,17 +203,18 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
       runUndoBatch(
         {
           operationType: 'bulk',
-          vertical: 'manufacturing',
-          label: {
+          vertical: 'manufacturing_production',
+          affectedCount: count,
+          summary: pickLocalizedText(language, {
             fr: `${count} ordres de fabrication supprimés`,
             en: `${count} manufacturing orders deleted`,
             ar: `تم حذف ${count} أوامر تصنيع`,
-          },
-          moduleLabel: {
+          }),
+          toastTitle: pickLocalizedText(language, {
             fr: 'Ordres de Fabrication',
             en: 'Manufacturing Orders',
             ar: 'أوامر التصنيع',
-          },
+          }),
         },
         () => {
           ids.forEach((id) => deleteOrder(id));
@@ -222,7 +223,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
       if (selectedOrder && ids.has(selectedOrder.id)) setSelectedOrder(null);
       setSelectedIds(new Set());
     },
-    [deleteOrder, selectedOrder]
+    [deleteOrder, selectedOrder, language]
   );
 
   const handleTogglePin = useCallback((o: ManufacturingOrder) => {

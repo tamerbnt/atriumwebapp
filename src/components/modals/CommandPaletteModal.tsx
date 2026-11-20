@@ -127,6 +127,25 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       },
     });
 
+    const canAccessHistoryScreen = (() => {
+      if (category === 'project_milestone') return activePmRole === 'direction';
+      if (category === 'freelance_solo' || category === 'rental_booking' || category === 'trading_commercial' || category === 'medical_clinic') {
+        return true;
+      }
+      if (category === 'membership_session') return activeMembershipRole !== 'staff';
+      if (category === 'appointment_service') return activeAppointmentRole !== 'staff';
+      if (category === 'pos_inventory') return activePosRole !== 'staff';
+      if (category === 'education_cohort') return activeEducationRole !== 'staff';
+      if (category === 'auto_garage') return !['reception', 'mecanicien', 'magasinier', 'caisse'].includes(activeGarageRole || '');
+      if (category === 'real_estate') return !activeRealEstateRole || activeRealEstateRole === 'direction';
+      if (category === 'manufacturing_production') return !activeManufacturingRole || activeManufacturingRole === 'gerant';
+      if (category === 'legal_accounting') return activeLegalRole !== 'secretaire_caisse';
+      if (category === 'logistics_delivery') return !['dispatcher', 'hub_sorter', 'stop_desk_agent'].includes(activeLogisticsRole || '');
+      if (category === 'construction_contractor') return !activeContractorRole || activeContractorRole === 'gerant';
+      if (category === 'agriculture_farming') return !['chef_culture', 'zootechnicien', 'magasinier'].includes(activeAgriRole || '');
+      return true;
+    })();
+
     if (category === 'project_milestone') {
       const pmNavItems: Array<{ id: ActiveScreen; label: string; role: string; icon: React.ReactNode }> = [
         // Direction
@@ -134,6 +153,9 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         { id: 'pm_dir_new_project', label: t('pm_screen_dir_new_project'), role: t('pm_role_direction_name'), icon: <FileText size={15} /> },
         { id: 'pm_dir_approvals', label: t('pm_screen_dir_approvals'), role: t('pm_role_direction_name'), icon: <ShieldCheck size={15} /> },
         { id: 'pm_dir_reports', label: t('pm_screen_dir_reports'), role: t('pm_role_direction_name'), icon: <BarChart2 size={15} /> },
+        ...(canAccessHistoryScreen
+          ? [{ id: 'history' as ActiveScreen, label: t('nav_history', language), role: t('pm_role_direction_name'), icon: <History size={15} /> }]
+          : []),
         // Chef de Projet
         { id: 'pm_cp_projects', label: t('pm_screen_cp_projects'), role: t('pm_role_chef_projet_name'), icon: <Kanban size={15} /> },
         { id: 'pm_cp_catalog', label: t('pm_screen_cp_catalog'), role: t('pm_role_chef_projet_name'), icon: <ShoppingBag size={15} /> },
@@ -186,6 +208,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         { id: 'trading_directory', label: t('nav_trading_directory', language), icon: <Building2 size={15} /> },
         { id: 'trading_catalog', label: t('nav_trading_catalog', language), icon: <ShoppingBag size={15} /> },
         { id: 'trading_finance', label: t('nav_trading_finance', language), icon: <CreditCard size={15} /> },
+        ...(canAccessHistoryScreen ? [{ id: 'history' as ActiveScreen, label: t('nav_history', language), icon: <History size={15} /> }] : []),
         { id: 'settings', label: t('nav_settings', language), icon: <Settings size={15} /> },
       ];
 
@@ -209,7 +232,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         { id: 'shop', label: `${terminology.shop}`, icon: <ShoppingBag size={15} /> },
         { id: 'registrations', label: `${terminology.registration}`, icon: <FileText size={15} /> },
         { id: 'finance', label: t('nav_finance', language), icon: <CreditCard size={15} /> },
-        { id: 'history', label: t('nav_history', language), icon: <History size={15} /> },
+        ...(canAccessHistoryScreen ? [{ id: 'history' as ActiveScreen, label: t('nav_history', language), icon: <History size={15} /> }] : []),
         { id: 'settings', label: t('nav_settings', language), icon: <Settings size={15} /> },
       ];
 

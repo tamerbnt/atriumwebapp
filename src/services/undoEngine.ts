@@ -367,7 +367,9 @@ export function registerUndoEntry(params: RegisterUndoParams): UndoHistoryEntry 
       hasUndo: true,
       undoLabel: params.undoLabel || getUndoButtonLabel(language),
       category,
-      onUndo: () => triggerUndoById(entryId),
+      onUndo: async () => {
+        await triggerUndoById(entryId);
+      },
     });
   }
 
@@ -579,7 +581,9 @@ export async function triggerRedoById(entryId: string): Promise<boolean> {
         hasUndo: true,
         undoLabel: getUndoButtonLabel(language),
         category: ctx?.category,
-        onUndo: () => triggerUndoById(entryId),
+        onUndo: async () => {
+          await triggerUndoById(entryId);
+        },
       });
     }
     return true;
@@ -612,6 +616,20 @@ export async function undoLatestForBranch(
   });
   if (!candidate) return false;
   return triggerUndoById(candidate.id);
+}
+
+export async function redoLatestForBranch(
+  businessId?: string,
+  branchId?: string
+): Promise<boolean> {
+  const candidate = undoHistoryEntries.find((e) => {
+    if (e.status !== 'undone' || !e.redo) return false;
+    if (businessId && e.businessId !== businessId) return false;
+    if (branchId && e.branchId !== branchId) return false;
+    return true;
+  });
+  if (!candidate) return false;
+  return triggerRedoById(candidate.id);
 }
 
 export function clearUndoHistory(businessId?: string, branchId?: string): void {

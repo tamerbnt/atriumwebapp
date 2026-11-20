@@ -311,9 +311,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     if (!selectedRenterId) {
       runUndoBatch(
         {
-          category: 'rental_booking',
+          vertical: 'rental_booking',
           operationType: bookingToEdit ? 'edit' : 'create',
-          label: bookingToEdit
+          summary: bookingToEdit
             ? language === 'ar'
               ? `تعديل حجز: ${purpose.trim()}`
               : language === 'fr'
@@ -324,7 +324,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             : language === 'fr'
             ? `Nouvelle réservation : ${purpose.trim()}`
             : `New booking: ${purpose.trim()}`,
-          entityType: 'rentalBooking',
+          entityLabel: purpose.trim(),
         },
         commitBooking
       );

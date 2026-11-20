@@ -1785,16 +1785,15 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                         const prevNote = projectNotesMap[proj.id] || '';
                         setProjectNotesMap((prev) => ({ ...prev, [proj.id]: next }));
                         registerUndoEntry({
-                          category: 'project_management',
+                          vertical: 'project_milestone',
                           operationType: 'edit',
-                          label: localizeText(
+                          summary: localizeText(
                             language,
                             `Directive : ${proj.title}`,
                             `Directive: ${proj.title}`,
                             `توجيه: ${proj.title}`
                           ),
-                          entityType: 'pmProject',
-                          entityId: proj.id,
+                          entityLabel: proj.title,
                           branchId: proj.facilityId || currentBranch?.id,
                           undo: () => {
                             setProjectNotesMap((prev) => ({ ...prev, [proj.id]: prevNote }));

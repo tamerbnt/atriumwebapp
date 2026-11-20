@@ -24,6 +24,8 @@ import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { t } from '../../../utils/i18n';
+import { useUndoHistory } from '../../../services/undoEngine';
+import { EmbeddedUndoHistoryPanel } from '../../ui/EmbeddedUndoHistoryPanel';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import {
   ScreenHeaderBar,
@@ -55,6 +57,8 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
   const {
     sales,
     branches,
+    currentBusinessId,
+    currentBranchId,
     currentBranch,
     language,
     isSyncing,
@@ -65,6 +69,8 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
     (s) => ({
       sales: selectCurrentSalesFromState(s),
       branches: s.branches,
+      currentBusinessId: s.currentBusinessId,
+      currentBranchId: s.currentBranchId,
       currentBranch: selectCurrentBranchFromState(s),
       language: s.language,
       isSyncing: s.isSyncing,
@@ -76,6 +82,16 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
   );
 
   const { setScreen, refundSale, retryCloudSync } = useAtriumActions();
+  const { entries: undoEntries } = useUndoHistory(currentBusinessId, currentBranchId);
+  const membershipUndoCount = useMemo(
+    () =>
+      undoEntries.filter(
+        (e) =>
+          (e.vertical === 'membership_session' || e.vertical === 'settings') &&
+          e.status === 'available'
+      ).length,
+    [undoEntries]
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [methodFilter, setMethodFilter] = useState('All');
@@ -321,7 +337,8 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
     { value: 'All', label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All', count: statusCounts.all },
     { value: 'Settled', label: language === 'ar' ? 'مسدد' : language === 'fr' ? 'Encaissé' : 'Settled', count: statusCounts.settled },
     { value: 'Refunded', label: language === 'ar' ? 'مسترجع' : language === 'fr' ? 'Remboursé' : 'Refunded', count: statusCounts.refunded },
-  ], [language, statusCounts]);
+    { value: 'Annulations', label: language === 'ar' ? 'الإلغاءات' : language === 'fr' ? 'Annulations' : 'Undos', count: membershipUndoCount },
+  ], [language, statusCounts, membershipUndoCount]);
 
   const filterSections = useMemo<KineticFilterSection[]>(() => [
     {
@@ -594,64 +611,76 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
           statusOptions={statusOptions}
           statusValue={statusFilter}
           onStatusChange={setStatusFilter}
-          hasActiveAdvancedFilters={hasActiveAdvancedFilters}
-          activeFiltersCount={activeFiltersCount}
-          isFilterModalOpen={isFilterModalOpen}
+          hasActiveAdvancedFilters={statusFilter !== 'Annulations' && hasActiveAdvancedFilters}
+          activeFiltersCount={statusFilter === 'Annulations' ? 0 : activeFiltersCount}
+          isFilterModalOpen={statusFilter !== 'Annulations' && isFilterModalOpen}
           filterButtonRef={filterButtonRef}
-          onToggleFilterModal={() => setIsFilterModalOpen((p) => !p)}
+          onToggleFilterModal={statusFilter === 'Annulations' ? undefined : () => setIsFilterModalOpen((p) => !p)}
           viewMode={viewMode}
           onViewModeChange={(mode) => setViewMode(mode === 'grid' ? 'grid' : 'list')}
-          onExport={handleExportCSV}
-          activeChips={activeChips}
-          onResetAllFilters={handleResetFilters}
+          showViewToggle={statusFilter !== 'Annulations'}
+          onExport={statusFilter === 'Annulations' ? undefined : handleExportCSV}
+          activeChips={statusFilter === 'Annulations' ? [] : activeChips}
+          onResetAllFilters={statusFilter === 'Annulations' ? undefined : handleResetFilters}
         />
 
-        <UniversalDataCollection<Sale>
-          items={sortedSales}
-          keyExtractor={(s) => s.id}
-          viewMode={viewMode}
-          pageSize={50}
-          hideToolbar
-          openItemId={selectedSale?.id ?? null}
-          sortBy={saleSortBy}
-          sortDirection={saleSortDir}
-          onSortChange={(key, dir) => {
-            setSaleSortBy(key);
-            setSaleSortDir(dir);
-          }}
-          selectedIds={selectedSaleIds}
-          onSelectionChange={setSelectedSaleIds}
-          pinnedIds={pinnedSaleIds}
-          onPinToggle={(s: any) => {
-            const id = typeof s === 'string' ? s : s.id;
-            setPinnedSaleIds((prev) => {
-              const next = new Set(prev);
-              if (next.has(id)) next.delete(id);
-              else next.add(id);
-              return next;
-            });
-          }}
-          onItemClick={(sale, opener) => {
-            setDrawerOpenerEl(opener || null);
-            setSelectedSale(sale);
-          }}
-          onViewDetails={(sale, opener) => {
-            setDrawerOpenerEl(opener || null);
-            setSelectedSale(sale);
-          }}
-          getRowMeta={getRowMeta}
-          getFanActions={getFanActions}
-          getDetailActions={getDetailActions}
-          columns={saleColumns}
-          emptyTitle={language === 'ar' ? 'لا توجد معاملات' : 'No sales transactions found'}
-          emptyDescription={
-            language === 'ar'
-              ? 'جرب تغيير شروط البحث أو مسح المرشحات'
-              : 'Try adjusting your search terms or clearing filters.'
-          }
-          onResetFilters={handleResetFilters}
-          hasActiveFilters={hasActiveAdvancedFilters || statusFilter !== 'All' || searchQuery.trim().length > 0}
-        />
+        {statusFilter === 'Annulations' ? (
+          <EmbeddedUndoHistoryPanel
+            businessId={currentBusinessId}
+            branchId={currentBranchId}
+            vertical="membership_session"
+            language={language}
+            externalSearchQuery={searchQuery}
+            onExternalSearchChange={setSearchQuery}
+          />
+        ) : (
+          <UniversalDataCollection<Sale>
+            items={sortedSales}
+            keyExtractor={(s) => s.id}
+            viewMode={viewMode}
+            pageSize={50}
+            hideToolbar
+            openItemId={selectedSale?.id ?? null}
+            sortBy={saleSortBy}
+            sortDirection={saleSortDir}
+            onSortChange={(key, dir) => {
+              setSaleSortBy(key);
+              setSaleSortDir(dir);
+            }}
+            selectedIds={selectedSaleIds}
+            onSelectionChange={setSelectedSaleIds}
+            pinnedIds={pinnedSaleIds}
+            onPinToggle={(s: any) => {
+              const id = typeof s === 'string' ? s : s.id;
+              setPinnedSaleIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(id)) next.delete(id);
+                else next.add(id);
+                return next;
+              });
+            }}
+            onItemClick={(sale, opener) => {
+              setDrawerOpenerEl(opener || null);
+              setSelectedSale(sale);
+            }}
+            onViewDetails={(sale, opener) => {
+              setDrawerOpenerEl(opener || null);
+              setSelectedSale(sale);
+            }}
+            getRowMeta={getRowMeta}
+            getFanActions={getFanActions}
+            getDetailActions={getDetailActions}
+            columns={saleColumns}
+            emptyTitle={language === 'ar' ? 'لا توجد معاملات' : 'No sales transactions found'}
+            emptyDescription={
+              language === 'ar'
+                ? 'جرب تغيير شروط البحث أو مسح المرشحات'
+                : 'Try adjusting your search terms or clearing filters.'
+            }
+            onResetFilters={handleResetFilters}
+            hasActiveFilters={hasActiveAdvancedFilters || statusFilter !== 'All' || searchQuery.trim().length > 0}
+          />
+        )}
       </ScreenPod>
 
       <KineticFilterModal

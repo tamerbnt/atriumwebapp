@@ -798,14 +798,14 @@ export const EducationStudentsView: React.FC = () => {
               if (ids.size === 0) return;
               runUndoBatch(
                 {
-                  category: 'education_cohort',
+                  vertical: 'education_cohort',
                   operationType: 'bulk',
-                  label: isAr
+                  affectedCount: ids.size,
+                  summary: isAr
                     ? `تفعيل طلبة (${ids.size})`
                     : isEn
                     ? `Activate students (${ids.size})`
                     : `Activation étudiants (${ids.size})`,
-                  entityType: 'eduStudent',
                 },
                 () => {
                   ids.forEach((id) => updateEduStudent(id, { status: 'Active' }));
@@ -819,14 +819,14 @@ export const EducationStudentsView: React.FC = () => {
             if (ids.size === 0) return;
             runUndoBatch(
               {
-                category: 'education_cohort',
+                vertical: 'education_cohort',
                 operationType: 'bulk',
-                label: isAr
+                affectedCount: ids.size,
+                summary: isAr
                   ? `حذف طلبة (${ids.size})`
                   : isEn
                   ? `Delete students (${ids.size})`
                   : `Suppression étudiants (${ids.size})`,
-                entityType: 'eduStudent',
               },
               () => {
                 ids.forEach((id) => deleteEduStudent(id));

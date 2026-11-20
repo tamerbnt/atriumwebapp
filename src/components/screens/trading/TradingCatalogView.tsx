@@ -638,14 +638,14 @@ export const TradingCatalogView: React.FC = () => {
             if (ids.size === 0) return;
             runUndoBatch(
               {
-                category: 'pos_inventory',
+                vertical: 'trading_commercial',
                 operationType: 'bulk',
-                label: isAr
+                affectedCount: ids.size,
+                summary: isAr
                   ? `حذف منتجات (${ids.size})`
                   : isEn
                   ? `Delete items (${ids.size})`
                   : `Suppression articles (${ids.size})`,
-                entityType: 'product',
               },
               () => {
                 ids.forEach((id) => deleteProduct(id));

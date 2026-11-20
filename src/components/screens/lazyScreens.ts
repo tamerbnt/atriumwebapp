@@ -134,3 +134,16 @@ export const RealEstateStaffView = lazyNamed<any>(() => import('./realestate/Rea
 export const TradingStaffView = lazyNamed<any>(() => import('./trading/TradingStaffView'), 'TradingStaffView');
 export const VenueStaffView = lazyNamed<any>(() => import('./venue/VenueStaffView'), 'VenueStaffView');
 export const FreelanceStaffView = lazyNamed<any>(() => import('./freelance/FreelanceStaffView'), 'FreelanceStaffView');
+export const ProjectHistoryView = lazyNamed<any>(() => import('./project/ProjectHistoryView'), 'ProjectHistoryView');
+export const FreelanceHistoryView = lazyNamed<any>(() => import('./freelance/FreelanceHistoryView'), 'FreelanceHistoryView');
+export const VenueHistoryView = lazyNamed<any>(() => import('./venue/VenueHistoryView'), 'VenueHistoryView');
+export const EducationHistoryView = lazyNamed<any>(() => import('./education/EducationHistoryView'), 'EducationHistoryView');
+export const TradingHistoryView = lazyNamed<any>(() => import('./trading/TradingHistoryView'), 'TradingHistoryView');
+export const MedicalHistoryView = lazyNamed<any>(() => import('./medical/MedicalHistoryView'), 'MedicalHistoryView');
+export const AutoGarageHistoryView = lazyNamed<any>(() => import('./garage/AutoGarageHistoryView'), 'AutoGarageHistoryView');
+export const RealEstateHistoryView = lazyNamed<any>(() => import('./realestate/RealEstateHistoryView'), 'RealEstateHistoryView');
+export const ManufacturingHistoryView = lazyNamed<any>(() => import('./manufacturing/ManufacturingHistoryView'), 'ManufacturingHistoryView');
+export const LegalHistoryView = lazyNamed<any>(() => import('./legal/LegalHistoryView'), 'LegalHistoryView');
+export const LogisticsHistoryView = lazyNamed<any>(() => import('./logistics/LogisticsHistoryView'), 'LogisticsHistoryView');
+export const ContractorHistoryView = lazyNamed<any>(() => import('./contractor/ContractorHistoryView'), 'ContractorHistoryView');
+export const AgricultureHistoryView = lazyNamed<any>(() => import('./agriculture/AgricultureHistoryView'), 'AgricultureHistoryView');

@@ -762,14 +762,14 @@ export const EducationTimetableView: React.FC = () => {
             if (ids.size === 0) return;
             runUndoBatch(
               {
-                category: 'education_cohort',
+                vertical: 'education_cohort',
                 operationType: 'bulk',
-                label: isAr
+                affectedCount: ids.size,
+                summary: isAr
                   ? `حذف حصص (${ids.size})`
                   : isEn
                   ? `Delete sessions (${ids.size})`
                   : `Suppression séances (${ids.size})`,
-                entityType: 'eduSession',
               },
               () => {
                 ids.forEach((id) => deleteEduSession(id));

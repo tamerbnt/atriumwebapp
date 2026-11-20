@@ -17,7 +17,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
-import { runUndoBatch } from '../../../services/undoEngine';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useContractorData } from './contractorData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -825,17 +825,18 @@ export const ContractorBoqView: React.FC<any> = () => {
             runUndoBatch(
               {
                 operationType: 'bulk',
-                vertical: 'contractor',
-                label: {
+                vertical: 'construction_contractor',
+                affectedCount: count,
+                summary: pickLocalizedText(language, {
                   fr: `${count} postes BOQ supprimés`,
                   en: `${count} BOQ items deleted`,
                   ar: `تم حذف ${count} بنود مقايسة`,
-                },
-                moduleLabel: {
+                }),
+                toastTitle: pickLocalizedText(language, {
                   fr: 'Bordereau BOQ',
                   en: 'BOQ Schedule',
                   ar: 'المقايسة BOQ',
-                },
+                }),
               },
               () => {
                 ids.forEach((id) => deleteBoqItem(id));
