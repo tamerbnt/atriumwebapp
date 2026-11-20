@@ -849,49 +849,59 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         }}
       />
 
-      <div className="flex items-center gap-2 p-1.5 bg-neutral-100 dark:bg-neutral-850 rounded-2xl w-fit border border-neutral-200/80 dark:border-neutral-800">
+      <div
+        data-sq="ctl"
+        data-sq-border="solid"
+        className="flex items-center gap-1 p-[3px] bg-neutral-100 dark:bg-neutral-850 w-fit border border-neutral-200/80 dark:border-neutral-800"
+      >
         <button
           type="button"
           onClick={() => setActiveSection('logs')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+          data-sq="thumb"
+          data-sq-border="none"
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold transition-all cursor-pointer ${
             activeSection === 'logs'
-              ? 'bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs'
+              ? 'bg-white dark:bg-neutral-800 text-[#d4522f]'
               : 'text-black/70 dark:text-white/75 hover:text-black'
           }`}
         >
           <Calendar size={14} />
           <span>{isAr ? 'محاضر الورشة والحضور' : 'Journaux & Effectifs'}</span>
-          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 dark:bg-neutral-700">
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700">
             {projectLogs.length}
           </span>
         </button>
         <button
           type="button"
           onClick={() => setActiveSection('concrete')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+          data-sq="thumb"
+          data-sq-border="none"
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold transition-all cursor-pointer ${
             activeSection === 'concrete'
-              ? 'bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs'
+              ? 'bg-white dark:bg-neutral-800 text-[#d4522f]'
               : 'text-black/70 dark:text-white/75 hover:text-black'
           }`}
         >
           <Layers size={14} />
           <span>{isAr ? 'صبات الخرسانة ومطابقة CTC' : 'Coulées Béton & CTC (CBA 93)'}</span>
-          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 dark:bg-neutral-700">
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700">
             {projectConcretePours.length}
           </span>
         </button>
         <button
           type="button"
           onClick={() => setActiveSection('equipment')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+          data-sq="thumb"
+          data-sq-border="none"
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold transition-all cursor-pointer ${
             activeSection === 'equipment'
-              ? 'bg-white dark:bg-neutral-800 text-[#d4522f] shadow-xs'
+              ? 'bg-white dark:bg-neutral-800 text-[#d4522f]'
               : 'text-black/70 dark:text-white/75 hover:text-black'
           }`}
         >
           <Fuel size={14} />
           <span>{isAr ? 'ساعات العتاد والوقود' : 'Parc Engins & Gasoil'}</span>
-          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 dark:bg-neutral-700">
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700">
             {projectEquipmentLogs.length}
           </span>
         </button>
@@ -1024,7 +1034,12 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
       )}
 
       {activeSection === 'concrete' && (
-        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4">
+        <div className="sq-elev-card">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-[#F3EDE7] dark:bg-[#141312] p-3 border border-[#E6DED6] dark:border-[#33302D] space-y-4"
+        >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
               {isAr
@@ -1060,7 +1075,9 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
               return (
                 <div
                   key={pour.id}
-                  className="bg-white dark:bg-neutral-850 rounded-[20px] p-4 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between space-y-3"
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="bg-white dark:bg-neutral-850 p-4 border border-[#E6DED6] dark:border-neutral-800 flex flex-col justify-between space-y-3"
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
@@ -1121,7 +1138,12 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                     </div>
                   </div>
                   {isLockedFromDeshoring ? (
-                    <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 space-y-1">
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
+                      className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 space-y-1"
+                    >
                       <div className="flex items-center gap-1.5 font-bold text-[11px]">
                         <AlertOctagon size={13} className="text-amber-600 shrink-0" />
                         <span>Alerte CTC : Lockout Décoffrage</span>
@@ -1132,7 +1154,12 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                       </p>
                     </div>
                   ) : (
-                    <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 text-[11px] font-semibold">
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      style={{ '--sq-stroke': 'rgba(16, 185, 129, 0.35)' } as React.CSSProperties}
+                      className="p-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 text-[11px] font-semibold"
+                    >
                       <CheckCircle2 size={13} className="shrink-0" />
                       <span>Conforme · Visa CTC accordé</span>
                     </div>
@@ -1141,6 +1168,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
               );
             })}
           </div>
+        </div>
         </div>
       )}
 
@@ -1531,23 +1559,28 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 
       {isLogModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-xl shadow-xl space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center gap-2">
-                <Calendar size={20} className="text-[#d4522f]" />
-                <h3 className="font-bold text-base text-black dark:text-white">
-                  {isAr ? 'محضر ورشة يومي وتعداد المهن' : 'Nouveau Rapport Journalier & Pointage'}
-                </h3>
+          <div className="sq-elev-pop w-full max-w-xl">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 w-full space-y-5 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-2">
+                  <Calendar size={20} className="text-[#d4522f]" />
+                  <h3 className="font-bold text-base text-black dark:text-white">
+                    {isAr ? 'محضر ورشة يومي وتعداد المهن' : 'Nouveau Rapport Journalier & Pointage'}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setIsLogModalOpen(false)}
+                  className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                type="button"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsLogModalOpen(false)}
-                className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"
-              >
-                <X size={18} />
-              </button>
-            </div>
             <form onSubmit={handleCreateLog} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
@@ -1569,7 +1602,11 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   ]}
                 />
               </div>
-              <div className="p-3.5 bg-neutral-50 dark:bg-neutral-850 rounded-2xl border border-neutral-200 dark:border-neutral-800 space-y-3">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3.5 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-3"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-xs font-bold text-black dark:text-white block">
@@ -1593,7 +1630,9 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   ].map((c) => (
                     <div
                       key={c.label}
-                      className="p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between"
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      className="p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between"
                     >
                       <div>
                         <span className="text-[11px] font-medium block">{c.label}</span>
@@ -1603,14 +1642,18 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                         <button
                           type="button"
                           onClick={() => c.set((n) => Math.max(0, n - 1))}
-                          className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"
+                          data-sq="check"
+                          data-sq-border="none"
+                          className="w-6 h-6 bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"
                         >
                           <Minus size={12} />
                         </button>
                         <button
                           type="button"
                           onClick={() => c.set((n) => n + 1)}
-                          className="w-6 h-6 rounded bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"
+                          data-sq="check"
+                          data-sq-border="none"
+                          className="w-6 h-6 bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"
                         >
                           <Plus size={12} />
                         </button>
@@ -1657,31 +1700,37 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
 
       {isConcreteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-lg shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center gap-2">
-                <Layers size={20} className="text-[#d4522f]" />
-                <h3 className="font-bold text-base text-black dark:text-white">
-                  {isAr
-                    ? 'تسجيل صبة خرسانة وعينات مخبرية CTC'
-                    : 'Enregistrement Coulée & Prélèvement CTC'}
-                </h3>
+          <div className="sq-elev-pop w-full max-w-lg">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 w-full space-y-4"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-2">
+                  <Layers size={20} className="text-[#d4522f]" />
+                  <h3 className="font-bold text-base text-black dark:text-white">
+                    {isAr
+                      ? 'تسجيل صبة خرسانة وعينات مخبرية CTC'
+                      : 'Enregistrement Coulée & Prélèvement CTC'}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setIsConcreteModalOpen(false)}
+                  className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                type="button"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsConcreteModalOpen(false)}
-                className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"
-              >
-                <X size={18} />
-              </button>
-            </div>
             <form onSubmit={handleCreateConcretePour} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
@@ -1765,29 +1814,35 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
 
       {isEquipmentModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-lg shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center gap-2">
-                <Fuel size={20} className="text-[#d4522f]" />
-                <h3 className="font-bold text-base text-black dark:text-white">
-                  {isAr ? 'تسجيل ساعات عمل الآلية والوقود' : 'Relevé Compteur Horaire & Plein Gasoil'}
-                </h3>
+          <div className="sq-elev-pop w-full max-w-lg">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 w-full space-y-4"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-2">
+                  <Fuel size={20} className="text-[#d4522f]" />
+                  <h3 className="font-bold text-base text-black dark:text-white">
+                    {isAr ? 'تسجيل ساعات عمل الآلية والوقود' : 'Relevé Compteur Horaire & Plein Gasoil'}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setIsEquipmentModalOpen(false)}
+                  className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                type="button"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsEquipmentModalOpen(false)}
-                className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"
-              >
-                <X size={18} />
-              </button>
-            </div>
             <form onSubmit={handleCreateEquipmentLog} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
@@ -1859,6 +1914,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

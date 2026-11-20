@@ -73,3 +73,213 @@ export function metaball(r1: number, r2: number, c1: Pt, c2: Pt, handle: number,
     `A${f(r1)} ${f(r1)} 0 ${d > r2 ? 1 : 0} 0 ${s(p1)}Z`
   );
 }
+
+/* ==========================================================================
+   60% Continuous Squircle Geometry (Figma / figma-squircle construction)
+   ========================================================================== */
+
+const SQ_DEFAULT_SMOOTHING = 0.6;
+const DEG = Math.PI / 180;
+const SQRT2 = Math.SQRT2;
+const f3 = (n: number): string => (Math.round(n * 1000) / 1000).toString();
+
+export interface SquircleParams {
+  w: number;
+  h: number;
+  r: number;
+  s: number;
+  p: number;
+  a: number;
+  b: number;
+  c: number;
+  d: number;
+  L: number;
+}
+
+/**
+ * Computes exact Figma-equivalent squircle corner parameters for width `w`, height `h`,
+ * corner radius `r`, and smoothing `smoothing` (default 0.6).
+ */
+export function computeSquircleParams(
+  w: number,
+  h: number,
+  r: number,
+  smoothing = SQ_DEFAULT_SMOOTHING,
+): SquircleParams {
+  const B = Math.min(w, h) / 2;
+  if (B <= 0 || r <= 0) {
+    return { w, h, r: 0, s: 0, p: 0, a: 0, b: 0, c: 0, d: 0, L: 0 };
+  }
+  const cr = Math.min(Math.max(0, r), B);
+  const rawS = Math.max(0, smoothing);
+  const p = Math.min((1 + rawS) * cr, B);
+  const s = cr > 0 ? Math.max(0, Math.min(rawS, B / cr - 1)) : 0;
+  const arcDeg = 90 * (1 - s);
+  const L = Math.sin((arcDeg / 2) * DEG) * cr * SQRT2;
+  const t = cr * Math.tan(((90 - arcDeg) / 4) * DEG);
+  const beta = 45 * s * DEG;
+  const c = t * Math.cos(beta);
+  const d = c * Math.tan(beta);
+  const b = Math.max(0, (p - L - c - d) / 3);
+  const a = 2 * b;
+  return { w, h, r: cr, s, p, a, b, c, d, L };
+}
+
+function squircleCornerCommands(
+  sx: number,
+  sy: number,
+  ux: number,
+  uy: number,
+  vx: number,
+  vy: number,
+  params: SquircleParams,
+  sweep: 0 | 1 = 1,
+): string {
+  const { r, a, b, c, d, L } = params;
+  const c1x = sx + a * ux;
+  const c1y = sy + a * uy;
+  const c2x = sx + (a + b) * ux;
+  const c2y = sy + (a + b) * uy;
+  const p1x = sx + (a + b + c) * ux + d * vx;
+  const p1y = sy + (a + b + c) * uy + d * vy;
+
+  const p2x = p1x + L * ux + L * vx;
+  const p2y = p1y + L * uy + L * vy;
+
+  const d1x = p2x + d * ux + c * vx;
+  const d1y = p2y + d * uy + c * vy;
+  const d2x = p2x + d * ux + (b + c) * vx;
+  const d2y = p2y + d * uy + (b + c) * vy;
+  const endX = p2x + d * ux + (a + b + c) * vx;
+  const endY = p2y + d * uy + (a + b + c) * vy;
+
+  return (
+    `C${f3(c1x)} ${f3(c1y)} ${f3(c2x)} ${f3(c2y)} ${f3(p1x)} ${f3(p1y)}` +
+    `A${f3(r)} ${f3(r)} 0 0 ${sweep} ${f3(p2x)} ${f3(p2y)}` +
+    `C${f3(d1x)} ${f3(d1y)} ${f3(d2x)} ${f3(d2y)} ${f3(endX)} ${f3(endY)}`
+  );
+}
+
+const SQUIRCLE_CACHE_LIMIT = 512;
+const squirclePathCache = new Map<string, string>();
+
+/**
+ * Generates an exact SVG path string for a continuous squircle box.
+ * Uses a bounded FIFO/LRU cache keyed by rounded geometry so identical cards/rows cost O(1).
+ */
+export function squirclePath(
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+  smoothing = SQ_DEFAULT_SMOOTHING,
+): string {
+  if (!(w > 0 && h > 0)) return '';
+
+  const rw = Math.round(w * 100) / 100;
+  const rh = Math.round(h * 100) / 100;
+  const rx = Math.round(x * 100) / 100;
+  const ry = Math.round(y * 100) / 100;
+  const rrVal = Math.round(Math.max(0, r) * 100) / 100;
+  const rs = Math.round(Math.max(0, smoothing) * 1000) / 1000;
+
+  const key = `${rx}|${ry}|${rw}|${rh}|${rrVal}|${rs}`;
+  const cached = squirclePathCache.get(key);
+  if (cached !== undefined) {
+    // Refresh recency
+    squirclePathCache.delete(key);
+    squirclePathCache.set(key, cached);
+    return cached;
+  }
+
+  let out: string;
+  if (rrVal <= 0) {
+    out = `M${f3(rx)} ${f3(ry)}H${f3(rx + rw)}V${f3(ry + rh)}H${f3(rx)}Z`;
+  } else {
+    const params = computeSquircleParams(rw, rh, rrVal, rs);
+    if (params.s <= 1e-4) {
+      out = rr(rx, ry, rw, rh, params.r);
+    } else {
+      const { p } = params;
+      out =
+        `M${f3(rx + rw - p)} ${f3(ry)}` +
+        squircleCornerCommands(rx + rw - p, ry, 1, 0, 0, 1, params, 1) +
+        `L${f3(rx + rw)} ${f3(ry + rh - p)}` +
+        squircleCornerCommands(rx + rw, ry + rh - p, 0, 1, -1, 0, params, 1) +
+        `L${f3(rx + p)} ${f3(ry + rh)}` +
+        squircleCornerCommands(rx + p, ry + rh, -1, 0, 0, -1, params, 1) +
+        `L${f3(rx)} ${f3(ry + p)}` +
+        squircleCornerCommands(rx, ry + p, 0, -1, 1, 0, params, 1) +
+        `Z`;
+    }
+  }
+
+  if (squirclePathCache.size >= SQUIRCLE_CACHE_LIMIT) {
+    const oldest = squirclePathCache.keys().next().value;
+    if (oldest !== undefined) squirclePathCache.delete(oldest);
+  }
+  squirclePathCache.set(key, out);
+  return out;
+}
+
+/**
+ * Generates left, right, and animated notch gap paths for floating-label fields
+ * (`LabelInput` / `LabelSelect`) using 60% squircle corner curves.
+ */
+export function squircleNotchedRingPaths(
+  W: number,
+  H: number,
+  r: number,
+  IN: number,
+  x0: number,
+  x1: number,
+  smoothing = SQ_DEFAULT_SMOOTHING,
+): { gapL: string; gapR: string; right: string; left: string } {
+  const iw = Math.max(1, W - 2 * IN);
+  const ih = Math.max(1, H - 2 * IN);
+  const ir = Math.max(0, r - IN);
+  const R = IN + iw;
+  const B = IN + ih;
+  const mid = W / 2;
+
+  const nm = (x0 + x1) / 2;
+  const gapL = `M${f3(nm)} ${f3(IN)} L${f3(x0)} ${f3(IN)}`;
+  const gapR = `M${f3(nm)} ${f3(IN)} L${f3(x1)} ${f3(IN)}`;
+
+  if (ir <= 0) {
+    return {
+      gapL,
+      gapR,
+      right: `M${f3(x1)} ${f3(IN)} L${f3(R)} ${f3(IN)} L${f3(R)} ${f3(B)} L${f3(mid)} ${f3(B)}`,
+      left: `M${f3(x0)} ${f3(IN)} L${f3(IN)} ${f3(IN)} L${f3(IN)} ${f3(B)} L${f3(mid)} ${f3(B)}`,
+    };
+  }
+
+  const params = computeSquircleParams(iw, ih, ir, smoothing);
+  const { p } = params;
+
+  const trStartX = Math.max(x1, R - p);
+  const right =
+    `M${f3(x1)} ${f3(IN)}` +
+    (trStartX > x1 ? `L${f3(trStartX)} ${f3(IN)}` : '') +
+    squircleCornerCommands(R - p, IN, 1, 0, 0, 1, params, 1) +
+    `L${f3(R)} ${f3(B - p)}` +
+    squircleCornerCommands(R, B - p, 0, 1, -1, 0, params, 1) +
+    `L${f3(mid)} ${f3(B)}`;
+
+  // For the left path, keep x0 at least at IN + p - 2 (where vertical displacement < 0.03px) or clamp cleanly
+  const tlJoinX = IN + p;
+  const safeX0 = Math.min(x0, R - p);
+  const left =
+    (safeX0 > tlJoinX
+      ? `M${f3(safeX0)} ${f3(IN)}L${f3(tlJoinX)} ${f3(IN)}`
+      : `M${f3(Math.max(IN + 2, safeX0))} ${f3(IN)}`) +
+    squircleCornerCommands(tlJoinX, IN, -1, 0, 0, 1, params, 0) +
+    `L${f3(IN)} ${f3(B - p)}` +
+    squircleCornerCommands(IN, B - p, 0, 1, 1, 0, params, 0) +
+    `L${f3(mid)} ${f3(B)}`;
+
+  return { gapL, gapR, right, left };
+}
+

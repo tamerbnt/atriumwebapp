@@ -29,13 +29,22 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[92vh] overflow-y-auto">
-        {/* Modal Controls */}
-        <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
-              <Scale size={22} />
-            </div>
+      <div className="sq-elev-pop max-w-2xl w-full">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[92vh] overflow-y-auto"
+        >
+          {/* Modal Controls */}
+          <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
+            <div className="flex items-center gap-3">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"
+              >
+                <Scale size={22} />
+              </div>
             <div>
               <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {isAr ? 'تذكرة ميزان الجسر ووصل التسليم' : 'Ticket Pont-Bascule & Bon de Livraison'}
@@ -63,7 +72,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
         </div>
 
         {/* Printable Ticket Voucher (A5 Format) */}
-        <div className="bg-white text-black p-6 rounded-2xl border border-neutral-300 shadow-xs space-y-5 font-sans text-xs print:m-0 print:p-0 print:border-none print:shadow-none">
+        <div className="printable-document bg-white text-black p-6 rounded-[var(--r-card,16px)] border border-neutral-300 shadow-xs space-y-5 font-sans text-xs print:m-0 print:p-0 print:border-none print:shadow-none">
           {/* Header */}
           <div className="flex items-start justify-between border-b border-neutral-300 pb-4">
             <div className="space-y-1">
@@ -91,7 +100,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
           </div>
 
           {/* Client / Destination Grid */}
-          <div className="grid grid-cols-2 gap-4 p-3 rounded-xl bg-neutral-50 border border-neutral-200">
+          <div className="grid grid-cols-2 gap-4 p-3 rounded-[var(--r-ctl,12px)] bg-neutral-50 border border-neutral-200">
             <div>
               <span className="text-[10px] font-bold text-black/75 uppercase block rtl:normal-case">
                 Acheteur / Mandataire de Gros
@@ -160,7 +169,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
           </div>
 
           {/* Financial Settlement & Timbre Fiscal Art. 317 */}
-          <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 space-y-2">
+          <div className="p-3.5 rounded-[var(--r-ctl,12px)] bg-neutral-50 border border-neutral-200 space-y-2">
             <div className="flex justify-between items-center text-xs">
               <span className="text-black/75">
                 Prix Unitaire Convenu ({ticket.unitPriceDzdPerKg} DA/kg) :
@@ -174,11 +183,11 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
               <span className="text-black/75 flex items-center gap-1.5">
                 <span>Droit de Timbre Fiscal (Art. 317 Code du Timbre) :</span>
                 {isCash ? (
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-sm bg-neutral-200 text-black font-medium">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-200 text-black font-medium">
                     Espèces (Plafond 2 500 DA)
                   </span>
                 ) : (
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-sm bg-emerald-100 text-emerald-800 font-medium">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-medium">
                     Paiement bancaire (Exonéré)
                   </span>
                 )}
@@ -213,6 +222,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
               <p className="text-[10px] text-black/55">(Lu et approuvé - Bon pour Accord)</p>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

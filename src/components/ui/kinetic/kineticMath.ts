@@ -128,7 +128,7 @@ export function computeRowVisualGeometry(
   const islandTop = (ROW_H / 2 - ROW_B / 2) * (1 - e) + (ROW_H + ROW_G) * e;
   const islandWidth = Math.max(0, ROW_B + (w - ROW_B) * e);
   const islandHeight = Math.max(0, ROW_B + (ROW_DH - ROW_B) * e);
-  const islandRadius = 19 + 3 * e;
+  const islandRadius = 19 - 3 * e;
 
   const detailTop = ROW_H + ROW_G;
   const detailHeight = ROW_DH;

@@ -596,7 +596,11 @@ export const ContractorBoqView: React.FC<any> = () => {
         sortable: true,
         renderCell: (item) => (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"
+            >
               <ClipboardList size={16} />
             </div>
             <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
@@ -1026,34 +1030,43 @@ export const ContractorBoqView: React.FC<any> = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
-                  <ClipboardList size={20} />
+          <div className="sq-elev-pop max-w-lg w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    data-sq="tile"
+                    data-sq-border="none"
+                    className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"
+                  >
+                    <ClipboardList size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                      {itemToEdit
+                        ? isAr ? 'تعديل بند المقايسة' : 'Modifier le Poste BOQ'
+                        : isAr ? 'إضافة بند إلى الكشف التقديري' : 'Nouveau Poste au Bordereau BOQ'}
+                    </h2>
+                    <p className="text-xs text-black/55 dark:text-white/55">
+                      {isAr
+                        ? 'تعريف وحدات العمل والأسعار الأحادية'
+                        : 'Définition du poste, prix unitaire et quantités contractuelles'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                    {itemToEdit
-                      ? isAr ? 'تعديل بند المقايسة' : 'Modifier le Poste BOQ'
-                      : isAr ? 'إضافة بند إلى الكشف التقديري' : 'Nouveau Poste au Bordereau BOQ'}
-                  </h2>
-                  <p className="text-xs text-black/55 dark:text-white/55">
-                    {isAr
-                      ? 'تعريف وحدات العمل والأسعار الأحادية'
-                      : 'Définition du poste, prix unitaire et quantités contractuelles'}
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                type="button"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
             <form onSubmit={handleSaveModal} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
@@ -1117,6 +1130,7 @@ export const ContractorBoqView: React.FC<any> = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

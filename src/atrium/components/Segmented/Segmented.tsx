@@ -145,12 +145,15 @@ function SegmentedInner<T extends string>(props: SegmentedProps<T>, ref: Ref<HTM
   };
 
   const sp = sizeProps(size, style);
+  const isCompact = size === 'sm' || (typeof size === 'number' && size <= 34);
   return (
     <div
       ref={merged}
       role="radiogroup"
       aria-label={props['aria-label']}
       aria-labelledby={props['aria-labelledby']}
+      data-sq={isCompact ? 'ctl-sm' : 'ctl'}
+      data-sq-border="solid"
       className={cx(s.root, className)}
       onKeyDown={onKeyDown}
       {...sp}

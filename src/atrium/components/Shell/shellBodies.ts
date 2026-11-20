@@ -137,8 +137,8 @@ export class PushBody implements Body {
 
   measure(): void {
     const cs = getComputedStyle(this.root);
-    const wr = parseFloat(cs.getPropertyValue('--atr-rail')) || 60;
-    const wx = parseFloat(cs.getPropertyValue('--atr-rail-open')) || 236;
+    const wr = parseFloat(cs.getPropertyValue('--atr-rail')) || 68;
+    const wx = parseFloat(cs.getPropertyValue('--atr-rail-open')) || 244;
     this.W = Math.max(0, wx - wr);
     this.isRtl = cs.direction === 'rtl';
   }
@@ -208,7 +208,7 @@ export class PushBody implements Body {
  */
 export class SidebarHoverBody implements Body {
   hy = new Spring(0, 420, 0.55);
-  hh = new Spring(40, 300, 0.7);
+  hh = new Spring(44, 300, 0.7);
   ho = new Spring(0, 300, 1);
   hover: [number, number] | null = null;
 
@@ -296,7 +296,7 @@ const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
  */
 export class SidebarActiveBody implements Body {
   T = new Spring(0, 200);
-  B = new Spring(40, 420);
+  B = new Spring(44, 420);
   geo: Array<[number, number]> = [];
   index = -1;
   private lastTransform = '';
@@ -322,7 +322,7 @@ export class SidebarActiveBody implements Body {
         o.offsetParent === this.list
           ? o.offsetTop
           : (o.parentElement ? o.parentElement.offsetTop : 0) + o.offsetTop;
-      const height = o.offsetHeight || 40;
+      const height = o.offsetHeight || 44;
       return [top, top + height];
     });
   }

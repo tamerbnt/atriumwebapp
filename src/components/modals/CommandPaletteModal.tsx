@@ -454,10 +454,13 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
-      <div
-        className="w-full max-w-xl rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-150"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="sq-elev-pop w-full max-w-xl animate-in zoom-in-95 duration-150">
+        <div
+          data-sq="panel"
+          style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+          className="w-full bg-white dark:bg-neutral-900 overflow-hidden flex flex-col max-h-[80vh]"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Kinetic Search Input Bar */}
         <div
           className={`p-3.5 sm:p-4 border-b transition-colors flex items-center gap-3 ${
@@ -506,10 +509,10 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white transition-colors ml-1"
+            className="p-1 rounded-full text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white transition-colors ml-1 cursor-pointer"
             title={language === 'ar' ? 'إغلاق (Esc)' : language === 'fr' ? 'Fermer (Esc)' : 'Close (Esc)'}
           >
-            <span className="text-[11px] font-mono px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-700">ESC</span>
+            <span className="text-[11px] font-mono px-1.5 py-0.5 rounded-[var(--r-check,6px)] border border-neutral-200 dark:border-neutral-700">ESC</span>
           </button>
         </div>
 
@@ -528,7 +531,8 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                   type="button"
                   onClick={item.onSelect}
                   onMouseEnter={() => setSelectedIndex(index)}
-                  className={`w-full flex items-center justify-between p-3 rounded-2xl text-left rtl:text-right transition-all cursor-pointer ${
+                  data-sq="row"
+                  className={`w-full flex items-center justify-between p-3 text-left rtl:text-right transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-[#FDF4F0] dark:bg-neutral-800 text-black dark:text-white scale-[1.01]'
                       : 'text-black/80 dark:text-white/80 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
@@ -536,9 +540,10 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                      data-sq="tile"
+                      className={`w-8 h-8 flex items-center justify-center shrink-0 ${
                         isSelected
-                          ? 'bg-[#d4522f] text-white shadow-xs'
+                          ? 'bg-[#d4522f] text-white'
                           : 'bg-neutral-100 dark:bg-neutral-800 text-black/65 dark:text-white/65'
                       }`}
                     >
@@ -580,19 +585,19 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         <div className="p-3 bg-neutral-50 dark:bg-neutral-950/60 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[10px] text-black dark:text-white shadow-2xs">
+              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] font-mono text-[10px] text-black dark:text-white shadow-2xs">
                 ↑↓
               </kbd>
               {language === 'ar' ? 'تنقل' : language === 'fr' ? 'Naviguer' : 'Navigate'}
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[10px] text-black dark:text-white shadow-2xs">
+              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] font-mono text-[10px] text-black dark:text-white shadow-2xs">
                 ↵
               </kbd>
               {language === 'ar' ? 'اختيار' : language === 'fr' ? 'Sélectionner' : 'Select'}
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[10px] text-black dark:text-white shadow-2xs">
+              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] font-mono text-[10px] text-black dark:text-white shadow-2xs">
                 ESC
               </kbd>
               {language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}
@@ -603,6 +608,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
             <Command size={11} />
             <span>Atrium</span>
           </div>
+        </div>
         </div>
       </div>
     </div>

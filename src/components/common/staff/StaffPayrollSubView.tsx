@@ -153,7 +153,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         header: isAr ? 'طريقة الدفع' : isEn ? 'Method' : 'Mode',
         sortable: true,
         renderCell: (slip) => (
-          <span className="text-[11px] uppercase font-bold px-2 py-0.5 rounded-md bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85">
+          <span className="text-[11px] uppercase font-bold px-2.5 py-0.5 rounded-full bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85">
             {slip.paymentMethod}
           </span>
         ),
@@ -164,7 +164,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         sortable: true,
         renderCell: (slip) => (
           <span
-            className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
+            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
               slip.isPaid
                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
                 : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
@@ -291,120 +291,154 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-[#F3EDE7] dark:bg-[#262422] px-3 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] h-10">
-            <Calendar className="w-4 h-4 text-[#d4522f]" />
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="bg-transparent text-xs font-bold text-black dark:text-white focus:outline-hidden cursor-pointer"
+      <div className="sq-elev-card">
+        <div
+          data-sq="card"
+          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A]"
+        >
+          <div className="flex items-center gap-3">
+            <div
+              data-sq="ctl"
+              style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
+              className="flex items-center gap-2 bg-[#F3EDE7] dark:bg-[#262422] px-3 h-10"
             >
-              {months.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="bg-transparent text-xs font-bold text-black dark:text-white focus:outline-hidden cursor-pointer tabular-nums"
-            >
-              <option value={2026}>2026</option>
-              <option value={2025}>2025</option>
-            </select>
+              <Calendar className="w-4 h-4 text-[#d4522f]" />
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                className="bg-transparent text-xs font-bold text-black dark:text-white focus:outline-hidden cursor-pointer"
+              >
+                {months.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                className="bg-transparent text-xs font-bold text-black dark:text-white focus:outline-hidden cursor-pointer tabular-nums"
+              >
+                <option value={2026}>2026</option>
+                <option value={2025}>2025</option>
+              </select>
+            </div>
+
+            {activeRun ? (
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                  activeRun.status === 'paid'
+                    ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/60'
+                    : 'bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/60'
+                }`}
+              >
+                {activeRun.status === 'paid'
+                  ? isAr ? 'رواتب مدفوعة' : isEn ? 'Closed & Paid' : 'Clôturée & Payée'
+                  : isAr ? 'مسودة قيد المراجعة' : isEn ? 'Draft' : 'Brouillon'}
+              </span>
+            ) : (
+              <span className="text-xs text-black/60 dark:text-white/65 font-medium">
+                {isAr ? 'لم يتم احتساب الرواتب بعد' : isEn ? 'Payroll not calculated yet' : 'Paie non encore générée'}
+              </span>
+            )}
           </div>
 
-          {activeRun ? (
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold ${
-                activeRun.status === 'paid'
-                  ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/60'
-                  : 'bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/60'
-              }`}
-            >
-              {activeRun.status === 'paid'
-                ? isAr ? 'رواتب مدفوعة' : isEn ? 'Closed & Paid' : 'Clôturée & Payée'
-                : isAr ? 'مسودة قيد المراجعة' : isEn ? 'Draft' : 'Brouillon'}
-            </span>
-          ) : (
-            <span className="text-xs text-black/60 dark:text-white/65 font-medium">
-              {isAr ? 'لم يتم احتساب الرواتب بعد' : isEn ? 'Payroll not calculated yet' : 'Paie non encore générée'}
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <AtriumButton
-            variant="secondary"
-            size="md"
-            onClick={() => setIsAdvanceModalOpen(true)}
-            icon={<Plus className="w-4 h-4 text-[#d4522f]" />}
-            className="h-10 text-xs font-semibold"
-          >
-            <span>{isAr ? 'سلفة' : isEn ? 'Advance' : 'Acompte'}</span>
-          </AtriumButton>
-
-          <AtriumButton
-            variant="secondary"
-            size="md"
-            onClick={handleGenerate}
-            icon={<RefreshCw className="w-4 h-4 text-black/70 dark:text-white/75" />}
-            className="h-10 text-xs font-semibold"
-          >
-            <span>
-              {activeSlips.length > 0
-                ? isAr ? 'إعادة الحساب' : isEn ? 'Recalculate' : 'Recalculer'
-                : isAr ? 'حساب' : isEn ? 'Calculate' : 'Calculer'}
-            </span>
-          </AtriumButton>
-
-          {activeRun && activeRun.status !== 'paid' && (
+          <div className="flex items-center gap-2.5">
             <AtriumButton
-              variant="primary"
+              variant="secondary"
               size="md"
-              onClick={handleApprove}
-              icon={<CheckCircle2 className="w-4 h-4" />}
-              className="h-10 text-xs font-semibold shadow-xs"
+              onClick={() => setIsAdvanceModalOpen(true)}
+              icon={<Plus className="w-4 h-4 text-[#d4522f]" />}
+              className="h-10 text-xs font-semibold"
             >
-              <span>{isAr ? 'اعتماد' : isEn ? 'Approve' : 'Valider'}</span>
+              <span>{isAr ? 'سلفة' : isEn ? 'Advance' : 'Acompte'}</span>
             </AtriumButton>
-          )}
+
+            <AtriumButton
+              variant="secondary"
+              size="md"
+              onClick={handleGenerate}
+              icon={<RefreshCw className="w-4 h-4 text-black/70 dark:text-white/75" />}
+              className="h-10 text-xs font-semibold"
+            >
+              <span>
+                {activeSlips.length > 0
+                  ? isAr ? 'إعادة الحساب' : isEn ? 'Recalculate' : 'Recalculer'
+                  : isAr ? 'حساب' : isEn ? 'Calculate' : 'Calculer'}
+              </span>
+            </AtriumButton>
+
+            {activeRun && activeRun.status !== 'paid' && (
+              <AtriumButton
+                variant="primary"
+                size="md"
+                onClick={handleApprove}
+                icon={<CheckCircle2 className="w-4 h-4" />}
+                className="h-10 text-xs font-semibold shadow-xs"
+              >
+                <span>{isAr ? 'اعتماد' : isEn ? 'Approve' : 'Valider'}</span>
+              </AtriumButton>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
-          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'صافي الأجور' : isEn ? 'Net Pay' : 'Net à Payer'}</p>
-          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-[#d4522f] mt-1.5 tabular-nums">
-            {totalNet > 0 ? totalNet.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
-          </p>
-          <p className="text-[11px] text-black/62 dark:text-white/65 mt-1 tabular-nums">{activeSlips.length} {isAr ? 'قسيمة' : isEn ? 'slips' : 'bulletins'}</p>
+        <div className="sq-elev-card">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+            className="p-4 bg-white dark:bg-[#1C1B1A]"
+          >
+            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'صافي الأجور' : isEn ? 'Net Pay' : 'Net à Payer'}</p>
+            <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-[#d4522f] mt-1.5 tabular-nums">
+              {totalNet > 0 ? totalNet.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
+            </p>
+            <p className="text-[11px] text-black/62 dark:text-white/65 mt-1 tabular-nums">{activeSlips.length} {isAr ? 'قسيمة' : isEn ? 'slips' : 'bulletins'}</p>
+          </div>
         </div>
 
-        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
-          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'الضمان الاجتماعي' : isEn ? 'Social Security' : 'Cotisations'}</p>
-          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-emerald-600 dark:text-emerald-400 mt-1.5 tabular-nums">
-            {totalCnas > 0 ? totalCnas.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
-          </p>
-          <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'الموظف وصاحب العمل' : isEn ? 'Staff + Employer' : 'Salarial + Patronal'}</p>
+        <div className="sq-elev-card">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+            className="p-4 bg-white dark:bg-[#1C1B1A]"
+          >
+            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'الضمان الاجتماعي' : isEn ? 'Social Security' : 'Cotisations'}</p>
+            <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-emerald-600 dark:text-emerald-400 mt-1.5 tabular-nums">
+              {totalCnas > 0 ? totalCnas.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
+            </p>
+            <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'الموظف وصاحب العمل' : isEn ? 'Staff + Employer' : 'Salarial + Patronal'}</p>
+          </div>
         </div>
 
-        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
-          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'ضريبة الدخل' : isEn ? 'Income Tax' : 'Impôt'}</p>
-          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white mt-1.5 tabular-nums">
-            {totalIrg > 0 ? totalIrg.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
-          </p>
-          <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'مقتطع' : isEn ? 'Withheld' : 'Retenue'}</p>
+        <div className="sq-elev-card">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+            className="p-4 bg-white dark:bg-[#1C1B1A]"
+          >
+            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'ضريبة الدخل' : isEn ? 'Income Tax' : 'Impôt'}</p>
+            <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white mt-1.5 tabular-nums">
+              {totalIrg > 0 ? totalIrg.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
+            </p>
+            <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'مقتطع' : isEn ? 'Withheld' : 'Retenue'}</p>
+          </div>
         </div>
 
-        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
-          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'السلفيات' : isEn ? 'Advances' : 'Acomptes'}</p>
-          <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-amber-600 dark:text-amber-400 mt-1.5 tabular-nums">
-            {totalAdvances > 0 ? totalAdvances.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
-          </p>
-          <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'مخصوم' : isEn ? 'Deducted' : 'Déduits'}</p>
+        <div className="sq-elev-card">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+            className="p-4 bg-white dark:bg-[#1C1B1A]"
+          >
+            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'السلفيات' : isEn ? 'Advances' : 'Acomptes'}</p>
+            <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-amber-600 dark:text-amber-400 mt-1.5 tabular-nums">
+              {totalAdvances > 0 ? totalAdvances.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
+            </p>
+            <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'مخصوم' : isEn ? 'Deducted' : 'Déduits'}</p>
+          </div>
         </div>
       </div>
 
@@ -454,72 +488,81 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         emptyDescription={isAr ? 'قم باحتساب رواتب الشهر' : isEn ? 'Run payroll calculation for this period' : 'Lancez le calcul de paie pour cette période'}
       />
 
-      <div className="bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] p-4 shadow-2xs">
-        <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
-          <h4 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
-            {isAr ? 'السلفيات' : isEn ? 'Salary Advances' : 'Acomptes'}
-          </h4>
-          <button
-            type="button"
-            onClick={() => setIsAdvanceModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#d4522f] bg-[#d4522f]/10 rounded-xl hover:bg-[#d4522f]/20 transition-colors cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>{isAr ? 'سلفة' : isEn ? 'New Advance' : 'Acompte'}</span>
-          </button>
-        </div>
-
-        {salaryAdvances.length === 0 ? (
-          <KineticEmptyStateMotion motionKey={`staff-adv-empty-${language}`}>
-            <EmptyState
-              variant="compact"
-              tone="neutral"
-              icon={<CreditCard className="w-5 h-5" />}
-              title={isAr ? 'لا توجد سلفيات' : isEn ? 'No salary advances' : 'Aucun acompte'}
-              description={
-                isAr
-                  ? 'أضف سلفة راتب ليتم خصمها تلقائياً من مسير الشهر.'
-                  : isEn
-                  ? 'Record a salary advance to deduct it automatically from payroll.'
-                  : 'Enregistrez un acompte sur salaire pour le déduire à la paie.'
-              }
-              secondaryAction={{
-                label: isAr ? 'سلفة جديدة' : isEn ? 'New Advance' : 'Nouvel acompte',
-                icon: <Plus className="w-4 h-4" />,
-                onClick: () => setIsAdvanceModalOpen(true),
-              }}
-            />
-          </KineticEmptyStateMotion>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {salaryAdvances.map((adv) => (
-              <div
-                key={adv.id}
-                className="p-3 rounded-xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between"
-              >
-                <div>
-                  <div className="font-bold text-xs text-black dark:text-white">{adv.staffName}</div>
-                  <div className="text-[11px] font-mono text-black/62 dark:text-white/65 tabular-nums">
-                    {adv.voucherNumber} · {adv.dateIssued}
-                  </div>
-                  {adv.reason && <div className="text-[11px] text-black/70 dark:text-white/75 italic mt-0.5">&quot;{adv.reason}&quot;</div>}
-                </div>
-                <div className="text-right">
-                  <div className="font-mono font-bold text-xs text-[#d4522f] tabular-nums">{adv.amountDzd.toLocaleString()} DZD</div>
-                  <span
-                    className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md uppercase ${
-                      adv.status === 'deducted'
-                        ? 'bg-[#E6DED6] text-black/75 dark:bg-[#3A3734] dark:text-white/80'
-                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                    }`}
-                  >
-                    {adv.status === 'deducted' ? 'Déduit' : 'En Attente'}
-                  </span>
-                </div>
-              </div>
-            ))}
+      <div className="sq-elev-card">
+        <div
+          data-sq="panel"
+          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+          className="bg-white dark:bg-[#1C1B1A] p-3"
+        >
+          <div className="flex items-center justify-between px-1.5 pt-1 pb-3 mb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
+            <h4 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
+              {isAr ? 'السلفيات' : isEn ? 'Salary Advances' : 'Acomptes'}
+            </h4>
+            <button
+              type="button"
+              onClick={() => setIsAdvanceModalOpen(true)}
+              data-sq="ctl-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#d4522f] bg-[#d4522f]/10 hover:bg-[#d4522f]/20 transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{isAr ? 'سلفة' : isEn ? 'New Advance' : 'Acompte'}</span>
+            </button>
           </div>
-        )}
+
+          {salaryAdvances.length === 0 ? (
+            <KineticEmptyStateMotion motionKey={`staff-adv-empty-${language}`}>
+              <EmptyState
+                variant="compact"
+                tone="neutral"
+                icon={<CreditCard className="w-5 h-5" />}
+                title={isAr ? 'لا توجد سلفيات' : isEn ? 'No salary advances' : 'Aucun acompte'}
+                description={
+                  isAr
+                    ? 'أضف سلفة راتب ليتم خصمها تلقائياً من مسير الشهر.'
+                    : isEn
+                    ? 'Record a salary advance to deduct it automatically from payroll.'
+                    : 'Enregistrez un acompte sur salaire pour le déduire à la paie.'
+                }
+                secondaryAction={{
+                  label: isAr ? 'سلفة جديدة' : isEn ? 'New Advance' : 'Nouvel acompte',
+                  icon: <Plus className="w-4 h-4" />,
+                  onClick: () => setIsAdvanceModalOpen(true),
+                }}
+              />
+            </KineticEmptyStateMotion>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {salaryAdvances.map((adv) => (
+                <div
+                  key={adv.id}
+                  data-sq="card"
+                  style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+                  className="p-3 bg-[#FBF8F5] dark:bg-[#262422] flex items-center justify-between"
+                >
+                  <div>
+                    <div className="font-bold text-xs text-black dark:text-white">{adv.staffName}</div>
+                    <div className="text-[11px] font-mono text-black/62 dark:text-white/65 tabular-nums">
+                      {adv.voucherNumber} · {adv.dateIssued}
+                    </div>
+                    {adv.reason && <div className="text-[11px] text-black/70 dark:text-white/75 italic mt-0.5">&quot;{adv.reason}&quot;</div>}
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono font-bold text-xs text-[#d4522f] tabular-nums">{adv.amountDzd.toLocaleString()} DZD</div>
+                    <span
+                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                        adv.status === 'deducted'
+                          ? 'bg-[#E6DED6] text-black/75 dark:bg-[#3A3734] dark:text-white/80'
+                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                      }`}
+                    >
+                      {adv.status === 'deducted' ? 'Déduit' : 'En Attente'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <KineticSlideOverInspector<StaffPayrollSlipRecord>

@@ -488,7 +488,11 @@ export const EducationAttendanceView: React.FC = () => {
         sortable: true,
         renderCell: (st) => (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="solid"
+              className="w-8 h-8 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"
+            >
               {st.fullName.charAt(0)}
             </div>
             <div>
@@ -570,7 +574,7 @@ export const EducationAttendanceView: React.FC = () => {
               {studentRecords.slice(0, 4).map((rec) => (
                 <span
                   key={rec.id}
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                     rec.status === 'Present'
                       ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                       : rec.status === 'Late'
@@ -602,11 +606,13 @@ export const EducationAttendanceView: React.FC = () => {
         renderCell: () => (
           <button
             type="button"
+            data-sq="ctl-sm"
+            data-sq-border="none"
             onClick={(e) => {
               e.stopPropagation();
               setIsRollCallOpen(true);
             }}
-            className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white text-xs font-semibold transition-colors cursor-pointer"
+            className="px-2.5 py-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white text-xs font-semibold transition-colors cursor-pointer"
           >
             {t('edu_btn_roll_call')}
           </button>
@@ -698,7 +704,11 @@ export const EducationAttendanceView: React.FC = () => {
       />
 
       {selectedStudentIds.size > 0 && activeTab === 'attendance' && (
-        <div className="p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-150">
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          className="p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-150"
+        >
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center">
               {selectedStudentIds.size}
@@ -711,32 +721,40 @@ export const EducationAttendanceView: React.FC = () => {
           <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={() => handleBatchMarkStatus('Present')}
-              className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-emerald-700 transition-colors cursor-pointer"
+              className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-emerald-700 transition-colors cursor-pointer"
             >
               <CheckCircle2 size={13} />
               <span>Mark Present</span>
             </button>
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={() => handleBatchMarkStatus('Late')}
-              className="px-3 py-1.5 rounded-xl bg-amber-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-amber-700 transition-colors cursor-pointer"
+              className="px-3 py-1.5 bg-amber-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-amber-700 transition-colors cursor-pointer"
             >
               <Clock size={13} />
               <span>Mark Late</span>
             </button>
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={() => handleBatchMarkStatus('Absent')}
-              className="px-3 py-1.5 rounded-xl bg-rose-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-rose-700 transition-colors cursor-pointer"
+              className="px-3 py-1.5 bg-rose-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-rose-700 transition-colors cursor-pointer"
             >
               <XCircle size={13} />
               <span>Mark Absent</span>
             </button>
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="solid"
               onClick={() => setSelectedStudentIds(new Set<string>())}
-              className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white text-xs font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white text-xs font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               Deselect All
             </button>
@@ -940,7 +958,9 @@ export const EducationAttendanceView: React.FC = () => {
                       }));
                       setIsGradeModalOpen(true);
                     }}
-                    className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white text-xs font-semibold transition-colors cursor-pointer"
+                    data-sq="ctl-sm"
+                    data-sq-border="none"
+                    className="px-2.5 py-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white text-xs font-semibold transition-colors cursor-pointer"
                   >
                     {t('edu_btn_record_grade')}
                   </button>
@@ -1170,7 +1190,12 @@ export const EducationAttendanceView: React.FC = () => {
 
       {isGradeModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
+          <div className="sq-elev-pop w-full max-w-md">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
+            >
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {t('edu_grade_modal_title')}
@@ -1192,7 +1217,7 @@ export const EducationAttendanceView: React.FC = () => {
                 onChange={(val) => setGradeForm({ ...gradeForm, studentId: extractStr(val) })}
                 options={cohortStudents.map((s) => ({ value: s.id, label: s.fullName }))}
                 height={44}
-                corner={14}
+                corner={12}
               />
 
               <div>
@@ -1205,7 +1230,7 @@ export const EducationAttendanceView: React.FC = () => {
                   placeholder="e.g. Midterm Exam, Project 1, Final Defense"
                   width="100%"
                   height={46}
-                  corner={14}
+                  corner={12}
                 />
               </div>
 
@@ -1220,7 +1245,7 @@ export const EducationAttendanceView: React.FC = () => {
                     onChange={(val) => setGradeForm({ ...gradeForm, score: Number(extractStr(val)) || 0 })}
                     width="100%"
                     height={46}
-                    corner={14}
+                    corner={12}
                   />
                 </div>
                 <div>
@@ -1233,7 +1258,7 @@ export const EducationAttendanceView: React.FC = () => {
                     onChange={(val) => setGradeForm({ ...gradeForm, maxScore: Number(extractStr(val)) || 100 })}
                     width="100%"
                     height={46}
-                    corner={14}
+                    corner={12}
                   />
                 </div>
               </div>
@@ -1242,12 +1267,18 @@ export const EducationAttendanceView: React.FC = () => {
                 <label className="block font-semibold text-black dark:text-white mb-1">
                   {t('edu_grade_remarks')}
                 </label>
-                <textarea
-                  rows={2}
-                  value={gradeForm.teacherRemarks}
-                  onChange={(e) => setGradeForm({ ...gradeForm, teacherRemarks: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white"
-                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                >
+                  <textarea
+                    rows={2}
+                    value={gradeForm.teacherRemarks}
+                    onChange={(e) => setGradeForm({ ...gradeForm, teacherRemarks: e.target.value })}
+                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
@@ -1259,6 +1290,7 @@ export const EducationAttendanceView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

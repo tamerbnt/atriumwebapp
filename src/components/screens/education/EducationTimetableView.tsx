@@ -501,10 +501,12 @@ export const EducationTimetableView: React.FC = () => {
             .filter((s) => s.date === dateStr)
             .sort((a, b) => a.startTime.localeCompare(b.startTime));
           return (
-            <div
-              key={dateStr}
-              className="bg-white dark:bg-neutral-850 rounded-2xl border border-neutral-200/80 dark:border-neutral-700/80 p-3.5 shadow-2xs space-y-3"
-            >
+            <div key={dateStr} className="sq-elev-card">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="bg-white dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-700/80 p-3.5 space-y-3 h-full"
+              >
               <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-[#d4522f]" />
@@ -522,13 +524,15 @@ export const EducationTimetableView: React.FC = () => {
                     <button
                       key={s.id}
                       type="button"
+                      data-sq="ctl"
+                      data-sq-border="solid"
                       onClick={(e) => {
                         setDrawerOpenerEl(e.currentTarget);
                         setSelectedSession(s);
                       }}
-                      className={`w-full text-left rtl:text-right p-3 rounded-xl border transition-all cursor-pointer ${
+                      className={`w-full text-left rtl:text-right p-3 border transition-all cursor-pointer ${
                         isSelected
-                          ? 'border-[#d4522f] bg-[#FCEEE8]/40 dark:bg-neutral-800 shadow-xs'
+                          ? 'border-[#d4522f] bg-[#FCEEE8]/40 dark:bg-neutral-800'
                           : 'border-neutral-200/70 dark:border-neutral-700/60 hover:border-[#d4522f]/60 bg-neutral-50/50 dark:bg-neutral-800/40'
                       }`}
                     >
@@ -538,7 +542,7 @@ export const EducationTimetableView: React.FC = () => {
                           {s.startTime} - {s.endTime}
                         </span>
                         {hasConflict && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
                             Conflit
                           </span>
                         )}
@@ -562,6 +566,7 @@ export const EducationTimetableView: React.FC = () => {
                     </button>
                   );
                 })}
+              </div>
               </div>
             </div>
           );
@@ -592,7 +597,11 @@ export const EducationTimetableView: React.FC = () => {
         title={t('edu_timetable_title')}
         secondaryActions={
           conflicts.size > 0 ? (
-            <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 text-xs font-semibold">
+            <div
+              data-sq="ctl"
+              data-sq-border="none"
+              className="flex items-center gap-1.5 px-3 py-2 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 text-xs font-semibold"
+            >
               <AlertTriangle size={14} />
               <span>{conflicts.size} Conflits détectés</span>
             </div>
@@ -932,20 +941,25 @@ export const EducationTimetableView: React.FC = () => {
 
       {isAddSessionModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-md shadow-xl space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center gap-2">
-                <CalendarIcon size={20} className="text-[#d4522f]" />
-                <h3 className="font-bold text-base text-black dark:text-white">{t('edu_btn_add_session')}</h3>
+          <div className="sq-elev-pop w-full max-w-md">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 w-full space-y-5"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon size={20} className="text-[#d4522f]" />
+                  <h3 className="font-bold text-base text-black dark:text-white">{t('edu_btn_add_session')}</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddSessionModalOpen(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsAddSessionModalOpen(false)}
-                className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
             <form onSubmit={handleCreateSession} className="space-y-4">
               <LabelSelect
                 label={t('edu_label_cohort')}
@@ -1002,6 +1016,7 @@ export const EducationTimetableView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

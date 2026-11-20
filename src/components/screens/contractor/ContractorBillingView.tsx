@@ -518,7 +518,11 @@ export const ContractorBillingView: React.FC<any> = () => {
           const isPinned = pinnedIds.has(d.id);
           return (
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800">
+              <div
+                data-sq="ctl-sm"
+                data-sq-border="solid"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800"
+              >
                 <Building2 size={16} />
               </div>
               <div className="min-w-0">
@@ -937,25 +941,34 @@ export const ContractorBillingView: React.FC<any> = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
-                  <Plus size={16} />
+          <div className="sq-elev-pop max-w-lg w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5"
+            >
+              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <div
+                    data-sq="ctl-sm"
+                    data-sq-border="none"
+                    className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"
+                  >
+                    <Plus size={16} />
+                  </div>
+                  <h3 className="font-bold text-sm text-black dark:text-white">
+                    {isAr ? 'تحرير كشف حساب جديد (DGP)' : 'Établir une Nouvelle Situation DGP'}
+                  </h3>
                 </div>
-                <h3 className="font-bold text-sm text-black dark:text-white">
-                  {isAr ? 'تحرير كشف حساب جديد (DGP)' : 'Établir une Nouvelle Situation DGP'}
-                </h3>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setIsModalOpen(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
               </div>
-              <button
-                type="button"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-              >
-                <X size={16} />
-              </button>
-            </div>
             <form onSubmit={handleCreateDgp} className="space-y-4">
               <LabelInput
                 label="Libellé de la période"
@@ -985,7 +998,11 @@ export const ContractorBillingView: React.FC<any> = () => {
                 value={advanceAmort}
                 onChange={(e) => setAdvanceAmort(e.target.value)}
               />
-              <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between"
+              >
                 <div>
                   <div className="text-xs font-semibold text-black dark:text-white">
                     {isAr ? 'تعويض اقتطاع الضمان بكفالة بنكية' : 'Caution bancaire de substitution'}
@@ -1000,7 +1017,7 @@ export const ContractorBillingView: React.FC<any> = () => {
                   type="checkbox"
                   checked={hasBankCaution}
                   onChange={(e) => setHasBankCaution(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#d4522f] accent-[#d4522f] cursor-pointer"
+                  className="w-4 h-4 rounded-[var(--r-check,6px)] text-[#d4522f] accent-[#d4522f] cursor-pointer"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -1033,6 +1050,7 @@ export const ContractorBillingView: React.FC<any> = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

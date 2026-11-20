@@ -61,40 +61,46 @@ export const CollectionKebabMenu: React.FC<CollectionKebabMenuProps> = ({
     <div
       ref={menuRef}
       onClick={(e) => e.stopPropagation()}
-      style={{
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.18), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-      }}
-      className="absolute right-0 top-full mt-1.5 z-50 min-w-[190px] p-1.5 rounded-[14px] bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800 text-black dark:text-white text-[13px] font-medium shadow-xl animate-in fade-in zoom-in-95 duration-150"
+      className="absolute right-0 top-full mt-1.5 z-50 min-w-[190px] sq-elev-pop animate-in fade-in zoom-in-95 duration-150"
     >
-      <div className="flex flex-col gap-0.5">
-        {items.map((item, idx) => (
-          <React.Fragment key={item.id || idx}>
-            {item.isSeparatorBefore && (
-              <div className="h-[1px] my-1 mx-2 bg-neutral-200 dark:bg-neutral-800" />
-            )}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                item.onClick();
-                onClose();
-              }}
-              className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-left transition-colors cursor-pointer ${
-                item.isSpecialDelete
-                  ? 'text-red-500 hover:bg-[#12EF4444] dark:hover:bg-red-500/10'
-                  : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/70 text-black/85 dark:text-white/90'
-              }`}
-            >
-              <span
-                className="w-5 h-5 flex items-center justify-center shrink-0"
-                style={{ color: item.iconColor }}
+      <div
+        data-sq="card"
+        data-sq-border="solid"
+        className="relative p-1.5 bg-white dark:bg-[#18181B] [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#26262A] text-black dark:text-white text-[13px] font-medium"
+      >
+        <div className="flex flex-col gap-0.5">
+          {items.map((item, idx) => (
+            <React.Fragment key={item.id || idx}>
+              {item.isSeparatorBefore && (
+                <div className="h-[1px] my-1 mx-2 bg-neutral-200 dark:bg-neutral-800" />
+              )}
+              <button
+                type="button"
+                data-no-liquid="true"
+                data-sq="row"
+                data-sq-border="none"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  item.onClick();
+                  onClose();
+                }}
+                className={`relative w-full flex items-center gap-2.5 px-2.5 py-2 text-left transition-colors cursor-pointer ${
+                  item.isSpecialDelete
+                    ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10'
+                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/70 text-black/85 dark:text-white/90'
+                }`}
               >
-                {item.icon}
-              </span>
-              <span className="truncate">{item.label}</span>
-            </button>
-          </React.Fragment>
-        ))}
+                <span
+                  className="w-5 h-5 flex items-center justify-center shrink-0"
+                  style={{ color: item.iconColor }}
+                >
+                  {item.icon}
+                </span>
+                <span className="truncate">{item.label}</span>
+              </button>
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     </div>
   );

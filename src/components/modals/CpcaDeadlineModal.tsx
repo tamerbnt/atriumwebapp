@@ -110,7 +110,11 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Banner Alert */}
-        <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
+        <div
+          data-sq="card"
+          style={{ '--sq-stroke': 'rgba(245,158,11,0.28)' } as React.CSSProperties}
+          className="p-3.5 bg-amber-500/10 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5"
+        >
           <AlertTriangle size={18} className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
           <div>
             <span className="font-semibold block">
@@ -197,8 +201,12 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
 
         {/* Live Calculation Result Preview Box */}
         {preview && (
-          <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
-            <div className="flex items-center justify-between">
+          <div
+            data-sq="panel"
+            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+            className="p-3 bg-[#F3EDE7] dark:bg-neutral-800/60 space-y-2.5"
+          >
+            <div className="flex items-center justify-between px-1 pt-0.5">
               <span className="text-xs font-semibold text-black/80 dark:text-white/80">
                 {isAr ? 'الأجل المحسوب' : isEn ? 'Calculated Limit' : 'Calcul Automatique'}
               </span>
@@ -207,16 +215,28 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
-              <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div
+                data-sq="card"
+                style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+                className="p-2.5 bg-white dark:bg-neutral-800"
+              >
                 <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'المدة الأساسية' : isEn ? 'Base Days' : 'Délai Base'}</span>
                 <span className="font-bold text-black dark:text-white font-mono tabular-nums">{preview.baseDays} j</span>
               </div>
-              <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
+              <div
+                data-sq="card"
+                style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+                className="p-2.5 bg-white dark:bg-neutral-800"
+              >
                 <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'تمديد المسافة' : isEn ? 'Extra Days' : 'Distance'}</span>
                 <span className="font-bold text-black dark:text-white font-mono tabular-nums">+{preview.distanceExtensionDays} j</span>
               </div>
-              <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40 col-span-2">
+              <div
+                data-sq="card"
+                style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+                className="p-2.5 bg-white dark:bg-neutral-800 col-span-2"
+              >
                 <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'تاريخ الانتهاء' : isEn ? 'Final Due' : 'Expiration Finale'}</span>
                 <span className="font-bold text-[#d4522f] font-mono tabular-nums text-xs">
                   {new Date(preview.terminalExpiryDate).toLocaleDateString('fr-DZ', {
@@ -231,7 +251,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
             </div>
 
             {preview.isRolledOver && (
-              <p className="text-[11px] text-amber-700 dark:text-amber-300 font-medium pt-1">
+              <p className="text-[11px] text-amber-700 dark:text-amber-300 font-medium px-1 pt-0.5">
                 {preview.rolloverReason}
               </p>
             )}

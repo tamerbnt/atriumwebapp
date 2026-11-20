@@ -169,7 +169,12 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="relative w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[90vh] overflow-hidden">
+      <div className="sq-elev-pop w-full max-w-2xl">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[90vh] overflow-hidden"
+        >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60">
           <div>
@@ -241,8 +246,10 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
             </span>
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="solid"
               onClick={markAllPresent}
-              className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 font-semibold text-black dark:text-white cursor-pointer shadow-2xs"
+              className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 font-semibold text-black dark:text-white cursor-pointer"
             >
               {t('edu_mark_all_present')}
             </button>
@@ -257,10 +264,16 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
             return (
               <div
                 key={student.id}
-                className="flex items-center justify-between p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-2xs"
+                data-sq="card"
+                data-sq-border="solid"
+                className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+                  <div
+                    data-sq="ctl-sm"
+                    data-sq-border="solid"
+                    className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"
+                  >
                     {student.fullName.charAt(0)}
                   </div>
                   <div>
@@ -280,16 +293,18 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                     <button
                       key={st}
                       type="button"
+                      data-sq="ctl-sm"
+                      data-sq-border="none"
                       onClick={() => handleStatusChange(student.id, st)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                      className={`px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
                         currentStatus === st
                           ? st === 'Present'
-                            ? 'bg-emerald-600 text-white shadow-2xs'
+                            ? 'bg-emerald-600 text-white'
                             : st === 'Late'
-                            ? 'bg-amber-600 text-white shadow-2xs'
+                            ? 'bg-amber-600 text-white'
                             : st === 'Absent'
-                            ? 'bg-rose-600 text-white shadow-2xs'
-                            : 'bg-blue-600 text-white shadow-2xs'
+                            ? 'bg-rose-600 text-white'
+                            : 'bg-blue-600 text-white'
                           : 'bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white'
                       }`}
                     >

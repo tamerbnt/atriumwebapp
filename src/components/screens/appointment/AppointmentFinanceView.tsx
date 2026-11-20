@@ -312,7 +312,7 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
           const isApproved = payout.status === 'Approved';
           return (
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-semibold ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold ${
                 isPaid
                   ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
                   : isApproved

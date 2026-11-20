@@ -192,7 +192,7 @@ export function Sidebar({
     if (!btn || !listRef.current) return;
     if (btn === lastTargetBtn.current) return;
     lastTargetBtn.current = btn;
-    hoverBody.current?.setHover([btn.offsetTop, btn.offsetHeight || 40]);
+    hoverBody.current?.setHover([btn.offsetTop, btn.offsetHeight || 44]);
   };
 
   const onListPointerLeave = (e: React.PointerEvent) => {

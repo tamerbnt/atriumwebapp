@@ -300,11 +300,23 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             return (
               <div
                 key={ws.id}
-                className={`rounded-[20px] border transition-all p-5 flex flex-col justify-between min-h-[290px] shadow-2xs ${
+                data-sq="card"
+                data-sq-border={!isOccupied ? 'dashed' : 'solid'}
+                data-sq-stroke-w={isOccupied && active.stage === 'in_progress' ? 2 : 1}
+                style={
+                  isOccupied && active.stage === 'in_progress'
+                    ? ({ '--sq-stroke': '#d4522f' } as React.CSSProperties)
+                    : isOccupied && active.stage === 'completed'
+                    ? ({ '--sq-stroke': 'rgba(52, 211, 153, 0.8)' } as React.CSSProperties)
+                    : !isOccupied
+                    ? ({ '--sq-stroke': '#D4C8BC' } as React.CSSProperties)
+                    : undefined
+                }
+                className={`border transition-all p-5 flex flex-col justify-between min-h-[290px] ${
                   !isOccupied
-                    ? 'bg-[#FBF8F5] dark:bg-[#1C1B1A] border-dashed border-[#D4C8BC] dark:border-[#3A3734]'
+                    ? 'bg-[#FBF8F5] dark:bg-[#1C1B1A] border-[#D4C8BC] dark:border-[#3A3734]'
                     : active.stage === 'in_progress'
-                    ? 'bg-white dark:bg-[#1C1B1A] border-[#d4522f] ring-2 ring-[#d4522f]/15'
+                    ? 'bg-white dark:bg-[#1C1B1A] border-[#d4522f]'
                     : active.stage === 'completed'
                     ? 'bg-emerald-50/40 dark:bg-emerald-950/15 border-emerald-400 dark:border-emerald-700'
                     : 'bg-white dark:bg-[#1C1B1A] border-[#E6DED6] dark:border-[#3A3734]'
@@ -317,7 +329,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                     </span>
                     {isOccupied ? (
                       <span
-                        className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
+                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
                           active.stage === 'waiting'
                             ? 'bg-amber-50 text-amber-700'
                             : active.stage === 'in_progress'
@@ -354,7 +366,11 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                           </div>
                           <span className="font-bold text-black dark:text-white truncate">{active.clientName}</span>
                         </div>
-                        <div className="bg-[#F3EDE7] dark:bg-[#262422] rounded-xl p-2.5">
+                        <div
+                          data-sq="ctl"
+                          data-sq-border="none"
+                          className="bg-[#F3EDE7] dark:bg-[#262422] p-2.5"
+                        >
                           <span className="text-[11px] text-black/62 dark:text-white/65 block">
                             {isRtl ? 'الخدمة' : 'Prestation'}
                           </span>
@@ -388,7 +404,9 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                     <button
                       type="button"
                       onClick={() => handleAdvanceStage(ws.id)}
-                      className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs ${
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className={`w-full py-2.5 px-3 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                         active.stage === 'waiting'
                           ? 'bg-blue-600 hover:bg-blue-700 text-white'
                           : active.stage === 'in_progress'
@@ -420,7 +438,9 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                         setTargetStationId(ws.id);
                         setIsAddClientModalOpen(true);
                       }}
-                      className="w-full py-2.5 px-3 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] hover:border-[#d4522f] hover:bg-[#d4522f]/5 text-xs font-semibold text-black/75 dark:text-white/80 hover:text-[#d4522f] transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      className="w-full py-2.5 px-3 border border-[#D4C8BC] dark:border-[#3A3734] hover:[--sq-stroke:#d4522f] hover:bg-[#d4522f]/5 text-xs font-semibold text-black/75 dark:text-white/80 hover:text-[#d4522f] transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <Plus size={14} />
                       <span>{isRtl ? 'إسناد زبون' : 'Assigner'}</span>
@@ -568,14 +588,23 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
 
       {checkoutModalStationKey && activeStations[checkoutModalStationKey] && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-[#1C1B1A] rounded-[24px] shadow-2xl border border-[#E6DED6] dark:border-[#3A3734] max-w-sm w-full p-6">
-            <h3 className="text-base font-bold text-black dark:text-white mb-1">
-              {isRtl ? 'تحصيل فاتورة الصالون' : 'Encaissement Express Salon'}
-            </h3>
-            <p className="text-xs text-black/62 dark:text-white/65 mb-4">
-              {activeStations[checkoutModalStationKey].clientName} — {activeStations[checkoutModalStationKey].serviceName}
-            </p>
-            <div className="bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] rounded-2xl p-4 text-xs space-y-2 mb-4">
+          <div className="sq-elev-pop max-w-sm w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] w-full p-6"
+            >
+              <h3 className="text-base font-bold text-black dark:text-white mb-1">
+                {isRtl ? 'تحصيل فاتورة الصالون' : 'Encaissement Express Salon'}
+              </h3>
+              <p className="text-xs text-black/62 dark:text-white/65 mb-4">
+                {activeStations[checkoutModalStationKey].clientName} — {activeStations[checkoutModalStationKey].serviceName}
+              </p>
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] p-4 text-xs space-y-2 mb-4"
+              >
               <div className="flex justify-between">
                 <span>{isRtl ? 'سعر الخدمة' : 'Prestation'}</span>
                 <span className="font-mono font-bold">
@@ -607,7 +636,10 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   key={pm}
                   type="button"
                   onClick={() => setPaymentMethod(pm)}
-                  className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all flex flex-col items-center gap-1 cursor-pointer ${
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  style={paymentMethod === pm ? ({ '--sq-stroke': '#d4522f' } as React.CSSProperties) : undefined}
+                  className={`py-2 px-2 text-xs font-bold border transition-all flex flex-col items-center gap-1 cursor-pointer ${
                     paymentMethod === pm
                       ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                       : 'border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white/80'
@@ -622,17 +654,22 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
               <button
                 type="button"
                 onClick={() => setCheckoutModalStationKey(null)}
-                className="flex-1 py-2.5 rounded-xl bg-[#F3EDE7] dark:bg-[#262422] text-xs font-semibold cursor-pointer"
+                data-sq="ctl"
+                data-sq-border="none"
+                className="flex-1 py-2.5 bg-[#F3EDE7] dark:bg-[#262422] text-xs font-semibold cursor-pointer"
               >
                 {isRtl ? 'إلغاء' : 'Annuler'}
               </button>
               <button
                 type="button"
                 onClick={handleConfirmCheckout}
-                className="flex-1 py-2.5 rounded-xl bg-[#d4522f] text-white text-xs font-semibold cursor-pointer"
+                data-sq="ctl"
+                data-sq-border="none"
+                className="flex-1 py-2.5 bg-[#d4522f] text-white text-xs font-semibold cursor-pointer"
               >
                 {isRtl ? 'تأكيد' : 'Valider'}
               </button>
+            </div>
             </div>
           </div>
         </div>
@@ -640,138 +677,191 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
 
       {isAddClientModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-[#1C1B1A] rounded-[24px] shadow-2xl border border-[#E6DED6] dark:border-[#3A3734] max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-black dark:text-white">
-                {isRtl ? 'تسكين زبون' : 'Installer un Client au Fauteuil'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsAddClientModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/62 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            <form onSubmit={handleAddNewClientToStation} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold mb-1">{isRtl ? 'محطة العمل' : 'Poste'}</label>
-                <select
-                  value={targetStationId}
-                  onChange={(e) => setTargetStationId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs font-medium"
-                >
-                  {workstationsList.map((ws) => (
-                    <option key={ws.id} value={ws.id}>
-                      {ws.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold mb-1">{isRtl ? 'اسم الزبون' : 'Nom du client'}</label>
-                <input
-                  type="text"
-                  required
-                  value={newClientName}
-                  onChange={(e) => setNewClientName(e.target.value)}
-                  placeholder="Ex: Karim Mansouri"
-                  className="w-full h-10 px-3 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold mb-1">{isRtl ? 'الخدمة' : 'Prestation'}</label>
-                <select
-                  value={selectedServiceId}
-                  onChange={(e) => setSelectedServiceId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs font-medium"
-                >
-                  {servicesCatalog.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} — {formatMoney(s.price, 'DZD')}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold mb-1">{isRtl ? 'المصففة' : 'Styliste'}</label>
-                <select
-                  value={selectedStylistId}
-                  onChange={(e) => setSelectedStylistId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs font-medium"
-                >
-                  {staff.map((st) => (
-                    <option key={st.id} value={st.id}>
-                      {st.fullName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="pt-2 flex gap-2">
+          <div className="sq-elev-pop max-w-md w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] w-full p-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-bold text-black dark:text-white">
+                  {isRtl ? 'تسكين زبون' : 'Installer un Client au Fauteuil'}
+                </h3>
                 <button
                   type="button"
                   onClick={() => setIsAddClientModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-[#F3EDE7] dark:bg-[#262422] text-xs font-semibold cursor-pointer"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/62 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
-                  {isRtl ? 'إلغاء' : 'Annuler'}
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#d4522f] text-white text-xs font-semibold cursor-pointer"
-                >
-                  {isRtl ? 'تسكين' : 'Installer'}
+                  ✕
                 </button>
               </div>
-            </form>
+              <form onSubmit={handleAddNewClientToStation} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold mb-1">{isRtl ? 'محطة العمل' : 'Poste'}</label>
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                  >
+                    <select
+                      value={targetStationId}
+                      onChange={(e) => setTargetStationId(e.target.value)}
+                      className="w-full h-full px-3 bg-transparent border-0 text-xs font-medium outline-none"
+                    >
+                      {workstationsList.map((ws) => (
+                        <option key={ws.id} value={ws.id}>
+                          {ws.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1">{isRtl ? 'اسم الزبون' : 'Nom du client'}</label>
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                  >
+                    <input
+                      type="text"
+                      required
+                      value={newClientName}
+                      onChange={(e) => setNewClientName(e.target.value)}
+                      placeholder="Ex: Karim Mansouri"
+                      className="lbi-field px-3 bg-transparent border-0 text-xs font-medium outline-none"
+                      style={{ paddingInline: '12px' }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1">{isRtl ? 'الخدمة' : 'Prestation'}</label>
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                  >
+                    <select
+                      value={selectedServiceId}
+                      onChange={(e) => setSelectedServiceId(e.target.value)}
+                      className="w-full h-full px-3 bg-transparent border-0 text-xs font-medium outline-none"
+                    >
+                      {servicesCatalog.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} — {formatMoney(s.price, 'DZD')}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1">{isRtl ? 'المصففة' : 'Styliste'}</label>
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                  >
+                    <select
+                      value={selectedStylistId}
+                      onChange={(e) => setSelectedStylistId(e.target.value)}
+                      className="w-full h-full px-3 bg-transparent border-0 text-xs font-medium outline-none"
+                    >
+                      {staff.map((st) => (
+                        <option key={st.id} value={st.id}>
+                          {st.fullName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="pt-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddClientModalOpen(false)}
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    className="flex-1 py-2.5 bg-[#F3EDE7] dark:bg-[#262422] text-xs font-semibold cursor-pointer"
+                  >
+                    {isRtl ? 'إلغاء' : 'Annuler'}
+                  </button>
+                  <button
+                    type="submit"
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    className="flex-1 py-2.5 bg-[#d4522f] text-white text-xs font-semibold cursor-pointer"
+                  >
+                    {isRtl ? 'تسكين' : 'Installer'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
 
       {lastReceipt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-[#1C1B1A] rounded-[24px] shadow-2xl border border-[#E6DED6] dark:border-[#3A3734] max-w-sm w-full p-6 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 mx-auto flex items-center justify-center mb-3">
-              <CheckCircle2 size={24} />
-            </div>
-            <h3 className="text-base font-bold text-black dark:text-white mb-1">
-              {isRtl ? 'وصل التحصيل جاهز' : 'Ticket de Caisse Validé'}
-            </h3>
-            <p className="text-xs mb-4 font-mono font-bold text-[#d4522f]">{lastReceipt.receiptNumber}</p>
-            <div className="bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] rounded-2xl p-4 text-xs space-y-2 text-left mb-5">
-              <div className="flex justify-between">
-                <span>Client :</span>
-                <span className="font-semibold">{lastReceipt.clientName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Service :</span>
-                <span className="font-semibold">{lastReceipt.serviceName}</span>
-              </div>
-              <div className="flex justify-between font-bold pt-2 border-t border-[#E6DED6] dark:border-[#3A3734]">
-                <span>Total :</span>
-                <span className="text-[#d4522f] font-mono">
-                  {formatMoney(lastReceipt.amountDzd + lastReceipt.timbreFiscalDzd, 'DZD')}
-                </span>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setLastReceipt(null)}
-                className="flex-1 py-2.5 rounded-xl bg-[#F3EDE7] dark:bg-[#262422] text-xs font-semibold cursor-pointer"
+          <div className="sq-elev-pop max-w-sm w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] w-full p-6 text-center"
+            >
+              <div
+                data-sq="tile-lg"
+                data-sq-border="none"
+                className="w-12 h-12 bg-emerald-50 text-emerald-700 mx-auto flex items-center justify-center mb-3"
               >
-                Fermer
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  window.print();
-                  setLastReceipt(null);
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-[#d4522f] text-white text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
+                <CheckCircle2 size={24} />
+              </div>
+              <h3 className="text-base font-bold text-black dark:text-white mb-1">
+                {isRtl ? 'وصل التحصيل جاهز' : 'Ticket de Caisse Validé'}
+              </h3>
+              <p className="text-xs mb-4 font-mono font-bold text-[#d4522f]">{lastReceipt.receiptNumber}</p>
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] p-4 text-xs space-y-2 text-left mb-5"
               >
-                <Printer size={14} />
-                <span>Imprimer</span>
-              </button>
+                <div className="flex justify-between">
+                  <span>Client :</span>
+                  <span className="font-semibold">{lastReceipt.clientName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Service :</span>
+                  <span className="font-semibold">{lastReceipt.serviceName}</span>
+                </div>
+                <div className="flex justify-between font-bold pt-2 border-t border-[#E6DED6] dark:border-[#3A3734]">
+                  <span>Total :</span>
+                  <span className="text-[#d4522f] font-mono">
+                    {formatMoney(lastReceipt.amountDzd + lastReceipt.timbreFiscalDzd, 'DZD')}
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLastReceipt(null)}
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="flex-1 py-2.5 bg-[#F3EDE7] dark:bg-[#262422] text-xs font-semibold cursor-pointer"
+                >
+                  Fermer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.print();
+                    setLastReceipt(null);
+                  }}
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="flex-1 py-2.5 bg-[#d4522f] text-white text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Printer size={14} />
+                  <span>Imprimer</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -1,11 +1,13 @@
 .root {
   --h: var(--atr-h, 34px);
-  --r: calc(var(--h) * 0.147);
+  --r: var(--r-ctl, 12px);
+  --sq-stroke: var(--atr-line, #E6DED6);
 
   position: relative;
   display: inline-flex;
   box-sizing: border-box;
-  padding: calc(var(--h) * 0.08);
+  isolation: isolate;
+  padding: 3px;
   border: 1px solid var(--atr-line);
   border-radius: var(--r);
   background: #FFFFFF;
@@ -17,17 +19,20 @@
 :global([data-surface='dark']) .root {
   background: #202022;
   border-color: #3A3734;
+  --sq-stroke: #3A3734;
 }
 
 :global([data-surface='light']) .root {
   background: #FFFFFF;
   border-color: var(--atr-line, #E6DED6);
+  --sq-stroke: var(--atr-line, #E6DED6);
 }
 
 .bl {
   position: absolute;
-  inset: calc(var(--h) * 0.08);
-  border-radius: calc(var(--r) * 0.8);
+  inset: 3px;
+  z-index: 0;
+  border-radius: var(--r-thumb, 9px);
   background: var(--atr-acc);
   clip-path: inset(0 100% 0 0);
   pointer-events: none;
@@ -35,15 +40,16 @@
 
 .so {
   position: relative;
+  z-index: 1;
   appearance: none;
   -webkit-appearance: none;
   border: 0;
   margin: 0;
   background: transparent;
   box-sizing: border-box;
-  height: calc(var(--h) * 0.84 - 2px);
+  height: calc(var(--h) - 8px);
   padding: 0 calc(var(--h) * 0.42);
-  border-radius: calc(var(--r) * 0.8);
+  border-radius: var(--r-thumb, 9px);
   color: var(--atr-ink);
   font-family: var(--atr-font-ui, inherit);
   font-size: calc(var(--h) * 0.38);

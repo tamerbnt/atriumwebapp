@@ -1734,7 +1734,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                               }}
                               isLast={idx === projExpenses.length - 1}
                             />
-                          ))
+                          ))}
                         </InspectorCard>
                       )}
                     </InspectorSection>

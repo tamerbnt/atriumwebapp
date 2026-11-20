@@ -355,7 +355,11 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (apt) => (
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-[#d4522f]/10 text-[#d4522f] font-bold text-[11px] font-mono flex flex-col items-center justify-center shrink-0">
+            <div
+              data-sq="tile"
+              data-sq-border="none"
+              className="w-9 h-9 bg-[#d4522f]/10 text-[#d4522f] font-bold text-[11px] font-mono flex flex-col items-center justify-center shrink-0"
+            >
               <span>{apt.startTime}</span>
             </div>
             <div className="min-w-0">
@@ -390,7 +394,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (apt) => (
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-semibold ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold ${
               apt.status === 'InChair'
                 ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
                 : apt.status === 'Completed'
@@ -628,36 +632,48 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
           onViewModeChange={(m) => setViewMode(m)}
           onExport={handleExportCSV}
           extraTrailingControls={
-            <div className="flex items-center gap-1 bg-white dark:bg-[#262422] px-1.5 h-10 rounded-xl border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs text-xs font-semibold">
-              <button
-                type="button"
-                onClick={handlePrevDay}
-                className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-[#3A3734] text-black/70 dark:text-white/75 cursor-pointer"
-                title={t('salon_btn_prev_day', language)}
+            <div className="sq-elev-card">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="flex items-center gap-1 bg-white dark:bg-[#262422] px-1.5 h-10 border border-[#E6DED6] dark:border-[#3A3734] text-xs font-semibold"
               >
-                <ChevronLeft size={14} className="rtl:rotate-180" />
-              </button>
-              <button
-                type="button"
-                onClick={handleToday}
-                className="px-2 py-1 rounded-lg bg-[#d4522f]/10 text-[#d4522f] font-bold cursor-pointer"
-              >
-                {t('salon_btn_today', language)}
-              </button>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-1 text-xs font-semibold bg-transparent text-black dark:text-white border-none focus:outline-none cursor-pointer"
-              />
-              <button
-                type="button"
-                onClick={handleNextDay}
-                className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-[#3A3734] text-black/70 dark:text-white/75 cursor-pointer"
-                title={t('salon_btn_next_day', language)}
-              >
-                <ChevronRight size={14} className="rtl:rotate-180" />
-              </button>
+                <button
+                  type="button"
+                  data-sq="ctl-sm"
+                  data-sq-border="none"
+                  onClick={handlePrevDay}
+                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-[#3A3734] text-black/70 dark:text-white/75 cursor-pointer"
+                  title={t('salon_btn_prev_day', language)}
+                >
+                  <ChevronLeft size={14} className="rtl:rotate-180" />
+                </button>
+                <button
+                  type="button"
+                  data-sq="ctl-sm"
+                  data-sq-border="none"
+                  onClick={handleToday}
+                  className="px-2 py-1 bg-[#d4522f]/10 text-[#d4522f] font-bold cursor-pointer"
+                >
+                  {t('salon_btn_today', language)}
+                </button>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="px-1 text-xs font-semibold bg-transparent text-black dark:text-white border-none focus:outline-none cursor-pointer"
+                />
+                <button
+                  type="button"
+                  data-sq="ctl-sm"
+                  data-sq-border="none"
+                  onClick={handleNextDay}
+                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-[#3A3734] text-black/70 dark:text-white/75 cursor-pointer"
+                  title={t('salon_btn_next_day', language)}
+                >
+                  <ChevronRight size={14} className="rtl:rotate-180" />
+                </button>
+              </div>
             </div>
           }
           activeChips={activeChips}
@@ -681,7 +697,12 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
           lastSyncedAt={lastSyncedAt}
           onRetrySync={retryCloudSync}
           renderCalendarView={() => (
-            <div className="bg-white dark:bg-[#1C1B1A] rounded-[20px] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs overflow-hidden">
+            <div className="sq-elev-card">
+              <div
+                data-sq="table"
+                data-sq-border="solid"
+                className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] overflow-hidden"
+              >
               <div className="overflow-x-auto">
                 <div className="min-w-[760px]">
                   <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-[#E6DED6] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422]">
@@ -744,11 +765,13 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                               {apt ? (
                                 <button
                                   type="button"
+                                  data-sq="card"
+                                  data-sq-border="solid"
                                   onClick={(e) => {
                                     setDrawerOpenerEl(e.currentTarget);
                                     setInspectingApt(apt);
                                   }}
-                                  className={`w-full h-full text-left p-2.5 rounded-2xl cursor-pointer transition-all border shadow-2xs hover:border-[#d4522f] ${
+                                  className={`w-full h-full text-left p-2.5 cursor-pointer transition-all border hover:border-[#d4522f] ${
                                     apt.status === 'InChair'
                                       ? 'bg-amber-50 dark:bg-amber-950/35 border-amber-300 dark:border-amber-700'
                                       : apt.status === 'Completed'
@@ -777,8 +800,10 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                               ) : (
                                 <button
                                   type="button"
+                                  data-sq="ctl"
+                                  data-sq-border="dashed"
                                   onClick={() => handleOpenAddModal(time, stylist.id)}
-                                  className="w-full h-full min-h-[50px] rounded-xl border border-dashed border-transparent group-hover:border-[#D4C8BC] flex items-center justify-center text-black/55 hover:text-[#d4522f] opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                                  className="w-full h-full min-h-[50px] border border-dashed border-transparent group-hover:border-[#D4C8BC] flex items-center justify-center text-black/55 hover:text-[#d4522f] opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                                 >
                                   <Plus size={14} />
                                 </button>
@@ -790,6 +815,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                     ))}
                   </div>
                 </div>
+              </div>
               </div>
             </div>
           )}

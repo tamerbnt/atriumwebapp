@@ -10,6 +10,7 @@ export interface AtriumButtonProps extends React.ButtonHTMLAttributes<HTMLButton
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
   loading?: boolean;
+  shape?: 'squircle' | 'capsule';
 }
 
 export const AtriumButton = forwardRef<HTMLButtonElement, AtriumButtonProps>(function AtriumButton(
@@ -47,7 +48,7 @@ export const AtriumButton = forwardRef<HTMLButtonElement, AtriumButtonProps>(fun
       break;
     case 'danger':
       tone = 'outline';
-      dangerClass = '!border-[var(--atr-danger)] !text-[var(--atr-danger)]';
+      dangerClass = '!border-[var(--atr-danger)] !text-[var(--atr-danger)] [--sq-stroke:var(--atr-danger)]';
       break;
   }
 

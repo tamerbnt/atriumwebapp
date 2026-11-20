@@ -4,7 +4,7 @@
  */
 .panel {
   --h: var(--atr-h, 34px);
-  --r: calc(var(--h) * 0.147);
+  --r: var(--r-row, 12px);
 
   position: fixed;
   top: 0;
@@ -16,11 +16,11 @@
   max-height: min(70vh, 480px);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: calc(var(--h) * 0.2);
+  padding: 8px;
   background: var(--atr-card);
   color: var(--atr-ink);
   border: 1px solid var(--atr-line);
-  border-radius: calc(var(--r) * 1.8);
+  border-radius: var(--r-table, 20px);
   box-shadow: var(--atr-shadow-pop);
   font-family: var(--atr-font-ui, inherit);
   font-size: calc(var(--h) * 0.34);
@@ -48,8 +48,8 @@
 /* the blob that follows the pointer */
 .hl {
   position: absolute;
-  left: calc(var(--h) * 0.2);
-  right: calc(var(--h) * 0.2);
+  left: 8px;
+  right: 8px;
   top: 0;
   height: 0;
   border-radius: var(--r);

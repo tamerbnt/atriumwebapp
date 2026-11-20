@@ -92,18 +92,20 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
     >
-      <div
-        className={`bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl border border-neutral-200 dark:border-neutral-800 max-w-sm w-full p-6 text-center transition-all ${
-          shake ? 'animate-shake' : 'animate-in fade-in zoom-in-95 duration-150'
-        }`}
-        dir={isRtl ? 'rtl' : 'ltr'}
-      >
-        {/* Header with Close */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="w-8" />
-          <div className="w-12 h-12 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center mx-auto shadow-2xs">
-            <Lock size={22} />
-          </div>
+      <div className="sq-elev-pop max-w-sm w-full">
+        <div
+          data-sq="panel"
+          className={`bg-white dark:bg-neutral-900 w-full p-6 text-center transition-all ${
+            shake ? 'animate-shake' : 'animate-in fade-in zoom-in-95 duration-150'
+          }`}
+          dir={isRtl ? 'rtl' : 'ltr'}
+        >
+          {/* Header with Close */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-8" />
+            <div data-sq="tile-lg" data-sq-border="none" className="w-12 h-12 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center mx-auto">
+              <Lock size={22} />
+            </div>
           <button
             type="button"
             onClick={onClose}
@@ -148,12 +150,20 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
             return (
               <div
                 key={idx}
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-mono font-bold transition-all border ${
-                  isError
-                    ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-600'
+                data-sq="tile-lg"
+                style={{
+                  '--sq-stroke': isError
+                    ? '#f43f5e'
                     : hasDigit
-                    ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs'
-                    : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-black/50 dark:text-white/50'
+                    ? '#d4522f'
+                    : 'var(--color-border)',
+                } as React.CSSProperties}
+                className={`w-12 h-12 flex items-center justify-center text-xl font-mono font-bold transition-all ${
+                  isError
+                    ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600'
+                    : hasDigit
+                    ? 'bg-[#d4522f]/10 text-[#d4522f]'
+                    : 'bg-neutral-50 dark:bg-neutral-800/50 text-black/50 dark:text-white/50'
                 }`}
               >
                 {hasDigit ? '•' : ''}
@@ -178,30 +188,38 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
             <button
               key={digit}
               type="button"
+              data-sq="ctl"
+              data-sq-border="none"
               onClick={() => handleDigit(digit)}
-              className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black dark:text-white text-lg font-bold font-mono tabular-nums transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+              className="h-12 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black dark:text-white text-lg font-bold font-mono tabular-nums transition-all flex items-center justify-center cursor-pointer"
             >
               {digit}
             </button>
           ))}
           <button
             type="button"
+            data-sq="ctl"
+            data-sq-border="none"
             onClick={handleClear}
-            className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black/70 dark:text-white/70 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+            className="h-12 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black/70 dark:text-white/70 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer"
           >
             {isRtl ? 'مسح' : 'C'}
           </button>
           <button
             type="button"
+            data-sq="ctl"
+            data-sq-border="none"
             onClick={() => handleDigit('0')}
-            className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black dark:text-white text-lg font-bold font-mono tabular-nums transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+            className="h-12 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black dark:text-white text-lg font-bold font-mono tabular-nums transition-all flex items-center justify-center cursor-pointer"
           >
             0
           </button>
           <button
             type="button"
+            data-sq="ctl"
+            data-sq-border="none"
             onClick={handleBackspace}
-            className="h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black/70 dark:text-white/70 text-sm font-semibold transition-all flex items-center justify-center cursor-pointer shadow-2xs"
+            className="h-12 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black/70 dark:text-white/70 text-sm font-semibold transition-all flex items-center justify-center cursor-pointer"
           >
             <Delete size={18} />
           </button>
@@ -224,6 +242,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
               idle: isRtl ? 'تأكيد' : language === 'fr' ? 'Valider' : 'Confirm',
             }}
           />
+        </div>
         </div>
       </div>
     </div>

@@ -210,12 +210,15 @@ export const LiveSegmentedControl = React.memo(forwardRef<HTMLDivElement, LiveSe
     };
 
     const sizeProps = getSizeProps(size, style);
+    const isCompact = size === 'sm' || (typeof size === 'number' && size <= 34);
 
     return (
       <div
         ref={rootRef}
         role="radiogroup"
         aria-label={ariaLabel}
+        data-sq={isCompact ? 'ctl-sm' : 'ctl'}
+        data-sq-border="solid"
         className={[classes.root, fullWidth ? 'w-full flex' : '', className].filter(Boolean).join(' ')}
         onKeyDown={handleKeyDown}
         {...sizeProps}

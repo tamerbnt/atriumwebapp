@@ -69,22 +69,24 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
     >
       <div className="space-y-5">
         {/* Active Entitlement Status */}
-        <div className="p-4 rounded-[20px] bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/55 dark:text-white/55 block">
-              {t('settings_license_entitlement', language)}
-            </span>
-            <div className="text-sm font-bold text-black dark:text-white mt-0.5 tabular-nums">
-              {subscription.plan.name} {language === 'ar' ? `الرتبة #${subscription.plan.tierRank}` : language === 'fr' ? `Niveau #${subscription.plan.tierRank}` : `Tier Rank #${subscription.plan.tierRank}`}
+        <div className="sq-elev-card">
+          <div data-sq="card" className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 flex items-center justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/55 dark:text-white/55 block">
+                {t('settings_license_entitlement', language)}
+              </span>
+              <div className="text-sm font-bold text-black dark:text-white mt-0.5 tabular-nums">
+                {subscription.plan.name} {language === 'ar' ? `الرتبة #${subscription.plan.tierRank}` : language === 'fr' ? `Niveau #${subscription.plan.tierRank}` : `Tier Rank #${subscription.plan.tierRank}`}
+              </div>
+              <span className="text-xs text-[#d4522f] font-semibold">
+                {subscription.isLifetime
+                  ? t('settings_lifetime_badge', language)
+                  : t('settings_trial_badge', language)}
+              </span>
             </div>
-            <span className="text-xs text-[#d4522f] font-semibold">
-              {subscription.isLifetime
-                ? t('settings_lifetime_badge', language)
-                : t('settings_trial_badge', language)}
-            </span>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0">
-            <Shield size={20} />
+            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0">
+              <Shield size={20} />
+            </div>
           </div>
         </div>
 
@@ -98,7 +100,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
               onChange={(val) => setCode(val.toUpperCase())}
               width="100%"
               height={44}
-              corner={14}
+              corner={12}
               required
             />
             <span className="text-[11px] text-black/55 dark:text-white/55 block px-1">
@@ -120,10 +122,14 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
         {/* Feedback Alert */}
         {resultMessage && (
           <div
-            className={`p-3.5 rounded-2xl text-xs font-semibold flex items-start gap-2.5 border ${
+            data-sq="card"
+            style={{
+              '--sq-stroke': resultMessage.success ? 'rgba(16,185,129,0.4)' : 'rgba(244,63,94,0.4)',
+            } as React.CSSProperties}
+            className={`p-3.5 text-xs font-semibold flex items-start gap-2.5 ${
               resultMessage.success
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200'
-                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300'
             }`}
           >
             {resultMessage.success ? (
@@ -142,24 +148,26 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
           </span>
           <div className="space-y-1.5">
             {sampleVouchers.map((v) => (
-              <button
-                key={v.code}
-                type="button"
-                onClick={() => handleApplyPreset(v.code)}
-                className="w-full text-left rtl:text-right p-3 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 hover:border-[#D5DFE3] bg-white dark:bg-neutral-800/50 flex items-center justify-between group cursor-pointer transition-colors shadow-2xs"
-              >
-                <div>
-                  <div className="text-xs font-bold text-black dark:text-white">
-                    {v.label}
+              <div key={v.code} className="sq-elev-card">
+                <button
+                  type="button"
+                  data-sq="card"
+                  onClick={() => handleApplyPreset(v.code)}
+                  className="w-full text-left rtl:text-right p-3 bg-white dark:bg-neutral-800/50 flex items-center justify-between group cursor-pointer transition-colors"
+                >
+                  <div>
+                    <div className="text-xs font-bold text-black dark:text-white">
+                      {v.label}
+                    </div>
+                    <span className="text-[11px] font-mono text-[#d4522f] font-semibold">
+                      {v.code}
+                    </span>
                   </div>
-                  <span className="text-[11px] font-mono text-[#d4522f] font-semibold">
-                    {v.code}
+                  <span className="text-[10px] font-bold text-black/55 dark:text-white/55 group-hover:text-[#d4522f] uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
+                    {t('voucher_fill_code', language)}
                   </span>
-                </div>
-                <span className="text-[10px] font-bold text-black/55 dark:text-white/55 group-hover:text-[#d4522f] uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
-                  {t('voucher_fill_code', language)}
-                </span>
-              </button>
+                </button>
+              </div>
             ))}
           </div>
         </div>

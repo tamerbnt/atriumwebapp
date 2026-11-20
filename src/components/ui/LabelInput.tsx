@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { enqueueLabelWrite, cancelLabelGeometryTask } from "./labelGeometryQueue";
+import { squircleNotchedRingPaths, squirclePath } from "@/atrium/motion/shapes";
 
 /* ══ Label input ══════════════════════════════════════════
    A field whose label is its placeholder until you are in it.
@@ -30,24 +31,9 @@ function computeRingPaths(W: number, H: number, r: number, lw: number, isRtl: bo
   const x1 = isRtl
     ? Math.min(W - r * 0.5, W - lx + 4)
     : Math.min(W - r, lx + lw * S + 4);
-  const a = r - IN;
-  const R = W - IN;
-  const B = H - IN;
-  const mid = W / 2;
-
-  const nm = (x0 + x1) / 2;
-  const gapL = `M${nm},${IN} L${x0},${IN}`;
-  const gapR = `M${nm},${IN} L${x1},${IN}`;
-
-  const right = r > 0
-    ? `M${x1},${IN} L${W - r},${IN} A${a},${a} 0 0 1 ${R},${r} L${R},${H - r} A${a},${a} 0 0 1 ${W - r},${B} L${mid},${B}`
-    : `M${x1},${IN} L${R},${IN} L${R},${B} L${mid},${B}`;
-
-  const left = r > 0
-    ? `M${x0},${IN} L${r},${IN} A${a},${a} 0 0 0 ${IN},${r} L${IN},${H - r} A${a},${a} 0 0 0 ${r},${B} L${mid},${B}`
-    : `M${x0},${IN} L${IN},${IN} L${IN},${B} L${mid},${B}`;
-
-  return { lx, gapL, gapR, right, left };
+  const ring = squircleNotchedRingPaths(W, H, r, IN, x0, x1, 0.6);
+  const bg = squirclePath(0, 0, W, H, r, 0.6);
+  return { lx, bg, ...ring };
 }
 
 export interface LabelInputProps {
@@ -109,6 +95,7 @@ export function LabelInput({
   onBlur: explicitOnBlur,
 }: LabelInputProps) {
   const boxRef = useRef<HTMLDivElement | null>(null);
+  const bgRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rightPathRef = useRef<SVGPathElement | null>(null);
   const leftPathRef = useRef<SVGPathElement | null>(null);
@@ -170,6 +157,11 @@ export function LabelInput({
     lastGeomRef.current = { W, lw };
     const paths = computeRingPaths(W, H, r, lw, isRtl);
 
+    if (bgRef.current && paths.bg) {
+      const clipStr = `path('${paths.bg}')`;
+      bgRef.current.style.clipPath = clipStr;
+      (bgRef.current.style as any).webkitClipPath = clipStr;
+    }
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
     rightPathRef.current?.setAttribute("d", paths.right);
     leftPathRef.current?.setAttribute("d", paths.left);
@@ -296,10 +288,15 @@ export function LabelInput({
         style={{
           width: typeof width === "number" ? `${width}px` : "100%",
           height: H,
-          borderRadius: r,
           "--lbi-x": `${initialPaths.lx}px`,
         } as React.CSSProperties}
       >
+        <div
+          ref={bgRef}
+          className="lbi-bg"
+          aria-hidden="true"
+          style={initialPaths.bg ? { clipPath: `path('${initialPaths.bg}')` } : undefined}
+        />
         <svg ref={svgRef} className="lbi-ring" width="100%" height={H} viewBox={`0 0 ${initialW} ${H}`} aria-hidden="true">
           <path ref={rightPathRef} d={initialPaths.right} style={error ? { stroke: "#B8321C", strokeWidth: 1.5 } : undefined} />
           <path ref={leftPathRef} d={initialPaths.left} style={error ? { stroke: "#B8321C", strokeWidth: 1.5 } : undefined} />

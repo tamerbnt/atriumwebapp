@@ -125,7 +125,7 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -6, scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 460, damping: 32 }}
-      className="tst fixed z-[99999] w-[390px] max-w-[calc(100vw-32px)] rounded-[24px] bg-white dark:bg-[#1C1C20] border border-black/8 dark:border-white/12 shadow-[0_14px_34px_rgba(0,0,0,0.14)] dark:shadow-[0_18px_40px_rgba(0,0,0,0.52)] overflow-hidden flex flex-col pointer-events-auto select-none outline-none font-sans"
+      className="tst fixed z-[99999] w-[390px] max-w-[calc(100vw-32px)] sq-elev-pop pointer-events-auto select-none outline-none font-sans"
       style={{
         position: 'fixed',
         top: '76px',
@@ -133,9 +133,14 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
         left: isRtl ? '24px' : 'auto',
         zIndex: 99999,
         transformOrigin: isRtl ? 'top left' : 'top right',
-        '--tst-r': '20px',
+        '--tst-r': '16px',
       } as React.CSSProperties}
     >
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="rounded-[var(--r-panel,28px)] bg-white dark:bg-[#1C1C20] [--sq-stroke:rgba(0,0,0,0.08)] dark:[--sq-stroke:rgba(255,255,255,0.12)] overflow-hidden flex flex-col"
+      >
       {/* Unified Panel Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#1C1C20] text-[11px] text-black/70 dark:text-white/75">
         <div className="flex items-center gap-2 font-bold text-black dark:text-white text-[13px]">
@@ -203,6 +208,8 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
               transition={{ duration: 0.15 }}
               className="tst-toast-item h-[60px] text-xs font-semibold text-black/80 dark:text-white/85"
               data-kind="success"
+              data-sq="card"
+              data-sq-border="solid"
             >
               <span className="tst-icon shrink-0">
                 <CheckCircle2 size={18} strokeWidth={2.2} />
@@ -230,6 +237,8 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
                   transition={{ type: 'spring', stiffness: 480, damping: 30 }}
                   className="tst-toast-item group h-[64px] cursor-pointer hover:-translate-y-0.5 select-none shrink-0"
                   data-kind={notif.type}
+                  data-sq="card"
+                  data-sq-border="solid"
                   onClick={() => {
                     if (isUnread) markNotificationAsRead(notif.id);
                   }}
@@ -319,6 +328,7 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
             ? 'Flux opérationnel en direct'
             : 'Realtime Operational Stream'}
         </span>
+      </div>
       </div>
     </motion.div>
   );

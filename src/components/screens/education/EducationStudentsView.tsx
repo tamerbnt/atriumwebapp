@@ -490,7 +490,11 @@ export const EducationStudentsView: React.FC = () => {
         sortable: true,
         renderCell: (student) => (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+            <div
+              data-sq="tile"
+              data-sq-border="solid"
+              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"
+            >
               {student.fullName.charAt(0)}
             </div>
             <div className="min-w-0">
@@ -564,7 +568,7 @@ export const EducationStudentsView: React.FC = () => {
           const enrollment = eduEnrollments.find((e) => e.studentId === student.id && e.status === 'Active');
           return enrollment ? (
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide uppercase ${
+              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase ${
                 enrollment.paymentStatus === 'Paid'
                   ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                   : enrollment.paymentStatus === 'Overdue'
@@ -998,8 +1002,10 @@ export const EducationStudentsView: React.FC = () => {
                   action={
                     <button
                       type="button"
+                      data-sq="ctl-sm"
+                      data-sq-border="none"
                       onClick={() => setIsCertModalOpen(true)}
-                      className="px-2.5 py-1 rounded-lg bg-[#d4522f] text-white text-[11px] font-semibold flex items-center gap-1 cursor-pointer hover:opacity-90"
+                      className="px-2.5 py-1 bg-[#d4522f] text-white text-[11px] font-semibold flex items-center gap-1 cursor-pointer hover:opacity-90"
                     >
                       <Plus size={12} />
                       <span>{t('edu_btn_issue_certificate')}</span>
@@ -1007,7 +1013,7 @@ export const EducationStudentsView: React.FC = () => {
                   }
                 >
                   {studentCerts.length === 0 ? (
-                    <KineticEmptyStateMotion motionKey={`edu-cert-${student.id}`}>
+                    <KineticEmptyStateMotion motionKey={`edu-cert-${st.id}`}>
                       <EmptyState
                         variant="compact"
                         icon={<Award />}
@@ -1180,7 +1186,12 @@ export const EducationStudentsView: React.FC = () => {
 
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="sq-elev-pop w-full max-w-lg">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 max-h-[90vh] overflow-y-auto"
+            >
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {studentToEdit ? t('edu_modal_edit_student') : t('edu_modal_add_student')}
@@ -1257,13 +1268,17 @@ export const EducationStudentsView: React.FC = () => {
                   placeholder="Select Cohort..."
                 />
               )}
-              <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3.5 border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3"
+              >
                 <label className="flex items-center gap-2 font-semibold text-black dark:text-white cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.isMinor}
                     onChange={(e) => setFormData({ ...formData, isMinor: e.target.checked })}
-                    className="rounded text-[#d4522f] focus:ring-[#d4522f]"
+                    className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
                   />
                   <span>{t('edu_field_is_minor')}</span>
                 </label>
@@ -1305,19 +1320,24 @@ export const EducationStudentsView: React.FC = () => {
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
+                  data-sq="ctl"
+                  data-sq-border="solid"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="px-5 py-2 bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('edu_btn_save_student')}
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

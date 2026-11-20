@@ -247,7 +247,11 @@ export const LegalMattersView: React.FC<any> = () => {
         sortable: true,
         renderCell: (d) => (
           <div className="flex items-center gap-3 min-w-0 pr-2">
-            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+            <div
+              data-sq="tile"
+              data-sq-border="solid"
+              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700"
+            >
               <BookOpen size={18} />
             </div>
             <div className="min-w-0">
@@ -322,7 +326,7 @@ export const LegalMattersView: React.FC<any> = () => {
           const isPublished = d.status === 'publie_conservation';
           return (
             <span
-              className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                 isPublished
                   ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
                   : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
@@ -350,7 +354,11 @@ export const LegalMattersView: React.FC<any> = () => {
         sortable: true,
         renderCell: (m) => (
           <div className="flex items-center gap-3 min-w-0 pr-2">
-            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+            <div
+              data-sq="tile"
+              data-sq-border="solid"
+              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700"
+            >
               <Gavel size={18} />
             </div>
             <div className="min-w-0">

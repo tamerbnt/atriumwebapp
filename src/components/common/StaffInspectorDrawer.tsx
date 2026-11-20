@@ -228,11 +228,11 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
         headerPills={
           staff ? (
             <>
-              <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate max-w-full">
+              <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate max-w-full">
                 {staff.role || 'Staff'}
               </span>
               {staff.status === 'active' && (
-                <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3] border border-[#B5E8CE] dark:border-[#1E4D36]">
+                <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3] border border-[#B5E8CE] dark:border-[#1E4D36]">
                   <ShieldCheck className="w-3 h-3" />
                   {isAr ? 'في الخدمة' : isEn ? 'In Service' : 'En Poste'}
                 </span>

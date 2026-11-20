@@ -131,24 +131,25 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
           <label className="text-xs font-bold text-black/80 dark:text-white/80">
             {t('modal_notes', language)}
           </label>
-          <textarea
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder={
-              language === 'ar'
-                ? 'أهداف المشترك، تفضيلات الحصص، رغبة في حصة تجريبية...'
-                : language === 'fr'
-                ? 'Objectifs du prospect, créneaux souhaités, demande de séance d\'essai...'
-                : 'Class preferences, goals, free trial session requested...'
-            }
-            style={{
-              backgroundColor: 'var(--color-surface-bg)',
-              borderColor: 'var(--color-border)',
-              borderRadius: 'var(--radius-input)',
-            }}
-            className="w-full p-2.5 text-sm border focus:outline-none focus:border-[#d4522f] text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 resize-none"
-          />
+          <div
+            data-sq="card"
+            style={{ backgroundColor: 'var(--color-surface-bg)' }}
+            className="w-full focus-within:[--sq-stroke:#d4522f]"
+          >
+            <textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={
+                language === 'ar'
+                  ? 'أهداف المشترك، تفضيلات الحصص، رغبة في حصة تجريبية...'
+                  : language === 'fr'
+                  ? 'Objectifs du prospect, créneaux souhaités, demande de séance d\'essai...'
+                  : 'Class preferences, goals, free trial session requested...'
+              }
+              className="w-full p-2.5 text-sm bg-transparent border-0 focus:outline-none text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 resize-none"
+            />
+          </div>
         </div>
 
         <div className="flex justify-end gap-3 pt-3">

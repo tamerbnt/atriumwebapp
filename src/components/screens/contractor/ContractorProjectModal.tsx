@@ -110,29 +110,38 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
-              <HardHat size={20} />
+      <div className="sq-elev-pop max-w-lg w-full">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold shrink-0"
+              >
+                <HardHat size={20} />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  {initialData
+                    ? (isAr ? 'تعديل بيانات الورشة' : 'Modifier le Chantier')
+                    : (isAr ? 'فتح ورشة عمل جديدة (Chantier)' : 'Nouveau Chantier & Marché BTP')}
+                </h2>
+              </div>
             </div>
-            <div>
-              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {initialData
-                  ? (isAr ? 'تعديل بيانات الورشة' : 'Modifier le Chantier')
-                  : (isAr ? 'فتح ورشة عمل جديدة (Chantier)' : 'Nouveau Chantier & Marché BTP')}
-              </h2>
-            </div>
+            <button
+              type="button"
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              onClick={onClose}
+              className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            >
+              <X size={18} />
+            </button>
           </div>
-          <button
-            type="button"
-            aria-label={isAr ? 'إغلاق' : 'Fermer'}
-            onClick={onClose}
-            className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-          >
-            <X size={18} />
-          </button>
-        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <LabelInput
@@ -231,6 +240,7 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
             </AtriumButton>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

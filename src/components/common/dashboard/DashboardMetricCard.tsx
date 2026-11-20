@@ -48,7 +48,9 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
   return (
     <div
       title={tooltip}
-      className={`bg-white dark:bg-neutral-800/90 rounded-[18px] p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs min-h-[132px] flex flex-col justify-between ${className}`}
+      data-sq="card"
+      data-sq-border="solid"
+      className={`relative bg-white dark:bg-neutral-800/90 p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] min-h-[132px] flex flex-col justify-between ${className}`}
     >
       <div>
         <div className="flex items-center justify-between gap-1.5">
@@ -71,7 +73,7 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
         </div>
         {displayBadge && (
           <span
-            className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-md inline-block mt-1.5 ${currentBadgeColor}`}
+            className={`text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full inline-block mt-1.5 ${currentBadgeColor}`}
           >
             {displayBadge}
           </span>

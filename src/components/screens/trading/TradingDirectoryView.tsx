@@ -982,7 +982,7 @@ export const TradingDirectoryView: React.FC = () => {
                   }
                 >
                   {entityHistory.length === 0 ? (
-                    <KineticEmptyStateMotion motionKey={`tr-dir-hist-empty-${activeEntity.id}`}>
+                    <KineticEmptyStateMotion motionKey={`tr-dir-hist-empty-${ent.id}`}>
                       <EmptyState
                         variant="compact"
                         tone="neutral"
@@ -996,11 +996,11 @@ export const TradingDirectoryView: React.FC = () => {
                             : 'Les devis, BL et factures de ce tiers apparaîtront ici.'
                         }
                         secondaryAction={
-                          directoryTab === 'clients'
+                          mode === 'clients'
                             ? {
                                 label: isAr ? 'إنشاء مستند' : isEn ? 'Create document' : 'Créer document',
                                 icon: <Plus size={14} />,
-                                onClick: () => setIsDocComposerOpen(true),
+                                onClick: () => setComposerOpen(true),
                               }
                             : undefined
                         }

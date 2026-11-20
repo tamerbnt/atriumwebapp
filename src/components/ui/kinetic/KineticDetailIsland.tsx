@@ -72,13 +72,13 @@ export const KineticDetailIsland: React.FC<KineticDetailIslandProps> = React.mem
   const islandTop = (ROW_H / 2 - ROW_B / 2) * (1 - e) + (ROW_H + ROW_G) * e;
   const islandWidth = ROW_B + (W - ROW_B) * e;
   const islandHeight = ROW_B + (ROW_DH - ROW_B) * e;
-  const islandRadius = 19 + 3 * e;
+  const islandRadius = 19 - 3 * e;
 
   return (
     <>
       <div
         ref={detRef}
-        className="det absolute bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] border border-[#d4522f]/25 dark:border-[#52291F] rounded-[20px] box-border z-0 pointer-events-none"
+        className="det absolute bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] border border-[#d4522f]/25 dark:border-[#52291F] rounded-[16px] box-border z-0 pointer-events-none"
         style={
           detRef
             ? DET_CONTROLLED_BASE_STYLE
@@ -200,15 +200,17 @@ export const KineticDetailIsland: React.FC<KineticDetailIslandProps> = React.mem
                     key={btn.id}
                     type="button"
                     data-no-liquid="true"
+                    data-sq="ctl-sm"
+                    data-sq-border="solid"
                     tabIndex={dcRef ? -1 : isInteractive ? 0 : -1}
                     onClick={(e) => {
                       e.stopPropagation();
                       btn.onClick();
                     }}
-                    className={`h-[30px] px-3 rounded-[9px] border font-medium text-[11.5px] flex items-center gap-1.5 transition-colors duration-140 cursor-pointer whitespace-nowrap ${
+                    className={`relative h-[32px] px-3 font-medium text-[11.5px] flex items-center gap-1.5 transition-colors duration-140 cursor-pointer whitespace-nowrap ${
                       btn.isDanger
-                        ? 'border-[#F5BDB3] dark:border-[#5C2B24] bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] hover:bg-[#c0283d] hover:text-white hover:border-[#c0283d]'
-                        : 'border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white dark:hover:bg-[var(--atr-acc,#e8643f)] dark:hover:text-white text-[var(--atr-ink,#000000)] dark:text-white'
+                        ? '[--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] hover:bg-[#c0283d] hover:text-white hover:[--sq-stroke:#c0283d]'
+                        : '[--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white hover:[--sq-stroke:#1F1D1B] dark:hover:bg-[var(--atr-acc,#e8643f)] dark:hover:text-white dark:hover:[--sq-stroke:var(--atr-acc,#e8643f)] text-[var(--atr-ink,#000000)] dark:text-white'
                     }`}
                   >
                     {btn.icon}

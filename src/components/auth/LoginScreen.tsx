@@ -135,70 +135,93 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           </button>
 
           {langMenuOpen && (
-            <div className={`absolute top-full mt-2 w-48 rounded-2xl bg-[#1E1B19] border border-neutral-700 shadow-2xl p-1.5 space-y-1 z-30 ${language === 'ar' ? 'left-0' : 'right-0'}`}>
-              <button
-                type="button"
-                onClick={() => {
-                  setSystemDefaultLanguage();
-                  setLangMenuOpen(false);
-                }}
-                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  isLanguageAuto ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
-                }`}
+            <div className={`absolute top-full mt-2 w-48 sq-elev-pop z-30 ${language === 'ar' ? 'left-0' : 'right-0'}`}>
+              <div
+                data-sq="table"
+                data-sq-border="solid"
+                className="w-full rounded-[var(--r-table,20px)] bg-[#1E1B19] [--sq-stroke:#404040] p-2 space-y-1"
               >
-                <span>🌐 {t('settings_system_default', language)}</span>
-                {isLanguageAuto && <Check size={13} />}
-              </button>
-              <div className="h-px bg-neutral-800 my-1" />
-              <button
-                type="button"
-                onClick={() => {
-                  setLanguage('en', false);
-                  setLangMenuOpen(false);
-                }}
-                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'en' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
-                }`}
-              >
-                <span>🇺🇸 English (US)</span>
-                {!isLanguageAuto && language === 'en' && <Check size={13} />}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setLanguage('fr', false);
-                  setLangMenuOpen(false);
-                }}
-                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'fr' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
-                }`}
-              >
-                <span>🇫🇷 Français</span>
-                {!isLanguageAuto && language === 'fr' && <Check size={13} />}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setLanguage('ar', false);
-                  setLangMenuOpen(false);
-                }}
-                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'ar' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
-                }`}
-              >
-                <span>🇩🇿 العربية (RTL)</span>
-                {!isLanguageAuto && language === 'ar' && <Check size={13} />}
-              </button>
+                <button
+                  type="button"
+                  data-sq="row"
+                  data-sq-border="none"
+                  onClick={() => {
+                    setSystemDefaultLanguage();
+                    setLangMenuOpen(false);
+                  }}
+                  className={`w-full px-2.5 py-1.5 rounded-[var(--r-row,12px)] text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                    isLanguageAuto ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                  }`}
+                >
+                  <span>🌐 {t('settings_system_default', language)}</span>
+                  {isLanguageAuto && <Check size={13} />}
+                </button>
+                <div className="h-px bg-neutral-800 my-1" />
+                <button
+                  type="button"
+                  data-sq="row"
+                  data-sq-border="none"
+                  onClick={() => {
+                    setLanguage('en', false);
+                    setLangMenuOpen(false);
+                  }}
+                  className={`w-full px-2.5 py-1.5 rounded-[var(--r-row,12px)] text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                    !isLanguageAuto && language === 'en' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                  }`}
+                >
+                  <span>🇺🇸 English (US)</span>
+                  {!isLanguageAuto && language === 'en' && <Check size={13} />}
+                </button>
+                <button
+                  type="button"
+                  data-sq="row"
+                  data-sq-border="none"
+                  onClick={() => {
+                    setLanguage('fr', false);
+                    setLangMenuOpen(false);
+                  }}
+                  className={`w-full px-2.5 py-1.5 rounded-[var(--r-row,12px)] text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                    !isLanguageAuto && language === 'fr' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                  }`}
+                >
+                  <span>🇫🇷 Français</span>
+                  {!isLanguageAuto && language === 'fr' && <Check size={13} />}
+                </button>
+                <button
+                  type="button"
+                  data-sq="row"
+                  data-sq-border="none"
+                  onClick={() => {
+                    setLanguage('ar', false);
+                    setLangMenuOpen(false);
+                  }}
+                  className={`w-full px-2.5 py-1.5 rounded-[var(--r-row,12px)] text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                    !isLanguageAuto && language === 'ar' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                  }`}
+                >
+                  <span>🇩🇿 العربية (RTL)</span>
+                  {!isLanguageAuto && language === 'ar' && <Check size={13} />}
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* Main 480px Centered Auth Card */}
-      <div className="relative w-full max-w-[480px] rounded-[28px] bg-[#1E1B19]/95 border border-white/[0.08] shadow-2xl p-7 sm:p-10 text-white backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-[480px] sq-elev-pop animate-in fade-in zoom-in-95 duration-200">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="relative w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19]/95 [--sq-stroke:rgba(255,255,255,0.08)] p-7 sm:p-10 text-white backdrop-blur-xl"
+        >
         {/* Atrium Brand Emblem */}
         <div className="flex flex-col items-center text-center mb-7">
-          <div className="w-14 h-14 rounded-2xl bg-[#2A2420] border border-[#483B33] flex items-center justify-center p-2.5 mb-4 shadow-md">
+          <div
+            data-sq="tile-lg"
+            data-sq-border="solid"
+            className="w-14 h-14 rounded-[var(--r-tile-lg,15px)] bg-[#2A2420] [--sq-stroke:#483B33] flex items-center justify-center p-2.5 mb-4"
+          >
             <FiveCubesLogo size={28} cubeColor="#d4522f" />
           </div>
           <div className="flex items-center gap-2">
@@ -212,9 +235,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
         {/* Primary Google SSO Button */}
         <button
           type="button"
+          data-sq="ctl"
+          data-sq-border="none"
           onClick={handleGoogleLogin}
           disabled={isGoogleLoading}
-          className="w-full h-11 rounded-xl bg-white hover:bg-neutral-100 text-black text-xs font-bold transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer mb-2 disabled:opacity-75"
+          className="w-full h-11 rounded-[var(--r-ctl,12px)] bg-white hover:bg-neutral-100 text-black text-xs font-bold transition-all flex items-center justify-center gap-2.5 cursor-pointer mb-2 disabled:opacity-75"
         >
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path
@@ -241,8 +266,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
         <div className="mb-3">
           <button
             type="button"
+            data-sq="ctl"
+            data-sq-border="solid"
             onClick={() => handleFastOwnerLogin('mehdisamih79@gmail.com')}
-            className="w-full h-9 px-3 rounded-xl bg-[#2A2420] hover:bg-[#342D28] border border-[#483B33] text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            className="w-full h-9 px-3 rounded-[var(--r-ctl,12px)] bg-[#2A2420] hover:bg-[#342D28] [--sq-stroke:#483B33] text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             title="Instant sign-in without Google OAuth"
           >
             <Sparkles size={13} className="text-[#d4522f]" />
@@ -259,16 +286,22 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
         </div>
 
         {/* Auth Mode Toggle Pill */}
-        <div className="grid grid-cols-2 p-1 rounded-xl bg-neutral-900/80 border border-neutral-800 mb-6 text-xs font-semibold">
+        <div
+          data-sq="ctl"
+          data-sq-border="solid"
+          className="grid grid-cols-2 p-[3px] rounded-[var(--r-ctl,12px)] bg-neutral-900/80 [--sq-stroke:#262626] mb-6 text-xs font-semibold"
+        >
           <button
             type="button"
+            data-sq="thumb"
+            data-sq-border="none"
             onClick={() => {
               setAuthMode('password');
               setError(null);
             }}
-            className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
+            className={`py-2 rounded-[var(--r-thumb,9px)] transition-all cursor-pointer flex items-center justify-center gap-2 ${
               authMode === 'password'
-                ? 'bg-[#d4522f] text-white shadow-xs font-bold'
+                ? 'bg-[#d4522f] text-white font-bold'
                 : 'text-white/70 hover:text-white'
             }`}
           >
@@ -277,13 +310,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           </button>
           <button
             type="button"
+            data-sq="thumb"
+            data-sq-border="none"
             onClick={() => {
               setAuthMode('pin');
               setError(null);
             }}
-            className={`py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
+            className={`py-2 rounded-[var(--r-thumb,9px)] transition-all cursor-pointer flex items-center justify-center gap-2 ${
               authMode === 'pin'
-                ? 'bg-[#d4522f] text-white shadow-xs font-bold'
+                ? 'bg-[#d4522f] text-white font-bold'
                 : 'text-white/70 hover:text-white'
             }`}
           >
@@ -293,7 +328,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-950/60 border border-rose-800/80 text-rose-200 text-xs flex items-center gap-2 animate-in fade-in">
+          <div
+            data-sq="ctl"
+            data-sq-border="solid"
+            className="mb-4 p-3 rounded-[var(--r-ctl,12px)] bg-rose-950/60 [--sq-stroke:rgba(159,18,57,0.8)] text-rose-200 text-xs flex items-center gap-2 animate-in fade-in"
+          >
             <ShieldCheck size={14} className="text-rose-400 shrink-0" />
             <span>{error}</span>
           </div>
@@ -311,7 +350,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                 type="email"
                 width={360}
                 height={50}
-                corner={16}
+                corner={12}
               />
             </div>
 
@@ -336,7 +375,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                 type="password"
                 width={360}
                 height={50}
-                corner={16}
+                corner={12}
               />
             </div>
 
@@ -398,17 +437,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                 <button
                   key={btn}
                   type="button"
+                  data-sq="ctl"
+                  data-sq-border={btn === 'C' || btn === '⌫' ? 'none' : 'solid'}
                   onClick={() => {
                     if (btn === 'C') handlePinClear();
                     else if (btn === '⌫') handlePinDelete();
                     else handlePinDigit(btn);
                   }}
-                  className={`h-12 rounded-xl text-sm font-bold flex items-center justify-center transition-all cursor-pointer ${
+                  className={`h-12 rounded-[var(--r-ctl,12px)] text-sm font-bold flex items-center justify-center transition-all cursor-pointer ${
                     btn === 'C'
                       ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
                       : btn === '⌫'
                       ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
-                      : 'bg-neutral-900 border border-neutral-800 text-white hover:bg-neutral-800 hover:border-neutral-700 active:scale-95'
+                      : 'bg-neutral-900 [--sq-stroke:#262626] text-white hover:bg-neutral-800 hover:[--sq-stroke:#404040] active:scale-95'
                   }`}
                 >
                   {btn}
@@ -444,36 +485,49 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             <span>{language === 'ar' ? 'إنشاء نشاط جديد' : language === 'fr' ? 'Créer un espace' : 'Create a Business'}</span>
           </button>
         </div>
+        </div>
       </div>
 
       {/* Forgot Password Modal */}
       {forgotPasswordOpen && (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="w-full max-w-sm rounded-2xl bg-[#1E1B19] border border-neutral-700 p-6 text-white space-y-4">
-            <h3 className="text-base font-bold">
-              {language === 'ar' ? 'استرجاع كلمة المرور' : language === 'fr' ? 'Récupération du mot de passe' : 'Password Recovery'}
-            </h3>
-            <p className="text-xs text-white/80 leading-relaxed">
-              {language === 'ar'
-                ? 'لأمان المحطات وأجهزة سطح المكتب، يتم إرسال رموز الاسترجاع إلى البريد الإلكتروني المعتمد أو عبر القسيمة الرئيسية.'
-                : language === 'fr'
-                ? 'Pour la sécurité locale des postes Atrium, les codes de récupération sont transmis à l\'adresse de l\'administrateur ou via le bon maître.'
-                : 'For local security in Atrium desktop & web terminals, password recovery codes are routed to the registered account owner email or master cash voucher.'}
-            </p>
-            <div className="p-3 rounded-xl bg-neutral-900 border border-neutral-800 text-xs text-white/75">
-              {language === 'ar'
-                ? <>تلميح: سجّل الدخول باستخدام عنوان بريدك الإلكتروني المعتمد أو رمز PIN المكون من 4 أرقام.</>
-                : language === 'fr'
-                ? <>Astuce : Connectez-vous avec votre adresse email enregistrée ou votre code PIN personnel à 4 chiffres.</>
-                : <>Recovery hint: Sign in with your registered account email or your 4-digit PIN.</>}
-            </div>
-            <button
-              type="button"
-              onClick={() => setForgotPasswordOpen(false)}
-              className="w-full h-10 rounded-xl bg-[#d4522f] text-white text-xs font-bold cursor-pointer"
+          <div className="w-full max-w-sm sq-elev-pop">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19] [--sq-stroke:#404040] p-6 text-white space-y-4"
             >
-              {language === 'ar' ? 'العودة لتسجيل الدخول' : language === 'fr' ? 'Retour à la connexion' : 'Back to Sign In'}
-            </button>
+              <h3 className="text-base font-bold">
+                {language === 'ar' ? 'استرجاع كلمة المرور' : language === 'fr' ? 'Récupération du mot de passe' : 'Password Recovery'}
+              </h3>
+              <p className="text-xs text-white/80 leading-relaxed">
+                {language === 'ar'
+                  ? 'لأمان المحطات وأجهزة سطح المكتب، يتم إرسال رموز الاسترجاع إلى البريد الإلكتروني المعتمد أو عبر القسيمة الرئيسية.'
+                  : language === 'fr'
+                  ? 'Pour la sécurité locale des postes Atrium, les codes de récupération sont transmis à l\'adresse de l\'administrateur ou via le bon maître.'
+                  : 'For local security in Atrium desktop & web terminals, password recovery codes are routed to the registered account owner email or master cash voucher.'}
+              </p>
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3 rounded-[var(--r-card,16px)] bg-neutral-900 [--sq-stroke:#262626] text-xs text-white/75"
+              >
+                {language === 'ar'
+                  ? <>تلميح: سجّل الدخول باستخدام عنوان بريدك الإلكتروني المعتمد أو رمز PIN المكون من 4 أرقام.</>
+                  : language === 'fr'
+                  ? <>Astuce : Connectez-vous avec votre adresse email enregistrée ou votre code PIN personnel à 4 chiffres.</>
+                  : <>Recovery hint: Sign in with your registered account email or your 4-digit PIN.</>}
+              </div>
+              <button
+                type="button"
+                data-sq="ctl"
+                data-sq-border="none"
+                onClick={() => setForgotPasswordOpen(false)}
+                className="w-full h-10 rounded-[var(--r-ctl,12px)] bg-[#d4522f] text-white text-xs font-bold cursor-pointer"
+              >
+                {language === 'ar' ? 'العودة لتسجيل الدخول' : language === 'fr' ? 'Retour à la connexion' : 'Back to Sign In'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -488,7 +488,11 @@ export const AgricultureParcelsView: React.FC = () => {
         sortable: true,
         renderCell: (p) => (
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="w-8 h-8 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0"
+            >
               <Sprout size={16} />
             </div>
             <div className="min-w-0">

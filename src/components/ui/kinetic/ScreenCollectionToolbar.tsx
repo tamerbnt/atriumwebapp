@@ -201,7 +201,8 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
             placeholder={defaultSearchPlaceholder}
             shutSize={40}
             openWidth={240}
-            className="shrink-0 !rounded-xl"
+            shape="squircle"
+            className="shrink-0"
           />
 
           {/* 2. Quick Status Segmented Control */}
@@ -219,16 +220,18 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
 
           {/* 3. Advanced Filters Trigger Button */}
           {onToggleFilterModal && (
-            <div className="relative shrink-0">
+            <div className="relative shrink-0 sq-elev-card">
               <button
                 ref={filterButtonRef}
                 type="button"
                 data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="solid"
                 onClick={onToggleFilterModal}
-                className={`h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${
+                className={`relative h-10 px-3.5 border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-colors select-none ${
                   hasActiveAdvancedFilters || isFilterModalOpen
-                    ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/15 text-[#d4522f] border-[#d4522f]/40 ring-1 ring-[#d4522f]/20'
-                    : 'bg-white dark:bg-neutral-800 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#FBF8F5] dark:hover:bg-neutral-700/50'
+                    ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/15 text-[#d4522f] [--sq-stroke:rgba(212,82,47,0.5)]'
+                    : 'bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] text-black/75 dark:text-white/80 hover:bg-[#FBF8F5] dark:hover:bg-neutral-700/50'
                 }`}
                 title={
                   language === 'ar'
@@ -251,7 +254,7 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
                   {language === 'ar' ? 'مرشحات' : language === 'fr' ? 'Filtres' : 'Filters'}
                 </span>
                 {activeFiltersCount > 0 && (
-                  <span className="w-5 h-5 rounded-md text-[11px] font-bold flex items-center justify-center bg-[#d4522f] text-white tabular-nums">
+                  <span className="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center bg-[#d4522f] text-white tabular-nums">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -286,7 +289,7 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
                 onPress={handleExportPress}
                 title={exportTooltip || exportLabels.idle}
                 aria-label={exportTooltip || exportLabels.idle}
-                className="shrink-0 !h-10 !max-h-10 !rounded-xl"
+                className="shrink-0 !h-10 !max-h-10"
                 style={EXPORT_BTN_STYLE}
               />
             )}
@@ -308,7 +311,7 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
             <span
               key={chip.key}
               title={chip.title || chip.label}
-              className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold"
+              className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold"
             >
               <span>{chip.label}</span>
               <button

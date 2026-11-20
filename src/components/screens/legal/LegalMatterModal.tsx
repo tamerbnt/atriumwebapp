@@ -135,10 +135,19 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-neutral-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-700 space-y-5 max-h-[90vh] overflow-y-auto">
+      <div className="sq-elev-pop max-w-xl w-full">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-neutral-800 w-full p-6 border border-neutral-200 dark:border-neutral-700 space-y-5 max-h-[90vh] overflow-y-auto"
+        >
         <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-700">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center">
+            <div
+              data-sq="tile"
+              data-sq-border="none"
+              className="w-9 h-9 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"
+            >
               <Scale size={18} />
             </div>
             <div>
@@ -204,7 +213,11 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
             />
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-3.5 bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <LabelInput
                 label={isAr ? 'اسم الموكل (فرنسية)' : 'Nom du Client (Français)'}
@@ -287,6 +300,7 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
             </AtriumButton>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

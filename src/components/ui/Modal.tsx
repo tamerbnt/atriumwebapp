@@ -64,40 +64,44 @@ export const Modal: React.FC<ModalProps> = ({
       />
 
       {/* Dialog Surface */}
-      <div
-        style={{ contain: 'layout paint' }}
-        className={`relative w-full ${widthClasses} z-10 max-h-[90vh] flex flex-col overflow-hidden rounded-[28px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl transform-gpu animate-in fade-in zoom-in-95 duration-200`}
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#E6DED6] dark:border-neutral-800/80">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              {title}
-            </h2>
-            {subtitle && (
-              <p className="text-xs text-black/70 dark:text-white/75 mt-0.5">{subtitle}</p>
+      <div className={`relative w-full ${widthClasses} z-10 sq-elev-pop`}>
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          style={{ contain: 'layout paint' }}
+          className="relative w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#26262A] transform-gpu animate-in fade-in zoom-in-95 duration-200"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#E6DED6] dark:border-neutral-800/80">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                {title}
+              </h2>
+              {subtitle && (
+                <p className="text-xs text-black/70 dark:text-white/75 mt-0.5">{subtitle}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              data-no-liquid="true"
+              onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              aria-label="Close modal"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Content Body */}
+          <div className="px-6 py-5 overflow-y-auto max-h-[calc(90vh-140px)]">
+            {isLoading ? (
+              <SkeletonModalForm fieldsCount={skeletonFieldsCount} />
+            ) : (
+              children
             )}
           </div>
-          <button
-            type="button"
-            data-no-liquid="true"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-            aria-label="Close modal"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Content Body */}
-        <div className="px-6 py-5 overflow-y-auto max-h-[calc(90vh-140px)]">
-          {isLoading ? (
-            <SkeletonModalForm fieldsCount={skeletonFieldsCount} />
-          ) : (
-            children
-          )}
         </div>
       </div>
     </div>

@@ -761,7 +761,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
                 <>
                   <InspectorSection index={1} title={isAr ? 'سجل المخالصات' : 'Quittances émises'}>
                     {leaseReceipts.length === 0 ? (
-                      <KineticEmptyStateMotion motionKey={`re-quit-${l.id}`}>
+                      <KineticEmptyStateMotion motionKey={`re-quit-${lease.id}`}>
                         <EmptyState
                           variant="compact"
                           icon={<FileText />}

@@ -2,7 +2,7 @@ import { Spring } from '../../motion/spring';
 import { Body, wake, unschedule } from '../../motion/loop';
 import { motion } from '../../motion/env';
 import { f } from '../../motion/liquid';
-import { clamp, rnd, rr, el, metaball } from '../../motion/shapes';
+import { clamp, rnd, rr, el, metaball, squirclePath } from '../../motion/shapes';
 import { WaveField, WAVE_N } from '../../motion/wave';
 
 export type LiquidKind = 'scan' | 'import' | 'export' | 'confirm' | 'continue' | 'create';
@@ -14,7 +14,7 @@ export type LiquidStatus = 'idle' | 'busy' | 'done' | 'error';
    so a 34 px and a 72 px button are the same object. Nothing below ever reads the layout.
    ------------------------------------------------------------------------------------------- */
 export const H = 72;
-const R0 = 0.147 * H;
+export const R0 = 0.3 * H;
 const IC = 44; // the four-squares mark
 const IX = 28;
 const IY = 14;
@@ -60,8 +60,8 @@ export interface LbEls {
   button: HTMLElement;
   svg: SVGSVGElement;
   root: SVGGElement;
-  body: SVGRectElement;
-  clipr: SVGRectElement;
+  body: SVGPathElement;
+  clipr: SVGPathElement;
   maskr: SVGRectElement;
   liq: SVGPathElement;
   lqcp: SVGPathElement;
@@ -176,6 +176,7 @@ export class LiquidButtonBody implements Body {
   private noiseTimer: ReturnType<typeof setTimeout> | undefined;
   private dwellTimer: ReturnType<typeof setTimeout> | undefined;
   private fitDirty = true;
+  private lastBodyPath = '';
 
   constructor(
     readonly kind: LiquidKind,
@@ -219,7 +220,7 @@ export class LiquidButtonBody implements Body {
 
   /** Read the box once (on mount and when it resizes) and redraw. Never called per frame. */
   measure(): void {
-    const { button, svg, clipr, body } = this.els;
+    const { button, svg } = this.els;
     const bw = button.clientWidth;
     const bh = button.clientHeight;
     if (!bw || !bh) return;
@@ -227,7 +228,7 @@ export class LiquidButtonBody implements Body {
     if (Math.abs(w - this.W) > 0.01) {
       this.W = w;
       svg.setAttribute('viewBox', `0 0 ${f(w)} ${H}`);
-      for (const r of [clipr, body]) r.setAttribute('width', f(w));
+      this.lastBodyPath = '';
       this.fitDirty = true;
       this.aimRest();
     }
@@ -595,7 +596,7 @@ export class LiquidButtonBody implements Body {
     this.by.t = (hov ? clamp((this.py - H / 2) * 0.1, -4, 4) : 0) + (prs ? 2 : 0);
     this.sx.t = (prs ? 1.03 : 1) * this.sxo;
     this.sy.t = (prs ? 0.945 : 1) * this.syo;
-    this.rad.t = (busy && this.kind !== 'continue' ? 20 : R0) + (hov && this.state === 'idle' ? 3 : 0);
+    this.rad.t = (busy && this.kind !== 'continue' ? 26 : R0) + (hov && this.state === 'idle' ? 3 : 0);
     this.cs.t = prs ? 0.86 : 1;
     if (this.kind === 'create') {
       const idleG = prs ? 0 : hov ? 5 : 3.5;
@@ -792,7 +793,7 @@ export class LiquidButtonBody implements Body {
 
   private stepConfirm(): void {
     if (this.state !== 'busy') return;
-    this.rad.t = 18;
+    this.rad.t = 24;
     for (let j = 0; j < 4; j++) {
       this.cx[j].t = -DIR[j][0] * 3;
       this.cy[j].t = -DIR[j][1] * 3;
@@ -877,9 +878,13 @@ export class LiquidButtonBody implements Body {
       'transform',
       `translate(${f(this.bx.x)} ${f(this.by.x)}) translate(${f(W / 2)} ${H / 2}) scale(${f(this.sx.x)} ${f(this.sy.x)}) translate(${f(-W / 2)} ${-H / 2})`,
     );
-    const r = f(clamp(this.rad.x, 2, H / 2));
-    E.body.setAttribute('rx', r);
-    E.clipr.setAttribute('rx', r);
+    const r = clamp(this.rad.x, 2, H / 2);
+    const bodyPath = squirclePath(0, 0, W, H, r, 0.6);
+    if (bodyPath && bodyPath !== this.lastBodyPath) {
+      E.body.setAttribute('d', bodyPath);
+      E.clipr.setAttribute('d', bodyPath);
+      this.lastBodyPath = bodyPath;
+    }
 
     // the liquid in the vessel
     let d: string;

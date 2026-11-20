@@ -1,5 +1,6 @@
 // Atrium Live Controls — Damped Harmonic Spring Engine & Kinetic Physics Controllers
 // 100% behavioral parity with Atrium Live Controls specification
+import { squirclePath } from '../atrium/motion/shapes';
 
 export type MotionTier = 'full' | 'lite' | 'off';
 
@@ -456,7 +457,8 @@ export class SegmentedBlobController implements SpringBody {
   R = new Spring(0, 420);
   geo: Array<[number, number]> = [];
   W = 0;
-  rad = 5;
+  H = 0;
+  rad = 9;
   index = 0;
   lastClip = '';
   lastColors: string[] = [];
@@ -471,11 +473,16 @@ export class SegmentedBlobController implements SpringBody {
   private hasMeasuredStyle = false;
 
   measure(): boolean {
-    if (!this.hasMeasuredStyle) {
+    const bh = this.blob.offsetHeight || 0;
+    if (!this.hasMeasuredStyle || bh !== this.H) {
       this.hasMeasuredStyle = true;
       this.lastLeftOffset = parseFloat(getComputedStyle(this.blob).left) || 0;
-      const r = this.opts[0] ? parseFloat(getComputedStyle(this.opts[0]).borderTopLeftRadius) : 0;
-      this.rad = r > 10 ? Math.min(r, (this.blob.offsetHeight || 30) / 2) : (r || 5);
+      const cssThumb = parseFloat(getComputedStyle(this.group).getPropertyValue('--r-thumb'));
+      const optRadius = this.opts[0] ? parseFloat(getComputedStyle(this.opts[0]).borderTopLeftRadius) : 0;
+      const targetRad = !Number.isNaN(cssThumb) && cssThumb > 0 ? cssThumb : (optRadius || 9);
+      const compactRad = this.group.getAttribute('data-sq') === 'ctl-sm' ? Math.min(targetRad, 7) : targetRad;
+      this.rad = bh > 0 ? Math.min(compactRad, bh / 2) : compactRad;
+      this.H = bh;
     }
     const leftOffset = this.lastLeftOffset;
     const nextW = this.blob.offsetWidth || 1;
@@ -529,9 +536,13 @@ export class SegmentedBlobController implements SpringBody {
 
   render() {
     if (!this.geo.length) return;
-    const clip = `inset(0 ${fmt(Math.max(0, this.R.x))}px 0 ${fmt(Math.max(0, this.L.x))}px round ${fmt(
-      this.rad
-    )}px)`;
+    const left = Math.max(0, this.L.x);
+    const right = Math.max(0, this.R.x);
+    const w = Math.max(0, this.W - left - right);
+    const clip =
+      this.H > 0 && w > 0
+        ? `path('${squirclePath(left, 0, w, this.H, this.rad, 0.6)}')`
+        : `inset(0 ${fmt(right)}px 0 ${fmt(left)}px round ${fmt(this.rad)}px)`;
     if (clip !== this.lastClip) {
       this.blob.style.clipPath = clip;
       this.lastClip = clip;
@@ -598,7 +609,7 @@ export class PopoverMenuController implements SpringBody {
   ho = new Spring(0, 300, 1.0);
   hover: [number, number] | null = null;
   H = 0;
-  R = 8;
+  R = 20;
 
   private lastVis = '';
   private lastClip = '';
@@ -615,7 +626,7 @@ export class PopoverMenuController implements SpringBody {
 
   measure() {
     this.H = this.panel.offsetHeight;
-    this.R = parseFloat(getComputedStyle(this.panel).borderTopLeftRadius) || 8;
+    this.R = parseFloat(getComputedStyle(this.panel).borderTopLeftRadius) || 20;
   }
 
   setOpen(open: boolean) {

@@ -800,7 +800,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
                           />
                         </InspectorCard>
                       ) : (
-                        <KineticEmptyStateMotion motionKey={`re-prop-${p.id}`}>
+                        <KineticEmptyStateMotion motionKey={`re-prop-${prop.id}`}>
                           <EmptyState
                             variant="compact"
                             icon={<Key />}

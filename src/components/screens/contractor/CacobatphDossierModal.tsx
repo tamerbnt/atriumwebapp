@@ -36,10 +36,11 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 		onClose();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in overflow-y-auto">
-<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-6 my-8">
+<div className="sq-elev-pop max-w-2xl w-full my-8">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-6">
 <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 print:hidden">
 <div className="flex items-center gap-2">
-<div className="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold"><Cloud size={18} /></div>
+<div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold shrink-0"><Cloud size={18} /></div>
 <div>
 <h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "ملف التصريح بالتوقف عن العمل بسبب سوء الأحوال الجوية (CACOBATPH)" : "Dossier d'Arrêt Intempéries CACOBATPH (Délai Légal 48h)"}
@@ -48,10 +49,10 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 </div>
 <div className="flex items-center gap-2">
 <AtriumButton variant="primary" onClick={handlePrint} icon={<Printer size={15} />}>{isAr ? "طباعة الملف" : "Imprimer Bordereau"}</AtriumButton>
-<button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 </div>
-<div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-start gap-3 print:hidden">
+<div data-sq="card" data-sq-border="solid" style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties} className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-start gap-3 print:hidden">
 <AlertTriangle size={18} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
 <div className="text-xs text-amber-800 dark:text-amber-300 space-y-0.5">
 <div className="font-bold">
@@ -62,7 +63,7 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 </p>
 </div>
 </div>
-<div className="p-5 border border-neutral-300 dark:border-neutral-700 rounded-xl bg-white text-black text-xs space-y-5 font-sans">
+<div className="printable-document p-5 border border-neutral-300 dark:border-neutral-700 rounded-[var(--r-card,16px)] bg-white text-black text-xs space-y-5 font-sans">
 <div className="text-center space-y-1 border-b border-neutral-300 pb-3">
 <p className="font-bold text-xs uppercase tracking-wide">CAISSE NATIONALE DES CONGÉS PAYÉS ET DU CHÔMAGE-INTEMPÉRIES DU BTPH</p>
 <p className="text-[10px] text-black/75 font-semibold">
@@ -71,7 +72,7 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 <div className="text-xs font-bold text-[#d4522f] pt-1">DÉCLARATION D'ARRÊT DE CHANTIER POUR INTEMPÉRIES</div>
 </div>
 <div className="grid grid-cols-2 gap-3 text-[11px]">
-<div className="space-y-1 p-2.5 bg-neutral-50 rounded-lg border border-neutral-200">
+<div className="space-y-1 p-2.5 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200">
 <span className="font-bold text-black/75 uppercase text-[10px]">Chantier & Entreprise</span>
 <div className="font-bold text-black">{project?.projectName || "Chantier Réalisation"}</div>
 <div>
@@ -86,7 +87,7 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 {cacobatphCenter}
 </div>
 </div>
-<div className="space-y-1 p-2.5 bg-neutral-50 rounded-lg border border-neutral-200">
+<div className="space-y-1 p-2.5 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200">
 <span className="font-bold text-black/75 uppercase text-[10px]">Justificatif Météorologique</span>
 <div>
 {"Date d'arrêt: "}
@@ -161,11 +162,11 @@ h
 </table>
 </div>
 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-300 text-center text-[10px]">
-<div className="p-2 border border-neutral-200 rounded-lg h-24 flex flex-col justify-between">
+<div className="p-2 border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] h-24 flex flex-col justify-between">
 <span className="font-bold text-black/75 uppercase">Pour l'Entreprise de BTPH</span>
 <p className="text-[10px] text-black/55">Nom, Signature & Cachet de l'Employeur</p>
 </div>
-<div className="p-2 border border-neutral-200 rounded-lg h-24 flex flex-col justify-between">
+<div className="p-2 border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] h-24 flex flex-col justify-between">
 <span className="font-bold text-black/75 uppercase">Visa de l'Inspection du Travail / BET</span>
 <p className="text-[10px] text-black/55">Confirmation de l'arrêt effectif des travaux</p>
 </div>
@@ -174,6 +175,7 @@ h
 <div className="flex justify-end gap-2 pt-3 border-t border-neutral-200 dark:border-neutral-800 print:hidden">
 <AtriumButton variant="outline" onClick={onClose}>{isAr ? "إلغاء" : "Fermer"}</AtriumButton>
 <AtriumButton variant="primary" onClick={handleValidateDossier} icon={<CheckCircle2 size={15} />}>{isAr ? "اعتماد وإرسال إلى CACOBATPH" : "Valider & Enregistrer Dossier"}</AtriumButton>
+</div>
 </div>
 </div>
 </div>;

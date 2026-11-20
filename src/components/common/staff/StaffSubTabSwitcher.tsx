@@ -47,7 +47,11 @@ export const StaffSubTabSwitcher: React.FC<StaffSubTabSwitcherProps> = ({
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 p-1 bg-[#F3EDE7] dark:bg-[#1C1B1A] rounded-2xl w-full sm:w-fit border border-[#E6DED6] dark:border-[#3A3734] shadow-xs">
+    <div
+      data-sq="ctl"
+      style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+      className="flex flex-wrap items-center gap-1.5 p-[3px] bg-[#F3EDE7] dark:bg-[#1C1B1A] w-full sm:w-fit"
+    >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -55,10 +59,16 @@ export const StaffSubTabSwitcher: React.FC<StaffSubTabSwitcherProps> = ({
             key={tab.id}
             type="button"
             onClick={() => onChange(tab.id)}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold tracking-tight transition-all cursor-pointer select-none whitespace-nowrap ${
+            data-sq={isActive ? 'thumb' : 'none'}
+            style={
               isActive
-                ? 'bg-white dark:bg-[#262422] text-black dark:text-white shadow-sm border border-black/5 dark:border-white/10'
-                : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/3 dark:hover:bg-white/5'
+                ? ({ '--sq-stroke': 'var(--atr-border, rgba(0,0,0,0.08))' } as React.CSSProperties)
+                : undefined
+            }
+            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold tracking-tight transition-all cursor-pointer select-none whitespace-nowrap ${
+              isActive
+                ? 'bg-white dark:bg-[#262422] text-black dark:text-white'
+                : 'rounded-[var(--r-thumb,9px)] text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/3 dark:hover:bg-white/5'
             }`}
           >
             <span className={isActive ? 'text-[#d4522f]' : 'text-black/65 dark:text-white/70'}>
@@ -67,7 +77,7 @@ export const StaffSubTabSwitcher: React.FC<StaffSubTabSwitcherProps> = ({
             <span>{tab.label}</span>
             {tab.badge && (
               <span
-                className={`text-[11px] font-mono px-1.5 py-0.5 rounded-md font-bold tabular-nums ${
+                className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-bold tabular-nums ${
                   isActive
                     ? 'bg-[#d4522f]/10 text-[#d4522f]'
                     : 'bg-[#E6DED6]/70 dark:bg-[#262422] text-black/72 dark:text-white/75'

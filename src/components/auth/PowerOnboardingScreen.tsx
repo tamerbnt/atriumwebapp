@@ -603,9 +603,18 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     const activeSlide = PREVIEW_SLIDES[activeSlideIndex] || PREVIEW_SLIDES[0];
 
     return (
-      <div className="bg-[#181512]/80 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl p-2 sm:p-2.5 flex flex-col justify-between h-full min-h-0 overflow-hidden relative group/card">
-        {/* Main Image Viewport with Spatial Momentum Transition */}
-        <div className="relative flex-1 min-h-0 w-full h-full rounded-xl overflow-hidden bg-[#100D0B] border border-white/10 select-none">
+      <div className="sq-elev-pop h-full min-h-0">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-[#181512]/80 backdrop-blur-md rounded-[var(--r-panel,28px)] [--sq-stroke:rgba(255,255,255,0.1)] p-3 flex flex-col justify-between h-full min-h-0 overflow-hidden relative group/card"
+        >
+          {/* Main Image Viewport with Spatial Momentum Transition */}
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="relative flex-1 min-h-0 w-full h-full rounded-[var(--r-card,16px)] overflow-hidden bg-[#100D0B] [--sq-stroke:rgba(255,255,255,0.1)] select-none"
+          >
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.div
               key={activeSlide.id}
@@ -662,6 +671,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           </div>
         </div>
       </div>
+      </div>
     );
   };
 
@@ -681,10 +691,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               setSelectedPlanTier(plan.tier);
               setPaidVoucherError(null);
             }}
-            className={`flex flex-col justify-between ${isWide ? 'p-3 sm:p-3.5 rounded-2xl' : 'p-2 sm:p-2.5 rounded-xl'} border transition-all duration-200 cursor-pointer relative group text-left ${
+            data-sq="card"
+            data-sq-border="solid"
+            data-sq-stroke-w={isSelected ? '1.5' : '1'}
+            className={`flex flex-col justify-between ${isWide ? 'p-3 sm:p-3.5' : 'p-2 sm:p-2.5'} rounded-[var(--r-card,16px)] transition-all duration-200 cursor-pointer relative group text-left ${
               isSelected
-                ? 'bg-[rgba(232,98,44,0.12)] border-[#F4511E] shadow-[0_0_20px_rgba(244,81,30,0.25)] ring-1 ring-[#F4511E]'
-                : 'bg-white/[0.035] border-white/10 hover:border-white/20 hover:bg-white/[0.06]'
+                ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:#F4511E]'
+                : 'bg-white/[0.035] [--sq-stroke:rgba(255,255,255,0.1)] hover:[--sq-stroke:rgba(255,255,255,0.22)] hover:bg-white/[0.06]'
             }`}
           >
             {/* Recommended Ribbon */}
@@ -744,11 +757,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
             {/* Plan Activation Status */}
             <div className="mt-1.5 pt-1">
-              <span className={`w-full py-0.5 rounded-lg text-[10px] font-bold flex items-center justify-center transition-colors ${
-                isSelected
-                  ? 'bg-gradient-to-r from-[#C4552A] to-[#E64A19] text-white shadow-xs'
-                  : 'bg-white/5 group-hover:bg-white/10 text-[#F0DACF]'
-              }`}>
+              <span
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className={`w-full py-0.5 rounded-[var(--r-ctl-sm,10px)] text-[10px] font-bold flex items-center justify-center transition-colors ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-[#C4552A] to-[#E64A19] text-white'
+                    : 'bg-white/5 group-hover:bg-white/10 text-[#F0DACF]'
+                }`}
+              >
                 {isSelected
                   ? (isAr ? 'الخطة المحددة' : isFr ? 'Formule sélectionnée' : 'Selected Plan')
                   : (isAr ? 'اختيار' : isFr ? 'Choisir ce plan' : 'Select tier')}
@@ -764,7 +781,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   const renderVoucherBar = () => (
     <div className="w-full mt-2">
       {selectedPlanTier === 'free' ? (
-        <div className="p-1.5 px-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-xs">
+        <div
+          data-sq="ctl"
+          data-sq-border="solid"
+          className="p-1.5 px-2.5 rounded-[var(--r-ctl,12px)] bg-emerald-500/10 [--sq-stroke:rgba(16,185,129,0.25)] flex items-center justify-between text-xs"
+        >
           <div className="flex items-center gap-1.5 text-emerald-300">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
             <span className="text-[10.5px]">
@@ -777,7 +798,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           </div>
         </div>
       ) : (
-        <div className="p-1.5 px-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5">
+        <div
+          data-sq="ctl"
+          data-sq-border="solid"
+          className="p-1.5 px-2.5 rounded-[var(--r-ctl,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5"
+        >
           <div className="flex items-center gap-1.5 text-[#FFF5EE] text-xs">
             <Sparkles className="w-3 h-3 text-[#FF8A4C] shrink-0" />
             <span className="text-[10.5px]">
@@ -807,14 +832,16 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 }}
                 prefix={<KeyRound className="w-3 h-3 text-[#FF8A4C]" />}
                 height={28}
-                corner={6}
+                corner={10}
               />
             </div>
 
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="solid"
               onClick={() => setShowLicenseModal(true)}
-              className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/15 text-[#F0DACF] hover:text-white text-[10px] font-semibold border border-white/10 flex items-center justify-center gap-1 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+              className="px-2 py-0.5 rounded-[var(--r-ctl-sm,10px)] bg-white/10 hover:bg-white/15 text-[#F0DACF] hover:text-white text-[10px] font-semibold [--sq-stroke:rgba(255,255,255,0.12)] flex items-center justify-center gap-1 transition-all cursor-pointer whitespace-nowrap active:scale-95"
             >
               <Sparkles className="w-2.5 h-2.5 text-[#FF8A4C]" />
               <span>
@@ -833,8 +860,10 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         {currentStep > 0 ? (
           <button
             type="button"
+            data-sq="ctl-sm"
+            data-sq-border="none"
             onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#D9BEB0] hover:text-[#FFF5EE] hover:bg-white/5 transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--r-ctl-sm,10px)] text-xs font-semibold text-[#D9BEB0] hover:text-[#FFF5EE] hover:bg-white/5 transition-all cursor-pointer active:scale-95"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>{isAr ? 'السابق' : isFr ? 'Précédent' : 'Back'}</span>
@@ -921,7 +950,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           <div className="w-full flex-1 min-h-0 flex flex-col justify-between overflow-hidden max-w-6xl xl:max-w-7xl mx-auto">
             {/* Authenticated Operator Quick Return & Switch Account Banner */}
             {isAuthenticated && (
-              <div className="flex items-center justify-between gap-3 p-2.5 mb-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shrink-0">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="flex items-center justify-between gap-3 p-2.5 mb-2 rounded-[var(--r-ctl,12px)] bg-white/5 [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-md shrink-0"
+              >
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-[11px] font-medium text-white/85 truncate">
                     {isAr ? 'أنت متصل حالياً:' : isFr ? 'Connecté en tant que :' : 'Signed in as:'}{' '}
@@ -1026,7 +1059,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               <div className="w-full my-auto flex flex-col max-h-full overflow-hidden py-3 sm:py-5 pr-1">
                 {/* Authenticated Operator Quick Return & Switch Account Banner */}
                 {isAuthenticated && (
-                  <div className="flex items-center justify-between gap-3 p-2.5 mb-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shrink-0">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="flex items-center justify-between gap-3 p-2.5 mb-3 rounded-[var(--r-ctl,12px)] bg-white/5 [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-md shrink-0"
+                  >
                     <div className="flex flex-col min-w-0">
                       <span className="text-[11px] font-medium text-white/85 truncate">
                         {isAr ? 'أنت متصل حالياً:' : isFr ? 'Connecté en tant que :' : 'Signed in as:'}{' '}
@@ -1119,9 +1156,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   {/* Primary Google SSO One-Click Experience */}
                   <button
                     type="button"
+                    data-sq="ctl"
+                    data-sq-border="none"
                     onClick={handleGoogleLogin}
                     disabled={isGoogleLoading}
-                    className="w-full h-10 rounded-xl bg-white hover:bg-neutral-100 text-black text-xs font-bold transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer disabled:opacity-75 active:scale-[0.99]"
+                    className="w-full h-10 rounded-[var(--r-ctl,12px)] bg-white hover:bg-neutral-100 text-black text-xs font-bold transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-75 active:scale-[0.99]"
                   >
                     {isGoogleLoading ? (
                       <div className="w-4 h-4 border-2 border-neutral-700 border-t-transparent rounded-full animate-spin" />
@@ -1171,7 +1210,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       onChange={(val) => setFullName(String(val))}
                       prefix={<User className="w-3.5 h-3.5 text-[#FF8A4C]" />}
                       height={38}
-                      corner={10}
+                      corner={12}
                     />
 
                     <LabelInput
@@ -1182,7 +1221,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       onChange={(val) => setEmail(String(val))}
                       prefix={<Mail className="w-3.5 h-3.5 text-[#FF8A4C]" />}
                       height={38}
-                      corner={10}
+                      corner={12}
                     />
 
                     <LabelInput
@@ -1193,7 +1232,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       onChange={(val) => setPassword(String(val))}
                       prefix={<Lock className="w-3.5 h-3.5 text-[#FF8A4C]" />}
                       height={38}
-                      corner={10}
+                      corner={12}
                     />
                   </div>
 
@@ -1266,16 +1305,20 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <button
                         key={item.id}
                         type="button"
+                        data-sq="card"
+                        data-sq-border="solid"
                         onClick={() => handleSelectFrustration(item.id)}
-                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] min-h-[88px] sm:min-h-[94px] justify-between ${
+                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] min-h-[88px] sm:min-h-[94px] justify-between ${
                           isSelected
-                            ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
-                            : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
+                            ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
+                            : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-1.5">
                           <div
-                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
+                            data-sq="ctl-sm"
+                            data-sq-border="none"
+                            className={`w-6 h-6 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
@@ -1358,17 +1401,21 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       return (
                         <div
                           key={goal.id}
+                          data-sq="card"
+                          data-sq-border="solid"
                           onClick={() => handleConfirmGoalAndContinue(goal.id)}
-                          className={`p-2 sm:p-2.5 rounded-xl border transition-all duration-200 ease-out flex flex-col justify-between cursor-pointer group hover:scale-[1.015] active:scale-[0.99] ${
+                          className={`p-2 sm:p-2.5 rounded-[var(--r-card,16px)] transition-all duration-200 ease-out flex flex-col justify-between cursor-pointer group hover:scale-[1.015] active:scale-[0.99] ${
                             isSelected
-                              ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
-                              : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
+                              ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
+                              : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
                           }`}
                         >
                           <div>
                             <div className="flex items-center justify-between mb-1">
                               <div
-                                className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
+                                data-sq="ctl-sm"
+                                data-sq-border="none"
+                                className={`w-6 h-6 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
                                   isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                                 }`}
                               >
@@ -1389,17 +1436,19 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           <div className="flex items-center gap-1.5 pt-0.5">
                             <button
                               type="button"
+                              data-sq="ctl-sm"
+                              data-sq-border="solid"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleOpenGoalModal(goal.id);
                               }}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-1 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-[#F0DACF] hover:text-white text-[11px] font-semibold border border-white/10 hover:border-white/25 transition-all cursor-pointer group/btn"
+                              className="flex-1 flex items-center justify-center gap-1.5 py-1 px-2 rounded-[var(--r-ctl-sm,10px)] bg-white/5 hover:bg-white/10 text-[#F0DACF] hover:text-white text-[11px] font-semibold [--sq-stroke:rgba(255,255,255,0.12)] hover:[--sq-stroke:rgba(255,255,255,0.25)] transition-all cursor-pointer group/btn"
                             >
                               <Eye className="w-3 h-3 text-[#FF8A4C] group-hover/btn:text-white" />
                               <span>{isAr ? 'عرض المخطط التنفيذي' : isFr ? 'Voir le schéma directeur' : 'Inspect Blueprint'}</span>
                             </button>
                             <div
-                              className={`w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
+                              className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
                                 isSelected ? 'border-[#E8622C] bg-[#E8622C] text-white' : 'border-white/15 bg-white/5 text-[#D9BEB0] group-hover:border-white/30'
                               }`}
                               title={isAr ? 'اختيار ومتابعة' : isFr ? 'Sélectionner & continuer' : 'Select & continue'}
@@ -1470,16 +1519,20 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <button
                         key={item.id}
                         type="button"
+                        data-sq="card"
+                        data-sq-border="solid"
                         onClick={() => handleSelectWorkflow(item.id)}
-                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
+                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
                           isSelected
-                            ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
-                            : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
+                            ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
+                            : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-1.5">
                           <div
-                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
+                            data-sq="ctl-sm"
+                            data-sq-border="none"
+                            className={`w-6 h-6 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
@@ -1546,16 +1599,20 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <button
                         key={item.id}
                         type="button"
+                        data-sq="card"
+                        data-sq-border="solid"
                         onClick={() => handleSelectTeamScale(item.id)}
-                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
+                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
                           isSelected
-                            ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
-                            : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
+                            ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
+                            : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-1.5">
                           <div
-                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
+                            data-sq="ctl-sm"
+                            data-sq-border="none"
+                            className={`w-6 h-6 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
@@ -1620,16 +1677,20 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <button
                         key={item.id}
                         type="button"
+                        data-sq="card"
+                        data-sq-border="solid"
                         onClick={() => handleSelectSettlement(item.id)}
-                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
+                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
                           isSelected
-                            ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
-                            : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
+                            ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
+                            : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-1.5">
                           <div
-                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
+                            data-sq="ctl-sm"
+                            data-sq-border="none"
+                            className={`w-6 h-6 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
@@ -1661,7 +1722,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {currentStep === 6 && (
                 <div className="space-y-2.5 w-full mt-1 sm:mt-2 flex flex-col">
                   {/* Search Input Box & Live Match Counter */}
-                  <div className="relative">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="relative rounded-[var(--r-ctl,12px)] bg-white/[0.05] [--sq-stroke:rgba(255,255,255,0.15)] focus-within:[--sq-stroke:#E8622C]"
+                  >
                     <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#FF8A4C] pointer-events-none" />
                     <input
                       type="text"
@@ -1674,7 +1739,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           ? 'Recherchez votre métier : cabinet dentaire, imprimerie, agence, salle de sport...'
                           : 'Search trade: dental clinic, bakery, gym, agency, farm, auto repair...'
                       }
-                      className="w-full bg-white/[0.05] border border-white/15 focus:border-[#E8622C] rounded-xl py-2 pl-9 pr-28 text-xs text-[#FFF5EE] placeholder-[#D9BEB0]/60 outline-none transition-colors"
+                      className="w-full bg-transparent border-0 rounded-[var(--r-ctl,12px)] py-2 pl-9 pr-28 text-xs text-[#FFF5EE] placeholder-[#D9BEB0]/60 outline-none"
                     />
                     <div className="absolute right-2 top-1.5 flex items-center gap-1.5">
                       {catalogSearchQuery && (
@@ -1686,7 +1751,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           ✕
                         </button>
                       )}
-                      <span className="text-[10px] font-semibold text-[#FF8A4C] px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/10 pointer-events-none">
+                      <span className="text-[10px] font-semibold text-[#FF8A4C] px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/10 pointer-events-none">
                         {filteredCatalogTrades.length} {isAr ? 'نشاط' : isFr ? 'métiers' : 'trades'}
                       </span>
                     </div>
@@ -1725,11 +1790,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             <button
                               key={trade.id}
                               type="button"
+                              data-sq="ctl"
+                              data-sq-border="solid"
                               onClick={() => handleSelectTrade(trade)}
-                              className={`flex items-center justify-between p-2 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.98] min-h-[46px] ${
+                              className={`flex items-center justify-between p-2 rounded-[var(--r-ctl,12px)] text-left transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.98] min-h-[46px] ${
                                 isSelected
-                                  ? 'bg-[rgba(232,98,44,0.12)] border-[#E8622C] ring-1 ring-[#E8622C]/40 shadow-[0_4px_20px_rgba(232,98,44,0.3)]'
-                                  : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
+                                  ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:#E8622C]'
+                                  : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.22)] hover:bg-white/[0.07]'
                               }`}
                             >
                               <div className="flex flex-col min-w-0 pr-1.5">
@@ -1753,7 +1820,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       </div>
                     ) : (
                       /* Empty state fallback with option to use custom trade */
-                      <div className="p-6 text-center rounded-xl bg-white/[0.02] border border-white/10 flex flex-col items-center justify-center gap-3">
+                      <div
+                        data-sq="empty"
+                        data-sq-border="dashed"
+                        className="p-6 text-center rounded-[var(--r-empty,12px)] bg-white/[0.02] [--sq-stroke:rgba(255,255,255,0.16)] flex flex-col items-center justify-center gap-3"
+                      >
                         <p className="text-xs text-[#D9BEB0]">
                           {isAr
                             ? `لم يتم العثور على أي نشاط مطابق لـ "${catalogSearchQuery}"`
@@ -1763,6 +1834,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         </p>
                         <button
                           type="button"
+                          data-sq="ctl-sm"
+                          data-sq-border="none"
                           onClick={() => {
                             const customTrade: CatalogBusinessTrade = {
                               id: `custom_${Date.now()}`,
@@ -1773,7 +1846,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             };
                             handleSelectTrade(customTrade);
                           }}
-                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer shadow-md"
+                          className="px-4 py-2 rounded-[var(--r-ctl-sm,10px)] bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer"
                         >
                           {isAr
                             ? `متابعة باستخدام "${catalogSearchQuery}" كنشاط رئيسي`
@@ -1800,11 +1873,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         <button
                           key={src.id}
                           type="button"
+                          data-sq="ctl"
+                          data-sq-border="solid"
                           onClick={() => handleSelectReferral(src.id)}
-                          className={`flex items-center gap-2 p-2.5 sm:p-3 rounded-xl border text-xs font-medium transition-all duration-200 ease-out cursor-pointer hover:scale-[1.015] active:scale-[0.99] ${
+                          className={`flex items-center gap-2 p-2.5 sm:p-3 rounded-[var(--r-ctl,12px)] text-xs font-medium transition-all duration-200 ease-out cursor-pointer hover:scale-[1.015] active:scale-[0.99] ${
                             isSelected
-                              ? 'bg-[rgba(232,98,44,0.12)] border-white/[0.16] text-[#E8622C] shadow-[0_4px_16px_rgba(0,0,0,0.4)]'
-                              : 'bg-white/[0.04] border-white/[0.07] text-[#F0DACF] hover:border-white/20 hover:text-white'
+                              ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:rgba(255,255,255,0.2)] text-[#E8622C]'
+                              : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] text-[#F0DACF] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:text-white'
                           }`}
                         >
                           <Compass className={`w-3.5 h-3.5 shrink-0 transition-colors ${isSelected ? 'text-[#E8622C]' : 'text-[#FF8A4C] opacity-80'}`} />
@@ -1823,9 +1898,17 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {currentStep === 8 && (
                 <div className="space-y-2 w-full mt-1 sm:mt-2">
                   {/* Synthesis Vertical Match Pill */}
-                  <div className="p-2 sm:p-2.5 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-sm flex items-center justify-between">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="p-2 sm:p-2.5 rounded-[var(--r-ctl,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-sm flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 rounded-lg bg-[rgba(232,98,44,0.12)] border border-white/10 flex items-center justify-center shrink-0">
+                      <div
+                        data-sq="ctl-sm"
+                        data-sq-border="solid"
+                        className="w-7 h-7 rounded-[var(--r-ctl-sm,10px)] bg-[rgba(232,98,44,0.12)] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-center shrink-0"
+                      >
                         <Sparkles className="w-3.5 h-3.5 text-[#FF8A4C]" />
                       </div>
                       <div className="min-w-0">
@@ -1854,7 +1937,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
                   {/* Manual Category Override Dropdown (If expanded, Zero Scroll Grid) */}
                   {isOverrideSelectorOpen && (
-                    <div className="p-2 rounded-xl bg-black/80 border border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px] backdrop-blur-md">
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      className="p-2 rounded-[var(--r-ctl,12px)] bg-black/80 [--sq-stroke:rgba(255,255,255,0.1)] grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px] backdrop-blur-md"
+                    >
                       {(Object.keys(CATEGORY_METADATA) as BusinessCategory[]).map((catKey) => {
                         const meta = CATEGORY_METADATA[catKey];
                         const isPicked = activeCategory === catKey;
@@ -1866,7 +1953,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               setManualCategoryOverride(catKey);
                               setIsOverrideSelectorOpen(false);
                             }}
-                            className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-left transition-colors cursor-pointer ${
+                            className={`w-full flex items-center justify-between px-2 py-1 rounded-lg text-left transition-colors cursor-pointer ${
                               isPicked
                                 ? 'bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white font-semibold'
                                 : 'hover:bg-white/10 text-[#F0DACF]'
@@ -1889,7 +1976,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       onChange={(val) => setWorkspaceName(String(val))}
                       prefix={<Building2 className="w-3.5 h-3.5 text-[#FF8A4C]" />}
                       height={38}
-                      corner={10}
+                      corner={12}
                     />
 
                     <LabelInput
@@ -1900,12 +1987,16 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       onChange={(val) => setPhone(String(val))}
                       prefix={<Phone className="w-3.5 h-3.5 text-[#FF8A4C]" />}
                       height={38}
-                      corner={10}
+                      corner={12}
                     />
                   </div>
 
                   {/* Branch Address Summary */}
-                  <div className="p-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-xs">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="p-2 rounded-[var(--r-ctl,12px)] bg-white/[0.03] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-between text-xs"
+                  >
                     <div className="flex items-center gap-2 text-[#D9BEB0]">
                       <MapPin className="w-3.5 h-3.5 text-[#FF8A4C] shrink-0" />
                       <span className="text-[11px] truncate">
@@ -1913,7 +2004,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         <strong className="text-[#FFF5EE] font-medium">{branchAddress}</strong>
                       </span>
                     </div>
-                    <span className="text-[10px] text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 shrink-0">
+                    <span className="text-[10px] text-emerald-400 font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
                       {isAr ? 'معتمد' : isFr ? 'Siège Actif' : 'Active Site'}
                     </span>
                   </div>
@@ -1973,11 +2064,20 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       {/* Commercial License & Voucher Request Modal */}
       {showLicenseModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative w-full max-w-lg rounded-2xl bg-[#18181B] border border-[#d4522f]/40 shadow-2xl p-5 text-white animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg sq-elev-pop animate-in fade-in zoom-in-95 duration-200">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="w-full rounded-[var(--r-panel,28px)] bg-[#18181B] [--sq-stroke:rgba(212,82,47,0.4)] p-5 text-white"
+            >
             {/* Header */}
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#d4522f]/20 border border-[#d4522f]/30 flex items-center justify-center">
+                <div
+                  data-sq="tile"
+                  data-sq-border="solid"
+                  className="w-8 h-8 rounded-[var(--r-tile,12px)] bg-[#d4522f]/20 [--sq-stroke:rgba(212,82,47,0.3)] flex items-center justify-center"
+                >
                   <Sparkles className="w-4 h-4 text-[#d4522f]" />
                 </div>
                 <div>
@@ -1993,14 +2093,18 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               <button
                 type="button"
                 onClick={() => setShowLicenseModal(false)}
-                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Selected Plan Recap Banner */}
-            <div className="p-3 rounded-xl bg-gradient-to-r from-[#221F1C] to-[#171618] border border-[#d4522f]/30 mb-3.5 flex items-center justify-between">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-3 rounded-[var(--r-card,16px)] bg-gradient-to-r from-[#221F1C] to-[#171618] [--sq-stroke:rgba(212,82,47,0.3)] mb-3.5 flex items-center justify-between"
+            >
               <div>
                 <span className="text-[10px] uppercase font-bold text-[#d4522f] tracking-wider">
                   {isAr ? 'الخطة المطلوبة' : isFr ? 'Formule sélectionnée' : 'Selected Tier'}
@@ -2021,7 +2125,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
             {/* Contact & Settlement Channels */}
             <div className="space-y-2 mb-3.5 text-xs">
-              <div className="p-2.5 rounded-xl bg-neutral-900 border border-white/5 space-y-1.5">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-2.5 rounded-[var(--r-card,16px)] bg-neutral-900 [--sq-stroke:rgba(255,255,255,0.06)] space-y-1.5"
+              >
                 <div className="text-[10px] font-bold uppercase tracking-wider text-white/70 flex items-center gap-1.5">
                   <CreditCard className="w-3.5 h-3.5 text-[#d4522f]" />
                   <span>{isAr ? 'قنوات الدفع المعتمدة بالدينار' : isFr ? 'Canaux de règlement en Algérie' : 'Algerian Payment Options'}</span>
@@ -2042,7 +2150,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   )}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex-1 px-3 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer text-xs"
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="flex-1 px-3 py-2.5 rounded-[var(--r-ctl,12px)] bg-emerald-600/20 hover:bg-emerald-600/30 [--sq-stroke:rgba(16,185,129,0.3)] text-emerald-300 font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer text-xs"
                 >
                   <MessageCircle className="w-4 h-4 text-emerald-400" />
                   <span>{isAr ? 'مراسلة عبر واتساب' : isFr ? 'Commander via WhatsApp' : 'Order via WhatsApp'}</span>
@@ -2051,12 +2161,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
                 <a
                   href="tel:+213550123456"
-                  className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/90 font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-xs"
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="px-3 py-2.5 rounded-[var(--r-ctl,12px)] bg-white/5 hover:bg-white/10 [--sq-stroke:rgba(255,255,255,0.1)] text-white/90 font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-xs"
                 >
                   <Phone className="w-3.5 h-3.5 text-[#d4522f]" />
                   <span>+213 (0) 550 12 34 56</span>
                 </a>
               </div>
+            </div>
             </div>
           </div>
         </div>

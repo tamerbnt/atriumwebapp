@@ -81,31 +81,44 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto select-none animate-in fade-in duration-150">
-      <div className="relative w-full max-w-md rounded-[28px] bg-[#1E1B19] border border-[#3E3832] shadow-2xl text-white p-6 sm:p-7 space-y-5">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#2A2420] border border-[#483B33] flex items-center justify-center text-[#d4522f]">
-              <Lock size={16} />
+      <div className="w-full max-w-md sq-elev-pop">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="relative w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19] [--sq-stroke:#3E3832] text-white p-6 sm:p-7 space-y-5"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
+            <div className="flex items-center gap-2.5">
+              <div
+                data-sq="tile"
+                data-sq-border="solid"
+                className="w-9 h-9 rounded-[var(--r-tile,12px)] bg-[#2A2420] [--sq-stroke:#483B33] flex items-center justify-center text-[#d4522f]"
+              >
+                <Lock size={16} />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white">{t('fast_switch_title_lock', language)}</h3>
+                <p className="text-[11px] text-white/70">
+                  {t('fast_switch_operator_security', language)}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-white">{t('fast_switch_title_lock', language)}</h3>
-              <p className="text-[11px] text-white/70">
-                {t('fast_switch_operator_security', language)}
-              </p>
-            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 text-white/65 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+            >
+              <X size={14} />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 text-white/65 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
-          >
-            <X size={14} />
-          </button>
-        </div>
 
-        {/* Current Active Operator Banner */}
-        <div className="p-3.5 rounded-2xl bg-neutral-900/90 border border-neutral-800 flex items-center justify-between">
+          {/* Current Active Operator Banner */}
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-3.5 rounded-[var(--r-card,16px)] bg-neutral-900/90 [--sq-stroke:#262626] flex items-center justify-between"
+          >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[#d4522f] text-white flex items-center justify-center font-bold text-sm shadow-xs">
               {currentUser.fullName.charAt(0)}
@@ -137,11 +150,13 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
                 <button
                   key={stf.id}
                   type="button"
+                  data-sq="row"
+                  data-sq-border="solid"
                   onClick={() => handleQuickSelectStaff(stf)}
-                  className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
+                  className={`w-full p-2.5 rounded-[var(--r-row,12px)] text-left flex items-center justify-between transition-colors cursor-pointer ${
                     isCurrent
-                      ? 'bg-[#2A2420] border-[#d4522f] text-white font-bold'
-                      : 'bg-neutral-900/60 border-neutral-800 text-white/85 hover:bg-neutral-800/80 hover:text-white'
+                      ? 'bg-[#2A2420] [--sq-stroke:#d4522f] text-white font-bold'
+                      : 'bg-neutral-900/60 [--sq-stroke:#262626] text-white/85 hover:bg-neutral-800/80 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -191,12 +206,14 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
               <button
                 key={btn}
                 type="button"
+                data-sq="ctl"
+                data-sq-border="solid"
                 onClick={() => {
                   if (btn === 'C') handleClear();
                   else if (btn === '⌫') handleBack();
                   else handleDigit(btn);
                 }}
-                className="h-10 rounded-xl bg-neutral-900 border border-neutral-800 text-white font-bold text-xs hover:bg-neutral-800 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
+                className="h-10 rounded-[var(--r-ctl,12px)] bg-neutral-900 [--sq-stroke:#262626] text-white font-bold text-xs hover:bg-neutral-800 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
               >
                 {btn === 'C' ? t('fast_switch_pin_clear', language) : btn}
               </button>
@@ -220,15 +237,18 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
 
           <button
             type="button"
+            data-sq="ctl-sm"
+            data-sq-border="solid"
             onClick={() => {
               logout();
               onClose();
             }}
-            className="h-9 px-3.5 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-rose-950/40 hover:border-rose-900 text-white/85 hover:text-rose-400 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="h-9 px-3.5 rounded-[var(--r-ctl-sm,10px)] bg-neutral-900 [--sq-stroke:#262626] hover:bg-rose-950/40 hover:[--sq-stroke:#7f1d1d] text-white/85 hover:text-rose-400 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <LogOut size={13} />
             <span>{t('topbar_logout', language)}</span>
           </button>
+        </div>
         </div>
       </div>
     </div>

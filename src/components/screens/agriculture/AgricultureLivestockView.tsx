@@ -587,7 +587,11 @@ export const AgricultureLivestockView: React.FC = () => {
         sortable: true,
         renderCell: (a) => (
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"
+            >
               <Tag size={15} />
             </div>
             <div className="min-w-0">
@@ -682,7 +686,11 @@ export const AgricultureLivestockView: React.FC = () => {
         sortable: true,
         renderCell: (m) => (
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold shrink-0">
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="w-8 h-8 bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold shrink-0"
+            >
               <Milk size={16} />
             </div>
             <div className="min-w-0">
@@ -1009,7 +1017,12 @@ export const AgricultureLivestockView: React.FC = () => {
       />
 
       {treatmentCount > 0 && (
-        <div className="flex items-center gap-3 px-4 py-3 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-amber-800 dark:text-amber-300 text-xs">
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
+          className="flex items-center gap-3 px-4 py-3 bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 text-xs"
+        >
           <AlertTriangle size={18} className="shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="flex-1">
             <span className="font-semibold">
@@ -1575,25 +1588,31 @@ export const AgricultureLivestockView: React.FC = () => {
 
       {isAnimalModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {animalToEdit
-                  ? isAr
-                    ? 'تعديل بيانات رأس الماشية'
-                    : 'Modifier Fiche Bovine'
-                  : isAr
-                  ? 'تسجيل رأس ماشية في السجل'
-                  : 'Ajouter un Animal au Cheptel'}
-              </h2>
-              <button
-                type="button"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsAnimalModalOpen(false)}
-              >
-                <X size={18} className="text-black/55 dark:text-white/55" />
-              </button>
-            </div>
+          <div className="sq-elev-pop w-full max-w-lg">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  {animalToEdit
+                    ? isAr
+                      ? 'تعديل بيانات رأس الماشية'
+                      : 'Modifier Fiche Bovine'
+                    : isAr
+                    ? 'تسجيل رأس ماشية في السجل'
+                    : 'Ajouter un Animal au Cheptel'}
+                </h2>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setIsAnimalModalOpen(false)}
+                  className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <X size={18} className="text-black/55 dark:text-white/55" />
+                </button>
+              </div>
             <form onSubmit={handleSaveModal} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
@@ -1696,6 +1715,7 @@ export const AgricultureLivestockView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

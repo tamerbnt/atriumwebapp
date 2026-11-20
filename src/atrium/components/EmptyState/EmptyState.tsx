@@ -81,6 +81,9 @@ function renderActionButton(
     .filter(Boolean)
     .join(' ');
 
+  const sqToken = compact ? 'ctl-sm' : 'ctl';
+  const sqBorder = kind === 'secondary' ? 'solid' : 'none';
+
   const content = (
     <>
       {action.icon && (
@@ -98,6 +101,8 @@ function renderActionButton(
         ref={ref as React.RefObject<HTMLAnchorElement | null>}
         href={action.href}
         onClick={action.onClick}
+        data-sq={sqToken}
+        data-sq-border={sqBorder}
         className={classes}
       >
         {content}
@@ -110,6 +115,8 @@ function renderActionButton(
       ref={ref as React.RefObject<HTMLButtonElement | null>}
       type="button"
       onClick={action.onClick}
+      data-sq={sqToken}
+      data-sq-border={sqBorder}
       className={classes}
     >
       {content}
@@ -203,9 +210,17 @@ const EmptyStateInner: React.FC<EmptyStateProps> = ({
             <div
               key={idx}
               className="es-ghost-row"
+              data-sq="row"
+              data-sq-border="dashed"
+              data-sq-stroke-w="1.5"
               style={{ gridTemplateColumns }}
             >
-              <span className="es-gc" />
+              <span
+                className="es-gc"
+                data-sq="check"
+                data-sq-border="dashed"
+                data-sq-stroke-w="1.5"
+              />
               <span className="es-ga" />
               <span className="es-gl">
                 <span className="es-gl-bar" style={{ width: `${primaryBarW}px` }} />
@@ -239,6 +254,12 @@ const EmptyStateInner: React.FC<EmptyStateProps> = ({
 
   const tileContent = (
     <span className={`es-tile ${variant === 'compact' ? 'es-tile--compact' : ''}`}>
+      <span
+        className="es-tile-surface"
+        aria-hidden="true"
+        data-sq={variant === 'compact' ? 'tile' : 'tile-lg'}
+        data-sq-border="solid"
+      />
       <span className="es-tile-icon" aria-hidden="true">
         {icon}
       </span>
@@ -257,7 +278,13 @@ const EmptyStateInner: React.FC<EmptyStateProps> = ({
         ref={rootRef}
         className={['es-compact-root', className].filter(Boolean).join(' ')}
       >
-        <div className="es-compact" {...liveRoleProps}>
+        <div
+          className="es-compact"
+          data-sq="empty"
+          data-sq-border="dashed"
+          data-sq-stroke-w="1.5"
+          {...liveRoleProps}
+        >
           {tileContent}
           <Heading className="es-title">{title}</Heading>
           {description && <p className="es-desc">{description}</p>}
@@ -283,6 +310,8 @@ const EmptyStateInner: React.FC<EmptyStateProps> = ({
 
       <div
         className="es-island"
+        data-sq="panel"
+        data-sq-border="solid"
         style={{ '--es-width': `${width}px` } as React.CSSProperties}
         {...liveRoleProps}
       >

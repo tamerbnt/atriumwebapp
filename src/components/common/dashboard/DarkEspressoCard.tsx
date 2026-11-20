@@ -49,7 +49,9 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
 
   return (
     <div
-      className={`bg-[#1F1D1B] rounded-[18px] p-4 sm:p-5 border border-white/[0.08] text-white relative overflow-hidden min-h-[132px] flex flex-col justify-between shadow-sm group select-none ${className}`}
+      data-sq="card"
+      data-sq-border="solid"
+      className={`bg-[#1F1D1B] p-4 sm:p-5 border border-white/[0.08] [--sq-stroke:rgba(255,255,255,0.08)] text-white relative overflow-hidden min-h-[132px] flex flex-col justify-between group select-none ${className}`}
     >
       {showSparkline && (
         <div className="absolute -right-3 -bottom-4 opacity-25 group-hover:opacity-40 transition-opacity pointer-events-none">
@@ -71,7 +73,7 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
         </span>
         {displayBadge && (
           <div className="text-[10.5px] font-semibold mt-1.5">
-            <span className={`${currentBadgeColor} px-2 py-0.5 rounded-md inline-block`}>
+            <span className={`${currentBadgeColor} px-2.5 py-0.5 rounded-full inline-block`}>
               {displayBadge}
             </span>
           </div>

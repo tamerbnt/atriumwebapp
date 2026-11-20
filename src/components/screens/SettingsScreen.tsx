@@ -256,20 +256,20 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           ))}
         </div>
         {/* Settings Card 1 */}
-        <div className="p-6 rounded-[24px] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] space-y-4">
+        <div className="p-6 rounded-[var(--r-panel,28px)] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] space-y-4">
           <SkeletonText size="sm" width="200px" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SkeletonBox height={48} rounded="rounded-xl" />
-            <SkeletonBox height={48} rounded="rounded-xl" />
+            <SkeletonBox height={48} rounded="rounded-[var(--r-ctl,12px)]" />
+            <SkeletonBox height={48} rounded="rounded-[var(--r-ctl,12px)]" />
           </div>
         </div>
         {/* Settings Card 2 */}
-        <div className="p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 space-y-4">
+        <div className="p-6 rounded-[var(--r-panel,28px)] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 space-y-4">
           <SkeletonText size="sm" width="180px" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <SkeletonBox height={54} rounded="rounded-xl" />
-            <SkeletonBox height={54} rounded="rounded-xl" />
-            <SkeletonBox height={54} rounded="rounded-xl" />
+            <SkeletonBox height={54} rounded="rounded-[var(--r-ctl,12px)]" />
+            <SkeletonBox height={54} rounded="rounded-[var(--r-ctl,12px)]" />
+            <SkeletonBox height={54} rounded="rounded-[var(--r-ctl,12px)]" />
           </div>
         </div>
       </div>
@@ -281,11 +281,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       {/* Row 0: Screen Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="flex items-center gap-3.5">
-          <div
-            style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
-            className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
-          >
-            <Settings size={24} />
+          <div className="sq-elev-card shrink-0">
+            <div
+              data-sq="tile-lg"
+              data-sq-border="none"
+              style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
+              className="w-12 h-12 flex items-center justify-center"
+            >
+              <Settings size={24} />
+            </div>
           </div>
           <div>
             <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase rtl:normal-case leading-none rtl:leading-tight tracking-[0.01em] rtl:tracking-normal text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
@@ -305,8 +309,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           <button
             type="button"
+            data-sq="ctl"
             onClick={handleExportDataBackup}
-            className="h-10 px-3.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-black/85 dark:text-white/90 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-200 dark:border-neutral-700"
+            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-black/85 dark:text-white/90 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             title="Download complete JSON database backup"
           >
             <FileDown size={14} className="text-[#d4522f]" />
@@ -315,27 +320,32 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           <button
             type="button"
+            data-sq="ctl"
             onClick={() => fileInputRef.current?.click()}
-            className="h-10 px-3.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-black/85 dark:text-white/90 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-200 dark:border-neutral-700"
+            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-black/85 dark:text-white/90 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             title="Restore database from a JSON backup file"
           >
             <FileUp size={14} className="text-[#d4522f]" />
             <span>{t('settings_restore_backup', language)}</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => openDesktopUpgradeModal('general')}
-            className="h-10 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer dark:border dark:border-neutral-700 shadow-xs"
-          >
-            <Laptop size={14} className="text-[#d4522f]" />
-            <span>{t('topbar_desktop_app', language)}</span>
-          </button>
+          <div className="sq-elev-card">
+            <button
+              type="button"
+              data-sq="ctl"
+              onClick={() => openDesktopUpgradeModal('general')}
+              className="h-10 px-4 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer"
+            >
+              <Laptop size={14} className="text-[#d4522f]" />
+              <span>{t('topbar_desktop_app', language)}</span>
+            </button>
+          </div>
 
           <button
             type="button"
+            data-sq="ctl"
             onClick={openOnboarding}
-            className="h-10 px-4 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 text-[#d4522f] text-xs font-bold flex items-center gap-2 hover:bg-[#FBECE6] dark:hover:bg-neutral-700/80 transition-colors cursor-pointer"
+            className="h-10 px-4 bg-[#FDF4F0] dark:bg-neutral-800 text-[#d4522f] text-xs font-bold flex items-center gap-2 hover:bg-[#FBECE6] dark:hover:bg-neutral-700/80 transition-colors cursor-pointer"
           >
             <Sparkles size={14} />
             <span>{t('action_relaunch_wizard', language)}</span>
@@ -344,830 +354,542 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       </div>
 
       {exportedStatus && (
-        <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+        <div
+          data-sq="card"
+          style={{ '--sq-stroke': 'rgba(16,185,129,0.4)' } as React.CSSProperties}
+          className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in"
+        >
           <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
           <span>{exportedStatus}</span>
         </div>
       )}
 
       {/* Row 1: Language & Regional Localization */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div
-              style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
-              className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
-            >
-              <Globe size={20} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
-                  {t('settings_lang_title', language)}
-                </h3>
-                <span
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal ${
-                    isLanguageAuto
-                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
-                      : 'bg-[#FCEEE8] text-[#d4522f] dark:bg-[#d4522f]/20 dark:text-[#d4522f]'
-                  }`}
-                >
-                  {isLanguageAuto ? `${t('topbar_auto_detected', language)} (${language.toUpperCase()})` : `Manual (${language.toUpperCase()})`}
-                </span>
+      <div className="sq-elev-card">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1 pt-1">
+            <div className="flex items-center gap-3">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
+                className="w-10 h-10 flex items-center justify-center shrink-0"
+              >
+                <Globe size={20} />
               </div>
-              <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
-                {t('settings_lang_desc', language)}
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
+                    {t('settings_lang_title', language)}
+                  </h3>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal ${
+                      isLanguageAuto
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                        : 'bg-[#FCEEE8] text-[#d4522f] dark:bg-[#d4522f]/20 dark:text-[#d4522f]'
+                    }`}
+                  >
+                    {isLanguageAuto ? `${t('topbar_auto_detected', language)} (${language.toUpperCase()})` : `Manual (${language.toUpperCase()})`}
+                  </span>
+                </div>
+                <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
+                  {t('settings_lang_desc', language)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto text-xs text-black/65 dark:text-white/65">
+              <span>{t('settings_system_detected_badge', language)}:</span>
+              <span className="font-bold text-black dark:text-white uppercase rtl:normal-case bg-white dark:bg-neutral-800 px-2.5 py-0.5 rounded-full border border-neutral-200 dark:border-neutral-700">
+                {getSystemDefaultLanguage() === 'ar' ? 'العربية (ar)' : getSystemDefaultLanguage() === 'fr' ? 'Français (fr)' : 'English (en)'}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto text-xs text-black/65 dark:text-white/65">
-            <span>{t('settings_system_detected_badge', language)}:</span>
-            <span className="font-bold text-black dark:text-white uppercase rtl:normal-case bg-white dark:bg-neutral-800 px-2 py-0.5 rounded-md border border-neutral-200 dark:border-neutral-700">
-              {getSystemDefaultLanguage() === 'ar' ? 'العربية (ar)' : getSystemDefaultLanguage() === 'fr' ? 'Français (fr)' : 'English (en)'}
-            </span>
+          {/* Language Options Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+            {/* Option 0: System Default */}
+            <div className={isLanguageAuto ? 'sq-elev-card' : ''}>
+              <button
+                type="button"
+                data-sq="card"
+                data-sq-stroke-w={isLanguageAuto ? 2 : 1}
+                style={{ '--sq-stroke': isLanguageAuto ? '#d4522f' : 'var(--color-border)' } as React.CSSProperties}
+                onClick={() => {
+                  setSystemDefaultLanguage();
+                  showToast({
+                    type: 'info',
+                    title: t('topbar_auto_detected', language),
+                    message: t('settings_lang_changed_toast', language),
+                  });
+                }}
+                className={`w-full h-full p-4 text-left transition-all cursor-pointer relative ${
+                  isLanguageAuto
+                    ? 'bg-white dark:bg-neutral-800'
+                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xl">🌐</span>
+                  {isLanguageAuto && (
+                    <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
+                      <Check size={12} strokeWidth={3} />
+                    </span>
+                  )}
+                </div>
+                <div className="font-bold text-sm text-black dark:text-white">
+                  {t('settings_system_default', language)}
+                </div>
+                <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
+                  {t('settings_lang_desc', language)} ({getSystemDefaultLanguage().toUpperCase()})
+                </p>
+              </button>
+            </div>
+
+            {/* Option 1: English */}
+            <div className={!isLanguageAuto && language === 'en' ? 'sq-elev-card' : ''}>
+              <button
+                type="button"
+                data-sq="card"
+                data-sq-stroke-w={!isLanguageAuto && language === 'en' ? 2 : 1}
+                style={{ '--sq-stroke': !isLanguageAuto && language === 'en' ? '#d4522f' : 'var(--color-border)' } as React.CSSProperties}
+                onClick={() => {
+                  setLanguage('en', false);
+                  showToast({
+                    type: 'success',
+                    title: 'Language Updated',
+                    message: 'Interface display language set to English.',
+                  });
+                }}
+                className={`w-full h-full p-4 text-left transition-all cursor-pointer relative ${
+                  !isLanguageAuto && language === 'en'
+                    ? 'bg-white dark:bg-neutral-800'
+                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xl">🇺🇸</span>
+                  {!isLanguageAuto && language === 'en' && (
+                    <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
+                      <Check size={12} strokeWidth={3} />
+                    </span>
+                  )}
+                </div>
+                <div className="font-bold text-sm text-black dark:text-white">
+                  English (US / UK)
+                </div>
+                <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
+                  Standard Left-to-Right (LTR)
+                </p>
+              </button>
+            </div>
+
+            {/* Option 2: Français */}
+            <div className={!isLanguageAuto && language === 'fr' ? 'sq-elev-card' : ''}>
+              <button
+                type="button"
+                data-sq="card"
+                data-sq-stroke-w={!isLanguageAuto && language === 'fr' ? 2 : 1}
+                style={{ '--sq-stroke': !isLanguageAuto && language === 'fr' ? '#d4522f' : 'var(--color-border)' } as React.CSSProperties}
+                onClick={() => {
+                  setLanguage('fr', false);
+                  showToast({
+                    type: 'success',
+                    title: 'Langue modifiée',
+                    message: 'La langue d\'affichage est maintenant le Français.',
+                  });
+                }}
+                className={`w-full h-full p-4 text-left transition-all cursor-pointer relative ${
+                  !isLanguageAuto && language === 'fr'
+                    ? 'bg-white dark:bg-neutral-800'
+                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xl">🇫🇷</span>
+                  {!isLanguageAuto && language === 'fr' && (
+                    <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
+                      <Check size={12} strokeWidth={3} />
+                    </span>
+                  )}
+                </div>
+                <div className="font-bold text-sm text-black dark:text-white">
+                  Français (France / Algérie)
+                </div>
+                <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
+                  Mise en page standard (LTR)
+                </p>
+              </button>
+            </div>
+
+            {/* Option 3: العربية */}
+            <div className={!isLanguageAuto && language === 'ar' ? 'sq-elev-card' : ''}>
+              <button
+                type="button"
+                data-sq="card"
+                data-sq-stroke-w={!isLanguageAuto && language === 'ar' ? 2 : 1}
+                style={{ '--sq-stroke': !isLanguageAuto && language === 'ar' ? '#d4522f' : 'var(--color-border)' } as React.CSSProperties}
+                onClick={() => {
+                  setLanguage('ar', false);
+                  showToast({
+                    type: 'success',
+                    title: 'تم تحديث اللغة',
+                    message: 'تم تفعيل اللغة العربية والواجهة من اليمين إلى اليسار.',
+                  });
+                }}
+                className={`w-full h-full p-4 text-left rtl:text-right transition-all cursor-pointer relative ${
+                  !isLanguageAuto && language === 'ar'
+                    ? 'bg-white dark:bg-neutral-800'
+                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xl">🇩🇿</span>
+                  {!isLanguageAuto && language === 'ar' && (
+                    <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
+                      <Check size={12} strokeWidth={3} />
+                    </span>
+                  )}
+                </div>
+                <div className="font-bold text-sm text-black dark:text-white">
+                  العربية (الجزائر / MENA)
+                </div>
+                <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
+                  دعم أصيل من اليمين إلى اليسار (RTL)
+                </p>
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Language Options Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-          {/* Option 0: System Default */}
-          <button
-            type="button"
-            onClick={() => {
-              setSystemDefaultLanguage();
-              showToast({
-                type: 'info',
-                title: t('topbar_auto_detected', language),
-                message: t('settings_lang_changed_toast', language),
-              });
-            }}
-            className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
-              isLanguageAuto
-                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xl">🌐</span>
-              {isLanguageAuto && (
-                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
-                  <Check size={12} strokeWidth={3} />
-                </span>
-              )}
-            </div>
-            <div className="font-bold text-sm text-black dark:text-white">
-              {t('settings_system_default', language)}
-            </div>
-            <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
-              {t('settings_lang_desc', language)} ({getSystemDefaultLanguage().toUpperCase()})
-            </p>
-          </button>
-
-          {/* Option 1: English */}
-          <button
-            type="button"
-            onClick={() => {
-              setLanguage('en', false);
-              showToast({
-                type: 'success',
-                title: 'Language Updated',
-                message: 'Interface display language set to English.',
-              });
-            }}
-            className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
-              !isLanguageAuto && language === 'en'
-                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xl">🇺🇸</span>
-              {!isLanguageAuto && language === 'en' && (
-                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
-                  <Check size={12} strokeWidth={3} />
-                </span>
-              )}
-            </div>
-            <div className="font-bold text-sm text-black dark:text-white">
-              English (US / UK)
-            </div>
-            <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
-              Standard Left-to-Right (LTR)
-            </p>
-          </button>
-
-          {/* Option 2: Français */}
-          <button
-            type="button"
-            onClick={() => {
-              setLanguage('fr', false);
-              showToast({
-                type: 'success',
-                title: 'Langue modifiée',
-                message: 'La langue d\'affichage est maintenant le Français.',
-              });
-            }}
-            className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
-              !isLanguageAuto && language === 'fr'
-                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xl">🇫🇷</span>
-              {!isLanguageAuto && language === 'fr' && (
-                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
-                  <Check size={12} strokeWidth={3} />
-                </span>
-              )}
-            </div>
-            <div className="font-bold text-sm text-black dark:text-white">
-              Français (France / Algérie)
-            </div>
-            <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
-              Mise en page standard (LTR)
-            </p>
-          </button>
-
-          {/* Option 3: العربية */}
-          <button
-            type="button"
-            onClick={() => {
-              setLanguage('ar', false);
-              showToast({
-                type: 'success',
-                title: 'تم تحديث اللغة',
-                message: 'تم تفعيل اللغة العربية والواجهة من اليمين إلى اليسار.',
-              });
-            }}
-            className={`p-4 rounded-[20px] text-left rtl:text-right transition-all border cursor-pointer relative ${
-              !isLanguageAuto && language === 'ar'
-                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xl">🇩🇿</span>
-              {!isLanguageAuto && language === 'ar' && (
-                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs">
-                  <Check size={12} strokeWidth={3} />
-                </span>
-              )}
-            </div>
-            <div className="font-bold text-sm text-black dark:text-white">
-              العربية (الجزائر / MENA)
-            </div>
-            <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
-              دعم أصيل من اليمين إلى اليسار (RTL)
-            </p>
-          </button>
-        </div>
-
-        {/* RTL Information callout */}
-        <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 flex items-center gap-3 text-xs text-black/75 dark:text-white/75">
-          <Sparkles size={16} className="text-[#d4522f] shrink-0" />
-          <span>{t('settings_rtl_notice', language)}</span>
+          {/* RTL Information callout */}
+          <div data-sq="card" className="p-3.5 bg-white dark:bg-neutral-800/60 flex items-center gap-3 text-xs text-black/75 dark:text-white/75">
+            <Sparkles size={16} className="text-[#d4522f] shrink-0" />
+            <span>{t('settings_rtl_notice', language)}</span>
+          </div>
         </div>
       </div>
 
       {/* Row 1.1: Appearance & Theme Mode */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div
-              style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
-              className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
-            >
-              {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
-                  {language === 'ar' ? 'المظهر والسمة' : language === 'fr' ? 'Apparence' : 'Theme'}
-                </h3>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal bg-[#d4522f]/10 text-[#d4522f]">
-                  {theme === 'dark'
-                    ? (language === 'ar' ? 'داكن' : language === 'fr' ? 'Sombre' : 'Dark')
-                    : (language === 'ar' ? 'فاتح' : language === 'fr' ? 'Clair' : 'Light')}
-                </span>
+      <div className="sq-elev-card">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1 pt-1">
+            <div className="flex items-center gap-3">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
+                className="w-10 h-10 flex items-center justify-center shrink-0"
+              >
+                {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
               </div>
-              <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
-                {language === 'ar'
-                  ? 'اختر مظهر العرض المناسب لعملك'
-                  : language === 'fr'
-                  ? 'Choisissez le thème visuel adapté à votre espace'
-                  : 'Select your preferred display theme'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Dynamic Theme Toggle */}
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
-              {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
-            </div>
-            <div>
-              <div className="text-xs font-bold text-black dark:text-white">
-                {language === 'ar' ? 'الوضع الليلي' : language === 'fr' ? 'Mode Sombre' : 'Dark Mode'}
-              </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55">
-                {theme === 'dark'
-                  ? (language === 'ar' ? 'ليلي' : language === 'fr' ? 'Sombre' : 'Night')
-                  : (language === 'ar' ? 'نهاري' : language === 'fr' ? 'Clair' : 'Day')}
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
+                    {language === 'ar' ? 'المظهر والسمة' : language === 'fr' ? 'Apparence' : 'Theme'}
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal bg-[#d4522f]/10 text-[#d4522f]">
+                    {theme === 'dark'
+                      ? (language === 'ar' ? 'داكن' : language === 'fr' ? 'Sombre' : 'Dark')
+                      : (language === 'ar' ? 'فاتح' : language === 'fr' ? 'Clair' : 'Light')}
+                  </span>
+                </div>
+                <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
+                  {language === 'ar'
+                    ? 'اختر مظهر العرض المناسب لعملك'
+                    : language === 'fr'
+                    ? 'Choisissez le thème visuel adapté à votre espace'
+                    : 'Select your preferred display theme'}
+                </p>
               </div>
             </div>
           </div>
-          <Toggle
-            aria-label="Toggle dark mode"
-            checked={theme === 'dark'}
-            onCheckedChange={(checked) => {
-              setTheme(checked ? 'dark' : 'light');
-            }}
-          />
-        </div>
 
-        {/* Theme Options Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          {/* Option: Light Mode */}
-          <button
-            type="button"
-            onClick={() => {
-              setTheme('light');
-              showToast({
-                type: 'info',
-                title: language === 'ar' ? 'الوضع الفاتح' : language === 'fr' ? 'Mode Clair' : 'Light Mode',
-                message: language === 'ar' ? 'تم تفعيل الوضع الفاتح' : language === 'fr' ? 'Mode clair activé.' : 'Light theme enabled.',
-              });
-            }}
-            className={`p-4 rounded-[20px] text-left rtl:text-right transition-all border cursor-pointer relative ${
-              theme === 'light'
-                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center">
-                <Sun size={20} />
+          {/* Dynamic Theme Toggle */}
+          <div className="sq-elev-card">
+            <div data-sq="card" className="flex items-center justify-between p-3.5 bg-white dark:bg-neutral-800">
+              <div className="flex items-center gap-3">
+                <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
+                  {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-black dark:text-white">
+                    {language === 'ar' ? 'الوضع الليلي' : language === 'fr' ? 'Mode Sombre' : 'Dark Mode'}
+                  </div>
+                  <div className="text-[10px] text-black/55 dark:text-white/55">
+                    {theme === 'dark'
+                      ? (language === 'ar' ? 'ليلي' : language === 'fr' ? 'Sombre' : 'Night')
+                      : (language === 'ar' ? 'نهاري' : language === 'fr' ? 'Clair' : 'Day')}
+                  </div>
+                </div>
               </div>
-              {theme === 'light' && (
-                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs shadow-xs">
-                  <Check size={12} strokeWidth={3} />
-                </span>
-              )}
+              <Toggle
+                aria-label="Toggle dark mode"
+                checked={theme === 'dark'}
+                onCheckedChange={(checked) => {
+                  setTheme(checked ? 'dark' : 'light');
+                }}
+              />
             </div>
-            <div className="font-bold text-sm text-black dark:text-white">
-              {language === 'ar' ? 'فاتح' : language === 'fr' ? 'Mode Clair' : 'Light Theme'}
-            </div>
-            <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
-              {language === 'ar' ? 'واجهة ناصعة للاستخدام النهاري' : language === 'fr' ? 'Interface claire et contrastée' : 'Clean bright canvas for daytime use'}
-            </p>
-          </button>
+          </div>
 
-          {/* Option: Dark Mode */}
-          <button
-            type="button"
-            onClick={() => {
-              setTheme('dark');
-              showToast({
-                type: 'info',
-                title: language === 'ar' ? 'الوضع الداكن' : language === 'fr' ? 'Mode Sombre' : 'Dark Mode',
-                message: language === 'ar' ? 'تم تفعيل الوضع الداكن' : language === 'fr' ? 'Mode sombre activé.' : 'Dark theme enabled.',
-              });
-            }}
-            className={`p-4 rounded-[20px] text-left rtl:text-right transition-all border cursor-pointer relative ${
-              theme === 'dark'
-                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
-                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-neutral-900 text-amber-300 flex items-center justify-center">
-                <Moon size={20} />
-              </div>
-              {theme === 'dark' && (
-                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs shadow-xs">
-                  <Check size={12} strokeWidth={3} />
-                </span>
-              )}
+          {/* Theme Options Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            {/* Option: Light Mode */}
+            <div className={theme === 'light' ? 'sq-elev-card' : ''}>
+              <button
+                type="button"
+                data-sq="card"
+                data-sq-stroke-w={theme === 'light' ? 2 : 1}
+                style={{ '--sq-stroke': theme === 'light' ? '#d4522f' : 'var(--color-border)' } as React.CSSProperties}
+                onClick={() => {
+                  setTheme('light');
+                  showToast({
+                    type: 'info',
+                    title: language === 'ar' ? 'الوضع الفاتح' : language === 'fr' ? 'Mode Clair' : 'Light Mode',
+                    message: language === 'ar' ? 'تم تفعيل الوضع الفاتح' : language === 'fr' ? 'Mode clair activé.' : 'Light theme enabled.',
+                  });
+                }}
+                className={`w-full h-full p-4 text-left rtl:text-right transition-all cursor-pointer relative ${
+                  theme === 'light'
+                    ? 'bg-white dark:bg-neutral-800'
+                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center">
+                    <Sun size={20} />
+                  </div>
+                  {theme === 'light' && (
+                    <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs shadow-xs">
+                      <Check size={12} strokeWidth={3} />
+                    </span>
+                  )}
+                </div>
+                <div className="font-bold text-sm text-black dark:text-white">
+                  {language === 'ar' ? 'فاتح' : language === 'fr' ? 'Mode Clair' : 'Light Theme'}
+                </div>
+                <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
+                  {language === 'ar' ? 'واجهة ناصعة للاستخدام النهاري' : language === 'fr' ? 'Interface claire et contrastée' : 'Clean bright canvas for daytime use'}
+                </p>
+              </button>
             </div>
-            <div className="font-bold text-sm text-black dark:text-white">
-              {language === 'ar' ? 'داكن' : language === 'fr' ? 'Mode Sombre' : 'Dark Theme'}
+
+            {/* Option: Dark Mode */}
+            <div className={theme === 'dark' ? 'sq-elev-card' : ''}>
+              <button
+                type="button"
+                data-sq="card"
+                data-sq-stroke-w={theme === 'dark' ? 2 : 1}
+                style={{ '--sq-stroke': theme === 'dark' ? '#d4522f' : 'var(--color-border)' } as React.CSSProperties}
+                onClick={() => {
+                  setTheme('dark');
+                  showToast({
+                    type: 'info',
+                    title: language === 'ar' ? 'الوضع الداكن' : language === 'fr' ? 'Mode Sombre' : 'Dark Mode',
+                    message: language === 'ar' ? 'تم تفعيل الوضع الداكن' : language === 'fr' ? 'Mode sombre activé.' : 'Dark theme enabled.',
+                  });
+                }}
+                className={`w-full h-full p-4 text-left rtl:text-right transition-all cursor-pointer relative ${
+                  theme === 'dark'
+                    ? 'bg-white dark:bg-neutral-800'
+                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-neutral-900 text-amber-300 flex items-center justify-center">
+                    <Moon size={20} />
+                  </div>
+                  {theme === 'dark' && (
+                    <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs shadow-xs">
+                      <Check size={12} strokeWidth={3} />
+                    </span>
+                  )}
+                </div>
+                <div className="font-bold text-sm text-black dark:text-white">
+                  {language === 'ar' ? 'داكن' : language === 'fr' ? 'Mode Sombre' : 'Dark Theme'}
+                </div>
+                <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
+                  {language === 'ar' ? 'ألوان داكنة مريحة للعينين ليلاً' : language === 'fr' ? 'Teintes sombres pour un confort maximal' : 'Dark surfaces for low-light comfort'}
+                </p>
+              </button>
             </div>
-            <p className="text-[11px] text-black/60 dark:text-white/60 mt-1">
-              {language === 'ar' ? 'ألوان داكنة مريحة للعينين ليلاً' : language === 'fr' ? 'Teintes sombres pour un confort maximal' : 'Dark surfaces for low-light comfort'}
-            </p>
-          </button>
+          </div>
         </div>
       </div>
 
       {/* Row 1.2: Layout & Top Bar Settings */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div
-              style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
-              className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
-            >
-              <Layout size={20} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
-                  {language === 'ar' ? 'سلوك الشريط' : language === 'fr' ? 'Barre Supérieure' : 'Navigation Bar'}
-                </h3>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal bg-[#d4522f]/10 text-[#d4522f]">
-                  {language === 'ar' ? 'تخطيط' : language === 'fr' ? 'Interface' : 'Layout'}
-                </span>
+      <div className="sq-elev-card">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1 pt-1">
+            <div className="flex items-center gap-3">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
+                className="w-10 h-10 flex items-center justify-center shrink-0"
+              >
+                <Layout size={20} />
               </div>
-              <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
-                {language === 'ar'
-                  ? 'التحكم في إخفاء الشريط العلوي عند التمرير'
-                  : language === 'fr'
-                  ? 'Masquage automatique de la barre lors du défilement'
-                  : 'Control top bar scroll auto-hide behavior'}
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
+                    {language === 'ar' ? 'سلوك الشريط' : language === 'fr' ? 'Barre Supérieure' : 'Navigation Bar'}
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal bg-[#d4522f]/10 text-[#d4522f]">
+                    {language === 'ar' ? 'تخطيط' : language === 'fr' ? 'Interface' : 'Layout'}
+                  </span>
+                </div>
+                <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
+                  {language === 'ar'
+                    ? 'التحكم في إخفاء الشريط العلوي عند التمرير'
+                    : language === 'fr'
+                    ? 'Masquage automatique de la barre lors du défilement'
+                    : 'Control top bar scroll auto-hide behavior'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Auto-Hide Switch */}
+          <div className="sq-elev-card">
+            <div data-sq="card" className="flex items-center justify-between p-3.5 bg-white dark:bg-neutral-800">
+              <div className="flex items-center gap-3">
+                <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
+                  <ChevronUp size={16} />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-black dark:text-white">
+                    {language === 'ar' ? 'إخفاء تلقائي' : language === 'fr' ? 'Masquage Auto' : 'Auto-Hide'}
+                  </div>
+                  <div className="text-[10px] text-black/55 dark:text-white/55">
+                    {isTopBarAutoHide
+                      ? (language === 'ar' ? 'يختفي عند التمرير للأسفل' : language === 'fr' ? 'Masqué au défilement' : 'Hides on scroll down')
+                      : (language === 'ar' ? 'ثابت ودائم الظهور' : language === 'fr' ? 'Toujours visible' : 'Always visible')}
+                  </div>
+                </div>
+              </div>
+              <Toggle
+                aria-label="Toggle Top Bar Auto-hide"
+                checked={isTopBarAutoHide}
+                onCheckedChange={() => {
+                  toggleTopBarAutoHide();
+                  showToast({
+                    type: 'info',
+                    title: isTopBarAutoHide ? (language === 'ar' ? 'الشريط ثابت' : language === 'fr' ? 'Barre fixée' : 'Bar Pinned') : (language === 'ar' ? 'إخفاء تلقائي' : language === 'fr' ? 'Auto-Hide Activé' : 'Auto-Hide On'),
+                    message: isTopBarAutoHide
+                      ? (language === 'ar' ? 'الشريط العلوي يبقى ظاهراً.' : language === 'fr' ? 'La barre reste visible.' : 'Top bar stays visible.')
+                      : (language === 'ar' ? 'سيختفي الشريط عند التمرير.' : language === 'fr' ? 'La barre s\'efface au défilement.' : 'Top bar hides on scroll.'),
+                  });
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Feature summary pills */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
+            <div data-sq="card" className="p-3 bg-white/70 dark:bg-neutral-800/70">
+              <div className="font-bold text-black dark:text-white flex items-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-[#d4522f]" />
+                <span>{language === 'ar' ? 'شريط جانبي' : language === 'fr' ? 'Menu Latéral' : 'Sidebar Rail'}</span>
+              </div>
+              <p className="text-[11px] text-black/60 dark:text-white/60">
+                {language === 'ar' ? 'توسيع سلس دون إزاحة المحتوى' : language === 'fr' ? 'Ouverture fluide sans décalage' : 'Smooth overlay without pushing layout.'}
               </p>
             </div>
-          </div>
-        </div>
 
-        {/* Auto-Hide Switch */}
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
-              <ChevronUp size={16} />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-black dark:text-white">
-                {language === 'ar' ? 'إخفاء تلقائي' : language === 'fr' ? 'Masquage Auto' : 'Auto-Hide'}
+            <div data-sq="card" className="p-3 bg-white/70 dark:bg-neutral-800/70">
+              <div className="font-bold text-black dark:text-white flex items-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span>{language === 'ar' ? 'أداء فوري' : language === 'fr' ? 'Zéro Latence' : 'Fast Render'}</span>
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55">
-                {isTopBarAutoHide
-                  ? (language === 'ar' ? 'يختفي عند التمرير للأسفل' : language === 'fr' ? 'Masqué au défilement' : 'Hides on scroll down')
-                  : (language === 'ar' ? 'ثابت ودائم الظهور' : language === 'fr' ? 'Toujours visible' : 'Always visible')}
+              <p className="text-[11px] text-black/60 dark:text-white/60">
+                {language === 'ar' ? 'استجابة سريعة بدون ثقل' : language === 'fr' ? 'Animations fluides accélérées' : 'Hardware-accelerated smooth motion.'}
+              </p>
+            </div>
+
+            <div data-sq="card" className="p-3 bg-white/70 dark:bg-neutral-800/70">
+              <div className="font-bold text-black dark:text-white flex items-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span>{language === 'ar' ? 'خط واضح' : language === 'fr' ? 'Typographie' : 'Typography'}</span>
               </div>
+              <p className="text-[11px] text-black/60 dark:text-white/60">
+                {language === 'ar' ? 'عناوين عالية الوضوح' : language === 'fr' ? 'Titres haute lisibilité' : 'High-contrast display headers.'}
+              </p>
             </div>
-          </div>
-          <Toggle
-            aria-label="Toggle Top Bar Auto-hide"
-            checked={isTopBarAutoHide}
-            onCheckedChange={() => {
-              toggleTopBarAutoHide();
-              showToast({
-                type: 'info',
-                title: isTopBarAutoHide ? (language === 'ar' ? 'الشريط ثابت' : language === 'fr' ? 'Barre fixée' : 'Bar Pinned') : (language === 'ar' ? 'إخفاء تلقائي' : language === 'fr' ? 'Auto-Hide Activé' : 'Auto-Hide On'),
-                message: isTopBarAutoHide
-                  ? (language === 'ar' ? 'الشريط العلوي يبقى ظاهراً.' : language === 'fr' ? 'La barre reste visible.' : 'Top bar stays visible.')
-                  : (language === 'ar' ? 'سيختفي الشريط عند التمرير.' : language === 'fr' ? 'La barre s\'efface au défilement.' : 'Top bar hides on scroll.'),
-              });
-            }}
-          />
-        </div>
-
-        {/* Feature summary pills */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
-          <div className="p-3 rounded-xl bg-white/70 dark:bg-neutral-800/70 border border-neutral-200/80 dark:border-neutral-700/80">
-            <div className="font-bold text-black dark:text-white flex items-center gap-1.5 mb-1">
-              <span className="w-2 h-2 rounded-full bg-[#d4522f]" />
-              <span>{language === 'ar' ? 'شريط جانبي' : language === 'fr' ? 'Menu Latéral' : 'Sidebar Rail'}</span>
-            </div>
-            <p className="text-[11px] text-black/60 dark:text-white/60">
-              {language === 'ar' ? 'توسيع سلس دون إزاحة المحتوى' : language === 'fr' ? 'Ouverture fluide sans décalage' : 'Smooth overlay without pushing layout.'}
-            </p>
-          </div>
-
-          <div className="p-3 rounded-xl bg-white/70 dark:bg-neutral-800/70 border border-neutral-200/80 dark:border-neutral-700/80">
-            <div className="font-bold text-black dark:text-white flex items-center gap-1.5 mb-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>{language === 'ar' ? 'أداء فوري' : language === 'fr' ? 'Zéro Latence' : 'Fast Render'}</span>
-            </div>
-            <p className="text-[11px] text-black/60 dark:text-white/60">
-              {language === 'ar' ? 'استجابة سريعة بدون ثقل' : language === 'fr' ? 'Animations fluides accélérées' : 'Hardware-accelerated smooth motion.'}
-            </p>
-          </div>
-
-          <div className="p-3 rounded-xl bg-white/70 dark:bg-neutral-800/70 border border-neutral-200/80 dark:border-neutral-700/80">
-            <div className="font-bold text-black dark:text-white flex items-center gap-1.5 mb-1">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              <span>{language === 'ar' ? 'خط واضح' : language === 'fr' ? 'Typographie' : 'Typography'}</span>
-            </div>
-            <p className="text-[11px] text-black/60 dark:text-white/60">
-              {language === 'ar' ? 'عناوين عالية الوضوح' : language === 'fr' ? 'Titres haute lisibilité' : 'High-contrast display headers.'}
-            </p>
           </div>
         </div>
       </div>
 
       {/* Row 2: License Status Banner */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/55 dark:text-white/55">
-                {t('settings_license_entitlement', language)}
-              </span>
-              <span
-                className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                  subscription.isLifetime
-                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
-                    : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
-                }`}
-              >
-                {subscription.isLifetime ? t('settings_lifetime_badge', language) : t('settings_trial_badge', language)}
-              </span>
-            </div>
-            <h2 className="text-2xl font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-              {subscription.plan.name}
-            </h2>
-            <p className="text-xs text-black/65 dark:text-white/65">
-              {subscription.isLifetime
-                ? (language === 'ar'
-                  ? `تم التفعيل (${subscription.activatedByVoucher || 'LIFETIME'}).`
-                  : language === 'fr'
-                  ? `Activé (${subscription.activatedByVoucher || 'LIFETIME'}).`
-                  : `Activated (${subscription.activatedByVoucher || 'LIFETIME'}).`)
-                : (language === 'ar'
-                  ? 'خطة تقييم مجانية.'
-                  : language === 'fr'
-                  ? 'Version d\'évaluation gratuite.'
-                  : 'Free evaluation tier.')}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => openDesktopUpgradeModal('general')}
-              className="h-10 px-4 text-xs font-bold text-black/85 dark:text-white/90 border border-neutral-300 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
-            >
-              <Download size={14} className="text-[#d4522f]" />
-              <span>{t('settings_get_desktop', language)}</span>
-            </button>
-
-            <AtriumButton
-              onClick={onOpenVoucherModal}
-              icon={<KeyRound size={15} />}
-              size="md"
-            >
-              {t('settings_redeem_voucher', language)}
-            </AtriumButton>
-          </div>
-        </div>
-
-        {/* Free Web Edition Banner Notice */}
-        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#FDF4F0] via-[#FAF0EA] to-white dark:from-[#26211E] dark:to-[#18181B] border border-[#F5E2D8] dark:border-[#3E3832] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2.5">
-            <Laptop size={18} className="text-[#d4522f] shrink-0" />
-            <div>
-              <span className="font-extrabold text-black dark:text-white">
-                {t('settings_current_plan', language)}: {t('settings_web_limit', language)}
-              </span>
-              <p className="text-black/65 dark:text-white/65 text-[11px] mt-0.5">
-                {t('settings_web_limit_desc', language)}
-              </p>
-            </div>
-          </div>
-          <AtriumButton
-            type="button"
-            variant="primary"
-            size="xs"
-            onClick={() => openDesktopUpgradeModal('general')}
-            className="shrink-0 self-start sm:self-auto"
-          >
-            {language === 'ar' ? 'الترقية' : language === 'fr' ? 'Version Desktop' : 'Get Desktop'}
-          </AtriumButton>
-        </div>
-
-        {/* Quota gauges */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-            <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
-              {language === 'ar' ? 'المنشآت' : language === 'fr' ? 'Établissements' : 'Businesses'}
-            </span>
-            <span className="text-2xl font-black text-black dark:text-white tabular-nums mt-1 block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              {businesses.length} / {subscription.plan.maxBusinesses}
-            </span>
-          </div>
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-            <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
-              {language === 'ar' ? 'الفروع' : language === 'fr' ? 'Succursales' : 'Branches'}
-            </span>
-            <span className="text-2xl font-black text-black dark:text-white tabular-nums mt-1 block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              {branches.length} / {subscription.plan.maxBranches}
-            </span>
-          </div>
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-            <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
-              {language === 'ar' ? 'نقاط البيع' : language === 'fr' ? 'Caisses' : 'Terminals'}
-            </span>
-            <span className="text-2xl font-black text-black dark:text-white tabular-nums mt-1 block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              {devices.length} / {subscription.plan.maxDevices}
-            </span>
-          </div>
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs">
-            <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
-              {language === 'ar' ? 'التقارير' : language === 'fr' ? 'Rapports' : 'Reports'}
-            </span>
-            <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-2 block">
-              {subscription.plan.crossBranchReports
-                ? (language === 'ar' ? 'مفعل' : language === 'fr' ? 'Activé' : 'Enabled')
-                : (language === 'ar' ? 'برو فقط' : language === 'fr' ? 'Offre Pro' : 'Pro Only')}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Row 1.5: Cloud Sync */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div
-              className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
-                supabaseStatus === 'connected'
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
-                  : supabaseStatus === 'connecting'
-                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
-                  : supabaseStatus === 'offline'
-                  ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
-                  : 'bg-neutral-200 dark:bg-neutral-700 text-black/75 dark:text-white/80'
-              }`}
-            >
-              <Database size={20} />
-            </div>
-            <div>
+      <div className="sq-elev-card">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4 relative overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1 pt-1">
+            <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
-                  {t('settings_supabase_title', language)}
-                </h3>
+                <span className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/55 dark:text-white/55">
+                  {t('settings_license_entitlement', language)}
+                </span>
                 <span
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal ${
-                    supabaseStatus === 'connected'
-                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
-                      : supabaseStatus === 'connecting'
-                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
-                      : supabaseStatus === 'offline'
-                      ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
-                      : 'bg-neutral-200 text-black/80 dark:bg-neutral-700 dark:text-white/80'
+                  className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                    subscription.isLifetime
+                      ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
+                      : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
                   }`}
                 >
-                  {supabaseStatus === 'connected'
-                    ? (language === 'ar' ? 'متصل' : language === 'fr' ? 'Connecté' : 'Connected')
-                    : supabaseStatus === 'connecting'
-                    ? (language === 'ar' ? 'مزامنة' : language === 'fr' ? 'Sync...' : 'Syncing')
-                    : supabaseStatus === 'offline'
-                    ? (language === 'ar' ? 'محلي' : language === 'fr' ? 'Hors-ligne' : 'Offline')
-                    : (language === 'ar' ? 'هجين' : language === 'fr' ? 'Local' : 'Local')}
+                  {subscription.isLifetime ? t('settings_lifetime_badge', language) : t('settings_trial_badge', language)}
                 </span>
               </div>
-              <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
-                {t('settings_supabase_subtitle', language)}
+              <h2 className="text-2xl font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                {subscription.plan.name}
+              </h2>
+              <p className="text-xs text-black/65 dark:text-white/65">
+                {subscription.isLifetime
+                  ? (language === 'ar'
+                    ? `تم التفعيل (${subscription.activatedByVoucher || 'LIFETIME'}).`
+                    : language === 'fr'
+                    ? `Activé (${subscription.activatedByVoucher || 'LIFETIME'}).`
+                    : `Activated (${subscription.activatedByVoucher || 'LIFETIME'}).`)
+                  : (language === 'ar'
+                    ? 'خطة تقييم مجانية.'
+                    : language === 'fr'
+                    ? 'Version d\'évaluation gratuite.'
+                    : 'Free evaluation tier.')}
               </p>
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setIsAuditLogOpen(true)}
-              className="h-9 px-3.5 text-xs font-semibold rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs whitespace-nowrap shrink-0"
-            >
-              <History size={13} className="text-[#d4522f]" />
-              <span>
-                {language === 'ar' ? 'سجل التدقيق' : language === 'fr' ? 'Journal d’audit' : 'Audit Log'}
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => syncWithSupabase()}
-              disabled={isSyncing}
-              className="h-9 px-4 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60 whitespace-nowrap shrink-0"
-            >
-              <RotateCw size={13} className={isSyncing ? 'animate-spin text-[#d4522f]' : ''} />
-              <span>
-                {isSyncing
-                  ? (language === 'ar' ? 'جاري المزامنة...' : language === 'fr' ? 'Synchronisation...' : 'Syncing...')
-                  : (language === 'ar' ? 'مزامنة الآن' : language === 'fr' ? 'Synchroniser' : 'Sync Now')}
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Cloud Diagnostics */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
-            <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">
-              {language === 'ar' ? 'قاعدة البيانات' : language === 'fr' ? 'Structure' : 'Database'}
-            </span>
-            <span className="text-sm font-bold text-black dark:text-white mt-1 block">
-              {language === 'ar' ? 'مفعل وآمن' : language === 'fr' ? 'Actif & Sécurisé' : 'Active & Isolated'}
-            </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
-              {language === 'ar' ? 'عزل بيانات تام' : language === 'fr' ? 'Isolation complète' : 'Tenant isolation'}
-            </span>
-          </div>
-
-          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
-            <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">
-              {language === 'ar' ? 'التحديث المباشر' : language === 'fr' ? 'Temps Réel' : 'Live Updates'}
-            </span>
-            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-1 block">
-              {language === 'ar' ? 'متصل' : language === 'fr' ? 'Actif' : 'Active'}
-            </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
-              {language === 'ar' ? 'مزامنة فورية' : language === 'fr' ? 'Entrées & ventes' : 'Check-ins & sales'}
-            </span>
-          </div>
-
-          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
-            <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">
-              {language === 'ar' ? 'آخر مزامنة' : language === 'fr' ? 'Dernière Sync' : 'Last Sync'}
-            </span>
-            <span className="text-sm font-bold text-black dark:text-white mt-1 block tabular-nums">
-              {lastSyncedAt ? new Date(lastSyncedAt).toLocaleTimeString() : (language === 'ar' ? 'جاهز' : language === 'fr' ? 'Prêt' : 'Ready')}
-            </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
-              {isSupabaseConfigured
-                ? (language === 'ar' ? 'سحابة نشطة' : language === 'fr' ? 'Cloud actif' : 'Cloud active')
-                : (language === 'ar' ? 'تخزين محلي' : language === 'fr' ? 'Stockage local' : 'Local storage')}
-            </span>
-          </div>
-        </div>
-
-        {syncErrorMessage && (
-          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
-            <AlertTriangle size={15} className="shrink-0" />
-            <span>{syncErrorMessage}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Row 1.8: Backup & Restore */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420] text-[#d4522f] flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-[#4A3B33]">
-              <HardDrive size={20} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
-                  {language === 'ar' ? 'النسخ الاحتياطي' : language === 'fr' ? 'Sauvegarde' : 'Data Backup'}
-                </h3>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
-                  {language === 'ar' ? 'جاهز' : language === 'fr' ? 'Prêt' : 'Ready'}
-                </span>
+            <div className="flex items-center gap-2.5 shrink-0">
+              <div className="sq-elev-card">
+                <button
+                  type="button"
+                  data-sq="ctl"
+                  onClick={() => openDesktopUpgradeModal('general')}
+                  className="h-10 px-4 text-xs font-bold text-black/85 dark:text-white/90 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <Download size={14} className="text-[#d4522f]" />
+                  <span>{t('settings_get_desktop', language)}</span>
+                </button>
               </div>
-              <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
-                {language === 'ar'
-                  ? 'قم بتنزيل نسخة احتياطية كاملة ومحمولة بصيغة JSON لمساحة عملك، أو استعد بياناتك السابقة على أي جهاز.'
-                  : language === 'fr'
-                  ? 'Téléchargez une sauvegarde JSON 100% portable de votre espace ou restaurez vos données sur tout appareil.'
-                  : 'Download a 100% portable JSON snapshot of your entire workspace or restore past records onto any device.'}
-              </p>
+
+              <AtriumButton
+                onClick={onOpenVoucherModal}
+                icon={<KeyRound size={15} />}
+                size="md"
+              >
+                {t('settings_redeem_voucher', language)}
+              </AtriumButton>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <LiquidButton
-              kind="export"
-              size="sm"
-              labels={{
-                idle: language === 'ar' ? 'تصدير JSON كامل' : language === 'fr' ? 'Exporter JSON' : 'Export JSON',
-                busy: language === 'ar' ? 'جاري التصدير' : language === 'fr' ? 'Exportation...' : 'Exporting...',
-                done: language === 'ar' ? 'تم التصدير' : language === 'fr' ? 'Exporté' : 'Exported',
-              }}
-              onPress={async () => {
-                await Promise.resolve(handleExportDataBackup());
-              }}
-            />
-
-            <LiquidButton
-              kind="import"
-              size="sm"
-              tone="ink"
-              labels={{
-                idle: t('settings_restore_backup', language),
-                busy: language === 'ar' ? 'استعادة...' : 'Restauration...',
-                done: language === 'ar' ? 'تمت الاستعادة' : 'Restauré',
-              }}
-              onPress={() => {
-                fileInputRef.current?.click();
-              }}
-            />
-
-          </div>
-        </div>
-
-        {/* Live Storage Breakdown */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
-          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
-            <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
-              {language === 'ar' ? 'المنشآت' : language === 'fr' ? 'Entités' : 'Tenants'}
-            </span>
-            <span className="text-base font-extrabold text-black dark:text-white mt-0.5 block tabular-nums">
-              {businesses.length} {language === 'ar' ? 'منشأة' : language === 'fr' ? 'Entreprise(s)' : `Business${businesses.length !== 1 ? 'es' : ''}`}
-            </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5 tabular-nums">
-              {branches.length} {language === 'ar' ? 'فروع' : language === 'fr' ? 'Succursales' : 'Branches'}
-            </span>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
-            <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
-              {language === 'ar' ? 'عملاء CRM' : language === 'fr' ? 'Clients CRM' : 'CRM Clients'}
-            </span>
-            <span className="text-base font-extrabold text-[#d4522f] mt-0.5 block tabular-nums">
-              {members.length + (freelanceClients?.length || 0)} {language === 'ar' ? 'جهة اتصال' : language === 'fr' ? 'Contacts' : 'Contacts'}
-            </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
-              {language === 'ar' ? 'ملفات الحسابات النشطة' : language === 'fr' ? 'Profils comptables actifs' : 'Active ledger profiles'}
-            </span>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
-            <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
-              {language === 'ar' ? 'المخزون والمنتجات' : language === 'fr' ? 'Inventaire' : 'Inventory'}
-            </span>
-            <span className="text-base font-extrabold text-black dark:text-white mt-0.5 block tabular-nums">
-              {products.length} {language === 'ar' ? 'عنصر' : language === 'fr' ? 'Articles' : 'Items'}
-            </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
-              {language === 'ar' ? 'البضائع والباقات' : language === 'fr' ? 'Articles & forfaits' : 'SKUs & packages'}
-            </span>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60">
-            <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
-              {language === 'ar' ? 'المعاملات' : language === 'fr' ? 'Transactions' : 'Transactions'}
-            </span>
-            <span className="text-base font-extrabold text-black dark:text-white mt-0.5 block tabular-nums">
-              {sales.length + (freelanceInvoices?.length || 0)} {language === 'ar' ? 'سجل' : language === 'fr' ? 'Enregistrements' : 'Records'}
-            </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
-              {language === 'ar' ? 'الطلبات والفواتير' : language === 'fr' ? 'Commandes & factures' : 'Orders & invoices'}
-            </span>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 col-span-2 sm:col-span-1">
-            <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
-              {language === 'ar' ? 'محرك التخزين' : language === 'fr' ? 'Moteur stockage' : 'Storage Engine'}
-            </span>
-            <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
-              {language === 'ar' ? 'مشفر محلياً' : language === 'fr' ? 'Chiffré' : 'Encrypted'}
-            </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">LocalStorage v2</span>
-          </div>
-        </div>
-
-        {exportedStatus && (
-          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
-            <CheckCircle2 size={15} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span>{exportedStatus}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Row 2: Branches Management */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
-              {t('settings_branches_title', language)}
-            </h3>
-            <p className="text-xs text-black/60 dark:text-white/60 tabular-nums">
-              {language === 'ar'
-                ? `جميع المواقع الفعلية المسجلة للمنشأة (${branches.length} مسجل · ${subscription.plan.maxBranches} مسموح في باقة ${subscription.plan.name})`
-                : language === 'fr'
-                ? `Tous les établissements physiques de l'entreprise (${branches.length} enregistrés · ${subscription.plan.maxBranches} autorisés avec ${subscription.plan.name})`
-                : `All physical locations under tenant business (${branches.length} registered · ${subscription.plan.maxBranches} permitted on ${subscription.plan.name})`}
-            </p>
-          </div>
-          <AtriumButton
-            onClick={handleOpenAddBranch}
-            icon={<Plus size={14} />}
-            size="sm"
-          >
-            {t('settings_add_branch', language)}
-          </AtriumButton>
-        </div>
-
-        {/* Multi-Branch Desktop Alert when at capacity */}
-        {branches.length >= subscription.plan.maxBranches && (
-          <div className="p-3.5 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420]/70 border border-[#F5E2D8] dark:border-[#4A3B33] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          {/* Free Web Edition Banner Notice */}
+          <div data-sq="card" className="p-3.5 bg-gradient-to-r from-[#FDF4F0] via-[#FAF0EA] to-white dark:from-[#26211E] dark:to-[#18181B] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
-              <Building2 size={18} className="text-[#d4522f] shrink-0" />
+              <Laptop size={18} className="text-[#d4522f] shrink-0" />
               <div>
                 <span className="font-extrabold text-black dark:text-white">
-                  {language === 'ar' ? 'إدارة الفروع المتعددة ميزة حصرية في Atrium Desktop' : language === 'fr' ? 'La gestion multi-sites est une exclusivité Atrium Desktop' : 'Multi-Facility Management is an Atrium Desktop Feature'}
+                  {t('settings_current_plan', language)}: {t('settings_web_limit', language)}
                 </span>
-                <p className="text-black/70 dark:text-white/75 text-[11px] mt-0.5">
-                  {language === 'ar'
-                    ? 'إدارة فروع فعلية متعددة، واشتراكات مشتركة وتقارير موحدة للمخزون عبر تطبيق Atrium المكتبي.'
-                    : language === 'fr'
-                    ? 'Gérez plusieurs succursales physiques, des abonnements multi-sites et des rapports unifiés avec Atrium Desktop.'
-                    : 'Manage multiple physical branches, cross-branch memberships, and unified inventory reporting with Atrium Desktop.'}
+                <p className="text-black/65 dark:text-white/65 text-[11px] mt-0.5">
+                  {t('settings_web_limit_desc', language)}
                 </p>
               </div>
             </div>
@@ -1175,134 +897,515 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               type="button"
               variant="primary"
               size="xs"
-              onClick={() => openDesktopUpgradeModal('branch_limit')}
+              onClick={() => openDesktopUpgradeModal('general')}
               className="shrink-0 self-start sm:self-auto"
             >
-              {language === 'ar' ? 'تحميل Atrium للكمبيوتر (Windows / Mac)' : language === 'fr' ? 'Télécharger Atrium Desktop (Windows / Mac)' : 'Download Atrium Desktop (Windows / Mac)'}
+              {language === 'ar' ? 'الترقية' : language === 'fr' ? 'Version Desktop' : 'Get Desktop'}
             </AtriumButton>
           </div>
-        )}
 
-        <div className="space-y-2">
-          {branches.map((b) => (
-            <div key={b.id} className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs hover:border-[#D5DFE3] transition-all">
+          {/* Quota gauges */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+            <div className="sq-elev-card">
+              <div data-sq="card" className="p-4 bg-white dark:bg-neutral-800 h-full">
+                <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
+                  {language === 'ar' ? 'المنشآت' : language === 'fr' ? 'Établissements' : 'Businesses'}
+                </span>
+                <span className="text-2xl font-black text-black dark:text-white tabular-nums mt-1 block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  {businesses.length} / {subscription.plan.maxBusinesses}
+                </span>
+              </div>
+            </div>
+            <div className="sq-elev-card">
+              <div data-sq="card" className="p-4 bg-white dark:bg-neutral-800 h-full">
+                <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
+                  {language === 'ar' ? 'الفروع' : language === 'fr' ? 'Succursales' : 'Branches'}
+                </span>
+                <span className="text-2xl font-black text-black dark:text-white tabular-nums mt-1 block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  {branches.length} / {subscription.plan.maxBranches}
+                </span>
+              </div>
+            </div>
+            <div className="sq-elev-card">
+              <div data-sq="card" className="p-4 bg-white dark:bg-neutral-800 h-full">
+                <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
+                  {language === 'ar' ? 'نقاط البيع' : language === 'fr' ? 'Caisses' : 'Terminals'}
+                </span>
+                <span className="text-2xl font-black text-black dark:text-white tabular-nums mt-1 block font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  {devices.length} / {subscription.plan.maxDevices}
+                </span>
+              </div>
+            </div>
+            <div className="sq-elev-card">
+              <div data-sq="card" className="p-4 bg-white dark:bg-neutral-800 h-full">
+                <span className="text-xs font-semibold text-black/60 dark:text-white/60 block text-[11px]">
+                  {language === 'ar' ? 'التقارير' : language === 'fr' ? 'Rapports' : 'Reports'}
+                </span>
+                <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-2 block">
+                  {subscription.plan.crossBranchReports
+                    ? (language === 'ar' ? 'مفعل' : language === 'fr' ? 'Activé' : 'Enabled')
+                    : (language === 'ar' ? 'برو فقط' : language === 'fr' ? 'Offre Pro' : 'Pro Only')}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 1.5: Cloud Sync */}
+      <div className="sq-elev-card">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1 pt-1">
+            <div className="flex items-center gap-3">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className={`w-10 h-10 flex items-center justify-center shrink-0 ${
+                  supabaseStatus === 'connected'
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                    : supabaseStatus === 'connecting'
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                    : supabaseStatus === 'offline'
+                    ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
+                    : 'bg-neutral-200 dark:bg-neutral-700 text-black/75 dark:text-white/80'
+                }`}
+              >
+                <Database size={20} />
+              </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-black dark:text-white">
-                    {b.name}
+                  <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
+                    {t('settings_supabase_title', language)}
+                  </h3>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal ${
+                      supabaseStatus === 'connected'
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                        : supabaseStatus === 'connecting'
+                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                        : supabaseStatus === 'offline'
+                        ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
+                        : 'bg-neutral-200 text-black/80 dark:bg-neutral-700 dark:text-white/80'
+                    }`}
+                  >
+                    {supabaseStatus === 'connected'
+                      ? (language === 'ar' ? 'متصل' : language === 'fr' ? 'Connecté' : 'Connected')
+                      : supabaseStatus === 'connecting'
+                      ? (language === 'ar' ? 'مزامنة' : language === 'fr' ? 'Sync...' : 'Syncing')
+                      : supabaseStatus === 'offline'
+                      ? (language === 'ar' ? 'محلي' : language === 'fr' ? 'Hors-ligne' : 'Offline')
+                      : (language === 'ar' ? 'هجين' : language === 'fr' ? 'Local' : 'Local')}
                   </span>
-                  <span className="font-mono text-[10px] bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full text-black/65 dark:text-white/70 font-bold">
-                    {b.code}
-                  </span>
-                  {b.isMainBranch && (
-                    <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
-                      {language === 'ar' ? 'المقر الرئيسي' : language === 'fr' ? 'Siège principal' : 'Headquarters'}
-                    </span>
-                  )}
                 </div>
-                <div className="text-xs text-black/65 dark:text-white/65 mt-0.5">
-                  {b.address || (language === 'ar' ? 'العنوان غير محدد' : language === 'fr' ? 'Adresse non renseignée' : 'Address not configured')} · {b.phone || (language === 'ar' ? 'بدون هاتف' : language === 'fr' ? 'Sans téléphone' : 'No phone')}
-                </div>
+                <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
+                  {t('settings_supabase_subtitle', language)}
+                </p>
               </div>
+            </div>
 
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                {language === 'ar' ? 'متصل' : language === 'fr' ? 'En ligne' : 'Online'}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="sq-elev-card">
+                <button
+                  type="button"
+                  data-sq="ctl-sm"
+                  onClick={() => setIsAuditLogOpen(true)}
+                  className="h-9 px-3.5 text-xs font-semibold bg-white dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+                >
+                  <History size={13} className="text-[#d4522f]" />
+                  <span>
+                    {language === 'ar' ? 'سجل التدقيق' : language === 'fr' ? 'Journal d’audit' : 'Audit Log'}
+                  </span>
+                </button>
+              </div>
+              <div className="sq-elev-card">
+                <button
+                  type="button"
+                  data-sq="ctl-sm"
+                  onClick={() => syncWithSupabase()}
+                  disabled={isSyncing}
+                  className="h-9 px-4 text-xs font-bold bg-white dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-60 whitespace-nowrap shrink-0"
+                >
+                  <RotateCw size={13} className={isSyncing ? 'animate-spin text-[#d4522f]' : ''} />
+                  <span>
+                    {isSyncing
+                      ? (language === 'ar' ? 'جاري المزامنة...' : language === 'fr' ? 'Synchronisation...' : 'Syncing...')
+                      : (language === 'ar' ? 'مزامنة الآن' : language === 'fr' ? 'Synchroniser' : 'Sync Now')}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Cloud Diagnostics */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+            <div data-sq="card" className="p-3.5 bg-white dark:bg-neutral-800">
+              <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">
+                {language === 'ar' ? 'قاعدة البيانات' : language === 'fr' ? 'Structure' : 'Database'}
+              </span>
+              <span className="text-sm font-bold text-black dark:text-white mt-1 block">
+                {language === 'ar' ? 'مفعل وآمن' : language === 'fr' ? 'Actif & Sécurisé' : 'Active & Isolated'}
+              </span>
+              <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
+                {language === 'ar' ? 'عزل بيانات تام' : language === 'fr' ? 'Isolation complète' : 'Tenant isolation'}
               </span>
             </div>
-          ))}
+
+            <div data-sq="card" className="p-3.5 bg-white dark:bg-neutral-800">
+              <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">
+                {language === 'ar' ? 'التحديث المباشر' : language === 'fr' ? 'Temps Réel' : 'Live Updates'}
+              </span>
+              <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-1 block">
+                {language === 'ar' ? 'متصل' : language === 'fr' ? 'Actif' : 'Active'}
+              </span>
+              <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
+                {language === 'ar' ? 'مزامنة فورية' : language === 'fr' ? 'Entrées & ventes' : 'Check-ins & sales'}
+              </span>
+            </div>
+
+            <div data-sq="card" className="p-3.5 bg-white dark:bg-neutral-800">
+              <span className="text-[11px] font-semibold text-black/55 dark:text-white/55 block">
+                {language === 'ar' ? 'آخر مزامنة' : language === 'fr' ? 'Dernière Sync' : 'Last Sync'}
+              </span>
+              <span className="text-sm font-bold text-black dark:text-white mt-1 block tabular-nums">
+                {lastSyncedAt ? new Date(lastSyncedAt).toLocaleTimeString() : (language === 'ar' ? 'جاهز' : language === 'fr' ? 'Prêt' : 'Ready')}
+              </span>
+              <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
+                {isSupabaseConfigured
+                  ? (language === 'ar' ? 'سحابة نشطة' : language === 'fr' ? 'Cloud actif' : 'Cloud active')
+                  : (language === 'ar' ? 'تخزين محلي' : language === 'fr' ? 'Stockage local' : 'Local storage')}
+              </span>
+            </div>
+          </div>
+
+          {syncErrorMessage && (
+            <div
+              data-sq="card"
+              style={{ '--sq-stroke': 'rgba(244,63,94,0.4)' } as React.CSSProperties}
+              className="p-3 bg-rose-50 dark:bg-rose-950/40 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2"
+            >
+              <AlertTriangle size={15} className="shrink-0" />
+              <span>{syncErrorMessage}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Row 1.8: Backup & Restore */}
+      <div className="sq-elev-card">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1 pt-1">
+            <div className="flex items-center gap-3">
+              <div data-sq="tile" className="w-10 h-10 bg-[#FDF4F0] dark:bg-[#2A2420] text-[#d4522f] flex items-center justify-center shrink-0">
+                <HardDrive size={20} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
+                    {language === 'ar' ? 'النسخ الاحتياطي' : language === 'fr' ? 'Sauvegarde' : 'Data Backup'}
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+                    {language === 'ar' ? 'جاهز' : language === 'fr' ? 'Prêt' : 'Ready'}
+                  </span>
+                </div>
+                <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
+                  {language === 'ar'
+                    ? 'قم بتنزيل نسخة احتياطية كاملة ومحمولة بصيغة JSON لمساحة عملك، أو استعد بياناتك السابقة على أي جهاز.'
+                    : language === 'fr'
+                    ? 'Téléchargez une sauvegarde JSON 100% portable de votre espace ou restaurez vos données sur tout appareil.'
+                    : 'Download a 100% portable JSON snapshot of your entire workspace or restore past records onto any device.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <LiquidButton
+                kind="export"
+                size="sm"
+                labels={{
+                  idle: language === 'ar' ? 'تصدير JSON كامل' : language === 'fr' ? 'Exporter JSON' : 'Export JSON',
+                  busy: language === 'ar' ? 'جاري التصدير' : language === 'fr' ? 'Exportation...' : 'Exporting...',
+                  done: language === 'ar' ? 'تم التصدير' : language === 'fr' ? 'Exporté' : 'Exported',
+                }}
+                onPress={async () => {
+                  await Promise.resolve(handleExportDataBackup());
+                }}
+              />
+
+              <LiquidButton
+                kind="import"
+                size="sm"
+                tone="ink"
+                labels={{
+                  idle: t('settings_restore_backup', language),
+                  busy: language === 'ar' ? 'استعادة...' : 'Restauration...',
+                  done: language === 'ar' ? 'تمت الاستعادة' : 'Restauré',
+                }}
+                onPress={() => {
+                  fileInputRef.current?.click();
+                }}
+              />
+
+            </div>
+          </div>
+
+          {/* Live Storage Breakdown */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
+            <div data-sq="card" className="p-3 bg-white dark:bg-neutral-800">
+              <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
+                {language === 'ar' ? 'المنشآت' : language === 'fr' ? 'Entités' : 'Tenants'}
+              </span>
+              <span className="text-base font-extrabold text-black dark:text-white mt-0.5 block tabular-nums">
+                {businesses.length} {language === 'ar' ? 'منشأة' : language === 'fr' ? 'Entreprise(s)' : `Business${businesses.length !== 1 ? 'es' : ''}`}
+              </span>
+              <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5 tabular-nums">
+                {branches.length} {language === 'ar' ? 'فروع' : language === 'fr' ? 'Succursales' : 'Branches'}
+              </span>
+            </div>
+
+            <div data-sq="card" className="p-3 bg-white dark:bg-neutral-800">
+              <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
+                {language === 'ar' ? 'عملاء CRM' : language === 'fr' ? 'Clients CRM' : 'CRM Clients'}
+              </span>
+              <span className="text-base font-extrabold text-[#d4522f] mt-0.5 block tabular-nums">
+                {members.length + (freelanceClients?.length || 0)} {language === 'ar' ? 'جهة اتصال' : language === 'fr' ? 'Contacts' : 'Contacts'}
+              </span>
+              <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
+                {language === 'ar' ? 'ملفات الحسابات النشطة' : language === 'fr' ? 'Profils comptables actifs' : 'Active ledger profiles'}
+              </span>
+            </div>
+
+            <div data-sq="card" className="p-3 bg-white dark:bg-neutral-800">
+              <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
+                {language === 'ar' ? 'المخزون والمنتجات' : language === 'fr' ? 'Inventaire' : 'Inventory'}
+              </span>
+              <span className="text-base font-extrabold text-black dark:text-white mt-0.5 block tabular-nums">
+                {products.length} {language === 'ar' ? 'عنصر' : language === 'fr' ? 'Articles' : 'Items'}
+              </span>
+              <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
+                {language === 'ar' ? 'البضائع والباقات' : language === 'fr' ? 'Articles & forfaits' : 'SKUs & packages'}
+              </span>
+            </div>
+
+            <div data-sq="card" className="p-3 bg-white dark:bg-neutral-800">
+              <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
+                {language === 'ar' ? 'المعاملات' : language === 'fr' ? 'Transactions' : 'Transactions'}
+              </span>
+              <span className="text-base font-extrabold text-black dark:text-white mt-0.5 block tabular-nums">
+                {sales.length + (freelanceInvoices?.length || 0)} {language === 'ar' ? 'سجل' : language === 'fr' ? 'Enregistrements' : 'Records'}
+              </span>
+              <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
+                {language === 'ar' ? 'الطلبات والفواتير' : language === 'fr' ? 'Commandes & factures' : 'Orders & invoices'}
+              </span>
+            </div>
+
+            <div data-sq="card" className="p-3 bg-white dark:bg-neutral-800 col-span-2 sm:col-span-1">
+              <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block tracking-wider rtl:normal-case rtl:tracking-normal">
+                {language === 'ar' ? 'محرك التخزين' : language === 'fr' ? 'Moteur stockage' : 'Storage Engine'}
+              </span>
+              <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
+                {language === 'ar' ? 'مشفر محلياً' : language === 'fr' ? 'Chiffré' : 'Encrypted'}
+              </span>
+              <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">LocalStorage v2</span>
+            </div>
+          </div>
+
+          {exportedStatus && (
+            <div
+              data-sq="card"
+              style={{ '--sq-stroke': 'rgba(16,185,129,0.4)' } as React.CSSProperties}
+              className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2"
+            >
+              <CheckCircle2 size={15} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span>{exportedStatus}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Row 2: Branches Management */}
+      <div className="sq-elev-card">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4">
+          <div className="flex items-center justify-between px-1 pt-1">
+            <div>
+              <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
+                {t('settings_branches_title', language)}
+              </h3>
+              <p className="text-xs text-black/60 dark:text-white/60 tabular-nums">
+                {language === 'ar'
+                  ? `جميع المواقع الفعلية المسجلة للمنشأة (${branches.length} مسجل · ${subscription.plan.maxBranches} مسموح في باقة ${subscription.plan.name})`
+                  : language === 'fr'
+                  ? `Tous les établissements physiques de l'entreprise (${branches.length} enregistrés · ${subscription.plan.maxBranches} autorisés avec ${subscription.plan.name})`
+                  : `All physical locations under tenant business (${branches.length} registered · ${subscription.plan.maxBranches} permitted on ${subscription.plan.name})`}
+              </p>
+            </div>
+            <AtriumButton
+              onClick={handleOpenAddBranch}
+              icon={<Plus size={14} />}
+              size="sm"
+            >
+              {t('settings_add_branch', language)}
+            </AtriumButton>
+          </div>
+
+          {/* Multi-Branch Desktop Alert when at capacity */}
+          {branches.length >= subscription.plan.maxBranches && (
+            <div data-sq="card" className="p-3.5 bg-[#FDF4F0] dark:bg-[#2A2420]/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5">
+                <Building2 size={18} className="text-[#d4522f] shrink-0" />
+                <div>
+                  <span className="font-extrabold text-black dark:text-white">
+                    {language === 'ar' ? 'إدارة الفروع المتعددة ميزة حصرية في Atrium Desktop' : language === 'fr' ? 'La gestion multi-sites est une exclusivité Atrium Desktop' : 'Multi-Facility Management is an Atrium Desktop Feature'}
+                  </span>
+                  <p className="text-black/70 dark:text-white/75 text-[11px] mt-0.5">
+                    {language === 'ar'
+                      ? 'إدارة فروع فعلية متعددة، واشتراكات مشتركة وتقارير موحدة للمخزون عبر تطبيق Atrium المكتبي.'
+                      : language === 'fr'
+                      ? 'Gérez plusieurs succursales physiques, des abonnements multi-sites et des rapports unifiés avec Atrium Desktop.'
+                      : 'Manage multiple physical branches, cross-branch memberships, and unified inventory reporting with Atrium Desktop.'}
+                  </p>
+                </div>
+              </div>
+              <AtriumButton
+                type="button"
+                variant="primary"
+                size="xs"
+                onClick={() => openDesktopUpgradeModal('branch_limit')}
+                className="shrink-0 self-start sm:self-auto"
+              >
+                {language === 'ar' ? 'تحميل Atrium للكمبيوتر (Windows / Mac)' : language === 'fr' ? 'Télécharger Atrium Desktop (Windows / Mac)' : 'Download Atrium Desktop (Windows / Mac)'}
+              </AtriumButton>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {branches.map((b) => (
+              <div key={b.id} className="sq-elev-card">
+                <div data-sq="card" className="p-4 bg-white dark:bg-neutral-800 flex items-center justify-between transition-all">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-black dark:text-white">
+                        {b.name}
+                      </span>
+                      <span className="font-mono text-[10px] bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full text-black/65 dark:text-white/70 font-bold">
+                        {b.code}
+                      </span>
+                      {b.isMainBranch && (
+                        <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/10 px-2 py-0.5 rounded-full">
+                          {language === 'ar' ? 'المقر الرئيسي' : language === 'fr' ? 'Siège principal' : 'Headquarters'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-black/65 dark:text-white/65 mt-0.5">
+                      {b.address || (language === 'ar' ? 'العنوان غير محدد' : language === 'fr' ? 'Adresse non renseignée' : 'Address not configured')} · {b.phone || (language === 'ar' ? 'بدون هاتف' : language === 'fr' ? 'Sans téléphone' : 'No phone')}
+                    </div>
+                  </div>
+
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    {language === 'ar' ? 'متصل' : language === 'fr' ? 'En ligne' : 'Online'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Row 3: Authorized Devices & Terminals */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
-              {t('settings_terminals_title', language)}
-            </h3>
-            <p className="text-xs text-black/60 dark:text-white/60">
-              {t('settings_terminals_subtitle', language)}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsAddDeviceOpen(true)}
-            style={{
-              backgroundColor: 'var(--color-accent)',
-            }}
-            className="h-9 px-4 text-xs font-bold text-white flex items-center gap-1.5 rounded-full cursor-pointer hover:opacity-90 transition-opacity shadow-xs"
-          >
-            <Plus size={14} />
-            <span>{t('settings_register_terminal', language)}</span>
-          </button>
-        </div>
-
-        {/* Hardware integration notice banner */}
-        <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2.5">
-            <Printer size={18} className="text-[#d4522f] shrink-0" />
+      <div className="sq-elev-card">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4">
+          <div className="flex items-center justify-between px-1 pt-1">
             <div>
-              <span className="font-bold text-black dark:text-white">
-                {language === 'ar'
-                  ? 'ربط العتاد والمزامنة المحلية عبر تطبيق سطح المكتب'
-                  : language === 'fr'
-                  ? 'Le matériel et la synchronisation locale nécessitent Atrium Desktop'
-                  : 'Hardware & offline sync require Atrium Desktop'}
-              </span>
-              <p className="text-black/65 dark:text-white/65 text-[11px] mt-0.5">
-                {language === 'ar'
-                  ? 'طابعات الإيصالات، أدراج النقد، وقارئات الباركود.'
-                  : language === 'fr'
-                  ? 'Imprimantes thermiques, tiroirs-caisses et lecteurs.'
-                  : 'Receipt printers, cash drawers, and barcode scanners.'}
+              <h3 className="text-base font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white">
+                {t('settings_terminals_title', language)}
+              </h3>
+              <p className="text-xs text-black/60 dark:text-white/60">
+                {t('settings_terminals_subtitle', language)}
               </p>
             </div>
+            <button
+              type="button"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              onClick={() => setIsAddDeviceOpen(true)}
+              style={{
+                backgroundColor: 'var(--color-accent)',
+              }}
+              className="h-9 px-4 text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer hover:opacity-90 transition-opacity"
+            >
+              <Plus size={14} />
+              <span>{t('settings_register_terminal', language)}</span>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => openDesktopUpgradeModal('general')}
-            className="px-3 py-1.5 rounded-full border border-neutral-300 dark:border-neutral-600 text-black/80 dark:text-white/85 text-[11px] font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
-          >
-            {language === 'ar' ? 'المزيد' : language === 'fr' ? 'En savoir plus' : 'Learn More'}
-          </button>
-        </div>
 
-        <div className="space-y-2">
-          {devices.map((dev) => (
-            <div key={dev.id} className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs hover:border-[#D5DFE3] transition-all">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#F3EDE7] dark:bg-neutral-700/80 border border-[#E6DED6] dark:border-neutral-600 flex items-center justify-center text-black/75 dark:text-white/80">
-                  <Monitor size={17} />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-black dark:text-white">
-                    {dev.label}
-                  </div>
-                  <div className="text-xs font-mono text-black/55 dark:text-white/55 tabular-nums">
-                    ID: {dev.hardwareId} · {new Date(dev.registeredAt).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  {language === 'ar' ? 'نشط' : language === 'fr' ? 'Actif' : 'Active'}
+          {/* Hardware integration notice banner */}
+          <div data-sq="card" className="p-3.5 bg-neutral-50 dark:bg-neutral-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <Printer size={18} className="text-[#d4522f] shrink-0" />
+              <div>
+                <span className="font-bold text-black dark:text-white">
+                  {language === 'ar'
+                    ? 'ربط العتاد والمزامنة المحلية عبر تطبيق سطح المكتب'
+                    : language === 'fr'
+                    ? 'Le matériel et la synchronisation locale nécessitent Atrium Desktop'
+                    : 'Hardware & offline sync require Atrium Desktop'}
                 </span>
-                {devices.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => revokeDevice(dev.id)}
-                    className="text-xs text-rose-500 hover:text-rose-700 cursor-pointer p-1.5 rounded-full hover:bg-rose-50 transition-colors"
-                    title={language === 'ar' ? 'حذف' : language === 'fr' ? 'Révoquer' : 'Revoke'}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                )}
+                <p className="text-black/65 dark:text-white/65 text-[11px] mt-0.5">
+                  {language === 'ar'
+                    ? 'طابعات الإيصالات، أدراج النقد، وقارئات الباركود.'
+                    : language === 'fr'
+                    ? 'Imprimantes thermiques, tiroirs-caisses et lecteurs.'
+                    : 'Receipt printers, cash drawers, and barcode scanners.'}
+                </p>
               </div>
             </div>
-          ))}
+            <button
+              type="button"
+              onClick={() => openDesktopUpgradeModal('general')}
+              className="px-3 py-1.5 rounded-full border border-neutral-300 dark:border-neutral-600 text-black/80 dark:text-white/85 text-[11px] font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
+            >
+              {language === 'ar' ? 'المزيد' : language === 'fr' ? 'En savoir plus' : 'Learn More'}
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {devices.map((dev) => (
+              <div key={dev.id} className="sq-elev-card">
+                <div data-sq="card" className="p-4 bg-white dark:bg-neutral-800 flex items-center justify-between transition-all">
+                  <div className="flex items-center gap-3">
+                    <div data-sq="tile" className="w-9 h-9 bg-[#F3EDE7] dark:bg-neutral-700/80 flex items-center justify-center text-black/75 dark:text-white/80">
+                      <Monitor size={17} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-black dark:text-white">
+                        {dev.label}
+                      </div>
+                      <div className="text-xs font-mono text-black/55 dark:text-white/55 tabular-nums">
+                        ID: {dev.hardwareId} · {new Date(dev.registeredAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      {language === 'ar' ? 'نشط' : language === 'fr' ? 'Actif' : 'Active'}
+                    </span>
+                    {devices.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => revokeDevice(dev.id)}
+                        className="text-xs text-rose-500 hover:text-rose-700 cursor-pointer p-1.5 rounded-full hover:bg-rose-50 transition-colors"
+                        title={language === 'ar' ? 'حذف' : language === 'fr' ? 'Révoquer' : 'Revoke'}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1321,7 +1424,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       >
         <form onSubmit={handleCreateBranch} className="space-y-4">
           {branchError && (
-            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 text-xs border border-rose-200">
+            <div
+              data-sq="card"
+              style={{ '--sq-stroke': 'rgba(244,63,94,0.4)' } as React.CSSProperties}
+              className="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-700 text-xs"
+            >
               {branchError}
             </div>
           )}
@@ -1401,7 +1508,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       >
         <form onSubmit={handleRegisterDevice} className="space-y-4">
           {deviceError && (
-            <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs border border-rose-200">
+            <div
+              data-sq="card"
+              style={{ '--sq-stroke': 'rgba(244,63,94,0.4)' } as React.CSSProperties}
+              className="p-3 bg-rose-50 text-rose-700 text-xs"
+            >
               {deviceError}
             </div>
           )}
@@ -1440,11 +1551,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </button>
             <button
               type="submit"
+              data-sq="ctl"
+              data-sq-border="none"
               style={{
                 backgroundColor: 'var(--color-accent)',
-                borderRadius: 'var(--radius-button)',
               }}
-              className="h-10 px-5 text-xs font-semibold text-white cursor-pointer shadow-xs"
+              className="h-10 px-5 text-xs font-semibold text-white cursor-pointer"
             >
               {language === 'ar' ? 'حفظ' : language === 'fr' ? 'Autoriser' : 'Authorize'}
             </button>
@@ -1464,7 +1576,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         subtitle={language === 'ar' ? 'مراجعة محتويات النسخة قبل استبدال بيانات مساحة العمل' : language === 'fr' ? 'Vérifier le contenu avant d\'écraser les données' : 'Review backup contents before overwriting workspace data'}
       >
         <div className="space-y-4">
-          <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-3">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'rgba(245,158,11,0.4)' } as React.CSSProperties}
+            className="p-4 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-3"
+          >
             <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
             <div>
               <p className="font-bold">
@@ -1482,7 +1598,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           {pendingBackupMeta && (
             <div className="space-y-3">
-              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
+              <div data-sq="card" className="p-4 bg-neutral-50 dark:bg-neutral-800 space-y-2 text-xs">
                 <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
                   <span className="text-black/65 dark:text-white/65">
                     {language === 'ar' ? 'تاريخ تصدير النسخة:' : language === 'fr' ? 'Date de la sauvegarde :' : 'Backup Export Date:'}
@@ -1539,7 +1655,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </div>
 
               {pendingBackupMeta.validation.warnings.length > 0 && (
-                <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-800 dark:text-amber-300 space-y-1">
+                <div
+                  data-sq="card"
+                  style={{ '--sq-stroke': 'rgba(245,158,11,0.4)' } as React.CSSProperties}
+                  className="p-3 bg-amber-50/70 dark:bg-amber-950/30 text-[11px] text-amber-800 dark:text-amber-300 space-y-1"
+                >
                   {pendingBackupMeta.validation.warnings.map((w, idx) => (
                     <div key={idx}>{w}</div>
                   ))}

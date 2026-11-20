@@ -292,7 +292,11 @@ export const LegalHearingsView: React.FC<any> = () => {
         sortable: true,
         renderCell: (h) => (
           <div className="flex items-center gap-3 min-w-0 pr-2">
-            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+            <div
+              data-sq="tile"
+              data-sq-border="solid"
+              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700"
+            >
               <Calendar size={18} />
             </div>
             <div className="min-w-0">
@@ -362,7 +366,7 @@ export const LegalHearingsView: React.FC<any> = () => {
           return (
             <div className="flex flex-col gap-0.5">
               <span
-                className={`text-[10px] font-semibold px-2 py-0.5 rounded-md inline-block text-center ${
+                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full inline-block text-center ${
                   isDone
                     ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
                     : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
@@ -864,7 +868,9 @@ export const LegalHearingsView: React.FC<any> = () => {
               Object.entries(hearingsByDate).map(([date, dateHearings]) => (
                 <div
                   key={date}
-                  className="bg-white/80 dark:bg-neutral-900/40 rounded-[22px] p-5 border border-[#E6DED6] dark:border-[#33302D] space-y-4"
+                  data-sq="panel"
+                  data-sq-border="solid"
+                  className="bg-white/80 dark:bg-neutral-900/40 p-3 border border-[#E6DED6] dark:border-[#33302D] space-y-3"
                 >
                   <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800 flex-wrap gap-2">
                     <div className="flex items-center gap-2">
@@ -872,7 +878,7 @@ export const LegalHearingsView: React.FC<any> = () => {
                       <h3 className="text-sm font-black text-black dark:text-white uppercase tracking-wider font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                         {isAr ? `جلسة يوم ${date}` : `Audience du ${date}`}
                       </h3>
-                      <span className="text-xs bg-[#d4522f]/15 text-[#d4522f] font-bold px-2 py-0.5 rounded-md">
+                      <span className="text-xs bg-[#d4522f]/15 text-[#d4522f] font-bold px-2 py-0.5 rounded-full">
                         {dateHearings.length} {isAr ? 'قضايا' : 'dossiers'}
                       </span>
                     </div>
@@ -887,18 +893,25 @@ export const LegalHearingsView: React.FC<any> = () => {
                         key={h.id}
                         type="button"
                         data-no-liquid="true"
+                        data-sq="card"
+                        data-sq-border="solid"
+                        data-sq-stroke-w={activeHearing?.id === h.id ? 2 : undefined}
                         onClick={(e) => {
                           setSelectedHearing(h);
                           setDrawerOpenerEl(e.currentTarget);
                         }}
-                        className={`w-full text-left rtl:text-right p-4 rounded-2xl bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                        className={`w-full text-left rtl:text-right p-4 bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
                           activeHearing?.id === h.id
-                            ? 'border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
+                            ? 'border-[#d4522f]'
                             : 'border-[#E6DED6] dark:border-neutral-700 hover:border-[#d4522f]/50'
                         }`}
                       >
                         <div className="flex items-start gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-600">
+                          <div
+                            data-sq="tile"
+                            data-sq-border="solid"
+                            className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-600"
+                          >
                             <span className="text-xs font-mono font-black">
                               {h.hearingTime || '09:00'}
                             </span>
@@ -936,12 +949,12 @@ export const LegalHearingsView: React.FC<any> = () => {
 
                         <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                           {h.postponementCode && (
-                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">
                               {h.postponementCode}
                             </span>
                           )}
                           <span
-                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                               h.isCompleted
                                 ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
                                 : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
@@ -1280,7 +1293,12 @@ export const LegalHearingsView: React.FC<any> = () => {
 
       {isNewHearingModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-lg w-full p-6 shadow-xl border border-[#E6DED6] dark:border-neutral-800 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+          <div className="sq-elev-pop max-w-lg w-full animate-in fade-in zoom-in-95 duration-150">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 w-full p-6 border border-[#E6DED6] dark:border-neutral-800 space-y-5"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
               <div className="flex items-center gap-2">
                 <Gavel size={20} className="text-[#d4522f]" />
@@ -1391,6 +1409,7 @@ export const LegalHearingsView: React.FC<any> = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

@@ -457,7 +457,11 @@ export const EducationFinanceView: React.FC = () => {
         sortable: true,
         renderCell: (enr) => (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="solid"
+              className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"
+            >
               {enr.studentName.charAt(0)}
             </div>
             <div className="min-w-0">
@@ -545,7 +549,7 @@ export const EducationFinanceView: React.FC = () => {
         sortable: true,
         renderCell: (enr) => (
           <span
-            className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${
+            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
               enr.paymentStatus === 'Paid'
                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                 : enr.paymentStatus === 'Overdue'
@@ -571,17 +575,21 @@ export const EducationFinanceView: React.FC = () => {
             {enr.balanceDue > 0 ? (
               <button
                 type="button"
+                data-sq="ctl-sm"
+                data-sq-border="none"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleOpenPayment(enr, 0);
                 }}
-                className="px-2.5 py-1.5 rounded-lg bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-2xs whitespace-nowrap"
+                className="px-2.5 py-1.5 bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap"
               >
                 {t('edu_btn_log_payment')}
               </button>
             ) : (
               <button
                 type="button"
+                data-sq="ctl-sm"
+                data-sq-border="solid"
                 onClick={(e) => {
                   e.stopPropagation();
                   setReceiptToPrint({
@@ -593,7 +601,7 @@ export const EducationFinanceView: React.FC = () => {
                     receiptNumber: `REC-${enr.id.slice(-6)}`,
                   });
                 }}
-                className="px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer flex items-center gap-1"
+                className="px-2.5 py-1.5 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer flex items-center gap-1"
               >
                 <Receipt size={12} />
                 <span>Reçu</span>
@@ -652,7 +660,11 @@ export const EducationFinanceView: React.FC = () => {
       />
 
       {selectedEnrollmentIds.size > 0 && (
-        <div className="p-3 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 rounded-2xl flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          className="p-3 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150"
+        >
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs font-bold">
               {selectedEnrollmentIds.size}
@@ -671,16 +683,20 @@ export const EducationFinanceView: React.FC = () => {
             </button>
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={handleBatchMarkInstallmentPaid}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             >
               <CheckCircle2 size={13} />
               <span>{isAr ? 'تسجيل سداد القسط' : 'Encaisser Versement'}</span>
             </button>
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={handleBatchSendReminder}
-              className="px-3.5 py-1.5 rounded-xl bg-[#d4522f] hover:opacity-90 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-1.5 bg-[#d4522f] hover:opacity-90 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             >
               <Bell size={13} />
               <span>{isAr ? 'إرسال تذكير بالسداد' : 'Envoyer Rappel SMS'}</span>
@@ -984,7 +1000,12 @@ export const EducationFinanceView: React.FC = () => {
 
       {selectedEnrollmentForPayment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6 space-y-4">
+          <div className="sq-elev-pop w-full max-w-md">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 space-y-4"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {t('edu_payment_modal_title')}
@@ -998,7 +1019,11 @@ export const EducationFinanceView: React.FC = () => {
               </button>
             </div>
             <form onSubmit={handleConfirmPayment} className="space-y-4 text-xs">
-              <div className="p-3.5 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-1">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-1"
+              >
                 <div className="font-bold text-black dark:text-white">{selectedEnrollmentForPayment.studentName}</div>
                 <div className="text-black/55 dark:text-white/55">
                   {t('edu_label_cohort')}: {selectedEnrollmentForPayment.cohortName}
@@ -1017,11 +1042,13 @@ export const EducationFinanceView: React.FC = () => {
                       <button
                         key={idx}
                         type="button"
+                        data-sq="ctl"
+                        data-sq-border="solid"
                         onClick={() => {
                           setSelectedInstallmentIndex(idx);
                           setPaymentAmount(inst.isPaid ? 0 : inst.amount);
                         }}
-                        className={`p-2 rounded-xl border text-left rtl:text-right transition-colors cursor-pointer ${
+                        className={`p-2 border text-left rtl:text-right transition-colors cursor-pointer ${
                           selectedInstallmentIndex === idx
                             ? 'bg-[#FCEEE8] dark:bg-neutral-800 border-[#d4522f] text-[#d4522f] font-bold'
                             : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
@@ -1059,7 +1086,7 @@ export const EducationFinanceView: React.FC = () => {
                   { value: 'Scholarship Voucher', label: 'Scholarship Voucher' },
                 ]}
                 height={44}
-                corner={14}
+                corner={12}
               />
               <div className="pt-2 flex justify-end gap-2 border-t border-neutral-100 dark:border-neutral-800">
                 <AtriumButton
@@ -1075,13 +1102,19 @@ export const EducationFinanceView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
 
       {receiptToPrint && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative w-full max-w-sm bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6 space-y-4">
+          <div className="sq-elev-pop w-full max-w-sm">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 space-y-4"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div className="text-xs font-bold uppercase tracking-wider text-[#d4522f]">
                 Official Tuition Receipt
@@ -1102,7 +1135,11 @@ export const EducationFinanceView: React.FC = () => {
                 Receipt #{receiptToPrint.receiptNumber} · {receiptToPrint.date}
               </div>
             </div>
-            <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-2 text-xs">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-4 bg-[#F3EDE7] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-2 text-xs"
+            >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">
                   {isAr ? 'المترشح / المتدرب:' : isEn ? 'Learner:' : 'Apprenant :'}
@@ -1137,6 +1174,7 @@ export const EducationFinanceView: React.FC = () => {
               >
                 Print Official Receipt
               </AtriumButton>
+            </div>
             </div>
           </div>
         </div>

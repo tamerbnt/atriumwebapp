@@ -119,7 +119,9 @@ function KineticCollectionStageInner<T>({
 
   const headerBar = (
     <div
-      className="th th-adherents shrink-0 bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-black dark:text-white box-border select-none"
+      data-sq="row"
+      data-sq-border="solid"
+      className="th th-adherents relative shrink-0 bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] text-black dark:text-white box-border select-none"
       data-v={viewMode === 'grid' ? 'g' : 'l'}
       aria-hidden={viewMode === 'grid'}
     >
@@ -127,6 +129,9 @@ function KineticCollectionStageInner<T>({
         type="button"
         role="checkbox"
         data-no-liquid="true"
+        data-sq="check"
+        data-sq-border="solid"
+        data-sq-stroke-w="1.5"
         tabIndex={viewMode === 'grid' ? -1 : 0}
         aria-checked={
           selectedCount === 0
@@ -143,10 +148,10 @@ function KineticCollectionStageInner<T>({
             : 'Select all'
         }
         onClick={onToggleSelectAll}
-        className={`cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 cursor-pointer ${
+        className={`cb relative w-5 h-5 grid place-items-center p-0 cursor-pointer ${
           selectedCount === totalCount && totalCount > 0
-            ? 'bg-[var(--atr-acc,#d4522f)] border-[var(--atr-acc,#d4522f)] text-white'
-            : 'bg-white dark:bg-[#262422] border-[#D4C8BC] dark:border-[#5A5550] text-transparent hover:border-[var(--atr-acc,#d4522f)]'
+            ? 'bg-[var(--atr-acc,#d4522f)] [--sq-stroke:var(--atr-acc,#d4522f)] text-white'
+            : 'bg-white dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#5A5550] hover:[--sq-stroke:var(--atr-acc,#d4522f)] text-transparent'
         }`}
       >
         <Check
@@ -175,7 +180,7 @@ function KineticCollectionStageInner<T>({
             <span className="truncate">{col.label}</span>
             {isSortable && (
               <i
-                className={`not-italic text-[11px] px-1.5 py-0.5 rounded-[5px] ${
+                className={`not-italic text-[11px] px-1.5 py-0.5 rounded-full ${
                   isOn
                     ? 'bg-[var(--atr-hl,rgba(212,82,47,0.12))] text-[var(--atr-acc,#d4522f)]'
                     : 'bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-black dark:text-white/75'
@@ -256,6 +261,7 @@ function KineticCollectionStageInner<T>({
                   <KineticRow
                     key={rowId}
                     row={rowData}
+                    viewMode={viewMode}
                     isSelected={selectedIds.has(rowId)}
                     isOpen={openItemId === rowId}
                     isExpanded={expandedIds.has(rowId)}

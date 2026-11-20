@@ -24,10 +24,11 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
 	};
 	const netPayableWords = numberToAlgerianWords(dgp.netPayableDzd);
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in overflow-y-auto">
-<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-6 my-8">
+<div className="sq-elev-pop max-w-3xl w-full my-8">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-6">
 <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 print:hidden">
 <div className="flex items-center gap-2">
-<div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><FileText size={18} /></div>
+<div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"><FileText size={18} /></div>
 <div>
 <h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "الكشف المالي المؤقت الرسمي (Décret 15-247)" : "Bordereau Officiel de Décompte Provisoire"}
@@ -41,10 +42,10 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
 </div>
 <div className="flex items-center gap-2">
 <AtriumButton variant="primary" onClick={handlePrint} icon={<Printer size={15} />}>{isAr ? "طباعة الكشف" : "Imprimer le Décompte"}</AtriumButton>
-<button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 </div>
-<div className="p-6 border border-neutral-300 dark:border-neutral-700 rounded-xl bg-white text-black text-xs space-y-6 shadow-xs font-serif">
+<div className="printable-document p-6 border border-neutral-300 dark:border-neutral-700 rounded-[var(--r-card,16px)] bg-white text-black text-xs space-y-6 shadow-xs font-serif">
 <div className="text-center space-y-1 border-b border-neutral-300 pb-4">
 <p className="font-bold text-[13px] tracking-wider uppercase font-sans">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</p>
 <p className="text-black/75 text-[11px] font-sans">الجمهورية الجزائرية الديمقراطية الشعبية</p>
@@ -53,7 +54,7 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
 </div>
 <p className="text-[10px] text-black/55 font-sans">DIRECTION DU LOGEMENT ET DES ÉQUIPEMENTS PUBLICS (DLEP)</p>
 </div>
-<div className="flex items-center justify-between bg-neutral-50 p-3 rounded-lg border border-neutral-200 font-sans">
+<div className="flex items-center justify-between bg-neutral-50 p-3 rounded-[var(--r-ctl,12px)] border border-neutral-200 font-sans">
 <div>
 <span className="text-[10px] uppercase font-bold text-black/55">Document Légal</span>
 <h2 className="text-base font-black text-black font-['Barlow_Condensed',sans-serif] rtl:font-sans">
@@ -68,7 +69,7 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
 </p>
 </div>
 <div className="text-right">
-<span className="inline-flex items-center gap-1 bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-md text-[11px] font-bold">
+<span className="inline-flex items-center gap-1 bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-0.5 rounded-full text-[11px] font-bold">
 <ShieldCheck size={13} />
 Décret Présidentiel 15-247
 </span>
@@ -76,7 +77,7 @@ Décret Présidentiel 15-247
 </div>
 </div>
 <div className="grid grid-cols-2 gap-4 font-sans text-[11px]">
-<div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 space-y-1">
+<div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 space-y-1">
 <span className="text-[10px] font-bold text-black/55 uppercase">Marché & Opération</span>
 <div className="font-bold text-black">{project?.projectName || "Construction Siège"}</div>
 <div className="text-black/75">
@@ -95,7 +96,7 @@ Décret Présidentiel 15-247
 {formatMoney(project?.contractAmountDzd || 0)}
 </div>
 </div>
-<div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 space-y-1">
+<div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 space-y-1">
 <span className="text-[10px] font-bold text-black/55 uppercase">Intervenants</span>
 <div className="text-black">
 <span className="font-semibold">Maître de l'Ouvrage:</span>
@@ -210,7 +211,7 @@ TVA (
 </tbody>
 </table>
 </div>
-<div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 font-sans space-y-1">
+<div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 font-sans space-y-1">
 <span className="text-[10px] font-bold text-black/55 uppercase">Arrêté de la présente situation (En Toutes Lettres)</span>
 <p className="font-semibold text-black italic">
 {"« Arrêtée la présente situation de travaux à la somme nette à mandater de : "}
@@ -219,17 +220,18 @@ TVA (
 </p>
 </div>
 <div className="grid grid-cols-3 gap-4 pt-4 border-t border-neutral-300 text-center font-sans">
-<div className="p-2 border border-neutral-200 rounded-lg h-28 flex flex-col justify-between">
+<div className="p-2 border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] h-28 flex flex-col justify-between">
 <span className="text-[10px] font-bold text-black/75 uppercase">L'Entrepreneur</span>
 <p className="text-[10px] text-black/55">Signature & Cachet Humide</p>
 </div>
-<div className="p-2 border border-neutral-200 rounded-lg h-28 flex flex-col justify-between">
+<div className="p-2 border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] h-28 flex flex-col justify-between">
 <span className="text-[10px] font-bold text-black/75 uppercase">Le Maître d'Œuvre (BET)</span>
 <p className="text-[10px] text-black/55">Visa pour vérification et métrés</p>
 </div>
-<div className="p-2 border border-neutral-200 rounded-lg h-28 flex flex-col justify-between">
+<div className="p-2 border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] h-28 flex flex-col justify-between">
 <span className="text-[10px] font-bold text-black/75 uppercase">Le Maître de l'Ouvrage</span>
 <p className="text-[10px] text-black/55">Bon pour mandatement Trésor</p>
+</div>
 </div>
 </div>
 </div>

@@ -5,7 +5,8 @@ import type { ButtonHTMLAttributes, MouseEvent, PointerEvent } from 'react';
 import { cx, sizeProps, useIsoLayoutEffect, useMergedRef } from '../../hooks';
 import type { Size } from '../../hooks';
 import { initMotionEnv } from '../../motion/env';
-import { LiquidButtonBody, H } from './liquidButtonBody';
+import { squirclePath } from '../../motion/shapes';
+import { LiquidButtonBody, H, R0 } from './liquidButtonBody';
 import type { LiquidKind, LiquidStatus, LbEls } from './liquidButtonBody';
 import s from './LiquidButton.module.css';
 
@@ -85,8 +86,8 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(fun
   const liveRef = useRef<HTMLSpanElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const rootRef = useRef<SVGGElement>(null);
-  const bodyEl = useRef<SVGRectElement>(null);
-  const clipr = useRef<SVGRectElement>(null);
+  const bodyEl = useRef<SVGPathElement>(null);
+  const clipr = useRef<SVGPathElement>(null);
   const maskr = useRef<SVGRectElement>(null);
   const liq = useRef<SVGPathElement>(null);
   const lqcp = useRef<SVGPathElement>(null);
@@ -253,6 +254,7 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(fun
         type={type}
         className={cx(s.root, s[tone], className)}
         disabled={disabled}
+        data-no-liquid="true"
         data-status="idle"
         data-kind={kind}
         aria-busy="false"
@@ -306,7 +308,7 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(fun
         <svg ref={svgRef} className={s.svg} viewBox={`0 0 300 ${H}`} style={{ direction: 'ltr' }} aria-hidden="true" focusable="false">
           <defs>
             <clipPath id={ids.clip}>
-              <rect ref={clipr} x={0} y={0} width={300} height={H} rx={10.6} />
+              <path ref={clipr} d={squirclePath(0, 0, 300, H, R0, 0.6)} />
             </clipPath>
             <clipPath id={ids.lqc}>
               <path ref={lqcp} d="M0 0" />
@@ -321,7 +323,7 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(fun
             </mask>
           </defs>
           <g ref={rootRef}>
-            <rect ref={bodyEl} className={s.bodyFill} x={0} y={0} width={300} height={H} rx={10.6} />
+            <path ref={bodyEl} className={s.bodyFill} d={squirclePath(0, 0, 300, H, R0, 0.6)} />
             <g clipPath={`url(#${ids.clip})`}>
               <path ref={liq} className={s.liq} d="M0 0" />
             </g>

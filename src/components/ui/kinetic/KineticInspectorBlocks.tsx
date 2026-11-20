@@ -56,16 +56,20 @@ export const InspectorQuickActions: React.FC<{
           key={act.id}
           type="button"
           data-no-liquid="true"
+          data-sq="card"
+          data-sq-border="solid"
           disabled={act.disabled}
           onClick={act.onClick}
-          className={`flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border text-[12px] font-medium leading-tight text-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+          className={`flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[var(--r-card,16px)] text-[12px] font-medium leading-tight text-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
             act.primary
-              ? 'border-[#d4522f]/25 dark:border-[#52291F] bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A]'
-              : 'border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white'
+              ? '[--sq-stroke:rgba(212,82,47,0.25)] dark:[--sq-stroke:#52291F] bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A]'
+              : '[--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white'
           }`}
         >
           <span
-            className={`ic w-[38px] h-[38px] rounded-[12px] grid place-items-center shrink-0 ${
+            data-sq="tile"
+            data-sq-border="none"
+            className={`ic w-[38px] h-[38px] rounded-[var(--r-tile,12px)] grid place-items-center shrink-0 ${
               act.primary
                 ? 'bg-white dark:bg-[#1C1B1A]'
                 : 'bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1B1A]'
@@ -85,7 +89,9 @@ export const InspectorCard: React.FC<{
   className?: string;
 }> = ({ children, className = '' }) => (
   <div
-    className={`card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] ${className}`}
+    data-sq="card"
+    data-sq-border="solid"
+    className={`card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] ${className}`}
   >
     {children}
   </div>
@@ -159,7 +165,7 @@ export const InspectorKeyValue: React.FC<InspectorKeyValueProps> = ({
             type="button"
             data-no-liquid="true"
             onClick={handleCopy}
-            className="w-7 h-7 rounded-[8px] border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 hover:text-[var(--atr-acc,#d4522f)] cursor-pointer shrink-0"
+            className="w-7 h-7 rounded-full border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 hover:text-[var(--atr-acc,#d4522f)] cursor-pointer shrink-0"
             aria-label={typeof label === 'string' ? `Copy ${label}` : 'Copy'}
           >
             {copied ? (
@@ -210,10 +216,10 @@ export const InspectorProgressBar: React.FC<{
       : 'bg-[var(--atr-ok,#096b40)] dark:bg-[#5BE3A3]';
 
   return (
-    <div className="bar2 h-[8px] rounded-[4px] bg-[var(--atr-line,#E6DED6)] dark:bg-[#3A3734] overflow-hidden mt-0.5 mb-3">
+    <div className="bar2 h-[8px] rounded-full bg-[var(--atr-line,#E6DED6)] dark:bg-[#3A3734] overflow-hidden mt-0.5 mb-3">
       <i
         ref={fillRef}
-        className={`block w-full h-full rounded-[4px] ${barTone} origin-left rtl:origin-right`}
+        className={`block w-full h-full rounded-full ${barTone} origin-left rtl:origin-right`}
         style={{ transform: 'scaleX(0)' }}
       />
     </div>
@@ -240,7 +246,11 @@ export const InspectorBigStat: React.FC<{
       : 'text-[var(--atr-acc,#d4522f)] dark:text-[#FF8D7A]';
 
   return (
-    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-3.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+    <div
+      data-sq="card"
+      data-sq-border="solid"
+      className="card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-3.5 [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734]"
+    >
       <div className={`big font-mono font-bold text-[32px] tabular-nums my-0.5 ${colorClass}`}>
         {value}
       </div>
@@ -253,8 +263,10 @@ export const InspectorBigStat: React.FC<{
         <button
           type="button"
           data-no-liquid="true"
+          data-sq="ctl"
+          data-sq-border="none"
           onClick={action.onClick}
-          className={`wide mt-3 w-full h-[42px] border-0 rounded-[12px] font-semibold text-[13.5px] cursor-pointer transition-opacity hover:opacity-92 ${
+          className={`wide mt-3 w-full h-[42px] border-0 rounded-[var(--r-ctl,12px)] font-semibold text-[13.5px] cursor-pointer transition-opacity hover:opacity-92 ${
             action.tone === 'dark'
               ? 'bg-[#1F1D1B] dark:bg-white text-white dark:text-black'
               : 'bg-[var(--atr-acc,#d4522f)] text-white'
@@ -319,7 +331,7 @@ export const InspectorListItem: React.FC<InspectorListItemProps> = ({
       )}
       {badge && (
         <span
-          className={`pill px-2.5 py-[3px] rounded-md text-[11.5px] font-medium whitespace-nowrap ${
+          className={`pill px-2.5 py-[3px] rounded-full text-[11.5px] font-medium whitespace-nowrap ${
             BADGE_CLASSES[badge.tone || 'neutral']
           }`}
         >
@@ -345,20 +357,26 @@ export const InspectorNotesField: React.FC<{
   }, [value]);
 
   return (
-    <textarea
-      aria-label={ariaLabel}
-      value={draft}
-      onChange={(e) => setDraft(e.target.value)}
-      onBlur={() => {
-        const trimmed = draft.trim();
-        if (trimmed !== (lastSavedRef.current || '').trim()) {
-          lastSavedRef.current = trimmed;
-          onSave(trimmed);
-        }
-      }}
-      placeholder={placeholder}
-      className="w-full box-border min-h-[84px] rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-3.5 py-3 text-[13px] text-[var(--atr-ink,#000000)] dark:text-white placeholder:text-black/48 dark:placeholder:text-white/50 resize-y focus:outline-none focus:border-[#d4522f]"
-    />
+    <div
+      data-sq="card"
+      data-sq-border="solid"
+      className="relative rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#d4522f]"
+    >
+      <textarea
+        aria-label={ariaLabel}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          const trimmed = draft.trim();
+          if (trimmed !== (lastSavedRef.current || '').trim()) {
+            lastSavedRef.current = trimmed;
+            onSave(trimmed);
+          }
+        }}
+        placeholder={placeholder}
+        className="w-full box-border min-h-[84px] rounded-[var(--r-card,16px)] border-0 bg-transparent px-3.5 py-3 text-[13px] text-[var(--atr-ink,#000000)] dark:text-white placeholder:text-black/48 dark:placeholder:text-white/50 resize-y focus:outline-none"
+      />
+    </div>
   );
 };
 
@@ -372,13 +390,15 @@ export const InspectorWideButton: React.FC<{
   <button
     type="button"
     data-no-liquid="true"
+    data-sq="ctl"
+    data-sq-border={tone === 'neutral' ? 'solid' : 'none'}
     disabled={disabled}
     onClick={onClick}
-    className={`wide w-full h-[42px] rounded-[12px] font-semibold text-[13.5px] flex items-center justify-center gap-2 cursor-pointer transition-opacity hover:opacity-92 disabled:opacity-40 disabled:cursor-not-allowed ${
+    className={`wide w-full h-[42px] rounded-[var(--r-ctl,12px)] font-semibold text-[13.5px] flex items-center justify-center gap-2 cursor-pointer transition-opacity hover:opacity-92 disabled:opacity-40 disabled:cursor-not-allowed ${
       tone === 'dark'
         ? 'border-0 bg-[#1F1D1B] dark:bg-white text-white dark:text-black'
         : tone === 'neutral'
-        ? 'border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white hover:bg-[#F3EDE7]'
+        ? 'bg-white dark:bg-[#262422] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] text-[var(--atr-ink,#000000)] dark:text-white hover:bg-[#F3EDE7]'
         : 'border-0 bg-[var(--atr-acc,#d4522f)] text-white'
     }`}
   >

@@ -98,26 +98,37 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
       <div className="space-y-4">
         {/* Filter controls */}
         <div className="flex flex-wrap items-center gap-3 pb-3 border-b border-[var(--atr-line)]">
-          <input
-            type="text"
-            value={tableFilter}
-            onChange={(e) => setTableFilter(e.target.value)}
-            placeholder={
-              isAr ? 'تصفية باسم الجدول...' : isFr ? 'Filtrer par table (ex: gym_members)...' : 'Filter by table (e.g. gym_members)...'
-            }
-            className="flex-1 min-w-[200px] h-9 px-3 rounded-lg bg-[var(--atr-soft)] border border-[var(--atr-line)] text-xs text-[var(--atr-ink)] placeholder:text-[var(--atr-ink-4)] focus:outline-none focus:border-[var(--atr-acc)]"
-          />
+          <div
+            data-sq="ctl"
+            style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
+            className="flex-1 min-w-[200px] h-9 bg-[var(--atr-soft)] flex items-center"
+          >
+            <input
+              type="text"
+              value={tableFilter}
+              onChange={(e) => setTableFilter(e.target.value)}
+              placeholder={
+                isAr ? 'تصفية باسم الجدول...' : isFr ? 'Filtrer par table (ex: gym_members)...' : 'Filter by table (e.g. gym_members)...'
+              }
+              className="w-full h-full px-3 bg-transparent text-xs text-[var(--atr-ink)] placeholder:text-[var(--atr-ink-4)] focus:outline-none"
+            />
+          </div>
 
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-[var(--atr-soft)] border border-[var(--atr-line)]">
+          <div
+            data-sq="ctl"
+            style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
+            className="flex items-center gap-1 p-[3px] bg-[var(--atr-soft)]"
+          >
             {ACTION_OPTIONS.map((act) => (
               <button
                 key={act}
                 type="button"
                 onClick={() => setActionFilter(act)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                data-sq={actionFilter === act ? 'thumb' : 'none'}
+                className={`px-2.5 py-1 text-[11px] font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
                   actionFilter === act
-                    ? 'bg-[var(--atr-card)] text-[var(--atr-ink)] shadow-2xs'
-                    : 'text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
+                    ? 'bg-[var(--atr-card)] text-[var(--atr-ink)]'
+                    : 'rounded-[var(--r-thumb,9px)] text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
                 }`}
               >
                 {act === 'ALL' ? (isAr ? 'الكل' : isFr ? 'Tout' : 'All') : act}
@@ -155,7 +166,11 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
 
         {/* Error banner with retry */}
         {error && (
-          <div className="p-3 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/30 flex items-center justify-between gap-3 text-xs text-rose-700 dark:text-rose-300">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': '#FDA4AF' } as React.CSSProperties}
+            className="p-3 bg-rose-50 dark:bg-rose-950/30 flex items-center justify-between gap-3 text-xs text-rose-700 dark:text-rose-300"
+          >
             <span>{error}</span>
             <AtriumButton
               type="button"
@@ -174,7 +189,7 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
             {Array.from({ length: 6 }).map((_, idx) => (
               <div
                 key={idx}
-                className="h-[44px] rounded-xl bg-[var(--atr-soft)] animate-pulse border border-[var(--atr-line)]"
+                className="h-[44px] rounded-[var(--r-ctl,12px)] bg-[var(--atr-soft)] animate-pulse border border-[var(--atr-line)]"
               />
             ))}
           </div>
@@ -207,7 +222,11 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
             />
           </KineticEmptyStateMotion>
         ) : (
-          <div className="rounded-xl border border-[var(--atr-line)] divide-y divide-[var(--atr-line)] max-h-[380px] overflow-y-auto bg-[var(--atr-card)]">
+          <div
+            data-sq="table"
+            style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
+            className="divide-y divide-[var(--atr-line)] max-h-[380px] overflow-y-auto bg-[var(--atr-card)]"
+          >
             {logs.map((entry) => {
               const isExpanded = expandedId === entry.id;
               return (
@@ -250,7 +269,11 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
                         <div className="text-[11px] font-semibold text-[var(--atr-ink-3)] mb-1">
                           {isAr ? 'البيانات السابقة' : isFr ? 'Avant (old_data)' : 'Before (old_data)'}
                         </div>
-                        <pre className="p-2.5 rounded-lg bg-[var(--atr-card)] border border-[var(--atr-line)] text-[11px] font-mono overflow-x-auto max-h-[160px] text-[var(--atr-ink-2)]">
+                        <pre
+                          data-sq="ctl"
+                          style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
+                          className="p-2.5 bg-[var(--atr-card)] text-[11px] font-mono overflow-x-auto max-h-[160px] text-[var(--atr-ink-2)]"
+                        >
                           {entry.oldData ? JSON.stringify(entry.oldData, null, 2) : '—'}
                         </pre>
                       </div>
@@ -258,7 +281,11 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
                         <div className="text-[11px] font-semibold text-[var(--atr-ink-3)] mb-1">
                           {isAr ? 'البيانات الجديدة' : isFr ? 'Après (new_data)' : 'After (new_data)'}
                         </div>
-                        <pre className="p-2.5 rounded-lg bg-[var(--atr-card)] border border-[var(--atr-line)] text-[11px] font-mono overflow-x-auto max-h-[160px] text-[var(--atr-ink-2)]">
+                        <pre
+                          data-sq="ctl"
+                          style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
+                          className="p-2.5 bg-[var(--atr-card)] text-[11px] font-mono overflow-x-auto max-h-[160px] text-[var(--atr-ink-2)]"
+                        >
                           {entry.newData ? JSON.stringify(entry.newData, null, 2) : '—'}
                         </pre>
                       </div>
@@ -270,8 +297,8 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
 
             {isLoadingMore && (
               <div className="p-2 space-y-2">
-                <div className="h-[44px] rounded-lg bg-[var(--atr-soft)] animate-pulse" />
-                <div className="h-[44px] rounded-lg bg-[var(--atr-soft)] animate-pulse" />
+                <div className="h-[44px] rounded-[var(--r-row,12px)] bg-[var(--atr-soft)] animate-pulse" />
+                <div className="h-[44px] rounded-[var(--r-row,12px)] bg-[var(--atr-soft)] animate-pulse" />
               </div>
             )}
           </div>

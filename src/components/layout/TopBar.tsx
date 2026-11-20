@@ -911,7 +911,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           type="button"
           data-no-liquid="true"
           onClick={onToggleMobileMenu}
-          className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-black/80 dark:text-white/85 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer shrink-0"
+          className="lg:hidden w-8 h-8 rounded-full flex items-center justify-center text-black/80 dark:text-white/85 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer shrink-0"
           aria-label="Toggle mobile navigation menu"
         >
           <MenuIcon size={17} />
@@ -947,6 +947,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Dev-Only Phase 1 Dashboard Component Catalog Trigger */}
         {import.meta.env.DEV && (
           <LiveButton
+            shape="capsule"
             tone={activeScreen === 'chart_catalog' ? 'accent' : 'soft'}
             onClick={() =>
               setScreen(
@@ -1100,6 +1101,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             trigger={(props: MenuTriggerProps, { open }: { open: boolean }) => (
               <LiveButton
                 {...props}
+                shape="capsule"
                 tone="soft"
                 className={`!rounded-full !pl-1.5 !pr-2.5 !py-1 !h-[34px] !max-h-[34px] border cursor-pointer select-none ${
                   open

@@ -193,7 +193,7 @@ function KineticSlideOverInspectorInner<T>({
     if (indKey !== lastIndKeyRef.current) {
       lastIndKeyRef.current = indKey;
       if (pindRef.current) {
-        pindRef.current.style.clipPath = `inset(0 ${rightClip}px 0 ${leftClip}px round 10px)`;
+        pindRef.current.style.clipPath = `inset(0 ${rightClip}px 0 ${leftClip}px round 9px)`;
       }
     }
 
@@ -436,22 +436,31 @@ function KineticSlideOverInspectorInner<T>({
         aria-modal="true"
         aria-hidden={!isOpen}
         aria-labelledby="kinetic-pnl-title"
-        className="pnl fixed right-3.5 rtl:right-auto rtl:left-3.5 top-3.5 bottom-3.5 w-[560px] max-w-[calc(100vw-28px)] z-[61] rounded-[30px] bg-white dark:bg-[#1C1B1A] flex flex-col shadow-[-14px_0_40px_rgba(27,25,23,0.22)] border border-[#E6DED6] dark:border-[#3A3734] overflow-hidden"
+        className="pnl fixed right-3.5 rtl:right-auto rtl:left-3.5 top-3.5 bottom-3.5 w-[560px] max-w-[calc(100vw-28px)] z-[61] sq-elev-pop flex flex-col"
         style={{
           visibility: 'hidden',
           transform: 'translate3d(620px, 0, 0)',
           contain: 'layout paint',
         }}
       >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="relative w-full h-full bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex flex-col overflow-hidden"
+        >
         {/* Header (.ph) */}
         <div className="ph flex gap-4 items-start px-[26px] pt-[26px] pb-[18px]">
           {avatarText && (
-            <div
-              className="pav w-[68px] h-[68px] rounded-[22px] grid place-items-center text-white font-bold text-[26px] shrink-0 select-none shadow-sm"
-              style={{ backgroundColor: avatarColor }}
-              aria-hidden="true"
-            >
-              {avatarText}
+            <div className="sq-elev-card shrink-0">
+              <div
+                data-sq="card"
+                data-sq-border="none"
+                className="pav relative w-[68px] h-[68px] grid place-items-center text-white font-bold text-[26px] select-none"
+                style={{ backgroundColor: avatarColor }}
+                aria-hidden="true"
+              >
+                {avatarText}
+              </div>
             </div>
           )}
 
@@ -465,7 +474,7 @@ function KineticSlideOverInspectorInner<T>({
             <div className="ppills flex gap-1.5 flex-wrap items-center">
               {statusLabel && (
                 <span
-                  className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-md text-[12px] font-medium ${
+                  className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[12px] font-medium ${
                     statusClassName ||
                     'bg-[#DDF5E8] text-[#0B7A45] border border-[#B5E8CE]'
                   }`}
@@ -475,13 +484,13 @@ function KineticSlideOverInspectorInner<T>({
                 </span>
               )}
               {branchName && (
-                <span className="pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]">
+                <span className="pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--atr-acc,#d4522f)]" />
                   {branchName}
                 </span>
               )}
               {categoryLabel && (
-                <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F]">
+                <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F]">
                   {categoryLabel}
                 </span>
               )}
@@ -537,13 +546,15 @@ function KineticSlideOverInspectorInner<T>({
           <div
             ref={ptabsRef}
             role="tablist"
-            className="ptabs relative flex mx-[26px] p-1 rounded-[14px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
+            data-sq="ctl"
+            data-sq-border="none"
+            className="ptabs relative flex mx-[26px] p-[3px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
           >
             <i
               ref={pindRef}
               aria-hidden="true"
-              className="pind absolute top-1 bottom-1 left-0 right-0 rounded-[10px] bg-[var(--atr-acc,#d4522f)] pointer-events-none z-0"
-              style={{ clipPath: 'inset(0 100% 0 4px round 10px)' }}
+              className="pind absolute top-[3px] bottom-[3px] left-0 right-0 rounded-[9px] bg-[var(--atr-acc,#d4522f)] pointer-events-none z-0"
+              style={{ clipPath: 'inset(0 100% 0 3px round 9px)' }}
             />
             {tabs.map((tab) => {
               const isSelected = activeTab === tab.id;
@@ -558,7 +569,7 @@ function KineticSlideOverInspectorInner<T>({
                   data-no-liquid="true"
                   aria-selected={isSelected}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative z-[1] flex-1 h-[38px] border-0 bg-transparent font-semibold text-[13px] rounded-[10px] transition-colors duration-160 cursor-pointer whitespace-nowrap truncate ${
+                  className={`relative z-[1] flex-1 h-[36px] border-0 bg-transparent font-semibold text-[13px] rounded-[9px] transition-colors duration-160 cursor-pointer whitespace-nowrap truncate ${
                     isSelected
                       ? 'text-white'
                       : 'text-[var(--atr-ink,#000000)] dark:text-white/88'
@@ -588,6 +599,8 @@ function KineticSlideOverInspectorInner<T>({
               <button
                 type="button"
                 data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="solid"
                 onPointerDown={() => {
                   isHoldingRef.current = true;
                   holdRef.current?.setTarget(100);
@@ -608,7 +621,7 @@ function KineticSlideOverInspectorInner<T>({
                   holdRef.current?.setTarget(0);
                   wake();
                 }}
-                className="relative overflow-hidden h-[38px] px-4 rounded-[11px] border border-[#F5BDB3] dark:border-[#5C2B24] bg-[#FDE4DF]/70 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] font-semibold text-[12.5px] flex items-center gap-2 cursor-pointer select-none"
+                className="relative overflow-hidden h-[40px] px-4 [--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] bg-[#FDE4DF]/70 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] font-semibold text-[12.5px] flex items-center gap-2 cursor-pointer select-none"
               >
                 <span
                   ref={holdFillRef}
@@ -647,11 +660,14 @@ function KineticSlideOverInspectorInner<T>({
           <button
             type="button"
             data-no-liquid="true"
+            data-sq="ctl"
+            data-sq-border="none"
             onClick={onClose}
-            className="h-[44px] px-7 border-0 rounded-[12px] bg-[#d4522f] hover:bg-[#b03b1b] text-white font-semibold text-[14px] shadow-sm cursor-pointer transition-colors"
+            className="relative h-[40px] px-7 border-0 bg-[#d4522f] hover:bg-[#b03b1b] text-white font-semibold text-[14px] cursor-pointer transition-colors"
           >
             {resolvedCloseLabel}
           </button>
+        </div>
         </div>
       </aside>
     </>

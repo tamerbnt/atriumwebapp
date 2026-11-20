@@ -5,12 +5,11 @@
 
 .badge {
   --h: var(--atr-h, 34px);
-  --r: calc(var(--h) * 0.147);
   box-sizing: border-box;
   min-width: calc(var(--h) * 0.42);
   height: calc(var(--h) * 0.42);
   padding: 0 calc(var(--h) * 0.1);
-  border-radius: var(--r);
+  border-radius: 9999px;
   background: var(--atr-acc);
   color: var(--atr-onacc);
   font-family: var(--atr-font-ui, inherit);

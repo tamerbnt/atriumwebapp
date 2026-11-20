@@ -922,7 +922,7 @@ export const TradingInventoryView: React.FC = () => {
               <div className="space-y-4">
                 <InspectorSection index={0} title="Derniers bons enregistrés">
                   {relatedVouchers.length === 0 ? (
-                    <KineticEmptyStateMotion motionKey={`tr-inv-mvt-empty-${activeProduct.id}`}>
+                    <KineticEmptyStateMotion motionKey={`tr-inv-mvt-empty-${p.id}`}>
                       <EmptyState
                         variant="compact"
                         tone="neutral"
@@ -932,7 +932,7 @@ export const TradingInventoryView: React.FC = () => {
                         secondaryAction={{
                           label: 'Nouveau mouvement',
                           icon: <Plus size={14} />,
-                          onClick: () => setIsMvtModalOpen(true),
+                          onClick: () => setMovementModalOpen(true),
                         }}
                       />
                     </KineticEmptyStateMotion>

@@ -142,37 +142,37 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
     switch (status) {
       case 'present':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/40">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-800/40">
             {getStatusText(status)}
           </span>
         );
       case 'late':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-800/40">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-0.5 rounded-full border border-amber-200/60 dark:border-amber-800/40">
             {getStatusText(status)}
           </span>
         );
       case 'half_day':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-200/60 dark:border-blue-800/40">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 rounded-full border border-blue-200/60 dark:border-blue-800/40">
             {getStatusText(status)}
           </span>
         );
       case 'absent_justified':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded-md border border-purple-200/60 dark:border-purple-800/40">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-0.5 rounded-full border border-purple-200/60 dark:border-purple-800/40">
             {getStatusText(status)}
           </span>
         );
       case 'absent_unjustified':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-md border border-red-200/60 dark:border-red-800/40">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 bg-red-50 dark:bg-red-950/40 px-2.5 py-0.5 rounded-full border border-red-200/60 dark:border-red-800/40">
             {getStatusText(status)}
           </span>
         );
       case 'vacation':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-black/75 dark:text-white/80 bg-[#F3EDE7] dark:bg-[#262422] px-2 py-0.5 rounded-md">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-black/75 dark:text-white/80 bg-[#F3EDE7] dark:bg-[#262422] px-2.5 py-0.5 rounded-full">
             {getStatusText(status)}
           </span>
         );
@@ -385,81 +385,117 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-[#F3EDE7] dark:bg-[#262422] p-1 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] h-10">
-            <button
-              type="button"
-              onClick={() => setCurrentWeekOffset((prev) => prev - 1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-[#1C1B1A] text-black/75 dark:text-white/80 transition-colors cursor-pointer"
+      <div className="sq-elev-card">
+        <div
+          data-sq="card"
+          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A]"
+        >
+          <div className="flex items-center gap-3">
+            <div
+              data-sq="ctl"
+              style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
+              className="flex items-center gap-1 bg-[#F3EDE7] dark:bg-[#262422] p-[3px] h-10"
             >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-xs font-semibold px-2 text-black dark:text-white tabular-nums">
-              {isAr ? 'أسبوع العمل' : isEn ? 'Week' : 'Semaine du'} {weekDays[0].labelFR} – {weekDays[5].labelFR}
-            </span>
-            <button
-              type="button"
-              onClick={() => setCurrentWeekOffset((prev) => prev + 1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-[#1C1B1A] text-black/75 dark:text-white/80 transition-colors cursor-pointer"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              <button
+                type="button"
+                onClick={() => setCurrentWeekOffset((prev) => prev - 1)}
+                data-sq="thumb"
+                className="w-8 h-8 flex items-center justify-center hover:bg-white dark:hover:bg-[#1C1B1A] text-black/75 dark:text-white/80 transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-xs font-semibold px-2 text-black dark:text-white tabular-nums">
+                {isAr ? 'أسبوع العمل' : isEn ? 'Week' : 'Semaine du'} {weekDays[0].labelFR} – {weekDays[5].labelFR}
+              </span>
+              <button
+                type="button"
+                onClick={() => setCurrentWeekOffset((prev) => prev + 1)}
+                data-sq="thumb"
+                className="w-8 h-8 flex items-center justify-center hover:bg-white dark:hover:bg-[#1C1B1A] text-black/75 dark:text-white/80 transition-colors cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            {currentWeekOffset !== 0 && (
+              <button
+                type="button"
+                onClick={() => setCurrentWeekOffset(0)}
+                className="text-xs text-[#d4522f] hover:underline font-semibold cursor-pointer"
+              >
+                {isAr ? 'العودة لليوم' : isEn ? 'Current week' : 'Semaine actuelle'}
+              </button>
+            )}
           </div>
-          {currentWeekOffset !== 0 && (
-            <button
-              type="button"
-              onClick={() => setCurrentWeekOffset(0)}
-              className="text-xs text-[#d4522f] hover:underline font-semibold cursor-pointer"
+
+          <div className="flex items-center gap-2.5">
+            <AtriumButton
+              variant="secondary"
+              size="md"
+              onClick={() => setIsManualModalOpen(true)}
+              icon={<Plus className="w-4 h-4 text-black/70 dark:text-white/75" />}
+              className="h-10 text-xs font-semibold"
             >
-              {isAr ? 'العودة لليوم' : isEn ? 'Current week' : 'Semaine actuelle'}
-            </button>
-          )}
-        </div>
+              <span>{isAr ? 'تسجيل يدوي' : isEn ? 'Manual Log' : 'Saisie Manuelle'}</span>
+            </AtriumButton>
 
-        <div className="flex items-center gap-2.5">
-          <AtriumButton
-            variant="secondary"
-            size="md"
-            onClick={() => setIsManualModalOpen(true)}
-            icon={<Plus className="w-4 h-4 text-black/70 dark:text-white/75" />}
-            className="h-10 text-xs font-semibold"
-          >
-            <span>{isAr ? 'تسجيل يدوي' : isEn ? 'Manual Log' : 'Saisie Manuelle'}</span>
-          </AtriumButton>
-
-          <AtriumButton
-            variant="primary"
-            size="md"
-            onClick={onOpenKiosk}
-            icon={<QrCode className="w-4 h-4" />}
-            className="h-10 text-xs font-semibold shadow-xs"
-          >
-            <span>{isAr ? 'كشك الحضور' : isEn ? 'Clock Kiosk' : 'Borne Badge'}</span>
-          </AtriumButton>
+            <AtriumButton
+              variant="primary"
+              size="md"
+              onClick={onOpenKiosk}
+              icon={<QrCode className="w-4 h-4" />}
+              className="h-10 text-xs font-semibold shadow-xs"
+            >
+              <span>{isAr ? 'كشك الحضور' : isEn ? 'Clock Kiosk' : 'Borne Badge'}</span>
+            </AtriumButton>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
-          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'الحضور' : isEn ? 'Present' : 'Présents'}</p>
-          <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-emerald-600 dark:text-emerald-400 mt-1.5 tabular-nums">
-            {presentCount} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">/ {staffList.length}</span>
-          </p>
+        <div className="sq-elev-card">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+            className="p-4 bg-white dark:bg-[#1C1B1A]"
+          >
+            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'الحضور' : isEn ? 'Present' : 'Présents'}</p>
+            <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-emerald-600 dark:text-emerald-400 mt-1.5 tabular-nums">
+              {presentCount} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">/ {staffList.length}</span>
+            </p>
+          </div>
         </div>
-        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
-          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'التأخير' : isEn ? 'Late' : 'Retards'}</p>
-          <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-amber-600 dark:text-amber-400 mt-1.5 tabular-nums">{lateCount}</p>
+        <div className="sq-elev-card">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+            className="p-4 bg-white dark:bg-[#1C1B1A]"
+          >
+            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'التأخير' : isEn ? 'Late' : 'Retards'}</p>
+            <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-amber-600 dark:text-amber-400 mt-1.5 tabular-nums">{lateCount}</p>
+          </div>
         </div>
-        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
-          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'العطل' : isEn ? 'On Leave' : 'En Congé'}</p>
-          <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white mt-1.5 tabular-nums">{onLeaveCount}</p>
+        <div className="sq-elev-card">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+            className="p-4 bg-white dark:bg-[#1C1B1A]"
+          >
+            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'العطل' : isEn ? 'On Leave' : 'En Congé'}</p>
+            <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white mt-1.5 tabular-nums">{onLeaveCount}</p>
+          </div>
         </div>
-        <div className="p-4 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
-          <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'الالتزام' : isEn ? 'Rate' : 'Assiduité'}</p>
-          <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-[#d4522f] mt-1.5 tabular-nums">
-            {Math.round((presentCount / Math.max(1, staffList.length)) * 100)}%
-          </p>
+        <div className="sq-elev-card">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+            className="p-4 bg-white dark:bg-[#1C1B1A]"
+          >
+            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75">{isAr ? 'الالتزام' : isEn ? 'Rate' : 'Assiduité'}</p>
+            <p className="text-[28px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-[#d4522f] mt-1.5 tabular-nums">
+              {Math.round((presentCount / Math.max(1, staffList.length)) * 100)}%
+            </p>
+          </div>
         </div>
       </div>
 
@@ -509,34 +545,39 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
             {filteredStaff.map((member) => {
               const { hours } = computeWeeklyHours(member.id);
               return (
-                <div
-                  key={member.id}
-                  className="p-3.5 rounded-2xl bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-3"
-                >
-                  <div className="min-w-[180px]">
-                    <div className="font-bold text-xs text-black dark:text-white">{member.fullName}</div>
-                    <div className="text-[11px] text-black/60 dark:text-white/65">{member.role}</div>
-                  </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 flex-1">
-                    {weekDays.map((d) => {
-                      const st = getDayStatus(member.id, d.dateStr);
-                      return (
-                        <button
-                          key={d.dateStr}
-                          type="button"
-                          onClick={() => cycleDayStatus(member.id, d.dateStr)}
-                          className="p-2 rounded-xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] hover:border-[#d4522f]/50 flex flex-col items-center gap-1 cursor-pointer transition-colors"
-                        >
-                          <span className="text-[10px] font-semibold text-black/60 dark:text-white/65">
-                            {isAr ? d.labelAR : isEn ? d.labelEN : d.labelFR}
-                          </span>
-                          {renderStatusBadge(st)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="font-mono font-bold text-sm text-[#d4522f] tabular-nums lg:text-right min-w-[60px]">
-                    {hours} h
+                <div key={member.id} className="sq-elev-card">
+                  <div
+                    data-sq="panel"
+                    style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+                    className="p-3 bg-white dark:bg-[#1C1B1A] flex flex-col lg:flex-row lg:items-center justify-between gap-3"
+                  >
+                    <div className="min-w-[180px] px-1">
+                      <div className="font-bold text-xs text-black dark:text-white">{member.fullName}</div>
+                      <div className="text-[11px] text-black/60 dark:text-white/65">{member.role}</div>
+                    </div>
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 flex-1">
+                      {weekDays.map((d) => {
+                        const st = getDayStatus(member.id, d.dateStr);
+                        return (
+                          <button
+                            key={d.dateStr}
+                            type="button"
+                            onClick={() => cycleDayStatus(member.id, d.dateStr)}
+                            data-sq="card"
+                            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+                            className="p-2 bg-[#FBF8F5] dark:bg-[#262422] flex flex-col items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            <span className="text-[10px] font-semibold text-black/60 dark:text-white/65">
+                              {isAr ? d.labelAR : isEn ? d.labelEN : d.labelFR}
+                            </span>
+                            {renderStatusBadge(st)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="font-mono font-bold text-sm text-[#d4522f] tabular-nums lg:text-right min-w-[60px] px-1">
+                      {hours} h
+                    </div>
                   </div>
                 </div>
               );
@@ -601,7 +642,9 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                         key={d.dateStr}
                         type="button"
                         onClick={() => cycleDayStatus(m.id, d.dateStr)}
-                        className="w-full p-3 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 flex items-center justify-between hover:border-[#d4522f]/50 cursor-pointer transition-colors"
+                        data-sq="card"
+                        style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+                        className="w-full p-3 bg-white dark:bg-neutral-800 flex items-center justify-between cursor-pointer transition-colors"
                       >
                         <span className="text-xs font-semibold text-black dark:text-white">
                           {isAr ? d.labelAR : isEn ? d.labelEN : d.labelFR} ({d.dateStr})
@@ -619,79 +662,110 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
 
       {isManualModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1F1D1B]/45 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#1C1B1A] rounded-[24px] max-w-md w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-[#3A3734] space-y-4">
-            <h4 className="text-[16px] font-semibold tracking-[-0.015em] rtl:tracking-normal text-black dark:text-white">
-              {isAr ? 'تسجيل يدوي' : isEn ? 'Manual Log' : 'Pointage Manuel'}
-            </h4>
-            <form onSubmit={handleManualSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-black/80 dark:text-white/80 mb-1">
-                  {isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}
-                </label>
-                <select
-                  value={manualStaffId}
-                  onChange={(e) => setManualStaffId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs text-black dark:text-white"
-                >
-                  {staffList.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.fullName} ({s.role})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+          <div className="sq-elev-pop max-w-md w-full">
+            <div
+              data-sq="panel"
+              style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+              className="bg-white dark:bg-[#1C1B1A] w-full p-6 space-y-4"
+            >
+              <h4 className="text-[16px] font-semibold tracking-[-0.015em] rtl:tracking-normal text-black dark:text-white">
+                {isAr ? 'تسجيل يدوي' : isEn ? 'Manual Log' : 'Pointage Manuel'}
+              </h4>
+              <form onSubmit={handleManualSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-black/80 dark:text-white/80 mb-1">
-                    {isAr ? 'النوع' : isEn ? 'Type' : 'Type'}
+                    {isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}
                   </label>
-                  <select
-                    value={manualType}
-                    onChange={(e) => setManualType(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs text-black dark:text-white"
+                  <div
+                    data-sq="ctl"
+                    style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
+                    className="w-full bg-[#FBF8F5] dark:bg-[#262422]"
                   >
-                    <option value="in">{isAr ? 'دخول' : isEn ? 'Clock In' : 'Arrivée'}</option>
-                    <option value="out">{isAr ? 'خروج' : isEn ? 'Clock Out' : 'Sortie'}</option>
-                  </select>
+                    <select
+                      value={manualStaffId}
+                      onChange={(e) => setManualStaffId(e.target.value)}
+                      className="w-full px-3 py-2 bg-transparent text-xs text-black dark:text-white focus:outline-none cursor-pointer"
+                    >
+                      {staffList.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.fullName} ({s.role})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-black/80 dark:text-white/80 mb-1">
+                      {isAr ? 'النوع' : isEn ? 'Type' : 'Type'}
+                    </label>
+                    <div
+                      data-sq="ctl"
+                      style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
+                      className="w-full bg-[#FBF8F5] dark:bg-[#262422]"
+                    >
+                      <select
+                        value={manualType}
+                        onChange={(e) => setManualType(e.target.value as any)}
+                        className="w-full px-3 py-2 bg-transparent text-xs text-black dark:text-white focus:outline-none cursor-pointer"
+                      >
+                        <option value="in">{isAr ? 'دخول' : isEn ? 'Clock In' : 'Arrivée'}</option>
+                        <option value="out">{isAr ? 'خروج' : isEn ? 'Clock Out' : 'Sortie'}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-black/80 dark:text-white/80 mb-1">
+                      {isAr ? 'الوقت' : isEn ? 'Time' : 'Heure'}
+                    </label>
+                    <div
+                      data-sq="ctl"
+                      style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
+                      className="w-full bg-[#FBF8F5] dark:bg-[#262422]"
+                    >
+                      <input
+                        type="time"
+                        value={manualTime}
+                        onChange={(e) => setManualTime(e.target.value)}
+                        className="w-full px-3 py-2 bg-transparent text-xs font-mono text-black dark:text-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-black/80 dark:text-white/80 mb-1">
-                    {isAr ? 'الوقت' : isEn ? 'Time' : 'Heure'}
+                    {isAr ? 'السبب' : isEn ? 'Note' : 'Motif'}
                   </label>
-                  <input
-                    type="time"
-                    value={manualTime}
-                    onChange={(e) => setManualTime(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs font-mono text-black dark:text-white"
-                  />
+                  <div
+                    data-sq="ctl"
+                    style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
+                    className="w-full bg-[#FBF8F5] dark:bg-[#262422]"
+                  >
+                    <input
+                      type="text"
+                      value={manualNotes}
+                      onChange={(e) => setManualNotes(e.target.value)}
+                      placeholder={isAr ? 'ملاحظة...' : isEn ? 'Optional note...' : 'Motif...'}
+                      className="w-full px-3 py-2 bg-transparent text-xs text-black dark:text-white focus:outline-none"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-black/80 dark:text-white/80 mb-1">
-                  {isAr ? 'السبب' : isEn ? 'Note' : 'Motif'}
-                </label>
-                <input
-                  type="text"
-                  value={manualNotes}
-                  onChange={(e) => setManualNotes(e.target.value)}
-                  placeholder={isAr ? 'ملاحظة...' : isEn ? 'Optional note...' : 'Motif...'}
-                  className="w-full px-3 py-2 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs text-black dark:text-white"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsManualModalOpen(false)}
-                  className="px-3 py-2 text-xs font-semibold text-black/75 hover:text-black dark:text-white/75 dark:hover:text-white"
-                >
-                  {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
-                </button>
-                <AtriumButton type="submit">{isAr ? 'حفظ' : isEn ? 'Save' : 'Valider'}</AtriumButton>
-              </div>
-            </form>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsManualModalOpen(false)}
+                    data-sq="ctl-sm"
+                    className="px-3 py-2 text-xs font-semibold text-black/75 hover:text-black dark:text-white/75 dark:hover:text-white cursor-pointer"
+                  >
+                    {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
+                  </button>
+                  <AtriumButton type="submit">{isAr ? 'حفظ' : isEn ? 'Save' : 'Valider'}</AtriumButton>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

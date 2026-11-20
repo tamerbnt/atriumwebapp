@@ -23,11 +23,11 @@ import {
 
 /** Warm Walnut/Sandstone Pod surface for Pulse & Anchor column */
 export const HOME_POD_PULSE_CLASS =
-  '!bg-[#F2E6DA] dark:!bg-[#191512] !border-[#DFCFC0] dark:!border-[#382E25] !p-4 sm:!p-5 !space-y-3 lg:h-full [&>div:first-child>div:first-child>h2]:!text-[#2C1E15] dark:[&>div:first-child>div:first-child>h2]:!text-white [&>div:last-child]:!space-y-3';
+  '!bg-[#F2E6DA] dark:!bg-[#191512] [--sq-stroke:#DFCFC0] dark:[--sq-stroke:#382E25] !p-3 !space-y-3 lg:h-full [&>div:first-child>div:first-child>h2]:!text-[#2C1E15] dark:[&>div:first-child>div:first-child>h2]:!text-white [&>div:last-child]:!space-y-3';
 
 /** Soft Complementary Lavender-Linen Pod surface for Workspaces Directory column */
 export const HOME_POD_DIRECTORY_CLASS =
-  '!bg-[#EFEBF7] dark:!bg-[#171420] !border-[#DDD4EC] dark:!border-[#312A44] !p-4 sm:!p-5 !space-y-3 lg:h-full [&>div:first-child>div:first-child>h2]:!text-[#241B38] dark:[&>div:first-child>div:first-child>h2]:!text-white [&>div:last-child]:!space-y-3';
+  '!bg-[#EFEBF7] dark:!bg-[#171420] [--sq-stroke:#DDD4EC] dark:[--sq-stroke:#312A44] !p-3 !space-y-3 lg:h-full [&>div:first-child>div:first-child>h2]:!text-[#241B38] dark:[&>div:first-child>div:first-child>h2]:!text-white [&>div:last-child]:!space-y-3';
 
 export interface HomeShellProps {
   roleKey?: string;
@@ -124,7 +124,9 @@ export const HomeShell: React.FC<HomeShellProps> = ({
         <div className="flex items-center gap-3.5 min-w-0 flex-1">
           <div
             aria-hidden="true"
-            className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#F2E3D5] to-[#EAE3F7] dark:from-[#2B2019] dark:to-[#221C34] border border-[#DDD0C4] dark:border-[#3D3350] shadow-2xs flex items-center justify-center text-[#5B41A1] dark:text-[#C4B5FD] shrink-0"
+            data-sq="tile-lg"
+            data-sq-border="solid"
+            className="relative w-12 h-12 bg-gradient-to-br from-[#F2E3D5] to-[#EAE3F7] dark:from-[#2B2019] dark:to-[#221C34] border border-[#DDD0C4] dark:border-[#3D3350] [--sq-stroke:#DDD0C4] dark:[--sq-stroke:#3D3350] flex items-center justify-center text-[#5B41A1] dark:text-[#C4B5FD] shrink-0"
           >
             <Compass size={20} strokeWidth={2} />
           </div>
@@ -171,7 +173,7 @@ export const HomeShell: React.FC<HomeShellProps> = ({
                   variant="outline"
                   size="md"
                   icon={<Plus size={15} strokeWidth={2.2} />}
-                  className="whitespace-nowrap shrink-0 !border-[#D8C9BC] dark:!border-[#3A312C] hover:!border-[#6B4122] dark:hover:!border-[#D9A97E]"
+                  className="whitespace-nowrap shrink-0 [--sq-stroke:#D8C9BC] dark:[--sq-stroke:#3A312C] hover:[--sq-stroke:#6B4122] dark:hover:[--sq-stroke:#D9A97E]"
                 >
                   <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                     {strings.quickActions}

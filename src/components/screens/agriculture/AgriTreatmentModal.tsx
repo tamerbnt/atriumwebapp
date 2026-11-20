@@ -186,55 +186,71 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-6">
-        <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold">
-              <ShieldCheck size={20} />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {logToEdit
-                  ? (isAr ? 'تعديل المعالجة النباتية' : 'Modifier le Traitement Phytosanitaire')
-                  : (isAr ? 'قيد معالجة جديدة وفترة الأمان DAR' : 'Consigner un Traitement & Délai DAR (INPV)')}
-              </h2>
-            </div>
-          </div>
-          <button
-            type="button"
-            aria-label={isAr ? 'إغلاق' : 'Fermer'}
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Quick INPV Presets Selector Chips */}
-        <div className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl border border-neutral-100 dark:border-neutral-800">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-black/70 dark:text-white flex items-center gap-1.5">
-              <Zap size={13} className="text-[#d4522f]" />
-              {isAr ? 'مواد معتمدة ومطابقة لوزارة الفلاحة (INPV)' : 'Produits Homologués INPV Algérie (Pré-remplissage 1-clic)'}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {INPV_PRESETS.map((p) => (
-              <button
-                key={p.name}
-                type="button"
-                onClick={() => handleApplyPreset(p)}
-                className={`text-[10.5px] px-2.5 py-1 rounded-lg border transition font-medium ${
-                  productName === p.name
-                    ? 'bg-[#d4522f] text-white border-[#d4522f]'
-                    : 'bg-white dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700 hover:border-[#d4522f]'
-                }`}
+      <div className="sq-elev-pop w-full max-w-2xl">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 w-full max-h-[90vh] overflow-y-auto p-6"
+        >
+          <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center gap-3">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-10 h-10 bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold shrink-0"
               >
-                {p.name} <span className="opacity-70 text-[10px]">({p.darDays}j DAR)</span>
-              </button>
-            ))}
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  {logToEdit
+                    ? (isAr ? 'تعديل المعالجة النباتية' : 'Modifier le Traitement Phytosanitaire')
+                    : (isAr ? 'قيد معالجة جديدة وفترة الأمان DAR' : 'Consigner un Traitement & Délai DAR (INPV)')}
+                </h2>
+              </div>
+            </div>
+            <button
+              type="button"
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              onClick={onClose}
+              className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+            >
+              <X size={18} />
+            </button>
           </div>
-        </div>
+
+          {/* Quick INPV Presets Selector Chips */}
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-black/70 dark:text-white flex items-center gap-1.5">
+                <Zap size={13} className="text-[#d4522f]" />
+                {isAr ? 'مواد معتمدة ومطابقة لوزارة الفلاحة (INPV)' : 'Produits Homologués INPV Algérie (Pré-remplissage 1-clic)'}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {INPV_PRESETS.map((p) => (
+                <button
+                  key={p.name}
+                  type="button"
+                  onClick={() => handleApplyPreset(p)}
+                  data-sq="ctl-sm"
+                  data-sq-border="solid"
+                  style={productName === p.name ? ({ '--sq-stroke': '#d4522f' } as React.CSSProperties) : undefined}
+                  className={`text-[10.5px] px-2.5 py-1 border transition font-medium cursor-pointer ${
+                    productName === p.name
+                      ? 'bg-[#d4522f] text-white border-[#d4522f]'
+                      : 'bg-white dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700 hover:[--sq-stroke:#d4522f]'
+                  }`}
+                >
+                  {p.name} <span className="opacity-70 text-[10px]">({p.darDays}j DAR)</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -316,7 +332,12 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
           </div>
 
           {/* Safety Warning Preview */}
-          <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
+            className="p-3 bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300"
+          >
             <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold">
@@ -346,7 +367,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
               id="safetyGear"
               checked={safetyGearConfirmed}
               onChange={(e) => setSafetyGearConfirmed(e.target.checked)}
-              className="rounded text-[#d4522f] focus:ring-[#d4522f]"
+              className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
             />
             <label htmlFor="safetyGear" className="text-xs text-black/70 dark:text-white cursor-pointer">
               {isAr
@@ -373,6 +394,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
             </AtriumButton>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

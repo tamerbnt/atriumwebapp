@@ -9,6 +9,8 @@ import s from './Button.module.css';
 
 export type Tone = 'accent' | 'outline' | 'soft' | 'success';
 
+export type ButtonShape = 'squircle' | 'capsule';
+
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   /** accent: brand orange · outline · soft: neutral · success: green */
   tone?: Tone;
@@ -17,8 +19,10 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   /** any inline SVG, e.g. a Lucide icon */
   leading?: ReactNode;
   trailing?: ReactNode;
-  /** square button for a single icon; give it an aria-label */
+  /** square/circle button for a single icon; give it an aria-label */
   iconOnly?: boolean;
+  /** continuous 60% squircle (default for standard buttons) or capsule (default for iconOnly / rounded-full) */
+  shape?: ButtonShape;
   children?: ReactNode;
 }
 
@@ -30,17 +34,26 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
  * buttons cost the same as one until you touch them.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { tone = 'accent', size, leading, trailing, iconOnly, className, style, type = 'button', children, ...rest },
+  { tone = 'accent', size, leading, trailing, iconOnly, shape, className, style, type = 'button', children, ...rest },
   ref,
 ) {
   useEffect(() => installLiquid(), []);
   const sp = sizeProps(size, style);
+  const isCapsule =
+    shape === 'capsule' ||
+    (shape !== 'squircle' && (Boolean(iconOnly) || /\b!?rounded-full\b/.test(className || '')));
+  const isCompact = size === 'sm' || (typeof size === 'number' && size <= 34);
+  const sqToken = isCapsule ? undefined : isCompact ? 'ctl-sm' : 'ctl';
+  const sqBorder = isCapsule ? undefined : tone === 'outline' || tone === 'soft' ? 'solid' : 'none';
+
   return (
     <button
       ref={ref}
       type={type}
-      className={cx(s.root, s[tone], iconOnly && s.icon, className)}
+      className={cx(s.root, s[tone], iconOnly && s.icon, isCapsule && s.capsule, className)}
       data-atr-liquid=""
+      data-sq={sqToken}
+      data-sq-border={sqBorder}
       {...sp}
       {...rest}
     >

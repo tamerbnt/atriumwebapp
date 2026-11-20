@@ -98,8 +98,12 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
     >
       <form onSubmit={handleSave} className="space-y-4">
         {/* Top Summary Card */}
-        <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
-          <div className="flex items-center justify-between">
+        <div
+          data-sq="panel"
+          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+          className="p-3 bg-[#F3EDE7] dark:bg-neutral-800/60 space-y-2.5"
+        >
+          <div className="flex items-center justify-between px-1 pt-0.5">
             <span className="text-xs font-semibold text-black/70 dark:text-white/70">
               {isAr ? 'تاريخ العملية' : isEn ? 'Close Date' : 'Date Clôture'}
             </span>
@@ -109,19 +113,35 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-            <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
+            <div
+              data-sq="card"
+              style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+              className="p-2.5 bg-white dark:bg-neutral-800"
+            >
               <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'الافتتاح' : isEn ? 'Opening' : 'Fond Initial'}</span>
               <span className="font-bold text-black dark:text-white font-mono tabular-nums">{formatMoney(closure.openingFloatDzd || 0, language)}</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
+            <div
+              data-sq="card"
+              style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+              className="p-2.5 bg-white dark:bg-neutral-800"
+            >
               <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'المقبوضات' : isEn ? 'Cash In' : 'Encaissements'}</span>
               <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">+{formatMoney(closure.totalCashReceivedDzd || 0, language)}</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
+            <div
+              data-sq="card"
+              style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+              className="p-2.5 bg-white dark:bg-neutral-800"
+            >
               <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'رسوم الطابع' : isEn ? 'Stamp Tax' : 'Timbre Fiscal'}</span>
               <span className="font-bold text-amber-600 dark:text-amber-400 font-mono tabular-nums">{formatMoney(closure.totalTimbreAccruedDzd || 0, language)}</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700/40">
+            <div
+              data-sq="card"
+              style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+              className="p-2.5 bg-white dark:bg-neutral-800"
+            >
               <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'المتوقع' : isEn ? 'Expected' : 'Théorique'}</span>
               <span className="font-bold text-[#d4522f] font-mono tabular-nums">{formatMoney(closure.theoreticalCashDzd || 0, language)}</span>
             </div>
@@ -129,7 +149,12 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
         </div>
 
         {/* Banknote Denominations Counter */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-3 shadow-2xs">
+        <div className="sq-elev-card">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+            className="p-4 bg-white dark:bg-neutral-800 space-y-3"
+          >
           <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-700">
             <span className="text-xs font-bold text-black dark:text-white flex items-center gap-2">
               <Coins size={16} className="text-[#d4522f]" />
@@ -200,13 +225,17 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/50 text-xs">
+          <div
+            data-sq="ctl"
+            className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-900/50 text-xs"
+          >
             <span className="font-medium text-black/70 dark:text-white/70">
               {isAr ? 'العد الفعلي' : isEn ? 'Counted Total' : 'Total Compté'}
             </span>
             <span className="text-lg font-extrabold font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-black dark:text-white">
               {formatMoney(countedTotal, language)}
             </span>
+          </div>
           </div>
         </div>
 

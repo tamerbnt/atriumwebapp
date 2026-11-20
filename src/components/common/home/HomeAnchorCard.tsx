@@ -58,8 +58,10 @@ export const HomeAnchorCard: React.FC<HomeAnchorCardProps> = ({
 
   const cardBody = (
     <div
-      className={`bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] rounded-[18px] p-4 border border-[#4D382B]/85 text-white min-h-[108px] flex flex-col justify-between relative overflow-hidden shadow-xs transition-colors duration-150 ${
-        isInteractive ? 'group-hover/anchor:border-[#FB923C]/55' : ''
+      data-sq="card"
+      data-sq-border="solid"
+      className={`bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] p-4 border border-[#4D382B]/85 [--sq-stroke:rgba(77,56,43,0.85)] text-white min-h-[108px] flex flex-col justify-between relative overflow-hidden transition-colors duration-150 ${
+        isInteractive ? 'group-hover/anchor:[--sq-stroke:rgba(251,146,60,0.55)]' : ''
       }`}
     >
       {/* Subtle Espresso + Complementary Lavender & Terracotta Wave Backdrop */}
@@ -101,7 +103,7 @@ export const HomeAnchorCard: React.FC<HomeAnchorCardProps> = ({
           </span>
           {badgeText && (
             <span
-              className={`px-2 py-0.5 rounded-md text-[10.5px] font-semibold tracking-[-0.005em] whitespace-nowrap ${BADGE_CLASSES[badgeVariant]}`}
+              className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold tracking-[-0.005em] whitespace-nowrap ${BADGE_CLASSES[badgeVariant]}`}
             >
               {badgeText}
             </span>
@@ -135,8 +137,9 @@ export const HomeAnchorCard: React.FC<HomeAnchorCardProps> = ({
   return (
     <button
       type="button"
+      data-no-liquid="true"
       onClick={handleClick}
-      className={`group/anchor relative w-full text-start rounded-[18px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FB923C] shrink-0 ${className}`}
+      className={`group/anchor relative w-full text-start cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FB923C] shrink-0 ${className}`}
     >
       {cardBody}
       <span

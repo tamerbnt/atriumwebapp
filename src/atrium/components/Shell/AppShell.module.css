@@ -1,13 +1,13 @@
 .root {
   --gap: var(--atr-shell-gap, 14px);
   --bar-h: var(--atr-bar-h, 54px);
-  --r: var(--atr-r-card, 24px);
+  --r: var(--r-app, 40px);
   position: relative;
   box-sizing: border-box;
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: var(--atr-rail, 60px) minmax(0, 1fr);
+  grid-template-columns: var(--atr-rail, 68px) minmax(0, 1fr);
   column-gap: var(--gap);
   padding: var(--gap);
   overflow: hidden;
@@ -18,7 +18,7 @@
 }
 /* expanded: the grid column flips once, and the content's transform (PushBody) cancels the jump */
 .root[data-expanded] {
-  grid-template-columns: var(--atr-rail-open, 236px) minmax(0, 1fr);
+  grid-template-columns: var(--atr-rail-open, 244px) minmax(0, 1fr);
 }
 
 .side { grid-column: 1; min-height: 0; height: 100%; }
@@ -50,29 +50,33 @@
   padding: 0 16px 0 20px;
   background: var(--atr-card);
   border: 1px solid var(--atr-line);
-  border-radius: var(--r);
+  border-radius: var(--atr-r-bar, 27px);
   box-shadow: 0 1px 2px rgba(20, 16, 12, 0.03);
   will-change: transform;
 }
 .root[data-bar='hidden'][data-settled] .bar { visibility: hidden; will-change: auto; }
 
-.main {
+.mainFrame {
   grid-row: 2;
   min-width: 0;
   min-height: 0;
+  position: relative;
   margin-top: var(--gap);
+  background: var(--atr-card);
+  --sq-stroke: var(--atr-line);
+  will-change: transform;
+}
+.mainInner {
+  width: 100%;
+  height: 100%;
   overflow: auto;
   overscroll-behavior: contain;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  background: var(--atr-card);
-  border: 1px solid var(--atr-line);
-  border-radius: var(--r);
-  box-shadow: 0 1px 3px rgba(20, 16, 12, 0.03);
-  will-change: transform;
+  outline: none;
 }
-.root[data-bar='hidden'] .main { margin-top: 0; }
-.root[data-settled] .main { will-change: auto; }
+.root[data-bar='hidden'] .mainFrame { margin-top: 0; }
+.root[data-settled] .mainFrame { will-change: auto; }
 
 /* keyboard way back to a hidden bar: invisible until focused */
 .reveal {

@@ -923,7 +923,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                     );
                   })()
                 ) : (
-                  <KineticEmptyStateMotion motionKey={`mfg-bom-${inspectingOrder.id}`}>
+                  <KineticEmptyStateMotion motionKey={`mfg-bom-${ord.id}`}>
                     <EmptyState
                       variant="compact"
                       icon={<Boxes />}

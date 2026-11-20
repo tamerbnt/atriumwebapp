@@ -56,7 +56,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
     >
       <div className="space-y-5 text-black/85 dark:text-white/85 select-none">
         {/* Instant Access Banner */}
-        <div className="p-4 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420] border border-[#F5E2D8] dark:border-[#4A3B33] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div data-sq="card" className="p-4 bg-[#FDF4F0] dark:bg-[#2A2420] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 font-extrabold text-[#d4522f]">
               <Sparkles size={15} />
@@ -79,7 +79,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
         </div>
 
         {/* Question 1: Is Google Auth Free? */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/80 space-y-2">
+        <div data-sq="card" className="p-4 bg-white dark:bg-neutral-800/80 space-y-2">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
               ✓
@@ -94,7 +94,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
         </div>
 
         {/* Question 2: The First Field in Google Cloud Console */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700/80 space-y-3">
+        <div data-sq="card" className="p-4 bg-white dark:bg-neutral-800/80 space-y-3">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">
               ?
@@ -108,12 +108,12 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
           </p>
 
           <div className="space-y-2 pl-7 text-xs">
-            <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 space-y-1.5">
+            <div data-sq="ctl" className="p-3 bg-neutral-50 dark:bg-neutral-900 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-black/80 dark:text-white/80 text-[11px]">
                   First field: "Authorized JavaScript origins"
                 </span>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
                   Optional (Can leave empty)
                 </span>
               </div>
@@ -121,13 +121,13 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
                 You can leave this completely <strong>blank</strong>, or copy your Supabase URL:
               </p>
               <div className="flex items-center gap-2">
-                <code className="text-[11px] font-mono text-[#d4522f] bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded truncate flex-1">
+                <code className="text-[11px] font-mono text-[#d4522f] bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded-[var(--r-check,6px)] truncate flex-1">
                   {supabaseUrl}
                 </code>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(supabaseUrl, 'origin')}
-                  className="p-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 cursor-pointer"
+                  className="p-1.5 rounded-full border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 cursor-pointer"
                   title="Copy"
                 >
                   {copiedField === 'origin' ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
@@ -135,12 +135,12 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 space-y-1.5">
+            <div data-sq="ctl" className="p-3 bg-neutral-50 dark:bg-neutral-900 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-black/80 dark:text-white/80 text-[11px]">
                   Second field: "Authorized redirect URIs"
                 </span>
-                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full">
                   Mandatory
                 </span>
               </div>
@@ -148,13 +148,13 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
                 Paste this exact URL into Google Cloud Console:
               </p>
               <div className="flex items-center gap-2">
-                <code className="text-[11px] font-mono text-[#d4522f] bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded truncate flex-1">
+                <code className="text-[11px] font-mono text-[#d4522f] bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded-[var(--r-check,6px)] truncate flex-1">
                   {redirectUri}
                 </code>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(redirectUri, 'redirect')}
-                  className="p-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 cursor-pointer"
+                  className="p-1.5 rounded-full border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 cursor-pointer"
                   title="Copy"
                 >
                   {copiedField === 'redirect' ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
@@ -165,7 +165,11 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
         </div>
 
         {/* Question 3: How to Fix 403 Google Error */}
-        <div className="p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 space-y-2.5">
+        <div
+          data-sq="card"
+          style={{ '--sq-stroke': 'rgba(244,63,94,0.35)' } as React.CSSProperties}
+          className="p-4 bg-rose-50/50 dark:bg-rose-950/20 space-y-2.5"
+        >
           <div className="flex items-center gap-2">
             <ShieldAlert size={16} className="text-rose-600 shrink-0" />
             <h4 className="text-xs font-black text-rose-950 dark:text-rose-200 uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
@@ -178,7 +182,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
               When Google Cloud OAuth is set to <strong>Testing</strong> mode, Google blocks all logins with 403 unless you do one of these two fixes:
             </p>
 
-            <div className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-1">
+            <div data-sq="ctl" className="p-3 bg-white dark:bg-neutral-800 space-y-1">
               <span className="font-bold text-black dark:text-white block">
                 Fix A: Click "Publish App" (Best &amp; Easiest)
               </span>
@@ -187,7 +191,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
               </p>
             </div>
 
-            <div className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-1">
+            <div data-sq="ctl" className="p-3 bg-white dark:bg-neutral-800 space-y-1">
               <span className="font-bold text-black dark:text-white block">
                 Fix B: Verify User Type is "External"
               </span>
@@ -209,7 +213,8 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
           <button
             type="button"
             onClick={handleBypass}
-            className="h-9 px-4 text-xs font-bold rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:text-black dark:hover:bg-neutral-100 cursor-pointer shadow-xs"
+            data-sq="ctl-sm"
+            className="h-9 px-4 text-xs font-bold bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:text-black dark:hover:bg-neutral-100 cursor-pointer"
           >
             Sign In with 1-Click
           </button>

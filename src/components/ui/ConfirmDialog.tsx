@@ -54,17 +54,17 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   const variantStyles = {
     danger: {
-      iconBg: 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60',
+      iconBg: 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 [--sq-stroke:#FECDD3] dark:[--sq-stroke:rgba(136,19,55,0.6)]',
       btnBg: 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs focus:ring-rose-500/30',
       Icon: AlertTriangle,
     },
     warning: {
-      iconBg: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60',
+      iconBg: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 [--sq-stroke:#FDE68A] dark:[--sq-stroke:rgba(120,53,15,0.6)]',
       btnBg: 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs focus:ring-amber-500/30',
       Icon: AlertCircle,
     },
     info: {
-      iconBg: 'bg-[#d4522f]/10 text-[#d4522f] border border-[#d4522f]/20',
+      iconBg: 'bg-[#d4522f]/10 text-[#d4522f] [--sq-stroke:rgba(212,82,47,0.25)]',
       btnBg: 'bg-[#d4522f] hover:bg-[#b03b1b] text-white shadow-xs focus:ring-[#d4522f]/30',
       Icon: Info,
     },
@@ -81,54 +81,62 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       />
 
       {/* Surface Card */}
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        style={{ contain: 'layout paint' }}
-        className="relative w-full max-w-md z-10 overflow-hidden rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl transform-gpu animate-in fade-in zoom-in-95 duration-150 p-6"
-      >
-        <div className="flex items-start gap-4">
-          <div className={`w-12 h-12 rounded-2xl shrink-0 flex items-center justify-center ${variantStyles.iconBg}`}>
-            <IconComponent size={22} />
+      <div className="relative w-full max-w-md z-10 sq-elev-pop">
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          data-sq="panel"
+          data-sq-border="solid"
+          style={{ contain: 'layout paint' }}
+          className="relative w-full overflow-hidden bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#26262A] transform-gpu animate-in fade-in zoom-in-95 duration-150 p-6"
+        >
+          <div className="flex items-start gap-4">
+            <div
+              data-sq="tile-lg"
+              data-sq-border="solid"
+              className={`relative w-12 h-12 shrink-0 flex items-center justify-center ${variantStyles.iconBg}`}
+            >
+              <IconComponent size={22} />
+            </div>
+            <div className="flex-1 min-w-0 pr-6">
+              <h3 className="text-base font-bold tracking-tight text-black dark:text-white">
+                {title}
+              </h3>
+              <p className="mt-1.5 text-xs text-black/75 dark:text-white/75 leading-relaxed">
+                {description}
+              </p>
+            </div>
+            <button
+              type="button"
+              data-no-liquid="true"
+              onClick={onClose}
+              disabled={isLoading}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            >
+              <X size={16} />
+            </button>
           </div>
-          <div className="flex-1 min-w-0 pr-6">
-            <h3 className="text-base font-bold tracking-tight text-black dark:text-white">
-              {title}
-            </h3>
-            <p className="mt-1.5 text-xs text-black/75 dark:text-white/75 leading-relaxed">
-              {description}
-            </p>
-          </div>
-          <button
-            type="button"
-            data-no-liquid="true"
-            onClick={onClose}
-            disabled={isLoading}
-            className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-          >
-            <X size={16} />
-          </button>
-        </div>
 
-        <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
-          <AtriumButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            disabled={isLoading}
-            onClick={onClose}
-          >
-            {cancelLabel}
-          </AtriumButton>
-          <AtriumButton
-            type="button"
-            variant={variant === 'danger' ? 'danger' : 'primary'}
-            size="sm"
-            loading={isLoading}
-            onClick={onConfirm}
-          >
-            {confirmLabel}
-          </AtriumButton>
+          <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
+            <AtriumButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              disabled={isLoading}
+              onClick={onClose}
+            >
+              {cancelLabel}
+            </AtriumButton>
+            <AtriumButton
+              type="button"
+              variant={variant === 'danger' ? 'danger' : 'primary'}
+              size="sm"
+              loading={isLoading}
+              onClick={onConfirm}
+            >
+              {confirmLabel}
+            </AtriumButton>
+          </div>
         </div>
       </div>
     </div>

@@ -136,6 +136,7 @@ export const ChartCard: React.FC<ChartCardProps> = React.memo(({
       className={`ax-card ax-reveal ${className}`}
       aria-label={ariaSummary || title}
     >
+      <div className="ax-card-bg" aria-hidden="true" data-sq="card" data-sq-border="solid" />
       <header className="ax-head">
         <div className="ax-head-meta">
           <div className="ax-title-row">

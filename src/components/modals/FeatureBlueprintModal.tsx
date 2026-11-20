@@ -707,7 +707,12 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
       dir={isAr ? 'rtl' : 'ltr'}
     >
-      <div className="relative w-full max-w-2xl bg-[#141416] border border-[#d4522f]/40 rounded-[28px] shadow-[0_24px_60px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="sq-elev-pop relative w-full max-w-2xl">
+        <div
+          data-sq="panel"
+          style={{ '--sq-stroke': 'rgba(212,82,47,0.4)' } as React.CSSProperties}
+          className="relative w-full bg-[#141416] overflow-hidden flex flex-col max-h-[90vh]"
+        >
         
         {/* Ambient Top Glow */}
         <div
@@ -746,10 +751,12 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
             {data.mechanisms.map((mech, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-2xl bg-neutral-900/80 border border-white/5 space-y-1.5 hover:border-white/15 transition-colors"
+                data-sq="card"
+                style={{ '--sq-stroke': 'rgba(255,255,255,0.08)' } as React.CSSProperties}
+                className="p-4 bg-neutral-900/80 space-y-1.5 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-[#d4522f]/20 flex items-center justify-center text-[#E09070] font-bold text-xs shrink-0">
+                  <div className="w-6 h-6 rounded-[var(--r-check,6px)] bg-[#d4522f]/20 flex items-center justify-center text-[#E09070] font-bold text-xs shrink-0">
                     {idx + 1}
                   </div>
                   <h4 className="text-sm font-bold text-white">
@@ -764,7 +771,11 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
           </div>
 
           {/* Quantifiable Result Card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-[#1C1A18] to-neutral-900 border border-[#d4522f]/30 flex items-center gap-4">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'rgba(212,82,47,0.3)' } as React.CSSProperties}
+            className="p-4 bg-gradient-to-r from-[#1C1A18] to-neutral-900 flex items-center gap-4"
+          >
             <div className="text-2xl sm:text-3xl font-black text-[#d4522f] font-mono tabular-nums shrink-0">
               {data.result.stat}
             </div>
@@ -795,6 +806,7 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
           </AtriumButton>
         </div>
 
+        </div>
       </div>
     </div>
   );

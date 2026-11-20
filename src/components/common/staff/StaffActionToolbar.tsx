@@ -224,8 +224,10 @@ export const StaffActionToolbar: React.FC<StaffActionToolbarProps> = React.memo(
     <button
       type="button"
       data-no-liquid="true"
+      data-sq="ctl"
+      style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
       onClick={onOpenPointage}
-      className="h-10 px-3.5 rounded-xl border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-colors shadow-2xs bg-white dark:bg-neutral-800 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#FBF8F5] dark:hover:bg-neutral-700/50 shrink-0"
+      className="h-10 px-3.5 flex items-center gap-2 text-xs font-semibold cursor-pointer transition-colors bg-white dark:bg-neutral-800 text-black/75 dark:text-white/80 hover:bg-[#FBF8F5] dark:hover:bg-neutral-700/50 shrink-0"
       title={isAr ? 'كشك البصمة السريع' : isEn ? 'Quick Attendance Clock-In' : 'Kiosk Pointage RFID / PIN'}
     >
       <QrCode size={15} className="text-[#d4522f]" />

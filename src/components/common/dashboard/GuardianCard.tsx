@@ -48,19 +48,26 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
   };
 
   return (
-    <div
-      className={`bg-[#1F1D1B] rounded-[20px] p-5 sm:p-6 border border-white/[0.08] text-white relative overflow-hidden flex flex-col justify-between shadow-md ${className}`}
-    >
-      {/* Top row: Title and Toggle */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white/[0.08] border border-white/[0.08] text-[#FB923C] flex items-center justify-center shrink-0">
-            <Shield size={16} />
+    <div className={`sq-elev-card h-full ${className}`}>
+      <div
+        data-sq="card"
+        data-sq-border="solid"
+        className="bg-[#1F1D1B] rounded-[var(--r-card,16px)] p-5 sm:p-6 [--sq-stroke:rgba(255,255,255,0.08)] text-white relative overflow-hidden flex flex-col justify-between h-full"
+      >
+        {/* Top row: Title and Toggle */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              data-sq="tile"
+              data-sq-border="solid"
+              className="w-9 h-9 rounded-[var(--r-tile,12px)] bg-white/[0.08] [--sq-stroke:rgba(255,255,255,0.08)] text-[#FB923C] flex items-center justify-center shrink-0"
+            >
+              <Shield size={16} />
+            </div>
+            <h4 className="text-[15px] font-semibold text-white tracking-[-0.015em] leading-snug">
+              {title}
+            </h4>
           </div>
-          <h4 className="text-[15px] font-semibold text-white tracking-[-0.015em] leading-snug">
-            {title}
-          </h4>
-        </div>
 
         {/* Toggle pill */}
         <button
@@ -133,6 +140,7 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
         <span className="text-[11px] text-white/60 font-mono tabular-nums">
           {trendText || 'Live'}
         </span>
+      </div>
       </div>
     </div>
   );

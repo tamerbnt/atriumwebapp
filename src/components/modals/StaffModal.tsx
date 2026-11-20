@@ -286,7 +286,11 @@ export const StaffModal: React.FC<StaffModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto max-h-[75vh]" dir={isAr ? 'rtl' : 'ltr'}>
         {errors.form && (
-          <div className="p-3 text-xs rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-2">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'rgba(239,68,68,0.25)' } as React.CSSProperties}
+            className="p-3 text-xs bg-red-500/10 text-red-500 flex items-center gap-2"
+          >
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errors.form}</span>
           </div>
@@ -383,10 +387,10 @@ export const StaffModal: React.FC<StaffModalProps> = ({
           </div>
 
           {/* Access Badge */}
-          <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60">
+          <div data-sq="card" className="p-3.5 bg-neutral-50 dark:bg-neutral-800/50">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
+                <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
                   <QrCode className="w-5 h-5" />
                 </div>
                 <div>
@@ -400,17 +404,21 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <input
-                  type="text"
-                  value={cardId}
-                  onChange={(e) => setCardId(e.target.value.toUpperCase())}
-                  placeholder="RFID-000000"
-                  className="font-mono text-xs px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 w-full sm:w-36 focus:outline-hidden focus:border-[#d4522f]"
-                />
+                <div data-sq="ctl" className="w-full sm:w-36 bg-white dark:bg-neutral-900 focus-within:[--sq-stroke:#d4522f]">
+                  <input
+                    type="text"
+                    value={cardId}
+                    onChange={(e) => setCardId(e.target.value.toUpperCase())}
+                    placeholder="RFID-000000"
+                    className="font-mono text-xs px-3 py-1.5 w-full bg-transparent border-0 text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-hidden"
+                  />
+                </div>
                 <button
                   type="button"
+                  data-sq="ctl-sm"
+                  data-sq-border="none"
                   onClick={handleGenerateBadge}
-                  className="shrink-0 text-xs px-3 py-1.5 rounded-xl bg-[#d4522f] text-white hover:bg-[#b0674b] transition-colors"
+                  className="shrink-0 text-xs px-3 py-1.5 bg-[#d4522f] text-white hover:bg-[#b0674b] transition-colors cursor-pointer"
                 >
                   {isAr ? 'توليد' : isEn ? 'Gen' : 'Générer'}
                 </button>
@@ -424,8 +432,10 @@ export const StaffModal: React.FC<StaffModalProps> = ({
         <div className="border-t border-neutral-200 dark:border-neutral-800 pt-4">
           <button
             type="button"
+            data-sq="ctl"
+            data-sq-border="none"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-between p-3 rounded-2xl bg-neutral-100/70 dark:bg-neutral-800/40 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-left rtl:text-right transition-colors"
+            className="w-full flex items-center justify-between p-3 bg-neutral-100/70 dark:bg-neutral-800/40 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-left rtl:text-right transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
               <FileText className="w-4 h-4 text-[#d4522f]" />
@@ -533,7 +543,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               </div>
 
               {/* Multi-Credential Authentication Toggles */}
-              <div className="space-y-3 p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700/60">
+              <div data-sq="panel" className="space-y-3 p-3 bg-neutral-50 dark:bg-neutral-800/40">
                 <div className="flex items-center gap-2 text-xs font-semibold text-black dark:text-white">
                   <KeyRound className="w-4 h-4 text-[#d4522f]" />
                   <span>{isAr ? 'بيانات الدخول' : isEn ? 'Login Access' : 'Accès Connexion'}</span>
@@ -547,32 +557,32 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
+                  <label data-sq="card" className="flex items-center gap-2.5 p-2.5 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
                     <input
                       type="checkbox"
                       checked={canLoginEmail}
                       onChange={(e) => setCanLoginEmail(e.target.checked)}
-                      className="accent-[#d4522f] rounded-sm"
+                      className="accent-[#d4522f] rounded-[var(--r-check,6px)]"
                     />
                     <span>{isAr ? 'البريد' : isEn ? 'Email' : 'Email'}</span>
                   </label>
 
-                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
+                  <label data-sq="card" className="flex items-center gap-2.5 p-2.5 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
                     <input
                       type="checkbox"
                       checked={canLoginPhone}
                       onChange={(e) => setCanLoginPhone(e.target.checked)}
-                      className="accent-[#d4522f] rounded-sm"
+                      className="accent-[#d4522f] rounded-[var(--r-check,6px)]"
                     />
                     <span>{isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}</span>
                   </label>
 
-                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
+                  <label data-sq="card" className="flex items-center gap-2.5 p-2.5 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
                     <input
                       type="checkbox"
                       checked={canLoginPin}
                       onChange={(e) => setCanLoginPin(e.target.checked)}
-                      className="accent-[#d4522f] rounded-sm"
+                      className="accent-[#d4522f] rounded-[var(--r-check,6px)]"
                     />
                     <span>{isAr ? 'رمز سريع' : isEn ? 'Quick PIN' : 'Code PIN'}</span>
                   </label>
@@ -591,8 +601,10 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                     </div>
                     <button
                       type="button"
+                      data-sq="ctl"
+                      data-sq-border="none"
                       onClick={handleGeneratePin}
-                      className="text-xs px-3 py-2 rounded-xl bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors text-black dark:text-white flex items-center gap-1.5"
+                      className="text-xs px-3 py-2 bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors text-black dark:text-white flex items-center gap-1.5 cursor-pointer"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-[#d4522f]" />
                       <span>{isAr ? 'توليد' : isEn ? 'Generate' : 'Générer'}</span>

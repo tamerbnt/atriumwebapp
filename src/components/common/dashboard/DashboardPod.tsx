@@ -25,12 +25,18 @@ export const DashboardPod: React.FC<DashboardPodProps> = ({
 
   return (
     <section
-      className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-4 sm:space-y-5 flex flex-col justify-start min-w-0 ${className}`}
+      data-sq="panel"
+      data-sq-border="solid"
+      className={`relative bg-[#F3EDE7] dark:bg-[#141312] p-3 border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3 flex flex-col justify-start min-w-0 ${className}`}
     >
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-start gap-3 min-w-0 flex-1">
           {icon && (
-            <div className="w-8 h-8 rounded-xl bg-[#FBF8F5] dark:bg-white/[0.06] border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-center text-[#d4522f] shrink-0 mt-0.5">
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="solid"
+              className="relative w-8 h-8 bg-[#FBF8F5] dark:bg-white/[0.06] border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex items-center justify-center text-[#d4522f] shrink-0 mt-0.5"
+            >
               {icon}
             </div>
           )}

@@ -51,8 +51,14 @@ export const ScreenHeaderBar: React.FC<ScreenHeaderBarProps> = React.memo(({
   return (
     <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1 ${className}`}>
       <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
-        <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white shrink-0">
-          {icon}
+        <div className="sq-elev-card shrink-0">
+          <div
+            data-sq="tile-lg"
+            data-sq-border="solid"
+            className="relative w-11 h-11 sm:w-12 sm:h-12 bg-[#F3EDE7] dark:bg-white/[0.07] [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.7)] flex items-center justify-center text-black dark:text-white"
+          >
+            {icon}
+          </div>
         </div>
         <div className="min-w-0">
           <h1 className="text-[34px] sm:text-[42px] rtl:text-[28px] rtl:sm:text-[34px] font-extrabold uppercase rtl:normal-case leading-[0.98] rtl:leading-tight tracking-[0.012em] rtl:tracking-normal text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans truncate">

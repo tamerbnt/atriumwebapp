@@ -1047,7 +1047,7 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '1.6*',
         renderCell: (a) => (
           <span
-            className={`text-[10px] font-bold px-2 py-0.5 rounded-md inline-flex items-center gap-1 ${
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
               a.isLocked
                 ? 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
                 : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
@@ -1397,7 +1397,11 @@ export const LegalTrustView: React.FC<any> = () => {
                       />
                     </InspectorCard>
                   ) : (
-                    <div className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] rounded-[18px] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
+                    <div
+                      data-sq="card"
+                      data-sq-border="solid"
+                      className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5"
+                    >
                       <div className="grid grid-cols-2 gap-2">
                         <LabelInput
                           label={isAr ? 'رقم المجلد *' : 'Volume *'}
@@ -1422,7 +1426,11 @@ export const LegalTrustView: React.FC<any> = () => {
                 </InspectorSection>
 
                 <InspectorSection index={2} title={isAr ? 'الشرط الثاني: رمز الأمان PIN' : 'Verrou 2 : Code PIN Notaire'}>
-                  <div className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] rounded-[18px] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5">
+                  <div
+                    data-sq="card"
+                    data-sq-border="solid"
+                    className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5"
+                  >
                     <LabelInput
                       label={
                         isAr
@@ -1838,7 +1846,12 @@ export const LegalTrustView: React.FC<any> = () => {
 
         {isSCFModalOpen && (
           <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
+            <div className="sq-elev-pop max-w-lg w-full">
+              <div
+                data-sq="panel"
+                data-sq-border="solid"
+                className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4"
+              >
               <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
                 <div className="flex items-center gap-2">
                   <Scale size={20} className="text-[#d4522f]" />
@@ -1853,7 +1866,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   data-no-liquid="true"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsSCFModalOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -1906,7 +1919,11 @@ export const LegalTrustView: React.FC<any> = () => {
                     ]}
                   />
                 </div>
-                <div className="p-3 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl space-y-1 font-mono text-[11px]">
+                <div
+                  data-sq="card"
+                  data-sq-border="none"
+                  className="p-3 bg-neutral-50 dark:bg-neutral-800/60 space-y-1 font-mono text-[11px]"
+                >
                   <div className="flex justify-between">
                     <span>Compte 706000 (Crédit HT):</span>
                     <span className="font-bold">{formatMoney(scfDebitAmount, language)}</span>
@@ -1941,6 +1958,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   </AtriumButton>
                 </div>
               </form>
+              </div>
             </div>
           </div>
         )}
@@ -2316,7 +2334,12 @@ export const LegalTrustView: React.FC<any> = () => {
 
         {isNewReceiptModalOpen && (
           <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
+            <div className="sq-elev-pop max-w-lg w-full">
+              <div
+                data-sq="panel"
+                data-sq-border="solid"
+                className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4"
+              >
               <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
                 <div className="flex items-center gap-2">
                   <CreditCard size={20} className="text-[#d4522f]" />
@@ -2331,7 +2354,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   data-no-liquid="true"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsNewReceiptModalOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -2364,7 +2387,11 @@ export const LegalTrustView: React.FC<any> = () => {
                   const stamp = calculateArticle317Stamp(ttc, 'especes');
                   const netCollected = ttc + stamp;
                   return (
-                    <div className="p-3 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl space-y-1 font-mono text-[11px]">
+                    <div
+                      data-sq="card"
+                      data-sq-border="none"
+                      className="p-3 bg-neutral-50 dark:bg-neutral-800/60 space-y-1 font-mono text-[11px]"
+                    >
                       <div className="flex justify-between">
                         <span>Montant HT:</span>
                         <span>{formatMoney(ht, language)}</span>
@@ -2401,6 +2428,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   </AtriumButton>
                 </div>
               </form>
+              </div>
             </div>
           </div>
         )}

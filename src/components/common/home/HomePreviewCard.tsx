@@ -37,10 +37,10 @@ interface ToneStyles {
 
 const TONE_STYLES: Record<HomeCardTone, ToneStyles> = {
   terracotta: {
-    card: 'bg-white dark:bg-[#171413] border-[#E4D8CF] dark:border-[#2E2724] hover:border-[#d4522f]/55 dark:hover:border-[#FB923C]/55',
+    card: 'bg-white dark:bg-[#171413] border-[#E4D8CF] dark:border-[#2E2724] [--sq-stroke:#E4D8CF] dark:[--sq-stroke:#2E2724] hover:[--sq-stroke:rgba(212,82,47,0.55)] dark:hover:[--sq-stroke:rgba(251,146,60,0.55)]',
     topAccent: 'bg-[#d4522f]/80 dark:bg-[#FB923C]/75',
     iconWell:
-      'bg-[#FCEEE9] dark:bg-[#2B1B17] border-[#F3D5CA] dark:border-[#492A20] text-[#B83B1B] dark:text-[#FB923C]',
+      'bg-[#FCEEE9] dark:bg-[#2B1B17] border-[#F3D5CA] dark:border-[#492A20] [--sq-stroke:#F3D5CA] dark:[--sq-stroke:#492A20] text-[#B83B1B] dark:text-[#FB923C]',
     accentText: 'text-[#B83B1B] dark:text-[#FB923C]',
     titleHover: 'group-hover/card:text-[#B83B1B] dark:group-hover/card:text-[#FB923C]',
     divider: 'divide-[#EFE6DF] dark:divide-[#27211E] border-[#EFE6DF] dark:border-[#27211E]',
@@ -51,10 +51,10 @@ const TONE_STYLES: Record<HomeCardTone, ToneStyles> = {
     footerLink: 'text-[#B83B1B] dark:text-[#FB923C]',
   },
   brown: {
-    card: 'bg-[#FFFCF8] dark:bg-[#171310] border-[#E0D2C3] dark:border-[#352B22] hover:border-[#7C4E2D]/60 dark:hover:border-[#D9A97E]/55',
+    card: 'bg-[#FFFCF8] dark:bg-[#171310] border-[#E0D2C3] dark:border-[#352B22] [--sq-stroke:#E0D2C3] dark:[--sq-stroke:#352B22] hover:[--sq-stroke:rgba(124,78,45,0.6)] dark:hover:[--sq-stroke:rgba(217,169,126,0.55)]',
     topAccent: 'bg-[#7C4E2D]/85 dark:bg-[#D9A97E]/75',
     iconWell:
-      'bg-[#F2E5D8] dark:bg-[#291F17] border-[#DFCBB7] dark:border-[#473526] text-[#6B4122] dark:text-[#D9A97E]',
+      'bg-[#F2E5D8] dark:bg-[#291F17] border-[#DFCBB7] dark:border-[#473526] [--sq-stroke:#DFCBB7] dark:[--sq-stroke:#473526] text-[#6B4122] dark:text-[#D9A97E]',
     accentText: 'text-[#6B4122] dark:text-[#D9A97E]',
     titleHover: 'group-hover/card:text-[#6B4122] dark:group-hover/card:text-[#D9A97E]',
     divider: 'divide-[#EFE4D8] dark:divide-[#2B231C] border-[#EFE4D8] dark:border-[#2B231C]',
@@ -65,10 +65,10 @@ const TONE_STYLES: Record<HomeCardTone, ToneStyles> = {
     footerLink: 'text-[#6B4122] dark:text-[#D9A97E]',
   },
   lavender: {
-    card: 'bg-[#FCFBFF] dark:bg-[#16141D] border-[#DCD3EC] dark:border-[#312A45] hover:border-[#684DA8]/60 dark:hover:border-[#C4B5FD]/55',
+    card: 'bg-[#FCFBFF] dark:bg-[#16141D] border-[#DCD3EC] dark:border-[#312A45] [--sq-stroke:#DCD3EC] dark:[--sq-stroke:#312A45] hover:[--sq-stroke:rgba(104,77,168,0.6)] dark:hover:[--sq-stroke:rgba(196,181,253,0.55)]',
     topAccent: 'bg-[#684DA8]/85 dark:bg-[#A78BFA]/75',
     iconWell:
-      'bg-[#EFEBF9] dark:bg-[#231D36] border-[#D7CCF0] dark:border-[#3D325B] text-[#5B41A1] dark:text-[#C4B5FD]',
+      'bg-[#EFEBF9] dark:bg-[#231D36] border-[#D7CCF0] dark:border-[#3D325B] [--sq-stroke:#D7CCF0] dark:[--sq-stroke:#3D325B] text-[#5B41A1] dark:text-[#C4B5FD]',
     accentText: 'text-[#5B41A1] dark:text-[#C4B5FD]',
     titleHover: 'group-hover/card:text-[#5B41A1] dark:group-hover/card:text-[#C4B5FD]',
     divider: 'divide-[#ECE6F6] dark:divide-[#262136] border-[#ECE6F6] dark:border-[#262136]',
@@ -118,7 +118,9 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
 
   return (
     <div
-      className={`group/card relative overflow-hidden h-full rounded-[18px] border p-3.5 sm:p-4 flex flex-col justify-between transition-[border-color,box-shadow] duration-200 hover:shadow-xs min-w-0 ${styles.card} ${className}`}
+      data-sq="card"
+      data-sq-border="solid"
+      className={`group/card relative overflow-hidden h-full border p-3.5 sm:p-4 flex flex-col justify-between transition-colors duration-200 min-w-0 ${styles.card} ${className}`}
       data-testid={`home-preview-${config.id}`}
     >
       {/* Clean 2.5px Top Accent Hairline */}
@@ -132,11 +134,16 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
         <div className="flex items-start justify-between gap-2.5 mb-2.5 shrink-0">
           <button
             type="button"
+            data-no-liquid="true"
+            data-sq="row"
+            data-sq-border="none"
             onClick={navigate}
-            className={`flex items-center gap-2.5 min-w-0 flex-1 text-start cursor-pointer focus-visible:outline-none focus-visible:ring-2 ${styles.ring} rounded-xl`}
+            className={`relative flex items-center gap-2.5 min-w-0 flex-1 text-start cursor-pointer focus-visible:outline-none focus-visible:ring-2 ${styles.ring}`}
           >
             <span
-              className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 ${styles.iconWell}`}
+              data-sq="ctl-sm"
+              data-sq-border="solid"
+              className={`relative w-8 h-8 border flex items-center justify-center shrink-0 ${styles.iconWell}`}
             >
               {config.icon}
             </span>
@@ -164,6 +171,7 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
           {/* Fast North-East Navigation Trigger (40x40 minimum touch target) */}
           <button
             type="button"
+            data-no-liquid="true"
             onClick={navigate}
             aria-label={`${strings.openModule} ${config.title}`}
             title={`${strings.openModule} ${config.title}`}
@@ -184,6 +192,9 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
               <li key={row.id}>
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="row"
+                  data-sq-border="none"
                   onClick={() => {
                     if (row.onClick) {
                       row.onClick();
@@ -191,7 +202,7 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
                       navigate();
                     }
                   }}
-                  className={`w-full py-1.5 flex items-center justify-between gap-2.5 text-start rounded-lg px-1.5 -mx-1.5 transition-colors cursor-pointer group/row ${styles.rowHover}`}
+                  className={`relative w-full py-1.5 flex items-center justify-between gap-2.5 text-start px-1.5 -mx-1.5 transition-colors cursor-pointer group/row ${styles.rowHover}`}
                 >
                   <div className="flex items-start gap-2 min-w-0 flex-1">
                     {row.statusTone && (
@@ -251,6 +262,7 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
         </span>
         <button
           type="button"
+          data-no-liquid="true"
           onClick={navigate}
           className={`group/foot inline-flex items-center gap-1 text-[12px] font-semibold hover:underline cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 ${styles.ring} rounded ${styles.footerLink}`}
         >
@@ -299,9 +311,12 @@ export const HomeCompactStrip: React.FC<HomeCompactStripProps> = ({
   return (
     <button
       type="button"
+      data-no-liquid="true"
+      data-sq="card"
+      data-sq-border="solid"
       onClick={navigate}
       data-testid={`home-strip-${config.id}`}
-      className={`group/card relative overflow-hidden w-full text-start rounded-[16px] border px-3.5 py-2.5 flex items-center justify-between gap-3 transition-[border-color,box-shadow] duration-200 hover:shadow-xs cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 ${styles.card} ${styles.ring} ${className}`}
+      className={`group/card relative overflow-hidden w-full text-start border px-3.5 py-2.5 flex items-center justify-between gap-3 transition-colors duration-200 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 ${styles.card} ${styles.ring} ${className}`}
     >
       <span
         aria-hidden="true"
@@ -309,7 +324,9 @@ export const HomeCompactStrip: React.FC<HomeCompactStripProps> = ({
       />
       <div className="flex items-center gap-2.5 min-w-0 flex-1">
         <span
-          className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 ${styles.iconWell}`}
+          data-sq="ctl-sm"
+          data-sq-border="solid"
+          className={`relative w-8 h-8 border flex items-center justify-center shrink-0 ${styles.iconWell}`}
         >
           {config.icon}
         </span>

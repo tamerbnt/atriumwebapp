@@ -25,7 +25,7 @@ export class PanelBody implements Body {
   /** [top, height] of the hovered row, or null */
   hover: [number, number] | null = null;
   H = 0;
-  R = 8;
+  R = 20;
 
   constructor(
     readonly panel: HTMLElement,
@@ -36,7 +36,7 @@ export class PanelBody implements Body {
 
   measure(): void {
     this.H = this.panel.offsetHeight;
-    this.R = parseFloat(getComputedStyle(this.panel).borderTopLeftRadius) || 8;
+    this.R = parseFloat(getComputedStyle(this.panel).borderTopLeftRadius) || 20;
   }
 
   setOpen(v: boolean): void {

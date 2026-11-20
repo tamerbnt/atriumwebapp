@@ -65,10 +65,11 @@ export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, 
 		showToast(isAr ? "تم تجهيز مذكرة مراجعة الأسعار التعاقدية" : "Note de calcul de révision des prix prête pour visa", "success");
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-<div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-2xl shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+<div className="sq-elev-pop w-full max-w-2xl">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 w-full space-y-5 max-h-[90vh] overflow-y-auto">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
 <div className="flex items-center gap-2.5">
-<div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Calculator size={20} /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"><Calculator size={20} /></div>
 <div>
 <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "حاسبة مراجعة الأسعار التعاقدية (CCAG المادة 54)" : "Calculateur de Révision des Prix (CCAG Art. 54)"}
@@ -80,9 +81,9 @@ export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, 
 </p>
 </div>
 </div>
-<button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1"><X size={18} /></button>
+<button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
-<div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-1">
+<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-1">
 <div className="flex items-center gap-2 text-xs font-bold text-black dark:text-white">
 <Info size={14} className="text-[#d4522f]" />
 <span>Formule Paramétrique Réglementaire Algérienne</span>
@@ -93,7 +94,7 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </p>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<div className="p-3.5 bg-neutral-50 dark:bg-neutral-850 rounded-2xl border border-neutral-200 dark:border-neutral-800 space-y-3">
+<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-3">
 <span className="text-xs font-bold text-black dark:text-white block">Main d'Œuvre & Salaires (S)</span>
 <div className="grid grid-cols-2 gap-2">
 <LabelInput label="Indice Base S0" type="number" value={baseLaborS0} onChange={setBaseLaborS0} />
@@ -109,7 +110,7 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </span>
 </div>
 </div>
-<div className="p-3.5 bg-neutral-50 dark:bg-neutral-850 rounded-2xl border border-neutral-200 dark:border-neutral-800 space-y-3">
+<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-3">
 <span className="text-xs font-bold text-black dark:text-white block">Matériaux & Carburant (M)</span>
 <div className="grid grid-cols-2 gap-2">
 <LabelInput label="Indice Base M0" type="number" value={baseMaterialM0} onChange={setBaseMaterialM0} />
@@ -126,7 +127,7 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </div>
 </div>
 </div>
-<div className="p-3.5 bg-neutral-50 dark:bg-neutral-850 rounded-2xl border border-neutral-200 dark:border-neutral-800 space-y-2">
+<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-2">
 <div className="flex justify-between items-center text-xs">
 <span className="font-bold text-black dark:text-white">Pondération Contractuelle du Marché</span>
 <span className="text-[11px] text-black/55 dark:text-white/55 font-mono">
@@ -143,7 +144,8 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 <div>
 <LabelInput label="Montant Initial des Travaux HT (DZD)" type="number" value={contractBaseAmount} onChange={setContractBaseAmount} />
 </div>
-<div className="p-4 rounded-2xl bg-[#1F1D1B] text-white space-y-3 shadow-md">
+<div className="sq-elev-card">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#1F1D1B] text-white space-y-3">
 <div className="flex items-center justify-between">
 <span className="text-xs font-semibold text-white/80">Résultat Paramétrique (Coefficient K)</span>
 <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-[#3D2817] text-[#FB923C]">
@@ -178,6 +180,8 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 <AtriumButton variant="secondary" onClick={onClose}>{isAr ? "إغلاق" : "Fermer"}</AtriumButton>
 <div className="flex items-center gap-2">
 <AtriumButton variant="primary" onClick={handlePrintNote} icon={<Printer size={14} />}>{isAr ? "طباعة مذكرة المراجعة" : "Imprimer Note CCAG"}</AtriumButton>
+</div>
+</div>
 </div>
 </div>
 </div>

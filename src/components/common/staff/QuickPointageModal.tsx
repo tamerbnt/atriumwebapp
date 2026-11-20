@@ -63,14 +63,18 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
     >
       <div className="space-y-4">
         {/* Punch Type Selector */}
-        <div className="grid grid-cols-2 gap-2 p-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+        <div
+          data-sq="ctl"
+          className="grid grid-cols-2 gap-1.5 p-[3px] bg-neutral-100 dark:bg-neutral-800"
+        >
           <button
             type="button"
             onClick={() => setPunchType('in')}
-            className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+            data-sq={punchType === 'in' ? 'thumb' : 'none'}
+            className={`py-2 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               punchType === 'in'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-black/75 dark:text-white/80 hover:text-black dark:hover:text-white'
+                ? 'bg-emerald-600 text-white'
+                : 'rounded-[var(--r-thumb,9px)] text-black/75 dark:text-white/80 hover:text-black dark:hover:text-white'
             }`}
           >
             <Clock size={14} />
@@ -79,10 +83,11 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
           <button
             type="button"
             onClick={() => setPunchType('out')}
-            className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+            data-sq={punchType === 'out' ? 'thumb' : 'none'}
+            className={`py-2 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               punchType === 'out'
-                ? 'bg-amber-600 text-white shadow-xs'
-                : 'text-black/75 dark:text-white/80 hover:text-black dark:hover:text-white'
+                ? 'bg-amber-600 text-white'
+                : 'rounded-[var(--r-thumb,9px)] text-black/75 dark:text-white/80 hover:text-black dark:hover:text-white'
             }`}
           >
             <Clock size={14} />
@@ -116,7 +121,11 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
 
         {/* Success Toast Banner */}
         {successMessage && (
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2 animate-in fade-in">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': '#A7F3D0' } as React.CSSProperties}
+            className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2 animate-in fade-in"
+          >
             <CheckCircle2 size={16} className="shrink-0" />
             <span className="font-medium">{successMessage}</span>
           </div>
@@ -132,7 +141,8 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
               <div
                 key={member.id}
                 onClick={() => onPunch(member.id, punchType, 'manual')}
-                className="flex items-center justify-between p-2 rounded-xl bg-[#F3EDE7] dark:bg-[#1C1C1E] hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
+                data-sq="row"
+                className="flex items-center justify-between p-2 bg-[#F3EDE7] dark:bg-[#1C1C1E] hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xs font-bold text-black dark:text-white shrink-0">

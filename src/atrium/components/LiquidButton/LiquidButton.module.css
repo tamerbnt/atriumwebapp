@@ -20,7 +20,7 @@
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  border-radius: calc(var(--h) * 0.28);
+  border-radius: calc(var(--h) * 0.3);
   overflow: hidden;
   appearance: none;
   -webkit-appearance: none;

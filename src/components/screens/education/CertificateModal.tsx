@@ -86,7 +86,12 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="relative w-full max-w-4xl bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[92vh] overflow-hidden">
+      <div className="sq-elev-pop w-full max-w-4xl">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[92vh] overflow-hidden"
+        >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 print:hidden">
           <div>
@@ -222,7 +227,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             </form>
           ) : (
             /* Printable Preview */
-            <div className="printable-document preserve-border max-w-2xl mx-auto p-8 rounded-2xl border-4 border-double border-[#d4522f]/40 bg-gradient-to-br from-[#FDF4F0]/40 via-white to-[#FDF4F0]/20 dark:from-neutral-900 dark:via-[#18181B] dark:to-neutral-900 shadow-xl relative overflow-hidden">
+            <div className="printable-document preserve-border max-w-2xl mx-auto p-8 rounded-[var(--r-card,16px)] border-4 border-double border-[#d4522f]/40 bg-gradient-to-br from-[#FDF4F0]/40 via-white to-[#FDF4F0]/20 dark:from-neutral-900 dark:via-[#18181B] dark:to-neutral-900 shadow-xl relative overflow-hidden">
               {/* Watermark in BG */}
               <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none text-[#d4522f]">
                 <GraduationCap size={240} />
@@ -260,7 +265,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 </div>
 
                 {activeCert.honors && (
-                  <div className="inline-block text-xs font-semibold px-3 py-1 rounded-md bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
+                  <div className="inline-block text-xs font-semibold px-3 py-1 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
                     {activeCert.honors} · {t('edu_cert_final_score')} {activeCert.averageGradeScore}%
                   </div>
                 )}
@@ -293,6 +298,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               </div>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>

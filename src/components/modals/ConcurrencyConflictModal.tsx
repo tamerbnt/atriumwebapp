@@ -168,7 +168,11 @@ export const ConcurrencyConflictModal: React.FC = () => {
 
         {/* Side-by-side field diff table */}
         {diffRows.length === 0 ? (
-          <div className="p-4 rounded-xl bg-[var(--atr-soft)] border border-[var(--atr-line)] text-xs text-[var(--atr-ink-3)]">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
+            className="p-4 bg-[var(--atr-soft)] text-xs text-[var(--atr-ink-3)]"
+          >
             {isAr
               ? 'تم تحديث رقم النسخة على الخادم دون اختلاف في الحقول المرئية. يمكنك إعادة الحفظ أو اعتماد نسخة الخادم.'
               : isFr
@@ -176,7 +180,11 @@ export const ConcurrencyConflictModal: React.FC = () => {
               : 'The server version advanced with no visible field divergence. You may safely reload the server version or re-submit your save.'}
           </div>
         ) : (
-          <div className="rounded-xl border border-[var(--atr-line)] overflow-hidden bg-[var(--atr-card)]">
+          <div
+            data-sq="table"
+            style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
+            className="overflow-hidden bg-[var(--atr-card)]"
+          >
             <div className="grid grid-cols-12 gap-3 px-4 py-2.5 bg-[var(--atr-soft)] border-b border-[var(--atr-line)] text-[11px] font-semibold text-[var(--atr-ink-3)]">
               <div className="col-span-4">
                 {isAr ? 'الحقل' : isFr ? 'Champ' : 'Field'}
@@ -207,10 +215,16 @@ export const ConcurrencyConflictModal: React.FC = () => {
                         onClick={() =>
                           setSelectedSourceByField((prev) => ({ ...prev, [row.key]: 'local' }))
                         }
-                        className={`w-full text-left rtl:text-right px-2.5 py-1.5 rounded-lg border transition-colors cursor-pointer flex items-center justify-between gap-2 ${
+                        data-sq="ctl-sm"
+                        style={
+                          {
+                            '--sq-stroke': picked === 'local' ? 'var(--atr-acc)' : 'var(--atr-line)',
+                          } as React.CSSProperties
+                        }
+                        className={`w-full text-left rtl:text-right px-2.5 py-1.5 transition-colors cursor-pointer flex items-center justify-between gap-2 ${
                           picked === 'local'
-                            ? 'border-[var(--atr-acc)] bg-[var(--atr-hl)] text-[var(--atr-ink)] font-semibold'
-                            : 'border-[var(--atr-line)] bg-transparent text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
+                            ? 'bg-[var(--atr-hl)] text-[var(--atr-ink)] font-semibold'
+                            : 'bg-transparent text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
                         }`}
                       >
                         <span className="truncate font-mono text-[11px] tabular-nums" title={row.localStr}>
@@ -226,10 +240,16 @@ export const ConcurrencyConflictModal: React.FC = () => {
                         onClick={() =>
                           setSelectedSourceByField((prev) => ({ ...prev, [row.key]: 'server' }))
                         }
-                        className={`w-full text-left rtl:text-right px-2.5 py-1.5 rounded-lg border transition-colors cursor-pointer flex items-center justify-between gap-2 ${
+                        data-sq="ctl-sm"
+                        style={
+                          {
+                            '--sq-stroke': picked === 'server' ? 'var(--atr-acc)' : 'var(--atr-line)',
+                          } as React.CSSProperties
+                        }
+                        className={`w-full text-left rtl:text-right px-2.5 py-1.5 transition-colors cursor-pointer flex items-center justify-between gap-2 ${
                           picked === 'server'
-                            ? 'border-[var(--atr-acc)] bg-[var(--atr-hl)] text-[var(--atr-ink)] font-semibold'
-                            : 'border-[var(--atr-line)] bg-transparent text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
+                            ? 'bg-[var(--atr-hl)] text-[var(--atr-ink)] font-semibold'
+                            : 'bg-transparent text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
                         }`}
                       >
                         <span className="truncate font-mono text-[11px] tabular-nums" title={row.serverStr}>

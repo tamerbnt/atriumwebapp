@@ -460,7 +460,11 @@ export const FreelanceClientsView: React.FC = () => {
         sortable: true,
         renderCell: (client) => (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+            <div
+              data-sq="tile"
+              data-sq-border="solid"
+              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"
+            >
               {client.name.charAt(0)}
             </div>
             <div className="min-w-0">
@@ -483,7 +487,7 @@ export const FreelanceClientsView: React.FC = () => {
         renderCell: (client) => {
           const bInfo = resolveRecordBranch(client, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -541,7 +545,7 @@ export const FreelanceClientsView: React.FC = () => {
         renderCell: (client) => {
           const count = freelanceProjects.filter((p) => p.clientId === client.id).length;
           return (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
               {count} {t('free_nav_deliverables', language)}
             </span>
           );
@@ -768,7 +772,11 @@ export const FreelanceClientsView: React.FC = () => {
       />
 
       {selectedClientIds.size > 0 && (
-        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2"
+        >
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
             <span className="text-xs font-bold text-black dark:text-white">
@@ -786,24 +794,33 @@ export const FreelanceClientsView: React.FC = () => {
             </button>
             <button
               type="button"
+              data-no-liquid="true"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={handleBatchSetRetainer}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             >
               <CheckCircle size={13} />
               <span>{isAr ? 'تحويل لعقد شهري' : isFr ? 'Passer en Retainer' : 'Set Active Retainer'}</span>
             </button>
             <button
               type="button"
+              data-no-liquid="true"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={handleBatchSetProject}
-              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             >
               <Briefcase size={13} />
               <span>{isAr ? 'تحويل لمشروع' : isFr ? 'Passer au Projet' : 'Set Project Based'}</span>
             </button>
             <button
               type="button"
+              data-no-liquid="true"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={handleBatchDelete}
-              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             >
               <Trash2 size={13} />
               <span>{isAr ? 'حذف المحدد' : isFr ? 'Supprimer' : 'Delete'}</span>
@@ -1242,7 +1259,12 @@ export const FreelanceClientsView: React.FC = () => {
       {/* Add / Edit Client Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
+          <div className="sq-elev-pop max-w-lg w-full animate-in zoom-in-95 duration-150">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-5"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
                 <h3 className="text-base font-bold text-black dark:text-white">
@@ -1275,7 +1297,7 @@ export const FreelanceClientsView: React.FC = () => {
                   placeholder={t('free_clients_ph_name', language)}
                   width="100%"
                   height={46}
-                  corner={14}
+                  corner={12}
                 />
                 <LabelInput
                   field="Company"
@@ -1285,7 +1307,7 @@ export const FreelanceClientsView: React.FC = () => {
                   placeholder={t('free_clients_ph_company', language)}
                   width="100%"
                   height={46}
-                  corner={14}
+                  corner={12}
                 />
               </div>
 
@@ -1300,7 +1322,7 @@ export const FreelanceClientsView: React.FC = () => {
                   placeholder={t('free_clients_ph_email', language)}
                   width="100%"
                   height={46}
-                  corner={14}
+                  corner={12}
                 />
                 <LabelInput
                   field="ClientPhone"
@@ -1311,7 +1333,7 @@ export const FreelanceClientsView: React.FC = () => {
                   placeholder={t('free_clients_ph_phone', language)}
                   width="100%"
                   height={46}
-                  corner={14}
+                  corner={12}
                 />
               </div>
 
@@ -1332,7 +1354,7 @@ export const FreelanceClientsView: React.FC = () => {
                     { value: 'USD', label: 'USD ($)' },
                   ]}
                   height={46}
-                  corner={14}
+                  corner={12}
                 />
                 <LabelInput
                   field="HourlyRate"
@@ -1342,7 +1364,7 @@ export const FreelanceClientsView: React.FC = () => {
                   onChange={(v) => setFormData({ ...formData, hourlyRate: Number(extractStr(v)) || 0 })}
                   width="100%"
                   height={46}
-                  corner={14}
+                  corner={12}
                 />
                 <LabelSelect
                   field="Status"
@@ -1367,12 +1389,16 @@ export const FreelanceClientsView: React.FC = () => {
                     { value: 'Archived', label: t('free_clients_status_archived', language) },
                   ]}
                   height={46}
-                  corner={14}
+                  corner={12}
                 />
               </div>
 
               {formData.status === 'ActiveRetainer' && (
-                <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40">
+                <div
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="grid grid-cols-2 gap-3 p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40"
+                >
                   <LabelInput
                     field="RetainerHours"
                     label={t('free_clients_retainer_hours', language)}
@@ -1384,7 +1410,7 @@ export const FreelanceClientsView: React.FC = () => {
                     placeholder={t('free_clients_ph_retainer_hrs', language)}
                     width="100%"
                     height={46}
-                    corner={14}
+                    corner={12}
                   />
                   <LabelInput
                     field="FlatFee"
@@ -1400,7 +1426,7 @@ export const FreelanceClientsView: React.FC = () => {
                     placeholder={t('free_clients_ph_flat_fee', language)}
                     width="100%"
                     height={46}
-                    corner={14}
+                    corner={12}
                   />
                 </div>
               )}
@@ -1409,26 +1435,37 @@ export const FreelanceClientsView: React.FC = () => {
                 <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
                   {t('free_clients_notes', language)}
                 </label>
-                <textarea
-                  rows={2}
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder={t('free_clients_notes_ph', language)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white focus:outline-none focus:ring-1 focus:ring-[#d4522f]"
-                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                >
+                  <textarea
+                    rows={2}
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    placeholder={t('free_clients_notes_ph', language)}
+                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="solid"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="px-5 py-2 bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {clientToEdit
                     ? t('free_clients_save_changes', language)
@@ -1436,6 +1473,7 @@ export const FreelanceClientsView: React.FC = () => {
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
@@ -1443,36 +1481,49 @@ export const FreelanceClientsView: React.FC = () => {
       {/* Delete Client Confirmation Modal */}
       {clientToDelete && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-              <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60">
-                <AlertTriangle size={20} />
+          <div className="sq-elev-pop max-w-md w-full animate-in zoom-in-95 duration-150">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+            >
+              <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+                <div
+                  data-sq="tile"
+                  data-sq-border="solid"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"
+                >
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-black dark:text-white">
+                    {t('free_clients_delete', language)}
+                  </h3>
+                  <p className="text-xs text-black/55 dark:text-white/55">
+                    {t('free_clients_delete_warning', language)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-black dark:text-white">
-                  {t('free_clients_delete', language)}
-                </h3>
-                <p className="text-xs text-black/55 dark:text-white/55">
-                  {t('free_clients_delete_warning', language)}
-                </p>
-              </div>
-            </div>
 
-            <p className="text-xs text-black/70 dark:text-white/75">
-              {t('free_clients_delete_confirm', language)}{' '}
-              <strong className="text-black dark:text-white font-semibold">
-                {clientToDelete.name}
-              </strong>{' '}
-              ({clientToDelete.company || t('free_clients_private_badge', language)})?
-            </p>
+              <p className="text-xs text-black/70 dark:text-white/75">
+                {t('free_clients_delete_confirm', language)}{' '}
+                <strong className="text-black dark:text-white font-semibold">
+                  {clientToDelete.name}
+                </strong>{' '}
+                ({clientToDelete.company || t('free_clients_private_badge', language)})?
+              </p>
 
-            <label className="flex items-start gap-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs text-black/70 dark:text-white/75 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={deleteCascade}
-                onChange={(e) => setDeleteCascade(e.target.checked)}
-                className="mt-0.5 rounded text-[#d4522f] focus:ring-[#d4522f]"
-              />
+              <label
+                data-sq="card"
+                data-sq-border="solid"
+                className="flex items-start gap-2.5 p-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs text-black/70 dark:text-white/75 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={deleteCascade}
+                  onChange={(e) => setDeleteCascade(e.target.checked)}
+                  className="mt-0.5 rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
+                />
               <div>
                 <span className="font-semibold block text-black dark:text-white">
                   {t('free_clients_cascade_delete', language)}

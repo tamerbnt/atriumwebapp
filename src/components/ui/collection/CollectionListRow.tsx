@@ -234,29 +234,37 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       {/* ================= MAIN ROW CARD ================= */}
       <div
         onClick={onRowClick}
-        className={`relative z-10 w-full min-h-[54px] px-4 py-2.5 rounded-[14px] flex items-center transition-all duration-150 cursor-pointer ${
-          isSelected
-            ? 'bg-[#FCEEE8]/70 border border-[#d4522f]/45 dark:bg-[#d4522f]/15 dark:border-[#d4522f]/50'
-            : isHovered
-            ? 'bg-[#FBF8F5] dark:bg-neutral-800/80 border border-[#D4C8BC] dark:border-neutral-700 shadow-xs'
-            : isPinned
-            ? 'bg-white dark:bg-[#18181B] border border-amber-400/60 dark:border-amber-500/40'
-            : 'bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800'
-        }`}
+        className="relative z-10 w-full min-h-[54px] px-4 py-2.5 sq-elev-card flex items-center cursor-pointer"
       >
+        <div
+          aria-hidden="true"
+          data-sq="row"
+          data-sq-border="solid"
+          className={`absolute inset-0 z-0 pointer-events-none transition-colors duration-150 ${
+            isSelected
+              ? 'bg-[#FCEEE8]/70 [--sq-stroke:rgba(212,82,47,0.45)] dark:bg-[#d4522f]/15 dark:[--sq-stroke:rgba(212,82,47,0.5)]'
+              : isHovered
+              ? 'bg-[#FBF8F5] dark:bg-neutral-800/80 [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#404040]'
+              : isPinned
+              ? 'bg-white dark:bg-[#18181B] [--sq-stroke:rgba(251,191,36,0.6)] dark:[--sq-stroke:rgba(245,158,11,0.4)]'
+              : 'bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#26262A]'
+          }`}
+        />
+
         {/* Dynamic Column Children */}
-        <div className="flex-1 flex items-center gap-3 overflow-hidden">{children}</div>
+        <div className="relative z-10 flex-1 flex items-center gap-3 overflow-hidden">{children}</div>
 
         {/* Column 5: Kebab Button (⋮) */}
-        <div className="relative shrink-0 ml-2">
+        <div className="relative z-20 shrink-0 ml-2">
           <button
             ref={kebabButtonRef}
             type="button"
+            data-no-liquid="true"
             onClick={(e) => {
               e.stopPropagation();
               setIsKebabOpen((prev) => !prev);
             }}
-            className="w-8 h-8 rounded-[8px] flex items-center justify-center text-black/56 hover:text-black dark:text-white/60 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/56 hover:text-black dark:text-white/60 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
             title="Options"
           >
             <MoreVertical className="w-4 h-4" />
@@ -298,6 +306,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
               <button
                 key={action.id ? `${action.id}-${idx}` : `action-${idx}`}
                 type="button"
+                data-no-liquid="true"
                 onClick={action.onClick}
                 title={action.tooltip || action.label || ''}
                 style={{
@@ -310,7 +319,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
                     : 'cubic-bezier(0.4, 0, 1, 1)',
                   transitionDelay: `${isHovered ? enterDelay : exitDelay}ms`,
                 }}
-                className={`w-10 h-10 rounded-[6px] bg-white dark:bg-[#1E1E22] border border-[#E6DED6] dark:border-neutral-700/80 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                className={`w-10 h-10 rounded-full bg-white dark:bg-[#1E1E22] border border-[#E6DED6] dark:border-neutral-700/80 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                   action.isSpecialDelete
                     ? 'hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300'
                     : 'hover:bg-[#FDF4F0] dark:hover:bg-neutral-700/60 hover:border-[#d4522f]/50'

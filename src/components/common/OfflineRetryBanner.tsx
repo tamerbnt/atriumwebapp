@@ -45,7 +45,9 @@ export const OfflineRetryBanner: React.FC<OfflineRetryBannerProps> = ({
     <div
       role="alert"
       aria-live="polite"
-      className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-amber-200/80 bg-amber-50/90 dark:border-amber-900/50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 text-xs shadow-2xs transition-all animate-in fade-in duration-200 mb-4 ${className}`}
+      data-sq="ctl"
+      data-sq-border="solid"
+      className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-[var(--r-ctl,12px)] [--sq-stroke:rgba(253,230,138,0.85)] dark:[--sq-stroke:rgba(120,53,15,0.5)] bg-amber-50/90 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 text-xs transition-all animate-in fade-in duration-200 mb-4 ${className}`}
     >
       <div className="flex items-center gap-2.5 min-w-0">
         <div className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/60 flex items-center justify-center shrink-0 text-amber-700 dark:text-amber-300">
@@ -70,9 +72,11 @@ export const OfflineRetryBanner: React.FC<OfflineRetryBannerProps> = ({
       {onRetry && (
         <button
           type="button"
+          data-sq="ctl-sm"
+          data-sq-border="none"
           onClick={handleRetry}
           disabled={isRetrying}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-200/80 hover:bg-amber-200 dark:bg-amber-900/80 dark:hover:bg-amber-800 text-amber-950 dark:text-amber-100 font-medium text-xs transition-colors shrink-0 disabled:opacity-60 cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--r-ctl-sm,10px)] bg-amber-200/80 hover:bg-amber-200 dark:bg-amber-900/80 dark:hover:bg-amber-800 text-amber-950 dark:text-amber-100 font-medium text-xs transition-colors shrink-0 disabled:opacity-60 cursor-pointer"
         >
           <RefreshCw size={12} className={isRetrying ? 'animate-spin' : ''} />
           <span>{isRetrying ? 'Syncing...' : 'Retry Now'}</span>

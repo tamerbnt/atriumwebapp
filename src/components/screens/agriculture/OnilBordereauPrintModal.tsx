@@ -26,10 +26,11 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 		window.print();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-<div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-3xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[92vh] overflow-y-auto">
+<div className="sq-elev-pop max-w-3xl w-full">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[92vh] overflow-y-auto">
 <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
 <div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-bold"><Milk size={22} /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-bold shrink-0"><Milk size={22} /></div>
 <div>
 <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "جدول تسليم الحليب الطازج - ملف الدعم الوطني ONIL" : "Bordereau Officiel de Livraison de Lait Cru (Subvention ONIL)"}
@@ -44,7 +45,7 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
 </div>
-<div className="bg-white text-black p-8 rounded-2xl border border-neutral-300 shadow-xs space-y-6 font-sans text-xs print:m-0 print:p-0 print:border-none print:shadow-none">
+<div className="printable-document bg-white text-black p-8 rounded-[var(--r-card,16px)] border border-neutral-300 shadow-xs space-y-6 font-sans text-xs print:m-0 print:p-0 print:border-none print:shadow-none">
 <div className="text-center space-y-1 pb-4 border-b border-neutral-300">
 <p className="font-bold text-[11px] tracking-wide uppercase">الجمهورية الجزائرية الديمقراطية الشعبية</p>
 <p className="text-[10px] text-black/75 uppercase">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</p>
@@ -54,7 +55,7 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 <h1 className="text-base font-black tracking-wider uppercase text-black pt-2 rtl:normal-case rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans">BORDEREAU MENSUEL DE LIVRAISON DE LAIT CRU DE VACHE</h1>
 <p className="text-[11px] font-bold text-black/75">Dispositif de Soutien à la Production Nationale · Campagne 2026</p>
 </div>
-<div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-neutral-50 border border-neutral-200 text-xs">
+<div className="grid grid-cols-2 gap-4 p-4 rounded-[var(--r-ctl,12px)] bg-neutral-50 border border-neutral-200 text-xs">
 <div className="space-y-1.5">
 <span className="font-bold text-black uppercase block text-[10px]">Identification de l'Exploitation (Éleveur)</span>
 <p className="font-semibold text-black text-sm">{currentBusiness?.name || "Domaine Agricole & Élevage El Baraka"}</p>
@@ -140,7 +141,7 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 </tfoot>
 </table>
 </div>
-<div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-[11px] flex items-center justify-between">
+<div className="p-3 rounded-[var(--r-ctl,12px)] bg-emerald-50 border border-emerald-200 text-emerald-900 text-[11px] flex items-center justify-between">
 <div className="flex items-center gap-2">
 <ShieldCheck size={18} className="text-emerald-700 shrink-0" />
 <span>
@@ -164,6 +165,7 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 <div className="space-y-12">
 <p className="font-bold text-[11px] uppercase">L'Inspecteur Vétérinaire DSA</p>
 <p className="text-[10px] text-black/55">(Cachet Officiel ONIL / DSA)</p>
+</div>
 </div>
 </div>
 </div>

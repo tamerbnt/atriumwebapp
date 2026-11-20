@@ -1,6 +1,7 @@
 import { Spring } from '../../motion/spring';
 import { Body, wake, unschedule } from '../../motion/loop';
 import { f } from '../../motion/liquid';
+import { squirclePath } from '../../motion/shapes';
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
@@ -16,7 +17,8 @@ export class SegBody implements Body {
   R = new Spring(0, 420);
   geo: Array<[number, number]> = [];
   W = 0;
-  rad = 6;
+  H = 0;
+  rad = 9;
   index = 0;
   private lastClip = '';
   private lastColors: string[] = [];
@@ -31,8 +33,12 @@ export class SegBody implements Body {
   measure(): void {
     const pad = parseFloat(getComputedStyle(this.blob).left) || 0;
     this.W = this.blob.offsetWidth;
+    this.H = this.blob.offsetHeight || 0;
+    const cssThumb = parseFloat(getComputedStyle(this.group).getPropertyValue('--r-thumb'));
     const r = this.opts[0] ? parseFloat(getComputedStyle(this.opts[0]).borderTopLeftRadius) : 0;
-    this.rad = r || 6;
+    const rawRad = !Number.isNaN(cssThumb) && cssThumb > 0 ? cssThumb : (r || 9);
+    const compactRad = this.group.getAttribute('data-sq') === 'ctl-sm' ? Math.min(rawRad, 7) : rawRad;
+    this.rad = this.H > 0 ? Math.min(compactRad, this.H / 2) : compactRad;
     this.geo = this.opts.map((o) => [o.offsetLeft - pad, o.offsetLeft - pad + o.offsetWidth]);
   }
 
@@ -71,7 +77,13 @@ export class SegBody implements Body {
 
   render(): void {
     if (!this.geo.length || this.W <= 0) return;
-    const clip = `inset(0 ${f(Math.max(0, this.R.x))}px 0 ${f(Math.max(0, this.L.x))}px round ${f(this.rad)}px)`;
+    const left = Math.max(0, this.L.x);
+    const right = Math.max(0, this.R.x);
+    const w = Math.max(0, this.W - left - right);
+    const clip =
+      this.H > 0 && w > 0
+        ? `path('${squirclePath(left, 0, w, this.H, this.rad, 0.6)}')`
+        : `inset(0 ${f(right)}px 0 ${f(left)}px round ${f(this.rad)}px)`;
     if (clip !== this.lastClip) {
       this.blob.style.clipPath = clip;
       this.lastClip = clip;

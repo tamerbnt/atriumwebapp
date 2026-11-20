@@ -83,10 +83,14 @@ export const ScreenPod: React.FC<ScreenPodProps> = React.memo(({ children, class
 
   return (
     <ScreenPodBridgeContext.Provider value={store}>
-      <div
-        className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-4 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs ${className}`}
-      >
-        {children}
+      <div className="sq-elev-card">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className={`relative bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] ${className}`}
+        >
+          {children}
+        </div>
       </div>
     </ScreenPodBridgeContext.Provider>
   );

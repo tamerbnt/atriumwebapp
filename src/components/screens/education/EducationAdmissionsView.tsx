@@ -431,7 +431,11 @@ export const EducationAdmissionsView: React.FC = () => {
         sortable: true,
         renderCell: (lead) => (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
+            <div
+              data-sq="tile"
+              data-sq-border="solid"
+              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700"
+            >
               {lead.studentName.charAt(0)}
             </div>
             <div className="min-w-0">
@@ -495,7 +499,7 @@ export const EducationAdmissionsView: React.FC = () => {
         renderCell: (lead) => (
           <span className="text-xs text-black/70 dark:text-white/75">
             {lead.placementScore ? (
-              <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
                 {lead.placementScore}
               </span>
             ) : (
@@ -533,7 +537,7 @@ export const EducationAdmissionsView: React.FC = () => {
                     e.stopPropagation();
                     setConversionLead(lead);
                   }}
-                  className="p-1 rounded-md bg-[#d4522f] text-white hover:opacity-90 shadow-2xs cursor-pointer"
+                  className="p-1.5 rounded-full bg-[#d4522f] text-white hover:opacity-90 shadow-2xs cursor-pointer"
                   title={t('edu_btn_convert_student')}
                 >
                   <UserCheck size={12} />
@@ -592,13 +596,19 @@ export const EducationAdmissionsView: React.FC = () => {
         icon={<ClipboardList size={22} />}
         title={t('edu_admissions_title')}
         secondaryActions={
-          <div className="flex items-center p-1 bg-[#F4EFEA] dark:bg-neutral-800 rounded-xl border border-[#E8DFD8] dark:border-neutral-700 shadow-2xs">
+          <div
+            data-sq="ctl"
+            data-sq-border="solid"
+            className="flex items-center p-[3px] bg-[#F4EFEA] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700"
+          >
             <button
               type="button"
+              data-sq="thumb"
+              data-sq-border="none"
               onClick={() => setViewLayout('kanban')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
                 viewLayout === 'kanban'
-                  ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs'
+                  ? 'bg-white dark:bg-neutral-900 text-[#d4522f]'
                   : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
               }`}
             >
@@ -607,10 +617,12 @@ export const EducationAdmissionsView: React.FC = () => {
             </button>
             <button
               type="button"
+              data-sq="thumb"
+              data-sq-border="none"
               onClick={() => setViewLayout('collection')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
                 viewLayout === 'collection'
-                  ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-2xs'
+                  ? 'bg-white dark:bg-neutral-900 text-[#d4522f]'
                   : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
               }`}
             >
@@ -627,7 +639,11 @@ export const EducationAdmissionsView: React.FC = () => {
       />
 
       {selectedLeadIds.size > 0 && (
-        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2"
+        >
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
             <span className="text-xs font-bold text-black dark:text-white">
@@ -645,24 +661,30 @@ export const EducationAdmissionsView: React.FC = () => {
             </button>
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={() => handleBatchSetStage('TrialClass')}
-              className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             >
               <CheckCircle2 size={13} />
               <span>{isAr ? 'حصة تجريبية' : 'Trial Class'}</span>
             </button>
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={() => handleBatchSetStage('Admitted')}
-              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             >
               <CheckCircle2 size={13} />
               <span>{isAr ? 'قبول الملف' : 'Admit'}</span>
             </button>
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={handleBatchDelete}
-              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             >
               <Trash2 size={13} />
               <span>{isAr ? 'حذف المحدد' : isEn ? 'Delete' : 'Supprimer'}</span>
@@ -842,7 +864,9 @@ export const EducationAdmissionsView: React.FC = () => {
               return (
                 <div
                   key={stage.id}
-                  className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 p-3.5 flex flex-col space-y-3 min-h-[480px] shadow-2xs"
+                  data-sq="panel"
+                  data-sq-border="solid"
+                  className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 p-3 flex flex-col space-y-3 min-h-[480px]"
                 >
                   <div className="flex items-center justify-between pb-2 border-b border-neutral-200/80 dark:border-neutral-800">
                     <span className="text-xs font-bold text-black dark:text-white">{stage.title}</span>
@@ -852,10 +876,12 @@ export const EducationAdmissionsView: React.FC = () => {
                   </div>
                   <div className="space-y-2.5 flex-1">
                     {leadsInStage.map((lead) => (
-                      <div
-                        key={lead.id}
-                        className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs hover:border-[#d4522f]/50 transition-all space-y-2 group"
-                      >
+                      <div key={lead.id} className="sq-elev-card">
+                        <div
+                          data-sq="card"
+                          data-sq-border="solid"
+                          className="p-3.5 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-[#d4522f]/50 transition-all space-y-2 group"
+                        >
                         <button
                           type="button"
                           onClick={(e) => {
@@ -869,7 +895,7 @@ export const EducationAdmissionsView: React.FC = () => {
                               {lead.studentName}
                             </span>
                             {lead.placementScore && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
                                 Score: {lead.placementScore}
                               </span>
                             )}
@@ -898,8 +924,10 @@ export const EducationAdmissionsView: React.FC = () => {
                           {stage.id === 'Admitted' ? (
                             <button
                               type="button"
+                              data-sq="ctl-sm"
+                              data-sq-border="none"
                               onClick={() => setConversionLead(lead)}
-                              className="w-full py-1.5 px-2 rounded-lg bg-[#d4522f] text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 shadow-2xs"
+                              className="w-full py-1.5 px-2 bg-[#d4522f] text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90"
                             >
                               <UserCheck size={12} />
                               <span>{t('edu_btn_convert_student')}</span>
@@ -907,13 +935,15 @@ export const EducationAdmissionsView: React.FC = () => {
                           ) : stage.id !== 'Enrolled' ? (
                             <button
                               type="button"
+                              data-sq="ctl-sm"
+                              data-sq-border="none"
                               onClick={() => {
                                 const nextIndex = stages.findIndex((s) => s.id === stage.id) + 1;
                                 if (nextIndex < stages.length) {
                                   updateAdmissionStage(lead.id, stages[nextIndex].id);
                                 }
                               }}
-                              className="w-full py-1 text-center text-[10px] font-semibold text-black/70 dark:text-white/75 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                              className="w-full py-1 text-center text-[10px] font-semibold text-black/70 dark:text-white/75 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors flex items-center justify-center gap-1 cursor-pointer"
                             >
                               <span>Move Next</span>
                               <ArrowRight size={11} className="rtl:rotate-180" />
@@ -923,6 +953,7 @@ export const EducationAdmissionsView: React.FC = () => {
                               <UserCheck size={11} /> Converted
                             </span>
                           )}
+                        </div>
                         </div>
                       </div>
                     ))}
@@ -1025,8 +1056,10 @@ export const EducationAdmissionsView: React.FC = () => {
                       <button
                         key={st.id}
                         type="button"
+                        data-sq="ctl-sm"
+                        data-sq-border="solid"
                         onClick={() => updateAdmissionStage(lead.id, st.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                        className={`px-3 py-1.5 text-xs font-semibold border transition-colors cursor-pointer ${
                           lead.stage === st.id
                             ? 'bg-[#d4522f] text-white border-[#d4522f]'
                             : 'bg-[#F3EDE7] dark:bg-[#262422] border-[#E6DED6] dark:border-[#3A3734] text-black/80 dark:text-white/80 hover:border-[#d4522f]/50'
@@ -1126,7 +1159,12 @@ export const EducationAdmissionsView: React.FC = () => {
 
       {conversionLead && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
+          <div className="sq-elev-pop w-full max-w-md">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {t('edu_lead_modal_title')}
@@ -1167,19 +1205,24 @@ export const EducationAdmissionsView: React.FC = () => {
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
+                  data-sq="ctl"
+                  data-sq-border="solid"
                   onClick={() => setConversionLead(null)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
                 </button>
                 <button
                   type="button"
+                  data-sq="ctl"
+                  data-sq-border="none"
                   onClick={handleConfirmConversion}
-                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  className="px-5 py-2 bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('edu_btn_convert_student')}
                 </button>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -1187,7 +1230,12 @@ export const EducationAdmissionsView: React.FC = () => {
 
       {isAddLeadModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
+          <div className="sq-elev-pop w-full max-w-lg">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
+            >
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {t('edu_btn_new_lead')}
@@ -1281,19 +1329,24 @@ export const EducationAdmissionsView: React.FC = () => {
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
+                  data-sq="ctl"
+                  data-sq-border="solid"
                   onClick={() => setIsAddLeadModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="px-5 py-2 bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('edu_btn_new_lead')}
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

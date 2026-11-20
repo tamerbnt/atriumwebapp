@@ -4,7 +4,7 @@
  */
 .root {
   --h: var(--atr-h, 34px);
-  --r: calc(var(--h) * 0.147);
+  --r: var(--r-ctl, 12px);
 
   position: relative;
   overflow: hidden;
@@ -87,12 +87,14 @@
   --ob: var(--atr-acc-text);
   --q: var(--atr-hl);
   border-color: var(--atr-acc-text);
+  --sq-stroke: var(--atr-acc-text);
 }
 .soft {
   --b: var(--atr-soft);
   --ob: var(--atr-ink);
   --q: var(--atr-hl);
   border-color: var(--atr-line);
+  --sq-stroke: var(--atr-line);
 }
 .success {
   --b: var(--atr-okbg);
@@ -103,6 +105,9 @@
 .icon {
   width: var(--h);
   padding: 0;
+}
+.capsule {
+  border-radius: 9999px;
 }
 
 /* ---- tier "off": no simulation, so plain CSS carries the feedback ---- */

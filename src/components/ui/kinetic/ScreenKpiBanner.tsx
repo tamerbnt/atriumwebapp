@@ -53,12 +53,12 @@ const WhiteKpiCard: React.FC<{
     card.filteredLabel ||
     (language === 'ar' ? 'مُصفّى' : language === 'fr' ? 'Filtré' : 'Filtered');
 
-  const activeBorder = isEmerald
-    ? 'border-emerald-500/70 dark:border-emerald-400/70 ring-2 ring-emerald-500/20 shadow-[0_10px_24px_-6px_rgba(16,185,129,0.22),0_4px_10px_-2px_rgba(20,16,12,0.06)] dark:shadow-[0_12px_26px_-6px_rgba(16,185,129,0.25),inset_0_1px_0_rgba(255,255,255,0.1)]'
-    : 'border-[#d4522f]/75 dark:border-[#e8643f]/75 ring-2 ring-[#d4522f]/20 shadow-[0_10px_24px_-6px_rgba(212,82,47,0.22),0_4px_10px_-2px_rgba(20,16,12,0.06)] dark:shadow-[0_12px_26px_-6px_rgba(232,100,63,0.25),inset_0_1px_0_rgba(255,255,255,0.1)]';
+  const activeStrokeVars = isEmerald
+    ? '[--sq-stroke:rgba(16,185,129,0.75)] dark:[--sq-stroke:rgba(52,211,153,0.75)]'
+    : '[--sq-stroke:rgba(212,82,47,0.78)] dark:[--sq-stroke:rgba(232,100,63,0.78)]';
 
-  const inactiveBorder =
-    'border-[#E6DED6] dark:border-neutral-700/60 shadow-[0_2px_8px_rgba(20,16,12,0.05),0_1px_2px_rgba(20,16,12,0.04)] dark:shadow-[0_4px_14px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-[#D5C9BE] dark:hover:border-neutral-600/80 hover:shadow-[0_12px_28px_-6px_rgba(20,16,12,0.12),0_4px_10px_-2px_rgba(20,16,12,0.06)] dark:hover:shadow-[0_14px_30px_-6px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.1)]';
+  const inactiveStrokeVars =
+    '[--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.65)] group-hover:[--sq-stroke:#D5C9BE] dark:group-hover:[--sq-stroke:rgba(82,82,82,0.85)]';
 
   const glowGradient = isEmerald
     ? 'bg-[radial-gradient(240px_circle_at_90%_10%,rgba(16,185,129,0.09),transparent_70%)] dark:bg-[radial-gradient(240px_circle_at_90%_10%,rgba(16,185,129,0.14),transparent_70%)]'
@@ -71,10 +71,6 @@ const WhiteKpiCard: React.FC<{
   const filteredPillClass = isEmerald
     ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-500/12'
     : 'text-[#d4522f] dark:text-[#FF8D7A] bg-[#d4522f]/12';
-
-  const focusRing = isEmerald
-    ? 'focus-visible:ring-emerald-500/70'
-    : 'focus-visible:ring-[#d4522f]/70';
 
   const content = (
     <>
@@ -90,7 +86,7 @@ const WhiteKpiCard: React.FC<{
           </span>
           {card.isActive && (
             <span
-              className={`text-[10px] font-bold uppercase tracking-[0.04em] px-1.5 py-0.5 rounded-md shrink-0 ${filteredPillClass}`}
+              className={`text-[10px] font-bold uppercase tracking-[0.04em] px-2 py-0.5 rounded-full shrink-0 ${filteredPillClass}`}
             >
               {filteredText}
             </span>
@@ -98,7 +94,7 @@ const WhiteKpiCard: React.FC<{
         </div>
         <div className="mt-1.5">
           <span
-            className={`inline-block text-[10.5px] font-semibold px-2 py-0.5 rounded-md transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 ${chipClass}`}
+            className={`inline-block text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 ${chipClass}`}
           >
             {isEmerald ? (
               card.badgeText
@@ -122,28 +118,45 @@ const WhiteKpiCard: React.FC<{
     </>
   );
 
-  const sharedClass = `group relative overflow-hidden p-4.5 sm:p-5 rounded-[18px] bg-white dark:bg-neutral-800/90 border text-left rtl:text-right flex flex-col justify-between min-h-[132px] w-full select-none transform-gpu transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] focus:outline-none focus-visible:ring-2 ${focusRing} motion-reduce:transition-none motion-reduce:hover:transform-none ${
-    card.onToggle ? 'cursor-pointer active:translate-y-0 active:scale-[0.995]' : ''
-  } ${card.isActive ? activeBorder : inactiveBorder}`;
+  const sharedClass = `relative overflow-hidden p-4.5 sm:p-5 rounded-[var(--r-card,16px)] bg-white dark:bg-neutral-800/90 text-left rtl:text-right flex flex-col justify-between min-h-[132px] h-full w-full select-none focus:outline-none ${
+    card.onToggle ? 'cursor-pointer' : ''
+  } ${card.isActive ? activeStrokeVars : inactiveStrokeVars}`;
+
+  const wrapperClass = `group sq-elev-card-hover h-full transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] motion-reduce:transition-none motion-reduce:hover:transform-none ${
+    card.onToggle ? 'active:translate-y-0 active:scale-[0.995]' : ''
+  }`;
 
   if (card.onToggle) {
     return (
-      <button
-        type="button"
-        data-no-liquid="true"
-        onClick={card.onToggle}
-        aria-pressed={Boolean(card.isActive)}
-        title={card.title || card.label}
-        className={sharedClass}
-      >
-        {content}
-      </button>
+      <div className={wrapperClass}>
+        <button
+          type="button"
+          data-no-liquid="true"
+          data-sq="card"
+          data-sq-border="solid"
+          data-sq-stroke-w={card.isActive ? '2' : '1'}
+          onClick={card.onToggle}
+          aria-pressed={Boolean(card.isActive)}
+          title={card.title || card.label}
+          className={sharedClass}
+        >
+          {content}
+        </button>
+      </div>
     );
   }
 
   return (
-    <div title={card.title || card.label} className={sharedClass}>
-      {content}
+    <div className={wrapperClass}>
+      <div
+        title={card.title || card.label}
+        data-sq="card"
+        data-sq-border="solid"
+        data-sq-stroke-w={card.isActive ? '2' : '1'}
+        className={sharedClass}
+      >
+        {content}
+      </div>
     </div>
   );
 });
@@ -170,43 +183,51 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
 
   return (
     <div
-      className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[24px] p-5 sm:p-6 space-y-5 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs ${className}`}
+      data-sq="panel"
+      data-sq-border="solid"
+      className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[var(--r-panel,28px)] p-3 space-y-3 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] ${className}`}
     >
-      <div>
+      <div className="px-2 pt-1">
         <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
           {heading}
         </h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <WhiteKpiCard card={primaryCard} defaultTone="emerald" language={language} />
         <WhiteKpiCard card={secondaryCard} defaultTone="terracotta" language={language} />
 
         {/* 3rd Dark #1F1D1B Card with #FB923C orange figure */}
-        <div className="group relative overflow-hidden p-4.5 sm:p-5 rounded-[18px] bg-[#1F1D1B] border border-white/[0.08] text-white flex flex-col justify-between min-h-[132px] shadow-[0_4px_14px_rgba(20,16,12,0.16),0_1px_3px_rgba(20,16,12,0.12)] dark:shadow-[0_6px_18px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(255,255,255,0.07)] transform-gpu transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] hover:border-[#FB923C]/35 hover:shadow-[0_14px_30px_-6px_rgba(212,82,47,0.24),0_6px_14px_-2px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_16px_32px_-6px_rgba(0,0,0,0.72),0_0_0_1px_rgba(251,146,60,0.22)] motion-reduce:transition-none motion-reduce:hover:transform-none">
-          <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(260px_circle_at_88%_12%,rgba(251,146,60,0.14),transparent_70%)]" />
-          <div className="relative z-10 flex items-center justify-between gap-2">
-            <span className="text-[12px] font-medium text-white/75 truncate">
-              {darkCard.label}
-            </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/25 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5 shrink-0">
-              <span ref={darkChipCountRef}>
-                {darkCard.formatBadgeValue
-                  ? darkCard.formatBadgeValue(darkCard.badgeCount)
-                  : `${darkCard.badgePrefix ?? '+'}${darkCard.badgeCount}`}
+        <div className="group sq-elev-card-hover h-full transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] motion-reduce:transition-none motion-reduce:hover:transform-none">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="relative overflow-hidden p-4.5 sm:p-5 rounded-[var(--r-card,16px)] bg-[#1F1D1B] [--sq-stroke:rgba(255,255,255,0.08)] group-hover:[--sq-stroke:rgba(251,146,60,0.4)] text-white flex flex-col justify-between min-h-[132px] h-full"
+          >
+            <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(260px_circle_at_88%_12%,rgba(251,146,60,0.14),transparent_70%)]" />
+            <div className="relative z-10 flex items-center justify-between gap-2">
+              <span className="text-[12px] font-medium text-white/75 truncate">
+                {darkCard.label}
               </span>
-              {darkCard.badgeSuffix ? <span>{darkCard.badgeSuffix.trim()}</span> : null}
-            </span>
-          </div>
-          <div className="relative z-10">
-            <div
-              ref={darkBigCountRef}
-              className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03]"
-            >
-              {darkCard.formatValue
-                ? darkCard.formatValue(darkCard.valueCount)
-                : `${darkCard.valuePrefix ?? '+'}${darkCard.valueCount}${darkCard.valueSuffix ?? ''}`}
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/25 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5 shrink-0">
+                <span ref={darkChipCountRef}>
+                  {darkCard.formatBadgeValue
+                    ? darkCard.formatBadgeValue(darkCard.badgeCount)
+                    : `${darkCard.badgePrefix ?? '+'}${darkCard.badgeCount}`}
+                </span>
+                {darkCard.badgeSuffix ? <span>{darkCard.badgeSuffix.trim()}</span> : null}
+              </span>
             </div>
-            <p className="text-[11.5px] text-white/65 mt-1.5 truncate">{darkCard.caption}</p>
+            <div className="relative z-10">
+              <div
+                ref={darkBigCountRef}
+                className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03]"
+              >
+                {darkCard.formatValue
+                  ? darkCard.formatValue(darkCard.valueCount)
+                  : `${darkCard.valuePrefix ?? '+'}${darkCard.valueCount}${darkCard.valueSuffix ?? ''}`}
+              </div>
+              <p className="text-[11.5px] text-white/65 mt-1.5 truncate">{darkCard.caption}</p>
+            </div>
           </div>
         </div>
       </div>

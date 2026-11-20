@@ -23,7 +23,9 @@ export const HomeKioskCard: React.FC<HomeKioskCardProps> = ({
 
   return (
     <div
-      className={`flex-1 bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] rounded-[18px] p-4 sm:p-5 border border-[#4D382B]/85 text-white relative overflow-hidden flex flex-col justify-between shadow-sm group/kiosk ${className}`}
+      data-sq="card"
+      data-sq-border="solid"
+      className={`flex-1 bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] p-4 sm:p-5 border border-[#4D382B]/85 [--sq-stroke:rgba(77,56,43,0.85)] text-white relative overflow-hidden flex flex-col justify-between group/kiosk ${className}`}
       data-testid={`home-kiosk-${config.id}`}
     >
       {/* Subtle architectural sparkline backdrop in Lavender + Terracotta */}
@@ -53,7 +55,11 @@ export const HomeKioskCard: React.FC<HomeKioskCardProps> = ({
       <div className="relative z-10 space-y-3.5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0 flex-1">
-            <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FB923C]/20 to-[#A78BFA]/20 border border-white/[0.14] text-[#FB923C] flex items-center justify-center shrink-0">
+            <span
+              data-sq="tile"
+              data-sq-border="solid"
+              className="relative w-10 h-10 bg-gradient-to-br from-[#FB923C]/20 to-[#A78BFA]/20 border border-white/[0.14] [--sq-stroke:rgba(255,255,255,0.14)] text-[#FB923C] flex items-center justify-center shrink-0"
+            >
               {config.icon}
             </span>
             <div className="min-w-0 flex-1">

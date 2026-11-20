@@ -97,7 +97,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
         header: isAr ? 'الطريقة' : isEn ? 'Method' : 'Méthode',
         sortable: true,
         renderCell: (log) => (
-          <span className="font-mono text-[11px] px-2 py-0.5 rounded-md bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85 font-bold uppercase">
+          <span className="font-mono text-[11px] px-2.5 py-0.5 rounded-full bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85 font-bold uppercase">
             {log.method}
           </span>
         ),
@@ -108,7 +108,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
         sortable: true,
         renderCell: (log) => (
           <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase ${
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase ${
               log.type === 'in'
                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                 : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
@@ -225,7 +225,12 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs">
+      <div className="sq-elev-card">
+        <div
+          data-sq="card"
+          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A]"
+        >
         <LiveSegmentedControl
           size="md"
           value={historyMode}
@@ -254,6 +259,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
             ? isAr ? 'أرشيف الرواتب' : isEn ? 'Payroll archive' : 'Archives paie'
             : isAr ? 'سجل الحضور' : isEn ? 'Attendance logs' : 'Journal pointages'}
         </div>
+        </div>
       </div>
 
       {historyMode === 'salaires' && (
@@ -278,65 +284,75 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
             payrollRuns.map((run) => {
               const runSlips = payrollSlips.filter((s) => s.payrollRunId === run.id);
               return (
-                <div
-                  key={run.id}
-                  className="bg-white dark:bg-[#1C1B1A] rounded-2xl border border-[#E6DED6] dark:border-[#3A3734] p-5 shadow-2xs space-y-4"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-                        <CheckCircle2 className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                          <span>{run.title}</span>
-                          <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 uppercase font-bold">
-                            {run.status === 'paid' ? (isAr ? 'مدفوعة' : isEn ? 'Paid' : 'Payée') : isAr ? 'مسودة' : isEn ? 'Draft' : 'Brouillon'}
-                          </span>
-                        </h4>
-                        <p className="text-[11px] text-black/62 dark:text-white/65 font-mono tabular-nums">
-                          {run.slipsCount} {isAr ? 'موظف' : isEn ? 'staff' : 'agents'} · {run.approvedAt?.slice(0, 10) || run.createdAt.slice(0, 10)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 text-xs font-mono tabular-nums">
-                      <div>
-                        <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الصافي' : isEn ? 'Net' : 'Net'}</span>
-                        <span className="font-bold text-sm text-[#d4522f]">{run.totalNet.toLocaleString()} DZD</span>
-                      </div>
-                      <div>
-                        <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الضمان' : isEn ? 'Social' : 'Social'}</span>
-                        <span className="font-bold text-emerald-600 dark:text-emerald-400">{(run.totalCnasSalarial + run.totalCnasPatronal).toLocaleString()} DZD</span>
-                      </div>
-                      <div>
-                        <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الضريبة' : isEn ? 'Tax' : 'Impôt'}</span>
-                        <span className="font-bold text-black dark:text-white">{run.totalIrg.toLocaleString()} DZD</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                    {runSlips.map((slip) => (
-                      <div
-                        key={slip.id}
-                        className="p-3 rounded-xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between"
-                      >
-                        <div>
-                          <div className="font-bold text-xs text-black dark:text-white">{slip.staffFullName}</div>
-                          <div className="text-[11px] font-mono text-black/62 dark:text-white/65 tabular-nums">{slip.matricule} · {slip.role}</div>
-                          <div className="text-xs font-mono font-bold text-[#d4522f] mt-1 tabular-nums">{slip.netAPayer.toLocaleString()} DZD</div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setActiveSlipForPrint(slip)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-white dark:bg-[#1C1B1A] border border-[#D4C8BC] dark:border-[#3A3734] text-black/80 dark:text-white/85 hover:text-[#d4522f] hover:border-[#d4522f] transition-all cursor-pointer"
+                <div key={run.id} className="sq-elev-card">
+                  <div
+                    data-sq="panel"
+                    style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+                    className="bg-white dark:bg-[#1C1B1A] p-3 space-y-3"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-2 pt-1.5 pb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
+                      <div className="flex items-center gap-3">
+                        <div
+                          data-sq="tile"
+                          className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold"
                         >
-                          <Printer className="w-3.5 h-3.5" />
-                          <span>{isAr ? 'قسيمة' : isEn ? 'Slip' : 'Fiche'}</span>
-                        </button>
+                          <CheckCircle2 className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                            <span>{run.title}</span>
+                            <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 uppercase font-bold">
+                              {run.status === 'paid' ? (isAr ? 'مدفوعة' : isEn ? 'Paid' : 'Payée') : isAr ? 'مسودة' : isEn ? 'Draft' : 'Brouillon'}
+                            </span>
+                          </h4>
+                          <p className="text-[11px] text-black/62 dark:text-white/65 font-mono tabular-nums">
+                            {run.slipsCount} {isAr ? 'موظف' : isEn ? 'staff' : 'agents'} · {run.approvedAt?.slice(0, 10) || run.createdAt.slice(0, 10)}
+                          </p>
+                        </div>
                       </div>
-                    ))}
+
+                      <div className="flex items-center gap-4 text-xs font-mono tabular-nums">
+                        <div>
+                          <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الصافي' : isEn ? 'Net' : 'Net'}</span>
+                          <span className="font-bold text-sm text-[#d4522f]">{run.totalNet.toLocaleString()} DZD</span>
+                        </div>
+                        <div>
+                          <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الضمان' : isEn ? 'Social' : 'Social'}</span>
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">{(run.totalCnasSalarial + run.totalCnasPatronal).toLocaleString()} DZD</span>
+                        </div>
+                        <div>
+                          <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الضريبة' : isEn ? 'Tax' : 'Impôt'}</span>
+                          <span className="font-bold text-black dark:text-white">{run.totalIrg.toLocaleString()} DZD</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                      {runSlips.map((slip) => (
+                        <div
+                          key={slip.id}
+                          data-sq="card"
+                          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
+                          className="p-3 bg-[#FBF8F5] dark:bg-[#262422] flex items-center justify-between"
+                        >
+                          <div>
+                            <div className="font-bold text-xs text-black dark:text-white">{slip.staffFullName}</div>
+                            <div className="text-[11px] font-mono text-black/62 dark:text-white/65 tabular-nums">{slip.matricule} · {slip.role}</div>
+                            <div className="text-xs font-mono font-bold text-[#d4522f] mt-1 tabular-nums">{slip.netAPayer.toLocaleString()} DZD</div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setActiveSlipForPrint(slip)}
+                            data-sq="ctl-sm"
+                            style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
+                            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold bg-white dark:bg-[#1C1B1A] text-black/80 dark:text-white/85 hover:text-[#d4522f] transition-all cursor-pointer"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>{isAr ? 'قسيمة' : isEn ? 'Slip' : 'Fiche'}</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               );
@@ -358,19 +374,25 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
           onSearchChange={setSearchPunchQuery}
           searchPlaceholder={isAr ? 'بحث...' : isEn ? 'Search...' : 'Rechercher...'}
           headerActions={
-            <select
-              value={selectedStaffFilter}
-              onChange={(e) => setSelectedStaffFilter(e.target.value)}
-              title={isAr ? 'تصفية حسب الموظف' : isEn ? 'Filter by staff member' : 'Filtrer par collaborateur'}
-              className="h-9 px-3 text-xs font-medium rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-black dark:text-white"
+            <div
+              data-sq="ctl"
+              style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
+              className="h-9 bg-[#FBF8F5] dark:bg-[#262422] flex items-center"
             >
-              <option value="all">{isAr ? 'الكل' : isEn ? 'All' : 'Tous'}</option>
-              {staffList.map((s) => (
-                <option key={s.id} value={s.id} title={s.fullName}>
-                  {compactFilterLabel(s.fullName).label}
-                </option>
-              ))}
-            </select>
+              <select
+                value={selectedStaffFilter}
+                onChange={(e) => setSelectedStaffFilter(e.target.value)}
+                title={isAr ? 'تصفية حسب الموظف' : isEn ? 'Filter by staff member' : 'Filtrer par collaborateur'}
+                className="h-full px-3 text-xs font-medium bg-transparent text-black dark:text-white focus:outline-none cursor-pointer"
+              >
+                <option value="all">{isAr ? 'الكل' : isEn ? 'All' : 'Tous'}</option>
+                {staffList.map((s) => (
+                  <option key={s.id} value={s.id} title={s.fullName}>
+                    {compactFilterLabel(s.fullName).label}
+                  </option>
+                ))}
+              </select>
+            </div>
           }
           pinnedIds={pinnedLogIds}
           onPinToggle={(idOrItem) => {

@@ -664,7 +664,11 @@ export const AgricultureHarvestView: React.FC = () => {
         sortable: true,
         renderCell: (t) => (
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"
+            >
               <Scale size={16} />
             </div>
             <div className="min-w-0">
@@ -1132,7 +1136,9 @@ export const AgricultureHarvestView: React.FC = () => {
               return (
                 <div
                   key={p.id}
-                  className="p-4 rounded-2xl bg-white dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs space-y-3 flex flex-col justify-between"
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="p-4 bg-white dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3 flex flex-col justify-between"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -1154,7 +1160,11 @@ export const AgricultureHarvestView: React.FC = () => {
                       {p.isPaid ? (isAr ? 'تم الصرف ✓' : 'Réglé ✓') : isAr ? 'مستحق' : 'À payer'}
                     </span>
                   </div>
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2"
+                  >
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-black/55 dark:text-white/55 font-medium">
                         {isAr ? 'الصناديق المجنية :' : 'Caisses pointées :'}
@@ -1170,21 +1180,28 @@ export const AgricultureHarvestView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleIncrementCrates(p, -1)}
-                        className="py-1.5 px-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center gap-1 text-black/70 dark:text-white/75 transition-colors cursor-pointer"
+                        data-sq="ctl-sm"
+                        data-sq-border="solid"
+                        className="py-1.5 px-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center gap-1 text-black/70 dark:text-white/75 transition-colors cursor-pointer"
                       >
                         <Minus size={12} /> 1
                       </button>
                       <button
                         type="button"
                         onClick={() => handleIncrementCrates(p, 1)}
-                        className="py-1.5 px-2 bg-[#d4522f]/10 border border-[#d4522f]/30 text-[#d4522f] rounded-lg text-xs font-bold hover:bg-[#d4522f]/20 flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        data-sq="ctl-sm"
+                        data-sq-border="solid"
+                        style={{ '--sq-stroke': 'rgba(212, 82, 47, 0.35)' } as React.CSSProperties}
+                        className="py-1.5 px-2 bg-[#d4522f]/10 border border-[#d4522f]/30 text-[#d4522f] text-xs font-bold hover:bg-[#d4522f]/20 flex items-center justify-center gap-1 transition-colors cursor-pointer"
                       >
                         +1
                       </button>
                       <button
                         type="button"
                         onClick={() => handleIncrementCrates(p, 5)}
-                        className="py-1.5 px-2 bg-[#d4522f] text-white rounded-lg text-xs font-bold hover:bg-[#b06a4e] flex items-center justify-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                        data-sq="ctl-sm"
+                        data-sq-border="none"
+                        className="py-1.5 px-2 bg-[#d4522f] text-white text-xs font-bold hover:bg-[#b06a4e] flex items-center justify-center gap-1 transition-colors cursor-pointer"
                       >
                         +5
                       </button>
@@ -1208,7 +1225,10 @@ export const AgricultureHarvestView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleUpdateAdvance(p, 500)}
-                          className="px-1.5 py-0.5 text-[10px] bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 rounded border border-amber-300 dark:border-amber-700 cursor-pointer"
+                          data-sq="check"
+                          data-sq-border="solid"
+                          style={{ '--sq-stroke': 'rgba(217, 119, 6, 0.4)' } as React.CSSProperties}
+                          className="px-1.5 py-0.5 text-[10px] bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700 cursor-pointer"
                         >
                           +500
                         </button>
@@ -1223,7 +1243,12 @@ export const AgricultureHarvestView: React.FC = () => {
                   </div>
                   <div className="pt-2">
                     {p.isPaid ? (
-                      <div className="w-full py-2 text-center text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center gap-1.5">
+                      <div
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        style={{ '--sq-stroke': 'rgba(16, 185, 129, 0.35)' } as React.CSSProperties}
+                        className="w-full py-2 text-center text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center gap-1.5"
+                      >
                         <CheckCircle2 size={14} />{' '}
                         {isAr ? 'تم تسليم الأجر نقداً' : 'Payé en espèces (Caisse)'}
                       </div>
@@ -1435,38 +1460,47 @@ export const AgricultureHarvestView: React.FC = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
-                  <Scale size={20} />
+          <div className="sq-elev-pop max-w-lg w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    data-sq="tile"
+                    data-sq-border="none"
+                    className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold shrink-0"
+                  >
+                    <Scale size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                      {ticketToEdit
+                        ? isAr
+                          ? 'تعديل وصل وزن المحصول'
+                          : 'Modifier le Bon de Pesée'
+                        : isAr
+                        ? 'تسجيل وصل وزن قبان جديد'
+                        : 'Nouveau Bon de Pesée Pont-Bascule'}
+                    </h2>
+                    <p className="text-xs text-black/55 dark:text-white/55">
+                      {isAr
+                        ? 'قياس الحمولة الصافية والأسعار للطن'
+                        : 'Calcul automatique du poids net et net domaine'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                    {ticketToEdit
-                      ? isAr
-                        ? 'تعديل وصل وزن المحصول'
-                        : 'Modifier le Bon de Pesée'
-                      : isAr
-                      ? 'تسجيل وصل وزن قبان جديد'
-                      : 'Nouveau Bon de Pesée Pont-Bascule'}
-                  </h2>
-                  <p className="text-xs text-black/55 dark:text-white/55">
-                    {isAr
-                      ? 'قياس الحمولة الصافية والأسعار للطن'
-                      : 'Calcul automatique du poids net et net domaine'}
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                type="button"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
             <form onSubmit={handleSaveModal} className="space-y-4">
               <LabelSelect
                 label={isAr ? 'القطعة الفلاحية المصدر' : "Parcelle d'Origine"}
@@ -1547,33 +1581,43 @@ export const AgricultureHarvestView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
 
       {isPointageModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
-                  <Users size={20} />
+          <div className="sq-elev-pop max-w-md w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5"
+            >
+              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    data-sq="tile"
+                    data-sq-border="none"
+                    className="w-9 h-9 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"
+                  >
+                    <Users size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                      {isAr ? 'تسجيل حضور وجني لعامل' : 'Pointer un Ouvrier Saisonnier'}
+                    </h2>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                    {isAr ? 'تسجيل حضور وجني لعامل' : 'Pointer un Ouvrier Saisonnier'}
-                  </h2>
-                </div>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setIsPointageModalOpen(false)}
+                  className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                type="button"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsPointageModalOpen(false)}
-                className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
             <form onSubmit={handleSavePointage} className="space-y-4">
               <LabelSelect
                 label={isAr ? 'العامل السيزوني / التاشرون' : 'Ouvrier / Tâcheron'}
@@ -1608,7 +1652,11 @@ export const AgricultureHarvestView: React.FC = () => {
                   onChange={(e) => setPointageAdvance(e.target.value)}
                 />
               </div>
-              <div className="p-3 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs space-y-1">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 text-xs space-y-1"
+              >
                 <div className="flex justify-between">
                   <span className="text-black/55 dark:text-white/55">Rémunération calculée :</span>
                   <span className="font-mono font-bold text-black dark:text-white">
@@ -1649,6 +1697,7 @@ export const AgricultureHarvestView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

@@ -9,6 +9,7 @@ import React, {
 import { ChevronDown, Check, Search, X } from 'lucide-react';
 import { useAtriumSelector } from '../../services/store';
 import { enqueueLabelWrite, cancelLabelGeometryTask } from './labelGeometryQueue';
+import { squircleNotchedRingPaths, squirclePath } from '@/atrium/motion/shapes';
 
 export interface SelectOption {
   value: string | number;
@@ -50,26 +51,9 @@ function computeSelectRingPaths(W: number, H: number, r: number, lw: number, isR
   const x1 = isRtl
     ? Math.min(W - r * 0.5, W - lx + 4)
     : Math.min(W - r, lx + lw * S + 4);
-  const a = r - IN;
-  const R = W - IN;
-  const B = H - IN;
-  const mid = W / 2;
-
-  const nm = (x0 + x1) / 2;
-  const gapL = `M${nm},${IN} L${x0},${IN}`;
-  const gapR = `M${nm},${IN} L${x1},${IN}`;
-
-  const right =
-    r > 0
-      ? `M${x1},${IN} L${W - r},${IN} A${a},${a} 0 0 1 ${R},${r} L${R},${H - r} A${a},${a} 0 0 1 ${W - r},${B} L${mid},${B}`
-      : `M${x1},${IN} L${R},${IN} L${R},${B} L${mid},${B}`;
-
-  const left =
-    r > 0
-      ? `M${x0},${IN} L${r},${IN} A${a},${a} 0 0 0 ${IN},${r} L${IN},${H - r} A${a},${a} 0 0 0 ${r},${B} L${mid},${B}`
-      : `M${x0},${IN} L${IN},${IN} L${IN},${B} L${mid},${B}`;
-
-  return { lx, gapL, gapR, right, left };
+  const ring = squircleNotchedRingPaths(W, H, r, IN, x0, x1, 0.6);
+  const bg = squirclePath(0, 0, W, H, r, 0.6);
+  return { lx, bg, ...ring };
 }
 
 export const LabelSelect: React.FC<LabelSelectProps> = ({
@@ -81,7 +65,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
   placeholder,
   searchable = false,
   disabled = false,
-  corner = 6,
+  corner = 12,
   width = '100%',
   height = 40,
   className = '',
@@ -90,6 +74,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
   prefix,
 }) => {
   const boxRef = useRef<HTMLDivElement | null>(null);
+  const bgRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rightPathRef = useRef<SVGPathElement | null>(null);
   const leftPathRef = useRef<SVGPathElement | null>(null);
@@ -156,6 +141,11 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
     lastGeomRef.current = { W, lw };
     const paths = computeSelectRingPaths(W, H, r, lw, isRtl);
 
+    if (bgRef.current && paths.bg) {
+      const clipStr = `path('${paths.bg}')`;
+      bgRef.current.style.clipPath = clipStr;
+      (bgRef.current.style as any).webkitClipPath = clipStr;
+    }
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     rightPathRef.current?.setAttribute('d', paths.right);
     leftPathRef.current?.setAttribute('d', paths.left);
@@ -345,11 +335,16 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           {
             width: typeof width === 'number' ? `${width}px` : '100%',
             height: H,
-            borderRadius: r,
             '--lbi-x': `${initialPaths.lx}px`,
           } as React.CSSProperties
         }
       >
+        <div
+          ref={bgRef}
+          className="lbi-bg"
+          aria-hidden="true"
+          style={initialPaths.bg ? { clipPath: `path('${initialPaths.bg}')` } : undefined}
+        />
         <svg
           ref={svgRef}
           className="lbi-ring"
@@ -427,105 +422,118 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
 
         {isOpen && (
           <div
-            ref={popoverRef}
-            className={`absolute left-0 right-0 z-50 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 ${
+            className={`sq-elev-pop absolute left-0 right-0 z-50 ${
               openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
             }`}
-            style={{
-              maxHeight: '230px',
-            }}
           >
-            {(searchable || normalizedOptions.length >= 6) && (
-              <div className="p-2 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
-                <div className="relative flex items-center">
-                  <Search
-                    size={13}
-                    className="absolute left-2.5 rtl:left-auto rtl:right-2.5 text-black/55 dark:text-white/60 pointer-events-none"
-                  />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setHighlightedIndex(0);
-                    }}
-                    placeholder={defaultSearchPlaceholder}
-                    className="w-full h-7 pl-7 pr-7 rtl:pr-7 rtl:pl-7 text-xs bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-black dark:text-white focus:outline-none focus:border-[#d4522f]"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-2 rtl:right-auto rtl:left-2 text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white p-0.5 cursor-pointer"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <ul
-              className="py-1 max-h-48 overflow-y-auto focus:outline-none text-xs"
-              role="listbox"
+            <div
+              ref={popoverRef}
+              data-sq="card"
+              data-sq-border="solid"
+              className="relative bg-white dark:bg-neutral-900 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+              style={{
+                maxHeight: '230px',
+              }}
             >
-              {filteredOptions.length === 0 ? (
-                <li className="px-3.5 py-3 text-center text-black/60 dark:text-white/60 italic">
-                  {noOptionsText}
-                </li>
-              ) : (
-                filteredOptions.map((opt, idx) => {
-                  const isSelected =
-                    String(opt.value) === String(controlledValue);
-                  const isHighlighted = idx === highlightedIndex;
-
-                  return (
-                    <li
-                      key={String(opt.value)}
-                      role="option"
-                      aria-selected={isSelected}
-                      title={opt.tooltip || opt.sublabel || opt.label}
-                      onClick={() => {
-                        if (!opt.disabled) handleSelect(opt.value);
+              {(searchable || normalizedOptions.length >= 6) && (
+                <div className="p-2 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
+                  <div
+                    data-sq="ctl-sm"
+                    data-sq-border="solid"
+                    className="relative flex items-center bg-white dark:bg-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040]"
+                  >
+                    <Search
+                      size={13}
+                      className="absolute left-2.5 rtl:left-auto rtl:right-2.5 text-black/55 dark:text-white/60 pointer-events-none"
+                    />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setHighlightedIndex(0);
                       }}
-                      onMouseEnter={() => setHighlightedIndex(idx)}
-                      className={`px-3 py-2 flex items-center justify-between cursor-pointer transition-colors ${
-                        opt.disabled
-                          ? 'opacity-40 cursor-not-allowed'
-                          : isSelected
-                          ? 'bg-[#d4522f]/10 text-[#d4522f] font-semibold'
-                          : isHighlighted
-                          ? 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white'
-                          : 'text-black/85 dark:text-white/85'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 truncate pr-2">
-                        {opt.icon && (
-                          <span className="shrink-0">{opt.icon}</span>
-                        )}
-                        <div className="truncate">
-                          <div className="truncate font-medium">{opt.label}</div>
-                          {opt.sublabel && (
-                            <div className="text-[10px] text-black/60 dark:text-white/65 truncate">
-                              {opt.sublabel}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {isSelected && (
-                        <Check
-                          size={13}
-                          className="shrink-0 text-[#d4522f]"
-                          strokeWidth={2.5}
-                        />
-                      )}
-                    </li>
-                  );
-                })
+                      placeholder={defaultSearchPlaceholder}
+                      className="w-full h-7 pl-7 pr-7 rtl:pr-7 rtl:pl-7 text-xs bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        data-no-liquid="true"
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-2 rtl:right-auto rtl:left-2 text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white p-0.5 cursor-pointer"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+                </div>
               )}
-            </ul>
+
+              <ul
+                className="p-1.5 max-h-48 overflow-y-auto focus:outline-none text-xs space-y-0.5"
+                role="listbox"
+              >
+                {filteredOptions.length === 0 ? (
+                  <li className="px-3.5 py-3 text-center text-black/60 dark:text-white/60 italic">
+                    {noOptionsText}
+                  </li>
+                ) : (
+                  filteredOptions.map((opt, idx) => {
+                    const isSelected =
+                      String(opt.value) === String(controlledValue);
+                    const isHighlighted = idx === highlightedIndex;
+
+                    return (
+                      <li
+                        key={String(opt.value)}
+                        role="option"
+                        aria-selected={isSelected}
+                        data-sq="row"
+                        data-sq-border="none"
+                        title={opt.tooltip || opt.sublabel || opt.label}
+                        onClick={() => {
+                          if (!opt.disabled) handleSelect(opt.value);
+                        }}
+                        onMouseEnter={() => setHighlightedIndex(idx)}
+                        className={`relative px-2.5 py-2 flex items-center justify-between cursor-pointer transition-colors ${
+                          opt.disabled
+                            ? 'opacity-40 cursor-not-allowed'
+                            : isSelected
+                            ? 'bg-[#d4522f]/10 text-[#d4522f] font-semibold'
+                            : isHighlighted
+                            ? 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white'
+                            : 'text-black/85 dark:text-white/85'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate pr-2">
+                          {opt.icon && (
+                            <span className="shrink-0">{opt.icon}</span>
+                          )}
+                          <div className="truncate">
+                            <div className="truncate font-medium">{opt.label}</div>
+                            {opt.sublabel && (
+                              <div className="text-[10px] text-black/60 dark:text-white/65 truncate">
+                                {opt.sublabel}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {isSelected && (
+                          <Check
+                            size={13}
+                            className="shrink-0 text-[#d4522f]"
+                            strokeWidth={2.5}
+                          />
+                        )}
+                      </li>
+                    );
+                  })
+                )}
+              </ul>
+            </div>
           </div>
         )}
       </div>

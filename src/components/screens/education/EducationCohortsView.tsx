@@ -413,7 +413,11 @@ export const EducationCohortsView: React.FC = () => {
         sortable: true,
         renderCell: (cohort) => (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
+            <div
+              data-sq="tile"
+              data-sq-border="solid"
+              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700"
+            >
               <BookOpen size={16} />
             </div>
             <div className="min-w-0">
@@ -777,15 +781,19 @@ export const EducationCohortsView: React.FC = () => {
                       <button
                         key={idx}
                         type="button"
+                        data-sq="card"
+                        data-sq-border="solid"
                         onClick={() => handleToggleMilestone(cohort.id, idx)}
-                        className={`w-full text-left rtl:text-right flex items-start gap-3 p-3 rounded-[14px] border transition-all cursor-pointer ${
+                        className={`w-full text-left rtl:text-right flex items-start gap-3 p-3 border transition-all cursor-pointer ${
                           milestone.completed
                             ? 'border-emerald-200 dark:border-emerald-900/50 bg-[#DDF5E8]/40 dark:bg-emerald-950/20'
                             : 'border-[#E6DED6] dark:border-[#3A3734] bg-[#F3EDE7] dark:bg-[#262422]'
                         }`}
                       >
                         <span
-                          className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${
+                          data-sq="check"
+                          data-sq-border={milestone.completed ? 'none' : 'solid'}
+                          className={`w-5 h-5 flex items-center justify-center shrink-0 mt-0.5 ${
                             milestone.completed ? 'bg-emerald-600 text-white' : 'border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900'
                           }`}
                         >
@@ -818,7 +826,7 @@ export const EducationCohortsView: React.FC = () => {
                 title={`${isAr ? 'الطلبة المسجلون' : isEn ? 'Enrolled Roster' : 'Étudiants Inscrits'} (${cohortEnrolledStudents.length})`}
               >
                 {cohortEnrolledStudents.length === 0 ? (
-                  <KineticEmptyStateMotion motionKey={`cohort-roster-empty-${ch.id}`}>
+                  <KineticEmptyStateMotion motionKey={`cohort-roster-empty-${cohort.id}`}>
                     <EmptyState
                       variant="compact"
                       tone="neutral"
@@ -934,7 +942,12 @@ export const EducationCohortsView: React.FC = () => {
 
       {isAddCohortModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
+          <div className="sq-elev-pop w-full max-w-lg">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
+            >
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {t('edu_modal_add_cohort')}
@@ -1056,19 +1069,24 @@ export const EducationCohortsView: React.FC = () => {
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
+                  data-sq="ctl"
+                  data-sq-border="solid"
                   onClick={() => setIsAddCohortModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="px-5 py-2 bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('edu_btn_save_cohort')}
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

@@ -561,7 +561,11 @@ export const AgricultureCyclesView: React.FC = () => {
         sortable: true,
         renderCell: (c) => (
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0">
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"
+            >
               <Sprout size={16} />
             </div>
             <div className="min-w-0">
@@ -671,7 +675,11 @@ export const AgricultureCyclesView: React.FC = () => {
         sortable: true,
         renderCell: (t) => (
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold shrink-0">
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="w-8 h-8 bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold shrink-0"
+            >
               <ShieldCheck size={16} />
             </div>
             <div className="min-w-0">
@@ -1018,7 +1026,12 @@ export const AgricultureCyclesView: React.FC = () => {
       />
 
       {activeDarCyclesCount > 0 && (
-        <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl flex items-center gap-3 text-amber-800 dark:text-amber-300 text-xs">
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
+          className="p-3.5 bg-amber-500/10 border border-amber-500/25 flex items-center gap-3 text-amber-800 dark:text-amber-300 text-xs"
+        >
           <AlertTriangle size={20} className="shrink-0 text-amber-600" />
           <div className="flex-1">
             <span className="font-bold">

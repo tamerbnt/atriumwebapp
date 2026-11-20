@@ -251,10 +251,15 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
     >
       <div
         ref={dialogRef}
-        style={{ contain: 'layout paint' }}
-        className="w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#1C1B1A] rounded-[26px] border border-[#E6DED6] dark:border-[#3A3734] shadow-[0_18px_48px_rgba(0,0,0,0.22)] p-5 sm:p-6 space-y-4 text-black dark:text-white overflow-hidden flex flex-col select-text"
+        className="w-full max-w-lg max-h-[85vh] sq-elev-pop flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          style={{ contain: 'layout paint' }}
+          className="relative w-full max-h-[85vh] bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-5 sm:p-6 space-y-4 text-black dark:text-white overflow-hidden flex flex-col select-text"
+        >
         <div className="flex items-center justify-between pb-3.5 border-b border-[#E6DED6] dark:border-[#3A3734] shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 flex items-center justify-center text-[#d4522f] shadow-2xs">
@@ -346,12 +351,14 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                           key={opt.value}
                           type="button"
                           data-no-liquid="true"
+                          data-sq="row"
+                          data-sq-border="solid"
                           onClick={() => section.onChange(opt.value)}
                           title={opt.tooltip || opt.label}
-                          className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${
+                          className={`relative px-3 py-2 text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${
                             isSelected
-                              ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border-[#d4522f]/40 font-semibold shadow-2xs'
-                              : 'bg-[#FBF8F5] dark:bg-neutral-800/60 border-[#E6DED6] dark:border-neutral-700/60 text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50'
+                              ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] [--sq-stroke:rgba(212,82,47,0.4)] font-semibold'
+                              : 'bg-[#FBF8F5] dark:bg-neutral-800/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50'
                           }`}
                         >
                           <div className="min-w-0 text-left rtl:text-right">
@@ -404,6 +411,7 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                 : `Show ${displayCount} ${entityPluralLabel}`}
             </span>
           </BrandedAtriumButton>
+        </div>
         </div>
       </div>
     </div>

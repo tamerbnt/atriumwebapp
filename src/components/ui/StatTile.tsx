@@ -20,23 +20,28 @@ export const StatTile: React.FC<StatTileProps> = ({
   className = '',
 }) => {
   return (
-    <div
-      className={`p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[130px] transition-all duration-200 hover:border-[#D5DFE3] dark:hover:border-neutral-600 ${className}`}
-    >
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold tracking-wide text-black/70 dark:text-white/75">
-          {label}
-        </span>
-        <div
-          style={{
-            backgroundColor: 'var(--color-accent-dim)',
-            color: 'var(--color-accent)',
-          }}
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-        >
-          {icon}
+    <div className={`sq-elev-card ${className}`}>
+      <div
+        data-sq="card"
+        data-sq-border="solid"
+        className="relative p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col justify-between h-[130px] transition-colors duration-200 hover:[--sq-stroke:#D5DFE3] dark:hover:[--sq-stroke:#525252]"
+      >
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold tracking-wide text-black/70 dark:text-white/75">
+            {label}
+          </span>
+          <div
+            data-sq="tile"
+            data-sq-border="none"
+            style={{
+              backgroundColor: 'var(--color-accent-dim)',
+              color: 'var(--color-accent)',
+            }}
+            className="relative w-10 h-10 flex items-center justify-center shrink-0"
+          >
+            {icon}
+          </div>
         </div>
-      </div>
 
       <div>
         <div className="text-[28px] leading-none font-bold tracking-tight tabular-nums text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
@@ -60,6 +65,7 @@ export const StatTile: React.FC<StatTileProps> = ({
             </span>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -32,34 +32,39 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#18181B] rounded-[28px] max-w-3xl w-full p-6 md:p-8 shadow-2xl border border-neutral-200 dark:border-neutral-800 my-8 relative">
-        {/* Header Toolbar (hidden on print) */}
-        <div className="flex items-center justify-between pb-4 mb-6 border-b border-neutral-200 dark:border-neutral-800 print:hidden">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs font-bold text-[#d4522f] bg-[#d4522f]/10 px-2.5 py-1 rounded-lg">
-              {slip.receiptNumber}
-            </span>
-            <span className="text-xs text-black/70 dark:text-white/75 font-medium">
-              {slip.periodLabel}
-            </span>
+      <div className="sq-elev-pop max-w-3xl w-full my-8">
+        <div
+          data-sq="panel"
+          style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+          className="bg-white dark:bg-[#18181B] w-full p-6 md:p-8 relative"
+        >
+          {/* Header Toolbar (hidden on print) */}
+          <div className="flex items-center justify-between pb-4 mb-6 border-b border-neutral-200 dark:border-neutral-800 print:hidden">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs font-bold text-[#d4522f] bg-[#d4522f]/10 px-2.5 py-1 rounded-full">
+                {slip.receiptNumber}
+              </span>
+              <span className="text-xs text-black/70 dark:text-white/75 font-medium">
+                {slip.periodLabel}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <AtriumButton onClick={handlePrint} className="h-9 px-4 text-xs flex items-center gap-1.5">
+                <Printer className="w-4 h-4" />
+                <span>{isAr ? 'طباعة القسيمة' : isEn ? 'Print Payslip' : 'Imprimer le Bulletin'}</span>
+              </AtriumButton>
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2 rounded-full text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <AtriumButton onClick={handlePrint} className="h-9 px-4 text-xs flex items-center gap-1.5">
-              <Printer className="w-4 h-4" />
-              <span>{isAr ? 'طباعة القسيمة' : isEn ? 'Print Payslip' : 'Imprimer le Bulletin'}</span>
-            </AtriumButton>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-full text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
 
-        {/* Printable Official Algerian Bulletin de Paie */}
-        <div id="payslip-document" className="bg-white text-black p-6 md:p-8 rounded-xl border border-neutral-300 font-sans text-xs">
+          {/* Printable Official Algerian Bulletin de Paie */}
+          <div id="payslip-document" className="bg-white text-black p-6 md:p-8 rounded-[var(--r-card,16px)] border border-neutral-300 font-sans text-xs">
           {/* Header Block */}
           <div className="text-center pb-4 border-b-2 border-black/80 mb-4">
             <p className="text-[10px] uppercase font-bold tracking-widest text-black/70">
@@ -220,6 +225,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

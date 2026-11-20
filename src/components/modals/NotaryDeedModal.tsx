@@ -123,7 +123,11 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Repertoire Badge & Notice */}
-        <div className="p-3 rounded-xl bg-[#d4522f]/10 border border-[#d4522f]/20 flex items-center justify-between text-xs">
+        <div
+          data-sq="card"
+          style={{ '--sq-stroke': 'rgba(212,82,47,0.2)' } as React.CSSProperties}
+          className="p-3 bg-[#d4522f]/10 flex items-center justify-between text-xs"
+        >
           <div className="flex items-center gap-2">
             <BookOpen size={16} className="text-[#d4522f]" />
             <span className="font-semibold text-black dark:text-white">
@@ -159,7 +163,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
           />
 
           <div className="flex flex-col justify-end">
-            <div className="p-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs">
+            <div data-sq="ctl" className="p-2.5 bg-neutral-100 dark:bg-neutral-800 text-xs">
               <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'بالسنتيم' : isEn ? 'In Centimes' : 'En Centimes'}</span>
               <span className="font-semibold text-black dark:text-white truncate block tabular-nums">
                 {tariff.colloquialCentimesLabel}
@@ -186,7 +190,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
         </div>
 
         {/* Parties */}
-        <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
+        <div data-sq="card" className="p-3.5 bg-neutral-50 dark:bg-neutral-800/50 space-y-3">
           <span className="text-xs font-semibold text-black/85 dark:text-white/85 block">
             {isAr ? 'الأطراف والهوية' : isEn ? 'Contracting Parties' : 'Parties & Identité'}
           </span>
@@ -220,7 +224,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
 
         {/* Cadastre References */}
         {(actType === 'vente_immobiliere' || actType === 'donation') && (
-          <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
+          <div data-sq="card" className="p-3.5 bg-neutral-50 dark:bg-neutral-800/50 space-y-3">
             <span className="text-xs font-semibold text-black/85 dark:text-white/85 block">
               {isAr ? 'المراجع العقارية' : isEn ? 'Land Registry' : 'Cadastre'}
             </span>
@@ -236,35 +240,37 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
         )}
 
         {/* Fee Breakdown */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-700">
-            <div className="flex items-center gap-2">
-              <Scale size={16} className="text-[#d4522f]" />
-              <span className="text-xs font-bold text-black dark:text-white">
-                {isAr ? 'التعريفة والرسوم' : isEn ? 'Fees & Taxes' : 'Tarifs & Taxes'}
+        <div className="sq-elev-card">
+          <div data-sq="panel" className="p-3 bg-white dark:bg-neutral-800 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-700">
+              <div className="flex items-center gap-2">
+                <Scale size={16} className="text-[#d4522f]" />
+                <span className="text-xs font-bold text-black dark:text-white">
+                  {isAr ? 'التعريفة والرسوم' : isEn ? 'Fees & Taxes' : 'Tarifs & Taxes'}
+                </span>
+              </div>
+              <span className="text-xs font-mono font-bold tabular-nums text-[#d4522f]">
+                {isAr ? 'الإجمالي' : isEn ? 'Total' : 'Total'}: {formatMoney(tariff.totalProvisionClientDzd, language)}
               </span>
             </div>
-            <span className="text-xs font-mono font-bold tabular-nums text-[#d4522f]">
-              {isAr ? 'الإجمالي' : isEn ? 'Total' : 'Total'}: {formatMoney(tariff.totalProvisionClientDzd, language)}
-            </span>
-          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/40">
-              <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'أتعاب الموثق' : isEn ? 'Notary Fee' : 'Honoraires'}</span>
-              <span className="font-bold text-black dark:text-white font-mono tabular-nums">{formatMoney(tariff.honorairesHtDzd, language)}</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/40">
-              <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'الضريبة' : isEn ? 'VAT' : 'TVA'}</span>
-              <span className="font-bold text-black dark:text-white font-mono tabular-nums">{formatMoney(tariff.tvaAmountDzd, language)}</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/40">
-              <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'التسجيل' : isEn ? 'Registration' : 'Enregistrement'}</span>
-              <span className="font-bold text-black dark:text-white font-mono tabular-nums">{formatMoney(tariff.droitsEnregistrementDzd, language)}</span>
-            </div>
-            <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/40">
-              <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'الشهر العقاري' : isEn ? 'Filing Fee' : 'Publicité'}</span>
-              <span className="font-bold text-black dark:text-white font-mono tabular-nums">{formatMoney(tariff.droitsPubliciteDzd, language)}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div data-sq="card" className="p-2.5 bg-neutral-50 dark:bg-neutral-900/40">
+                <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'أتعاب الموثق' : isEn ? 'Notary Fee' : 'Honoraires'}</span>
+                <span className="font-bold text-black dark:text-white font-mono tabular-nums">{formatMoney(tariff.honorairesHtDzd, language)}</span>
+              </div>
+              <div data-sq="card" className="p-2.5 bg-neutral-50 dark:bg-neutral-900/40">
+                <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'الضريبة' : isEn ? 'VAT' : 'TVA'}</span>
+                <span className="font-bold text-black dark:text-white font-mono tabular-nums">{formatMoney(tariff.tvaAmountDzd, language)}</span>
+              </div>
+              <div data-sq="card" className="p-2.5 bg-neutral-50 dark:bg-neutral-900/40">
+                <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'التسجيل' : isEn ? 'Registration' : 'Enregistrement'}</span>
+                <span className="font-bold text-black dark:text-white font-mono tabular-nums">{formatMoney(tariff.droitsEnregistrementDzd, language)}</span>
+              </div>
+              <div data-sq="card" className="p-2.5 bg-neutral-50 dark:bg-neutral-900/40">
+                <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'الشهر العقاري' : isEn ? 'Filing Fee' : 'Publicité'}</span>
+                <span className="font-bold text-black dark:text-white font-mono tabular-nums">{formatMoney(tariff.droitsPubliciteDzd, language)}</span>
+              </div>
             </div>
           </div>
         </div>

@@ -68,6 +68,7 @@ export function AppShell({
   const root = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const bar = useRef<HTMLDivElement>(null);
+  const mainFrame = useRef<HTMLDivElement>(null);
   const main = useRef<HTMLElement>(null);
   const body = useRef<BarBody | null>(null);
   const pushBody = useRef<PushBody | null>(null);
@@ -127,10 +128,10 @@ export function AppShell({
   }, []);
 
   useIsoLayoutEffect(() => {
-    if (!root.current || !bar.current || !main.current || !content.current) return;
+    if (!root.current || !bar.current || !mainFrame.current || !main.current || !content.current) return;
     initMotionEnv();
     if (scrollRef) (scrollRef as { current: HTMLElement | null }).current = main.current;
-    const b = new BarBody(bar.current, main.current, root.current, hiddenRef.current);
+    const b = new BarBody(bar.current, mainFrame.current, root.current, hiddenRef.current);
     body.current = b;
     const pb = new PushBody(content.current, root.current, sidebarOpenRef.current);
     pushBody.current = pb;
@@ -257,9 +258,11 @@ export function AppShell({
               {topbar}
             </div>
           </div>
-          <main ref={main} id={mainId} className={s.main} aria-label={mainLabel} tabIndex={-1}>
-            {children}
-          </main>
+          <div ref={mainFrame} className={s.mainFrame} data-sq="app" data-sq-border="solid">
+            <main ref={main} id={mainId} className={s.mainInner} aria-label={mainLabel} tabIndex={-1}>
+              {children}
+            </main>
+          </div>
           {floatingOverlay && (
             <div className={s.floatingOverlay}>
               {floatingOverlay}

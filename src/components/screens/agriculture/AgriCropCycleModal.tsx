@@ -125,29 +125,38 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-6">
-        <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
-              <Sprout size={20} />
+      <div className="sq-elev-pop w-full max-w-2xl">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 w-full max-h-[90vh] overflow-y-auto p-6"
+        >
+          <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center gap-3">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"
+              >
+                <Sprout size={20} />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  {cycleToEdit
+                    ? (isAr ? 'تعديل دورة المحصول الفلاحي' : 'Modifier le Cycle de Culture')
+                    : (isAr ? 'فتح دورة محصول وموسم فلاحي جديد' : 'Nouveau Cycle de Culture & Assolement')}
+                </h2>
+              </div>
             </div>
-            <div>
-              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {cycleToEdit
-                  ? (isAr ? 'تعديل دورة المحصول الفلاحي' : 'Modifier le Cycle de Culture')
-                  : (isAr ? 'فتح دورة محصول وموسم فلاحي جديد' : 'Nouveau Cycle de Culture & Assolement')}
-              </h2>
-            </div>
+            <button
+              type="button"
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              onClick={onClose}
+              className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+            >
+              <X size={18} />
+            </button>
           </div>
-          <button
-            type="button"
-            aria-label={isAr ? 'إغلاق' : 'Fermer'}
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
-          >
-            <X size={18} />
-          </button>
-        </div>
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -230,7 +239,11 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
             />
           </div>
 
-          <div className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-3 border border-neutral-100 dark:border-neutral-800">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 space-y-3 border border-neutral-100 dark:border-neutral-800"
+          >
             <span className="text-xs font-bold text-black dark:text-white">
               {isAr ? 'أهداف الإنتاج والتكاليف التقديرية' : 'Objectifs de Rendement & Budget'}
             </span>
@@ -284,6 +297,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
             </AtriumButton>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

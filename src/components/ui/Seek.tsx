@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { useAtriumSelector } from "../../services/store";
+import { syncSquircleNow } from "../../utils/squircle";
 
 /* ══ Seek ═════════════════════════════════════════════════
    A search icon that becomes a search field, as one object.
@@ -27,6 +28,7 @@ export interface SeekProps {
   className?: string;
   openWidth?: number;
   shutSize?: number;
+  shape?: "capsule" | "squircle";
   onSearch?: (val: string) => void;
   autoFocusOnOpen?: boolean;
 }
@@ -38,6 +40,7 @@ export const Seek: React.FC<SeekProps> = React.memo(({
   className = "",
   openWidth = 260,
   shutSize = 40,
+  shape = "capsule",
   onSearch,
   autoFocusOnOpen = true,
 }) => {
@@ -46,6 +49,7 @@ export const Seek: React.FC<SeekProps> = React.memo(({
   const effectivePlaceholder = placeholder !== undefined ? placeholder : defaultPlaceholder;
   const [isOpen, setIsOpen] = useState(Boolean(value && value.length > 0));
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const skinRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const busyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const valueRef = useRef(value);
@@ -63,6 +67,27 @@ export const Seek: React.FC<SeekProps> = React.memo(({
       setIsOpen(true);
     }
   }, [value]);
+
+  // Keep 60% squircle clip-path & SVG border synced with the 280ms CSS width spring
+  useEffect(() => {
+    if (shape !== "squircle") return;
+    const el = skinRef.current;
+    if (!el) return;
+    syncSquircleNow(el);
+    let raf = 0;
+    const start = typeof performance !== "undefined" ? performance.now() : Date.now();
+    const tick = () => {
+      syncSquircleNow(el);
+      const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+      if (now - start < 330) {
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [isOpen, shape, shutSize, openWidth]);
 
   // Click outside to collapse if empty (only active while open)
   useEffect(() => {
@@ -142,6 +167,9 @@ export const Seek: React.FC<SeekProps> = React.memo(({
   const inset = Math.max(8, Math.round((shutSize - lensSize) / 2));
   const say = isOpen ? 1 : 0;
 
+  const isSquircle = shape === "squircle";
+  const sqToken = isSquircle ? (shutSize <= 34 ? "ctl-sm" : "ctl") : undefined;
+
   return (
     <div
       ref={containerRef}
@@ -149,6 +177,7 @@ export const Seek: React.FC<SeekProps> = React.memo(({
       data-open={isOpen ? "true" : "false"}
       data-press="false"
       data-busy="false"
+      data-shape={shape}
       style={
         {
           "--frame": `${isOpen ? openWidth : shutSize}px`,
@@ -157,6 +186,9 @@ export const Seek: React.FC<SeekProps> = React.memo(({
       }
     >
       <div
+        ref={skinRef}
+        data-sq={sqToken}
+        data-sq-border={isSquircle ? "solid" : undefined}
         className={`sek-skin ${!isOpen ? 'cursor-pointer' : ''}`}
         onClick={(e) => {
           if ((e.target as HTMLElement).closest('.sek-clear')) return;
@@ -173,7 +205,7 @@ export const Seek: React.FC<SeekProps> = React.memo(({
           {
             "--w": `${currentWidth}px`,
             "--shut": `${shutSize}px`,
-            "--sek-r": `${Math.round(shutSize / 2)}px`,
+            "--sek-r": isSquircle ? (shutSize <= 34 ? "var(--r-ctl-sm, 10px)" : "var(--r-ctl, 12px)") : `${Math.round(shutSize / 2)}px`,
             "--lens": `${lensSize}px`,
             "--inset": `${inset}px`,
             "--say": say,

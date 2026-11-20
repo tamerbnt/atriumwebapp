@@ -62,10 +62,26 @@
 :root {
   --atr-h: 34px;
   --atr-radius-k: 0.147; /* radius = 0.147 × height */
+  /* single-source continuous 60% squircle & concentric radius tokens */
+  --sq-smooth: 0.6;
+  --r-app: 40px;
+  --r-panel: 28px;
+  --r-card: 16px;
+  --r-table: 20px;
+  --r-row: 12px;
+  --r-ctl: 12px;
+  --r-ctl-sm: 10px;
+  --r-thumb: 9px;
+  --r-tile: 12px;
+  --r-tile-lg: 15px;
+  --r-check: 6px;
+  --r-empty: 12px;
   /* app shell */
-  --atr-r-card: 24px; /* big containers: the sidebar, the page card, the top bar */
-  --atr-rail: 60px; /* collapsed sidebar width */
-  --atr-rail-open: 236px; /* expanded sidebar width */
+  --atr-r-card: var(--r-app); /* main app container */
+  --atr-r-sidebar: 34px; /* 68px sidebar capsule (r = width/2) */
+  --atr-r-bar: 27px; /* 54px top bar capsule */
+  --atr-rail: 68px; /* collapsed sidebar width (34*2, 12px pad + 44px circle item = concentric) */
+  --atr-rail-open: 244px; /* expanded sidebar width (68 + 176) */
   --atr-bar-h: 54px; /* top bar height */
   --atr-shell-gap: 14px;
   /* the sidebar is dark in both themes */

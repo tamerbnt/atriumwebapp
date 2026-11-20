@@ -106,7 +106,7 @@ export const SkeletonButton: React.FC<SkeletonButtonProps> = ({
     <SkeletonBox
       width={width}
       height={height}
-      rounded="rounded-xl"
+      rounded="rounded-[var(--r-ctl,12px)]"
       className={`shrink-0 ${className}`}
       shimmer={shimmer}
     />

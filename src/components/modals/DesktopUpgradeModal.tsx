@@ -126,7 +126,11 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
       <div className="space-y-6 select-none">
         {/* Banner Alert based on trigger reason */}
         {reason === 'branch_limit' && (
-          <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': '#FDE68A' } as React.CSSProperties}
+            className="p-3.5 bg-amber-50 dark:bg-amber-950/40 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5"
+          >
             <Building2 size={16} className="shrink-0 text-amber-600 mt-0.5" />
             <div>
               <span className="font-bold">
@@ -142,7 +146,11 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
         )}
 
         {reason === 'business_limit' && (
-          <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': '#FDE68A' } as React.CSSProperties}
+            className="p-3.5 bg-amber-50 dark:bg-amber-950/40 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5"
+          >
             <Layers size={16} className="shrink-0 text-amber-600 mt-0.5" />
             <div>
               <span className="font-bold">
@@ -158,24 +166,33 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
         )}
 
         {/* Hero Card */}
-        <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-[#1E1B19] via-[#2A2420] to-[#1E1B19] p-6 text-white border border-[#3E3832] shadow-xl">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1.5 max-w-md">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#d4522f] text-white">
-                  {t('topbar_desktop_app', language)}
-                </span>
-                <span className="text-xs text-white/85">Windows · macOS · Linux</span>
+        <div className="sq-elev-card">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': '#3E3832' } as React.CSSProperties}
+            className="relative overflow-hidden bg-gradient-to-br from-[#1E1B19] via-[#2A2420] to-[#1E1B19] p-6 text-white"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1.5 max-w-md">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#d4522f] text-white">
+                    {t('topbar_desktop_app', language)}
+                  </span>
+                  <span className="text-xs text-white/85">Windows · macOS · Linux</span>
+                </div>
+                <h3 className="text-xl font-black text-white tracking-tight">
+                  {t('upgrade_modal_title', language)}
+                </h3>
               </div>
-              <h3 className="text-xl font-black text-white tracking-tight">
-                {t('upgrade_modal_title', language)}
-              </h3>
-            </div>
 
-            <div className="w-16 h-16 rounded-2xl bg-[#d4522f]/20 border border-[#d4522f]/40 text-[#d4522f] flex items-center justify-center shrink-0 self-center">
-              <Laptop size={32} />
+              <div
+                data-sq="tile-lg"
+                style={{ '--sq-stroke': 'rgba(212,82,47,0.4)' } as React.CSSProperties}
+                className="w-16 h-16 bg-[#d4522f]/20 text-[#d4522f] flex items-center justify-center shrink-0 self-center"
+              >
+                <Laptop size={32} />
+              </div>
             </div>
-          </div>
 
           {/* Quick Capabilities Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-5 pt-4 border-t border-white/10 text-[11px]">
@@ -196,12 +213,17 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
               <span>{t('settings_lifetime_badge', language)}</span>
             </div>
           </div>
+          </div>
         </div>
 
         {/* Free Web vs Desktop Lifetime Side-by-Side Comparison */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           {/* Free Web Tier Card */}
-          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/60 space-y-2.5">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+            className="p-4 bg-neutral-50 dark:bg-neutral-800/50 space-y-2.5"
+          >
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-black dark:text-white">{t('upgrade_free_badge', language)}</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
@@ -237,7 +259,11 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           </div>
 
           {/* Paid Desktop Lifetime Card */}
-          <div className="p-4 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420]/60 border border-[#F5E2D8] dark:border-[#4A3B33] space-y-2.5">
+          <div
+            data-sq="card"
+            style={{ '--sq-stroke': '#F5E2D8' } as React.CSSProperties}
+            className="p-4 bg-[#FDF4F0] dark:bg-[#2A2420]/60 space-y-2.5"
+          >
             <div className="flex items-center justify-between">
               <span className="font-extrabold text-[#d4522f]">{t('upgrade_desktop_badge', language)}</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#d4522f] text-white">
@@ -266,7 +292,11 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
         </div>
 
         {/* The Seamless Data Sync Reassurance Box */}
-        <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 space-y-3">
+        <div
+          data-sq="card"
+          style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
+          className="p-4 bg-neutral-50 dark:bg-neutral-800/60 space-y-3"
+        >
           <div className="flex items-center gap-2 text-black dark:text-white font-bold text-xs">
             <Cloud size={16} className="text-[#d4522f]" />
             <span>
@@ -336,7 +366,10 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           </div>
 
           {exportedStatus && (
-            <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
+            <div
+              data-sq="ctl"
+              className="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2"
+            >
               <CheckCircle2 size={14} className="text-emerald-500" />
               <span>{exportedStatus}</span>
             </div>

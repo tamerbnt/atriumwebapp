@@ -144,22 +144,32 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
         onClick={onCardClick}
         style={{
           transform: isHovered ? 'scale(1.01)' : 'scale(1)',
-          transition: 'transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease',
+          transition: 'transform 200ms ease, filter 200ms ease',
         }}
-        className={`relative w-[260px] p-6 rounded-[22px] flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
-          isSelected
-            ? 'bg-gradient-to-br from-[#d4522f] to-[#a8583c] text-white shadow-lg border border-transparent'
-            : isHovered
-            ? 'bg-white dark:bg-[#1C1B1A] border border-[#d4522f] shadow-md'
-            : isPinned
-            ? 'bg-white dark:bg-[#1C1B1A] border border-amber-400/80 shadow-sm'
-            : 'bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs'
+        className={`relative w-[260px] p-6 sq-elev-card-hover flex flex-col items-center justify-center text-center cursor-pointer ${
+          isSelected ? 'text-white' : ''
         }`}
       >
+        {/* Squircle card surface (background/stroke) so corner-fan buttons outside card bounds are never clipped */}
+        <div
+          aria-hidden="true"
+          data-sq="card"
+          data-sq-border={isSelected ? 'none' : 'solid'}
+          className={`absolute inset-0 z-0 pointer-events-none transition-colors duration-200 ${
+            isSelected
+              ? 'bg-gradient-to-br from-[#d4522f] to-[#a8583c]'
+              : isHovered
+              ? 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:#d4522f]'
+              : isPinned
+              ? 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:#FBBF24]'
+              : 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734]'
+          }`}
+        />
+
         {/* ================= CORNER-FAN ACTION BUTTONS ANCHOR ================= */}
         {/* Rendered outside card boundaries via absolute positioning */}
         <div
-          className="absolute top-0 right-0 pointer-events-none"
+          className="absolute top-0 right-0 pointer-events-none z-20"
           style={{ width: 0, height: 0 }}
         >
           {fanButtons.map((btn, idx) => {
@@ -170,6 +180,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
               <button
                 key={btn.id ? `${btn.id}-${idx}` : `btn-${idx}`}
                 type="button"
+                data-no-liquid="true"
                 onClick={btn.onClick}
                 title={btn.tooltip}
                 style={{
@@ -185,7 +196,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
                     : 'cubic-bezier(0.4, 0, 1, 1)',
                   transitionDelay: `${delay}ms`,
                 }}
-                className={`absolute -top-4 -right-4 w-9 h-9 rounded-[8px] bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] shadow-md flex items-center justify-center transition-transform hover:scale-115 active:scale-95 cursor-pointer z-50 ${
+                className={`absolute -top-4 -right-4 w-9 h-9 rounded-full bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] shadow-md flex items-center justify-center transition-transform hover:scale-115 active:scale-95 cursor-pointer z-50 ${
                   btn.isSpecialDelete
                     ? 'hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300'
                     : 'hover:bg-[#F3EDE7] dark:hover:bg-[#3A3734]'
@@ -198,7 +209,9 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
         </div>
 
         {/* Card Internal Body Content */}
-        {children}
+        <div className="relative z-10 w-full flex flex-col items-center justify-center">
+          {children}
+        </div>
       </div>
     </div>
   );

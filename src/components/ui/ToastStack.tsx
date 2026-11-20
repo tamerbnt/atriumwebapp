@@ -136,9 +136,7 @@ export const ToastStack: React.FC<ToastStackProps> = ({
                   damping: 28,
                   mass: 0.8,
                 }}
-                className="tst-toast cursor-pointer"
-                data-kind={toast.type}
-                data-front={isFront || isExpanded ? "true" : undefined}
+                className="tst-toast-wrap sq-elev-pop cursor-pointer"
                 style={{
                   height: `${CARD_HEIGHT}px`,
                 }}
@@ -148,45 +146,55 @@ export const ToastStack: React.FC<ToastStackProps> = ({
                   }
                 }}
               >
-                {/* Status Icon */}
-                <span className="tst-icon shrink-0">
-                  <Icon size={18} strokeWidth={2.2} />
-                </span>
+                <div
+                  data-sq="table"
+                  data-sq-border="solid"
+                  className="tst-toast"
+                  data-kind={toast.type}
+                  data-front={isFront || isExpanded ? "true" : undefined}
+                >
+                  {/* Status Icon */}
+                  <span className="tst-icon shrink-0">
+                    <Icon size={18} strokeWidth={2.2} />
+                  </span>
 
-                {/* Text Content */}
-                <div className="tst-text">
-                  <b>{toast.title}</b>
-                  <span>{toast.message}</span>
-                </div>
+                  {/* Text Content */}
+                  <div className="tst-text">
+                    <b>{toast.title}</b>
+                    <span>{toast.message}</span>
+                  </div>
 
-                {/* Optional Action Button */}
-                {toast.action && (
+                  {/* Optional Action Button */}
+                  {toast.action && (
+                    <button
+                      type="button"
+                      data-no-liquid="true"
+                      className="tst-act"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toast.action?.onClick();
+                        dismissToast(toast.id);
+                      }}
+                    >
+                      {toast.action.label}
+                    </button>
+                  )}
+
+                  {/* Dismiss Button */}
                   <button
                     type="button"
-                    className="tst-act"
+                    data-no-liquid="true"
+                    className="tst-x"
                     onClick={(e) => {
                       e.stopPropagation();
-                      toast.action?.onClick();
                       dismissToast(toast.id);
                     }}
+                    title="Dismiss notification"
+                    aria-label="Dismiss notification"
                   >
-                    {toast.action.label}
+                    <X size={14} strokeWidth={2.2} />
                   </button>
-                )}
-
-                {/* Dismiss Button */}
-                <button
-                  type="button"
-                  className="tst-x"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    dismissToast(toast.id);
-                  }}
-                  title="Dismiss notification"
-                  aria-label="Dismiss notification"
-                >
-                  <X size={14} strokeWidth={2.2} />
-                </button>
+                </div>
               </motion.div>
             );
           })}

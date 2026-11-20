@@ -995,11 +995,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         role="dialog"
         aria-modal="true"
         aria-labelledby="member-modal-title"
-        className={`member-modal-dialog dialog relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-[28px] bg-white dark:bg-[#1A1A1A] p-6 border border-[#E6DED6] dark:border-neutral-800 text-left select-text ${
-          useKineticSpring
-            ? 'shadow-[0_18px_48px_rgba(0,0,0,0.28)]'
-            : 'shadow-[0_24px_64px_rgba(0,0,0,0.35)]'
-        }`}
+        className="member-modal-dialog dialog relative w-full max-w-xl sq-elev-pop text-left select-text"
         style={
           useKineticSpring
             ? undefined
@@ -1010,6 +1006,12 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         }
         onClick={(e) => e.stopPropagation()}
       >
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="relative w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-[#1A1A1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#26262A]"
+        >
+          <div className="p-6 overflow-y-auto max-h-[90vh]">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 pb-4 border-b border-[#E6DED6] dark:border-[#3A3734]">
           <div>
@@ -1079,27 +1081,34 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                   >
                     {t('modal_name', language)} *
                   </label>
-                  <input
-                    ref={nameInputRef}
-                    id="member-fullName"
-                    name="fullName"
-                    type="text"
-                    required
-                    aria-invalid={Boolean(errors.fullName)}
-                    aria-describedby={errors.fullName ? 'fullName-error' : undefined}
-                    value={fullName}
-                    onChange={(e) => {
-                      formDirtyRef.current = true;
-                      setFullName(e.target.value);
-                      if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
-                    }}
-                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none ${
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    data-sq-stroke-w={errors.fullName ? '1.5' : undefined}
+                    className={`relative bg-white dark:bg-[#262422] transition-colors ${
                       errors.fullName
-                        ? 'border-[#B8321C] focus:border-[#B8321C] ring-1 ring-[#B8321C]'
-                        : 'border-[#E6DED6] dark:border-[#3A3734] focus:border-[#C9441F]'
+                        ? '[--sq-stroke:#B8321C]'
+                        : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#C9441F]'
                     }`}
-                    placeholder="ex: Amira Belkacem"
-                  />
+                  >
+                    <input
+                      ref={nameInputRef}
+                      id="member-fullName"
+                      name="fullName"
+                      type="text"
+                      required
+                      aria-invalid={Boolean(errors.fullName)}
+                      aria-describedby={errors.fullName ? 'fullName-error' : undefined}
+                      value={fullName}
+                      onChange={(e) => {
+                        formDirtyRef.current = true;
+                        setFullName(e.target.value);
+                        if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
+                      }}
+                      className="w-full h-10 px-3 bg-transparent border-0 text-sm font-medium text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none"
+                      placeholder="ex: Amira Belkacem"
+                    />
+                  </div>
                   {errors.fullName && (
                     <p
                       id="fullName-error"
@@ -1145,27 +1154,34 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                   >
                     {t('modal_email', language)} *
                   </label>
-                  <input
-                    ref={emailInputRef}
-                    id="member-email"
-                    name="email"
-                    type="email"
-                    required
-                    aria-invalid={Boolean(errors.email)}
-                    aria-describedby={errors.email ? 'email-error' : undefined}
-                    value={email}
-                    onChange={(e) => {
-                      formDirtyRef.current = true;
-                      setEmail(e.target.value);
-                      if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-                    }}
-                    className={`w-full h-10 px-3 rounded-xl border text-sm font-medium transition-colors bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none ${
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    data-sq-stroke-w={errors.email ? '1.5' : undefined}
+                    className={`relative bg-white dark:bg-[#262422] transition-colors ${
                       errors.email
-                        ? 'border-[#B8321C] focus:border-[#B8321C] ring-1 ring-[#B8321C]'
-                        : 'border-[#E6DED6] dark:border-[#3A3734] focus:border-[#C9441F]'
+                        ? '[--sq-stroke:#B8321C]'
+                        : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#C9441F]'
                     }`}
-                    placeholder="contact@domaine.com"
-                  />
+                  >
+                    <input
+                      ref={emailInputRef}
+                      id="member-email"
+                      name="email"
+                      type="email"
+                      required
+                      aria-invalid={Boolean(errors.email)}
+                      aria-describedby={errors.email ? 'email-error' : undefined}
+                      value={email}
+                      onChange={(e) => {
+                        formDirtyRef.current = true;
+                        setEmail(e.target.value);
+                        if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+                      }}
+                      className="w-full h-10 px-3 bg-transparent border-0 text-sm font-medium text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none"
+                      placeholder="contact@domaine.com"
+                    />
+                  </div>
                   {errors.email && (
                     <p
                       id="email-error"
@@ -1352,16 +1368,22 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                 <label className="block text-xs font-semibold text-black/80 dark:text-white/80 mb-1">
                   {t('member_field_private_notes', language)}
                 </label>
-                <textarea
-                  rows={2}
-                  value={notes}
-                  onChange={(e) => {
-                    formDirtyRef.current = true;
-                    setNotes(e.target.value);
-                  }}
-                  placeholder="Notes médicales, objectifs ou restrictions..."
-                  className="w-full p-2.5 text-sm border rounded-xl border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none focus:border-[#C9441F] resize-none"
-                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="relative bg-white dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#C9441F]"
+                >
+                  <textarea
+                    rows={2}
+                    value={notes}
+                    onChange={(e) => {
+                      formDirtyRef.current = true;
+                      setNotes(e.target.value);
+                    }}
+                    placeholder="Notes médicales, objectifs ou restrictions..."
+                    className="w-full p-2.5 text-sm bg-transparent border-0 text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none resize-none block"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1388,6 +1410,8 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             />
           </div>
         </form>
+          </div>
+        </div>
       </div>
     </div>
   );

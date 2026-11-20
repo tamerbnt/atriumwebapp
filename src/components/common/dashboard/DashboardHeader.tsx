@@ -64,7 +64,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 sm:gap-4 pb-1 min-w-0 max-w-full">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F3EDE7] dark:bg-white/[0.07] border border-[#E6DED6] dark:border-neutral-700/70 shadow-2xs flex items-center justify-center text-black dark:text-white shrink-0">
+          <div
+            data-sq="tile-lg"
+            data-sq-border="solid"
+            className="w-12 h-12 rounded-[var(--r-tile-lg,15px)] bg-[#F3EDE7] dark:bg-white/[0.07] [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.7)] flex items-center justify-center text-black dark:text-white shrink-0"
+          >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" aria-hidden="true">
               <rect x="3" y="3" width="7" height="7" rx="1.5" />
               <rect x="14" y="3" width="7" height="7" rx="1.5" />

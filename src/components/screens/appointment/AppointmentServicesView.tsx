@@ -833,31 +833,36 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
 
       {isServiceModalOpen && (
         <div className="fixed inset-0 bg-[#1F1D1B]/45 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-[#1C1B1A] rounded-[24px] max-w-lg w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-[#3A3734] space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
-              <h3 className="text-base font-bold text-black dark:text-white">
-                {editingService ? 'Modifier la Prestation' : 'Nouvelle Prestation'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsServiceModalOpen(false)}
-                className="text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <form onSubmit={handleSaveService} className="space-y-4">
-              <LabelInput
-                field="Name"
-                label="Intitulé du Soin"
-                required
-                value={formName}
-                onChange={setFormName}
-                placeholder="Ex: Balayage Californien & Gloss..."
-                width="100%"
-                height={42}
-                corner={10}
-              />
+          <div className="sq-elev-pop max-w-lg w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1B1A] w-full p-6 border border-[#E6DED6] dark:border-[#3A3734] space-y-4"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
+                <h3 className="text-base font-bold text-black dark:text-white">
+                  {editingService ? 'Modifier la Prestation' : 'Nouvelle Prestation'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsServiceModalOpen(false)}
+                  className="p-1.5 rounded-full text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <form onSubmit={handleSaveService} className="space-y-4">
+                <LabelInput
+                  field="Name"
+                  label="Intitulé du Soin"
+                  required
+                  value={formName}
+                  onChange={setFormName}
+                  placeholder="Ex: Balayage Californien & Gloss..."
+                  width="100%"
+                  height={42}
+                  corner={12}
+                />
               <div className="grid grid-cols-2 gap-3">
                 <LabelSelect
                   field="Category"
@@ -875,7 +880,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                     { value: 'Barber', label: 'Barbier' },
                   ]}
                   height={42}
-                  corner={10}
+                  corner={12}
                 />
                 <LabelInput
                   field="Duration"
@@ -886,7 +891,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   onChange={(v) => setFormDuration(parseInt(v, 10) || 30)}
                   width="100%"
                   height={42}
-                  corner={10}
+                  corner={12}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -899,7 +904,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   onChange={(v) => setFormPrice(parseFloat(v) || 0)}
                   width="100%"
                   height={42}
-                  corner={10}
+                  corner={12}
                 />
                 <LabelInput
                   field="Commission"
@@ -909,7 +914,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   onChange={(v) => setFormCommission(parseFloat(v) || 0)}
                   width="100%"
                   height={42}
-                  corner={10}
+                  corner={12}
                 />
               </div>
               <LabelInput
@@ -920,7 +925,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                 placeholder="Précisions techniques..."
                 width="100%"
                 height={42}
-                corner={10}
+                corner={12}
               />
               <div className="flex items-center justify-end gap-3 pt-3">
                 <AtriumButton type="button" variant="ghost" onClick={() => setIsServiceModalOpen(false)}>
@@ -930,7 +935,8 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   Enregistrer
                 </AtriumButton>
               </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       )}

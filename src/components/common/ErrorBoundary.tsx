@@ -43,25 +43,38 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen w-screen flex items-center justify-center bg-[#121110] text-white p-6 font-sans">
-          <div className="max-w-md w-full bg-[#1C1A18] border border-neutral-800 rounded-3xl p-8 shadow-2xl text-center space-y-6">
-            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto">
-              <AlertTriangle className="w-8 h-8" />
-            </div>
-
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight rtl:tracking-normal text-white mb-2">
-                Atrium Recovery Console
-              </h1>
-              <p className="text-sm text-white/75">
-                A rendering issue was intercepted. You can reload the application or reset local cache to clean state.
-              </p>
-            </div>
-
-            {this.state.error?.message && (
-              <div className="p-3 bg-neutral-900/80 rounded-xl text-left border border-neutral-800 text-xs font-mono text-white/90 max-h-32 overflow-y-auto">
-                {this.state.error.message}
+          <div className="max-w-md w-full sq-elev-pop">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="w-full bg-[#1C1A18] [--sq-stroke:#262626] rounded-[var(--r-panel,28px)] p-8 text-center space-y-6"
+            >
+              <div
+                data-sq="tile-lg"
+                data-sq-border="solid"
+                className="w-16 h-16 rounded-[var(--r-tile-lg,15px)] bg-amber-500/10 [--sq-stroke:rgba(245,158,11,0.3)] text-amber-500 flex items-center justify-center mx-auto"
+              >
+                <AlertTriangle className="w-8 h-8" />
               </div>
-            )}
+
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight rtl:tracking-normal text-white mb-2">
+                  Atrium Recovery Console
+                </h1>
+                <p className="text-sm text-white/75">
+                  A rendering issue was intercepted. You can reload the application or reset local cache to clean state.
+                </p>
+              </div>
+
+              {this.state.error?.message && (
+                <div
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="p-3 bg-neutral-900/80 rounded-[var(--r-card,16px)] text-left [--sq-stroke:#262626] text-xs font-mono text-white/90 max-h-32 overflow-y-auto"
+                >
+                  {this.state.error.message}
+                </div>
+              )}
 
             <div className="flex flex-col gap-3 pt-2">
               <AtriumButton
@@ -85,6 +98,7 @@ export class ErrorBoundary extends Component<Props, State> {
               >
                 Clear Local Cache & Reset
               </AtriumButton>
+            </div>
             </div>
           </div>
         </div>
