@@ -422,7 +422,11 @@ export const FreelanceInvoicesView: React.FC = () => {
         sortable: true,
         renderCell: (inv) => (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+            <div
+              data-sq="tile"
+              data-sq-border="solid"
+              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"
+            >
               <FileText size={16} />
             </div>
             <div className="min-w-0">
@@ -451,7 +455,7 @@ export const FreelanceInvoicesView: React.FC = () => {
         renderCell: (inv) => {
           const bInfo = resolveRecordBranch(inv, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -860,7 +864,11 @@ export const FreelanceInvoicesView: React.FC = () => {
         />
 
         {selectedInvoiceIds.size > 0 && (
-          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2"
+          >
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
               <span className="text-xs font-bold text-black dark:text-white">
@@ -882,8 +890,11 @@ export const FreelanceInvoicesView: React.FC = () => {
               </button>
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="ctl-sm"
+                data-sq-border="none"
                 onClick={handleBatchMarkPaid}
-                className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
                 <CheckCircle size={13} />
                 <span>
@@ -892,8 +903,11 @@ export const FreelanceInvoicesView: React.FC = () => {
               </button>
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="ctl-sm"
+                data-sq-border="none"
                 onClick={handleBatchMarkSent}
-                className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
                 <Send size={13} />
                 <span>
@@ -902,8 +916,11 @@ export const FreelanceInvoicesView: React.FC = () => {
               </button>
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="ctl-sm"
+                data-sq-border="none"
                 onClick={handleBatchDelete}
-                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
                 <Trash2 size={13} />
                 <span>{isAr ? 'حذف المحدد' : isFr ? 'Supprimer' : 'Delete'}</span>
@@ -1227,7 +1244,12 @@ export const FreelanceInvoicesView: React.FC = () => {
       {/* Create Invoice Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+          <div className="sq-elev-pop max-w-xl w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
                 <h3 className="text-base font-bold text-black dark:text-white">
@@ -1331,30 +1353,48 @@ export const FreelanceInvoicesView: React.FC = () => {
                 <div className="space-y-2">
                   {items.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        required
-                        placeholder={t('free_inv_item_desc', language)}
-                        value={item.description}
-                        onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
-                        className="flex-1 px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white"
-                      />
-                      <input
-                        type="number"
-                        min="1"
-                        placeholder={t('free_inv_ph_qty', language)}
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(idx, 'quantity', Number(e.target.value))}
-                        className="w-16 px-2 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white text-right"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        placeholder={t('free_inv_ph_rate', language)}
-                        value={item.unitRate}
-                        onChange={(e) => handleItemChange(idx, 'unitRate', Number(e.target.value))}
-                        className="w-24 px-2 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white text-right"
-                      />
+                      <div
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        className="flex-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                      >
+                        <input
+                          type="text"
+                          required
+                          placeholder={t('free_inv_item_desc', language)}
+                          value={item.description}
+                          onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
+                          className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                        />
+                      </div>
+                      <div
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        className="w-16 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                      >
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder={t('free_inv_ph_qty', language)}
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(idx, 'quantity', Number(e.target.value))}
+                          className="lbi-field w-full px-2 py-2 bg-transparent border-0 text-black dark:text-white text-right focus:outline-none"
+                        />
+                      </div>
+                      <div
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        className="w-24 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                      >
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder={t('free_inv_ph_rate', language)}
+                          value={item.unitRate}
+                          onChange={(e) => handleItemChange(idx, 'unitRate', Number(e.target.value))}
+                          className="lbi-field w-full px-2 py-2 bg-transparent border-0 text-black dark:text-white text-right focus:outline-none"
+                        />
+                      </div>
                       {items.length > 1 && (
                         <button
                           type="button"
@@ -1373,30 +1413,42 @@ export const FreelanceInvoicesView: React.FC = () => {
                 <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
                   {t('free_inv_notes_terms', language)}
                 </label>
-                <textarea
-                  rows={2}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder={t('free_inv_notes_ph', language)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white"
-                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                >
+                  <textarea
+                    rows={2}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder={t('free_inv_notes_ph', language)}
+                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                  />
+                </div>
               </div>
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="solid"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="px-5 py-2 bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('free_inv_btn_new', language)}
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
@@ -1404,46 +1456,62 @@ export const FreelanceInvoicesView: React.FC = () => {
       {/* Delete Invoice Modal */}
       {invoiceToDelete && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-              <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60">
-                <AlertTriangle size={20} />
+          <div className="sq-elev-pop max-w-md w-full animate-in zoom-in-95 duration-150">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+            >
+              <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+                <div
+                  data-sq="tile"
+                  data-sq-border="solid"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"
+                >
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-black dark:text-white">
+                    {t('common_delete', language)}
+                  </h3>
+                  <p className="text-xs text-black/55 dark:text-white/55">
+                    #{invoiceToDelete.invoiceNumber}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-black dark:text-white">
-                  {t('common_delete', language)}
-                </h3>
-                <p className="text-xs text-black/55 dark:text-white/55">
+              <p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
+                {t('free_clients_delete_confirm', language)}{' '}
+                <strong className="text-black dark:text-white font-semibold">
                   #{invoiceToDelete.invoiceNumber}
-                </p>
+                </strong>{' '}
+                ({invoiceToDelete.clientName})?
+              </p>
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  onClick={() => setInvoiceToDelete(null)}
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  {t('free_clients_cancel', language)}
+                </button>
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  onClick={() => {
+                    deleteFreelanceInvoice(invoiceToDelete.id);
+                    if (selectedInvoice?.id === invoiceToDelete.id) setSelectedInvoice(null);
+                    setInvoiceToDelete(null);
+                  }}
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  {t('common_delete', language)}
+                </button>
               </div>
-            </div>
-            <p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
-              {t('free_clients_delete_confirm', language)}{' '}
-              <strong className="text-black dark:text-white font-semibold">
-                #{invoiceToDelete.invoiceNumber}
-              </strong>{' '}
-              ({invoiceToDelete.clientName})?
-            </p>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <button
-                type="button"
-                onClick={() => setInvoiceToDelete(null)}
-                className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
-              >
-                {t('free_clients_cancel', language)}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  deleteFreelanceInvoice(invoiceToDelete.id);
-                  if (selectedInvoice?.id === invoiceToDelete.id) setSelectedInvoice(null);
-                  setInvoiceToDelete(null);
-                }}
-                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
-              >
-                {t('common_delete', language)}
-              </button>
             </div>
           </div>
         </div>

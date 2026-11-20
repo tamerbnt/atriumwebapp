@@ -22,7 +22,8 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
 	};
 	const offlineHash = `ALG-LVR-SEC-${manifest.manifestNumber}-${manifest.vehiclePlate}-${manifest.totalShipmentsCount}`;
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-<div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-3xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4 max-h-[95vh] flex flex-col">
+<div className="sq-elev-pop max-w-3xl w-full">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4 max-h-[95vh] flex flex-col">
 <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 shrink-0 print:hidden">
 <div className="flex items-center gap-2">
 <ShieldCheck size={20} className="text-[#d4522f]" />
@@ -32,10 +33,10 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
 </div>
 <div className="flex items-center gap-2">
 <AtriumButton variant="primary" size="sm" onClick={handlePrint} icon={<Printer size={14} />}>{isAr ? "طباعة الوثيقة" : "Imprimer"}</AtriumButton>
-<button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"><X size={18} /></button>
+<button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 </div>
-<div className="overflow-y-auto flex-1 p-6 bg-white text-black border border-neutral-300 rounded-xl space-y-6 font-sans text-xs">
+<div className="printable-document overflow-y-auto flex-1 p-6 bg-white text-black border border-neutral-300 rounded-[var(--r-card,16px)] space-y-6 font-sans text-xs">
 <div className="text-center border-b pb-4 border-black/30 space-y-1">
 <div className="font-bold uppercase tracking-wider text-[11px]">الجمهورية الجزائرية الديمقراطية الشعبية</div>
 <div className="font-semibold uppercase tracking-wider text-[10px] text-black/75">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE — MINISTÈRE DES TRANSPORTS</div>
@@ -45,7 +46,7 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
 </div>
 <div className="text-[10px] text-black/75 font-medium">Conforme aux dispositions du Décret Exécutif N° 05-468 du 10 Décembre 2005</div>
 </div>
-<div className="grid grid-cols-2 gap-4 border p-3 rounded-lg border-neutral-300">
+<div className="grid grid-cols-2 gap-4 border p-3 rounded-[var(--r-ctl,12px)] border-neutral-300">
 <div>
 <div className="font-bold text-[11px] uppercase border-b pb-1 mb-2 text-black">1. Entreprise de Transport & Messagerie</div>
 <div className="space-y-0.5">
@@ -98,7 +99,7 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
 </div>
 </div>
 </div>
-<div className="border p-3 rounded-lg border-neutral-300 space-y-2">
+<div className="border p-3 rounded-[var(--r-ctl,12px)] border-neutral-300 space-y-2">
 <div className="font-bold text-[11px] uppercase border-b pb-1 text-black flex justify-between">
 <span>3. Descriptif du Fret & Destination</span>
 <span>
@@ -149,22 +150,23 @@ Colis E-commerce & Messagerie (
 </table>
 </div>
 <div className="grid grid-cols-3 gap-3 pt-3 items-end">
-<div className="border p-2.5 rounded-lg border-neutral-300 h-28 flex flex-col justify-between">
+<div className="border p-2.5 rounded-[var(--r-ctl,12px)] border-neutral-300 h-28 flex flex-col justify-between">
 <span className="font-bold text-[10px] text-black/75 uppercase">Visa & Cachet Hub Émetteur</span>
 <div className="text-[10px] text-black/55 italic">Signature autorisée Baraki</div>
 </div>
-<div className="border p-2.5 rounded-lg border-neutral-300 h-28 flex flex-col justify-between">
+<div className="border p-2.5 rounded-[var(--r-ctl,12px)] border-neutral-300 h-28 flex flex-col justify-between">
 <span className="font-bold text-[10px] text-black/75 uppercase">Signature Chauffeur Transporteur</span>
 <div className="text-[10px] text-black/55 italic">Reconnaissance de prise en charge</div>
 </div>
-<div className="border p-2 rounded-lg border-neutral-300 h-28 flex flex-col items-center justify-center text-center bg-neutral-50">
-<div className="w-14 h-14 bg-black/10 rounded flex items-center justify-center font-mono text-[10px] text-black/75 p-1">[QR SECURE DECRET 05-468]</div>
+<div className="border p-2 rounded-[var(--r-ctl,12px)] border-neutral-300 h-28 flex flex-col items-center justify-center text-center bg-neutral-50">
+<div className="w-14 h-14 bg-black/10 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center font-mono text-[10px] text-black/75 p-1">[QR SECURE DECRET 05-468]</div>
 <span className="font-mono text-[10px] text-black/55 mt-1 truncate max-w-full">{offlineHash}</span>
 <span className="text-[10px] font-bold text-emerald-700">Contrôle Routier Validé</span>
 </div>
 </div>
 <div className="text-[10px] text-black/55 text-center pt-2">
 Document officiel à présenter à toute réquisition des services de Gendarmerie Nationale, Sûreté Nationale et Contrôle des Transports.
+</div>
 </div>
 </div>
 </div>

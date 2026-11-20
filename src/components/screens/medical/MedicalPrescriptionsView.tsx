@@ -558,7 +558,11 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
           const isPinned = pinnedIds.has(rx.id);
           return (
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800">
+              <div
+                data-sq="tile"
+                data-sq-border="solid"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800"
+              >
                 <Pill size={16} />
               </div>
               <div className="min-w-0">
@@ -654,13 +658,20 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
         title={isAr ? 'الوصفات' : language === 'en' ? 'Prescriptions' : 'Ordonnances'}
         secondaryActions={
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex bg-neutral-200/80 dark:bg-neutral-800 p-1 rounded-xl text-xs font-semibold">
+            <div
+              data-sq="ctl"
+              data-sq-border="none"
+              className="flex bg-neutral-200/80 dark:bg-neutral-800 p-[3px] text-xs font-semibold"
+            >
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="thumb"
+                data-sq-border="none"
                 onClick={() => setActiveMainTab('prescriptions')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1.5 transition-all cursor-pointer ${
                   activeMainTab === 'prescriptions'
-                    ? 'bg-white dark:bg-neutral-700 text-black dark:text-white shadow-2xs font-bold'
+                    ? 'bg-white dark:bg-neutral-700 text-black dark:text-white font-bold'
                     : 'text-black/70 dark:text-white/75'
                 }`}
               >
@@ -668,10 +679,13 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               </button>
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="thumb"
+                data-sq-border="none"
                 onClick={() => setActiveMainTab('ngap')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1.5 transition-all cursor-pointer ${
                   activeMainTab === 'ngap'
-                    ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-2xs font-bold'
+                    ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold'
                     : 'text-black/70 dark:text-white/75'
                 }`}
               >
@@ -680,8 +694,11 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
             </div>
             <button
               type="button"
+              data-no-liquid="true"
+              data-sq="ctl"
+              data-sq-border="solid"
               onClick={() => setIsPersonalizerOpen(true)}
-              className="px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black/70 dark:text-white hover:border-[#d4522f] text-xs font-semibold flex items-center gap-2 shadow-2xs transition-colors cursor-pointer"
+              className="px-3.5 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black/70 dark:text-white hover:border-[#d4522f] text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
             >
               <Settings size={14} className="text-[#d4522f]" />
               <span>{isAr ? 'تخصيص الأوردونونس' : 'Studio Ordonnance'}</span>
@@ -756,7 +773,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   header: 'Code NGAP',
                   width: '1.0*',
                   renderCell: (act) => (
-                    <span className="px-2 py-0.5 rounded-md bg-[#d4522f]/10 border border-[#d4522f]/20 font-mono font-bold text-xs text-[#d4522f]">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#d4522f]/10 border border-[#d4522f]/20 font-mono font-bold text-xs text-[#d4522f]">
                       {act.code}
                     </span>
                   ),
@@ -1197,7 +1214,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       />
                     </div>
                     <div
-                      className={`mt-3 p-4 rounded-xl border bg-white text-black shadow-sm relative overflow-hidden text-[11px] font-sans ${
+                      className={`printable-document mt-3 p-4 rounded-[var(--r-card,16px)] border bg-white text-black shadow-sm relative overflow-hidden text-[11px] font-sans ${
                         currentDoctorConfig.usePreprintedStationery
                           ? 'border-dashed border-amber-300'
                           : 'border-neutral-200'
@@ -1205,7 +1222,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       style={{ minHeight: '340px' }}
                     >
                       {currentDoctorConfig.usePreprintedStationery ? (
-                        <div className="border border-dashed border-amber-400 bg-amber-50/60 rounded p-2 text-center text-amber-800 text-[10px] mb-4">
+                        <div className="border border-dashed border-amber-400 bg-amber-50/60 rounded-[var(--r-ctl-sm,10px)] p-2 text-center text-amber-800 text-[10px] mb-4">
                           <strong>Mode Papier En-tête Pré-imprimé Actif :</strong> L&apos;en-tête et le
                           pied de page sont masqués pour impression directe sur votre papeterie
                           physique d&apos;imprimerie.
@@ -1233,7 +1250,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                           </div>
                         </div>
                       )}
-                      <div className="flex justify-between items-baseline mb-4 text-[10px] bg-neutral-50 p-2 rounded border border-neutral-100">
+                      <div className="flex justify-between items-baseline mb-4 text-[10px] bg-neutral-50 p-2 rounded-[var(--r-ctl-sm,10px)] border border-neutral-100">
                         <div>
                           Patient(e):{' '}
                           <strong className="text-xs uppercase">{rx.patientName}</strong>
@@ -1264,7 +1281,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                             {rx.qrCodeHash}
                           </div>
                         </div>
-                        <div className="border border-rose-600 rounded-lg p-1.5 text-center text-rose-700 rotate-[-4deg] opacity-85 text-[10px] font-mono leading-tight">
+                        <div className="border border-rose-600 rounded-[var(--r-ctl-sm,10px)] p-1.5 text-center text-rose-700 rotate-[-4deg] opacity-85 text-[10px] font-mono leading-tight">
                           <div className="font-bold text-[10px]">
                             {currentDoctorConfig.digitalStampUrl ||
                               currentDoctorConfig.digitalStampText ||
@@ -1287,7 +1304,12 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       title="Certification & Code QR Chifa"
                       index={0}
                     >
-                      <div className="p-5 rounded-2xl bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 flex flex-col items-center justify-center space-y-2.5 text-center mb-3">
+                      <div
+                        data-sq="empty"
+                        data-sq-border="dashed"
+                        data-sq-stroke-w={2}
+                        className="p-5 bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 flex flex-col items-center justify-center space-y-2.5 text-center mb-3"
+                      >
                         <QrCode size={72} className="text-[#d4522f]" />
                         <div>
                           <div className="font-mono font-bold text-xs text-black dark:text-white">
@@ -1369,71 +1391,96 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
 
       {isComposerOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-            <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center">
-                  <Pill size={18} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-black dark:text-white">
-                    Nouvelle Prescription Médicale Sécurisée
-                  </h3>
-                  <p className="text-[11px] text-black/55 dark:text-white/55">
-                    Contrôle automatique des contre-indications et posologies Chifa
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsComposerOpen(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
-                aria-label="Fermer"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">
-                    Médecin Prescripteur
-                  </label>
-                  <select
-                    value={compDoctorId}
-                    onChange={(e) => setCompDoctorId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-black dark:text-white"
+          <div className="sq-elev-pop w-full max-w-2xl">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[90vh] overflow-hidden"
+            >
+              <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    data-sq="tile"
+                    data-sq-border="none"
+                    className="w-9 h-9 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"
                   >
-                    {practitioners.map((doc) => (
-                      <option key={doc.id} value={doc.id}>
-                        {doc.fullName || doc.name} ({doc.specialty})
-                      </option>
-                    ))}
-                  </select>
+                    <Pill size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-black dark:text-white">
+                      Nouvelle Prescription Médicale Sécurisée
+                    </h3>
+                    <p className="text-[11px] text-black/55 dark:text-white/55">
+                      Contrôle automatique des contre-indications et posologies Chifa
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">
-                    Patient Destinataire
-                  </label>
-                  <select
-                    value={compPatientId}
-                    onChange={(e) => {
-                      setCompPatientId(e.target.value);
-                      setOverrideConfirmed(false);
-                    }}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-black dark:text-white"
-                  >
-                    {patients.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.fullName} (NSS: {p.nationalId || 'Chifa OK'})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsComposerOpen(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  aria-label="Fermer"
+                >
+                  <X size={16} />
+                </button>
               </div>
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">
+                      Médecin Prescripteur
+                    </label>
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      className="border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                    >
+                      <select
+                        value={compDoctorId}
+                        onChange={(e) => setCompDoctorId(e.target.value)}
+                        className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white"
+                      >
+                        {practitioners.map((doc) => (
+                          <option key={doc.id} value={doc.id}>
+                            {doc.fullName || doc.name} ({doc.specialty})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">
+                      Patient Destinataire
+                    </label>
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      className="border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                    >
+                      <select
+                        value={compPatientId}
+                        onChange={(e) => {
+                          setCompPatientId(e.target.value);
+                          setOverrideConfirmed(false);
+                        }}
+                        className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white"
+                      >
+                        {patients.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.fullName} (NSS: {p.nationalId || 'Chifa OK'})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
 
               {selectedPatientForComp && (
-                <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+                <div
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between"
+                >
                   <div className="space-y-0.5">
                     <span className="text-[10px] text-black/55 dark:text-white/55 uppercase font-semibold">
                       Vigilances du dossier
@@ -1447,7 +1494,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   <div>
                     {selectedPatientForComp.allergies &&
                     selectedPatientForComp.allergies.length > 0 ? (
-                      <span className="px-2 py-1 rounded bg-rose-100 text-rose-800 font-bold text-[10px]">
+                      <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px]">
                         ⚠️ Allergies : {selectedPatientForComp.allergies.join(', ')}
                       </span>
                     ) : (
@@ -1460,7 +1507,12 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               )}
 
               {allergyAlerts.length > 0 && (
-                <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-500/80 text-rose-800 dark:text-rose-300 space-y-2">
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  data-sq-stroke-w={2}
+                  className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-500/80 text-rose-800 dark:text-rose-300 space-y-2"
+                >
                   <div className="flex items-center gap-2 font-bold text-xs">
                     <ShieldAlert size={16} className="text-rose-600 animate-pulse" />
                     <span>ALERTE DE SÉCURITÉ PHARMACOLOGIQUE (CONTRE-INDICATION SÉVÈRE)</span>
@@ -1477,7 +1529,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       type="checkbox"
                       checked={overrideConfirmed}
                       onChange={(e) => setOverrideConfirmed(e.target.checked)}
-                      className="rounded text-rose-600 focus:ring-rose-500"
+                      className="rounded-[var(--r-check,6px)] text-rose-600 focus:ring-rose-500"
                     />
                     <span>
                       Je confirme en tant que médecin responsable avoir évalué le bénéfice/risque et
@@ -1494,6 +1546,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   </label>
                   <button
                     type="button"
+                    data-no-liquid="true"
+                    data-sq="ctl-sm"
+                    data-sq-border="none"
                     onClick={() =>
                       setCompItems((prev) => [
                         ...prev,
@@ -1507,7 +1562,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         },
                       ])
                     }
-                    className="px-2 py-1 rounded bg-[#d4522f] text-white text-[11px] font-semibold flex items-center gap-1 shadow-2xs cursor-pointer"
+                    className="px-2.5 py-1 bg-[#d4522f] text-white text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
                   >
                     <Plus size={11} />
                     <span>Ajouter Médicament</span>
@@ -1517,23 +1572,31 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 {compItems.map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2"
+                    data-sq="card"
+                    data-sq-border="solid"
+                    className="p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2"
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-black/55 dark:text-white/55 text-xs w-4">
                         {idx + 1}.
                       </span>
-                      <input
-                        type="text"
-                        placeholder="Nom de spécialité / DCI (ex: Augmentin 1g, Inexium 20mg)..."
-                        value={item.drugName}
-                        onChange={(e) => {
-                          const updated = [...compItems];
-                          updated[idx] = { ...updated[idx], drugName: e.target.value };
-                          setCompItems(updated);
-                        }}
-                        className="flex-1 px-2.5 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs font-semibold"
-                      />
+                      <div
+                        data-sq="ctl-sm"
+                        data-sq-border="solid"
+                        className="flex-1 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900"
+                      >
+                        <input
+                          type="text"
+                          placeholder="Nom de spécialité / DCI (ex: Augmentin 1g, Inexium 20mg)..."
+                          value={item.drugName}
+                          onChange={(e) => {
+                            const updated = [...compItems];
+                            updated[idx] = { ...updated[idx], drugName: e.target.value };
+                            setCompItems(updated);
+                          }}
+                          className="lbi-field w-full px-2.5 py-1.5 bg-transparent border-0 text-xs font-semibold"
+                        />
+                      </div>
                       {compItems.length > 1 && (
                         <button
                           type="button"
@@ -1550,49 +1613,67 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         <label className="text-[10px] text-black/55 dark:text-white/55">
                           Dosage
                         </label>
-                        <input
-                          type="text"
-                          value={item.dosage}
-                          onChange={(e) => {
-                            const updated = [...compItems];
-                            updated[idx] = { ...updated[idx], dosage: e.target.value };
-                            setCompItems(updated);
-                          }}
-                          className="w-full px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-[11px]"
-                        />
+                        <div
+                          data-sq="ctl-sm"
+                          data-sq-border="solid"
+                          className="border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900"
+                        >
+                          <input
+                            type="text"
+                            value={item.dosage}
+                            onChange={(e) => {
+                              const updated = [...compItems];
+                              updated[idx] = { ...updated[idx], dosage: e.target.value };
+                              setCompItems(updated);
+                            }}
+                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-[11px]"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="text-[10px] text-black/55 dark:text-white/55">
                           Fréquence / Prise
                         </label>
-                        <input
-                          type="text"
-                          value={item.frequency}
-                          onChange={(e) => {
-                            const updated = [...compItems];
-                            updated[idx] = { ...updated[idx], frequency: e.target.value };
-                            setCompItems(updated);
-                          }}
-                          className="w-full px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-[11px]"
-                        />
+                        <div
+                          data-sq="ctl-sm"
+                          data-sq-border="solid"
+                          className="border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900"
+                        >
+                          <input
+                            type="text"
+                            value={item.frequency}
+                            onChange={(e) => {
+                              const updated = [...compItems];
+                              updated[idx] = { ...updated[idx], frequency: e.target.value };
+                              setCompItems(updated);
+                            }}
+                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-[11px]"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="text-[10px] text-black/55 dark:text-white/55">
                           Durée (Jours)
                         </label>
-                        <input
-                          type="number"
-                          value={item.durationDays}
-                          onChange={(e) => {
-                            const updated = [...compItems];
-                            updated[idx] = {
-                              ...updated[idx],
-                              durationDays: parseInt(e.target.value, 10) || 1,
-                            };
-                            setCompItems(updated);
-                          }}
-                          className="w-full px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-[11px]"
-                        />
+                        <div
+                          data-sq="ctl-sm"
+                          data-sq-border="solid"
+                          className="border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900"
+                        >
+                          <input
+                            type="number"
+                            value={item.durationDays}
+                            onChange={(e) => {
+                              const updated = [...compItems];
+                              updated[idx] = {
+                                ...updated[idx],
+                                durationDays: parseInt(e.target.value, 10) || 1,
+                              };
+                              setCompItems(updated);
+                            }}
+                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-[11px]"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1603,13 +1684,19 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">
                   Recommandations au Patient
                 </label>
-                <textarea
-                  value={compNotes}
-                  onChange={(e) => setCompNotes(e.target.value)}
-                  rows={2}
-                  placeholder="Conseils hygiéno-diététiques, hydratation, repos..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs"
-                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                >
+                  <textarea
+                    value={compNotes}
+                    onChange={(e) => setCompNotes(e.target.value)}
+                    rows={2}
+                    placeholder="Conseils hygiéno-diététiques, hydratation, repos..."
+                    className="lbi-field w-full p-2.5 bg-transparent border-0 text-xs"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1620,8 +1707,11 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               <div className="flex gap-2">
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl-sm"
+                  data-sq-border="solid"
                   onClick={() => setIsComposerOpen(false)}
-                  className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold cursor-pointer"
+                  className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold cursor-pointer"
                 >
                   Annuler
                 </button>
@@ -1635,6 +1725,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   <span>Signer &amp; Valider l&apos;Ordonnance</span>
                 </AtriumButton>
               </div>
+            </div>
             </div>
           </div>
         </div>

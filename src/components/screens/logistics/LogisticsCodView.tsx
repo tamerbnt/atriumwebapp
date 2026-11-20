@@ -1228,16 +1228,29 @@ export const LogisticsCodView: React.FC<any> = () => {
       {activeTab === 'driver_payroll' && (
         <ScreenPod>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-5 rounded-[20px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+          <div className="sq-elev-card">
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] space-y-3"
+          >
+            <div className="flex items-center gap-2.5 px-2 pt-2">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-9 h-9 bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold"
+              >
                 <Truck size={18} />
               </div>
               <h3 className="font-bold text-sm text-black dark:text-white">
                 {isAr ? 'سائق أجير دائم (Salarié CDI)' : 'Chauffeur Salarié Flotte Interne'}
               </h3>
             </div>
-            <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2 text-xs">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2 text-xs"
+            >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Base Journalière (48 000 DZD / 26j):</span>
                 <span className="font-mono font-bold">1 846 DZD</span>
@@ -1258,9 +1271,19 @@ export const LogisticsCodView: React.FC<any> = () => {
               </div>
             </div>
           </div>
-          <div className="p-5 rounded-[20px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+          </div>
+          <div className="sq-elev-card">
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] space-y-3"
+          >
+            <div className="flex items-center gap-2.5 px-2 pt-2">
+              <div
+                data-sq="tile"
+                data-sq-border="none"
+                className="w-9 h-9 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold"
+              >
                 <UserCheck size={18} />
               </div>
               <h3 className="font-bold text-sm text-black dark:text-white">
@@ -1269,7 +1292,11 @@ export const LogisticsCodView: React.FC<any> = () => {
                   : 'Livreur Sous-Traitant Auto-Entrepreneur'}
               </h3>
             </div>
-            <div className="p-4 rounded-xl bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2 text-xs">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2 text-xs"
+            >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Colis Livrés (26 × 220 DZD):</span>
                 <span className="font-mono font-bold">5 720 DZD</span>
@@ -1291,6 +1318,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                 </span>
               </div>
             </div>
+          </div>
           </div>
           </div>
         </ScreenPod>

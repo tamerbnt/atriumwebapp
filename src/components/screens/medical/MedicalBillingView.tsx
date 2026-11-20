@@ -503,7 +503,7 @@ export const MedicalBillingView: React.FC<any> = () => {
           const isPinned = pinnedIds.has(c.id);
           return (
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-100 dark:border-neutral-800">
+              <div data-sq="tile" data-sq-border="solid" className="w-9 h-9 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-100 dark:border-neutral-800">
                 <Receipt size={16} />
               </div>
               <div className="min-w-0">
@@ -615,7 +615,7 @@ export const MedicalBillingView: React.FC<any> = () => {
         icon={<CreditCard size={22} />}
         title={isAr ? 'الفوترة' : language === 'en' ? 'Billing' : 'Facturation'}
         secondaryActions={
-          <div className="flex flex-wrap items-center p-1 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs gap-1">
+          <div data-sq="ctl" data-sq-border="solid" className="flex flex-wrap items-center p-[3px] bg-[#F3EDE7] dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 gap-1">
             {(
               [
                 { id: 'invoices', label: isAr ? 'الفواتير والتحصيل' : 'Factures & Tiers-Payant' },
@@ -628,10 +628,13 @@ export const MedicalBillingView: React.FC<any> = () => {
               <button
                 key={t.id}
                 type="button"
+                data-no-liquid="true"
+                data-sq="thumb"
+                data-sq-border="none"
                 onClick={() => setBillingMainTab(t.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+                className={`px-3 py-1.5 text-xs font-semibold cursor-pointer transition-all ${
                   billingMainTab === t.id
-                    ? 'bg-white dark:bg-neutral-700 text-[#d4522f] shadow-2xs font-bold'
+                    ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold'
                     : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                 }`}
               >
@@ -839,6 +842,9 @@ export const MedicalBillingView: React.FC<any> = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl-sm"
+                  data-sq-border="solid"
                   onClick={() => {
                     showToast({
                       type: 'info',
@@ -847,7 +853,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                     });
                     window.print();
                   }}
-                  className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                  className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
                 >
                   <Download size={13} />
                   <span>Exporter PDF CNAS</span>
@@ -864,7 +870,7 @@ export const MedicalBillingView: React.FC<any> = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div className="p-4 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+              <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
                 <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">
                   Total Fiches Chifa
                 </span>
@@ -875,7 +881,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                   {transmittedCount} télétransmis
                 </span>
               </div>
-              <div className="p-4 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
+              <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
                 <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">
                   Total Honoraires NGAP
                 </span>
@@ -886,7 +892,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                   Tarifs conventionnels
                 </span>
               </div>
-              <div className="p-4 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
+              <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
                 <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">
                   Créance Due par la CNAS
                 </span>
@@ -897,7 +903,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                   À virer au compte polyclinique
                 </span>
               </div>
-              <div className="p-4 rounded-xl bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
+              <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
                 <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">
                   Ticket Modérateur Encaissé
                 </span>
@@ -1135,8 +1141,11 @@ export const MedicalBillingView: React.FC<any> = () => {
               </h2>
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="ctl-sm"
+                data-sq-border="solid"
                 onClick={handleExportCSV}
-                className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
                 <Download size={13} />
                 <span>Bordereau Comptable CSV</span>
@@ -1151,59 +1160,65 @@ export const MedicalBillingView: React.FC<any> = () => {
                 const doctorPayout = (grossTurnover * docShare) / 100;
                 const polyclinicRetention = grossTurnover - doctorPayout;
                 return (
-                  <div
-                    key={doc.id}
-                    className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs space-y-3"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <h3 className="font-bold text-xs text-black dark:text-white truncate">
-                          {docName}
-                        </h3>
-                        <p className="text-[11px] text-black/55 dark:text-white/55 truncate">
-                          {doc.specialty}
-                        </p>
-                      </div>
-                      <span className="px-2 py-0.5 rounded-full bg-orange-50 text-[#d4522f] font-bold text-[10px] font-mono border border-orange-200/50 shrink-0">
-                        {docShare}% Rétrocession
-                      </span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/50 space-y-1.5 text-xs font-mono">
-                      <div className="flex justify-between text-black/55 dark:text-white/55">
-                        <span>Chiffre d&apos;affaires brut:</span>
-                        <span className="font-bold text-black dark:text-white">
-                          {formatMoney(grossTurnover, 'DZD')}
+                  <div key={doc.id} className="sq-elev-card">
+                    <div
+                      data-sq="card"
+                      data-sq-border="solid"
+                      className="p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-3"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-xs text-black dark:text-white truncate">
+                            {docName}
+                          </h3>
+                          <p className="text-[11px] text-black/55 dark:text-white/55 truncate">
+                            {doc.specialty}
+                          </p>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full bg-orange-50 text-[#d4522f] font-bold text-[10px] font-mono border border-orange-200/50 shrink-0">
+                          {docShare}% Rétrocession
                         </span>
                       </div>
-                      <div className="flex justify-between text-emerald-600">
-                        <span>Net Médecin ({docShare}%):</span>
-                        <span className="font-bold">{formatMoney(doctorPayout, 'DZD')}</span>
+                      <div data-sq="ctl" data-sq-border="none" className="p-3 bg-neutral-50 dark:bg-neutral-900/50 space-y-1.5 text-xs font-mono">
+                        <div className="flex justify-between text-black/55 dark:text-white/55">
+                          <span>Chiffre d&apos;affaires brut:</span>
+                          <span className="font-bold text-black dark:text-white">
+                            {formatMoney(grossTurnover, 'DZD')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-emerald-600">
+                          <span>Net Médecin ({docShare}%):</span>
+                          <span className="font-bold">{formatMoney(doctorPayout, 'DZD')}</span>
+                        </div>
+                        <div className="flex justify-between text-black/55 dark:text-white/55 text-[11px]">
+                          <span>Quote-part Polyclinique:</span>
+                          <span>{formatMoney(polyclinicRetention, 'DZD')}</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-black/55 dark:text-white/55 text-[11px]">
-                        <span>Quote-part Polyclinique:</span>
-                        <span>{formatMoney(polyclinicRetention, 'DZD')}</span>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+                          Cabinet: {docRoom}
+                        </span>
+                        <button
+                          type="button"
+                          data-no-liquid="true"
+                          data-sq="ctl-sm"
+                          data-sq-border="none"
+                          onClick={() =>
+                            showToast({
+                              type: 'success',
+                              title: 'Règlement Praticien',
+                              message: `Virement généré pour ${docName}: ${formatMoney(
+                                doctorPayout,
+                                'DZD'
+                              )}`,
+                            })
+                          }
+                          className="px-2.5 py-1 bg-[#d4522f] text-white font-semibold text-[11px] hover:bg-[#b3694c] transition-colors cursor-pointer"
+                        >
+                          Émettre Règlement
+                        </button>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
-                        Cabinet: {docRoom}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          showToast({
-                            type: 'success',
-                            title: 'Règlement Praticien',
-                            message: `Virement généré pour ${docName}: ${formatMoney(
-                              doctorPayout,
-                              'DZD'
-                            )}`,
-                          })
-                        }
-                        className="px-2.5 py-1 rounded-lg bg-[#d4522f] text-white font-semibold text-[11px] shadow-2xs hover:bg-[#b3694c] transition-colors cursor-pointer"
-                      >
-                        Émettre Règlement
-                      </button>
                     </div>
                   </div>
                 );
@@ -1223,124 +1238,134 @@ export const MedicalBillingView: React.FC<any> = () => {
               </h2>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs space-y-4 text-xs">
-                <h3 className="font-bold text-black dark:text-white text-xs uppercase tracking-wider">
-                  Comptage Physique du Tiroir Caisse (Aujourd&apos;hui)
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800">
-                    <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">
-                      Espèces Attendues (Système)
-                    </span>
-                    <div className="text-xl font-bold font-mono tabular-nums text-black dark:text-white mt-1">
-                      {formatMoney(expectedCashTotal, 'DZD')}
+              <div className="sq-elev-card">
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-4 text-xs">
+                  <h3 className="font-bold text-black dark:text-white text-xs uppercase tracking-wider">
+                    Comptage Physique du Tiroir Caisse (Aujourd&apos;hui)
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800">
+                      <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">
+                        Espèces Attendues (Système)
+                      </span>
+                      <div className="text-xl font-bold font-mono tabular-nums text-black dark:text-white mt-1">
+                        {formatMoney(expectedCashTotal, 'DZD')}
+                      </div>
+                      <span className="text-[10px] text-black/55 dark:text-white/55">
+                        Base tickets modérateurs encaissés
+                      </span>
                     </div>
-                    <span className="text-[10px] text-black/55 dark:text-white/55">
-                      Base tickets modérateurs encaissés
-                    </span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800">
-                    <label className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase block mb-1">
-                      Espèces Comptées Physiquement (DZD)
-                    </label>
-                    <input
-                      type="number"
-                      value={countedCash}
-                      onChange={(e) => setCountedCash(e.target.value)}
-                      className="w-full px-2 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 font-mono font-bold text-base text-black dark:text-white"
-                    />
-                    {(() => {
-                      const diff = (parseFloat(countedCash) || 0) - expectedCashTotal;
-                      return (
-                        <span
-                          className={`text-[10px] font-bold block mt-1 ${
-                            diff === 0
-                              ? 'text-emerald-600'
+                    <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800">
+                      <label className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase block mb-1">
+                        Espèces Comptées Physiquement (DZD)
+                      </label>
+                      <div data-sq="ctl-sm" data-sq-border="solid" className="border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                        <input
+                          type="number"
+                          value={countedCash}
+                          onChange={(e) => setCountedCash(e.target.value)}
+                          className="lbi-field w-full px-2 py-1.5 bg-transparent border-0 font-mono font-bold text-base text-black dark:text-white"
+                        />
+                      </div>
+                      {(() => {
+                        const diff = (parseFloat(countedCash) || 0) - expectedCashTotal;
+                        return (
+                          <span
+                            className={`text-[10px] font-bold block mt-1 ${
+                              diff === 0
+                                ? 'text-emerald-600'
+                                : diff > 0
+                                ? 'text-blue-600'
+                                : 'text-rose-600'
+                            }`}
+                          >
+                            Écart: {diff >= 0 ? `+${diff}` : diff} DZD{' '}
+                            {diff === 0
+                              ? '(Caisse Juste ✓)'
                               : diff > 0
-                              ? 'text-blue-600'
-                              : 'text-rose-600'
-                          }`}
-                        >
-                          Écart: {diff >= 0 ? `+${diff}` : diff} DZD{' '}
-                          {diff === 0
-                            ? '(Caisse Juste ✓)'
-                            : diff > 0
-                            ? '(Excédent)'
-                            : '(Déficit de caisse)'}
-                        </span>
-                      );
-                    })()}
+                              ? '(Excédent)'
+                              : '(Déficit de caisse)'}
+                          </span>
+                        );
+                      })()}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">
-                    Observations et Justificatifs
-                  </label>
-                  <textarea
-                    value={closureNotes}
-                    onChange={(e) => setClosureNotes(e.target.value)}
-                    rows={3}
-                    className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 text-xs text-black dark:text-white"
-                  />
-                </div>
-                <div className="flex justify-end pt-2">
-                  <AtriumButton
-                    variant="primary"
-                    size="md"
-                    icon={<Check size={14} />}
-                    onClick={handleSaveCashClosure}
-                  >
-                    <span>Valider &amp; Signer la Clôture de Caisse</span>
-                  </AtriumButton>
+                  <div>
+                    <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">
+                      Observations et Justificatifs
+                    </label>
+                    <div data-sq="ctl" data-sq-border="solid" className="border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900">
+                      <textarea
+                        value={closureNotes}
+                        onChange={(e) => setClosureNotes(e.target.value)}
+                        rows={3}
+                        className="lbi-field w-full p-2.5 bg-transparent border-0 text-xs text-black dark:text-white"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end pt-2">
+                    <AtriumButton
+                      variant="primary"
+                      size="md"
+                      icon={<Check size={14} />}
+                      onClick={handleSaveCashClosure}
+                    >
+                      <span>Valider &amp; Signer la Clôture de Caisse</span>
+                    </AtriumButton>
+                  </div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs space-y-3 text-xs">
-                <h3 className="font-bold text-black dark:text-white text-xs uppercase tracking-wider">
-                  Historique des Clôtures de Caisse
-                </h3>
-                <div className="space-y-2">
-                  {dailyClosures.map((cl) => (
-                    <div
-                      key={cl.id}
-                      className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-100 dark:border-neutral-800 space-y-1 text-xs"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-black dark:text-white font-mono">
-                          {cl.date}
-                        </span>
-                        <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
-                          {cl.verifiedAt || '17:30'}
-                        </span>
+              <div className="sq-elev-card">
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-3 text-xs">
+                  <h3 className="font-bold text-black dark:text-white text-xs uppercase tracking-wider">
+                    Historique des Clôtures de Caisse
+                  </h3>
+                  <div className="space-y-2">
+                    {dailyClosures.map((cl) => (
+                      <div
+                        key={cl.id}
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        className="p-3 bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-100 dark:border-neutral-800 space-y-1 text-xs"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-black dark:text-white font-mono">
+                            {cl.date}
+                          </span>
+                          <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+                            {cl.verifiedAt || '17:30'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] font-mono text-black/70 dark:text-white/75">
+                          <span>
+                            Compté:{' '}
+                            {formatMoney(
+                              cl.countedCashDzd ?? cl.actualCashInDrawerDzd ?? 0,
+                              'DZD'
+                            )}
+                          </span>
+                          <span
+                            className={
+                              cl.discrepancyDzd === 0
+                                ? 'text-emerald-600 font-bold'
+                                : 'text-rose-600 font-bold'
+                            }
+                          >
+                            Écart:{' '}
+                            {cl.discrepancyDzd >= 0
+                              ? `+${cl.discrepancyDzd}`
+                              : cl.discrepancyDzd}{' '}
+                            DZD
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-black/55 dark:text-white/55 italic">
+                          &ldquo;{cl.notes || 'Clôture normale'}&rdquo; —{' '}
+                          {cl.closedBySecretary || cl.closedByStaffName || 'Secrétariat'}
+                        </p>
                       </div>
-                      <div className="flex items-center justify-between text-[11px] font-mono text-black/70 dark:text-white/75">
-                        <span>
-                          Compté:{' '}
-                          {formatMoney(
-                            cl.countedCashDzd ?? cl.actualCashInDrawerDzd ?? 0,
-                            'DZD'
-                          )}
-                        </span>
-                        <span
-                          className={
-                            cl.discrepancyDzd === 0
-                              ? 'text-emerald-600 font-bold'
-                              : 'text-rose-600 font-bold'
-                          }
-                        >
-                          Écart:{' '}
-                          {cl.discrepancyDzd >= 0
-                            ? `+${cl.discrepancyDzd}`
-                            : cl.discrepancyDzd}{' '}
-                          DZD
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-black/55 dark:text-white/55 italic">
-                        &ldquo;{cl.notes || 'Clôture normale'}&rdquo; —{' '}
-                        {cl.closedBySecretary || cl.closedByStaffName || 'Secrétariat'}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1367,7 +1392,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                     : 'Niveaux de stock temps réel, auto-décrémentation par consultation/acte et alertes de réapprovisionnement'}
                 </p>
               </div>
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75">
+              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75">
                 {consumables.length} {isAr ? 'عنصر مراقب' : 'fournitures tracées'}
               </span>
             </div>
@@ -1379,108 +1404,118 @@ export const MedicalBillingView: React.FC<any> = () => {
                 const isCritical = currentStock <= threshold;
                 const code = item.itemCode ?? item.id;
                 return (
-                  <div
-                    key={item.id}
-                    className={`p-4 rounded-2xl bg-white dark:bg-neutral-800 border flex flex-col justify-between shadow-2xs space-y-3 transition-all ${
-                      isCritical
-                        ? 'border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-500/20'
-                        : 'border-neutral-200 dark:border-neutral-700'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] font-mono text-black/55 dark:text-white/55 block uppercase font-bold">
-                          {code} · {item.category}
-                        </span>
-                        <h4 className="font-bold text-sm text-black dark:text-white mt-0.5">
-                          {item.name}
-                        </h4>
+                  <div key={item.id} className="sq-elev-card">
+                    <div
+                      data-sq="card"
+                      data-sq-border="solid"
+                      data-sq-stroke-w={isCritical ? 2 : 1}
+                      className={`p-4 bg-white dark:bg-neutral-800 border flex flex-col justify-between space-y-3 transition-all ${
+                        isCritical
+                          ? 'border-rose-300 dark:border-rose-900/60'
+                          : 'border-neutral-200 dark:border-neutral-700'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <span className="text-[10px] font-mono text-black/55 dark:text-white/55 block uppercase font-bold">
+                            {code} · {item.category}
+                          </span>
+                          <h4 className="font-bold text-sm text-black dark:text-white mt-0.5">
+                            {item.name}
+                          </h4>
+                        </div>
+                        {isCritical ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 animate-pulse">
+                            Seuil Critique
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                            Stock Optimal
+                          </span>
+                        )}
                       </div>
-                      {isCritical ? (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 animate-pulse">
-                          Seuil Critique
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                          Stock Optimal
-                        </span>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-800 text-xs">
-                      <div>
-                        <span className="text-[10px] text-black/55 dark:text-white/55 uppercase font-semibold block">
-                          Stock Actuel
-                        </span>
-                        <div className="flex items-baseline gap-1 mt-0.5">
-                          <span
-                            className={`text-xl font-bold font-mono ${
-                              isCritical ? 'text-rose-600' : 'text-black dark:text-white'
-                            }`}
-                          >
-                            {currentStock}
+                      <div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 gap-2 p-2.5 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-800 text-xs">
+                        <div>
+                          <span className="text-[10px] text-black/55 dark:text-white/55 uppercase font-semibold block">
+                            Stock Actuel
                           </span>
-                          <span className="text-[10px] text-black/55 dark:text-white/55">
-                            {item.unit}
+                          <div className="flex items-baseline gap-1 mt-0.5">
+                            <span
+                              className={`text-xl font-bold font-mono ${
+                                isCritical ? 'text-rose-600' : 'text-black dark:text-white'
+                              }`}
+                            >
+                              {currentStock}
+                            </span>
+                            <span className="text-[10px] text-black/55 dark:text-white/55">
+                              {item.unit}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-black/55 dark:text-white/55 uppercase font-semibold block">
+                            Seuil d&apos;Alerte
                           </span>
+                          <div className="flex items-baseline gap-1 mt-0.5">
+                            <span className="text-xl font-bold font-mono text-black/55 dark:text-white/55">
+                              {threshold}
+                            </span>
+                            <span className="text-[10px] text-black/55 dark:text-white/55">
+                              {item.unit}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <span className="text-[10px] text-black/55 dark:text-white/55 uppercase font-semibold block">
-                          Seuil d&apos;Alerte
-                        </span>
-                        <div className="flex items-baseline gap-1 mt-0.5">
-                          <span className="text-xl font-bold font-mono text-black/55 dark:text-white/55">
-                            {threshold}
-                          </span>
-                          <span className="text-[10px] text-black/55 dark:text-white/55">
-                            {item.unit}
-                          </span>
-                        </div>
+                      <div className="w-full bg-neutral-100 dark:bg-neutral-700 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${
+                            isCritical ? 'bg-rose-500' : 'bg-emerald-500'
+                          }`}
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              Math.max(8, (currentStock / (threshold * 2.5)) * 100)
+                            )}%`,
+                          }}
+                        />
                       </div>
-                    </div>
-                    <div className="w-full bg-neutral-100 dark:bg-neutral-700 h-1.5 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${
-                          isCritical ? 'bg-rose-500' : 'bg-emerald-500'
-                        }`}
-                        style={{
-                          width: `${Math.min(
-                            100,
-                            Math.max(8, (currentStock / (threshold * 2.5)) * 100)
-                          )}%`,
-                        }}
-                      />
-                    </div>
-                    <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          depleteConsumable(code, 1);
-                          showToast({
-                            type: 'info',
-                            title: 'Stock Consommable',
-                            message: `-1 ${item.unit} déduit pour ${item.name}`,
-                          });
-                        }}
-                        className="px-2 py-1 text-[11px] rounded-lg border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                        title="Déduire manuellement pour un acte"
-                      >
-                        -1 Unité
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          restockConsumable(code, 50);
-                          showToast({
-                            type: 'success',
-                            title: 'Réapprovisionnement',
-                            message: `+50 ${item.unit} réapprovisionnés pour ${item.name}`,
-                          });
-                        }}
-                        className="px-2.5 py-1 text-[11px] rounded-lg bg-[#d4522f] text-white font-semibold hover:bg-[#b0674b] transition-colors cursor-pointer"
-                      >
-                        +50 Réappro
-                      </button>
+                      <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          data-no-liquid="true"
+                          data-sq="ctl-sm"
+                          data-sq-border="solid"
+                          onClick={() => {
+                            depleteConsumable(code, 1);
+                            showToast({
+                              type: 'info',
+                              title: 'Stock Consommable',
+                              message: `-1 ${item.unit} déduit pour ${item.name}`,
+                            });
+                          }}
+                          className="px-2 py-1 text-[11px] border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                          title="Déduire manuellement pour un acte"
+                        >
+                          -1 Unité
+                        </button>
+                        <button
+                          type="button"
+                          data-no-liquid="true"
+                          data-sq="ctl-sm"
+                          data-sq-border="none"
+                          onClick={() => {
+                            restockConsumable(code, 50);
+                            showToast({
+                              type: 'success',
+                              title: 'Réapprovisionnement',
+                              message: `+50 ${item.unit} réapprovisionnés pour ${item.name}`,
+                            });
+                          }}
+                          className="px-2.5 py-1 text-[11px] bg-[#d4522f] text-white font-semibold hover:bg-[#b0674b] transition-colors cursor-pointer"
+                        >
+                          +50 Réappro
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1615,8 +1650,11 @@ export const MedicalBillingView: React.FC<any> = () => {
                       <button
                         key={method}
                         type="button"
+                        data-no-liquid="true"
+                        data-sq="ctl"
+                        data-sq-border="solid"
                         onClick={() => setPaymentMethod(method)}
-                        className={`py-2 px-2 text-center rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                        className={`py-2 px-2 text-center text-xs font-semibold border transition-all cursor-pointer ${
                           paymentMethod === method
                             ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
                             : 'border-[#E6DED6] dark:border-neutral-700 bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75'

@@ -99,10 +99,11 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({ is
 		setActiveTab("list");
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-<div className="bg-white dark:bg-neutral-900 w-full max-w-3xl rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col max-h-[88vh] overflow-hidden">
+<div className="sq-elev-pop w-full max-w-3xl">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[88vh] overflow-hidden">
 <div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
 <div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-bold"><Microscope size={20} /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-bold"><Microscope size={20} /></div>
 <div>
 <div className="flex items-center gap-2">
 <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Dossier Biologique & Imagerie Médicale</h2>
@@ -112,20 +113,20 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({ is
 </div>
 </div>
 <div className="flex items-center gap-2">
-<div className="flex bg-neutral-200/80 dark:bg-neutral-800 p-1 rounded-xl text-xs font-semibold">
-<button onClick={() => setActiveTab("list")} className={`px-3 py-1 rounded-lg transition-all ${activeTab === "list" ? "bg-white dark:bg-neutral-700 text-black dark:text-white shadow-2xs" : "text-black/70 dark:text-white/75"}`}>
+<div data-sq="ctl" data-sq-border="none" className="flex bg-neutral-200/80 dark:bg-neutral-800 p-[3px] text-xs font-semibold">
+<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setActiveTab("list")} className={`px-3 py-1 transition-all cursor-pointer ${activeTab === "list" ? "bg-white dark:bg-neutral-700 text-black dark:text-white" : "text-black/70 dark:text-white/75"}`}>
 Bilans (
 {patientLabs.length}
 )
 </button>
-<button onClick={() => setActiveTab("create")} className={`px-3 py-1 rounded-lg transition-all ${activeTab === "create" ? "bg-white dark:bg-neutral-700 text-black dark:text-white shadow-2xs" : "text-black/70 dark:text-white/75"}`}>+ Saisir Résultats</button>
+<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setActiveTab("create")} className={`px-3 py-1 transition-all cursor-pointer ${activeTab === "create" ? "bg-white dark:bg-neutral-700 text-black dark:text-white" : "text-black/70 dark:text-white/75"}`}>+ Saisir Résultats</button>
 </div>
-<button onClick={onClose} className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"><X size={18} /></button>
+<button type="button" onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={18} /></button>
 </div>
 </div>
 <div className="p-6 overflow-y-auto flex-1">
 {activeTab === "list" ? patientLabs.length > 0 ? /* @__PURE__ */ <div className="space-y-4">
-{patientLabs.map((lab: any) => /* @__PURE__ */ <div key={lab.id} className="p-5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-3">
+{patientLabs.map((lab: any) => /* @__PURE__ */ <div key={lab.id} data-sq="card" data-sq-border="solid" className="p-5 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-3">
 <div className="flex items-center justify-between">
 <div className="flex items-center gap-2">
 <span className="font-bold text-xs text-black dark:text-white">{lab.testCategory}</span>
@@ -140,7 +141,7 @@ Bilans (
 </div>
 <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">{lab.status}</span>
 </div>
-<div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+<div data-sq="table" data-sq-border="solid" className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 overflow-hidden">
 <table className="w-full text-xs text-left">
 <thead>
 <tr className="bg-neutral-50 dark:bg-neutral-750 text-[10px] font-mono uppercase text-black/55 dark:text-white/55 border-b border-neutral-200 dark:border-neutral-700">
@@ -166,7 +167,7 @@ Bilans (
 {param.unit}
 </td>
 <td className="py-2 px-3 text-right">
-{param.isAbnormal ? /* @__PURE__ */ <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-400">{param.status === "high" ? "ÉLEVÉ ▲" : "BAS ▼"}</span> : /* @__PURE__ */ <span className="px-2 py-0.5 rounded text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">Normal ✓</span>}
+{param.isAbnormal ? /* @__PURE__ */ <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-400">{param.status === "high" ? "ÉLEVÉ ▲" : "BAS ▼"}</span> : /* @__PURE__ */ <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">Normal ✓</span>}
 </td>
 </tr>)}
 </tbody>
@@ -176,7 +177,7 @@ Bilans (
 <strong>{"Conclusion Médicale: "}</strong>
 {lab.clinicalConclusion}
 </div>
-{lab.imagingReport && /* @__PURE__ */ <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-300">
+{lab.imagingReport && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-blue-50/60 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-300">
 <strong>
 Rapport d'Imagerie (
 {lab.imagingModality}
@@ -223,7 +224,7 @@ Rapport d'Imagerie (
 									label: p.fullName
 								}))} />
 </div>
-<div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-3">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-3">
 <span className="text-xs font-bold text-black/70 dark:text-white/75 uppercase tracking-wider block">Valeurs Biologiques Mesurées</span>
 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
 <LabelInput label="Glycémie (0.7-1.1 g/L)" value={glycemieVal} onChange={(e) => setGlycemieVal(e.target.value)} />
@@ -234,13 +235,16 @@ Rapport d'Imagerie (
 </div>
 <div>
 <label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1">Conclusion & Interprétation Clinique</label>
-<textarea value={clinicalConclusion} onChange={(e) => setClinicalConclusion(e.target.value)} rows={3} className="w-full px-3 py-2 text-xs rounded-xl bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white focus:outline-hidden" required />
+<div data-sq="ctl" data-sq-border="solid" className="bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+<textarea value={clinicalConclusion} onChange={(e) => setClinicalConclusion(e.target.value)} rows={3} className="lbi-field w-full px-3 py-2 text-xs bg-transparent border-0 text-black dark:text-white focus:outline-hidden" required />
+</div>
 </div>
 <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800 flex justify-between items-center">
 <AtriumButton variant="ghost" type="button" onClick={() => setActiveTab("list")}>Annuler</AtriumButton>
 <AtriumButton variant="primary" type="submit" icon={<CheckCircle2 size={16} />}>Enregistrer le Bilan</AtriumButton>
 </div>
 </form>}
+</div>
 </div>
 </div>
 </div>;

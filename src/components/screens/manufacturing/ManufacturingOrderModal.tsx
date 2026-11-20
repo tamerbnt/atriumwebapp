@@ -125,29 +125,30 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 animate-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
-              <Factory size={20} />
+      <div className="sq-elev-pop max-w-xl w-full animate-in zoom-in-95 duration-150">
+        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 sm:p-7 border border-neutral-200 dark:border-neutral-800 space-y-5">
+          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+            <div className="flex items-center gap-3">
+              <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
+                <Factory size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  {orderToEdit
+                    ? isAr ? 'تعديل أمر التصنيع' : "Modifier l'Ordre de Fabrication"
+                    : isAr ? 'أمر تصنيع جديد (OF)' : 'Nouvel Ordre de Fabrication (OF)'}
+                </h3>
+              </div>
             </div>
-            <div>
-              <h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {orderToEdit
-                  ? isAr ? 'تعديل أمر التصنيع' : "Modifier l'Ordre de Fabrication"
-                  : isAr ? 'أمر تصنيع جديد (OF)' : 'Nouvel Ordre de Fabrication (OF)'}
-              </h3>
-            </div>
+            <button
+              type="button"
+              aria-label={isAr ? 'إغلاق' : 'Fermer'}
+              onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+            >
+              <X size={18} />
+            </button>
           </div>
-          <button
-            type="button"
-            aria-label={isAr ? 'إغلاق' : 'Fermer'}
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
-          >
-            <X size={18} />
-          </button>
-        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <LabelSelect
             label={isAr ? 'المنتج النهائي والتركيبة (BOM)' : 'Produit & Nomenclature (BOM)'}
@@ -172,7 +173,9 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
             />
           </div>
           <div
-            className={`p-3.5 rounded-2xl border text-xs flex items-start gap-3 transition-all ${
+            data-sq="card"
+            data-sq-border="solid"
+            className={`p-3.5 border text-xs flex items-start gap-3 transition-all ${
               stockCheck.canFulfill
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300'
                 : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300'
@@ -234,6 +237,7 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
             </AtriumButton>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

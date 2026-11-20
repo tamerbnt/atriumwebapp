@@ -839,7 +839,6 @@ export const FreelanceFinanceView: React.FC = () => {
                 <Trash2 size={13} />
                 <span>{isAr ? 'حذف المحدد' : isFr ? 'Supprimer' : 'Batch Delete'}</span>
               </button>
-              </button>
             </div>
             </div>
           </div>

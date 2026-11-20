@@ -623,7 +623,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         renderCell: (entry) => {
           const bInfo = resolveRecordBranch(entry, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -861,7 +861,12 @@ export const FreelanceTimeTrackerView: React.FC = () => {
 
       {/* Live Focus Timer Hero Widget */}
       <ScreenPod>
-        <div className="p-6 sm:p-8 rounded-3xl bg-neutral-900 dark:bg-black text-white border border-neutral-800 shadow-xl relative overflow-hidden">
+        <div className="sq-elev-pop">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-6 sm:p-8 bg-neutral-900 dark:bg-black text-white border border-neutral-800 relative overflow-hidden"
+          >
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#d4522f]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="space-y-3 text-center lg:text-left">
@@ -905,8 +910,11 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             {!activeTimer.isRunning ? (
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="none"
                 onClick={handleStartFocusTimer}
-                className="h-14 px-8 rounded-2xl bg-[#d4522f] text-white text-sm font-bold flex items-center gap-2.5 hover:opacity-90 transition-opacity cursor-pointer shadow-lg hover:shadow-[#d4522f]/20"
+                className="h-14 px-8 bg-[#d4522f] text-white text-sm font-bold flex items-center gap-2.5 hover:opacity-90 transition-opacity cursor-pointer"
               >
                 <Play size={18} className="fill-current" />
                 <span>{t('free_time_timer_start', language)}</span>
@@ -916,8 +924,11 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 {activeTimer.isPaused ? (
                   <button
                     type="button"
+                    data-no-liquid="true"
+                    data-sq="ctl"
+                    data-sq-border="none"
                     onClick={resumeTimer}
-                    className="h-12 px-6 rounded-2xl bg-emerald-600 text-white text-xs font-bold flex items-center gap-2 hover:bg-emerald-700 transition-colors cursor-pointer"
+                    className="h-12 px-6 bg-emerald-600 text-white text-xs font-bold flex items-center gap-2 hover:bg-emerald-700 transition-colors cursor-pointer"
                   >
                     <Play size={16} className="fill-current" />
                     <span>{t('free_time_timer_resume', language)}</span>
@@ -925,8 +936,11 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 ) : (
                   <button
                     type="button"
+                    data-no-liquid="true"
+                    data-sq="ctl"
+                    data-sq-border="none"
                     onClick={pauseTimer}
-                    className="h-12 px-6 rounded-2xl bg-amber-600 text-white text-xs font-bold flex items-center gap-2 hover:bg-amber-700 transition-colors cursor-pointer"
+                    className="h-12 px-6 bg-amber-600 text-white text-xs font-bold flex items-center gap-2 hover:bg-amber-700 transition-colors cursor-pointer"
                   >
                     <Pause size={16} />
                     <span>{t('free_time_timer_pause', language)}</span>
@@ -934,8 +948,11 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 )}
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="none"
                   onClick={stopTimer}
-                  className="h-12 px-6 rounded-2xl bg-rose-600 text-white text-xs font-bold flex items-center gap-2 hover:bg-rose-700 transition-colors cursor-pointer"
+                  className="h-12 px-6 bg-rose-600 text-white text-xs font-bold flex items-center gap-2 hover:bg-rose-700 transition-colors cursor-pointer"
                   title={t('free_time_stop_save_tt', language)}
                 >
                   <Square size={16} className="fill-current" />
@@ -943,8 +960,11 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="none"
                   onClick={resetTimer}
-                  className="h-12 w-12 rounded-2xl bg-neutral-800 text-white/75 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                  className="h-12 w-12 bg-neutral-800 text-white/75 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
                   title={t('free_time_discard_tt', language)}
                   aria-label={t('free_time_discard_tt', language)}
                 >
@@ -973,7 +993,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               }))}
               placeholder={t('free_deliv_ph_select_client', language)}
               height={46}
-              corner={14}
+              corner={12}
             />
             <LabelSelect
               field="Project"
@@ -986,7 +1006,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               }))}
               placeholder={t('free_time_ph_select_project', language)}
               height={46}
-              corner={14}
+              corner={12}
             />
             <LabelInput
               field="Task"
@@ -996,7 +1016,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               onChange={(v) => setTaskDescription(extractStr(v))}
               width="100%"
               height={46}
-              corner={14}
+              corner={12}
             />
             <div className="flex items-center justify-between sm:justify-end gap-4 pt-4 sm:pt-0">
               <label className="flex items-center gap-2 cursor-pointer text-white/80">
@@ -1004,7 +1024,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   type="checkbox"
                   checked={isBillable}
                   onChange={(e) => setIsBillable(e.target.checked)}
-                  className="rounded text-[#d4522f] focus:ring-0"
+                  className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-0"
                 />
                 <span>{t('free_time_billable', language)}</span>
               </label>
@@ -1013,13 +1033,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   type="checkbox"
                   checked={isPomodoro}
                   onChange={(e) => setIsPomodoro(e.target.checked)}
-                  className="rounded text-amber-500 focus:ring-0"
+                  className="rounded-[var(--r-check,6px)] text-amber-500 focus:ring-0"
                 />
                 <span>{t('free_topbar_pomodoro', language)} (25m)</span>
               </label>
             </div>
           </div>
         )}
+          </div>
         </div>
       </ScreenPod>
 
@@ -1088,8 +1109,11 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             unbilledLogs.length > 0 ? (
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="ctl"
+                data-sq-border="none"
                 onClick={() => handleBillClientUnbilled(unbilledLogs[0].clientId)}
-                className="h-10 px-3.5 rounded-xl bg-[#d4522f] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-2xs shrink-0"
+                className="h-10 px-3.5 bg-[#d4522f] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shrink-0"
               >
                 <FileText size={13} />
                 <span>
@@ -1109,45 +1133,51 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         />
 
         {selectedLogIds.size > 0 && (
-          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-neutral-900 text-white shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150">
-            <div className="flex items-center gap-3 text-xs font-semibold">
-              <span className="px-2 py-0.5 rounded-full bg-[#d4522f] text-white font-bold text-[11px]">
-                {selectedLogIds.size}
-              </span>
-              <span>
-                {isAr
-                  ? 'جلسة محددة'
-                  : isFr
-                  ? 'sessions sélectionnées'
-                  : 'sessions selected'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setSelectedLogIds(new Set())}
-                className="text-white/75 hover:text-white underline text-xs cursor-pointer ml-1"
-              >
-                {isAr ? 'إلغاء التحديد' : isFr ? 'Désélectionner' : 'Deselect all'}
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleBatchBillSelected}
-                className="h-8 px-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-              >
-                <FileText size={13} />
-                <span>
-                  {isAr ? 'فوترة المحدد' : isFr ? 'Facturer la sélection' : 'Batch Bill'}
+          <div className="sq-elev-pop animate-in fade-in slide-in-from-bottom-2 duration-150">
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="flex items-center justify-between p-3 px-4 bg-neutral-900 text-white"
+            >
+              <div className="flex items-center gap-3 text-xs font-semibold">
+                <span className="px-2 py-0.5 rounded-full bg-[#d4522f] text-white font-bold text-[11px]">
+                  {selectedLogIds.size}
                 </span>
-              </button>
-              <button
-                type="button"
-                onClick={handleBatchDeleteLogs}
-                className="h-8 px-3 rounded-full bg-rose-600/80 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Trash2 size={13} />
-                <span>{isAr ? 'حذف' : isFr ? 'Supprimer' : 'Batch Delete'}</span>
-              </button>
+                <span>
+                  {isAr
+                    ? 'جلسة محددة'
+                    : isFr
+                    ? 'sessions sélectionnées'
+                    : 'sessions selected'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedLogIds(new Set())}
+                  className="text-white/75 hover:text-white underline text-xs cursor-pointer ml-1"
+                >
+                  {isAr ? 'إلغاء التحديد' : isFr ? 'Désélectionner' : 'Deselect all'}
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleBatchBillSelected}
+                  className="h-8 px-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                >
+                  <FileText size={13} />
+                  <span>
+                    {isAr ? 'فوترة المحدد' : isFr ? 'Facturer la sélection' : 'Batch Bill'}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBatchDeleteLogs}
+                  className="h-8 px-3 rounded-full bg-rose-600/80 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Trash2 size={13} />
+                  <span>{isAr ? 'حذف' : isFr ? 'Supprimer' : 'Batch Delete'}</span>
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -1398,7 +1428,12 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       {/* Manual Time Log Modal */}
       {isManualModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="sq-elev-pop max-w-md w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <h3 className="text-base font-bold text-black dark:text-white">
                 {t('free_time_modal_manual_title', language)}
@@ -1536,6 +1571,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
@@ -1543,7 +1579,12 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       {/* Edit Log Modal */}
       {logToEdit && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="sq-elev-pop max-w-md w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
                 <h3 className="text-base font-bold text-black dark:text-white">
@@ -1640,6 +1681,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
@@ -1647,11 +1689,20 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       {/* Delete Log Modal */}
       {logToDelete && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-              <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60">
-                <AlertTriangle size={20} />
-              </div>
+          <div className="sq-elev-pop max-w-md w-full animate-in zoom-in-95 duration-150">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+            >
+              <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+                <div
+                  data-sq="tile"
+                  data-sq-border="solid"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"
+                >
+                  <AlertTriangle size={20} />
+                </div>
               <div>
                 <h3 className="text-base font-bold text-black dark:text-white">
                   {t('free_time_delete_modal_title', language)}
@@ -1681,6 +1732,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               >
                 {t('common_delete', language)}
               </AtriumButton>
+            </div>
             </div>
           </div>
         </div>

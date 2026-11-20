@@ -720,19 +720,21 @@ export const ManufacturingQcView: React.FC<any> = () => {
 
             {tab === 'cq' && (
               <div className="space-y-4">
-                <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-                  <div className="flex items-center justify-between text-white/80 text-[11px]">
-                    <span>Statut Libération du Lot</span>
-                    <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">ISO 9001</span>
+                <div className="sq-elev-card">
+                  <div data-sq="card" data-sq-border="none" className="p-4 bg-[#1F1D1B] text-white space-y-2">
+                    <div className="flex items-center justify-between text-white/80 text-[11px]">
+                      <span>Statut Libération du Lot</span>
+                      <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">ISO 9001</span>
+                    </div>
+                    <div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                      98.8% Conforme
+                    </div>
+                    <p className="text-[10px] text-white/75">
+                      Échantillonnage AQL 1.5 validé par le laboratoire de métrologie interne.
+                    </p>
                   </div>
-                  <div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                    98.8% Conforme
-                  </div>
-                  <p className="text-[10px] text-white/75">
-                    Échantillonnage AQL 1.5 validé par le laboratoire de métrologie interne.
-                  </p>
                 </div>
-                <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                <div data-sq="card" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2">
                   <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
                     Spécifications de Fabrication
                   </span>
@@ -755,20 +757,20 @@ export const ManufacturingQcView: React.FC<any> = () => {
             )}
 
             {tab === 'metrologie' && (
-              <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+              <div data-sq="card" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2">
                 <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
                   Rapport Dimensionnel & Tolérances
                 </span>
                 <div className="space-y-2">
-                  <div className="flex justify-between p-2 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                  <div data-sq="ctl" data-sq-border="solid" className="flex justify-between p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
                     <span>Cote Critique Longueur (±0.5mm):</span>
                     <span className="font-mono font-bold text-emerald-600">+0.12mm (OK)</span>
                   </div>
-                  <div className="flex justify-between p-2 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                  <div data-sq="ctl" data-sq-border="solid" className="flex justify-between p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
                     <span>Épaisseur & Planéité (±0.2mm):</span>
                     <span className="font-mono font-bold text-emerald-600">-0.05mm (OK)</span>
                   </div>
-                  <div className="flex justify-between p-2 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                  <div data-sq="ctl" data-sq-border="solid" className="flex justify-between p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
                     <span>Adhérence Finition / Revêtement:</span>
                     <span className="font-mono font-bold text-emerald-600">Grade 5B (Parfait)</span>
                   </div>
@@ -777,7 +779,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
             )}
 
             {tab === 'couts' && (
-              <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+              <div data-sq="card" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2">
                 <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
                   Décomposition Coût de Revient
                 </span>
@@ -805,57 +807,61 @@ export const ManufacturingQcView: React.FC<any> = () => {
 
       {orderForCertificate && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
-                  <ShieldCheck size={22} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-base text-black dark:text-white">
-                    {isAr ? 'شهادة المطابقة الصناعية IANOR / ISO' : 'Certificat de Conformité & Libération Lot'}
-                  </h3>
-                  <p className="text-xs text-black/55 dark:text-white/55">Norme ISO 9001:2015 & IANOR NA 1620</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
-                >
-                  <Printer size={14} />
-                  <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
-                </button>
-                <button
-                  type="button"
-                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                  onClick={() => setOrderForCertificate(null)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-            <div className="p-6 rounded-2xl bg-white border-2 border-emerald-600/40 text-black space-y-5 font-sans shadow-xs">
-              <div className="flex justify-between items-start border-b pb-4">
-                <div>
-                  <div className="font-black text-sm tracking-tight text-black">ATRIUM MANUFACTURE & CONTRÔLE QUALITÉ</div>
-                  <div className="text-[10px] text-black/55 font-medium">
-                    Laboratoire de Métrologie Industrielle • Alger • Agrément ONML N° 2026/88
+          <div className="sq-elev-pop max-w-xl w-full animate-in zoom-in-95 duration-150">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 sm:p-8 border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
+                <div className="flex items-center gap-3">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                    <ShieldCheck size={22} />
                   </div>
-                  <div className="text-xs font-bold text-emerald-700 mt-1 uppercase tracking-wide">
-                    BULLETIN D'ANALYSE & CERTIFICAT DE CONFORMITÉ PRODUIT FINI
+                  <div>
+                    <h3 className="font-bold text-base text-black dark:text-white">
+                      {isAr ? 'شهادة المطابقة الصناعية IANOR / ISO' : 'Certificat de Conformité & Libération Lot'}
+                    </h3>
+                    <p className="text-xs text-black/55 dark:text-white/55">Norme ISO 9001:2015 & IANOR NA 1620</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-mono font-bold text-xs text-emerald-700">
-                    CERT-2026-{orderForCertificate.orderNumber.replace(/[^0-9]/g, '')}
-                  </div>
-                  <div className="text-[11px] text-black/55 mt-0.5">Date : {new Date().toISOString().split('T')[0]}</div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    data-no-liquid="true"
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    onClick={() => window.print()}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                  >
+                    <Printer size={14} />
+                    <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                    onClick={() => setOrderForCertificate(null)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
               </div>
-              <div className="bg-neutral-50 p-3.5 rounded-xl border border-neutral-200 text-xs space-y-1.5">
+              <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-emerald-600/40 text-black space-y-5 font-sans shadow-xs">
+                <div className="flex justify-between items-start border-b pb-4">
+                  <div>
+                    <div className="font-black text-sm tracking-tight text-black">ATRIUM MANUFACTURE & CONTRÔLE QUALITÉ</div>
+                    <div className="text-[10px] text-black/55 font-medium">
+                      Laboratoire de Métrologie Industrielle • Alger • Agrément ONML N° 2026/88
+                    </div>
+                    <div className="text-xs font-bold text-emerald-700 mt-1 uppercase tracking-wide">
+                      BULLETIN D'ANALYSE & CERTIFICAT DE CONFORMITÉ PRODUIT FINI
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono font-bold text-xs text-emerald-700">
+                      CERT-2026-{orderForCertificate.orderNumber.replace(/[^0-9]/g, '')}
+                    </div>
+                    <div className="text-[11px] text-black/55 mt-0.5">Date : {new Date().toISOString().split('T')[0]}</div>
+                  </div>
+                </div>
+                <div className="bg-neutral-50 p-3.5 rounded-[var(--r-ctl,12px)] border border-neutral-200 text-xs space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-black/55">Article inspecté :</span>
                   <span className="font-bold text-black">{orderForCertificate.productName}</span>
@@ -884,7 +890,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
                 <div className="text-xs font-bold text-black uppercase tracking-wider">
                   Résultats des Contrôles Métrologiques & Essais
                 </div>
-                <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200 text-xs space-y-1">
+                <div className="p-3 bg-emerald-50/60 rounded-[var(--r-ctl,12px)] border border-emerald-200 text-xs space-y-1">
                   <div className="flex justify-between">
                     <span>Tolérance dimensionnelle (Calibre Vernier) :</span>
                     <span className="font-bold text-emerald-800">Conforme (+/- 0.2mm)</span>
@@ -899,7 +905,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
                   </div>
                 </div>
               </div>
-              <div className="p-3 bg-neutral-100 rounded-xl text-[11px] text-black/75 font-medium">
+              <div className="p-3 bg-neutral-100 rounded-[var(--r-ctl,12px)] text-[11px] text-black/75 font-medium">
                 Le Responsable Assurance Qualité atteste que le lot ci-dessus référencé répond strictement aux spécifications techniques du cahier des charges et est libéré pour livraison client.
               </div>
               <div className="grid grid-cols-2 gap-4 pt-6 border-t text-center text-xs">
@@ -912,6 +918,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
                   <div className="h-10 flex items-center justify-center font-serif text-black italic">Direction Qualité Atrium</div>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>

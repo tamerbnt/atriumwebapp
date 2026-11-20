@@ -139,11 +139,20 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-4xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] flex flex-col">
+      <div className="sq-elev-pop max-w-4xl w-full">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] flex flex-col"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
+            <div
+              data-sq="tile"
+              data-sq-border="none"
+              className="w-9 h-9 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"
+            >
               <MapPin size={18} />
             </div>
             <div>
@@ -153,8 +162,10 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
             </div>
           </div>
           <button
+            type="button"
+            aria-label={isAr ? 'إغلاق' : 'Fermer'}
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -167,7 +178,9 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
             return (
               <div
                 key={z.id}
-                className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3"
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <div>
@@ -188,56 +201,80 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                     <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'توصيل للمنزل (DZD)' : 'Domicile (DZD)'}
                     </label>
-                    <input
-                      type="number"
-                      value={rule.homeBasePriceDzd}
-                      onChange={(e) =>
-                        handleUpdate(z.id, 'homeBasePriceDzd', parseFloat(e.target.value) || 0)
-                      }
-                      className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold"
-                    />
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                    >
+                      <input
+                        type="number"
+                        value={rule.homeBasePriceDzd}
+                        onChange={(e) =>
+                          handleUpdate(z.id, 'homeBasePriceDzd', parseFloat(e.target.value) || 0)
+                        }
+                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'استلام مكتب Stop-Desk' : 'Stop-Desk (DZD)'}
                     </label>
-                    <input
-                      type="number"
-                      value={rule.stopDeskBasePriceDzd}
-                      onChange={(e) =>
-                        handleUpdate(z.id, 'stopDeskBasePriceDzd', parseFloat(e.target.value) || 0)
-                      }
-                      className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold text-emerald-600 dark:text-emerald-400"
-                    />
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                    >
+                      <input
+                        type="number"
+                        value={rule.stopDeskBasePriceDzd}
+                        onChange={(e) =>
+                          handleUpdate(z.id, 'stopDeskBasePriceDzd', parseFloat(e.target.value) || 0)
+                        }
+                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold text-emerald-600 dark:text-emerald-400"
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'زيادة الكيلوغرام (+DZD/kg)' : '+ Par Kg supp.'}
                     </label>
-                    <input
-                      type="number"
-                      value={rule.overweightPerKgDzd}
-                      onChange={(e) =>
-                        handleUpdate(z.id, 'overweightPerKgDzd', parseFloat(e.target.value) || 0)
-                      }
-                      className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold"
-                    />
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                    >
+                      <input
+                        type="number"
+                        value={rule.overweightPerKgDzd}
+                        onChange={(e) =>
+                          handleUpdate(z.id, 'overweightPerKgDzd', parseFloat(e.target.value) || 0)
+                        }
+                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'عناية هشة (+DZD)' : 'Fragile (+DZD)'}
                     </label>
-                    <input
-                      type="number"
-                      value={rule.fragileHandlingSurchargeDzd}
-                      onChange={(e) =>
-                        handleUpdate(z.id, 'fragileHandlingSurchargeDzd', parseFloat(e.target.value) || 0)
-                      }
-                      className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold"
-                    />
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                    >
+                      <input
+                        type="number"
+                        value={rule.fragileHandlingSurchargeDzd}
+                        onChange={(e) =>
+                          handleUpdate(z.id, 'fragileHandlingSurchargeDzd', parseFloat(e.target.value) || 0)
+                        }
+                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -260,6 +297,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
             </AtriumButton>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

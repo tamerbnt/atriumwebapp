@@ -63,11 +63,20 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-3xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4 max-h-[90vh] flex flex-col">
+      <div className="sq-elev-pop max-w-3xl w-full">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4 max-h-[90vh] flex flex-col"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+            <div
+              data-sq="tile"
+              data-sq-border="none"
+              className="w-10 h-10 bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold"
+            >
               <Building2 size={22} />
             </div>
             <div>
@@ -80,14 +89,18 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
             type="button"
             aria-label={isAr ? 'إغلاق' : 'Fermer'}
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Batch Overview Banner */}
-        <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between">
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between"
+        >
           <div>
             <span className="text-[11px] text-black/55 dark:text-white/55 block">
               {isAr ? 'المتاجر المشمولة بالدفعة' : 'Commerçants dans le lot'}
@@ -112,7 +125,11 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
             <span>Structure: Centre(5) + Compte(10) + Clé(2) + Centimes(12) + Nom(30)</span>
             <span className="font-mono">{lines.length} lignes</span>
           </div>
-          <pre className="p-4 rounded-xl bg-neutral-950 text-emerald-400 font-mono text-xs overflow-x-auto whitespace-pre selection:bg-emerald-900 border border-neutral-800 leading-relaxed">
+          <pre
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-4 bg-neutral-950 text-emerald-400 font-mono text-xs overflow-x-auto whitespace-pre selection:bg-emerald-900 border border-neutral-800 leading-relaxed"
+          >
             {fullText}
           </pre>
         </div>
@@ -142,6 +159,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
             </AtriumButton>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

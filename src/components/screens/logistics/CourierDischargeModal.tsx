@@ -109,11 +109,20 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-2xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] flex flex-col">
+      <div className="sq-elev-pop max-w-2xl w-full">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] flex flex-col"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <div
+              data-sq="tile"
+              data-sq-border="none"
+              className="w-10 h-10 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold"
+            >
               <ShieldCheck size={22} />
             </div>
             <div>
@@ -129,7 +138,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             type="button"
             aria-label={isAr ? 'إغلاق' : 'Fermer'}
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -139,7 +148,11 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 space-y-4 pr-1">
           {/* Summary Banner */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60"
+            >
               <span className="text-[11px] font-medium text-black/55 dark:text-white/55 block">
                 {isAr ? 'المبلغ النظري المتوقع' : 'Montant Théorique Attendu'}
               </span>
@@ -148,7 +161,11 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
               </span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60"
+            >
               <span className="text-[11px] font-medium text-black/55 dark:text-white/55 block">
                 {isAr ? 'المبلغ الفعلي المعدود' : 'Total Physique Compté'}
               </span>
@@ -158,7 +175,9 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             </div>
 
             <div
-              className={`p-3.5 rounded-2xl border ${
+              data-sq="card"
+              data-sq-border="solid"
+              className={`p-3.5 border ${
                 balance.status === 'Balanced'
                   ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
                   : balance.status === 'Shortage'
@@ -176,7 +195,11 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
           </div>
 
           {/* Banknote Denominations Counter */}
-          <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3"
+          >
             <div className="flex items-center justify-between">
               <h4 className="font-bold text-xs text-black dark:text-white uppercase tracking-wider">
                 {isAr ? 'تعداد الأوراق النقدية والقطع (الدينار الجزائري)' : 'Comptage des Billets & Pièces (DZD)'}
@@ -196,13 +219,19 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                   Billets 2 000 DZD
                 </label>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    value={n2000}
-                    onChange={(e) => setN2000(parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold"
-                  />
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                  >
+                    <input
+                      type="number"
+                      min="0"
+                      value={n2000}
+                      onChange={(e) => setN2000(parseInt(e.target.value) || 0)}
+                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                    />
+                  </div>
                   <span className="text-[11px] text-black/55 dark:text-white/55 shrink-0 font-mono">
                     = {formatMoney(n2000 * 2000, language)}
                   </span>
@@ -214,13 +243,19 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                   Billets 1 000 DZD
                 </label>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    value={n1000}
-                    onChange={(e) => setN1000(parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold"
-                  />
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                  >
+                    <input
+                      type="number"
+                      min="0"
+                      value={n1000}
+                      onChange={(e) => setN1000(parseInt(e.target.value) || 0)}
+                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                    />
+                  </div>
                   <span className="text-[11px] text-black/55 dark:text-white/55 shrink-0 font-mono">
                     = {formatMoney(n1000 * 1000, language)}
                   </span>
@@ -232,13 +267,19 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                   Billets 500 DZD
                 </label>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    value={n500}
-                    onChange={(e) => setN500(parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold"
-                  />
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                  >
+                    <input
+                      type="number"
+                      min="0"
+                      value={n500}
+                      onChange={(e) => setN500(parseInt(e.target.value) || 0)}
+                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                    />
+                  </div>
                   <span className="text-[11px] text-black/55 dark:text-white/55 shrink-0 font-mono">
                     = {formatMoney(n500 * 500, language)}
                   </span>
@@ -250,13 +291,19 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                   Billets 200 DZD
                 </label>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    value={n200}
-                    onChange={(e) => setN200(parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold"
-                  />
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                  >
+                    <input
+                      type="number"
+                      min="0"
+                      value={n200}
+                      onChange={(e) => setN200(parseInt(e.target.value) || 0)}
+                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                    />
+                  </div>
                   <span className="text-[11px] text-black/55 dark:text-white/55 shrink-0 font-mono">
                     = {formatMoney(n200 * 200, language)}
                   </span>
@@ -267,25 +314,35 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                 <label className="block text-[11px] font-semibold text-black/70 dark:text-white/75 mb-1">
                   Pièces de monnaie (Total)
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={coins}
-                  onChange={(e) => setCoins(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold"
-                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                >
+                  <input
+                    type="number"
+                    min="0"
+                    value={coins}
+                    onChange={(e) => setCoins(parseFloat(e.target.value) || 0)}
+                    className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
           {/* Signature & Confirmation Interlock */}
-          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-4 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2"
+          >
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={courierSigned}
                 onChange={(e) => setCourierSigned(e.target.checked)}
-                className="w-4 h-4 rounded text-[#d4522f] focus:ring-[#d4522f]"
+                className="w-4 h-4 rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
               />
               <span className="text-xs font-semibold text-black dark:text-white">
                 {isAr
@@ -325,6 +382,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             </div>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

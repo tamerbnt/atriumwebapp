@@ -338,7 +338,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
           const isFull = event.enrolledCount >= event.capacity;
           return (
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-semibold tabular-nums ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold tabular-nums ${
                 isFull
                   ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
                   : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
@@ -570,24 +570,33 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
   const renderTimetableView = () => (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
-        <div className="flex items-center p-0.5 rounded-xl bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-full">
-          {days.map((d) => {
-            const isActive = selectedDay === d.id;
-            return (
-              <button
-                key={d.id}
-                type="button"
-                onClick={() => setSelectedDay(d.id)}
-                className={`px-3 py-1.5 rounded-lg cursor-pointer transition-all ${
-                  isActive
-                    ? 'bg-[#d4522f]/12 text-[#d4522f] dark:bg-[#d4522f]/20 dark:text-[#FB923C] font-bold'
-                    : 'text-black/68 dark:text-white/72 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                {d.short}
-              </button>
-            );
-          })}
+        <div className="sq-elev-card max-w-full">
+          <div
+            data-sq="ctl"
+            data-sq-border="solid"
+            className="flex items-center p-[3px] bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] gap-0.5 text-xs font-semibold overflow-x-auto max-w-full"
+          >
+            {days.map((d) => {
+              const isActive = selectedDay === d.id;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="thumb"
+                  data-sq-border="none"
+                  onClick={() => setSelectedDay(d.id)}
+                  className={`px-3 py-1.5 cursor-pointer transition-all ${
+                    isActive
+                      ? 'bg-[#d4522f]/12 text-[#d4522f] dark:bg-[#d4522f]/20 dark:text-[#FB923C] font-bold'
+                      : 'text-black/68 dark:text-white/72 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  {d.short}
+                </button>
+              );
+            })}
+          </div>
         </div>
         <span className="text-xs text-black/62 dark:text-white/65 font-semibold tabular-nums">
           {days.find((d) => d.id === selectedDay)?.label} · {currentDayEvents.length}{' '}
@@ -627,60 +636,64 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
             const fillRatio = Math.round((event.enrolledCount / event.capacity) * 100);
             const branchName = resolveRecordBranch(event, branchesById, currentBranch, language).name;
             return (
-              <button
-                key={event.id}
-                type="button"
-                onClick={(e) => {
-                  setDrawerOpenerEl(e.currentTarget);
-                  setSelectedEvent(event);
-                }}
-                className="text-left rtl:text-right p-5 rounded-[18px] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] shadow-2xs hover:border-[#d4522f] hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between group"
-              >
-                <div className="w-full">
-                  <div className="flex items-center justify-between mb-3 gap-2">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.04em] rtl:normal-case bg-[#F3EDE7] dark:bg-[#262422] text-black/72 dark:text-white/80 px-2 py-0.5 rounded-md">
-                      {event.category}
-                    </span>
-                    <span className="text-xs font-mono font-bold text-[#d4522f] flex items-center gap-1 tabular-nums">
-                      <Clock size={12} />
-                      {event.startTime} - {event.endTime}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-sm text-black dark:text-white group-hover:text-[#d4522f] transition-colors mb-1">
-                    {event.title}
-                  </h3>
-                  <div className="space-y-1 text-xs text-black/62 dark:text-white/75">
-                    <div className="flex items-center gap-1.5">
-                      <MapPin size={12} className="shrink-0" />
-                      <span>
-                        {event.roomOrArea} · {branchName}
+              <div key={event.id} className="sq-elev-card-hover flex">
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="card"
+                  data-sq-border="solid"
+                  onClick={(e) => {
+                    setDrawerOpenerEl(e.currentTarget);
+                    setSelectedEvent(event);
+                  }}
+                  className="w-full text-left rtl:text-right p-5 bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] hover:[--sq-stroke:#d4522f] transition-all cursor-pointer flex flex-col justify-between group"
+                >
+                  <div className="w-full">
+                    <div className="flex items-center justify-between mb-3 gap-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.04em] rtl:normal-case bg-[#F3EDE7] dark:bg-[#262422] text-black/72 dark:text-white/80 px-2.5 py-0.5 rounded-full">
+                        {event.category}
+                      </span>
+                      <span className="text-xs font-mono font-bold text-[#d4522f] flex items-center gap-1 tabular-nums">
+                        <Clock size={12} />
+                        {event.startTime} - {event.endTime}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Users size={12} className="shrink-0" />
-                      <span>{event.trainerOrStaff}</span>
+                    <h3 className="font-bold text-sm text-black dark:text-white group-hover:text-[#d4522f] transition-colors mb-1">
+                      {event.title}
+                    </h3>
+                    <div className="space-y-1 text-xs text-black/62 dark:text-white/75">
+                      <div className="flex items-center gap-1.5">
+                        <MapPin size={12} className="shrink-0" />
+                        <span>
+                          {event.roomOrArea} · {branchName}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Users size={12} className="shrink-0" />
+                        <span>{event.trainerOrStaff}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#E6DED6]/60 dark:border-[#3A3734] w-full">
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="text-black/62 dark:text-white/65">
-                      {isFull ? (isAr ? 'مكتمل' : 'Complet') : isAr ? 'الأماكن' : 'Capacité'}
-                    </span>
-                    <span className="font-mono font-bold text-black/75 dark:text-white/80 tabular-nums">
-                      {event.enrolledCount}/{event.capacity}
-                    </span>
+                  <div className="mt-4 pt-3 border-t border-[#E6DED6]/60 dark:border-[#3A3734] w-full">
+                    <div className="flex items-center justify-between text-xs mb-1.5">
+                      <span className="text-black/62 dark:text-white/65">
+                        {isFull ? (isAr ? 'مكتمل' : 'Complet') : isAr ? 'الأماكن' : 'Capacité'}
+                      </span>
+                      <span className="font-mono font-bold text-black/75 dark:text-white/80 tabular-nums">
+                        {event.enrolledCount}/{event.capacity}
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-[#F3EDE7] dark:bg-[#262422] rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          isFull ? 'bg-rose-500' : fillRatio > 80 ? 'bg-amber-500' : 'bg-emerald-500'
+                        }`}
+                        style={{ width: `${Math.min(fillRatio, 100)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full h-1.5 bg-[#F3EDE7] dark:bg-[#262422] rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        isFull ? 'bg-rose-500' : fillRatio > 80 ? 'bg-amber-500' : 'bg-emerald-500'
-                      }`}
-                      style={{ width: `${Math.min(fillRatio, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </button>
+                </button>
+              </div>
             );
           })
         )}
@@ -760,7 +773,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="w-10 h-10 rounded-xl bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white cursor-pointer transition-colors shadow-2xs"
+              className="w-10 h-10 rounded-full bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white cursor-pointer transition-colors shadow-2xs"
               title="Toggle Fullscreen"
             >
               <Maximize2 size={15} />

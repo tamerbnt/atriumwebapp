@@ -510,7 +510,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
         renderCell: (item) => (
           <div className="flex items-center gap-3">
             <div
-              className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 border ${
+              data-sq="tile"
+              data-sq-border="solid"
+              className={`w-9 h-9 flex items-center justify-center font-bold text-xs shrink-0 border ${
                 item.isCompleted
                   ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border-emerald-200 dark:border-emerald-800'
                   : 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700'
@@ -540,7 +542,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
         renderCell: (item) => {
           const bInfo = resolveRecordBranch(item.project, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -968,11 +970,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
               {selectedProjectId !== 'all' && (
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="solid"
                   onClick={() => {
                     const targetProj = freelanceProjects.find((p) => p.id === selectedProjectId);
                     if (targetProj) setProjectToDelete(targetProj);
                   }}
-                  className="h-10 px-3 rounded-xl border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0"
+                  className="h-10 px-3 border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0"
                   title={t('common_delete', language)}
                 >
                   <Trash2 size={13} />
@@ -991,7 +996,11 @@ export const FreelanceDeliverablesView: React.FC = () => {
         />
 
         {selectedDeliverableIds.size > 0 && (
-          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2"
+          >
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
               <span className="text-xs font-bold text-black dark:text-white">
@@ -1013,32 +1022,44 @@ export const FreelanceDeliverablesView: React.FC = () => {
               </button>
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="ctl-sm"
+                data-sq-border="none"
                 onClick={() => handleBatchSetStage('InProgress')}
-                className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
                 <Clock size={12} />
                 <span>{t('free_deliv_stage_in_progress', language)}</span>
               </button>
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="ctl-sm"
+                data-sq-border="none"
                 onClick={() => handleBatchSetStage('ClientReview')}
-                className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
                 <Layers size={12} />
                 <span>{t('free_deliv_stage_review', language)}</span>
               </button>
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="ctl-sm"
+                data-sq-border="none"
                 onClick={() => handleBatchSetStage('Approved')}
-                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
                 <CheckCircle size={12} />
                 <span>{t('free_deliv_stage_delivered', language)}</span>
               </button>
               <button
                 type="button"
+                data-no-liquid="true"
+                data-sq="ctl-sm"
+                data-sq-border="none"
                 onClick={handleBatchDeleteDeliverables}
-                className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
                 <Trash2 size={12} />
                 <span>{isAr ? 'حذف المحدد' : isFr ? 'Supprimer' : 'Delete'}</span>
@@ -1154,7 +1175,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
               return (
                 <div
                   key={stage.id}
-                  className="rounded-2xl bg-white/75 dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-800 p-3 min-h-[480px] flex flex-col"
+                  data-sq="panel"
+                  data-sq-border="solid"
+                  className="bg-white/75 dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-800 p-3 min-h-[480px] flex flex-col"
                 >
                   <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200/60 dark:border-neutral-800">
                     <span className="text-xs font-bold text-black dark:text-white">
@@ -1172,10 +1195,12 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         (item.loggedHours / (item.estimatedHours || 1)) * 100
                       );
                       return (
-                        <div
-                          key={item.id}
-                          className="p-3.5 rounded-xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs hover:border-[#d4522f]/40 transition-all flex flex-col justify-between gap-2.5 group"
-                        >
+                        <div key={item.id} className="sq-elev-card">
+                          <div
+                            data-sq="card"
+                            data-sq-border="solid"
+                            className="p-3.5 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 hover:border-[#d4522f]/40 transition-all flex flex-col justify-between gap-2.5 group"
+                          >
                           <div>
                             <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 mb-1 gap-1">
                               <span className="truncate font-medium text-black/65 dark:text-white/75">
@@ -1220,7 +1245,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                             </div>
 
                             {isCreep && (
-                              <div className="px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-[10px] font-semibold flex items-center gap-1">
+                              <div className="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-[10px] font-semibold flex items-center gap-1">
                                 <AlertTriangle size={10} />
                                 <span>
                                   {t('free_clients_ph_over_est_label', language)} (+
@@ -1242,10 +1267,13 @@ export const FreelanceDeliverablesView: React.FC = () => {
                             <div className="flex items-center gap-1">
                               <button
                                 type="button"
+                                data-no-liquid="true"
+                                data-sq="ctl-sm"
+                                data-sq-border="none"
                                 onClick={() =>
                                   handleStartTimerForDeliverable(item.project, item.deliverable)
                                 }
-                                className="h-7 px-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-[#d4522f] hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                                className="h-7 px-2 bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-[#d4522f] hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                                 title={t('free_btn_log_time', language)}
                               >
                                 <Play size={10} />
@@ -1265,7 +1293,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                                     dueDate: item.dueDate,
                                   });
                                 }}
-                                className="h-7 w-7 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer"
+                                className="h-7 w-7 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer"
                                 aria-label={t('free_deliv_edit', language)}
                               >
                                 <Edit2 size={12} />
@@ -1279,7 +1307,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                                     title: item.title,
                                   })
                                 }
-                                className="h-7 w-7 rounded-lg text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center transition-colors cursor-pointer"
+                                className="h-7 w-7 rounded-full text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center transition-colors cursor-pointer"
                                 aria-label={t('free_deliv_delete', language)}
                               >
                                 <Trash2 size={12} />
@@ -1304,6 +1332,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                                 };
                               })}
                             />
+                          </div>
                           </div>
                         </div>
                       );
@@ -1437,8 +1466,11 @@ export const FreelanceDeliverablesView: React.FC = () => {
                       <button
                         key={st.id}
                         type="button"
+                        data-no-liquid="true"
+                        data-sq="ctl"
+                        data-sq-border="solid"
                         onClick={() => updateDeliverableStage(item.projectId, item.id, st.id)}
-                        className={`px-3 py-2.5 rounded-xl border text-xs font-semibold cursor-pointer transition-colors ${
+                        className={`px-3 py-2.5 border text-xs font-semibold cursor-pointer transition-colors ${
                           active
                             ? 'bg-[#d4522f] text-white border-[#d4522f]'
                             : 'bg-[#F3EDE7] dark:bg-neutral-900 border-[#E6DED6] dark:border-neutral-800 text-black/75 dark:text-white/75 hover:border-[#d4522f]/50'
@@ -1504,7 +1536,12 @@ export const FreelanceDeliverablesView: React.FC = () => {
       {/* Add Deliverable Modal */}
       {isAddDeliverableModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="sq-elev-pop max-w-md w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <h3 className="text-base font-bold text-black dark:text-white">
                 {t('free_deliv_btn_new', language)}
@@ -1541,13 +1578,19 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
                   {t('free_deliv_field_tags', language)}
                 </label>
-                <textarea
-                  rows={2}
-                  placeholder={t('free_deliv_ph_desc', language)}
-                  value={deliverableDescription}
-                  onChange={(e) => setDeliverableDescription(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white"
-                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                >
+                  <textarea
+                    rows={2}
+                    placeholder={t('free_deliv_ph_desc', language)}
+                    value={deliverableDescription}
+                    onChange={(e) => setDeliverableDescription(e.target.value)}
+                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
@@ -1571,19 +1614,25 @@ export const FreelanceDeliverablesView: React.FC = () => {
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="solid"
                   onClick={() => setIsAddDeliverableModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="px-5 py-2 bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('free_deliv_btn_new', language)}
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
@@ -1591,7 +1640,12 @@ export const FreelanceDeliverablesView: React.FC = () => {
       {/* Add Project Modal */}
       {isAddProjectModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="sq-elev-pop max-w-lg w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <h3 className="text-base font-bold text-black dark:text-white">
                 {t('free_deliv_field_project', language)}
@@ -1647,15 +1701,21 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
                   {t('free_deliv_field_tags', language)}
                 </label>
-                <textarea
-                  rows={2}
-                  placeholder={t('free_deliv_ph_proj_desc', language)}
-                  value={newProjectData.description}
-                  onChange={(e) =>
-                    setNewProjectData({ ...newProjectData, description: e.target.value })
-                  }
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white"
-                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                >
+                  <textarea
+                    rows={2}
+                    placeholder={t('free_deliv_ph_proj_desc', language)}
+                    value={newProjectData.description}
+                    onChange={(e) =>
+                      setNewProjectData({ ...newProjectData, description: e.target.value })
+                    }
+                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <LabelSelect
@@ -1705,19 +1765,25 @@ export const FreelanceDeliverablesView: React.FC = () => {
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="solid"
                   onClick={() => setIsAddProjectModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="px-5 py-2 bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('free_deliv_field_project', language)}
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
@@ -1725,7 +1791,12 @@ export const FreelanceDeliverablesView: React.FC = () => {
       {/* Edit Deliverable Modal */}
       {deliverableToEdit && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="sq-elev-pop max-w-md w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
                 <h3 className="text-base font-bold text-black dark:text-white">
@@ -1758,14 +1829,20 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <label className="font-semibold text-black/70 dark:text-white/75 block mb-1">
                   {t('free_deliv_field_tags', language)}
                 </label>
-                <textarea
-                  rows={2}
-                  value={editDeliverableForm.description}
-                  onChange={(e) =>
-                    setEditDeliverableForm({ ...editDeliverableForm, description: e.target.value })
-                  }
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-black dark:text-white"
-                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                >
+                  <textarea
+                    rows={2}
+                    value={editDeliverableForm.description}
+                    onChange={(e) =>
+                      setEditDeliverableForm({ ...editDeliverableForm, description: e.target.value })
+                    }
+                    className="lbi-field w-full px-3 py-2 bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
@@ -1796,19 +1873,25 @@ export const FreelanceDeliverablesView: React.FC = () => {
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="solid"
                   onClick={() => setDeliverableToEdit(null)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('common_cancel', language)}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="px-5 py-2 bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('common_save', language)}
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
@@ -1816,51 +1899,67 @@ export const FreelanceDeliverablesView: React.FC = () => {
       {/* Delete Deliverable Modal */}
       {deliverableToDelete && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-              <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60">
-                <AlertTriangle size={20} />
+          <div className="sq-elev-pop max-w-md w-full animate-in zoom-in-95 duration-150">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+            >
+              <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+                <div
+                  data-sq="tile"
+                  data-sq-border="solid"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"
+                >
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-black dark:text-white">
+                    {t('free_deliv_delete', language)}
+                  </h3>
+                  <p className="text-xs text-black/55 dark:text-white/55">
+                    {deliverableToDelete.title}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-black dark:text-white">
-                  {t('free_deliv_delete', language)}
-                </h3>
-                <p className="text-xs text-black/55 dark:text-white/55">
-                  {deliverableToDelete.title}
-                </p>
+              <p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
+                {isAr
+                  ? `هل أنت متأكد من حذف التسليمة "${deliverableToDelete.title}"؟`
+                  : isFr
+                  ? `Supprimer définitivement le livrable "${deliverableToDelete.title}" ?`
+                  : `Permanently remove deliverable "${deliverableToDelete.title}"?`}
+              </p>
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  onClick={() => setDeliverableToDelete(null)}
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  {t('common_cancel', language)}
+                </button>
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  onClick={() => {
+                    deleteDeliverable(
+                      deliverableToDelete.projectId,
+                      deliverableToDelete.deliverableId
+                    );
+                    if (selectedDeliverableItem?.id === deliverableToDelete.deliverableId) {
+                      setSelectedDeliverableItem(null);
+                    }
+                    setDeliverableToDelete(null);
+                  }}
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  {t('common_delete', language)}
+                </button>
               </div>
-            </div>
-            <p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
-              {isAr
-                ? `هل أنت متأكد من حذف التسليمة "${deliverableToDelete.title}"؟`
-                : isFr
-                ? `Supprimer définitivement le livrable "${deliverableToDelete.title}" ?`
-                : `Permanently remove deliverable "${deliverableToDelete.title}"?`}
-            </p>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <button
-                type="button"
-                onClick={() => setDeliverableToDelete(null)}
-                className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
-              >
-                {t('common_cancel', language)}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  deleteDeliverable(
-                    deliverableToDelete.projectId,
-                    deliverableToDelete.deliverableId
-                  );
-                  if (selectedDeliverableItem?.id === deliverableToDelete.deliverableId) {
-                    setSelectedDeliverableItem(null);
-                  }
-                  setDeliverableToDelete(null);
-                }}
-                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
-              >
-                {t('common_delete', language)}
-              </button>
             </div>
           </div>
         </div>
@@ -1869,46 +1968,62 @@ export const FreelanceDeliverablesView: React.FC = () => {
       {/* Delete Project Modal */}
       {projectToDelete && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-              <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60">
-                <AlertTriangle size={20} />
+          <div className="sq-elev-pop max-w-md w-full animate-in zoom-in-95 duration-150">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+            >
+              <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+                <div
+                  data-sq="tile"
+                  data-sq-border="solid"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"
+                >
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-black dark:text-white">
+                    {isAr ? 'حذف المشروع' : isFr ? 'Supprimer le Projet' : 'Delete Project'}
+                  </h3>
+                  <p className="text-xs text-black/55 dark:text-white/55">
+                    {projectToDelete.title} · {projectToDelete.clientName}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-black dark:text-white">
-                  {isAr ? 'حذف المشروع' : isFr ? 'Supprimer le Projet' : 'Delete Project'}
-                </h3>
-                <p className="text-xs text-black/55 dark:text-white/55">
-                  {projectToDelete.title} · {projectToDelete.clientName}
-                </p>
+              <p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
+                {isAr
+                  ? `هل أنت متأكد من حذف مشروع "${projectToDelete.title}" وكافة تسليماته؟`
+                  : isFr
+                  ? `Supprimer le projet "${projectToDelete.title}" et tous ses livrables ?`
+                  : `Delete project "${projectToDelete.title}" and all associated deliverables?`}
+              </p>
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  onClick={() => setProjectToDelete(null)}
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  {t('common_cancel', language)}
+                </button>
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  onClick={() => {
+                    deleteFreelanceProject(projectToDelete.id);
+                    setSelectedProjectId('all');
+                    setProjectToDelete(null);
+                  }}
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  {t('common_delete', language)}
+                </button>
               </div>
-            </div>
-            <p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
-              {isAr
-                ? `هل أنت متأكد من حذف مشروع "${projectToDelete.title}" وكافة تسليماته؟`
-                : isFr
-                ? `Supprimer le projet "${projectToDelete.title}" et tous ses livrables ?`
-                : `Delete project "${projectToDelete.title}" and all associated deliverables?`}
-            </p>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <button
-                type="button"
-                onClick={() => setProjectToDelete(null)}
-                className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
-              >
-                {t('common_cancel', language)}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  deleteFreelanceProject(projectToDelete.id);
-                  setSelectedProjectId('all');
-                  setProjectToDelete(null);
-                }}
-                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
-              >
-                {t('common_delete', language)}
-              </button>
             </div>
           </div>
         </div>

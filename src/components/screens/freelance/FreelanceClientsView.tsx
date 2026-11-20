@@ -1564,6 +1564,7 @@ export const FreelanceClientsView: React.FC = () => {
                 {t('free_clients_delete', language)}
               </AtriumButton>
             </div>
+            </div>
           </div>
         </div>
       )}

@@ -275,8 +275,10 @@ export const ManufacturingWorkstationView: React.FC = () => {
           lastSyncedAt={lastSyncedAt}
           onRetry={retryCloudSync || retry}
         />
-        <div className="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl">
-          <SkeletonKioskGrid count={6} />
+        <div className="sq-elev-card">
+          <div data-sq="panel" data-sq-border="solid" className="p-3 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+            <SkeletonKioskGrid count={6} />
+          </div>
         </div>
       </div>
     );
@@ -295,7 +297,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
         icon={<Wrench size={22} />}
         title={isAr ? 'المحطة 03' : isEn ? 'Station 03' : 'Poste 03'}
         secondaryActions={
-          <div className="min-w-[230px]">
+          <div data-sq="ctl" data-sq-border="solid" className="min-w-[230px] h-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800">
             <select
               value={selectedOrderId}
               onChange={(e) => {
@@ -310,7 +312,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   ? 'Select Manufacturing Order'
                   : 'Sélectionner Ordre de Fabrication'
               }
-              className="w-full h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-black dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-[#d4522f]/40"
+              className="lbi-field w-full h-full px-3 bg-transparent border-0 text-xs font-semibold text-black dark:text-white cursor-pointer outline-none"
             >
               {orders.map((o) => (
                 <option key={o.id} value={o.id}>
@@ -343,36 +345,43 @@ export const ManufacturingWorkstationView: React.FC = () => {
       />
 
       {andonActive && (
-        <div
-          role="alert"
-          className="rounded-2xl bg-red-600 text-white px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <BellRing size={20} className="animate-bounce shrink-0" />
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider">
-                {isAr
-                  ? 'حالة طوارئ أندون نشطة — المحطة 03'
-                  : isEn
-                  ? 'Active Andon Alert — Station 03'
-                  : "Appel Andon Actif — Poste 03 Découpe & Usinage CNC"}
-              </p>
-              <p className="text-xs text-white/90">
-                {isAr
-                  ? 'تم إشعار رئيس الورشة وفريق الصيانة بالتدخل الفوري.'
-                  : isEn
-                  ? 'Workshop supervisor and maintenance team have been alerted.'
-                  : "Chef d'atelier et maintenance alertés pour intervention immédiate."}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleCancelAndon}
-            className="px-3.5 py-2 rounded-xl bg-white text-red-700 text-xs font-bold hover:bg-red-50 transition-colors cursor-pointer shrink-0"
+        <div className="sq-elev-card">
+          <div
+            role="alert"
+            data-sq="card"
+            data-sq-border="none"
+            className="bg-red-600 text-white px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
           >
-            {isAr ? 'إغلاق النداء' : isEn ? 'Close Alert' : 'Clôturer Andon'}
-          </button>
+            <div className="flex items-center gap-3">
+              <BellRing size={20} className="animate-bounce shrink-0" />
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider">
+                  {isAr
+                    ? 'حالة طوارئ أندون نشطة — المحطة 03'
+                    : isEn
+                    ? 'Active Andon Alert — Station 03'
+                    : "Appel Andon Actif — Poste 03 Découpe & Usinage CNC"}
+                </p>
+                <p className="text-xs text-white/90">
+                  {isAr
+                    ? 'تم إشعار رئيس الورشة وفريق الصيانة بالتدخل الفوري.'
+                    : isEn
+                    ? 'Workshop supervisor and maintenance team have been alerted.'
+                    : "Chef d'atelier et maintenance alertés pour intervention immédiate."}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              data-no-liquid="true"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              onClick={handleCancelAndon}
+              className="px-3.5 py-2 bg-white text-red-700 text-xs font-bold hover:bg-red-50 transition-colors cursor-pointer shrink-0"
+            >
+              {isAr ? 'إغلاق النداء' : isEn ? 'Close Alert' : 'Clôturer Andon'}
+            </button>
+          </div>
         </div>
       )}
 
@@ -442,22 +451,23 @@ export const ManufacturingWorkstationView: React.FC = () => {
       <ScreenPod>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-5 space-y-5">
-            <div className="bg-white dark:bg-neutral-900 rounded-[22px] p-5 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
-                  {isAr
-                    ? 'أمر التصنيع المخصص'
-                    : isEn
-                    ? 'Assigned Manufacturing Order'
-                    : 'Ordre de Fabrication Actif'}
-                </span>
-                <span className="text-xs font-mono font-bold text-[#d4522f]">
-                  {orders.length} {isAr ? 'أوامر متاحة' : isEn ? 'available' : 'OFs disponibles'}
-                </span>
-              </div>
+            <div className="sq-elev-card">
+              <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 space-y-3">
+                <div className="flex items-center justify-between px-1 pt-1">
+                  <span className="text-xs font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
+                    {isAr
+                      ? 'أمر التصنيع المخصص'
+                      : isEn
+                      ? 'Assigned Manufacturing Order'
+                      : 'Ordre de Fabrication Actif'}
+                  </span>
+                  <span className="text-xs font-mono font-bold text-[#d4522f]">
+                    {orders.length} {isAr ? 'أوامر متاحة' : isEn ? 'available' : 'OFs disponibles'}
+                  </span>
+                </div>
 
-              {currentOrder ? (
-                <div className="p-4 rounded-2xl bg-[#F3EDE7]/65 dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
+                {currentOrder ? (
+                  <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7]/65 dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-black/55 dark:text-white/55 font-mono">
                       Lot: {currentOrder.batchLotNumber || 'LOT-2026-05'}
@@ -499,30 +509,35 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     </div>
                   </div>
                   <div className="pt-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        setDrawerOpenerEl(e.currentTarget);
-                        setInspectorTab('of');
-                        setIsInspectorOpen(true);
-                      }}
-                      className="w-full py-2.5 px-3 rounded-xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 hover:border-[#d4522f] text-xs font-bold text-black dark:text-white flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                    >
-                      <Eye size={14} className="text-[#d4522f]" />
-                      <span>
-                        {isAr ? 'معاينة أمر التصنيع والمواصفات' : isEn ? 'Inspect MO & Specs' : 'Inspecter OF / Specs'}
-                      </span>
-                    </button>
+                      <button
+                        type="button"
+                        data-no-liquid="true"
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        onClick={(e) => {
+                          setDrawerOpenerEl(e.currentTarget);
+                          setInspectorTab('of');
+                          setIsInspectorOpen(true);
+                        }}
+                        className="w-full py-2.5 px-3 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 hover:border-[#d4522f] text-xs font-bold text-black dark:text-white flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                      >
+                        <Eye size={14} className="text-[#d4522f]" />
+                        <span>
+                          {isAr ? 'معاينة أمر التصنيع والمواصفات' : isEn ? 'Inspect MO & Specs' : 'Inspecter OF / Specs'}
+                        </span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="p-4 rounded-2xl bg-[#F3EDE7]/50 dark:bg-neutral-800/40 text-xs text-black/55 dark:text-white/55">
-                  {isAr ? 'لا يوجد أمر تصنيع محدد' : isEn ? 'No manufacturing order selected' : 'Aucun OF sélectionné'}
-                </div>
-              )}
+                ) : (
+                  <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7]/50 dark:bg-neutral-800/40 text-xs text-black/55 dark:text-white/55">
+                    {isAr ? 'لا يوجد أمر تصنيع محدد' : isEn ? 'No manufacturing order selected' : 'Aucun OF sélectionné'}
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="bg-white dark:bg-neutral-900 rounded-[22px] p-5 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-4">
+            <div className="sq-elev-card">
+              <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <ShieldCheck size={18} className="text-[#d4522f] shrink-0" />
@@ -587,16 +602,19 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   <button
                     key={idx}
                     type="button"
+                    data-no-liquid="true"
+                    data-sq="card"
+                    data-sq-border="solid"
                     aria-pressed={epi.active}
                     onClick={epi.toggle}
-                    className={`p-3.5 rounded-xl border text-left rtl:text-right flex items-center gap-3 transition-all cursor-pointer ${
+                    className={`p-3.5 border text-left rtl:text-right flex items-center gap-3 transition-all cursor-pointer ${
                       epi.active
                         ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 font-bold'
                         : 'bg-[#FBF8F5] dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
                     }`}
                   >
                     <div
-                      className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+                      className={`w-6 h-6 rounded-[var(--r-check,6px)] flex items-center justify-center text-xs font-bold shrink-0 ${
                         epi.active
                           ? 'bg-emerald-600 text-white'
                           : 'bg-neutral-200 dark:bg-neutral-700 text-black/55 dark:text-white/55'
@@ -608,11 +626,13 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   </button>
                 ))}
               </div>
+              </div>
             </div>
           </div>
 
           <div className="lg:col-span-7 space-y-5">
-            <div className="bg-white dark:bg-neutral-900 rounded-[24px] p-6 sm:p-8 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col items-center justify-center text-center space-y-6">
+            <div className="sq-elev-card">
+              <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-6 sm:p-8 border border-[#E6DED6] dark:border-neutral-800 flex flex-col items-center justify-center text-center space-y-6">
               <div className="flex items-center gap-2 text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-widest">
                 <Clock size={16} className="text-[#d4522f]" />
                 <span>
@@ -648,72 +668,94 @@ export const ManufacturingWorkstationView: React.FC = () => {
               </div>
               <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-800">
                 {!isRunning ? (
+                  <div className="sq-elev-card w-full">
+                    <button
+                      type="button"
+                      data-no-liquid="true"
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      onClick={handleStartTimer}
+                      className="w-full h-16 bg-[#d4522f] hover:bg-[#b0674b] active:scale-[0.98] text-white font-bold text-base sm:text-lg flex items-center justify-center gap-3 transition-all cursor-pointer"
+                    >
+                      <Play size={22} fill="currentColor" />
+                      <span>
+                        {isAr ? 'بدء تشغيل الدورة' : isEn ? 'Start Cycle' : 'Démarrer Cycle'}
+                      </span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="sq-elev-card w-full">
+                    <button
+                      type="button"
+                      data-no-liquid="true"
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      onClick={handlePauseTimer}
+                      className="w-full h-16 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-bold text-base sm:text-lg flex items-center justify-center gap-3 transition-all cursor-pointer"
+                    >
+                      <Pause size={22} fill="currentColor" />
+                      <span>{isAr ? 'إيقاف مؤقت' : isEn ? 'Pause Cycle' : 'Mettre en Pause'}</span>
+                    </button>
+                  </div>
+                )}
+                <div className="sq-elev-card w-full">
                   <button
                     type="button"
-                    onClick={handleStartTimer}
-                    className="w-full h-16 rounded-2xl bg-[#d4522f] hover:bg-[#b0674b] active:scale-[0.98] text-white font-bold text-base sm:text-lg flex items-center justify-center gap-3 shadow-md transition-all cursor-pointer"
+                    data-no-liquid="true"
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    onClick={handleOpenFinishModal}
+                    disabled={elapsedSeconds === 0 && !isRunning}
+                    className={`w-full h-16 font-bold text-base sm:text-lg flex items-center justify-center gap-3 transition-all ${
+                      elapsedSeconds > 0 || isRunning
+                        ? 'bg-[#1F1D1B] hover:bg-black text-white active:scale-[0.98] cursor-pointer'
+                        : 'bg-neutral-200 dark:bg-neutral-800 text-black/45 dark:text-white/40 cursor-not-allowed'
+                    }`}
                   >
-                    <Play size={22} fill="currentColor" />
+                    <CheckCircle2 size={22} />
                     <span>
-                      {isAr ? 'بدء تشغيل الدورة' : isEn ? 'Start Cycle' : 'Démarrer Cycle'}
+                      {isAr
+                        ? 'إنهاء وتسجيل القطع'
+                        : isEn
+                        ? 'Declare Units'
+                        : 'Déclarer Pièces'}
                     </span>
                   </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handlePauseTimer}
-                    className="w-full h-16 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-bold text-base sm:text-lg flex items-center justify-center gap-3 shadow-md transition-all cursor-pointer"
-                  >
-                    <Pause size={22} fill="currentColor" />
-                    <span>{isAr ? 'إيقاف مؤقت' : isEn ? 'Pause Cycle' : 'Mettre en Pause'}</span>
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleOpenFinishModal}
-                  disabled={elapsedSeconds === 0 && !isRunning}
-                  className={`w-full h-16 rounded-2xl font-bold text-base sm:text-lg flex items-center justify-center gap-3 shadow-md transition-all ${
-                    elapsedSeconds > 0 || isRunning
-                      ? 'bg-[#1F1D1B] hover:bg-black text-white active:scale-[0.98] cursor-pointer'
-                      : 'bg-neutral-200 dark:bg-neutral-800 text-black/45 dark:text-white/40 cursor-not-allowed'
-                  }`}
-                >
-                  <CheckCircle2 size={22} />
-                  <span>
-                    {isAr
-                      ? 'إنهاء وتسجيل القطع'
-                      : isEn
-                      ? 'Declare Units'
-                      : 'Déclarer Pièces'}
-                  </span>
-                </button>
+                </div>
               </div>
+            </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs text-center">
-                <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">
-                  {isAr ? 'الوقت المستهدف' : isEn ? 'Target Rate' : 'Cadence Prévue'}
-                </span>
-                <span className="font-mono font-bold text-base text-black dark:text-white">
-                  12 min / u
-                </span>
+              <div className="sq-elev-card">
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 text-center">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">
+                    {isAr ? 'الوقت المستهدف' : isEn ? 'Target Rate' : 'Cadence Prévue'}
+                  </span>
+                  <span className="font-mono font-bold text-base text-black dark:text-white">
+                    12 min / u
+                  </span>
+                </div>
               </div>
-              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs text-center">
-                <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">
-                  {isAr ? 'معدل التوافر' : isEn ? 'Availability' : 'Disponibilité'}
-                </span>
-                <span className="font-mono font-bold text-base text-emerald-600 dark:text-emerald-400">
-                  96.4%
-                </span>
+              <div className="sq-elev-card">
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 text-center">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">
+                    {isAr ? 'معدل التوافر' : isEn ? 'Availability' : 'Disponibilité'}
+                  </span>
+                  <span className="font-mono font-bold text-base text-emerald-600 dark:text-emerald-400">
+                    96.4%
+                  </span>
+                </div>
               </div>
-              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs text-center">
-                <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">
-                  {isAr ? 'الخردة المسجلة' : isEn ? 'Total Scrap' : 'Rebuts Cumulés'}
-                </span>
-                <span className="font-mono font-bold text-base text-amber-600 dark:text-amber-400">
-                  {scrapCount} u
-                </span>
+              <div className="sq-elev-card">
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 text-center">
+                  <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">
+                    {isAr ? 'الخردة المسجلة' : isEn ? 'Total Scrap' : 'Rebuts Cumulés'}
+                  </span>
+                  <span className="font-mono font-bold text-base text-amber-600 dark:text-amber-400">
+                    {scrapCount} u
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -726,143 +768,167 @@ export const ManufacturingWorkstationView: React.FC = () => {
           aria-modal="true"
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
         >
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-6 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold">
-                  <CheckCircle2 size={22} />
+          <div className="sq-elev-pop max-w-xl w-full animate-in zoom-in-95 duration-150">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-3">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold">
+                    <CheckCircle2 size={22} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-black dark:text-white">
+                      {isAr
+                        ? 'تسجيل كميات الإنتاج والخردة'
+                        : isEn
+                        ? 'Declare Output & Scrap'
+                        : 'Déclaration de Fin de Cycle & Rebuts'}
+                    </h3>
+                    <p className="text-xs text-black/55 dark:text-white/55">
+                      {currentOrder?.orderNumber} • {currentOrder?.productName}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-black dark:text-white">
-                    {isAr
-                      ? 'تسجيل كميات الإنتاج والخردة'
-                      : isEn
-                      ? 'Declare Output & Scrap'
-                      : 'Déclaration de Fin de Cycle & Rebuts'}
-                  </h3>
-                  <p className="text-xs text-black/55 dark:text-white/55">
-                    {currentOrder?.orderNumber} • {currentOrder?.productName}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                aria-label={isAr ? 'إغلاق' : isEn ? 'Close' : 'Fermer'}
-                onClick={() => setIsFinishModalOpen(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setActiveNumpadField('good')}
-                className={`p-4 rounded-2xl border text-center transition-all cursor-pointer ${
-                  activeNumpadField === 'good'
-                    ? 'border-[#d4522f] bg-[#FCEEE8] dark:bg-neutral-800 ring-2 ring-[#d4522f]'
-                    : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40'
-                }`}
-              >
-                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 block mb-1">
-                  {isAr
-                    ? 'القطع السليمة المطابقة'
-                    : isEn
-                    ? 'Conforming Units'
-                    : 'Pièces Bonnes (Conformes)'}
-                </span>
-                <span className="font-black text-3xl text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                  {goodQuantityInput}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveNumpadField('scrap')}
-                className={`p-4 rounded-2xl border text-center transition-all cursor-pointer ${
-                  activeNumpadField === 'scrap'
-                    ? 'border-red-500 bg-red-50 dark:bg-neutral-800 ring-2 ring-red-500'
-                    : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40'
-                }`}
-              >
-                <span className="text-xs font-bold text-red-600 dark:text-red-400 block mb-1">
-                  {isAr
-                    ? 'القطع المرفوضة / خردة'
-                    : isEn
-                    ? 'Scrapped Units'
-                    : 'Pièces Rebutées (Chutes)'}
-                </span>
-                <span className="font-black text-3xl text-red-600 dark:text-red-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
-                  {scrapQuantityInput}
-                </span>
-              </button>
-            </div>
-
-            {parseInt(scrapQuantityInput, 10) > 0 && (
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-black/70 dark:text-white/75 block">
-                  {isAr
-                    ? 'سبب رفض القطع (التشريع الصناعي)'
-                    : isEn
-                    ? 'Scrap Reason Code'
-                    : 'Motif de Rebut Déclaré'}
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {SCRAP_REASON_CODES.map((code) => (
-                    <button
-                      key={code.id}
-                      type="button"
-                      onClick={() => setSelectedScrapReason(code.id)}
-                      className={`p-2.5 rounded-xl border text-xs text-left rtl:text-right cursor-pointer transition-all ${
-                        selectedScrapReason === code.id
-                          ? 'border-red-500 bg-red-50 dark:bg-neutral-800 text-red-700 dark:text-red-300 font-bold'
-                          : 'border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
-                      }`}
-                    >
-                      {isAr ? code.labelAr : isEn ? code.labelEn : code.labelFr}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-3 gap-2.5">
-              {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '00'].map((digit) => (
                 <button
-                  key={digit}
                   type="button"
-                  onClick={() => handleNumpadPress(digit)}
-                  className={`h-14 rounded-xl font-mono text-xl font-bold flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-xs ${
-                    digit === 'C'
-                      ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 hover:bg-red-200'
-                      : 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  aria-label={isAr ? 'إغلاق' : isEn ? 'Close' : 'Fermer'}
+                  onClick={() => setIsFinishModalOpen(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="card"
+                  data-sq-border="solid"
+                  data-sq-stroke-w={activeNumpadField === 'good' ? 2 : 1}
+                  onClick={() => setActiveNumpadField('good')}
+                  className={`p-4 border text-center transition-all cursor-pointer ${
+                    activeNumpadField === 'good'
+                      ? 'border-[#d4522f] bg-[#FCEEE8] dark:bg-neutral-800'
+                      : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40'
                   }`}
                 >
-                  {digit}
+                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 block mb-1">
+                    {isAr
+                      ? 'القطع السليمة المطابقة'
+                      : isEn
+                      ? 'Conforming Units'
+                      : 'Pièces Bonnes (Conformes)'}
+                  </span>
+                  <span className="font-black text-3xl text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                    {goodQuantityInput}
+                  </span>
                 </button>
-              ))}
-            </div>
 
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsFinishModalOpen(false)}
-                className="flex-1 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 font-bold text-sm cursor-pointer"
-              >
-                {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmFinish}
-                className="flex-2 py-3.5 rounded-xl bg-[#d4522f] hover:bg-[#b0674b] text-white font-bold text-sm shadow-md cursor-pointer transition-all"
-              >
-                {isAr
-                  ? 'تأكيد التسجيل وتحديث أمر التصنيع'
-                  : isEn
-                  ? 'Confirm Output Declaration'
-                  : 'Valider la Déclaration'}
-              </button>
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="card"
+                  data-sq-border="solid"
+                  data-sq-stroke-w={activeNumpadField === 'scrap' ? 2 : 1}
+                  onClick={() => setActiveNumpadField('scrap')}
+                  className={`p-4 border text-center transition-all cursor-pointer ${
+                    activeNumpadField === 'scrap'
+                      ? 'border-red-500 bg-red-50 dark:bg-neutral-800'
+                      : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40'
+                  }`}
+                >
+                  <span className="text-xs font-bold text-red-600 dark:text-red-400 block mb-1">
+                    {isAr
+                      ? 'القطع المرفوضة / خردة'
+                      : isEn
+                      ? 'Scrapped Units'
+                      : 'Pièces Rebutées (Chutes)'}
+                  </span>
+                  <span className="font-black text-3xl text-red-600 dark:text-red-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                    {scrapQuantityInput}
+                  </span>
+                </button>
+              </div>
+
+              {parseInt(scrapQuantityInput, 10) > 0 && (
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-black/70 dark:text-white/75 block">
+                    {isAr
+                      ? 'سبب رفض القطع (التشريع الصناعي)'
+                      : isEn
+                      ? 'Scrap Reason Code'
+                      : 'Motif de Rebut Déclaré'}
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {SCRAP_REASON_CODES.map((code) => (
+                      <button
+                        key={code.id}
+                        type="button"
+                        data-no-liquid="true"
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        onClick={() => setSelectedScrapReason(code.id)}
+                        className={`p-2.5 border text-xs text-left rtl:text-right cursor-pointer transition-all ${
+                          selectedScrapReason === code.id
+                            ? 'border-red-500 bg-red-50 dark:bg-neutral-800 text-red-700 dark:text-red-300 font-bold'
+                            : 'border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
+                        }`}
+                      >
+                        {isAr ? code.labelAr : isEn ? code.labelEn : code.labelFr}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-3 gap-2.5">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '00'].map((digit) => (
+                  <button
+                    key={digit}
+                    type="button"
+                    data-no-liquid="true"
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    onClick={() => handleNumpadPress(digit)}
+                    className={`h-14 font-mono text-xl font-bold flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
+                      digit === 'C'
+                        ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 hover:bg-red-200'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                    }`}
+                  >
+                    {digit}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  onClick={() => setIsFinishModalOpen(false)}
+                  className="flex-1 py-3.5 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 font-bold text-sm cursor-pointer"
+                >
+                  {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
+                </button>
+                <div className="sq-elev-card flex-2">
+                  <button
+                    type="button"
+                    data-no-liquid="true"
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    onClick={handleConfirmFinish}
+                    className="w-full py-3.5 bg-[#d4522f] hover:bg-[#b0674b] text-white font-bold text-sm cursor-pointer transition-all"
+                  >
+                    {isAr
+                      ? 'تأكيد التسجيل وتحديث أمر التصنيع'
+                      : isEn
+                      ? 'Confirm Output Declaration'
+                      : 'Valider la Déclaration'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

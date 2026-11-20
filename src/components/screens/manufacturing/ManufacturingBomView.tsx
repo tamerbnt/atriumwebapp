@@ -371,7 +371,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
         sortable: true,
         renderCell: (b) => (
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+            <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
               <Layers size={16} />
             </div>
             <div className="min-w-0">
@@ -683,7 +683,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
           renderCard={(b) => (
             <div className="space-y-3 w-full">
               <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-lg border border-[#d4522f]/20">
+                <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-full border border-[#d4522f]/20">
                   {b.bomCode}
                 </span>
                 <span
@@ -805,7 +805,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
 
             {tab === 'fiche' && (
               <div className="space-y-3.5 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
+                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 space-y-2 border border-neutral-100 dark:border-neutral-800">
                   <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">Code Formule:</span>
                     <span className="font-mono font-bold text-black dark:text-white">{bom.bomCode}</span>
@@ -825,7 +825,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                     <span className="font-mono text-black dark:text-white">{bom.standardLaborHours} heures MO</span>
                   </div>
                 </div>
-                <div className="p-3.5 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30">
+                <div data-sq="card" data-sq-border="solid" className="p-3.5 bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30">
                   <div className="flex justify-between items-center">
                     <span className="text-black/70 dark:text-white/75">Coût Standard Unitaire:</span>
                     <span className="font-mono font-bold text-[#d4522f]">{formatMoney(bom.estimatedCostDzd, language)}</span>
@@ -839,7 +839,9 @@ export const ManufacturingBomView: React.FC<any> = () => {
                 {(bom.components || []).map((c, i) => (
                   <div
                     key={i}
-                    className="p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1"
+                    data-sq="card"
+                    data-sq-border="solid"
+                    className="p-3 border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-black dark:text-white text-[11px]">{c.rawProductName}</span>
@@ -860,7 +862,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
 
             {tab === 'costs' && (
               <div className="space-y-3.5 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
+                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 space-y-2 border border-neutral-100 dark:border-neutral-800">
                   <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">Matières Premières:</span>
                     <span className="font-mono font-bold text-black dark:text-white">
@@ -885,13 +887,15 @@ export const ManufacturingBomView: React.FC<any> = () => {
                 <p className="text-black/55 dark:text-white/55 text-[11px]">
                   Directives techniques d'usinage, tolérances et normes d'assemblage :
                 </p>
-                <textarea
-                  rows={6}
-                  value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  placeholder="Noter les étapes opératoires, réglages de coupe, temps de séchage..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-1 focus:ring-[#d4522f] outline-hidden resize-none"
-                />
+                <div data-sq="card" data-sq-border="solid" className="border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800">
+                  <textarea
+                    rows={6}
+                    value={inspectorNotes}
+                    onChange={(e) => setInspectorNotes(e.target.value)}
+                    placeholder="Noter les étapes opératoires, réglages de coupe, temps de séchage..."
+                    className="lbi-field w-full p-2.5 bg-transparent border-0 text-black dark:text-white text-xs outline-hidden resize-none"
+                  />
+                </div>
                 <AtriumButton
                   type="button"
                   variant="primary"
@@ -910,32 +914,33 @@ export const ManufacturingBomView: React.FC<any> = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
-                  <Layers size={20} />
+          <div className="sq-elev-pop max-w-lg w-full">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
+                    <Layers size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                      {bomToEdit
+                        ? isAr ? 'تعديل جدول المكونات (BOM)' : 'Modifier la Nomenclature'
+                        : isAr ? 'إنشاء جدول مكونات جديد (BOM)' : 'Nouvelle Nomenclature Produit'}
+                    </h2>
+                    <p className="text-xs text-black/55 dark:text-white/55">
+                      {isAr ? 'تحديد مواصفات تصنيع المنتجات والمواد' : 'Définition de la recette de fabrication et standard de coût'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                    {bomToEdit
-                      ? isAr ? 'تعديل جدول المكونات (BOM)' : 'Modifier la Nomenclature'
-                      : isAr ? 'إنشاء جدول مكونات جديد (BOM)' : 'Nouvelle Nomenclature Produit'}
-                  </h2>
-                  <p className="text-xs text-black/55 dark:text-white/55">
-                    {isAr ? 'تحديد مواصفات تصنيع المنتجات والمواد' : 'Définition de la recette de fabrication et standard de coût'}
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                type="button"
-                aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
             <form onSubmit={handleSaveModal} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
@@ -988,6 +993,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

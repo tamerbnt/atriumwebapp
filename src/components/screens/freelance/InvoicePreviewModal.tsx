@@ -58,7 +58,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden printable-document">
+      <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-[var(--r-panel,28px)] max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden printable-document">
         {/* Modal Top Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 no-print">
           <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 pb-6 border-b border-neutral-200">
             <div>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#d4522f] text-white flex items-center justify-center font-black text-sm shadow-xs">
+                <div className="w-8 h-8 rounded-[var(--r-ctl-sm,10px)] bg-[#d4522f] text-white flex items-center justify-center font-black text-sm shadow-xs">
                   {businessName.charAt(0).toUpperCase()}
                 </div>
                 <span className="text-xl font-bold tracking-tight text-black">
@@ -144,7 +144,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           </div>
 
           {/* Billed To Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-[#F3EDE7] p-4 rounded-2xl border border-[#E6DED6]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-[#F3EDE7] p-4 rounded-[var(--r-card,16px)] border border-[#E6DED6]">
             <div>
               <span className="text-[10px] font-bold text-black/55 uppercase tracking-wider block mb-1">
                 {t('free_inv_doc_bill_to', language)}
@@ -182,7 +182,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
             <span className="text-xs font-bold uppercase tracking-wider text-black/55 block">
               {t('free_deliv_title', language)}
             </span>
-            <div className="border border-neutral-200 rounded-2xl overflow-hidden">
+            <div className="border border-neutral-200 rounded-[var(--r-card,16px)] overflow-hidden">
               <table className="w-full border-collapse text-xs">
                 <thead>
                   <tr className="bg-neutral-50 border-b border-neutral-200 text-black/55 font-semibold">
@@ -242,7 +242,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
           {/* Bank Coordinates / Payment Instructions */}
           {invoice.paymentDetails && (
-            <div className="p-4 rounded-2xl bg-[#F3EDE7] border border-[#E6DED6] space-y-2">
+            <div className="p-4 rounded-[var(--r-card,16px)] bg-[#F3EDE7] border border-[#E6DED6] space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-black flex items-center gap-1.5">
                   <CreditCard size={14} className="text-[#d4522f]" />

@@ -381,7 +381,11 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
           const inShop = orders.some((o) => o.vehiclePlate === v.plateNumber && o.status !== 'Delivered');
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+              <div
+                data-sq="tile"
+                data-sq-border="solid"
+                className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700"
+              >
                 <Car size={18} />
               </div>
               <div className="min-w-0">
@@ -391,19 +395,19 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
                   </span>
                   {isPinned && <span className="text-[10px] text-amber-500 font-bold">VIP</span>}
                   {v.isFleet && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200/50">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200/50">
                       Flotte B2B
                     </span>
                   )}
                   {inShop && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1">
                       <Wrench size={10} />
                       {isAr ? 'في الورشة' : 'En Atelier'}
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
-                  <span className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-bold">
                     {v.plateNumber}
                   </span>
                   <span>·</span>
@@ -466,7 +470,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
               </div>
               <div className="flex items-center gap-1.5">
                 {needsOilChange ? (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-0.5">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-0.5">
                     <AlertTriangle size={9} />
                     {isAr ? 'تغيير زيت مطلوب' : 'Vidange requise'}
                   </span>

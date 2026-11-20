@@ -87,7 +87,7 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
       role="toolbar"
       aria-label="Actions groupées"
       aria-hidden={selectedCount === 0}
-      className={`bar fixed left-1/2 top-[14px] flex items-center gap-1.5 h-[56px] max-w-[calc(100vw-24px)] overflow-x-auto pl-[22px] pr-[10px] rounded-[28px] bg-[#1F1D1B] text-[#F4EDE6] z-[45] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-white/[0.1] ${className}`}
+      className={`bar fixed left-1/2 top-[14px] flex items-center gap-1.5 h-[56px] max-w-[calc(100vw-24px)] overflow-x-auto pl-[22px] pr-[10px] rounded-full bg-[#1F1D1B] text-[#F4EDE6] z-[45] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-white/[0.1] ${className}`}
       style={{
         visibility: selectedCount > 0 ? 'visible' : 'hidden',
         pointerEvents: selectedCount > 0 ? 'auto' : 'none',
@@ -103,7 +103,7 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
           type="button"
           tabIndex={selectedCount > 0 ? 0 : -1}
           onClick={onMail}
-          className="h-[38px] px-3.5 border-0 rounded-[19px] bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
+          className="h-[38px] px-3.5 border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
         >
           <Mail className="w-4 h-4" />
           <span>E-mail</span>
@@ -115,7 +115,7 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
           type="button"
           tabIndex={selectedCount > 0 ? 0 : -1}
           onClick={onRenew}
-          className="h-[38px] px-3.5 border-0 rounded-[19px] bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
+          className="h-[38px] px-3.5 border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
         >
           <RotateCcw className="w-4 h-4" />
           <span>Renouveler</span>
@@ -127,7 +127,7 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
           type="button"
           tabIndex={selectedCount > 0 ? 0 : -1}
           onClick={onExport}
-          className="h-[38px] px-3.5 border-0 rounded-[19px] bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
+          className="h-[38px] px-3.5 border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
         >
           <Download className="w-4 h-4" />
           <span>Exporter</span>
@@ -139,7 +139,7 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
           type="button"
           tabIndex={selectedCount > 0 ? 0 : -1}
           onClick={onArchive}
-          className="h-[38px] px-3.5 border-0 rounded-[19px] bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
+          className="h-[38px] px-3.5 border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
         >
           <Archive className="w-4 h-4" />
           <span>Archiver</span>
@@ -151,7 +151,7 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
           type="button"
           tabIndex={selectedCount > 0 ? 0 : -1}
           onClick={onDelete}
-          className="h-[38px] px-3.5 border-0 rounded-[19px] bg-[#F4EDE6]/12 hover:bg-[#d4522f] text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
+          className="h-[38px] px-3.5 border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[#d4522f] text-[#F4EDE6] flex items-center gap-2 font-medium text-[13px] transition-colors cursor-pointer"
         >
           <Trash2 className="w-4 h-4" />
           <span>Supprimer</span>
@@ -163,7 +163,7 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
         tabIndex={selectedCount > 0 ? 0 : -1}
         onClick={onClear}
         aria-label="Effacer la sélection"
-        className="w-[38px] h-[38px] p-0 border-0 rounded-[19px] bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] grid place-items-center ml-1 transition-colors cursor-pointer shrink-0"
+        className="w-[38px] h-[38px] p-0 border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] grid place-items-center ml-1 transition-colors cursor-pointer shrink-0"
       >
         <X className="w-4 h-4" />
       </button>

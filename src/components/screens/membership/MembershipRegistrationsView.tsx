@@ -316,7 +316,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       header: language === 'ar' ? 'الباقة المفضلة' : language === 'fr' ? 'Formule souhaitée' : `Preferred ${terminology.plan}`,
       sortable: true,
       renderCell: (lead) => (
-        <span className="inline-block px-2 py-0.5 rounded-md bg-[#d4522f]/10 text-[#d4522f] text-[11.5px] font-semibold border border-[#d4522f]/20 truncate max-w-full">
+        <span className="inline-block px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] text-[11.5px] font-semibold border border-[#d4522f]/20 truncate max-w-full">
           {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
         </span>
       ),
@@ -330,7 +330,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
         const isDec = lead.status === 'Declined';
         return (
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-semibold ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold ${
               isApp
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
                 : isDec
@@ -957,7 +957,11 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       >
         {conversionLead && (
           <div className="space-y-4">
-            <div className="p-3.5 rounded-2xl bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] text-xs space-y-1">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-3.5 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-xs space-y-1"
+            >
               <div>
                 <strong className="text-black dark:text-white">
                   {language === 'ar' ? 'المتقدم:' : language === 'fr' ? 'Candidat :' : 'Applicant:'}
@@ -993,10 +997,14 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
                 searchable
                 width="100%"
                 height={46}
-                corner={14}
+                corner={12}
               />
             </div>
-            <div className="p-3 rounded-2xl bg-[#d4522f]/10 border border-[#d4522f]/20 text-xs text-[#d4522f]">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-3 bg-[#d4522f]/10 [--sq-stroke:rgba(212,82,47,0.2)] text-xs text-[#d4522f]"
+            >
               {language === 'ar'
                 ? 'عند التأكيد، سيتم إنشاء معرف بطاقة RFID تلقائياً، واعتماد الطلب، وتسجيل المشترك مباشرة.'
                 : language === 'fr'

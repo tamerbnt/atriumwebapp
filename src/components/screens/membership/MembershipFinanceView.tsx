@@ -507,7 +507,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (tx) => (
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-semibold ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold ${
               tx.status === 'Settled'
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
                 : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300'

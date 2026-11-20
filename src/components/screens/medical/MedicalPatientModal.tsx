@@ -90,25 +90,34 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
-        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
-              <UserPlus size={16} />
+      <div className="sq-elev-pop max-w-lg w-full">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5"
+        >
+          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+            <div className="flex items-center gap-2">
+              <div
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"
+              >
+                <UserPlus size={16} />
+              </div>
+              <h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                {patientToEdit
+                  ? (language === 'ar' ? 'تعديل الملف الطبي' : 'Modifier le Dossier Patient')
+                  : (language === 'ar' ? 'فتح ملف مريض جديد (EHR)' : 'Nouveau Dossier Patient (EHR)')}
+              </h3>
             </div>
-            <h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              {patientToEdit
-                ? (language === 'ar' ? 'تعديل الملف الطبي' : 'Modifier le Dossier Patient')
-                : (language === 'ar' ? 'فتح ملف مريض جديد (EHR)' : 'Nouveau Dossier Patient (EHR)')}
-            </h3>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            >
+              <X size={16} />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-          >
-            <X size={16} />
-          </button>
-        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-3 max-h-[65vh] overflow-y-auto px-1 pr-2">
@@ -210,6 +219,7 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
             </AtriumButton>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

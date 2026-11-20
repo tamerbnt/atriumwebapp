@@ -614,15 +614,22 @@ export const LogisticsScannerView: React.FC = () => {
             <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1">
               <Volume2 size={11} /> Audio Chime
             </span>
-            <div className="flex rounded-xl bg-neutral-100 dark:bg-neutral-800 p-1 border border-neutral-200 dark:border-neutral-700">
+            <div
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="flex bg-neutral-100 dark:bg-neutral-800 p-[3px] border border-neutral-200 dark:border-neutral-700"
+            >
               {(['Bagging', 'Intake', 'Unbagging'] as const).map((m) => (
                 <button
                   type="button"
                   key={m}
+                  data-no-liquid="true"
+                  data-sq="thumb"
+                  data-sq-border="none"
                   onClick={() => setScanMode(m)}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  className={`px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
                     scanMode === m
-                      ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-xs'
+                      ? 'bg-white dark:bg-neutral-900 text-[#d4522f]'
                       : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
@@ -670,9 +677,17 @@ export const LogisticsScannerView: React.FC = () => {
       <ScreenPod>
         <div className="space-y-4">
           {scanMode === 'Bagging' && activeBag && (
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-4 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                <div
+                  data-sq="tile"
+                  data-sq-border="none"
+                  className="w-10 h-10 bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold"
+                >
                   <Boxes size={22} />
                 </div>
                 <div>
@@ -698,18 +713,24 @@ export const LogisticsScannerView: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <select
-                  value={selectedBagId}
-                  onChange={(e) => setSelectedBagId(e.target.value)}
-                  aria-label={isAr ? 'اختر كيس الشحن' : 'Sélectionner un sac-navette'}
-                  className="px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-700 text-xs font-mono font-bold border-none"
+                <div
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="bg-neutral-100 dark:bg-neutral-700"
                 >
-                  {bags.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.bagCode} (W{b.destinationHubWilaya})
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={selectedBagId}
+                    onChange={(e) => setSelectedBagId(e.target.value)}
+                    aria-label={isAr ? 'اختر كيس الشحن' : 'Sélectionner un sac-navette'}
+                    className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 text-xs font-mono font-bold"
+                  >
+                    {bags.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.bagCode} (W{b.destinationHubWilaya})
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
                 {activeBag.status === 'Open' && (
                   <AtriumButton
@@ -725,20 +746,27 @@ export const LogisticsScannerView: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleScanSubmit} className="relative">
-            <input
-              ref={inputRef}
-              type="text"
-              value={scannedCode}
-              onChange={(e) => setScannedCode(e.target.value)}
-              placeholder={
-                isAr
-                  ? 'امسح باركود الشحنة بواسطة قارئ الباركود (Ex: ATR-EXP-88912)...'
-                  : 'Scannez le code-barres AWB (Lecteur HID ou caméra, ex: ATR-EXP-88912)...'
-              }
-              className="w-full pl-12 pr-28 py-4 rounded-2xl bg-white dark:bg-[#1C1B1A] border-2 border-[#E6DED6] dark:border-[#3A3734] focus:border-[#d4522f] text-sm font-mono font-bold text-black dark:text-white shadow-xs outline-hidden tracking-wider"
-            />
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-black/55 dark:text-white/55">
+          <form onSubmit={handleScanSubmit} className="relative sq-elev-card">
+            <div
+              data-sq="ctl"
+              data-sq-border="solid"
+              data-sq-stroke-w={2}
+              className="w-full bg-white dark:bg-[#1C1B1A] border-2 border-[#E6DED6] dark:border-[#3A3734] focus-within:border-[#d4522f]"
+            >
+              <input
+                ref={inputRef}
+                type="text"
+                value={scannedCode}
+                onChange={(e) => setScannedCode(e.target.value)}
+                placeholder={
+                  isAr
+                    ? 'امسح باركود الشحنة بواسطة قارئ الباركود (Ex: ATR-EXP-88912)...'
+                    : 'Scannez le code-barres AWB (Lecteur HID ou caméra, ex: ATR-EXP-88912)...'
+                }
+                className="lbi-field w-full bg-transparent border-0 pl-12 pr-28 py-4 text-sm font-mono font-bold text-black dark:text-white outline-hidden tracking-wider"
+              />
+            </div>
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-black/55 dark:text-white/55 pointer-events-none">
               <Barcode size={22} />
             </div>
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -783,7 +811,9 @@ export const LogisticsScannerView: React.FC = () => {
                 scanHistory.map((h, i) => (
                   <div
                     key={`${h.code}_${i}`}
-                    className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 ${
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className={`p-2.5 border text-xs flex items-center justify-between gap-2 ${
                       h.status === 'success'
                         ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50'
                         : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/50'
@@ -1073,7 +1103,12 @@ export const LogisticsScannerView: React.FC = () => {
 
       {isSealModalOpen && activeBag && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-md w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
+          <div className="sq-elev-pop max-w-md w-full">
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4"
+          >
             <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck size={18} className="text-[#d4522f]" />
@@ -1085,7 +1120,7 @@ export const LogisticsScannerView: React.FC = () => {
                 type="button"
                 aria-label={isAr ? 'إغلاق' : 'Fermer'}
                 onClick={() => setIsSealModalOpen(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -1102,15 +1137,21 @@ export const LogisticsScannerView: React.FC = () => {
                 <label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">
                   Numéro de Scellé (Ex: SL-994821)
                 </label>
-                <input
-                  type="text"
-                  value={securitySealInput}
-                  onChange={(e) => setSecuritySealInput(e.target.value)}
-                  placeholder="SL-XXXXXX"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold text-sm text-center tracking-widest focus:border-[#d4522f] outline-hidden"
-                  required
-                  autoFocus
-                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 focus-within:border-[#d4522f]"
+                >
+                  <input
+                    type="text"
+                    value={securitySealInput}
+                    onChange={(e) => setSecuritySealInput(e.target.value)}
+                    placeholder="SL-XXXXXX"
+                    className="lbi-field w-full bg-transparent border-0 px-4 py-2.5 font-mono font-bold text-sm text-center tracking-widest outline-hidden"
+                    required
+                    autoFocus
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
@@ -1127,6 +1168,7 @@ export const LogisticsScannerView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+          </div>
           </div>
         </div>
       )}

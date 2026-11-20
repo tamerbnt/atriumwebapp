@@ -203,11 +203,20 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-2xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4 max-h-[92vh] flex flex-col">
+      <div className="sq-elev-pop max-w-2xl w-full">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4 max-h-[92vh] flex flex-col"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
+            <div
+              data-sq="tile"
+              data-sq-border="none"
+              className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"
+            >
               <Package size={20} />
             </div>
             <div>
@@ -220,7 +229,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
             type="button"
             aria-label={isAr ? 'إغلاق' : 'Fermer'}
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -241,13 +250,20 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               <label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">
                 {isAr ? 'طريقة الاستلام' : 'Mode de Livraison'}
               </label>
-              <div className="flex rounded-xl bg-neutral-100 dark:bg-neutral-800 p-1 border border-neutral-200 dark:border-neutral-700">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="flex bg-neutral-100 dark:bg-neutral-800 p-[3px] border border-neutral-200 dark:border-neutral-700"
+              >
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="thumb"
+                  data-sq-border="none"
                   onClick={() => setDeliveryMode('HomeDelivery')}
-                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  className={`flex-1 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                     deliveryMode === 'HomeDelivery'
-                      ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs'
+                      ? 'bg-white dark:bg-neutral-900 text-black dark:text-white'
                       : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
@@ -255,10 +271,13 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                 </button>
                 <button
                   type="button"
+                  data-no-liquid="true"
+                  data-sq="thumb"
+                  data-sq-border="none"
                   onClick={() => setDeliveryMode('StopDesk')}
-                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  className={`flex-1 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                     deliveryMode === 'StopDesk'
-                      ? 'bg-white dark:bg-neutral-900 text-[#d4522f] shadow-xs'
+                      ? 'bg-white dark:bg-neutral-900 text-[#d4522f]'
                       : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
@@ -301,14 +320,20 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                   </span>
                 )}
               </div>
-              <input
-                type="text"
-                value={recipientPhone}
-                onChange={(e) => setRecipientPhone(e.target.value)}
-                placeholder="0555 41 22 33"
-                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-xs font-mono font-medium focus:border-[#d4522f] outline-hidden"
-                required
-              />
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 focus-within:border-[#d4522f]"
+              >
+                <input
+                  type="text"
+                  value={recipientPhone}
+                  onChange={(e) => setRecipientPhone(e.target.value)}
+                  placeholder="0555 41 22 33"
+                  className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 text-xs font-mono font-medium outline-hidden"
+                  required
+                />
+              </div>
             </div>
           </div>
 
@@ -330,7 +355,11 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
           </div>
 
           {/* Weight & Volumetric Dimensions */}
-          <div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-black dark:text-white">
                 {isAr ? 'الوزن والقياسات الحجمية (Diviseur 5000)' : 'Poids & Encombrement Volumétrique'}
@@ -343,61 +372,91 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <div>
                 <label className="text-[10px] text-black/55 dark:text-white/55 block">Poids Réel (kg)</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0.1"
-                  value={weightKg}
-                  onChange={(e) => setWeightKg(e.target.value)}
-                  className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono font-bold"
-                />
+                <div
+                  data-sq="ctl-sm"
+                  data-sq-border="solid"
+                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                >
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    value={weightKg}
+                    onChange={(e) => setWeightKg(e.target.value)}
+                    className="lbi-field w-full h-full bg-transparent border-0 px-2 py-1.5 font-mono font-bold"
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="text-[10px] text-black/55 dark:text-white/55 block">Longueur (cm)</label>
-                <input
-                  type="number"
-                  value={lengthCm}
-                  onChange={(e) => setLengthCm(e.target.value)}
-                  className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono"
-                />
+                <div
+                  data-sq="ctl-sm"
+                  data-sq-border="solid"
+                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                >
+                  <input
+                    type="number"
+                    value={lengthCm}
+                    onChange={(e) => setLengthCm(e.target.value)}
+                    className="lbi-field w-full h-full bg-transparent border-0 px-2 py-1.5 font-mono"
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="text-[10px] text-black/55 dark:text-white/55 block">Largeur (cm)</label>
-                <input
-                  type="number"
-                  value={widthCm}
-                  onChange={(e) => setWidthCm(e.target.value)}
-                  className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono"
-                />
+                <div
+                  data-sq="ctl-sm"
+                  data-sq-border="solid"
+                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                >
+                  <input
+                    type="number"
+                    value={widthCm}
+                    onChange={(e) => setWidthCm(e.target.value)}
+                    className="lbi-field w-full h-full bg-transparent border-0 px-2 py-1.5 font-mono"
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="text-[10px] text-black/55 dark:text-white/55 block">Hauteur (cm)</label>
-                <input
-                  type="number"
-                  value={heightCm}
-                  onChange={(e) => setHeightCm(e.target.value)}
-                  className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 font-mono"
-                />
+                <div
+                  data-sq="ctl-sm"
+                  data-sq-border="solid"
+                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                >
+                  <input
+                    type="number"
+                    value={heightCm}
+                    onChange={(e) => setHeightCm(e.target.value)}
+                    className="lbi-field w-full h-full bg-transparent border-0 px-2 py-1.5 font-mono"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
           {/* Pricing & Fiscal Stamp Breakdown Card */}
-          <div className="p-4 rounded-2xl bg-[#1F1D1B] text-white space-y-2">
+          <div data-sq="card" data-sq-border="none" className="p-4 bg-[#1F1D1B] text-white space-y-2">
             <div className="flex items-center justify-between text-xs border-b border-neutral-800 pb-2">
               <span className="text-white/80">
                 {isAr ? 'مبلغ السلعة COD' : 'Montant à Encaisser (COD)'}
               </span>
               <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  value={codAmount}
-                  onChange={(e) => setCodAmount(e.target.value)}
-                  className="w-28 px-2 py-1 rounded bg-neutral-800 text-right font-mono font-bold text-white text-xs border border-neutral-700"
-                />
+                <div
+                  data-sq="ctl-sm"
+                  data-sq-border="solid"
+                  className="w-28 bg-neutral-800 border border-neutral-700"
+                >
+                  <input
+                    type="number"
+                    value={codAmount}
+                    onChange={(e) => setCodAmount(e.target.value)}
+                    className="lbi-field w-full h-full bg-transparent border-0 px-2 py-1 text-right font-mono font-bold text-white text-xs"
+                  />
+                </div>
                 <span className="font-mono text-xs">DZD</span>
               </div>
             </div>
@@ -428,6 +487,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
             </AtriumButton>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

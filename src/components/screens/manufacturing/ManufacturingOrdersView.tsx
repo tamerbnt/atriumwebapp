@@ -348,7 +348,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
           const isPinned = pinnedIds.has(o.id);
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+              <div data-sq="tile" data-sq-border="solid" className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
                 <Factory size={18} />
               </div>
               <div className="min-w-0">
@@ -837,7 +837,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
 
             {tab === 'details' && (
               <div className="space-y-3 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 border border-neutral-100 dark:border-neutral-800 space-y-2">
                   <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
                     {isAr ? 'معلومات الدفعة' : 'Paramètres de Fabrication'}
                   </div>
@@ -871,7 +871,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
 
             {tab === 'costing' && (
               <div className="space-y-3 text-xs">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 border border-neutral-100 dark:border-neutral-800 space-y-2">
                   <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
                     {isAr ? 'تفكيك التكاليف الصناعية' : 'Décomposition Coût de Revient'}
                   </div>
@@ -902,7 +902,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                     const b = bomMap.get(ord.bomId)!;
                     return (
                       <div className="space-y-2">
-                        <div className="p-2.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 font-bold text-black dark:text-white flex items-center justify-between">
+                        <div data-sq="ctl" data-sq-border="none" className="p-2.5 bg-neutral-100 dark:bg-neutral-800 font-bold text-black dark:text-white flex items-center justify-between">
                           <span>{b.bomCode}</span>
                           <span className="font-mono text-[#d4522f]">{formatMoney(b.estimatedCostDzd, language)} / u</span>
                         </div>
@@ -910,7 +910,9 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                           {b.components.map((c, i) => (
                             <div
                               key={i}
-                              className="p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex items-center justify-between"
+                              data-sq="ctl"
+                              data-sq-border="solid"
+                              className="p-2 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex items-center justify-between"
                             >
                               <span className="text-black/70 dark:text-white/75 truncate max-w-[190px]">{c.rawProductName}</span>
                               <span className="font-mono text-black/55 dark:text-white/55">
@@ -939,13 +941,15 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                 <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase">
                   {isAr ? 'ملاحظات وتوجيهات الورشة' : "Consignes d'Atelier & Rebuts"}
                 </label>
-                <textarea
-                  value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  rows={8}
-                  placeholder={isAr ? 'أدخل ملاحظات الورشة...' : 'Tolérances dimensionnelles, cadence, rebus observés...'}
-                  className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-black dark:text-white text-xs focus:ring-2 focus:ring-[#d4522f] outline-none"
-                />
+                <div data-sq="card" data-sq-border="solid" className="border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
+                  <textarea
+                    value={inspectorNotes}
+                    onChange={(e) => setInspectorNotes(e.target.value)}
+                    rows={8}
+                    placeholder={isAr ? 'أدخل ملاحظات الورشة...' : 'Tolérances dimensionnelles, cadence, rebus observés...'}
+                    className="lbi-field w-full p-3 bg-transparent border-0 text-black dark:text-white text-xs outline-none"
+                  />
+                </div>
                 <div className="flex items-center justify-between pt-1">
                   <span className="text-[11px] text-black/55 dark:text-white/55">
                     {noteSaved && (
@@ -990,82 +994,86 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
 
       {orderForFiche && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
-                  <Printer size={20} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-base text-black dark:text-white">
-                    {isAr ? 'بطاقة التتبع المرافقة للورشة (Fiche Suiveuse)' : "Fiche Suiveuse d'Atelier & Ordre de Travail"}
-                  </h3>
-                  <p className="text-xs text-black/55 dark:text-white/55">
-                    Document officiel d'atelier • Traçabilité Décret 05-468 & ISO 9001
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="px-4 py-2 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
-                >
-                  <Printer size={14} />
-                  <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
-                </button>
-                <button
-                  type="button"
-                  aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                  onClick={() => setOrderForFiche(null)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-            <div className="p-6 rounded-2xl bg-white border-2 border-dashed border-neutral-300 text-black space-y-5 shadow-xs font-sans">
-              <div className="flex justify-between items-start border-b pb-4">
-                <div>
-                  <div className="font-black text-lg tracking-tight text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
-                  <div className="text-[11px] text-black/55 font-medium">
-                    Zone Industrielle Oued Smar, Alger • NIF: 001916010044589 • RC: 16/00-0988421
+          <div className="sq-elev-pop max-w-2xl w-full animate-in zoom-in-95 duration-150">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 sm:p-8 border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
+                <div className="flex items-center gap-3">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
+                    <Printer size={20} />
                   </div>
-                  <div className="text-xs font-bold text-[#d4522f] mt-1">
-                    FICHE SUIVEUSE DE PRODUCTION • ORDRE DE FABRICATION
+                  <div>
+                    <h3 className="font-bold text-base text-black dark:text-white">
+                      {isAr ? 'بطاقة التتبع المرافقة للورشة (Fiche Suiveuse)' : "Fiche Suiveuse d'Atelier & Ordre de Travail"}
+                    </h3>
+                    <p className="text-xs text-black/55 dark:text-white/55">
+                      Document officiel d'atelier • Traçabilité Décret 05-468 & ISO 9001
+                    </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-mono font-black text-xl text-[#d4522f]">{orderForFiche.orderNumber}</div>
-                  <div className="font-mono text-xs font-bold text-black/75 mt-0.5">
-                    {orderForFiche.batchLotNumber || 'LOT-202610-0089'}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    data-no-liquid="true"
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    onClick={() => window.print()}
+                    className="px-4 py-2 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                  >
+                    <Printer size={14} />
+                    <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={isAr ? 'إغلاق' : 'Fermer'}
+                    onClick={() => setOrderForFiche(null)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+              <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-dashed border-neutral-300 text-black space-y-5 shadow-xs font-sans">
+                <div className="flex justify-between items-start border-b pb-4">
+                  <div>
+                    <div className="font-black text-lg tracking-tight text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
+                    <div className="text-[11px] text-black/55 font-medium">
+                      Zone Industrielle Oued Smar, Alger • NIF: 001916010044589 • RC: 16/00-0988421
+                    </div>
+                    <div className="text-xs font-bold text-[#d4522f] mt-1">
+                      FICHE SUIVEUSE DE PRODUCTION • ORDRE DE FABRICATION
+                    </div>
                   </div>
-                  <div className="font-mono text-[10px] text-black/55 mt-1 tracking-widest">|||||||||||||||||||||||||||||||</div>
+                  <div className="text-right">
+                    <div className="font-mono font-black text-xl text-[#d4522f]">{orderForFiche.orderNumber}</div>
+                    <div className="font-mono text-xs font-bold text-black/75 mt-0.5">
+                      {orderForFiche.batchLotNumber || 'LOT-202610-0089'}
+                    </div>
+                    <div className="font-mono text-[10px] text-black/55 mt-1 tracking-widest">|||||||||||||||||||||||||||||||</div>
+                  </div>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-neutral-50 p-3.5 rounded-xl text-xs border border-neutral-200">
-                <div>
-                  <span className="text-black/55 block text-[10px] uppercase font-bold">Produit Fini</span>
-                  <span className="font-bold text-black">{orderForFiche.productName}</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-neutral-50 p-3.5 rounded-[var(--r-ctl,12px)] text-xs border border-neutral-200">
+                  <div>
+                    <span className="text-black/55 block text-[10px] uppercase font-bold">Produit Fini</span>
+                    <span className="font-bold text-black">{orderForFiche.productName}</span>
+                  </div>
+                  <div>
+                    <span className="text-black/55 block text-[10px] uppercase font-bold">Quantité Cible</span>
+                    <span className="font-mono font-bold text-black">{orderForFiche.targetQuantity} unités</span>
+                  </div>
+                  <div>
+                    <span className="text-black/55 block text-[10px] uppercase font-bold">Poste / Ligne</span>
+                    <span className="font-semibold text-black">{orderForFiche.assignedStation || 'Poste 03 CNC'}</span>
+                  </div>
+                  <div>
+                    <span className="text-black/55 block text-[10px] uppercase font-bold">Échéance</span>
+                    <span className="font-mono font-semibold text-black">{orderForFiche.dueDate?.split('T')[0] || '2026-06-15'}</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-black/55 block text-[10px] uppercase font-bold">Quantité Cible</span>
-                  <span className="font-mono font-bold text-black">{orderForFiche.targetQuantity} unités</span>
-                </div>
-                <div>
-                  <span className="text-black/55 block text-[10px] uppercase font-bold">Poste / Ligne</span>
-                  <span className="font-semibold text-black">{orderForFiche.assignedStation || 'Poste 03 CNC'}</span>
-                </div>
-                <div>
-                  <span className="text-black/55 block text-[10px] uppercase font-bold">Échéance</span>
-                  <span className="font-mono font-semibold text-black">{orderForFiche.dueDate?.split('T')[0] || '2026-06-15'}</span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="text-xs font-bold text-black uppercase tracking-wider">
-                  Gamme Opératoire & Visas de Validation Postes
-                </div>
-                <table className="w-full text-xs border border-neutral-200 rounded-lg overflow-hidden">
+                <div className="space-y-2">
+                  <div className="text-xs font-bold text-black uppercase tracking-wider">
+                    Gamme Opératoire & Visas de Validation Postes
+                  </div>
+                  <table className="w-full text-xs border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] overflow-hidden">
                   <thead className="bg-neutral-100 text-black/75 font-semibold border-b border-neutral-200">
                     <tr>
                       <th className="p-2 text-left w-12">Op.</th>
@@ -1107,7 +1115,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="p-3 bg-neutral-100 rounded-xl text-[11px] text-black/75 flex items-center justify-between">
+              <div className="p-3 bg-neutral-100 rounded-[var(--r-ctl,12px)] text-[11px] text-black/75 flex items-center justify-between">
                 <span>
                   ⚠️ <strong>Sécurité Loi 88-07 :</strong> Port des EPI (lunettes, gants, chaussures) obligatoire sur toute la phase.
                 </span>
@@ -1127,6 +1135,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                   <div className="h-10 flex items-center justify-center font-serif text-black/75 italic">Ing. S. Mokrani</div>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>

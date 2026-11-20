@@ -101,18 +101,19 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 		onClose();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-<div className="bg-white dark:bg-neutral-900 w-full max-w-lg rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden">
+<div className="sq-elev-pop w-full max-w-lg">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full border border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden">
 <div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
 <div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-bold"><Calendar size={20} /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-bold"><Calendar size={20} /></div>
 <div>
 <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Nouveau Rendez-vous Médical</h2>
 </div>
 </div>
-<button type="button" onClick={onClose} className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button type="button" onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
-{errorMsg && /* @__PURE__ */ <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
+{errorMsg && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
 <AlertTriangle size={16} />
 <span>{errorMsg}</span>
 </div>}
@@ -150,19 +151,19 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 								]} />
 </div>
 <LabelInput label="Motif du Rendez-vous" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="ex: Bilan annuel, Consultation cardiologique" required />
-<div className="flex items-center justify-between p-3 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700">
+<div data-sq="card" data-sq-border="solid" className="flex items-center justify-between p-3 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700">
 <div>
 <span className="text-xs font-semibold text-black dark:text-white block">Niveau de Priorité</span>
 <span className="text-[11px] text-black/55 dark:text-white/55">Normal ou Prioritaire</span>
 </div>
 <div className="flex items-center gap-2">
-<button type="button" onClick={() => setUrgency("Normal")} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${urgency === "Normal" ? "bg-[#0D9488] text-white shadow-xs" : "text-black/70 dark:text-white/75"}`}>Normal</button>
-<button type="button" onClick={() => setUrgency("Prioritaire")} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${urgency === "Prioritaire" ? "bg-[#d4522f] text-white shadow-xs" : "text-black/70 dark:text-white/75"}`}>Prioritaire</button>
+<button type="button" data-no-liquid="true" data-sq="ctl-sm" data-sq-border="none" onClick={() => setUrgency("Normal")} className={`px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${urgency === "Normal" ? "bg-[#0D9488] text-white" : "text-black/70 dark:text-white/75"}`}>Normal</button>
+<button type="button" data-no-liquid="true" data-sq="ctl-sm" data-sq-border="none" onClick={() => setUrgency("Prioritaire")} className={`px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${urgency === "Prioritaire" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75"}`}>Prioritaire</button>
 </div>
 </div>
-<div className="p-3 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-2">
+<div data-sq="card" data-sq-border="solid" className="p-3 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-2">
 <label className="flex items-center gap-2.5 cursor-pointer select-none">
-<input type="checkbox" checked={isEmergencyBypass} onChange={(e) => setIsEmergencyBypass(e.target.checked)} className="w-4 h-4 rounded text-[#d4522f] accent-[#d4522f] cursor-pointer" />
+<input type="checkbox" checked={isEmergencyBypass} onChange={(e) => setIsEmergencyBypass(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] text-[#d4522f] accent-[#d4522f] cursor-pointer" />
 <span className="text-xs font-bold text-amber-700 dark:text-amber-400">Sur-réservation d'urgence (Bypass de conflit)</span>
 </label>
 {isEmergencyBypass && /* @__PURE__ */ <div className="pt-1 animate-in fade-in duration-150">
@@ -174,6 +175,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 <AtriumButton variant="primary" type="submit" icon={<Check size={16} />}>Confirmer le Rendez-vous</AtriumButton>
 </div>
 </form>
+</div>
 </div>
 </div>;
 };

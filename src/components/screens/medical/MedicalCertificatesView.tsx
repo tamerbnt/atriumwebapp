@@ -834,25 +834,26 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-900 w-full max-w-lg rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden">
-            <div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
-                  <FileBadge size={20} />
+          <div className="sq-elev-pop w-full max-w-lg">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full border border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden">
+              <div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
+                <div className="flex items-center gap-3">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
+                    <FileBadge size={20} />
+                  </div>
+                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                    Établir un Certificat Médical
+                  </h2>
                 </div>
-                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                  Établir un Certificat Médical
-                </h2>
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  aria-label="Fermer"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsCreateModalOpen(false)}
-                className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 cursor-pointer"
-                aria-label="Fermer"
-              >
-                <X size={18} />
-              </button>
-            </div>
 
             <form
               onSubmit={handleCreateCertificate}
@@ -935,7 +936,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                       ) + 1;
                     if (diffDays > 30) {
                       return (
-                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs space-y-1 animate-in fade-in">
+                        <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs space-y-1 animate-in fade-in">
                           <div className="flex items-center gap-1.5 font-bold">
                             <AlertTriangle
                               size={14}
@@ -984,13 +985,15 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 <label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1">
                   Constatations Cliniques &amp; Mentions Légales
                 </label>
-                <textarea
-                  value={clinicalFindings}
-                  onChange={(e) => setClinicalFindings(e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white focus:outline-hidden"
-                  required
-                />
+                <div data-sq="ctl" data-sq-border="solid" className="bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+                  <textarea
+                    value={clinicalFindings}
+                    onChange={(e) => setClinicalFindings(e.target.value)}
+                    rows={3}
+                    className="lbi-field w-full px-3 py-2 text-xs bg-transparent border-0 text-black dark:text-white focus:outline-hidden"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800 flex justify-between items-center">
@@ -1006,13 +1009,14 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
 
       {activePrintCert && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white text-black w-full max-w-xl rounded-[28px] border border-neutral-300 shadow-2xl p-8 flex flex-col justify-between max-h-[90vh] overflow-y-auto">
+          <div className="printable-document bg-white text-black w-full max-w-xl rounded-[var(--r-panel,28px)] border border-neutral-300 shadow-2xl p-8 flex flex-col justify-between max-h-[90vh] overflow-y-auto">
             <div className="border-b-2 border-[#d4522f] pb-4 flex justify-between items-start">
               <div>
                 <h2 className="text-lg font-black uppercase text-[#d4522f] font-['Barlow_Condensed',sans-serif] rtl:font-sans">
@@ -1032,7 +1036,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
             </div>
 
             <div className="text-center my-6">
-              <span className="text-sm font-bold uppercase tracking-widest px-4 py-1.5 border-2 border-neutral-800 rounded-lg inline-block">
+              <span className="text-sm font-bold uppercase tracking-widest px-4 py-1.5 border-2 border-neutral-800 rounded-[var(--r-ctl-sm,10px)] inline-block">
                 {getCertTypeLabel(activePrintCert.certificateType)}
               </span>
             </div>
@@ -1042,7 +1046,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 Je soussigné, <strong>{activePrintCert.doctorName}</strong>, certifie avoir examiné
                 ce jour le/la nommé(e) :
               </p>
-              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-200 space-y-1 font-mono">
+              <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 space-y-1 font-mono">
                 <p>
                   <strong>Nom &amp; Prénom :</strong> {activePrintCert.patientName}
                 </p>
@@ -1058,12 +1062,12 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 )}
               </div>
               <p>Et déclare que son état de santé justifie les constatations suivantes :</p>
-              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-200 italic">
+              <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 italic">
                 &ldquo;{activePrintCert.clinicalFindings}&rdquo;
               </div>
 
               {activePrintCert.certificateType === 'ArretDeTravail' && (
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-semibold space-y-1">
+                <div className="p-3 rounded-[var(--r-ctl,12px)] bg-emerald-50 border border-emerald-200 text-emerald-900 font-semibold space-y-1">
                   <p>
                     En conséquence, je prescris un{' '}
                     <strong>ARRÊT DE TRAVAIL DE {activePrintCert.durationDays} JOURS</strong>.
@@ -1078,7 +1082,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               )}
 
               {activePrintCert.certificateType === 'CertificatDescriptifITT' && (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 font-semibold">
+                <div className="p-3 rounded-[var(--r-ctl,12px)] bg-amber-50 border border-amber-200 text-amber-900 font-semibold">
                   Incapacité Totale de Travail (ITT) fixée à :{' '}
                   <strong>{activePrintCert.ittDays} jours</strong>, sous réserve de complications
                   ultérieures.
@@ -1101,7 +1105,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               </div>
               <div className="text-center w-36">
                 <span className="text-[10px] text-black/55 block mb-1">Cachet &amp; Signature</span>
-                <div className="w-32 h-16 border-2 border-dashed border-blue-600 rounded-lg p-1.5 flex flex-col justify-center items-center text-center rotate-[-3deg] text-blue-700 bg-blue-50/50">
+                <div className="w-32 h-16 border-2 border-dashed border-blue-600 rounded-[var(--r-ctl-sm,10px)] p-1.5 flex flex-col justify-center items-center text-center rotate-[-3deg] text-blue-700 bg-blue-50/50">
                   <span className="text-[10px] font-black uppercase">
                     {activePrintCert.doctorName}
                   </span>

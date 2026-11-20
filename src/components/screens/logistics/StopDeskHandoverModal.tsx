@@ -44,10 +44,11 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 		onClose();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-<div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4 max-h-[90vh] flex flex-col">
+<div className="sq-elev-pop max-w-lg w-full">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4 max-h-[90vh] flex flex-col">
 <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 shrink-0">
 <div className="flex items-center gap-2.5">
-<div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold"><KeyRound size={22} /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold"><KeyRound size={22} /></div>
 <div>
 <h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {isAr ? "تسليم الطرد للزبون بالمكتب (Stop-Desk)" : "Remise Colis au Guichet Stop-Desk"}
@@ -58,9 +59,9 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 </p>
 </div>
 </div>
-<button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white"><X size={18} /></button>
+<button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
-<div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-center justify-between">
+<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-center justify-between">
 <div className="flex items-center gap-2">
 <Package size={18} className="text-amber-600 dark:text-amber-400" />
 <div>
@@ -77,7 +78,7 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 </div>
 </div>
 <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 space-y-4 pr-1">
-<div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-1">
+<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-1">
 <div className="text-sm font-bold text-black dark:text-white">{shipment.recipientName}</div>
 <div className="text-xs text-black/55 dark:text-white/55">
 {shipment.recipientPhone}
@@ -88,10 +89,12 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 <div className="space-y-1.5">
 <label className="block text-xs font-bold text-black dark:text-white">{isAr ? "رمز التحقق السري (SMS OTP)" : "Code de Retrait OTP (4 Chiffres)"}</label>
 <div className="flex items-center gap-2">
+<div data-sq="ctl" data-sq-border="solid" className={`w-full bg-white dark:bg-neutral-900 border ${otpError ? "border-red-500" : "border-neutral-200 dark:border-neutral-700 focus-within:border-[#d4522f]"}`}>
 <input type="text" maxLength={6} value={enteredOtp} onChange={(e) => {
 											setEnteredOtp(e.target.value);
 											setOtpError(false);
-										}} placeholder="Ex: 7492" className={`w-full px-4 py-2.5 rounded-xl bg-white dark:bg-neutral-900 border text-center font-mono text-lg font-black tracking-widest ${otpError ? "border-red-500 text-red-600" : "border-neutral-200 dark:border-neutral-700 focus:border-[#d4522f]"}`} required />
+										}} placeholder="Ex: 7492" className={`lbi-field w-full bg-transparent border-0 px-4 py-2.5 text-center font-mono text-lg font-black tracking-widest ${otpError ? "text-red-600" : ""}`} required />
+</div>
 <span className="text-[11px] text-black/55 dark:text-white/55 font-mono shrink-0">
 {"(Test: "}
 {expectedOtp}
@@ -117,7 +120,7 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 								]} />
 <LabelInput label={isAr ? "رقم الوثيقة الثبوتية" : "Numéro de la Pièce"} value={idNumber} onChange={(e) => setIdNumber(e.target.value)} placeholder="Ex: 1192837401" required />
 </div>
-<div className="p-3.5 rounded-2xl bg-neutral-900 text-white space-y-2">
+<div data-sq="card" data-sq-border="none" className="p-3.5 bg-neutral-900 text-white space-y-2">
 <div className="flex justify-between text-xs text-white/80">
 <span>{isAr ? "مبلغ السلعة COD" : "Montant Colis (COD)"}</span>
 <span className="font-mono">{formatMoney(shipment.codAmountDzd, language)}</span>
@@ -139,6 +142,7 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 <AtriumButton variant="primary" size="sm" type="submit" icon={<CheckCircle2 size={14} />}>{isAr ? "تسليم الطرد وقبض المبلغ" : "Valider la Remise"}</AtriumButton>
 </div>
 </form>
+</div>
 </div>
 </div>;
 };

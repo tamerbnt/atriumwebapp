@@ -255,7 +255,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
       header: language === 'ar' ? 'طريقة الدفع' : language === 'fr' ? 'Règlement' : 'Tender',
       sortable: true,
       renderCell: (sale) => (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11.5px] font-semibold bg-[#F3EDE7] dark:bg-[#262422] text-black/75 dark:text-white/80">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-[#F3EDE7] dark:bg-[#262422] text-black/75 dark:text-white/80">
           {sale.paymentMethod === 'Cash' && <Banknote size={12} className="text-emerald-600" />}
           {sale.paymentMethod === 'Card' && <CreditCard size={12} className="text-blue-600" />}
           {sale.paymentMethod === 'Split' && <CreditCard size={12} className="text-purple-600" />}
@@ -272,7 +272,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
         const isRefunded = sale.status === 'Refunded';
         return (
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-semibold ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold ${
               isRefunded
                 ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300'
                 : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
@@ -491,14 +491,20 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">
       {refundSuccessToast && (
-        <div className="p-3.5 bg-rose-50 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-700 rounded-2xl text-rose-800 dark:text-rose-200 text-xs font-semibold flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-2">
-            <Check size={16} className="text-rose-600" />
-            <span>{refundSuccessToast}</span>
+        <div className="sq-elev-card">
+          <div
+            data-sq="ctl"
+            data-sq-border="solid"
+            className="p-3.5 bg-rose-50 dark:bg-rose-950/80 [--sq-stroke:#FDA4AF] dark:[--sq-stroke:#BE123C] text-rose-800 dark:text-rose-200 text-xs font-semibold flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <Check size={16} className="text-rose-600" />
+              <span>{refundSuccessToast}</span>
+            </div>
+            <button type="button" onClick={() => setRefundSuccessToast(null)} className="text-rose-600 cursor-pointer rounded-full">
+              <X size={14} />
+            </button>
           </div>
-          <button type="button" onClick={() => setRefundSuccessToast(null)} className="text-rose-600 cursor-pointer">
-            <X size={14} />
-          </button>
         </div>
       )}
 
@@ -834,46 +840,59 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
 
       {isRefundModalOpen && selectedSale && (
         <div className="fixed inset-0 z-[70] bg-[#1F1D1B]/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1C1B1A] rounded-3xl max-w-md w-full p-6 space-y-5 border border-[#E6DED6] dark:border-[#3A3734] shadow-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950 text-rose-600 flex items-center justify-center">
-                <RotateCcw size={20} />
+          <div className="sq-elev-pop max-w-md w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1B1A] w-full p-6 space-y-5 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734]"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  data-sq="tile"
+                  data-sq-border="none"
+                  className="w-10 h-10 bg-rose-100 dark:bg-rose-950 text-rose-600 flex items-center justify-center shrink-0"
+                >
+                  <RotateCcw size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-black dark:text-white">
+                    {language === 'ar' ? 'تأكيد استرجاع المعاملة' : language === 'fr' ? 'Confirmer le remboursement' : 'Confirm Transaction Refund'}
+                  </h3>
+                  <p className="text-xs text-black/62 dark:text-white/65 tabular-nums">
+                    #{selectedSale.id} • {formatMoney(selectedSale.totalAmount)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-black dark:text-white">
-                  {language === 'ar' ? 'تأكيد استرجاع المعاملة' : language === 'fr' ? 'Confirmer le remboursement' : 'Confirm Transaction Refund'}
-                </h3>
-                <p className="text-xs text-black/62 dark:text-white/65 tabular-nums">
-                  #{selectedSale.id} • {formatMoney(selectedSale.totalAmount)}
-                </p>
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3.5 bg-amber-50 dark:bg-amber-950/40 [--sq-stroke:#FDE68A] dark:[--sq-stroke:#92400E] text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2.5"
+              >
+                <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                <span>
+                  {language === 'ar'
+                    ? 'سيؤدي الاسترجاع إلى إعادة جميع الأصناف إلى مخزون الفرع.'
+                    : language === 'fr'
+                    ? "Ce remboursement réintégrera l'ensemble des articles au stock."
+                    : 'Refunding will return all items back to available branch stock.'}
+                </span>
               </div>
-            </div>
-            <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2.5">
-              <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-              <span>
-                {language === 'ar'
-                  ? 'سيؤدي الاسترجاع إلى إعادة جميع الأصناف إلى مخزون الفرع.'
-                  : language === 'fr'
-                  ? "Ce remboursement réintégrera l'ensemble des articles au stock."
-                  : 'Refunding will return all items back to available branch stock.'}
-              </span>
-            </div>
-            <LabelSelect
-              field="RefundReason"
-              label={language === 'ar' ? 'سبب الاسترجاع *' : language === 'fr' ? 'Motif *' : 'Reason *'}
-              value={refundReason}
-              onChange={(val) => setRefundReason(val?.target?.value ?? String(val))}
-              options={[
-                'Customer return / exchange',
-                'Wrong item rung up by cashier',
-                'Defective or damaged product',
-                'Customer changed mind before leaving',
-                'Pricing / discount adjustment',
-              ]}
-              width="100%"
-              height={46}
-              corner={14}
-            />
+              <LabelSelect
+                field="RefundReason"
+                label={language === 'ar' ? 'سبب الاسترجاع *' : language === 'fr' ? 'Motif *' : 'Reason *'}
+                value={refundReason}
+                onChange={(val) => setRefundReason(val?.target?.value ?? String(val))}
+                options={[
+                  'Customer return / exchange',
+                  'Wrong item rung up by cashier',
+                  'Defective or damaged product',
+                  'Customer changed mind before leaving',
+                  'Pricing / discount adjustment',
+                ]}
+                width="100%"
+                height={46}
+                corner={12}
+              />
             <div className="flex items-center justify-end gap-3 pt-2">
               <AtriumButton type="button" variant="ghost" onClick={() => setIsRefundModalOpen(false)}>
                 <span>{t('action_cancel', language)}</span>
@@ -895,6 +914,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
               >
                 <span>{language === 'ar' ? 'تأكيد الاسترجاع' : language === 'fr' ? 'Confirmer' : 'Confirm Refund'}</span>
               </AtriumButton>
+              </div>
             </div>
           </div>
         </div>

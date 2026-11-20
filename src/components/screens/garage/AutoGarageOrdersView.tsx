@@ -756,19 +756,22 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
             {bays.map((bay) => {
               const bayOrder = orders.find((o) => o.assignedBayId === bay.id || o.id === bay.activeOrderId);
               return (
+                <div key={bay.id} className={bay.isOccupied ? 'sq-elev-card' : undefined}>
                 <button
-                  key={bay.id}
                   type="button"
                   disabled={!bayOrder}
+                  data-no-liquid="true"
+                  data-sq="card"
+                  data-sq-border="solid"
                   onClick={(e) => {
                     if (bayOrder) {
                       setDrawerOpenerEl(e.currentTarget);
                       setInspectedOrder(bayOrder);
                     }
                   }}
-                  className={`p-3 rounded-2xl border text-left rtl:text-right transition-all text-xs ${
+                  className={`w-full h-full p-3 border text-left rtl:text-right transition-all text-xs ${
                     bay.isOccupied
-                      ? 'bg-amber-50/70 dark:bg-amber-950/25 border-amber-300 dark:border-amber-800/60 shadow-2xs cursor-pointer hover:border-[#d4522f]'
+                      ? 'bg-amber-50/70 dark:bg-amber-950/25 border-amber-300 dark:border-amber-800/60 cursor-pointer hover:border-[#d4522f]'
                       : 'bg-white dark:bg-neutral-900 border-[#E6DED6] dark:border-neutral-800 opacity-85 cursor-default'
                   }`}
                 >
@@ -792,6 +795,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                     </span>
                   )}
                 </button>
+                </div>
               );
             })}
           </div>
@@ -842,9 +846,11 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
               const colOrders = sortedOrders.filter((o) => o.status === col.id);
               const colLabel = isAr ? col.ar : isEn ? col.en : col.fr;
               return (
+                <div key={col.id} className="sq-elev-card">
                 <div
-                  key={col.id}
-                  className="bg-white dark:bg-neutral-900 rounded-3xl p-3 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col space-y-3 min-h-[380px]"
+                  data-sq="panel"
+                  data-sq-border="solid"
+                  className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 flex flex-col space-y-3 min-h-[380px]"
                 >
                   <div className={`flex items-center justify-between pb-2 border-b-2 ${col.color}`}>
                     <span className="font-bold text-xs text-black dark:text-white">{colLabel}</span>
@@ -865,9 +871,11 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                       colOrders.map((order) => (
                         <div
                           key={order.id}
-                          className={`p-3 rounded-2xl border transition-all space-y-2 ${
+                          data-sq="card"
+                          data-sq-border="solid"
+                          className={`p-3 border transition-all space-y-2 ${
                             activeOrder?.id === order.id
-                              ? 'bg-[#FDF4F0] dark:bg-neutral-800 border-[#d4522f] shadow-xs'
+                              ? 'bg-[#FDF4F0] dark:bg-neutral-800 border-[#d4522f]'
                               : 'bg-[#F3EDE7] dark:bg-[#141312] border-neutral-200/60 dark:border-neutral-700/60 hover:border-neutral-400'
                           }`}
                         >
@@ -904,8 +912,11 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                           </button>
                           <button
                             type="button"
+                            data-no-liquid="true"
+                            data-sq="ctl-sm"
+                            data-sq-border="solid"
                             onClick={() => handleNextStatus(order)}
-                            className="w-full py-1.5 rounded-xl bg-white dark:bg-neutral-700 hover:bg-[#d4522f] hover:text-white text-black/75 dark:text-white text-[10px] font-bold flex items-center justify-center gap-1 border border-neutral-200 dark:border-neutral-600 transition-colors cursor-pointer"
+                            className="w-full py-1.5 bg-white dark:bg-neutral-700 hover:bg-[#d4522f] hover:text-white text-black/75 dark:text-white text-[10px] font-bold flex items-center justify-center gap-1 border border-neutral-200 dark:border-neutral-600 transition-colors cursor-pointer"
                           >
                             <span>{isAr ? 'تقديم المرحلة' : 'Avancer étape'}</span>
                             <ArrowRight size={10} />
@@ -914,6 +925,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                       ))
                     )}
                   </div>
+                </div>
                 </div>
               );
             })}
@@ -1113,7 +1125,9 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                     {checklist.map((item) => (
                       <label
                         key={item.id}
-                        className="flex items-center gap-2.5 p-2.5 bg-[#F3EDE7] dark:bg-[#1E1C1A] rounded-2xl border border-[#E6DED6] dark:border-[#33302D] cursor-pointer text-xs"
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        className="flex items-center gap-2.5 p-2.5 bg-[#F3EDE7] dark:bg-[#1E1C1A] border border-[#E6DED6] dark:border-[#33302D] cursor-pointer text-xs"
                       >
                         <input
                           type="checkbox"
@@ -1122,7 +1136,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                             const updated = checklist.map((c) => (c.id === item.id ? { ...c, done: !c.done } : c));
                             updateOrder({ ...order, technicianChecklist: updated });
                           }}
-                          className="rounded text-[#d4522f] focus:ring-[#d4522f]"
+                          className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
                         />
                         <span className={item.done ? 'line-through text-black/55 dark:text-white/55' : 'text-black dark:text-white'}>
                           {item.label}
@@ -1226,7 +1240,12 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
 
       {isRequisitionModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
+          <div className="sq-elev-pop max-w-md w-full">
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4"
+          >
             <div className="flex items-center justify-between border-b pb-3 border-neutral-100 dark:border-neutral-800">
               <h3 className="font-bold text-sm text-black dark:text-white flex items-center gap-2">
                 <Boxes size={16} className="text-[#d4522f]" />
@@ -1236,7 +1255,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 type="button"
                 onClick={() => setIsRequisitionModalOpen(false)}
                 aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -1246,32 +1265,44 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 <label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1.5">
                   {isAr ? 'اختيار القطعة من المخزن' : 'Sélectionner la pièce en stock'}
                 </label>
-                <select
-                  value={selectedPartId}
-                  onChange={(e) => setSelectedPartId(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white"
-                  required
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
                 >
-                  <option value="">-- Choisir une pièce disponible --</option>
-                  {parts.map((p) => (
-                    <option key={p.id} value={p.id} disabled={p.stockQuantity <= 0}>
-                      {p.name} ({p.sku}) · Stock: {p.stockQuantity} {p.unit || 'pcs'} · {p.sellingPriceDzd.toLocaleString()} DA
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={selectedPartId}
+                    onChange={(e) => setSelectedPartId(e.target.value)}
+                    className="lbi-field w-full h-full bg-transparent border-0 text-xs p-2.5 text-black dark:text-white"
+                    required
+                  >
+                    <option value="">-- Choisir une pièce disponible --</option>
+                    {parts.map((p) => (
+                      <option key={p.id} value={p.id} disabled={p.stockQuantity <= 0}>
+                        {p.name} ({p.sku}) · Stock: {p.stockQuantity} {p.unit || 'pcs'} · {p.sellingPriceDzd.toLocaleString()} DA
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1.5">
                   {isAr ? 'الكمية المطلوبة' : 'Quantité à sortir'}
                 </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={selectedPartQty}
-                  onChange={(e) => setSelectedPartQty(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-mono"
-                  required
-                />
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+                >
+                  <input
+                    type="number"
+                    min="1"
+                    value={selectedPartQty}
+                    onChange={(e) => setSelectedPartQty(e.target.value)}
+                    className="lbi-field w-full h-full bg-transparent border-0 text-xs p-2.5 text-black dark:text-white font-mono"
+                    required
+                  />
+                </div>
               </div>
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
                 <AtriumButton variant="secondary" onClick={() => setIsRequisitionModalOpen(false)}>
@@ -1282,6 +1313,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 </AtriumButton>
               </div>
             </form>
+          </div>
           </div>
         </div>
       )}

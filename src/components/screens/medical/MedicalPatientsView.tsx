@@ -494,11 +494,11 @@ export const MedicalPatientsView: React.FC<any> = () => {
           return (
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs font-mono">
+                <span className="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs font-mono">
                   {p.bloodGroup || 'O+'}
                 </span>
                 {hasAllergies && p.allergies && (
-                  <span className="text-[10px] font-semibold text-rose-500 flex items-center gap-1 bg-rose-50/50 dark:bg-rose-950/30 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] font-semibold text-rose-500 flex items-center gap-1 bg-rose-50/50 dark:bg-rose-950/30 px-2 py-0.5 rounded-full">
                     <AlertCircle size={10} />
                     {p.allergies[0]}
                   </span>
@@ -954,7 +954,11 @@ export const MedicalPatientsView: React.FC<any> = () => {
                       />
                     </InspectorCard>
                     {hasVigilance && (
-                      <div className="mt-2 px-3 py-2 rounded-xl bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/40 border border-[#F5BDB3] dark:border-[#5C2B24] text-[11px] font-semibold text-[#B8321C] dark:text-[#FF8D7A] flex items-center gap-2">
+                      <div
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        className="mt-2 px-3 py-2 bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/40 border border-[#F5BDB3] dark:border-[#5C2B24] text-[11px] font-semibold text-[#B8321C] dark:text-[#FF8D7A] flex items-center gap-2"
+                      >
                         <ShieldAlert size={13} className="shrink-0" />
                         <span>
                           {isAr
@@ -1028,7 +1032,12 @@ export const MedicalPatientsView: React.FC<any> = () => {
                         />
                       </InspectorCard>
 
-                      <div className="mt-3 p-3 rounded-xl bg-white dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700 shadow-2xs">
+                      <div className="sq-elev-card mt-3">
+                        <div
+                          data-sq="card"
+                          data-sq-border="solid"
+                          className="p-3 bg-white dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700"
+                        >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-1.5">
                             <Activity size={13} className="text-[#d4522f]" />
@@ -1047,7 +1056,11 @@ export const MedicalPatientsView: React.FC<any> = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="w-full h-32 relative bg-neutral-50/70 dark:bg-neutral-900/40 rounded-lg p-2 border border-neutral-100 dark:border-neutral-800">
+                        <div
+                          data-sq="ctl"
+                          data-sq-border="solid"
+                          className="w-full h-32 relative bg-neutral-50/70 dark:bg-neutral-900/40 p-2 border border-neutral-100 dark:border-neutral-800"
+                        >
                           <svg viewBox="0 0 320 100" className="w-full h-full overflow-visible">
                             <rect x="0" y="30" width="320" height="45" fill="rgba(16, 185, 129, 0.08)" />
                             <line
@@ -1143,6 +1156,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                             ))}
                         </div>
                       </div>
+                      </div>
 
                       {!showAddVitals ? (
                         <div className="mt-3">
@@ -1153,67 +1167,83 @@ export const MedicalPatientsView: React.FC<any> = () => {
                           />
                         </div>
                       ) : (
-                        <div className="mt-3 p-3 rounded-xl bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700 space-y-2.5 text-xs">
+                        <div
+                          data-sq="card"
+                          data-sq-border="solid"
+                          className="mt-3 p-3 bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700 space-y-2.5 text-xs"
+                        >
                           <div className="text-[11px] font-bold text-black/70 dark:text-white/75 uppercase">
                             Nouvelle Prise de Constantes
                           </div>
                           <div className="grid grid-cols-3 gap-2">
                             <div>
                               <label className="text-[10px] text-black/55 dark:text-white/55">Sys (mmHg)</label>
-                              <input
-                                type="number"
-                                value={newSys}
-                                onChange={(e) => setNewSys(e.target.value)}
-                                className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono"
-                              />
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
+                                <input
+                                  type="number"
+                                  value={newSys}
+                                  onChange={(e) => setNewSys(e.target.value)}
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                />
+                              </div>
                             </div>
                             <div>
                               <label className="text-[10px] text-black/55 dark:text-white/55">Dia (mmHg)</label>
-                              <input
-                                type="number"
-                                value={newDia}
-                                onChange={(e) => setNewDia(e.target.value)}
-                                className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono"
-                              />
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
+                                <input
+                                  type="number"
+                                  value={newDia}
+                                  onChange={(e) => setNewDia(e.target.value)}
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                />
+                              </div>
                             </div>
                             <div>
                               <label className="text-[10px] text-black/55 dark:text-white/55">Pouls (bpm)</label>
-                              <input
-                                type="number"
-                                value={newHr}
-                                onChange={(e) => setNewHr(e.target.value)}
-                                className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono"
-                              />
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
+                                <input
+                                  type="number"
+                                  value={newHr}
+                                  onChange={(e) => setNewHr(e.target.value)}
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                />
+                              </div>
                             </div>
                           </div>
                           <div className="grid grid-cols-3 gap-2">
                             <div>
                               <label className="text-[10px] text-black/55 dark:text-white/55">Poids (kg)</label>
-                              <input
-                                type="number"
-                                value={newWeight}
-                                onChange={(e) => setNewWeight(e.target.value)}
-                                className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono"
-                              />
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
+                                <input
+                                  type="number"
+                                  value={newWeight}
+                                  onChange={(e) => setNewWeight(e.target.value)}
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                />
+                              </div>
                             </div>
                             <div>
                               <label className="text-[10px] text-black/55 dark:text-white/55">Glycémie (mg/dL)</label>
-                              <input
-                                type="number"
-                                step="1"
-                                value={newSugar}
-                                onChange={(e) => setNewSugar(e.target.value)}
-                                className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono"
-                              />
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
+                                <input
+                                  type="number"
+                                  step="1"
+                                  value={newSugar}
+                                  onChange={(e) => setNewSugar(e.target.value)}
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                />
+                              </div>
                             </div>
                             <div>
                               <label className="text-[10px] text-black/55 dark:text-white/55">SpO₂ (%)</label>
-                              <input
-                                type="number"
-                                value={newSpo2}
-                                onChange={(e) => setNewSpo2(e.target.value)}
-                                className="w-full px-2 py-1 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded text-xs font-mono"
-                              />
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
+                                <input
+                                  type="number"
+                                  value={newSpo2}
+                                  onChange={(e) => setNewSpo2(e.target.value)}
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                />
+                              </div>
                             </div>
                           </div>
                           <div className="flex justify-end gap-2 pt-1">

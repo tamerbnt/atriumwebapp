@@ -131,12 +131,18 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
   return (
     <div
       ref={containerRef}
+      data-theme="dark"
       className="fixed inset-0 z-50 bg-[#0C0C0E] text-white flex flex-col font-sans select-none overflow-hidden animate-in fade-in duration-300"
     >
       {/* Top TV Header Bar */}
       <div className="h-20 bg-[#141416] border-b border-white/10 px-8 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#0D9488]/20 border border-[#0D9488]/30 flex items-center justify-center text-[#14B8A6]">
+          <div
+            data-sq="tile-lg"
+            data-sq-border="solid"
+            style={{ '--sq-stroke': 'rgba(13, 148, 136, 0.35)' } as React.CSSProperties}
+            className="w-12 h-12 bg-[#0D9488]/20 border border-[#0D9488]/30 flex items-center justify-center text-[#14B8A6]"
+          >
             <Activity size={26} className="animate-pulse" />
           </div>
           <div>
@@ -144,7 +150,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
               <span className="text-xl font-bold tracking-wide uppercase text-white">
                 Centre Médical El-Chifa
               </span>
-              <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#0D9488]/20 text-[#14B8A6] border border-[#0D9488]/40">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#0D9488]/20 text-[#14B8A6] border border-[#0D9488]/40">
                 Écran Salle d'Attente
               </span>
             </div>
@@ -155,7 +161,12 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
         </div>
 
         {/* Center Live Clock */}
-        <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/5 border border-white/10">
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          style={{ '--sq-stroke': 'rgba(255, 255, 255, 0.12)' } as React.CSSProperties}
+          className="flex items-center gap-3 px-5 py-2.5 bg-white/5 border border-white/10"
+        >
           <Clock size={20} className="text-[#d4522f]" />
           <div className="text-2xl font-bold tracking-wider tabular-nums text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
             {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
@@ -169,18 +180,26 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
         <div className="flex items-center gap-3">
           {!audioEnabled ? (
             <button
+              data-no-liquid="true"
+              data-sq="ctl"
+              data-sq-border="solid"
+              style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.45)' } as React.CSSProperties}
               onClick={handleEnableAudio}
-              className="px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm animate-bounce"
+              className="px-4 py-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer animate-bounce"
             >
               <VolumeX size={16} />
               <span>Activer le Son du Carillon</span>
             </button>
           ) : (
             <button
+              data-no-liquid="true"
+              data-sq="ctl"
+              data-sq-border="solid"
+              style={{ '--sq-stroke': 'rgba(255, 255, 255, 0.12)' } as React.CSSProperties}
               onClick={() => {
                 playChimeTone();
               }}
-              className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-emerald-400 hover:bg-white/10 text-xs font-medium flex items-center gap-2 cursor-pointer transition-colors"
+              className="px-3 py-2 bg-white/5 border border-white/10 text-emerald-400 hover:bg-white/10 text-xs font-medium flex items-center gap-2 cursor-pointer transition-colors"
               title="Tester le carillon"
             >
               <Volume2 size={16} />
@@ -189,10 +208,20 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
           )}
 
           <button
+            data-no-liquid="true"
+            data-sq="ctl"
+            data-sq-border="solid"
+            style={
+              {
+                '--sq-stroke': isEmergencyAlarmActive
+                  ? 'rgba(251, 113, 133, 0.9)'
+                  : 'rgba(255, 255, 255, 0.12)',
+              } as React.CSSProperties
+            }
             onClick={() => toggleEmergencyAlarm()}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-3.5 py-2 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
               isEmergencyAlarmActive
-                ? 'bg-rose-600 text-white border border-rose-400 shadow-lg shadow-rose-600/50 animate-pulse'
+                ? 'bg-rose-600 text-white border border-rose-400 animate-pulse'
                 : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10'
             }`}
             title="Déclencher / Arrêter l'alerte d'urgence médicale"
@@ -203,7 +232,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
 
           <button
             onClick={toggleFullscreen}
-            className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-2.5 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             title="Plein Écran"
           >
             {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
@@ -211,7 +240,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
 
           <button
             onClick={onClose}
-            className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
+            className="p-2.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
             title="Quitter le mode TV"
           >
             <X size={20} />
@@ -241,13 +270,22 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
             </div>
 
             {currentCall ? (
-              <div
-                className={`rounded-[32px] p-8 border transition-all duration-500 flex flex-col justify-between min-h-[380px] shadow-2xl relative overflow-hidden ${
-                  isFlashing
-                    ? 'bg-gradient-to-br from-[#0D9488]/30 via-[#141416] to-[#d4522f]/20 border-[#14B8A6] ring-4 ring-[#14B8A6]/40 scale-[1.01]'
-                    : 'bg-[#18181B] border-white/10'
-                }`}
-              >
+              <div className="sq-elev-pop">
+                <div
+                  data-sq="panel"
+                  data-sq-border="solid"
+                  data-sq-stroke-w={isFlashing ? 2 : 1}
+                  style={
+                    {
+                      '--sq-stroke': isFlashing ? '#14B8A6' : 'rgba(255, 255, 255, 0.12)',
+                    } as React.CSSProperties
+                  }
+                  className={`p-8 border transition-all duration-500 flex flex-col justify-between min-h-[380px] relative overflow-hidden ${
+                    isFlashing
+                      ? 'bg-gradient-to-br from-[#0D9488]/30 via-[#141416] to-[#d4522f]/20 border-[#14B8A6] scale-[1.01]'
+                      : 'bg-[#18181B] border-white/10'
+                  }`}
+                >
                 {/* Background ambient watermark */}
                 <div className="absolute right-[-20px] bottom-[-20px] opacity-5 pointer-events-none text-white">
                   <Activity size={260} />
@@ -279,7 +317,12 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                 </div>
 
                 {/* Cabinet & Doctor Destination Banner */}
-                <div className="mt-8 p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between backdrop-blur-md">
+                <div
+                  data-sq="card"
+                  data-sq-border="solid"
+                  style={{ '--sq-stroke': 'rgba(255, 255, 255, 0.12)' } as React.CSSProperties}
+                  className="mt-8 p-6 bg-white/5 border border-white/10 flex items-center justify-between backdrop-blur-md"
+                >
                   <div>
                     <span className="text-xs uppercase tracking-wider text-[#d4522f] font-semibold block mb-1">
                       Veuillez vous présenter au
@@ -302,9 +345,16 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                     </div>
                   </div>
                 </div>
+                </div>
               </div>
             ) : (
-              <div data-theme="dark" className="rounded-[32px] p-6 bg-[#18181B] border border-white/10 min-h-[380px] flex flex-col justify-center">
+              <div
+                data-theme="dark"
+                data-sq="panel"
+                data-sq-border="solid"
+                style={{ '--sq-stroke': 'rgba(255, 255, 255, 0.12)' } as React.CSSProperties}
+                className="p-6 bg-[#18181B] border border-white/10 min-h-[380px] flex flex-col justify-center"
+              >
                 <KineticEmptyStateMotion motionKey="tv-calm">
                   <EmptyState
                     variant="compact"
@@ -329,7 +379,10 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                 return (
                   <div
                     key={doc.id}
-                    className="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex flex-col justify-between"
+                    data-sq="card"
+                    data-sq-border="solid"
+                    style={{ '--sq-stroke': 'rgba(255, 255, 255, 0.12)' } as React.CSSProperties}
+                    className="p-3.5 bg-white/5 border border-white/10 flex flex-col justify-between"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-mono font-bold text-white/80">{doc.roomNumber}</span>
@@ -349,11 +402,20 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
         </div>
 
         {/* Right 5 Columns: Next Tickets Queue */}
-        <div className="col-span-5 flex flex-col justify-between bg-[#141416] rounded-[32px] p-6 border border-white/10">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          style={{ '--sq-stroke': 'rgba(255, 255, 255, 0.12)' } as React.CSSProperties}
+          className="col-span-5 flex flex-col justify-between bg-[#141416] p-6 border border-white/10"
+        >
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#d4522f]/20 text-[#d4522f] flex items-center justify-center font-bold">
+                <div
+                  data-sq="ctl-sm"
+                  data-sq-border="none"
+                  className="w-8 h-8 bg-[#d4522f]/20 text-[#d4522f] flex items-center justify-center font-bold"
+                >
                   <Clock size={18} />
                 </div>
                 <div>
@@ -371,10 +433,17 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
               {waitingQueue.slice(0, 5).map((patient, idx) => (
                 <div
                   key={patient.id}
-                  className="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors flex items-center justify-between"
+                  data-sq="card"
+                  data-sq-border="solid"
+                  style={{ '--sq-stroke': 'rgba(255, 255, 255, 0.12)' } as React.CSSProperties}
+                  className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors flex items-center justify-between"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-mono font-bold text-white text-sm">
+                    <div
+                      data-sq="tile"
+                      data-sq-border="none"
+                      className="w-10 h-10 bg-white/10 flex items-center justify-center font-mono font-bold text-white text-sm"
+                    >
                       #{idx + 1}
                     </div>
                     <div>
@@ -420,7 +489,12 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
           </div>
 
           {/* Clinic Guidelines & Protocol Banner */}
-          <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-200 text-xs flex items-start gap-3 mt-4">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            style={{ '--sq-stroke': 'rgba(59, 130, 246, 0.25)' } as React.CSSProperties}
+            className="p-4 bg-blue-500/10 border border-blue-500/20 text-blue-200 text-xs flex items-start gap-3 mt-4"
+          >
             <AlertCircle size={18} className="text-blue-400 shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold block mb-0.5">Consignes aux Patients</span>

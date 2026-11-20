@@ -155,10 +155,11 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 		label: `${b.name} ${b.isOccupied ? "(Occupé)" : "(Libre)"}`
 	}));
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs animate-in fade-in">
-<div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+<div className="sq-elev-pop max-w-4xl w-full">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full max-h-[92vh] flex flex-col border border-neutral-200 dark:border-neutral-800 overflow-hidden">
 <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40">
 <div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-2xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"><Car size={20} /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"><Car size={20} /></div>
 <div>
 <h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
 {language === "ar" ? "استلام مركبة جديدة وأمر تصليح (OR)" : "Fiche d'Entrée Atelier & Ordre de Réparation"}
@@ -189,7 +190,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 							label: language === "ar" ? "4. الموافقة والتوقيع" : "4. Accord & Signature",
 							icon: /* @__PURE__ */ <PenTool size={14} />
 						}
-					].map((t) => /* @__PURE__ */ <button key={t.id} type="button" onClick={() => setActiveTab(t.id)} className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold rounded-t-xl border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === t.id ? "border-[#d4522f] text-[#d4522f] bg-[#d4522f]/5" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>
+					].map((t) => /* @__PURE__ */ <button key={t.id} type="button" onClick={() => setActiveTab(t.id)} className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === t.id ? "border-[#d4522f] text-[#d4522f] bg-[#d4522f]/5" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>
 {t.icon}
 <span>{t.label}</span>
 {t.id === "walkaround" && damageMarkers.length > 0 && /* @__PURE__ */ <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white text-[10px] flex items-center justify-center font-mono">{damageMarkers.length}</span>}
@@ -197,9 +198,9 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 <div className="flex-1 overflow-y-auto p-6 space-y-6">
 {activeTab === "intake" && /* @__PURE__ */ <div className="space-y-5 animate-in fade-in">
-<div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200/80 dark:border-neutral-700/80 space-y-4">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200/80 dark:border-neutral-700/80 space-y-4">
 <LabelSelect label={language === "ar" ? "المركبة والماتريكيل" : "Véhicule & Matricule"} value={selectedVehicleId} onChange={(v) => setSelectedVehicleId(extractStr(v))} options={vehicleOptions} />
-{activeVehicle && /* @__PURE__ */ <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-white dark:bg-neutral-900 p-3 rounded-xl border border-neutral-200/60 dark:border-neutral-800">
+{activeVehicle && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-white dark:bg-neutral-900 p-3 border border-neutral-200/60 dark:border-neutral-800">
 <div>
 <span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "المالك" : "Propriétaire"}</span>
 <span className="font-semibold text-black dark:text-white">{activeVehicle.ownerName}</span>
@@ -225,7 +226,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <div className="space-y-2">
 <LabelInput label={language === "ar" ? "العداد الفعلي عند الدخول (كم)" : "Kilométrage actuel compteur (km)"} type="number" value={currentMileage} onChange={(e) => setCurrentMileage(e.target.value)} required />
 <label className="flex items-center gap-2 text-xs text-black/70 dark:text-white/75 cursor-pointer pt-1">
-<input type="checkbox" checked={isOdometerReplaced} onChange={(e) => setIsOdometerReplaced(e.target.checked)} className="rounded text-[#d4522f] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={isOdometerReplaced} onChange={(e) => setIsOdometerReplaced(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]" />
 <span>
 {language === "ar" ? "العداد مستبدل أو معاد للصفر" : "Compteur remplacé ou remis à zéro"}
 </span>
@@ -249,17 +250,17 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 												"50",
 												"75",
 												"100"
-											].map((lvl) => /* @__PURE__ */ <button key={lvl} type="button" onClick={() => setFuelLevel(lvl)} className={`py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer text-center ${fuelLevel === lvl ? "bg-[#d4522f] text-white border-[#d4522f] shadow-xs" : "bg-neutral-50 dark:bg-neutral-800 text-black/70 dark:text-white/75 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400"}`}>{lvl === "0" ? "Vide" : lvl === "100" ? "Plein" : `${lvl}%`}</button>)}
+											].map((lvl) => /* @__PURE__ */ <button key={lvl} type="button" data-no-liquid="true" data-sq="ctl" data-sq-border={fuelLevel === lvl ? "none" : "solid"} onClick={() => setFuelLevel(lvl)} className={`py-2 text-xs font-semibold border transition-all cursor-pointer text-center ${fuelLevel === lvl ? "bg-[#d4522f] text-white border-[#d4522f]" : "bg-neutral-50 dark:bg-neutral-800 text-black/70 dark:text-white/75 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400"}`}>{lvl === "0" ? "Vide" : lvl === "100" ? "Plein" : `${lvl}%`}</button>)}
 </div>
 </div>
 </div>
-<div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
 <div className="flex items-center justify-between">
 <span className="text-xs font-bold text-black dark:text-white">
 {language === "ar" ? "الملحقات والأغراض المسلمة في المركبة" : "Accessoires & Objets à Bord"}
 </span>
 <label className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800 cursor-pointer">
-<input type="checkbox" checked={isVehicleDirty} onChange={(e) => setIsVehicleDirty(e.target.checked)} className="rounded text-amber-600" />
+<input type="checkbox" checked={isVehicleDirty} onChange={(e) => setIsVehicleDirty(e.target.checked)} className="rounded-[var(--r-check,6px)] text-amber-600" />
 <span>
 {language === "ar" ? "المركبة غير نظيفة (فحص مشروط)" : "Véhicule très sale (réserve carrosserie)"}
 </span>
@@ -287,44 +288,48 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 												key: "wheelLockKey",
 												label: language === "ar" ? "مفتاح براغي العجلات السري" : "Écrou antivol jantes"
 											}
-										].map((item) => /* @__PURE__ */ <label key={item.key} className="flex items-center gap-2 p-2 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/60 dark:border-neutral-800 cursor-pointer">
+										].map((item) => /* @__PURE__ */ <label key={item.key} data-sq="ctl" data-sq-border="solid" className="flex items-center gap-2 p-2 bg-white dark:bg-neutral-900 border border-neutral-200/60 dark:border-neutral-800 cursor-pointer">
 <input type="checkbox" checked={accessories[item.key]} onChange={(e) => setAccessories((prev) => ({
 													...prev,
 													[item.key]: e.target.checked
-												}))} className="rounded text-[#d4522f] focus:ring-[#d4522f]" />
+												}))} className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]" />
 <span className="text-black/70 dark:text-white/75">{item.label}</span>
 </label>)}
 </div>
 </div>
 </div>}
 {activeTab === "walkaround" && /* @__PURE__ */ <div className="space-y-4 animate-in fade-in">
-<div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-2xl border border-neutral-200/80 dark:border-neutral-700/80">
+<div data-sq="card" data-sq-border="solid" className="flex flex-wrap items-center justify-between gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80">
 <div className="flex items-center gap-1.5">
 {[
 											"front",
 											"rear",
 											"left",
 											"right"
-										].map((view) => /* @__PURE__ */ <button key={view} type="button" onClick={() => setActiveCarView(view)} className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${activeCarView === view ? "bg-[#d4522f] text-white shadow-xs" : "bg-white dark:bg-neutral-900 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700"}`}>
+										].map((view) => /* @__PURE__ */ <button key={view} type="button" data-no-liquid="true" data-sq="ctl" data-sq-border={activeCarView === view ? "none" : "solid"} onClick={() => setActiveCarView(view)} className={`px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${activeCarView === view ? "bg-[#d4522f] text-white" : "bg-white dark:bg-neutral-900 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700"}`}>
 {view === "front" ? "Face Avant" : view === "rear" ? "Face Arrière" : view === "left" ? "Côté Gauche" : "Côté Droit"}
 </button>)}
 </div>
 <div className="flex items-center gap-2">
-<select value={selectedDamageType} onChange={(e) => setSelectedDamageType(e.target.value)} className="text-xs bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2.5 py-1.5">
+<div data-sq="ctl" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700">
+<select value={selectedDamageType} onChange={(e) => setSelectedDamageType(e.target.value)} className="lbi-field w-full h-full bg-transparent border-0 text-xs px-2.5 py-1.5">
 <option value="scratch">Rayure (Scratch)</option>
 <option value="dent">Bosse (Dent)</option>
 <option value="crack">Fissure / Cassure</option>
 <option value="paint_chip">Éclat peinture</option>
 <option value="missing_part">Pièce manquante</option>
 </select>
-<select value={selectedSeverity} onChange={(e) => setSelectedSeverity(e.target.value)} className="text-xs bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2.5 py-1.5">
+</div>
+<div data-sq="ctl" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700">
+<select value={selectedSeverity} onChange={(e) => setSelectedSeverity(e.target.value)} className="lbi-field w-full h-full bg-transparent border-0 text-xs px-2.5 py-1.5">
 <option value="minor">Léger</option>
 <option value="moderate">Moyen</option>
 <option value="severe">Important</option>
 </select>
 </div>
 </div>
-<div className="relative w-full h-64 sm:h-72 bg-neutral-900 rounded-3xl border border-neutral-800 flex items-center justify-center overflow-hidden group">
+</div>
+<div data-sq="card" data-sq-border="solid" className="relative w-full h-64 sm:h-72 bg-neutral-900 border border-neutral-800 flex items-center justify-center overflow-hidden group">
 <button type="button" onClick={handleCanvasClick} aria-label={language === "ar" ? "انقر على المخطط لتسجيل الضرر" : "Cliquer sur le schéma pour consigner un dommage"} className="w-full h-full relative flex items-center justify-center p-4 cursor-crosshair bg-transparent border-0">
 <svg viewBox="0 0 400 200" className="w-full max-w-md h-full opacity-70 group-hover:opacity-90 transition-opacity">
 {activeCarView === "front" && /* @__PURE__ */ <g stroke="#d4522f" strokeWidth="2.5" fill="none">
@@ -371,7 +376,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 {damageMarkers.length === 0 ? /* @__PURE__ */ <p className="text-xs text-black/55 dark:text-white/55 italic">
 {language === "ar" ? "لم يتم تسجيل أي خدوش. انقر على المخطط أعلاه لتحديد الأضرار." : "Aucun dommage répertorié. Cliquez sur le schéma ci-dessus pour ajouter des repères."}
 </p> : /* @__PURE__ */ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto">
-{damageMarkers.map((m, idx) => /* @__PURE__ */ <div key={m.id} className="flex items-center justify-between p-2.5 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200/60 dark:border-neutral-700 text-xs">
+{damageMarkers.map((m, idx) => /* @__PURE__ */ <div key={m.id} data-sq="ctl" data-sq-border="solid" className="flex items-center justify-between p-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 text-xs">
 <div className="flex items-center gap-2">
 <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-[10px] font-bold">{idx + 1}</span>
 <div>
@@ -385,7 +390,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </span>
 </div>
 </div>
-<button type="button" onClick={() => removeMarker(m.id)} className="text-black/55 dark:text-white/55 hover:text-rose-500 p-1"><Trash2 size={13} /></button>
+<button type="button" onClick={() => removeMarker(m.id)} className="rounded-full text-black/55 dark:text-white/55 hover:text-rose-500 p-1"><Trash2 size={13} /></button>
 </div>)}
 </div>}
 </div>
@@ -414,7 +419,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 												}
 											]} />
 </div>
-<div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2 text-xs">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2 text-xs">
 <span className="font-bold text-black dark:text-white block">
 {language === "ar" ? "معايير الفحص الأولي للورشة" : "Protocole d'admission & sécurité atelier"}
 </span>
@@ -432,7 +437,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 </div>}
 {activeTab === "signature" && /* @__PURE__ */ <div className="space-y-4 animate-in fade-in">
-<div className="p-4 rounded-2xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#d4522f]/30 space-y-2">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#FDF4F0] dark:bg-neutral-800 border border-[#d4522f]/30 space-y-2">
 <div className="flex items-center gap-2 text-sm font-bold text-[#d4522f]">
 <ShieldCheck size={18} />
 <span>
@@ -443,7 +448,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 {language === "ar" ? "يصرح الزبون ومسؤول الاستقبال بصحة فحص الهيكل، مستوى الوقود والعداد المدونين أعلاه. الورشة مسؤولة عن حراسة المركبة طيلة فترة التصليح ضمن حدود الأضرار المبينة في هذا الأمر." : "Le propriétaire et le chef d'atelier attestent de l'exactitude de l'état descriptif, du kilométrage et de la jauge carburant consignés ci-dessus. L'atelier assume la garde juridique du véhicule dans les strictes limites de la présente fiche d'entrée."}
 </p>
 </div>
-<div className="p-5 rounded-2xl bg-white dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-4">
+<div data-sq="card" data-sq-border="solid" className="p-5 bg-white dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-4">
 <div className="flex items-center justify-between">
 <span className="text-xs font-bold text-black dark:text-white flex items-center gap-2">
 <PenTool size={14} className="text-[#d4522f]" />
@@ -454,7 +459,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 {language === "ar" ? "تم توثيق التوقيع" : "Signé & certifié"}
 </span>}
 </div>
-<button type="button" onClick={() => setIsClientSigned(true)} className={`w-full h-28 rounded-2xl border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${isClientSigned ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-400" : "bg-neutral-50 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-[#d4522f]"}`}>
+<button type="button" data-no-liquid="true" data-sq="empty" data-sq-border="dashed" data-sq-stroke-w={2} onClick={() => setIsClientSigned(true)} className={`w-full h-28 border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${isClientSigned ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-400" : "bg-neutral-50 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-[#d4522f]"}`}>
 {isClientSigned ? /* @__PURE__ */ <span className="text-center space-y-1 block">
 <span className="font-serif italic text-xl text-black dark:text-white font-bold block">{activeVehicle?.ownerName || 'Client'}</span>
 <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">
@@ -486,6 +491,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 								else if (activeTab === "walkaround") setActiveTab("dispatch");
 								else if (activeTab === "dispatch") setActiveTab("signature");
 							}}>{language === "ar" ? "التالي" : "Suivant"}</AtriumButton> : /* @__PURE__ */ <AtriumButton variant="primary" onClick={handleSubmit} icon={<CheckCircle2 size={16} />}>{language === "ar" ? "اعتماد أمر التصليح (Créer OR)" : "Valider & Ouvrir l'OR"}</AtriumButton>}
+</div>
 </div>
 </div>
 </div>

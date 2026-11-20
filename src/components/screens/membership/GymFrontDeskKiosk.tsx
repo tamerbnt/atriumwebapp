@@ -385,7 +385,12 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                   ? 'مسح رمز الباركود أو بطاقة RFID أو الاسم'
                   : 'Scanner Code-Barres / Badge RFID / Recherche Adhérent'}
               </label>
-              <div className="relative">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                data-sq-stroke-w={2}
+                className="relative flex items-center h-14 bg-white dark:bg-[#262422] [--sq-stroke:rgba(212,82,47,0.4)] focus-within:[--sq-stroke:#d4522f] transition-all"
+              >
                 <input
                   id="barcodeInput"
                   ref={inputRef}
@@ -397,66 +402,79 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       ? 'امسح الباركود أو ابدأ بالكتابة...'
                       : 'Scanner le badge ou taper le nom/téléphone...'
                   }
-                  className="w-full h-14 pl-12 pr-28 rounded-2xl border-2 border-[#d4522f]/40 focus:border-[#d4522f] focus:ring-4 focus:ring-[#d4522f]/15 bg-white dark:bg-[#262422] text-base font-medium text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 transition-all"
+                  className="lbi-field w-full h-full pl-12 pr-28 bg-transparent border-0 text-base font-medium text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 focus:outline-none"
                   dir="ltr"
                 />
                 <Scan size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#d4522f]" />
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-4 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-4 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
                   {isRtl ? 'تحقق' : 'Valider'}
                 </button>
               </div>
               {searchResults.length > 0 && (
-                <div className="absolute z-20 left-0 right-0 mt-2 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] rounded-2xl shadow-xl overflow-hidden divide-y divide-[#E6DED6]/60 dark:divide-[#3A3734]">
-                  {searchResults.map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => handleValidateCheckIn(m)}
-                      className="w-full text-left rtl:text-right p-3 hover:bg-[#F3EDE7]/50 dark:hover:bg-[#262422] flex items-center justify-between cursor-pointer transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center font-bold text-xs text-[#d4522f]">
-                          {m.fullName.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-black dark:text-white">{m.fullName}</p>
-                          <p className="text-[11px] text-black/62 dark:text-white/65">
-                            {m.phoneNumber || m.id} • {m.membershipPlanName || 'Pass'} •{' '}
-                            {resolveRecordBranch(m, branchesById, currentBranch, language).name}
-                          </p>
-                        </div>
-                      </div>
-                      <span
-                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${
-                          m.status === 'Active'
-                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
-                            : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400'
-                        }`}
+                <div className="sq-elev-pop absolute z-20 left-0 right-0 mt-2">
+                  <div
+                    data-sq="panel"
+                    data-sq-border="solid"
+                    className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] overflow-hidden divide-y divide-[#E6DED6]/60 dark:divide-[#3A3734]"
+                  >
+                    {searchResults.map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => handleValidateCheckIn(m)}
+                        className="w-full text-left rtl:text-right p-3 hover:bg-[#F3EDE7]/50 dark:hover:bg-[#262422] flex items-center justify-between cursor-pointer transition-colors"
                       >
-                        {m.status}
-                      </span>
-                    </button>
-                  ))}
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center font-bold text-xs text-[#d4522f]">
+                            {m.fullName.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-black dark:text-white">{m.fullName}</p>
+                            <p className="text-[11px] text-black/62 dark:text-white/65">
+                              {m.phoneNumber || m.id} • {m.membershipPlanName || 'Pass'} •{' '}
+                              {resolveRecordBranch(m, branchesById, currentBranch, language).name}
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                            m.status === 'Active'
+                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                              : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400'
+                          }`}
+                        >
+                          {m.status}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </form>
 
             {lastCheckInResult && (
               <div
-                className={`p-5 rounded-2xl border transition-all animate-in fade-in duration-200 ${
+                data-sq="card"
+                data-sq-border="solid"
+                className={`p-5 transition-all animate-in fade-in duration-200 ${
                   lastCheckInResult.status === 'Granted'
-                    ? 'bg-emerald-50/90 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800'
+                    ? 'bg-emerald-50/90 dark:bg-emerald-950/30 [--sq-stroke:#6EE7B7] dark:[--sq-stroke:#065F46]'
                     : lastCheckInResult.status === 'Warning_Expiring'
-                    ? 'bg-amber-50/90 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800'
-                    : 'bg-rose-50/90 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800'
+                    ? 'bg-amber-50/90 dark:bg-amber-950/30 [--sq-stroke:#FCD34D] dark:[--sq-stroke:#92400E]'
+                    : 'bg-rose-50/90 dark:bg-rose-950/30 [--sq-stroke:#FDA4AF] dark:[--sq-stroke:#9F1239]'
                 }`}
               >
                 <div className="flex items-start gap-4">
                   <div
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                    data-sq="tile-lg"
+                    data-sq-border="none"
+                    className={`w-12 h-12 flex items-center justify-center shrink-0 ${
                       lastCheckInResult.status === 'Granted'
                         ? 'bg-emerald-600 text-white'
                         : lastCheckInResult.status === 'Warning_Expiring'
@@ -478,7 +496,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                         {lastCheckInResult.member.fullName}
                       </h3>
                       <span
-                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-md ${
+                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
                           lastCheckInResult.status === 'Granted'
                             ? 'bg-emerald-200/80 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200'
                             : lastCheckInResult.status === 'Warning_Expiring'
@@ -555,15 +573,18 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
               </div>
             ) : (
               visibleLogs.map((log) => (
-                <button
-                  key={log.id}
-                  type="button"
-                  onClick={(e) => {
-                    setDrawerOpenerEl(e.currentTarget);
-                    setInspectedLogId(log.id);
-                  }}
-                  className="w-full text-left rtl:text-right p-3 rounded-2xl bg-white dark:bg-[#262422] border border-[#E6DED6]/80 dark:border-[#3A3734] hover:border-[#d4522f]/50 flex items-center justify-between text-xs shadow-2xs transition-colors cursor-pointer"
-                >
+                <div key={log.id} className="sq-elev-card">
+                  <button
+                    type="button"
+                    data-no-liquid="true"
+                    data-sq="card"
+                    data-sq-border="solid"
+                    onClick={(e) => {
+                      setDrawerOpenerEl(e.currentTarget);
+                      setInspectedLogId(log.id);
+                    }}
+                    className="w-full text-left rtl:text-right p-3 bg-white dark:bg-[#262422] [--sq-stroke:rgba(230,222,214,0.8)] dark:[--sq-stroke:#3A3734] hover:[--sq-stroke:rgba(212,82,47,0.5)] flex items-center justify-between text-xs transition-colors cursor-pointer"
+                  >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span
                       className={`w-2 h-2 rounded-full shrink-0 ${
@@ -604,7 +625,8 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       {log.accessStatus}
                     </span>
                   </div>
-                </button>
+                  </button>
+                </div>
               ))
             )}
           </div>
@@ -743,205 +765,271 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
 
       {isWalkInModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-[#1C1B1A] rounded-[24px] shadow-2xl border border-[#E6DED6] dark:border-[#3A3734] max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center">
-                  <Ticket size={20} />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-black dark:text-white">
-                    {isRtl ? 'إصدار تذكرة حصة منفردة (Pass)' : 'Émission Pass Séance Libre'}
-                  </h3>
-                  <p className="text-[11px] text-black/62 dark:text-white/65">
-                    {isRtl ? 'تسجيل دخول الزائر غير المشترك' : 'Entrée ponctuelle sans abonnement'}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsWalkInModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#262422] transition-colors cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            <form onSubmit={handleCreateWalkIn} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
-                  {isRtl ? 'اسم الزائر' : 'Nom du visiteur'}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={walkInName}
-                  onChange={(e) => setWalkInName(e.target.value)}
-                  placeholder={isRtl ? 'محمد بلقاسم' : 'Ex: Karim Benali'}
-                  className="w-full h-10 px-3 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs font-medium text-black dark:text-white focus:outline-none focus:border-[#d4522f] focus:ring-2 focus:ring-[#d4522f]/20"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
-                  {isRtl ? 'رقم الهاتف (اختياري)' : 'Numéro de téléphone (optionnel)'}
-                </label>
-                <input
-                  type="tel"
-                  value={walkInPhone}
-                  onChange={(e) => setWalkInPhone(e.target.value)}
-                  placeholder="0550 12 34 56"
-                  className="w-full h-10 px-3 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs font-medium text-black dark:text-white focus:outline-none focus:border-[#d4522f] focus:ring-2 focus:ring-[#d4522f]/20"
-                  dir="ltr"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
-                  {isRtl ? 'مبلغ الحصة (د.ج)' : 'Tarif de la séance (DZD)'}
-                </label>
-                <div className="grid grid-cols-3 gap-2 mb-2">
-                  {['500', '800', '1000'].map((amt) => (
-                    <button
-                      key={amt}
-                      type="button"
-                      onClick={() => setWalkInAmount(amt)}
-                      className={`py-2 rounded-xl text-xs font-bold font-mono tabular-nums transition-all border cursor-pointer ${
-                        walkInAmount === amt
-                          ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
-                          : 'border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white/80'
-                      }`}
-                    >
-                      {amt} DA
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="number"
-                  required
-                  value={walkInAmount}
-                  onChange={(e) => setWalkInAmount(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422] text-xs font-bold font-mono tabular-nums text-black dark:text-white focus:outline-none focus:border-[#d4522f] focus:ring-2 focus:ring-[#d4522f]/20"
-                  dir="ltr"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
-                  {isRtl ? 'طريقة الدفع' : 'Mode de Paiement'}
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setWalkInPaymentMethod('cash')}
-                    className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
-                      walkInPaymentMethod === 'cash'
-                        ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
-                        : 'border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white/80'
-                    }`}
+          <div className="sq-elev-pop max-w-md w-full animate-in fade-in zoom-in-95 duration-150">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] w-full p-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    data-sq="tile"
+                    data-sq-border="none"
+                    className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center shrink-0"
                   >
-                    <Banknote size={14} />
-                    <span>{isRtl ? 'نقداً' : 'Espèces'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setWalkInPaymentMethod('baridimob')}
-                    className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
-                      walkInPaymentMethod === 'baridimob'
-                        ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
-                        : 'border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white/80'
-                    }`}
-                  >
-                    <span>BaridiMob</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setWalkInPaymentMethod('cib')}
-                    className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
-                      walkInPaymentMethod === 'cib'
-                        ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
-                        : 'border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white/80'
-                    }`}
-                  >
-                    <CreditCard size={14} />
-                    <span>CIB</span>
-                  </button>
+                    <Ticket size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-black dark:text-white">
+                      {isRtl ? 'إصدار تذكرة حصة منفردة (Pass)' : 'Émission Pass Séance Libre'}
+                    </h3>
+                    <p className="text-[11px] text-black/62 dark:text-white/65">
+                      {isRtl ? 'تسجيل دخول الزائر غير المشترك' : 'Entrée ponctuelle sans abonnement'}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="pt-2 flex gap-2">
                 <button
                   type="button"
                   onClick={() => setIsWalkInModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-[#F3EDE7] hover:bg-[#E6DED6] dark:bg-[#262422] dark:hover:bg-[#3A3734] text-xs font-semibold text-black/75 dark:text-white/80 transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#262422] transition-colors cursor-pointer"
                 >
-                  {isRtl ? 'إلغاء' : 'Annuler'}
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Printer size={14} />
-                  <span>{isRtl ? 'تأكيد وطباعة التذكرة' : 'Valider & Imprimer'}</span>
+                  ✕
                 </button>
               </div>
-            </form>
+              <form onSubmit={handleCreateWalkIn} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
+                    {isRtl ? 'اسم الزائر' : 'Nom du visiteur'}
+                  </label>
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="h-10 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#d4522f]"
+                  >
+                    <input
+                      type="text"
+                      required
+                      value={walkInName}
+                      onChange={(e) => setWalkInName(e.target.value)}
+                      placeholder={isRtl ? 'محمد بلقاسم' : 'Ex: Karim Benali'}
+                      className="lbi-field w-full h-full px-3 bg-transparent border-0 text-xs font-medium text-black dark:text-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
+                    {isRtl ? 'رقم الهاتف (اختياري)' : 'Numéro de téléphone (optionnel)'}
+                  </label>
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="h-10 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#d4522f]"
+                  >
+                    <input
+                      type="tel"
+                      value={walkInPhone}
+                      onChange={(e) => setWalkInPhone(e.target.value)}
+                      placeholder="0550 12 34 56"
+                      className="lbi-field w-full h-full px-3 bg-transparent border-0 text-xs font-medium text-black dark:text-white focus:outline-none"
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
+                    {isRtl ? 'مبلغ الحصة (د.ج)' : 'Tarif de la séance (DZD)'}
+                  </label>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {['500', '800', '1000'].map((amt) => (
+                      <button
+                        key={amt}
+                        type="button"
+                        data-no-liquid="true"
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        onClick={() => setWalkInAmount(amt)}
+                        className={`py-2 text-xs font-bold font-mono tabular-nums transition-all cursor-pointer ${
+                          walkInAmount === amt
+                            ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                            : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
+                        }`}
+                      >
+                        {amt} DA
+                      </button>
+                    ))}
+                  </div>
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="h-10 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#d4522f]"
+                  >
+                    <input
+                      type="number"
+                      required
+                      value={walkInAmount}
+                      onChange={(e) => setWalkInAmount(e.target.value)}
+                      className="lbi-field w-full h-full px-3 bg-transparent border-0 text-xs font-bold font-mono tabular-nums text-black dark:text-white focus:outline-none"
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
+                    {isRtl ? 'طريقة الدفع' : 'Mode de Paiement'}
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      data-no-liquid="true"
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      onClick={() => setWalkInPaymentMethod('cash')}
+                      className={`py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        walkInPaymentMethod === 'cash'
+                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                          : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
+                      }`}
+                    >
+                      <Banknote size={14} />
+                      <span>{isRtl ? 'نقداً' : 'Espèces'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      data-no-liquid="true"
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      onClick={() => setWalkInPaymentMethod('baridimob')}
+                      className={`py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        walkInPaymentMethod === 'baridimob'
+                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                          : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
+                      }`}
+                    >
+                      <span>BaridiMob</span>
+                    </button>
+                    <button
+                      type="button"
+                      data-no-liquid="true"
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      onClick={() => setWalkInPaymentMethod('cib')}
+                      className={`py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        walkInPaymentMethod === 'cib'
+                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                          : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
+                      }`}
+                    >
+                      <CreditCard size={14} />
+                      <span>CIB</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="pt-2 flex gap-2">
+                  <button
+                    type="button"
+                    data-no-liquid="true"
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    onClick={() => setIsWalkInModalOpen(false)}
+                    className="flex-1 py-2.5 bg-[#F3EDE7] hover:bg-[#E6DED6] dark:bg-[#262422] dark:hover:bg-[#3A3734] text-xs font-semibold text-black/75 dark:text-white/80 transition-colors cursor-pointer"
+                  >
+                    {isRtl ? 'إلغاء' : 'Annuler'}
+                  </button>
+                  <button
+                    type="submit"
+                    data-no-liquid="true"
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    className="flex-1 py-2.5 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Printer size={14} />
+                    <span>{isRtl ? 'تأكيد وطباعة التذكرة' : 'Valider & Imprimer'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
 
       {lastPrintedTicket && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1D1B]/45 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-[#1C1B1A] rounded-[24px] shadow-2xl border border-[#E6DED6] dark:border-[#3A3734] max-w-sm w-full p-6 text-center animate-in fade-in zoom-in-95 duration-150">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 mx-auto flex items-center justify-center mb-3">
-              <CheckCircle2 size={24} />
-            </div>
-            <h3 className="text-base font-bold text-black dark:text-white mb-1">
-              {isRtl ? 'تذكرة الحصة جاهزة' : 'Pass Séance Validé'}
-            </h3>
-            <p className="text-xs mb-4 font-mono font-bold text-[#d4522f] tabular-nums">
-              {lastPrintedTicket.ticketNumber}
-            </p>
-            <div className="bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] rounded-2xl p-4 text-xs space-y-2 text-left mb-5">
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">{isRtl ? 'الزبون' : 'Client'}</span>
-                <span className="font-semibold text-black dark:text-white">
-                  {lastPrintedTicket.clientName}
-                </span>
+          <div className="sq-elev-pop max-w-sm w-full animate-in fade-in zoom-in-95 duration-150">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] w-full p-6 text-center"
+            >
+              <div
+                data-sq="tile-lg"
+                data-sq-border="none"
+                className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 mx-auto flex items-center justify-center mb-3"
+              >
+                <CheckCircle2 size={24} />
               </div>
-              <div className="flex justify-between">
-                <span className="text-black/62 dark:text-white/65">{isRtl ? 'المبلغ' : 'Montant'}</span>
-                <span className="font-bold font-mono tabular-nums text-black dark:text-white">
-                  {formatMoney(lastPrintedTicket.amountDzd, 'DZD')}
-                </span>
-              </div>
-              {lastPrintedTicket.timbreFiscalDzd > 0 && (
-                <div className="flex justify-between text-[11px] text-amber-600 dark:text-amber-400 font-medium tabular-nums">
-                  <span>{isRtl ? 'طابع المادة 317' : 'Timbre Art. 317'}</span>
-                  <span>+{lastPrintedTicket.timbreFiscalDzd} DA</span>
+              <h3 className="text-base font-bold text-black dark:text-white mb-1">
+                {isRtl ? 'تذكرة الحصة جاهزة' : 'Pass Séance Validé'}
+              </h3>
+              <p className="text-xs mb-4 font-mono font-bold text-[#d4522f] tabular-nums">
+                {lastPrintedTicket.ticketNumber}
+              </p>
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-4 text-xs space-y-2 text-left mb-5"
+              >
+                <div className="flex justify-between">
+                  <span className="text-black/62 dark:text-white/65">{isRtl ? 'الزبون' : 'Client'}</span>
+                  <span className="font-semibold text-black dark:text-white">
+                    {lastPrintedTicket.clientName}
+                  </span>
                 </div>
-              )}
-              <div className="flex justify-between pt-2 border-t border-[#E6DED6] dark:border-[#3A3734] font-bold">
-                <span>{isRtl ? 'الإجمالي المقبوض' : 'Total Reçu'}</span>
-                <span className="text-[#d4522f] font-mono tabular-nums">
-                  {formatMoney(lastPrintedTicket.amountDzd + lastPrintedTicket.timbreFiscalDzd, 'DZD')}
-                </span>
+                <div className="flex justify-between">
+                  <span className="text-black/62 dark:text-white/65">{isRtl ? 'المبلغ' : 'Montant'}</span>
+                  <span className="font-bold font-mono tabular-nums text-black dark:text-white">
+                    {formatMoney(lastPrintedTicket.amountDzd, 'DZD')}
+                  </span>
+                </div>
+                {lastPrintedTicket.timbreFiscalDzd > 0 && (
+                  <div className="flex justify-between text-[11px] text-amber-600 dark:text-amber-400 font-medium tabular-nums">
+                    <span>{isRtl ? 'طابع المادة 317' : 'Timbre Art. 317'}</span>
+                    <span>+{lastPrintedTicket.timbreFiscalDzd} DA</span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-2 border-t border-[#E6DED6] dark:border-[#3A3734] font-bold">
+                  <span>{isRtl ? 'الإجمالي المقبوض' : 'Total Reçu'}</span>
+                  <span className="text-[#d4522f] font-mono tabular-nums">
+                    {formatMoney(lastPrintedTicket.amountDzd + lastPrintedTicket.timbreFiscalDzd, 'DZD')}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setLastPrintedTicket(null)}
-                className="flex-1 py-2.5 rounded-xl bg-[#F3EDE7] hover:bg-[#E6DED6] dark:bg-[#262422] dark:hover:bg-[#3A3734] text-xs font-semibold text-black/75 dark:text-white/80 transition-colors cursor-pointer"
-              >
-                {isRtl ? 'إغلاق' : 'Fermer'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  window.print();
-                  setLastPrintedTicket(null);
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Printer size={14} />
-                <span>{isRtl ? 'طباعة' : 'Imprimer'}</span>
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  onClick={() => setLastPrintedTicket(null)}
+                  className="flex-1 py-2.5 bg-[#F3EDE7] hover:bg-[#E6DED6] dark:bg-[#262422] dark:hover:bg-[#3A3734] text-xs font-semibold text-black/75 dark:text-white/80 transition-colors cursor-pointer"
+                >
+                  {isRtl ? 'إغلاق' : 'Fermer'}
+                </button>
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  onClick={() => {
+                    window.print();
+                    setLastPrintedTicket(null);
+                  }}
+                  className="flex-1 py-2.5 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Printer size={14} />
+                  <span>{isRtl ? 'طباعة' : 'Imprimer'}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
