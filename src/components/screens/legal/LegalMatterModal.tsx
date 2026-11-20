@@ -142,16 +142,16 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
           className="bg-white dark:bg-neutral-800 w-full p-6 border border-neutral-200 dark:border-neutral-700 space-y-5 max-h-[90vh] overflow-y-auto"
         >
         <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-700">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <div
               data-sq="tile"
               data-sq-border="none"
-              className="w-9 h-9 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"
+              className="w-9 h-9 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center"
             >
               <Scale size={18} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h2 className="t-card font-semibold text-black dark:text-white">
                 {matterToEdit
                   ? isAr
                     ? 'تعديل ملف القضية'
@@ -167,13 +167,13 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
             data-no-liquid="true"
             onClick={onClose}
             aria-label={isAr ? 'إغلاق' : 'Fermer'}
-            className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"
+            className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-4 t-cap">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <LabelInput
               label={isAr ? 'عنوان القضية (فرنسية)' : 'Intitulé du Dossier (Français)'}
@@ -216,7 +216,7 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-3.5 bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3"
+            className="p-4 bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <LabelInput

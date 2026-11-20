@@ -543,16 +543,16 @@ export const LogisticsManifestsView: React.FC<any> = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"
+              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center tabular-nums font-semibold t-small shrink-0"
             >
               <Truck size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
+              <div className="tabular-nums font-semibold t-small text-black dark:text-white flex items-center gap-2">
                 {m.manifestNumber}
-                {pinnedIds.has(m.id) && <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
+                {pinnedIds.has(m.id) && <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55">{m.dispatchDate}</div>
+              <div className="t-cap text-black/55 dark:text-white/55">{m.dispatchDate}</div>
             </div>
           </div>
         ),
@@ -564,10 +564,10 @@ export const LogisticsManifestsView: React.FC<any> = () => {
         sortable: true,
         renderCell: (m) => (
           <div className="min-w-0">
-            <div className="font-semibold text-xs text-black dark:text-white truncate">
+            <div className="font-semibold t-small text-black dark:text-white truncate">
               {m.driverName}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 font-mono truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums truncate">
               {m.vehiclePlate} ({m.driverPhone})
             </div>
           </div>
@@ -579,8 +579,8 @@ export const LogisticsManifestsView: React.FC<any> = () => {
         width: '2.0*',
         sortable: true,
         renderCell: (m) => (
-          <div className="flex items-center gap-1 text-xs text-black/70 dark:text-white/75 min-w-0">
-            <MapPin size={12} className="text-[#d4522f] shrink-0" />
+          <div className="flex items-center gap-1 t-cap text-black/70 dark:text-white/75 min-w-0">
+            <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
             <span className="truncate">{m.zoneWilaya || 'Alger'}</span>
           </div>
         ),
@@ -592,7 +592,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
         sortable: true,
         renderCell: (m) => {
           const b = resolveRecordBranch(m, branchesById, currentBranch, language);
-          return <span className="text-xs text-black/75 dark:text-white/75 truncate">{b.name}</span>;
+          return <span className="t-cap text-black/75 dark:text-white/75 truncate">{b.name}</span>;
         },
       },
       {
@@ -601,7 +601,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
         width: '1.1*',
         sortable: true,
         renderCell: (m) => (
-          <div className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+          <div className="tabular-nums font-semibold t-small text-black dark:text-white">
             {m.totalShipmentsCount} colis
           </div>
         ),
@@ -612,7 +612,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
         width: '1.6*',
         sortable: true,
         renderCell: (m) => (
-          <div className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+          <div className="tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(m.totalCodExpectedDzd)}
           </div>
         ),
@@ -623,7 +623,7 @@ export const LogisticsManifestsView: React.FC<any> = () => {
         width: '1.3*',
         renderCell: (m) => (
           <span
-            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+            className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold border ${
               m.status === 'Completed'
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                 : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
@@ -1018,15 +1018,15 @@ export const LogisticsManifestsView: React.FC<any> = () => {
             className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <div
                   data-sq="tile"
                   data-sq-border="none"
-                  className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"
+                  className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
                 >
                   <Truck size={20} />
                 </div>
-                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <h2 className="t-card font-semibold text-black dark:text-white">
                   {manifestToEdit
                     ? isAr ? 'تعديل ورقة الطريق' : 'Modifier le Manifeste'
                     : isAr ? 'إنشاء ورقة طريق جديدة' : 'Nouvelle Feuille de Route'}

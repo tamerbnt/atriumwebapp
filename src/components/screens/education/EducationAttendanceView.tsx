@@ -456,7 +456,7 @@ export const EducationAttendanceView: React.FC = () => {
       {
         id: 'rollcall',
         label: t('edu_btn_roll_call'),
-        icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#d4522f]" />,
+        icon: <CheckCircle2 className="w-3.5 h-3.5 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
         onClick: () => setIsRollCallOpen(true),
       },
       {
@@ -491,13 +491,13 @@ export const EducationAttendanceView: React.FC = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="w-8 h-8 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"
+              className="w-8 h-8 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-neutral-200 dark:border-neutral-700"
             >
               {st.fullName.charAt(0)}
             </div>
             <div>
               <div className="font-semibold text-black dark:text-white">{st.fullName}</div>
-              <div className="text-[11px] text-black/55 dark:text-white/55">
+              <div className="t-cap text-black/55 dark:text-white/55">
                 {st.phone || st.email || 'No contact'}
               </div>
             </div>
@@ -512,7 +512,7 @@ export const EducationAttendanceView: React.FC = () => {
         renderCell: (st) => {
           const b = resolveRecordBranch(st, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -529,7 +529,7 @@ export const EducationAttendanceView: React.FC = () => {
           <div className="space-y-0.5">
             <span className="font-medium text-black dark:text-white">{st.schoolGrade || 'Standard'}</span>
             {st.rfidBadgeCode && (
-              <span className="block text-[10px] text-black/55 dark:text-white/55 font-mono">
+              <span className="block t-cap text-black/55 dark:text-white/55 tabular-nums">
                 {st.rfidBadgeCode}
               </span>
             )}
@@ -557,7 +557,7 @@ export const EducationAttendanceView: React.FC = () => {
                   style={{ width: `${rate}%` }}
                 />
               </div>
-              <span className="font-bold text-black dark:text-white tabular-nums text-xs">{rate}%</span>
+              <span className="font-semibold text-black dark:text-white tabular-nums t-small">{rate}%</span>
             </div>
           );
         },
@@ -570,11 +570,11 @@ export const EducationAttendanceView: React.FC = () => {
         renderCell: (st) => {
           const studentRecords = cohortAttendance.filter((a) => a.studentId === st.id);
           return (
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
               {studentRecords.slice(0, 4).map((rec) => (
                 <span
                   key={rec.id}
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                  className={`px-2 py-1 rounded-full t-small font-semibold ${
                     rec.status === 'Present'
                       ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                       : rec.status === 'Late'
@@ -592,7 +592,7 @@ export const EducationAttendanceView: React.FC = () => {
                 </span>
               ))}
               {studentRecords.length === 0 && (
-                <span className="text-black/55 dark:text-white/55 italic text-[11px]">{t('edu_no_sessions')}</span>
+                <span className="text-black/55 dark:text-white/55 italic t-cap">{t('edu_no_sessions')}</span>
               )}
             </div>
           );
@@ -612,7 +612,7 @@ export const EducationAttendanceView: React.FC = () => {
               e.stopPropagation();
               setIsRollCallOpen(true);
             }}
-            className="px-2.5 py-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white text-xs font-semibold transition-colors cursor-pointer"
+            className="px-2.5 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white t-small font-semibold transition-colors cursor-pointer"
           >
             {t('edu_btn_roll_call')}
           </button>
@@ -710,10 +710,10 @@ export const EducationAttendanceView: React.FC = () => {
           className="p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040] flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-150"
         >
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center justify-center">
+            <span className="w-6 h-6 rounded-full bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center justify-center">
               {selectedStudentIds.size}
             </span>
-            <span className="text-xs font-semibold text-black dark:text-white">
+            <span className="t-small font-semibold text-black dark:text-white">
               {selectedStudentIds.size} {selectedStudentIds.size === 1 ? 'student' : 'students'} selected
             </span>
           </div>
@@ -724,7 +724,7 @@ export const EducationAttendanceView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={() => handleBatchMarkStatus('Present')}
-              className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-emerald-700 transition-colors cursor-pointer"
+              className="px-3 py-2 bg-emerald-600 text-white t-small font-semibold flex items-center gap-2 hover:bg-emerald-700 transition-colors cursor-pointer"
             >
               <CheckCircle2 size={13} />
               <span>Mark Present</span>
@@ -734,7 +734,7 @@ export const EducationAttendanceView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={() => handleBatchMarkStatus('Late')}
-              className="px-3 py-1.5 bg-amber-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-amber-700 transition-colors cursor-pointer"
+              className="px-3 py-2 bg-amber-600 text-white t-small font-semibold flex items-center gap-2 hover:bg-amber-700 transition-colors cursor-pointer"
             >
               <Clock size={13} />
               <span>Mark Late</span>
@@ -744,7 +744,7 @@ export const EducationAttendanceView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={() => handleBatchMarkStatus('Absent')}
-              className="px-3 py-1.5 bg-rose-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-rose-700 transition-colors cursor-pointer"
+              className="px-3 py-2 bg-rose-600 text-white t-small font-semibold flex items-center gap-2 hover:bg-rose-700 transition-colors cursor-pointer"
             >
               <XCircle size={13} />
               <span>Mark Absent</span>
@@ -754,7 +754,7 @@ export const EducationAttendanceView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="solid"
               onClick={() => setSelectedStudentIds(new Set<string>())}
-              className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white text-xs font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white t-small font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               Deselect All
             </button>
@@ -894,8 +894,8 @@ export const EducationAttendanceView: React.FC = () => {
                 sortable: true,
                 renderCell: (st) => (
                   <div>
-                    <div className="font-semibold text-xs text-black dark:text-white">{st.fullName}</div>
-                    <div className="text-[10px] text-black/55 dark:text-white/55">
+                    <div className="font-semibold t-small text-black dark:text-white">{st.fullName}</div>
+                    <div className="t-cap text-black/55 dark:text-white/55">
                       {st.schoolGrade || 'Standard'}
                     </div>
                   </div>
@@ -910,11 +910,11 @@ export const EducationAttendanceView: React.FC = () => {
                     (g) => g.studentId === st.id && g.assessmentTitle === title
                   );
                   return grade ? (
-                    <span className="font-semibold text-xs tabular-nums text-black dark:text-white">
+                    <span className="font-semibold t-small tabular-nums text-black dark:text-white">
                       {grade.score} / {grade.maxScore}
                     </span>
                   ) : (
-                    <span className="text-xs text-black/55 dark:text-white/55">—</span>
+                    <span className="t-cap text-black/55 dark:text-white/55">—</span>
                   );
                 },
               })),
@@ -928,7 +928,7 @@ export const EducationAttendanceView: React.FC = () => {
                   const avgScore = stGrades.length > 0 ? Math.round(totalScore / stGrades.length) : 0;
                   return stGrades.length > 0 ? (
                     <span
-                      className={`font-bold tabular-nums text-xs ${
+                      className={`font-semibold tabular-nums t-small ${
                         avgScore >= 80
                           ? 'text-emerald-600 dark:text-emerald-400'
                           : avgScore >= 60
@@ -939,7 +939,7 @@ export const EducationAttendanceView: React.FC = () => {
                       {avgScore}%
                     </span>
                   ) : (
-                    <span className="text-black/55 dark:text-white/55 italic text-xs">—</span>
+                    <span className="text-black/55 dark:text-white/55 italic t-cap">—</span>
                   );
                 },
               },
@@ -960,7 +960,7 @@ export const EducationAttendanceView: React.FC = () => {
                     }}
                     data-sq="ctl-sm"
                     data-sq-border="none"
-                    className="px-2.5 py-1.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white text-xs font-semibold transition-colors cursor-pointer"
+                    className="px-2.5 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white t-small font-semibold transition-colors cursor-pointer"
                   >
                     {t('edu_btn_record_grade')}
                   </button>
@@ -1197,7 +1197,7 @@ export const EducationAttendanceView: React.FC = () => {
               className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
             >
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_grade_modal_title')}
               </h2>
               <button
@@ -1209,7 +1209,7 @@ export const EducationAttendanceView: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleRecordGrade} className="space-y-4 pt-4 text-xs">
+            <form onSubmit={handleRecordGrade} className="space-y-4 pt-4 t-cap">
               <LabelSelect
                 field="Student"
                 label={t('edu_grade_student')}

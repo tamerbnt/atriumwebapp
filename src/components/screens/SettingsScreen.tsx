@@ -410,7 +410,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </div>
 
             <div className="flex items-center gap-[var(--s2,8px)] self-start sm:self-auto t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
-              <span>{t('settings_system_detected_badge', language)} :</span>
+              <span>{t('settings_system_detected_badge', language)}{language === 'fr' ? '\u00A0:' : ':'}</span>
               <span className="t-small text-[var(--text-1)] dark:text-white bg-white dark:bg-neutral-800 px-[var(--s3,12px)] h-[var(--pill-h,24px)] inline-flex items-center rounded-full border border-neutral-200 dark:border-neutral-700">
                 {getSystemDefaultLanguage() === 'ar' ? 'العربية (ar)' : getSystemDefaultLanguage() === 'fr' ? 'Français (fr)' : 'English (en)'}
               </span>
@@ -932,12 +932,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
 
           {/* Free Web Edition Banner Notice */}
-          <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-gradient-to-r from-[#FDF4F0] via-[#FAF0EA] to-white dark:from-[#26211E] dark:to-[#18181B] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]">
+          <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-gradient-to-r from-[#FDF4F0] via-[#FAF0EA] to-white dark:from-[#26211E] dark:via-[#1F1C1A] dark:to-[#18181B] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)]">
               <Laptop size={20} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
               <div className="flex flex-col gap-[var(--s1,4px)]">
                 <span className="t-label font-semibold text-[var(--text-1)]">
-                  {t('settings_current_plan', language)}: {t('settings_web_limit', language)}
+                  {t('settings_current_plan', language)}{language === 'fr' ? '\u00A0:' : ':'} {t('settings_web_limit', language)}
                 </span>
                 <p className="text-[var(--text-2)] t-cap">
                   {t('settings_web_limit_desc', language)}

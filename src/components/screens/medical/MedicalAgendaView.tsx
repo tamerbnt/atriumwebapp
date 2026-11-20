@@ -448,10 +448,10 @@ export const MedicalAgendaView: React.FC<any> = () => {
         sortable: true,
         renderCell: (a) => (
           <div>
-            <div className="font-mono font-bold text-xs text-black dark:text-white">
+            <div className="tabular-nums font-semibold t-small text-black dark:text-white">
               {a.startTime}
             </div>
-            <div className="text-[11px] font-mono text-black/55 dark:text-white/55">
+            <div className="t-cap tabular-nums text-black/55 dark:text-white/55">
               {a.date} · {a.durationMinutes}m
             </div>
           </div>
@@ -464,10 +464,10 @@ export const MedicalAgendaView: React.FC<any> = () => {
         sortable: true,
         renderCell: (a) => (
           <div className="min-w-0">
-            <div className="font-bold text-xs text-black dark:text-white truncate">
+            <div className="font-semibold t-small text-black dark:text-white truncate">
               {a.patientName}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[220px]">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate max-w-[220px]">
               {a.reason}
             </div>
           </div>
@@ -479,9 +479,9 @@ export const MedicalAgendaView: React.FC<any> = () => {
         width: '2*',
         sortable: true,
         renderCell: (a) => (
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <Stethoscope size={12} className="text-[#0D9488] shrink-0" />
-            <span className="text-xs font-semibold text-black dark:text-white truncate">
+            <span className="t-small font-semibold text-black dark:text-white truncate">
               {a.doctorName}
             </span>
           </div>
@@ -493,7 +493,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (a) => (
-          <span className="text-xs font-medium text-black/70 dark:text-white/75 truncate block max-w-[140px]">
+          <span className="t-small font-medium text-black/70 dark:text-white/75 truncate block max-w-[140px]">
             {getAptBranchName(a)}
           </span>
         ),
@@ -505,7 +505,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
         sortable: true,
         renderCell: (a) => (
           <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${getStatusBadge(
+            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold border ${getStatusBadge(
               a.status
             )}`}
           >
@@ -550,7 +550,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                 data-sq="thumb"
                 data-sq-border="none"
                 onClick={() => shiftDate(-1)}
-                className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 cursor-pointer"
+                className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 cursor-pointer"
                 title={isAr ? 'اليوم السابق' : 'Jour précédent'}
                 aria-label={isAr ? 'اليوم السابق' : 'Jour précédent'}
               >
@@ -561,7 +561,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 aria-label={isAr ? 'تاريخ الجدول' : 'Date du planning'}
-                className="px-2 py-1 text-xs font-semibold font-mono bg-transparent text-black dark:text-white border-0 focus:outline-hidden"
+                className="px-2 py-1 t-small font-semibold tabular-nums bg-transparent text-black dark:text-white border-0 focus:outline-hidden"
               />
               <button
                 type="button"
@@ -569,14 +569,14 @@ export const MedicalAgendaView: React.FC<any> = () => {
                 data-sq="thumb"
                 data-sq-border="none"
                 onClick={() => shiftDate(1)}
-                className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 cursor-pointer"
+                className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 cursor-pointer"
                 title={isAr ? 'اليوم التالي' : 'Jour suivant'}
                 aria-label={isAr ? 'اليوم التالي' : 'Jour suivant'}
               >
                 <ChevronRight size={16} />
               </button>
             </div>
-            <div data-sq="ctl" data-sq-border="solid" className="flex items-center gap-1 bg-white dark:bg-neutral-800 p-[3px] border border-neutral-200 dark:border-neutral-700 text-xs">
+            <div data-sq="ctl" data-sq-border="solid" className="flex items-center gap-1 bg-white dark:bg-neutral-800 p-[3px] border border-neutral-200 dark:border-neutral-700 t-cap">
               {[15, 30, 45].map((interval) => (
                 <button
                   key={interval}
@@ -585,9 +585,9 @@ export const MedicalAgendaView: React.FC<any> = () => {
                   data-sq="thumb"
                   data-sq-border="none"
                   onClick={() => setSlotIntervalMinutes(interval)}
-                  className={`px-2 py-1 font-mono text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-2 py-1 tabular-nums t-small font-semibold transition-all cursor-pointer ${
                     slotIntervalMinutes === interval
-                      ? 'bg-[#d4522f] text-white'
+                      ? 'bg-[var(--brand-fill,#C9461F)] text-white'
                       : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                   }`}
                 >
@@ -768,7 +768,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
             <div className="sq-elev-card">
               <div data-sq="table" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden">
               <div className="grid grid-cols-12 bg-[#F3EDE7] dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-800">
-                <div className="col-span-2 sm:col-span-1 p-3.5 text-center text-[11px] font-mono font-bold text-black/55 dark:text-white/55 uppercase tracking-wider border-r border-neutral-200 dark:border-neutral-800">
+                <div className="col-span-2 sm:col-span-1 p-4 text-center t-small tabular-nums font-semibold text-black/55 dark:text-white/55 border-r border-neutral-200 dark:border-neutral-800">
                   {isAr ? 'الوقت' : 'Heure'}
                 </div>
                 <div
@@ -784,19 +784,19 @@ export const MedicalAgendaView: React.FC<any> = () => {
                     return (
                       <div
                         key={doc.id}
-                        className="p-3.5 border-r last:border-r-0 border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2 min-w-0"
+                        className="p-4 border-r last:border-r-0 border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2 min-w-0"
                       >
                         <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-2">
                             <span
                               className="w-2.5 h-2.5 rounded-full shrink-0"
                               style={{ backgroundColor: doc.color }}
                             />
-                            <span className="text-xs font-bold text-black dark:text-white truncate">
+                            <span className="t-small font-semibold text-black dark:text-white truncate">
                               {doc.fullName}
                             </span>
                           </div>
-                          <span className="text-[10px] text-black/55 dark:text-white/75 block truncate">
+                          <span className="t-cap text-black/55 dark:text-white/75 block truncate">
                             {doc.specialty} ·{' '}
                             <strong className="text-black/70 dark:text-white/75">
                               {doc.roomNumber}
@@ -806,7 +806,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                         {waitingCount > 0 && (
                           <span
                             title={`File d'attente active : ${waitingCount} patient(s)`}
-                            className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 shrink-0"
+                            className="t-small font-semibold px-2 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 shrink-0"
                           >
                             +{waitingCount * 15}m
                           </span>
@@ -823,7 +823,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                     key={time}
                     className="grid grid-cols-12 min-h-[58px] hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20 transition-colors"
                   >
-                    <div className="col-span-2 sm:col-span-1 p-2 text-center text-xs font-mono font-bold text-black/55 dark:text-white/55 border-r border-neutral-200 dark:border-neutral-800 flex items-center justify-center">
+                    <div className="col-span-2 sm:col-span-1 p-2 text-center t-small tabular-nums font-semibold text-black/55 dark:text-white/55 border-r border-neutral-200 dark:border-neutral-800 flex items-center justify-center">
                       {time}
                     </div>
                     <div
@@ -840,7 +840,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                         return (
                           <div
                             key={doc.id}
-                            className="p-1.5 border-r last:border-r-0 border-neutral-200 dark:border-neutral-800 relative group min-w-0"
+                            className="p-2 border-r last:border-r-0 border-neutral-200 dark:border-neutral-800 relative group min-w-0"
                           >
                             {matchApt ? (
                               <div
@@ -856,25 +856,25 @@ export const MedicalAgendaView: React.FC<any> = () => {
                                   className="text-left w-full cursor-pointer focus:outline-hidden"
                                 >
                                   <div className="flex items-center justify-between gap-1 mb-1">
-                                    <span className="font-bold text-xs truncate">
+                                    <span className="font-semibold t-small truncate">
                                       {matchApt.patientName}
                                     </span>
-                                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider bg-white/50 dark:bg-black/30 shrink-0">
+                                    <span className="t-small tabular-nums px-2 py-1 rounded-full font-semibold bg-white/50 dark:bg-black/30 shrink-0">
                                       {matchApt.status}
                                     </span>
                                   </div>
-                                  <p className="text-[10px] text-black/70 dark:text-white/75 truncate">
+                                  <p className="t-cap text-black/70 dark:text-white/75 truncate">
                                     {matchApt.reason}
                                   </p>
                                 </button>
-                                <div className="flex items-center justify-between text-[10px] mt-1 pt-1 border-t border-black/5 dark:border-white/5 font-mono">
+                                <div className="flex items-center justify-between t-cap mt-1 pt-1 border-t border-black/5 dark:border-white/5 tabular-nums">
                                   <span>{matchApt.durationMinutes} min</span>
                                   <div className="flex items-center gap-1">
                                     {matchApt.status === 'Booked' && (
                                       <button
                                         type="button"
                                         onClick={() => handleStatusChange(matchApt, 'Arrived')}
-                                        className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white cursor-pointer"
+                                        className="t-small font-semibold px-2 py-1 rounded-full bg-amber-500 text-white cursor-pointer"
                                         title="Marquer comme arrivé en salle d'attente"
                                       >
                                         Arrivé
@@ -884,7 +884,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                                       <button
                                         type="button"
                                         onClick={() => handleStatusChange(matchApt, 'InRoom')}
-                                        className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white cursor-pointer"
+                                        className="t-small font-semibold px-2 py-1 rounded-full bg-emerald-600 text-white cursor-pointer"
                                         title="Faire entrer en consultation"
                                       >
                                         En Salle
@@ -894,7 +894,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                                       <button
                                         type="button"
                                         onClick={() => handleStatusChange(matchApt, 'Completed')}
-                                        className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-600 text-white cursor-pointer"
+                                        className="t-small font-semibold px-2 py-1 rounded-full bg-blue-600 text-white cursor-pointer"
                                         title="Terminer consultation"
                                       >
                                         Terminé
@@ -909,7 +909,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                                 onClick={() => handleOpenBooking(doc.id, time)}
                                 data-sq="ctl-sm"
                                 data-sq-border="dashed"
-                                className="h-full w-full min-h-[42px] [--sq-stroke:transparent] group-hover:[--sq-stroke:rgba(13,148,136,0.4)] hover:bg-[#0D9488]/5 flex items-center justify-center text-[10px] text-black/55 dark:text-white/55 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
+                                className="h-full w-full min-h-[42px] [--sq-stroke:transparent] group-hover:[--sq-stroke:rgba(13,148,136,0.4)] hover:bg-[#0D9488]/5 flex items-center justify-center t-cap text-black/55 dark:text-white/55 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
                               >
                                 + {isAr ? 'حجز' : 'Réserver'}
                               </button>
@@ -1084,7 +1084,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                   title={isAr ? 'سير العمل' : "Workflow Salle d'Attente"}
                   index={0}
                 >
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     {(['Arrived', 'InRoom', 'Completed', 'Cancelled'] as const).map((nextSt) => (
                       <InspectorWideButton
                         key={nextSt}

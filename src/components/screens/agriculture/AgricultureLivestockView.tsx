@@ -590,15 +590,15 @@ export const AgricultureLivestockView: React.FC = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"
+              className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center tabular-nums font-semibold t-small shrink-0"
             >
               <Tag size={15} />
             </div>
             <div className="min-w-0">
-              <div className="font-mono font-bold text-xs text-black dark:text-white truncate">
+              <div className="tabular-nums font-semibold t-small text-black dark:text-white truncate">
                 {a.earTagNumber}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55 truncate">
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">
                 {a.nameOrNumber || a.species || 'Bovine'} • {a.breed}
               </div>
             </div>
@@ -611,11 +611,11 @@ export const AgricultureLivestockView: React.FC = () => {
         width: '1.3*',
         sortable: true,
         renderCell: (a) => (
-          <div className="text-xs">
+          <div className="t-cap">
             <span className="font-medium text-black/70 dark:text-white/75">
               {a.reproStatus || 'Lactation'}
             </span>
-            <div className="text-[10px] text-black/55 dark:text-white/55">
+            <div className="t-cap text-black/55 dark:text-white/55">
               Lactation N° {a.lactationNumber || 1}
             </div>
           </div>
@@ -640,7 +640,7 @@ export const AgricultureLivestockView: React.FC = () => {
             label = isAr ? 'حجر صحي' : 'Quarantaine';
           }
           return (
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}`}>
+            <span className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold ${badgeColor}`}>
               {label}
             </span>
           );
@@ -652,7 +652,7 @@ export const AgricultureLivestockView: React.FC = () => {
         width: '1.2*',
         sortable: true,
         renderCell: (a) => (
-          <span className="text-xs text-black/65 dark:text-white/70 truncate block">
+          <span className="t-cap text-black/65 dark:text-white/70 truncate block">
             {resolveRecordBranch(a, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -663,11 +663,11 @@ export const AgricultureLivestockView: React.FC = () => {
         width: '1.2*',
         sortable: true,
         renderCell: (a) => (
-          <div className="text-xs">
-            <div className="font-mono font-bold text-black dark:text-white">
+          <div className="t-cap">
+            <div className="tabular-nums font-semibold text-black dark:text-white">
               {a.dailyProductionLiters ?? a.dailyAvgLiters ?? 0} L/j
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55">
+            <div className="t-cap text-black/55 dark:text-white/55">
               {(a.gender || 'Female') === 'Female' ? 'Traite active' : 'Mâle'}
             </div>
           </div>
@@ -689,15 +689,15 @@ export const AgricultureLivestockView: React.FC = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold shrink-0"
+              className="w-8 h-8 bg-blue-500/15 text-blue-600 flex items-center justify-center font-semibold shrink-0"
             >
               <Milk size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-mono font-bold text-xs text-black dark:text-white">
+              <div className="tabular-nums font-semibold t-small text-black dark:text-white">
                 {m.sessionDate}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55">
+              <div className="t-cap text-black/55 dark:text-white/55">
                 {m.sessionPeriod === 'morning' ? 'Traite du Matin' : 'Traite du Soir'}
               </div>
             </div>
@@ -710,12 +710,12 @@ export const AgricultureLivestockView: React.FC = () => {
         width: '1.4*',
         sortable: true,
         renderCell: (m) => (
-          <div className="text-xs">
-            <div className="font-mono font-bold text-black dark:text-white">
+          <div className="t-cap">
+            <div className="tabular-nums font-semibold text-black dark:text-white">
               {m.conformingLiters.toLocaleString()} L
             </div>
             {m.rejectedWithholdingLiters > 0 && (
-              <div className="text-[10px] text-amber-600 font-medium">
+              <div className="t-small text-amber-600 font-medium">
                 (-{m.rejectedWithholdingLiters} L écartés retrait)
               </div>
             )}
@@ -728,7 +728,7 @@ export const AgricultureLivestockView: React.FC = () => {
         width: '1.2*',
         sortable: true,
         renderCell: (m) => (
-          <div className="flex items-center gap-1.5 text-xs font-mono font-bold">
+          <div className="flex items-center gap-2 t-small tabular-nums font-semibold">
             <Thermometer
               size={14}
               className={m.tankTemperatureCelsius <= 4 ? 'text-emerald-500' : 'text-amber-500'}
@@ -751,7 +751,7 @@ export const AgricultureLivestockView: React.FC = () => {
         width: '1.4*',
         sortable: true,
         renderCell: (m) => (
-          <div className="text-xs font-mono font-bold text-[#d4522f]">
+          <div className="t-small tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
             +{formatMoney(m.onilTotalSubsidyDzd, language)}
           </div>
         ),
@@ -762,7 +762,7 @@ export const AgricultureLivestockView: React.FC = () => {
         width: '1.1*',
         sortable: true,
         renderCell: (m) => (
-          <span className="text-xs text-black/65 dark:text-white/70 truncate block">
+          <span className="t-cap text-black/65 dark:text-white/70 truncate block">
             {resolveRecordBranch(m, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -773,9 +773,9 @@ export const AgricultureLivestockView: React.FC = () => {
         width: '1.6*',
         sortable: true,
         renderCell: (m) => (
-          <div className="text-xs text-black/70 dark:text-white/75 min-w-0">
+          <div className="t-cap text-black/70 dark:text-white/75 min-w-0">
             <div className="truncate">{m.destinationDairy}</div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 font-mono truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums truncate">
               {m.dairyDeliverySlipNo || 'BL-Attente'}
             </div>
           </div>
@@ -995,7 +995,7 @@ export const AgricultureLivestockView: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => setIsOnilModalOpen(true)}
-            icon={<Milk size={14} className="text-[#d4522f]" />}
+            icon={<Milk size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
           >
             {isAr ? 'جدول دعم ONIL' : 'Bordereau ONIL (12 DA/L)'}
           </AtriumButton>
@@ -1021,7 +1021,7 @@ export const AgricultureLivestockView: React.FC = () => {
           data-sq="card"
           data-sq-border="solid"
           style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
-          className="flex items-center gap-3 px-4 py-3 bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 text-xs"
+          className="flex items-center gap-3 px-4 py-3 bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 t-cap"
         >
           <AlertTriangle size={18} className="shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="flex-1">
@@ -1595,7 +1595,7 @@ export const AgricultureLivestockView: React.FC = () => {
               className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <h2 className="t-card font-semibold text-black dark:text-white">
                   {animalToEdit
                     ? isAr
                       ? 'تعديل بيانات رأس الماشية'
@@ -1608,7 +1608,7 @@ export const AgricultureLivestockView: React.FC = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsAnimalModalOpen(false)}
-                  className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <X size={18} className="text-black/55 dark:text-white/55" />
                 </button>

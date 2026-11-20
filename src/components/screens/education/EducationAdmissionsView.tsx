@@ -403,7 +403,7 @@ export const EducationAdmissionsView: React.FC = () => {
             {
               id: 'convert',
               label: t('edu_btn_convert_student'),
-              icon: <UserCheck className="w-3.5 h-3.5 text-[#d4522f]" />,
+              icon: <UserCheck className="w-3.5 h-3.5 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
               onClick: () => setConversionLead(lead),
             },
           ]
@@ -434,13 +434,13 @@ export const EducationAdmissionsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
             >
               {lead.studentName.charAt(0)}
             </div>
             <div className="min-w-0">
-              <div className="font-bold text-black dark:text-white truncate">{lead.studentName}</div>
-              <div className="text-[11px] text-[#d4522f] font-medium truncate">{lead.desiredCourseTitle}</div>
+              <div className="font-semibold text-black dark:text-white truncate">{lead.studentName}</div>
+              <div className="t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-medium truncate">{lead.desiredCourseTitle}</div>
             </div>
           </div>
         ),
@@ -453,7 +453,7 @@ export const EducationAdmissionsView: React.FC = () => {
         renderCell: (lead) => {
           const b = resolveRecordBranch(lead, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -466,13 +466,13 @@ export const EducationAdmissionsView: React.FC = () => {
         width: '1.8*',
         minWidth: '170px',
         renderCell: (lead) => (
-          <div className="space-y-0.5 text-xs">
-            <div className="flex items-center gap-1.5 text-black/70 dark:text-white/75 font-mono text-[11px]">
+          <div className="space-y-0.5 t-cap">
+            <div className="flex items-center gap-2 text-black/70 dark:text-white/75 tabular-nums t-cap">
               <Phone size={12} className="text-black/55 dark:text-white/55 shrink-0" />
               <span>{lead.phone}</span>
             </div>
             {lead.email && (
-              <div className="flex items-center gap-1.5 text-black/55 dark:text-white/75 truncate text-[11px]">
+              <div className="flex items-center gap-2 text-black/55 dark:text-white/75 truncate t-cap">
                 <Mail size={12} className="text-black/55 dark:text-white/55 shrink-0" />
                 <span className="truncate">{lead.email}</span>
               </div>
@@ -486,7 +486,7 @@ export const EducationAdmissionsView: React.FC = () => {
         width: '1.5*',
         minWidth: '130px',
         renderCell: (lead) => (
-          <span className="text-xs text-black/70 dark:text-white/75">
+          <span className="t-cap text-black/70 dark:text-white/75">
             {lead.guardianName || (isAr ? 'مترشح راشد' : 'Adult / Self')}
           </span>
         ),
@@ -497,9 +497,9 @@ export const EducationAdmissionsView: React.FC = () => {
         width: '1.3*',
         minWidth: '120px',
         renderCell: (lead) => (
-          <span className="text-xs text-black/70 dark:text-white/75">
+          <span className="t-cap text-black/70 dark:text-white/75">
             {lead.placementScore ? (
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
+              <span className="px-2 py-1 rounded-full t-small font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 {lead.placementScore}
               </span>
             ) : (
@@ -520,7 +520,7 @@ export const EducationAdmissionsView: React.FC = () => {
           return (
             <div className="flex items-center gap-2">
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold ${
                   isEnrolled
                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                     : isAdmitted
@@ -537,7 +537,7 @@ export const EducationAdmissionsView: React.FC = () => {
                     e.stopPropagation();
                     setConversionLead(lead);
                   }}
-                  className="p-1.5 rounded-full bg-[#d4522f] text-white hover:opacity-90 shadow-2xs cursor-pointer"
+                  className="p-2 rounded-full bg-[var(--brand-fill,#C9461F)] text-white hover:opacity-90 shadow-2xs cursor-pointer"
                   title={t('edu_btn_convert_student')}
                 >
                   <UserCheck size={12} />
@@ -606,9 +606,9 @@ export const EducationAdmissionsView: React.FC = () => {
               data-sq="thumb"
               data-sq-border="none"
               onClick={() => setViewLayout('kanban')}
-              className={`px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+              className={`px-3 py-2 t-small font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
                 viewLayout === 'kanban'
-                  ? 'bg-white dark:bg-neutral-900 text-[#d4522f]'
+                  ? 'bg-white dark:bg-neutral-900 text-[var(--brand-on-dark,#FF8F63)]'
                   : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
               }`}
             >
@@ -620,9 +620,9 @@ export const EducationAdmissionsView: React.FC = () => {
               data-sq="thumb"
               data-sq-border="none"
               onClick={() => setViewLayout('collection')}
-              className={`px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+              className={`px-3 py-2 t-small font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
                 viewLayout === 'collection'
-                  ? 'bg-white dark:bg-neutral-900 text-[#d4522f]'
+                  ? 'bg-white dark:bg-neutral-900 text-[var(--brand-on-dark,#FF8F63)]'
                   : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
               }`}
             >
@@ -646,7 +646,7 @@ export const EducationAdmissionsView: React.FC = () => {
         >
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-            <span className="text-xs font-bold text-black dark:text-white">
+            <span className="t-small font-semibold text-black dark:text-white">
               {selectedLeadIds.size}{' '}
               {isAr ? 'طلبات تسجيل محددة' : isEn ? 'leads selected' : 'dossiers sélectionnés'}
             </span>
@@ -655,7 +655,7 @@ export const EducationAdmissionsView: React.FC = () => {
             <button
               type="button"
               onClick={() => setSelectedLeadIds(new Set<string>())}
-              className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
+              className="px-3 py-2 t-small text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
             >
               {isAr ? 'إلغاء التحديد' : isEn ? 'Deselect' : 'Désélectionner'}
             </button>
@@ -664,7 +664,7 @@ export const EducationAdmissionsView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={() => handleBatchSetStage('TrialClass')}
-              className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
             >
               <CheckCircle2 size={13} />
               <span>{isAr ? 'حصة تجريبية' : 'Trial Class'}</span>
@@ -674,7 +674,7 @@ export const EducationAdmissionsView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={() => handleBatchSetStage('Admitted')}
-              className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
             >
               <CheckCircle2 size={13} />
               <span>{isAr ? 'قبول الملف' : 'Admit'}</span>
@@ -684,7 +684,7 @@ export const EducationAdmissionsView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={handleBatchDelete}
-              className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
             >
               <Trash2 size={13} />
               <span>{isAr ? 'حذف المحدد' : isEn ? 'Delete' : 'Supprimer'}</span>
@@ -869,18 +869,18 @@ export const EducationAdmissionsView: React.FC = () => {
                   className="border border-neutral-200 dark:border-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900/60 p-3 flex flex-col space-y-3 min-h-[480px]"
                 >
                   <div className="flex items-center justify-between pb-2 border-b border-neutral-200/80 dark:border-neutral-800">
-                    <span className="text-xs font-bold text-black dark:text-white">{stage.title}</span>
-                    <span className="w-5 h-5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-[10px] font-bold flex items-center justify-center">
+                    <span className="t-small font-semibold text-black dark:text-white">{stage.title}</span>
+                    <span className="w-5 h-5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold flex items-center justify-center">
                       {leadsInStage.length}
                     </span>
                   </div>
-                  <div className="space-y-2.5 flex-1">
+                  <div className="space-y-2 flex-1">
                     {leadsInStage.map((lead) => (
                       <div key={lead.id} className="sq-elev-card">
                         <div
                           data-sq="ctl"
                           data-sq-border="solid"
-                          className="p-3.5 border border-neutral-200 dark:border-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 hover:border-[#d4522f]/50 hover:[--sq-stroke:rgba(212,82,47,0.5)] transition-all space-y-2 group"
+                          className="p-4 border border-neutral-200 dark:border-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 hover:border-[#d4522f]/50 hover:[--sq-stroke:rgba(212,82,47,0.5)] transition-all space-y-2 group"
                         >
                         <button
                           type="button"
@@ -888,33 +888,33 @@ export const EducationAdmissionsView: React.FC = () => {
                             setDrawerOpenerEl(e.currentTarget);
                             setSelectedLead(lead);
                           }}
-                          className="w-full text-left rtl:text-right cursor-pointer space-y-1.5"
+                          className="w-full text-left rtl:text-right cursor-pointer space-y-2"
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-bold text-black dark:text-white text-xs group-hover:text-[#d4522f] transition-colors">
+                            <span className="font-semibold text-black dark:text-white t-small group-hover:text-[var(--brand-text,#BF431F)] dark:group-hover:text-[var(--brand-on-dark,#FF8F63)] transition-colors">
                               {lead.studentName}
                             </span>
                             {lead.placementScore && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
+                              <span className="px-2 py-1 rounded-full t-small font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                                 Score: {lead.placementScore}
                               </span>
                             )}
                           </div>
-                          <span className="text-[11px] font-medium text-[#d4522f] block">
+                          <span className="t-small font-medium text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
                             {lead.desiredCourseTitle}
                           </span>
-                          <div className="space-y-1 text-[11px] text-black/55 dark:text-white/75">
-                            <div className="flex items-center gap-1.5">
+                          <div className="space-y-1 t-cap text-black/55 dark:text-white/75">
+                            <div className="flex items-center gap-2">
                               <Phone size={11} className="text-black/55 dark:text-white/55" />
                               <span>{lead.phone}</span>
                             </div>
                             {lead.guardianName && (
-                              <div className="text-[10px] text-black/55 dark:text-white/55">
+                              <div className="t-cap text-black/55 dark:text-white/55">
                                 {t('edu_guardian_prefix', { name: lead.guardianName })}
                               </div>
                             )}
                             {lead.source && (
-                              <div className="text-[10px] text-black/55 dark:text-white/55">
+                              <div className="t-cap text-black/55 dark:text-white/55">
                                 Source: {lead.source}
                               </div>
                             )}
@@ -927,7 +927,7 @@ export const EducationAdmissionsView: React.FC = () => {
                               data-sq="ctl-sm"
                               data-sq-border="none"
                               onClick={() => setConversionLead(lead)}
-                              className="w-full py-1.5 px-2 bg-[#d4522f] text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90"
+                              className="w-full py-2 px-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center justify-center gap-2 cursor-pointer hover:opacity-90"
                             >
                               <UserCheck size={12} />
                               <span>{t('edu_btn_convert_student')}</span>
@@ -943,13 +943,13 @@ export const EducationAdmissionsView: React.FC = () => {
                                   updateAdmissionStage(lead.id, stages[nextIndex].id);
                                 }
                               }}
-                              className="w-full py-1 text-center text-[10px] font-semibold text-black/70 dark:text-white/75 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                              className="w-full py-1 text-center t-small font-semibold text-black/70 dark:text-white/75 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors flex items-center justify-center gap-1 cursor-pointer"
                             >
                               <span>Move Next</span>
                               <ArrowRight size={11} className="rtl:rotate-180" />
                             </button>
                           ) : (
-                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 mx-auto">
+                            <span className="t-small text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 mx-auto">
                               <UserCheck size={11} /> Converted
                             </span>
                           )}
@@ -1059,9 +1059,9 @@ export const EducationAdmissionsView: React.FC = () => {
                         data-sq="ctl-sm"
                         data-sq-border="solid"
                         onClick={() => updateAdmissionStage(lead.id, st.id)}
-                        className={`px-3 py-1.5 text-xs font-semibold border transition-colors cursor-pointer ${
+                        className={`px-3 py-2 t-small font-semibold border transition-colors cursor-pointer ${
                           lead.stage === st.id
-                            ? 'bg-[#d4522f] text-white border-[#d4522f]'
+                            ? 'bg-[var(--brand-fill,#C9461F)] text-white border-[#d4522f]'
                             : 'bg-[#F3EDE7] dark:bg-[#262422] border-[#E6DED6] dark:border-[#3A3734] text-black/80 dark:text-white/80 hover:border-[#d4522f]/50'
                         }`}
                       >
@@ -1166,7 +1166,7 @@ export const EducationAdmissionsView: React.FC = () => {
               className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
             >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_lead_modal_title')}
               </h2>
               <button
@@ -1177,7 +1177,7 @@ export const EducationAdmissionsView: React.FC = () => {
                 <X size={16} />
               </button>
             </div>
-            <div className="pt-4 space-y-4 text-xs">
+            <div className="pt-4 space-y-4 t-cap">
               <p className="text-black/70 dark:text-white/75">
                 You are about to register{' '}
                 <strong className="text-black dark:text-white">{conversionLead.studentName}</strong> into the
@@ -1217,7 +1217,7 @@ export const EducationAdmissionsView: React.FC = () => {
                   data-sq="ctl"
                   data-sq-border="none"
                   onClick={handleConfirmConversion}
-                  className="px-5 py-2 bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('edu_btn_convert_student')}
                 </button>
@@ -1237,7 +1237,7 @@ export const EducationAdmissionsView: React.FC = () => {
               className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
             >
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_btn_new_lead')}
               </h2>
               <button
@@ -1248,7 +1248,7 @@ export const EducationAdmissionsView: React.FC = () => {
                 <X size={16} />
               </button>
             </div>
-            <form onSubmit={handleCreateLead} className="space-y-4 pt-4 text-xs">
+            <form onSubmit={handleCreateLead} className="space-y-4 pt-4 t-cap">
               <div>
                 <LabelInput
                   field="studentName"
@@ -1340,7 +1340,7 @@ export const EducationAdmissionsView: React.FC = () => {
                   type="submit"
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="px-5 py-2 bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('edu_btn_new_lead')}
                 </button>

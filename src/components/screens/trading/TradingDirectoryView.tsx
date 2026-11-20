@@ -271,9 +271,9 @@ export const TradingDirectoryView: React.FC = () => {
         minWidth: '210px',
         sortable: true,
         renderCell: (c) => (
-          <div className="text-xs">
-            <span className="font-bold text-black dark:text-white block">{c.companyName}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55">{c.sector || 'Entreprise B2B'}</span>
+          <div className="t-cap">
+            <span className="font-semibold text-black dark:text-white block">{c.companyName}</span>
+            <span className="t-cap text-black/55 dark:text-white/55">{c.sector || 'Entreprise B2B'}</span>
           </div>
         ),
       },
@@ -282,9 +282,9 @@ export const TradingDirectoryView: React.FC = () => {
         header: 'N.I.F. / R.C.',
         width: '170px',
         renderCell: (c) => (
-          <div className="text-xs font-mono">
+          <div className="t-cap tabular-nums">
             <span className="block font-medium text-black dark:text-white">NIF: {c.nif || 'N/A'}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55">RC: {c.rc || 'N/A'}</span>
+            <span className="t-cap text-black/55 dark:text-white/55">RC: {c.rc || 'N/A'}</span>
           </div>
         ),
       },
@@ -293,9 +293,9 @@ export const TradingDirectoryView: React.FC = () => {
         header: t('trading_col_contact', 'Interlocuteur'),
         width: '165px',
         renderCell: (c) => (
-          <div className="text-xs">
+          <div className="t-cap">
             <span className="font-semibold text-black dark:text-white block">{c.contactName || 'N/A'}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{c.phone || c.contactPhone}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">{c.phone || c.contactPhone}</span>
           </div>
         ),
       },
@@ -306,7 +306,7 @@ export const TradingDirectoryView: React.FC = () => {
         renderCell: (c) => {
           const b = resolveRecordBranch(c, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -318,7 +318,7 @@ export const TradingDirectoryView: React.FC = () => {
         header: t('trading_col_city', 'Wilaya'),
         width: '100px',
         sortable: true,
-        renderCell: (c) => <span className="text-xs text-black/70 dark:text-white/75">{c.city}</span>,
+        renderCell: (c) => <span className="t-cap text-black/70 dark:text-white/75">{c.city}</span>,
       },
       {
         key: 'balance',
@@ -328,11 +328,11 @@ export const TradingDirectoryView: React.FC = () => {
         renderCell: (c) => {
           const isOver = (c.outstandingBalance || 0) > (c.creditLimit || 0);
           return (
-            <div className="text-xs font-mono tabular-nums">
-              <span className={`font-bold block ${isOver ? 'text-rose-600 dark:text-rose-400' : 'text-black dark:text-white'}`}>
+            <div className="t-cap tabular-nums">
+              <span className={`font-semibold block ${isOver ? 'text-rose-600 dark:text-rose-400' : 'text-black dark:text-white'}`}>
                 {formatMoney(c.outstandingBalance || 0)}
               </span>
-              <span className="text-[10px] text-black/55 dark:text-white/55">
+              <span className="t-cap text-black/55 dark:text-white/55">
                 Plafond: {formatMoney(c.creditLimit || 0)}
               </span>
             </div>
@@ -355,7 +355,7 @@ export const TradingDirectoryView: React.FC = () => {
               aria-label={t('action_edit', 'Modifier')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <Edit size={14} />
             </button>
@@ -368,7 +368,7 @@ export const TradingDirectoryView: React.FC = () => {
               aria-label={t('action_delete', 'Supprimer')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
             >
               <Trash2 size={14} />
             </button>
@@ -387,9 +387,9 @@ export const TradingDirectoryView: React.FC = () => {
         minWidth: '210px',
         sortable: true,
         renderCell: (s) => (
-          <div className="text-xs">
-            <span className="font-bold text-black dark:text-white block">{s.supplierName}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55">{s.sector || 'Fournisseur'}</span>
+          <div className="t-cap">
+            <span className="font-semibold text-black dark:text-white block">{s.supplierName}</span>
+            <span className="t-cap text-black/55 dark:text-white/55">{s.sector || 'Fournisseur'}</span>
           </div>
         ),
       },
@@ -398,9 +398,9 @@ export const TradingDirectoryView: React.FC = () => {
         header: 'N.I.F. / R.C.',
         width: '170px',
         renderCell: (s) => (
-          <div className="text-xs font-mono">
+          <div className="t-cap tabular-nums">
             <span className="block font-medium text-black dark:text-white">NIF: {s.nif || 'N/A'}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55">RC: {s.rc || 'N/A'}</span>
+            <span className="t-cap text-black/55 dark:text-white/55">RC: {s.rc || 'N/A'}</span>
           </div>
         ),
       },
@@ -409,9 +409,9 @@ export const TradingDirectoryView: React.FC = () => {
         header: t('trading_col_contact', 'Contact & Tél'),
         width: '165px',
         renderCell: (s) => (
-          <div className="text-xs">
+          <div className="t-cap">
             <span className="font-semibold text-black dark:text-white block">{s.contactName || 'Standard'}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{s.phone}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">{s.phone}</span>
           </div>
         ),
       },
@@ -422,7 +422,7 @@ export const TradingDirectoryView: React.FC = () => {
         renderCell: (s) => {
           const b = resolveRecordBranch(s, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -433,14 +433,14 @@ export const TradingDirectoryView: React.FC = () => {
         key: 'city',
         header: t('trading_col_city', 'Ville'),
         width: '105px',
-        renderCell: (s) => <span className="text-xs text-black/70 dark:text-white/75">{s.city}</span>,
+        renderCell: (s) => <span className="t-cap text-black/70 dark:text-white/75">{s.city}</span>,
       },
       {
         key: 'payable',
         header: t('trading_col_debt', 'Dette Fournisseur'),
         width: '145px',
         renderCell: (s) => (
-          <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+          <span className="tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(s.outstandingPayable || 0)}
           </span>
         ),
@@ -461,7 +461,7 @@ export const TradingDirectoryView: React.FC = () => {
               aria-label={t('action_edit', 'Modifier')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <Edit size={14} />
             </button>
@@ -474,7 +474,7 @@ export const TradingDirectoryView: React.FC = () => {
               aria-label={t('action_delete', 'Supprimer')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
             >
               <Trash2 size={14} />
             </button>
@@ -982,7 +982,7 @@ export const TradingDirectoryView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setComposerOpen(true)}
-                        className="text-[11px] font-bold text-[#d4522f] hover:underline cursor-pointer"
+                        className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline cursor-pointer"
                       >
                         + Créer document
                       </button>
@@ -1071,7 +1071,7 @@ export const TradingDirectoryView: React.FC = () => {
                   <InspectorKeyValue
                     label="Téléphone"
                     value={ent.phone || 'Non renseigné'}
-                    icon={<Phone size={13} className="text-[#d4522f]" />}
+                    icon={<Phone size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
                     mono
                     copyText={ent.phone}
                   />

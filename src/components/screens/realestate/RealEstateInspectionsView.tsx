@@ -323,8 +323,8 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         sortable: true,
         renderCell: (insp) => (
           <div>
-            <span className="font-bold text-xs text-black dark:text-white block truncate">{insp.propertyTitle}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">Date: {insp.inspectionDate}</span>
+            <span className="font-semibold t-small text-black dark:text-white block truncate">{insp.propertyTitle}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">Date: {insp.inspectionDate}</span>
           </div>
         ),
       },
@@ -336,7 +336,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
           const isEntry = insp.inspectionType === 'MoveIn' || insp.inspectionType === 'Entry';
           return (
             <span
-              className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+              className={`t-small font-semibold px-2.5 py-1 rounded-full ${
                 isEntry
                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                   : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
@@ -355,8 +355,8 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         renderCell: (insp) => {
           const b = resolveRecordBranch(insp, branchesById, currentBranch, language);
           return (
-            <div className="text-xs font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-1.5">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="t-small font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-2">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -367,14 +367,14 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         header: isAr ? 'الخبير المعاين' : 'Inspecteur Mandataire',
         width: '1.8*',
         sortable: true,
-        renderCell: (insp) => <span className="text-xs font-medium text-black dark:text-white truncate">{insp.inspectorName}</span>,
+        renderCell: (insp) => <span className="t-small font-medium text-black dark:text-white truncate">{insp.inspectorName}</span>,
       },
       {
         key: 'meters',
         header: isAr ? 'العدادات (سونلغاز / سيال)' : 'Index Compteurs',
         width: '1.8*',
         renderCell: (insp) => (
-          <div className="font-mono text-[11px] text-black/55 dark:text-white/55 space-y-0.5">
+          <div className="tabular-nums t-cap text-black/55 dark:text-white/55 space-y-0.5">
             <div>
               Élec:{' '}
               <strong className="text-black dark:text-white">
@@ -395,7 +395,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         header: isAr ? 'المفاتيح' : 'Clés',
         width: '1.1*',
         renderCell: (insp) => (
-          <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+          <span className="t-small font-semibold text-emerald-600 flex items-center gap-1">
             <Key size={12} />
             <span>{insp.keysDeliveredCount || insp.keysCount || 4} clés</span>
           </span>
@@ -413,8 +413,8 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         width: '2.2*',
         renderCell: (v) => (
           <div>
-            <div className="font-bold text-xs text-black dark:text-white truncate">{v.clientFullName}</div>
-            <div className="text-[11px] font-mono text-black/55 dark:text-white/55">{v.clientPhone}</div>
+            <div className="font-semibold t-small text-black dark:text-white truncate">{v.clientFullName}</div>
+            <div className="t-cap tabular-nums text-black/55 dark:text-white/55">{v.clientPhone}</div>
           </div>
         ),
       },
@@ -424,8 +424,8 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         width: '2.6*',
         renderCell: (v) => (
           <div>
-            <div className="font-semibold text-xs text-black dark:text-white truncate">{v.propertyTitle}</div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 truncate">{v.propertyAddress}</div>
+            <div className="font-semibold t-small text-black dark:text-white truncate">{v.propertyTitle}</div>
+            <div className="t-cap text-black/55 dark:text-white/55 truncate">{v.propertyAddress}</div>
           </div>
         ),
       },
@@ -437,8 +437,8 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         renderCell: (v) => {
           const b = resolveRecordBranch(v, branchesById, currentBranch, language);
           return (
-            <div className="text-xs font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-1.5">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="t-small font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-2">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -449,9 +449,9 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         header: 'GPS & Négociateur',
         width: '1.8*',
         renderCell: (v) => (
-          <div className="text-xs">
+          <div className="t-cap">
             <div className="font-medium text-black dark:text-white truncate">{v.negotiatorName}</div>
-            <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+            <div className="t-cap tabular-nums text-emerald-600 dark:text-emerald-400">
               {v.gpsLatitude?.toFixed(4)}° N, {v.gpsLongitude?.toFixed(4)}° E
             </div>
           </div>
@@ -463,11 +463,11 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         width: '1.8*',
         renderCell: (v) => (
           <div>
-            <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#d4522f]/12 text-[#d4522f]">
+            <span className="inline-flex px-2 py-1 rounded-full t-small font-semibold bg-[#d4522f]/12 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
               {v.clientImpression || 'Interested'}
             </span>
             {v.counterOfferDzd && (
-              <div className="text-[11px] font-mono font-bold text-black dark:text-white mt-0.5">
+              <div className="t-small tabular-nums font-semibold text-black dark:text-white mt-0.5">
                 {formatMoney(v.counterOfferDzd, language)}
               </div>
             )}
@@ -1035,7 +1035,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                 </InspectorCard>
                 {v.signatureSvgData && (
                   <div data-sq="card" data-sq-border="solid" className="mt-3 p-3 bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734]">
-                    <div className="text-[11px] font-semibold text-black/60 dark:text-white/60 mb-2">Signature Certifiée</div>
+                    <div className="t-small font-semibold text-black/60 dark:text-white/60 mb-2">Signature Certifiée</div>
                     <img src={v.signatureSvgData} alt="Signature acquéreur" className="h-24 mx-auto object-contain" />
                   </div>
                 )}

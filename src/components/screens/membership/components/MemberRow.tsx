@@ -237,14 +237,14 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         {/* Avatar + Identity (.who.c-who) */}
         <span className="who c-who flex items-center gap-3 min-w-0 text-left rtl:text-right">
           <span
-            className="av w-[38px] h-[38px] rounded-full grid place-items-center text-white font-semibold text-[14px] shrink-0 select-none"
+            className="av w-[38px] h-[38px] rounded-full grid place-items-center text-white font-semibold t-label shrink-0 select-none"
             style={{ backgroundColor: member.avatarColor || '#d4522f' }}
             aria-hidden="true"
           >
             {initials}
           </span>
           <span className="flex flex-col min-w-0">
-            <span className="flex items-center gap-1.5 min-w-0">
+            <span className="flex items-center gap-2 min-w-0">
               <button
                 type="button"
                 data-no-liquid="true"
@@ -252,17 +252,17 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
                   e.stopPropagation();
                   onOpenDetails?.(member.id, e.currentTarget);
                 }}
-                className="nm border-0 bg-transparent p-0 text-left rtl:text-right font-semibold text-[14px] text-[var(--atr-ink,#000000)] dark:text-white hover:text-[var(--atr-acc,#d4522f)] truncate cursor-pointer"
+                className="nm border-0 bg-transparent p-0 text-left rtl:text-right font-semibold t-label text-[var(--atr-ink,#000000)] dark:text-white hover:text-[var(--atr-acc,#d4522f)] truncate cursor-pointer"
               >
                 {member.name}
               </button>
               {(isPinned || member.isPinned) && (
-                <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/12 px-2 py-0.5 rounded-full shrink-0">
+                <span className="t-small font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/12 px-2 py-1 rounded-full shrink-0">
                   VIP
                 </span>
               )}
             </span>
-            <small className="font-mono text-[11px] tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 truncate">
+            <small className="tabular-nums t-cap text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 truncate">
               ID: {member.id}
               {member.phone ? ` · ${member.phone}` : ''}
             </small>
@@ -273,7 +273,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         <span className="c-fm min-w-0">
           <span
             title={member.planName}
-            className="pill inline-flex items-center max-w-full px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate"
+            className="pill inline-flex items-center max-w-full px-2.5 py-[3px] rounded-full t-small font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate"
           >
             {member.planName}
           </span>
@@ -282,7 +282,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         {/* Status Pill (.c-st) */}
         <span className="c-st">
           <span
-            className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[12px] font-medium whitespace-nowrap ${statusPillClass}`}
+            className={`pill inline-flex items-center gap-2 px-2.5 py-[3px] rounded-full t-small font-medium whitespace-nowrap ${statusPillClass}`}
           >
             <i className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
             {member.status}
@@ -291,10 +291,10 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
 
         {/* Expiry Date (.dt.c-dt) */}
         <span className="dt c-dt flex flex-col min-w-0">
-          <b className="font-mono text-[12px] font-bold tabular-nums text-[var(--atr-ink,#000000)] dark:text-white truncate">
+          <b className="tabular-nums t-small font-semibold text-[var(--atr-ink,#000000)] dark:text-white truncate">
             {member.expiryDate}
           </b>
-          <small className="font-mono text-[11px] tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 truncate">
+          <small className="tabular-nums t-cap text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 truncate">
             {member.daysRemainingLabel}
           </small>
         </span>
@@ -302,7 +302,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         {/* Branch (.br.c-sd) */}
         <span
           title={member.branchName || '—'}
-          className="br c-sd inline-flex items-center gap-1.5 min-w-0 max-w-full text-[12.5px] font-medium text-[var(--atr-ink,#000000)] dark:text-white truncate"
+          className="br c-sd inline-flex items-center gap-2 min-w-0 max-w-full t-small font-medium text-[var(--atr-ink,#000000)] dark:text-white truncate"
         >
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--atr-acc,#d4522f)] shrink-0" />
           <span className="truncate">{member.branchName || '—'}</span>

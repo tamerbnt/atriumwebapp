@@ -611,8 +611,8 @@ export const PosInventoryView: React.FC<any> = () => {
         sortable: true,
         renderCell: (p) => (
           <div className="min-w-0">
-            <div className="font-bold text-xs text-black dark:text-white truncate">{p.name}</div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 truncate">
+            <div className="font-semibold t-small text-black dark:text-white truncate">{p.name}</div>
+            <div className="t-cap text-black/55 dark:text-white/55 truncate">
               {p.description || t('shop_standard_article')}
             </div>
           </div>
@@ -625,7 +625,7 @@ export const PosInventoryView: React.FC<any> = () => {
         minWidth: '100px',
         sortable: true,
         renderCell: (p) => (
-          <span className="text-[10px] font-bold text-black/70 dark:text-white/75">{p.category}</span>
+          <span className="t-small font-semibold text-black/70 dark:text-white/75">{p.category}</span>
         ),
       },
       {
@@ -635,9 +635,9 @@ export const PosInventoryView: React.FC<any> = () => {
         minWidth: '120px',
         sortable: true,
         renderCell: (p) => (
-          <div className="font-mono text-[11px] text-black/55 dark:text-white/55">
+          <div className="tabular-nums t-cap text-black/55 dark:text-white/55">
             <div>{p.sku}</div>
-            {p.barcode && <div className="text-[10px]">{p.barcode}</div>}
+            {p.barcode && <div className="t-cap">{p.barcode}</div>}
           </div>
         ),
       },
@@ -650,7 +650,7 @@ export const PosInventoryView: React.FC<any> = () => {
         renderCell: (p) => {
           const costAmt = p.costPrice || p.cost?.amount || Math.round(p.price.amount * 0.6);
           return (
-            <span className="font-mono text-black/55 dark:text-white/55 tabular-nums">
+            <span className="tabular-nums text-black/55 dark:text-white/55">
               {formatMoney(costAmt)}
             </span>
           );
@@ -663,7 +663,7 @@ export const PosInventoryView: React.FC<any> = () => {
         minWidth: '100px',
         sortable: true,
         renderCell: (p) => (
-          <span className="font-mono font-bold text-black dark:text-white tabular-nums">
+          <span className="tabular-nums font-semibold text-black dark:text-white">
             {formatMoney(p.price.amount)}
           </span>
         ),
@@ -679,11 +679,11 @@ export const PosInventoryView: React.FC<any> = () => {
           const isLow = !isOut && p.stockQuantity <= (p.reorderLevel || 5);
           return (
             <span
-              className={`inline-flex items-center gap-1 font-bold text-[11px] tabular-nums ${
+              className={`inline-flex items-center gap-1 font-semibold t-small tabular-nums ${
                 isOut
-                  ? 'text-red-600 dark:text-red-400 font-black'
+                  ? 'text-red-600 dark:text-red-400 font-semibold'
                   : isLow
-                  ? 'text-amber-600 dark:text-amber-400 font-bold'
+                  ? 'text-amber-600 dark:text-amber-400 font-semibold'
                   : 'text-black dark:text-white'
               }`}
             >
@@ -699,7 +699,7 @@ export const PosInventoryView: React.FC<any> = () => {
         minWidth: '110px',
         sortable: true,
         renderCell: (p) => (
-          <span className="font-mono font-bold text-[#d4522f] tabular-nums">
+          <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
             {formatMoney(p.price.amount * p.stockQuantity)}
           </span>
         ),
@@ -711,7 +711,7 @@ export const PosInventoryView: React.FC<any> = () => {
         minWidth: '110px',
         sortable: true,
         renderCell: (p) => (
-          <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">
+          <span className="t-small font-medium text-black/75 dark:text-white/80 truncate block">
             {resolveRecordBranch(p, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -733,7 +733,7 @@ export const PosInventoryView: React.FC<any> = () => {
               }}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-[#d4522f] hover:bg-[#d4522f]/10 cursor-pointer"
+              className="p-2 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:bg-[#d4522f]/10 cursor-pointer"
               title="Adjust Stock"
             >
               <ArrowDownUp size={14} />
@@ -746,7 +746,7 @@ export const PosInventoryView: React.FC<any> = () => {
               }}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
               title="Edit Product"
             >
               <Edit2 size={14} />
@@ -759,7 +759,7 @@ export const PosInventoryView: React.FC<any> = () => {
               }}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer"
               title="Delete Product"
             >
               <Trash2 size={14} />
@@ -783,7 +783,7 @@ export const PosInventoryView: React.FC<any> = () => {
           return (
             <div className="flex items-center gap-2">
               <span
-                className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold font-mono uppercase ${
+                className={`px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold tabular-nums ${
                   isBr
                     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
@@ -791,7 +791,7 @@ export const PosInventoryView: React.FC<any> = () => {
               >
                 {isBr ? 'BR' : 'PO'}
               </span>
-              <span className="font-mono font-bold text-xs text-black dark:text-white">
+              <span className="tabular-nums font-semibold t-small text-black dark:text-white">
                 {doc.docNumber}
               </span>
             </div>
@@ -804,9 +804,9 @@ export const PosInventoryView: React.FC<any> = () => {
         minWidth: '180px',
         sortable: true,
         renderCell: (doc) => (
-          <div className="text-xs">
-            <div className="font-bold text-black dark:text-white truncate">{doc.supplierName}</div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+          <div className="t-cap">
+            <div className="font-semibold text-black dark:text-white truncate">{doc.supplierName}</div>
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               {doc.items.length} {isAr ? 'أصناف محددة' : 'articles commandés'}
             </div>
           </div>
@@ -818,10 +818,10 @@ export const PosInventoryView: React.FC<any> = () => {
         width: '130px',
         sortable: true,
         renderCell: (doc) => (
-          <div className="text-xs font-mono">
+          <div className="t-cap tabular-nums">
             <div className="text-black dark:text-white">{doc.orderDate}</div>
             {doc.deliveryExpectedDate && (
-              <div className="text-[10px] text-black/55 dark:text-white/55">
+              <div className="t-cap text-black/55 dark:text-white/55">
                 {isAr ? 'التسليم:' : 'Prévue:'} {doc.deliveryExpectedDate}
               </div>
             )}
@@ -834,7 +834,7 @@ export const PosInventoryView: React.FC<any> = () => {
         width: '125px',
         sortable: true,
         renderCell: (doc) => (
-          <span className="font-mono font-bold text-xs text-[#d4522f] tabular-nums">
+          <span className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
             {formatMoney(doc.totalTtc)}
           </span>
         ),
@@ -848,7 +848,7 @@ export const PosInventoryView: React.FC<any> = () => {
           const isReceived = doc.status === 'Received' || doc.type === 'br';
           return (
             <span
-              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full t-small font-semibold ${
                 isReceived
                   ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400'
                   : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400'
@@ -866,7 +866,7 @@ export const PosInventoryView: React.FC<any> = () => {
         width: '120px',
         sortable: true,
         renderCell: (doc) => (
-          <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">
+          <span className="t-small font-medium text-black/75 dark:text-white/80 truncate block">
             {resolveRecordBranch(doc, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -876,7 +876,7 @@ export const PosInventoryView: React.FC<any> = () => {
         header: '',
         width: '150px',
         renderCell: (doc) => (
-          <div className="flex items-center justify-end gap-1.5">
+          <div className="flex items-center justify-end gap-2">
             {doc.type === 'po' && doc.status === 'Ordered' && (
               <button
                 type="button"
@@ -886,7 +886,7 @@ export const PosInventoryView: React.FC<any> = () => {
                 }}
                 data-sq="ctl-sm"
                 data-sq-border="none"
-                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white t-small font-semibold flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <CheckCircle2 size={12} />
                 <span>{isAr ? 'استلام' : 'Réceptionner'}</span>
@@ -900,7 +900,7 @@ export const PosInventoryView: React.FC<any> = () => {
               }}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               title="Imprimer"
             >
               <Printer size={14} />
@@ -1367,15 +1367,15 @@ export const PosInventoryView: React.FC<any> = () => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Building2 size={16} className="text-[#d4522f]" />
-                  <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
+                  <Building2 size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                  <h3 className="t-small font-semibold text-black dark:text-white">
                     {isAr ? 'دليل الموردين التجاريين' : 'Fournisseurs & Grossistes Partenaires'}
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsSupplierModalOpen(true)}
-                  className="text-xs font-bold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   + {isAr ? 'إضافة مورد جديد' : 'Nouveau Fournisseur'}
                 </button>
@@ -1386,19 +1386,19 @@ export const PosInventoryView: React.FC<any> = () => {
                     key={sup.id}
                     data-sq="card"
                     data-sq-border="solid"
-                    className="p-3.5 [--sq-stroke:#F5F5F5] dark:[--sq-stroke:#262626] bg-neutral-50/50 dark:bg-neutral-850/50 space-y-1.5"
+                    className="p-4 [--sq-stroke:#F5F5F5] dark:[--sq-stroke:#262626] bg-neutral-50/50 dark:bg-neutral-850/50 space-y-2"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-black dark:text-white truncate">{sup.supplierName}</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-200/60 dark:bg-neutral-700 text-black/70 dark:text-white/75">
+                      <span className="font-semibold t-small text-black dark:text-white truncate">{sup.supplierName}</span>
+                      <span className="t-cap tabular-nums px-2 py-1 rounded-[var(--r-check,6px)] bg-neutral-200/60 dark:bg-neutral-700 text-black/70 dark:text-white/75">
                         {sup.city || 'Alger'}
                       </span>
                     </div>
-                    <div className="text-[11px] text-black/55 dark:text-white/55">
+                    <div className="t-cap text-black/55 dark:text-white/55">
                       {sup.contactName ? `${sup.contactName} · ` : ''}
                       {sup.phone || 'Sans contact'}
                     </div>
-                    <div className="flex items-center justify-between text-[10px] text-black/55 dark:text-white/55 font-mono pt-1 border-t border-neutral-200/50 dark:border-neutral-800">
+                    <div className="flex items-center justify-between t-cap text-black/55 dark:text-white/55 tabular-nums pt-1 border-t border-neutral-200/50 dark:border-neutral-800">
                       <span>{sup.sector || 'Grossiste'}</span>
                       <span>{sup.paymentTermsDays || 30}j paiement</span>
                     </div>
@@ -1436,7 +1436,7 @@ export const PosInventoryView: React.FC<any> = () => {
         branchName={inspectingProduct ? resolveRecordBranch(inspectingProduct, branchesById, currentBranch, language).name : undefined}
         headerPills={
           inspectingProduct?.category ? (
-            <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-[var(--r-check,6px)] text-[12px] font-medium bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]">
+            <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]">
               {inspectingProduct.category}
             </span>
           ) : undefined
@@ -1887,10 +1887,10 @@ export const PosInventoryView: React.FC<any> = () => {
             />
           </div>
           <div className="flex items-center justify-end gap-3 pt-3">
-            <button type="button" onClick={() => setIsProductFormModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">
+            <button type="button" onClick={() => setIsProductFormModalOpen(false)} className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">
               {t('action_cancel')}
             </button>
-            <button type="submit" className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs">
+            <button type="submit" className="h-10 px-5 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 cursor-pointer shadow-xs">
               {editingProductId ? (isAr ? 'حفظ التعديلات' : 'Enregistrer') : isAr ? 'إضافة الصنف' : 'Créer l’Article'}
             </button>
           </div>
@@ -1908,7 +1908,7 @@ export const PosInventoryView: React.FC<any> = () => {
             <div
               data-sq="ctl"
               data-sq-border="none"
-              className="flex bg-neutral-100 dark:bg-neutral-800 p-1 text-xs font-bold"
+              className="flex bg-neutral-100 dark:bg-neutral-800 p-1 t-small font-semibold"
             >
               <button
                 type="button"
@@ -1960,10 +1960,10 @@ export const PosInventoryView: React.FC<any> = () => {
               corner={12}
             />
             <div className="flex items-center justify-end gap-3 pt-3">
-              <button type="button" onClick={() => setIsAdjustStockModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">
+              <button type="button" onClick={() => setIsAdjustStockModalOpen(false)} className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">
                 {t('action_cancel')}
               </button>
-              <button type="submit" className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs">
+              <button type="submit" className="h-10 px-5 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 cursor-pointer shadow-xs">
                 {isAr ? 'تأكيد التعديل' : 'Valider l’Ajustement'}
               </button>
             </div>
@@ -1990,10 +1990,10 @@ export const PosInventoryView: React.FC<any> = () => {
             corner={12}
           />
           <div className="flex items-center justify-end gap-3 pt-3">
-            <button type="button" onClick={() => setIsBatchRestockModalOpen(false)} className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">
+            <button type="button" onClick={() => setIsBatchRestockModalOpen(false)} className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer">
               {t('action_cancel')}
             </button>
-            <button type="submit" className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs">
+            <button type="submit" className="h-10 px-5 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 cursor-pointer shadow-xs">
               {isAr ? 'تطبيق التموين' : 'Confirmer le Réassort'}
             </button>
           </div>
@@ -2033,7 +2033,7 @@ export const PosInventoryView: React.FC<any> = () => {
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
+              <span className="t-small font-semibold text-black dark:text-white">
                 {isAr ? 'السلع المطلوبة' : 'Articles & Quantités à commander'}
               </span>
               <button
@@ -2053,7 +2053,7 @@ export const PosInventoryView: React.FC<any> = () => {
                     },
                   ])
                 }
-                className="text-xs font-bold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer"
+                className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline flex items-center gap-1 cursor-pointer"
               >
                 + {isAr ? 'إضافة صنف' : 'Ajouter une ligne'}
               </button>
@@ -2130,7 +2130,7 @@ export const PosInventoryView: React.FC<any> = () => {
                         onClick={() => setPoItems((prev) => prev.filter((_, i) => i !== idx))}
                         data-sq="ctl-sm"
                         data-sq-border="none"
-                        className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 cursor-pointer transition-colors"
+                        className="p-2 text-black/55 dark:text-white/55 hover:text-rose-600 cursor-pointer transition-colors"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -2153,12 +2153,12 @@ export const PosInventoryView: React.FC<any> = () => {
           <div
             data-sq="ctl"
             data-sq-border="solid"
-            className="p-3.5 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-neutral-100/60 dark:bg-neutral-800/60 flex items-center justify-between text-xs"
+            className="p-4 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-neutral-100/60 dark:bg-neutral-800/60 flex items-center justify-between t-cap"
           >
             <span className="font-semibold text-black/70 dark:text-white/75">
               {isAr ? 'المجموع المقدر (TTC شامل 19% رسم)' : 'Total Estimé TTC (TVA 19% incluse) :'}
             </span>
-            <span className="font-mono font-black text-sm text-[#d4522f] tabular-nums">
+            <span className="tabular-nums font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
               {formatMoney(poItems.reduce((sum, it) => sum + it.orderedQty * it.unitCostHt, 0) * 1.19)}
             </span>
           </div>

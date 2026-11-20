@@ -249,21 +249,21 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
       const label = getStatusLabel(status);
       switch (status) {
         case 'Intake':
-          return <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">{label}</span>;
+          return <span className="t-small font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full border border-blue-200 dark:border-blue-800">{label}</span>;
         case 'Diagnostic':
-          return <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">{label}</span>;
+          return <span className="t-small font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800">{label}</span>;
         case 'WaitingApproval':
-          return <span className="text-[11px] font-semibold text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">{label}</span>;
+          return <span className="t-small font-semibold text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-1 rounded-full border border-purple-200 dark:border-purple-800">{label}</span>;
         case 'WaitingParts':
-          return <span className="text-[11px] font-semibold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-800">{label}</span>;
+          return <span className="t-small font-semibold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 rounded-full border border-rose-200 dark:border-rose-800">{label}</span>;
         case 'InRepair':
-          return <span className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">{label}</span>;
+          return <span className="t-small font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">{label}</span>;
         case 'Testing':
-          return <span className="text-[11px] font-semibold text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 px-2.5 py-0.5 rounded-full border border-cyan-200 dark:border-cyan-800">{label}</span>;
+          return <span className="t-small font-semibold text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 px-2.5 py-1 rounded-full border border-cyan-200 dark:border-cyan-800">{label}</span>;
         case 'ReadyForPickup':
-          return <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">{label}</span>;
+          return <span className="t-small font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">{label}</span>;
         case 'Delivered':
-          return <span className="text-[11px] font-semibold text-black/70 dark:text-white/75 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-0.5 rounded-full">{label}</span>;
+          return <span className="t-small font-semibold text-black/70 dark:text-white/75 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-full">{label}</span>;
         default:
           return null;
       }
@@ -454,7 +454,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         width: '1.2*',
         sortable: true,
         renderCell: (o) => (
-          <div className="flex items-center gap-1.5 font-mono font-bold text-xs text-[#d4522f]">
+          <div className="flex items-center gap-2 tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
             <span>{o.orderNumber}</span>
           </div>
         ),
@@ -466,8 +466,8 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         sortable: true,
         renderCell: (o) => (
           <div className="min-w-0">
-            <span className="font-mono font-bold text-xs text-black dark:text-white block">{o.vehiclePlate}</span>
-            <span className="text-[11px] text-black/55 dark:text-white/55 block truncate">{o.vehicleModel}</span>
+            <span className="tabular-nums font-semibold t-small text-black dark:text-white block">{o.vehiclePlate}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 block truncate">{o.vehicleModel}</span>
           </div>
         ),
       },
@@ -478,8 +478,8 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         sortable: true,
         renderCell: (o) => (
           <div className="min-w-0">
-            <span className="font-semibold text-xs text-black dark:text-white block truncate">{o.clientName}</span>
-            <span className="text-[11px] text-black/55 dark:text-white/55 font-mono block">{o.clientPhone}</span>
+            <span className="font-semibold t-small text-black dark:text-white block truncate">{o.clientName}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums block">{o.clientPhone}</span>
           </div>
         ),
       },
@@ -491,7 +491,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         renderCell: (o) => {
           const info = resolveRecordBranch(o, branchesById, currentBranch, language);
           return (
-            <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">
+            <span className="t-small font-medium text-black/75 dark:text-white/80 truncate block">
               {info.name}
             </span>
           );
@@ -502,9 +502,9 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         header: isAr ? 'الجسر والتقني' : isEn ? 'Lift & Tech' : 'Pont & Mécanicien',
         width: '1.8*',
         renderCell: (o) => (
-          <div className="text-xs min-w-0">
+          <div className="t-cap min-w-0">
             <span className="font-semibold text-black/75 dark:text-white/80 block truncate">{o.bayName || 'Non assigné'}</span>
-            <span className="text-[11px] text-black/55 dark:text-white/55 block truncate">{o.technicianName}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 block truncate">{o.technicianName}</span>
           </div>
         ),
       },
@@ -523,7 +523,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
               width: '1.3*',
               sortable: true,
               renderCell: (o: RepairOrder) => (
-                <div className="text-right font-mono font-bold text-xs text-black dark:text-white">
+                <div className="text-right tabular-nums font-semibold t-small text-black dark:text-white">
                   {formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
                 </div>
               ),
@@ -740,11 +740,11 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
       <ScreenPod>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-black dark:text-white flex items-center gap-2">
-              <Wrench size={14} className="text-[#d4522f]" />
+            <span className="t-small font-semibold text-black dark:text-white flex items-center gap-2">
+              <Wrench size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               {isAr ? 'حالة جسور الرفع والورشة في الوقت الفعلي' : 'Occupation Temps Réel des Ponts & Postes Atelier'}
             </span>
-            <span className="text-[11px] font-medium text-black/55 dark:text-white/55">
+            <span className="t-small font-medium text-black/55 dark:text-white/55">
               {occupiedBaysCount === bays.length
                 ? isAr
                   ? 'الورشة ممتلئة'
@@ -752,7 +752,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 : `${bays.length - occupiedBaysCount} ${isAr ? 'مراكز متاحة' : 'postes disponibles'}`}
             </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
             {bays.map((bay) => {
               const bayOrder = orders.find((o) => o.assignedBayId === bay.id || o.id === bay.activeOrderId);
               return (
@@ -769,28 +769,28 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                       setInspectedOrder(bayOrder);
                     }
                   }}
-                  className={`w-full h-full p-3 border text-left rtl:text-right transition-all text-xs ${
+                  className={`w-full h-full p-3 border text-left rtl:text-right transition-all t-cap ${
                     bay.isOccupied
                       ? 'bg-amber-50/70 dark:bg-amber-950/25 border-amber-300 dark:border-amber-800/60 cursor-pointer hover:border-[#d4522f]'
                       : 'bg-white dark:bg-neutral-900 border-[#E6DED6] dark:border-neutral-800 opacity-85 cursor-default'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-black dark:text-white truncate">P{bay.bayNumber}</span>
+                    <span className="font-semibold text-black dark:text-white truncate">P{bay.bayNumber}</span>
                     <span className={`w-2 h-2 rounded-full ${bay.isOccupied ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
                   </div>
-                  <span className="text-[11px] text-black/55 dark:text-white/55 block truncate">{bay.name}</span>
+                  <span className="t-cap text-black/55 dark:text-white/55 block truncate">{bay.name}</span>
                   {bayOrder ? (
-                    <span className="mt-2 pt-1.5 border-t border-amber-200/60 dark:border-amber-800/40 block">
-                      <span className="font-mono font-bold text-black dark:text-white block text-[11px] truncate">
+                    <span className="mt-2 pt-2 border-t border-amber-200/60 dark:border-amber-800/40 block">
+                      <span className="tabular-nums font-semibold text-black dark:text-white block t-small truncate">
                         {bayOrder.vehiclePlate}
                       </span>
-                      <span className="text-[10px] text-black/55 dark:text-white/55 block truncate">
+                      <span className="t-cap text-black/55 dark:text-white/55 block truncate">
                         {bayOrder.technicianName}
                       </span>
                     </span>
                   ) : (
-                    <span className="mt-2 block text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    <span className="mt-2 block t-small font-semibold text-emerald-600 dark:text-emerald-400">
                       {isAr ? 'متاح' : 'Libre'}
                     </span>
                   )}
@@ -841,7 +841,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         />
 
         {displayMode === 'kanban' ? (
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5 items-start mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-start mt-4">
             {KANBAN_COLUMNS.map((col) => {
               const colOrders = sortedOrders.filter((o) => o.status === col.id);
               const colLabel = isAr ? col.ar : isEn ? col.en : col.fr;
@@ -853,12 +853,12 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                   className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col space-y-3 min-h-[380px]"
                 >
                   <div className={`flex items-center justify-between pb-2 border-b-2 ${col.color}`}>
-                    <span className="font-bold text-xs text-black dark:text-white">{colLabel}</span>
-                    <span className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 text-[11px] font-mono flex items-center justify-center font-bold">
+                    <span className="font-semibold t-small text-black dark:text-white">{colLabel}</span>
+                    <span className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 t-small tabular-nums flex items-center justify-center font-semibold">
                       {colOrders.length}
                     </span>
                   </div>
-                  <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[550px] pr-1">
+                  <div className="space-y-2 flex-1 overflow-y-auto max-h-[550px] pr-1">
                     {colOrders.length === 0 ? (
                       <KineticEmptyStateMotion motionKey={`garage-col-${col.id}`}>
                         <EmptyState
@@ -888,23 +888,23 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                             className="w-full text-left rtl:text-right space-y-2 bg-transparent border-0 p-0 cursor-pointer"
                           >
                             <div className="flex items-center justify-between">
-                              <span className="font-mono text-xs font-bold text-[#d4522f]">{order.orderNumber}</span>
-                              <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+                              <span className="tabular-nums t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{order.orderNumber}</span>
+                              <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                                 {order.bayName || 'Cour'}
                               </span>
                             </div>
                             <div>
-                              <span className="font-bold text-xs text-black dark:text-white block font-mono">
+                              <span className="font-semibold t-small text-black dark:text-white block tabular-nums">
                                 {order.vehiclePlate}
                               </span>
-                              <span className="text-[11px] text-black/55 dark:text-white/55 block truncate">
+                              <span className="t-cap text-black/55 dark:text-white/55 block truncate">
                                 {order.vehicleModel}
                               </span>
                             </div>
-                            <div className="text-[10px] text-black/55 dark:text-white/55 flex items-center justify-between pt-1 border-t border-neutral-200/40 dark:border-neutral-700/40">
+                            <div className="t-cap text-black/55 dark:text-white/55 flex items-center justify-between pt-1 border-t border-neutral-200/40 dark:border-neutral-700/40">
                               <span className="truncate">{order.technicianName}</span>
                               {!isMechanicRole && (
-                                <span className="font-mono font-bold text-black/70 dark:text-white/75 shrink-0">
+                                <span className="tabular-nums font-semibold text-black/70 dark:text-white/75 shrink-0">
                                   {formatMoney(order.finalCostDzd || order.estimatedCostDzd, language)}
                                 </span>
                               )}
@@ -916,7 +916,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                             data-sq="ctl-sm"
                             data-sq-border="solid"
                             onClick={() => handleNextStatus(order)}
-                            className="w-full py-1.5 bg-white dark:bg-neutral-700 hover:bg-[#d4522f] hover:text-white text-black/75 dark:text-white text-[10px] font-bold flex items-center justify-center gap-1 border border-neutral-200 dark:border-neutral-600 transition-colors cursor-pointer"
+                            className="w-full py-2 bg-white dark:bg-neutral-700 hover:bg-[#d4522f] hover:text-white text-black/75 dark:text-white t-small font-semibold flex items-center justify-center gap-1 border border-neutral-200 dark:border-neutral-600 transition-colors cursor-pointer"
                           >
                             <span>{isAr ? 'تقديم المرحلة' : 'Avancer étape'}</span>
                             <ArrowRight size={10} />
@@ -1127,7 +1127,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                         key={item.id}
                         data-sq="ctl"
                         data-sq-border="solid"
-                        className="flex items-center gap-2.5 p-2.5 bg-[#F3EDE7] dark:bg-[#1E1C1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] cursor-pointer text-xs"
+                        className="flex items-center gap-2 p-3 bg-[#F3EDE7] dark:bg-[#1E1C1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] cursor-pointer t-cap"
                       >
                         <input
                           type="checkbox"
@@ -1136,7 +1136,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                             const updated = checklist.map((c) => (c.id === item.id ? { ...c, done: !c.done } : c));
                             updateOrder({ ...order, technicianChecklist: updated });
                           }}
-                          className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
+                          className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
                         />
                         <span className={item.done ? 'line-through text-black/55 dark:text-white/55' : 'text-black dark:text-white'}>
                           {item.label}
@@ -1247,8 +1247,8 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
             className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4"
           >
             <div className="flex items-center justify-between border-b pb-3 border-neutral-100 dark:border-neutral-800">
-              <h3 className="font-bold text-sm text-black dark:text-white flex items-center gap-2">
-                <Boxes size={16} className="text-[#d4522f]" />
+              <h3 className="font-semibold t-label text-black dark:text-white flex items-center gap-2">
+                <Boxes size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>{isAr ? 'صرف قطعة غيار لأمر التصليح' : 'Sortie Pièce Magasin (Réquisition)'}</span>
               </h3>
               <button
@@ -1262,7 +1262,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
             </div>
             <form onSubmit={handleRequisitionSubmit} className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1.5">
+                <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-2">
                   {isAr ? 'اختيار القطعة من المخزن' : 'Sélectionner la pièce en stock'}
                 </label>
                 <div
@@ -1273,7 +1273,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                   <select
                     value={selectedPartId}
                     onChange={(e) => setSelectedPartId(e.target.value)}
-                    className="lbi-field w-full h-full bg-transparent border-0 text-xs p-2.5 text-black dark:text-white"
+                    className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white"
                     required
                   >
                     <option value="">-- Choisir une pièce disponible --</option>
@@ -1286,7 +1286,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1.5">
+                <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-2">
                   {isAr ? 'الكمية المطلوبة' : 'Quantité à sortir'}
                 </label>
                 <div
@@ -1299,7 +1299,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                     min="1"
                     value={selectedPartQty}
                     onChange={(e) => setSelectedPartQty(e.target.value)}
-                    className="lbi-field w-full h-full bg-transparent border-0 text-xs p-2.5 text-black dark:text-white font-mono"
+                    className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white tabular-nums"
                     required
                   />
                 </div>

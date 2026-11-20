@@ -274,10 +274,10 @@ export const PosHistoryView: React.FC = () => {
         sortable: true,
         renderCell: (m) => (
           <div className="min-w-0">
-            <div className="font-bold text-xs text-black dark:text-white truncate">
+            <div className="font-semibold t-small text-black dark:text-white truncate">
               {m.productName}
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate">
               {m.reason || 'Mouvement régulier'}
             </div>
           </div>
@@ -296,7 +296,7 @@ export const PosHistoryView: React.FC = () => {
           const isDamage = m.type === 'Damage';
           return (
             <span
-              className={`text-[10px] font-bold uppercase tracking-wider ${
+              className={`t-small font-semibold ${
                 isRestock
                   ? 'text-emerald-600 dark:text-emerald-400'
                   : isSale
@@ -329,7 +329,7 @@ export const PosHistoryView: React.FC = () => {
         sortable: true,
         renderCell: (m) => (
           <span
-            className={`font-mono font-black text-xs tabular-nums ${
+            className={`tabular-nums font-semibold t-small ${
               m.quantity > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
             }`}
           >
@@ -343,8 +343,8 @@ export const PosHistoryView: React.FC = () => {
         width: '1.5*',
         minWidth: '120px',
         renderCell: (m) => (
-          <span className="font-mono text-xs text-black/55 dark:text-white/55 tabular-nums">
-            {m.previousStock} → <span className="font-bold text-black dark:text-white">{m.newStock}</span>
+          <span className="tabular-nums t-cap text-black/55 dark:text-white/55">
+            {m.previousStock} → <span className="font-semibold text-black dark:text-white">{m.newStock}</span>
           </span>
         ),
       },
@@ -355,7 +355,7 @@ export const PosHistoryView: React.FC = () => {
         minWidth: '110px',
         sortable: true,
         renderCell: (m) => (
-          <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">
+          <span className="t-small font-medium text-black/75 dark:text-white/80 truncate block">
             {resolveRecordBranch(m, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -367,7 +367,7 @@ export const PosHistoryView: React.FC = () => {
         minWidth: '130px',
         sortable: true,
         renderCell: (m) => (
-          <span className="text-xs text-black/55 dark:text-white/55 font-mono">
+          <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
             {new Date(m.createdAt).toLocaleString()}
           </span>
         ),

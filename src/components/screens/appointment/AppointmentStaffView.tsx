@@ -17,19 +17,19 @@ export const AppointmentStaffView: React.FC = () => {
       sortable: true,
       cell: (member) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-pink-500/15 text-pink-600 dark:text-pink-400 font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-pink-500/15 text-pink-600 dark:text-pink-400 font-semibold t-small flex items-center justify-center shrink-0">
             {member.fullName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-black dark:text-white text-xs truncate">
+            <div className="font-semibold text-black dark:text-white t-small truncate">
               {member.fullName}
             </div>
-            <div className="text-[11px] text-black/70 dark:text-white/75 truncate flex items-center gap-1.5">
+            <div className="t-cap text-black/70 dark:text-white/75 truncate flex items-center gap-2">
               <span>{member.role}</span>
               {member.chairOrStudio && (
                 <>
                   <span>·</span>
-                  <span className="text-[#d4522f] font-medium">{member.chairOrStudio}</span>
+                  <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-medium">{member.chairOrStudio}</span>
                 </>
               )}
             </div>
@@ -62,7 +62,7 @@ export const AppointmentStaffView: React.FC = () => {
                   : 'bg-neutral-400'
               }`}
             />
-            <span className="text-xs font-medium text-black dark:text-white">
+            <span className="t-small font-medium text-black dark:text-white">
               {member.status === 'active'
                 ? isPresent
                   ? isAr
@@ -102,7 +102,7 @@ export const AppointmentStaffView: React.FC = () => {
       header: isAr ? 'الكرسي / المقصورة' : isEn ? 'Assigned Chair / Cabin' : 'Fauteuil / Cabine',
       accessorKey: 'chairOrStudio',
       cell: (member) => (
-        <span className="text-xs font-medium text-black dark:text-white">
+        <span className="t-small font-medium text-black dark:text-white">
           {member.chairOrStudio || (isAr ? 'مشترك' : isEn ? 'Shared' : 'Partagé')}
         </span>
       ),
@@ -112,7 +112,7 @@ export const AppointmentStaffView: React.FC = () => {
       header: isAr ? 'نسبة العمولة' : isEn ? 'Commission %' : 'Commission Prestations',
       accessorKey: 'serviceCommissionRate',
       cell: (member) => (
-        <span className="text-xs font-semibold text-[#d4522f]">
+        <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
           {member.serviceCommissionRate ? `${member.serviceCommissionRate}%` : 'Standard'}
         </span>
       ),
@@ -122,7 +122,7 @@ export const AppointmentStaffView: React.FC = () => {
       header: isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
       accessorKey: 'phoneNumber',
       cell: (member) => (
-        <span className="text-xs text-black/70 dark:text-white tabular-nums">
+        <span className="t-cap text-black/70 dark:text-white tabular-nums">
           {member.phoneNumber || '—'}
         </span>
       ),

@@ -405,16 +405,16 @@ export const MedicalQueueView: React.FC<any> = () => {
               <div
                 data-sq="tile"
                 data-sq-border="solid"
-                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800 [--sq-stroke:#ffedd5] dark:[--sq-stroke:#262626]"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-orange-100 dark:border-neutral-800 [--sq-stroke:#ffedd5] dark:[--sq-stroke:#262626]"
               >
                 {c.patientName.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
-                <div className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 truncate">
+                <div className="font-semibold t-small text-black dark:text-white flex items-center gap-2 truncate">
                   {c.patientName}
-                  {isPinned && <span className="text-[10px] text-amber-500">VIP</span>}
+                  {isPinned && <span className="t-cap text-amber-500">VIP</span>}
                 </div>
-                <div className="text-[11px] text-black/55 dark:text-white/75 truncate max-w-[180px]">
+                <div className="t-cap text-black/55 dark:text-white/75 truncate max-w-[180px]">
                   {c.chiefComplaint}
                 </div>
               </div>
@@ -428,7 +428,7 @@ export const MedicalQueueView: React.FC<any> = () => {
         sortable: true,
         minWidth: '130px',
         renderCell: (c) => (
-          <span className="text-xs font-medium text-black/70 dark:text-white/75 truncate block max-w-[140px]">
+          <span className="t-small font-medium text-black/70 dark:text-white/75 truncate block max-w-[140px]">
             {resolveRecordBranch(c, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -439,14 +439,14 @@ export const MedicalQueueView: React.FC<any> = () => {
         minWidth: '170px',
         renderCell: (c) => (
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-mono text-[11px] font-semibold">
+            <span className="px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white tabular-nums t-small font-semibold">
               {c.vitals?.bloodPressure || '120/80'}
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 font-mono text-[11px]">
+            <span className="px-2 py-1 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 tabular-nums t-cap">
               {c.vitals?.temperatureCelsius ? `${c.vitals.temperatureCelsius}°C` : '37°C'}
             </span>
             {c.vitals?.weightKg && (
-              <span className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+              <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                 {c.vitals.weightKg}kg
               </span>
             )}
@@ -460,7 +460,7 @@ export const MedicalQueueView: React.FC<any> = () => {
         minWidth: '130px',
         renderCell: (c) => (
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+            className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold border ${
               c.status === 'InWaitingQueue'
                 ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
                 : c.status === 'InConsultation'
@@ -491,7 +491,7 @@ export const MedicalQueueView: React.FC<any> = () => {
         sortable: true,
         minWidth: '115px',
         renderCell: (c) => (
-          <div className="font-mono font-bold text-xs text-black dark:text-white">
+          <div className="tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(c.consultationFeeDzd, 'DZD')}
           </div>
         ),
@@ -545,7 +545,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                 data-sq="thumb"
                 data-sq-border="none"
                 onClick={() => setActiveSubView('queue')}
-                className={`px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-2 t-small font-semibold transition-all cursor-pointer flex items-center gap-2 ${
                   activeSubView === 'queue'
                     ? 'bg-neutral-900 dark:bg-white text-white dark:text-black'
                     : 'text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white'
@@ -560,7 +560,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                 data-sq="thumb"
                 data-sq-border="none"
                 onClick={() => setActiveSubView('agenda')}
-                className={`px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-2 t-small font-semibold transition-all cursor-pointer flex items-center gap-2 ${
                   activeSubView === 'agenda'
                     ? 'bg-neutral-900 dark:bg-white text-white dark:text-black'
                     : 'text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white'
@@ -684,9 +684,9 @@ export const MedicalQueueView: React.FC<any> = () => {
                     data-sq="thumb"
                     data-sq-border="none"
                     onClick={() => setDisplayLayout('collection')}
-                    className={`px-2.5 py-1.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 ${
+                    className={`px-2.5 py-2 t-small font-semibold transition-all cursor-pointer flex items-center gap-1 ${
                       displayLayout === 'collection'
-                        ? 'bg-[#d4522f]/10 text-[#d4522f]'
+                        ? 'bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                         : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                     }`}
                   >
@@ -699,9 +699,9 @@ export const MedicalQueueView: React.FC<any> = () => {
                     data-sq="thumb"
                     data-sq-border="none"
                     onClick={() => setDisplayLayout('visual_queue')}
-                    className={`px-2.5 py-1.5 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 ${
+                    className={`px-2.5 py-2 t-small font-semibold transition-all cursor-pointer flex items-center gap-1 ${
                       displayLayout === 'visual_queue'
-                        ? 'bg-[#d4522f]/10 text-[#d4522f]'
+                        ? 'bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                         : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                     }`}
                   >
@@ -826,7 +826,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                           ? 2
                           : 1
                       }
-                      className={`bg-white dark:bg-neutral-800 border p-5 space-y-3.5 transition-all ${
+                      className={`bg-white dark:bg-neutral-800 border p-5 space-y-4 transition-all ${
                         activeConsultation?.id === cons.id
                           ? 'border-[#d4522f] [--sq-stroke:#d4522f]'
                           : cons.status === 'InConsultation'
@@ -844,15 +844,15 @@ export const MedicalQueueView: React.FC<any> = () => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-700 text-xs font-bold flex items-center justify-center text-black/70 dark:text-white/75">
+                          <span className="w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-700 t-small font-semibold flex items-center justify-center text-black/70 dark:text-white/75">
                             #{index + 1}
                           </span>
-                          <span className="text-xs font-bold text-black dark:text-white truncate max-w-[140px]">
+                          <span className="t-small font-semibold text-black dark:text-white truncate max-w-[140px]">
                             {cons.patientName}
                           </span>
                         </div>
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          className={`t-small font-semibold px-2 py-1 rounded-full ${
                             cons.status === 'InWaitingQueue'
                               ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                               : cons.status === 'InConsultation'
@@ -870,30 +870,30 @@ export const MedicalQueueView: React.FC<any> = () => {
                       <div
                         data-sq="ctl"
                         data-sq-border="solid"
-                        className="bg-neutral-50 dark:bg-neutral-900/60 p-2.5 grid grid-cols-3 gap-1 text-center text-xs font-mono border border-neutral-100 dark:border-neutral-700/40"
+                        className="bg-neutral-50 dark:bg-neutral-900/60 p-3 grid grid-cols-3 gap-1 text-center t-cap tabular-nums border border-neutral-100 dark:border-neutral-700/40"
                       >
                         <div>
-                          <div className="text-[10px] text-black/55 dark:text-white/55">TA</div>
-                          <div className="font-bold text-black dark:text-white">
+                          <div className="t-cap text-black/55 dark:text-white/55">TA</div>
+                          <div className="font-semibold text-black dark:text-white">
                             {cons.vitals?.bloodPressure || 'N/A'}
                           </div>
                         </div>
                         <div>
-                          <div className="text-[10px] text-black/55 dark:text-white/55">Temp</div>
-                          <div className="font-bold text-black dark:text-white">
+                          <div className="t-cap text-black/55 dark:text-white/55">Temp</div>
+                          <div className="font-semibold text-black dark:text-white">
                             {cons.vitals?.temperatureCelsius
                               ? `${cons.vitals.temperatureCelsius}°C`
                               : 'N/A'}
                           </div>
                         </div>
                         <div>
-                          <div className="text-[10px] text-black/55 dark:text-white/55">Poids</div>
-                          <div className="font-bold text-black dark:text-white">
+                          <div className="t-cap text-black/55 dark:text-white/55">Poids</div>
+                          <div className="font-semibold text-black dark:text-white">
                             {cons.vitals?.weightKg ? `${cons.vitals.weightKg}kg` : 'N/A'}
                           </div>
                         </div>
                       </div>
-                      <div className="text-xs text-black/70 dark:text-white/75 truncate">
+                      <div className="t-cap text-black/70 dark:text-white/75 truncate">
                         <span className="font-medium text-black/55 dark:text-white/55 mr-1">
                           Motif:
                         </span>
@@ -901,7 +901,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                       </div>
                     </button>
                     <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold text-[#d4522f]">
+                      <span className="t-small tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                         {formatMoney(cons.consultationFeeDzd, 'DZD')}
                       </span>
                       <button
@@ -913,7 +913,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                           if (cons.status === 'InWaitingQueue') handleStartExam(cons);
                           else handleFinishExam(cons);
                         }}
-                        className="px-2.5 py-1 bg-[#d4522f] text-white text-[11px] font-semibold hover:bg-[#b0674b] transition-colors cursor-pointer"
+                        className="px-2.5 py-1 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:bg-[#b0674b] transition-colors cursor-pointer"
                       >
                         {cons.status === 'InWaitingQueue'
                           ? 'Appeler'
@@ -1151,7 +1151,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                       title="Actions & Règlement"
                       index={1}
                     >
-                      <div className="space-y-2.5">
+                      <div className="space-y-2">
                         {!cons.isPaid && (
                           <InspectorWideButton
                             label="Encaisser la consultation"

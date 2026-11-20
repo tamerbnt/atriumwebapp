@@ -524,18 +524,18 @@ export const LegalVaultView: React.FC<any> = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"
+              className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center tabular-nums font-semibold t-small shrink-0"
             >
               {targetScope === 'notaire' ? <Scroll size={16} /> : <Lock size={16} />}
             </div>
             <div className="min-w-0">
-              <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5 truncate">
+              <div className="tabular-nums font-semibold t-small text-black dark:text-white flex items-center gap-2 truncate">
                 {i.code}
                 {pinnedIds.has(i.id) && (
-                  <Pin size={10} className="fill-[#d4522f] text-[#d4522f] shrink-0" />
+                  <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
                 )}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55">{i.depositDate}</div>
+              <div className="t-cap text-black/55 dark:text-white/55">{i.depositDate}</div>
             </div>
           </div>
         ),
@@ -547,13 +547,13 @@ export const LegalVaultView: React.FC<any> = () => {
         sortable: true,
         renderCell: (i) => (
           <div className="min-w-0">
-            <div className="font-semibold text-xs text-black dark:text-white truncate">
+            <div className="font-semibold t-small text-black dark:text-white truncate">
               {i.title}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 font-mono flex items-center gap-2 truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums flex items-center gap-2 truncate">
               <span>Dossier: {i.matterReference}</span>
               {i.cadastralVolume && (
-                <span className="text-[#d4522f] font-bold">
+                <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
                   · {i.cadastralVolume} {i.cadastralNumber}
                 </span>
               )}
@@ -567,7 +567,7 @@ export const LegalVaultView: React.FC<any> = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (i) => (
-          <div className="text-xs text-black/75 dark:text-white/80 truncate">{i.category}</div>
+          <div className="t-cap text-black/75 dark:text-white/80 truncate">{i.category}</div>
         ),
       },
       {
@@ -576,8 +576,8 @@ export const LegalVaultView: React.FC<any> = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (i) => (
-          <span className="inline-flex items-center gap-1.5 text-xs text-black/75 dark:text-white/80 truncate">
-            <MapPin size={12} className="text-[#d4522f] shrink-0" />
+          <span className="inline-flex items-center gap-2 t-cap text-black/75 dark:text-white/80 truncate">
+            <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
             <span className="truncate">
               {resolveRecordBranch(i, branchesById, currentBranch, language).name}
             </span>
@@ -590,7 +590,7 @@ export const LegalVaultView: React.FC<any> = () => {
         width: '1.6*',
         renderCell: (i) => (
           <span
-            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+            className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold border ${
               i.status === 'MinuteOfficielle'
                 ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
                 : i.status === 'DossierAudit'
@@ -1104,15 +1104,15 @@ export const LegalVaultView: React.FC<any> = () => {
               className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
             >
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <div
                   data-sq="tile"
                   data-sq-border="none"
-                  className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"
+                  className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
                 >
                   {targetScope === 'notaire' ? <Scroll size={20} /> : <Lock size={20} />}
                 </div>
-                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <h2 className="t-card font-semibold text-black dark:text-white">
                   {vaultToEdit
                     ? isAr
                       ? 'تعديل وثيقة بالخزينة'
@@ -1127,7 +1127,7 @@ export const LegalVaultView: React.FC<any> = () => {
                 data-no-liquid="true"
                 aria-label={isAr ? 'إغلاق' : 'Fermer'}
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
                 <X size={18} />
               </button>

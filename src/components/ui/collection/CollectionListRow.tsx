@@ -172,7 +172,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
           {
             id: 'kebab-edit',
             label: 'Edit',
-            icon: <Pencil className="w-4 h-4 text-[#d4522f]" />,
+            icon: <Pencil className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
             onClick: () => onEdit(),
           },
         ]

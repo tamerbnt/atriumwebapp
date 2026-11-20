@@ -133,7 +133,7 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
       <div className="w-full flex items-end gap-3 relative">
         {showYAxis && (
           <div
-            className="flex flex-col justify-between text-xs tabular-nums text-[var(--text-2)] select-none pb-5 text-right w-6"
+            className="flex flex-col justify-between t-small tabular-nums text-[var(--text-2)] select-none pb-5 text-right w-6"
             style={{ height: `${height}px` }}
           >
             {yTicks.map((tick) => (

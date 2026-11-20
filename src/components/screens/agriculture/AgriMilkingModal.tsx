@@ -93,12 +93,12 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               <div
                 data-sq="tile"
                 data-sq-border="none"
-                className="w-10 h-10 bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold shrink-0"
+                className="w-10 h-10 bg-blue-500/15 text-blue-600 flex items-center justify-center font-semibold shrink-0"
               >
                 <Milk size={20} />
               </div>
               <div>
-                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <h2 className="t-card font-semibold text-black dark:text-white">
                   {isAr ? 'تسجيل جلسة حلب وتبريد الحليب' : 'Enregistrer une Session de Traite & Tank'}
                 </h2>
               </div>
@@ -107,7 +107,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               type="button"
               aria-label={isAr ? 'إغلاق' : 'Fermer'}
               onClick={onClose}
-              className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+              className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
             >
               <X size={18} />
             </button>
@@ -157,16 +157,16 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               data-sq="card"
               data-sq-border="solid"
               style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
-              className="p-3 bg-amber-500/10 border border-amber-500/25 flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-300"
+              className="p-3 bg-amber-500/10 border border-amber-500/25 flex items-center gap-2 t-cap text-amber-800 dark:text-amber-300"
             >
               <Thermometer size={16} className="text-amber-600 shrink-0" />
               <div>
-                <span className="font-bold">
+                <span className="font-semibold">
                   {temp > 6.0
                     ? (isAr ? 'إنذار حرج: عطل ضاغط التبريد (>6°C)' : 'Alerte Critique : Compresseur Défaillant (>6°C)')
                     : (isAr ? 'تنبيه: حرارة الخزان أعلى من المعيار (>4°C)' : 'Attention : Température au-dessus de 4°C')}
                 </span>
-                <p className="text-[11px] opacity-80 mt-0.5">
+                <p className="t-cap opacity-80 mt-0.5">
                   {isAr
                     ? 'الحرارة المثالية لتخزين الحليب هي بين +3.5°C و +4.0°C لتفادي التحمض.'
                     : 'La plage optimale de conservation du lait cru est de +3.5°C à +4.0°C pour éviter l’acidification.'}
@@ -178,13 +178,13 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 space-y-3 border border-neutral-100 dark:border-neutral-800"
+            className="p-4 bg-neutral-50 dark:bg-neutral-800/40 space-y-3 border border-neutral-100 dark:border-neutral-800"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-black dark:text-white">
+              <span className="t-small font-semibold text-black dark:text-white">
                 {isAr ? 'عزل الحليب المعالج بالمضادات الحيوية' : 'Exclusion Sanitaire (Antibiotiques)'}
               </span>
-              <span className="text-[10px] text-amber-600 font-medium">
+              <span className="t-small text-amber-600 font-medium">
                 {lockedCows.length} {isAr ? 'أبقار خاضعة لفترة السحب' : 'vache(s) sous traitement'}
               </span>
             </div>
@@ -196,7 +196,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               onChange={(e) => setRejectedWithholdingLiters(e.target.value)}
               required
             />
-            <p className="text-[10.5px] text-black/55 dark:text-white/55">
+            <p className="t-cap text-black/55 dark:text-white/55">
               {isAr
                 ? 'الحليب المعالج بالمضادات الحيوية يُستبعد تلقائياً من خزان التسليم لحماية دعم ONIL.'
                 : 'Le lait contenant des résidus médicamenteux est strictly exclu du volume éligible à la prime ONIL.'}
@@ -239,15 +239,15 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
             data-sq="card"
             data-sq-border="solid"
             style={{ '--sq-stroke': 'rgba(16, 185, 129, 0.3)' } as React.CSSProperties}
-            className="p-3.5 bg-emerald-500/10 border border-emerald-500/25 text-xs space-y-1.5 text-emerald-900 dark:text-emerald-300"
+            className="p-4 bg-emerald-500/10 border border-emerald-500/25 t-cap space-y-2 text-emerald-900 dark:text-emerald-300"
           >
             <div className="flex justify-between items-center">
               <span className="font-medium">Volume Conforme Éligible :</span>
-              <span className="font-mono font-bold">{subsidy.conformingLiters.toLocaleString()} Litres</span>
+              <span className="tabular-nums font-semibold">{subsidy.conformingLiters.toLocaleString()} Litres</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="font-medium">Subvention de l’État ONIL (12 DA/L) :</span>
-              <span className="font-mono font-bold text-sm text-[#d4522f]">
+              <span className="tabular-nums font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 + {formatMoney(subsidy.subsidyAmountDzd)}
               </span>
             </div>

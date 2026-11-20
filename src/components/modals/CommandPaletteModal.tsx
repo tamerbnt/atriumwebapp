@@ -250,7 +250,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         title: language === 'ar' ? 'الفريق' : language === 'en' ? 'Staff' : 'Équipe',
         subtitle: language === 'ar' ? 'الموظفون والحضور' : language === 'en' ? 'Team & Shifts' : 'Équipe & Pointage',
         category: navCategoryLabel,
-        icon: <Users size={15} className="text-[#d4522f]" />,
+        icon: <Users size={15} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
         onSelect: () => {
           setScreen('staff');
           onClose();
@@ -264,7 +264,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       title: t('fast_switch_title', language),
       subtitle: t('fast_switch_subtitle', language),
       category: actionCategoryLabel,
-      icon: <Layers size={15} className="text-[#d4522f]" />,
+      icon: <Layers size={15} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
       onSelect: () => {
         openFastSwitch();
         onClose();
@@ -289,7 +289,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       title: t('onboarding_title', language),
       subtitle: t('onboarding_subtitle', language),
       category: actionCategoryLabel,
-      icon: <Sparkles size={15} className="text-[#d4522f]" />,
+      icon: <Sparkles size={15} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
       onSelect: () => {
         openOnboarding();
         onClose();
@@ -373,7 +373,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           title: mem.fullName,
           subtitle: `${localizeStatus(mem.status, language)} • ${mem.phoneNumber || mem.email || ''}`,
           category: 'Records',
-          icon: <User size={15} className="text-[#d4522f]" />,
+          icon: <User size={15} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
           onSelect: () => {
             selectMember(mem.id);
             setScreen('members');

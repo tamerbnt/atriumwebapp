@@ -508,7 +508,7 @@ export const LogisticsScannerView: React.FC = () => {
         width: '1.4*',
         sortable: true,
         renderCell: (s) => (
-          <span className="font-mono font-bold text-xs text-[#d4522f]">{s.trackingCode}</span>
+          <span className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{s.trackingCode}</span>
         ),
       },
       {
@@ -518,10 +518,10 @@ export const LogisticsScannerView: React.FC = () => {
         sortable: true,
         renderCell: (s) => (
           <div className="min-w-0">
-            <div className="font-semibold text-xs text-black dark:text-white truncate">
+            <div className="font-semibold t-small text-black dark:text-white truncate">
               {s.recipientName}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate">
               {s.destinationWilaya} • {s.recipientPhone}
             </div>
           </div>
@@ -535,8 +535,8 @@ export const LogisticsScannerView: React.FC = () => {
         renderCell: (s) => {
           const b = resolveRecordBranch(s, branchesById, currentBranch, language);
           return (
-            <div className="flex items-center gap-1 text-xs text-black/75 dark:text-white/75 truncate">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="flex items-center gap-1 t-cap text-black/75 dark:text-white/75 truncate">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -548,7 +548,7 @@ export const LogisticsScannerView: React.FC = () => {
         width: '1.1*',
         renderCell: (s) => (
           <span
-            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+            className={`t-small font-semibold px-2 py-1 rounded-full ${
               s.deliveryMode === 'StopDesk'
                 ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                 : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
@@ -564,7 +564,7 @@ export const LogisticsScannerView: React.FC = () => {
         width: '1.1*',
         renderCell: (s) => (
           <span
-            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+            className={`t-small font-semibold px-2 py-1 rounded-full ${
               s.status === 'Delivered'
                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                 : s.status === 'Sorted'
@@ -611,7 +611,7 @@ export const LogisticsScannerView: React.FC = () => {
         title={isAr ? 'الماسح' : 'Scanner'}
         secondaryActions={
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1">
+            <span className="t-small font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1">
               <Volume2 size={11} /> Audio Chime
             </span>
             <div
@@ -627,9 +627,9 @@ export const LogisticsScannerView: React.FC = () => {
                   data-sq="thumb"
                   data-sq-border="none"
                   onClick={() => setScanMode(m)}
-                  className={`px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1 t-small font-semibold transition-all cursor-pointer ${
                     scanMode === m
-                      ? 'bg-white dark:bg-neutral-900 text-[#d4522f]'
+                      ? 'bg-white dark:bg-neutral-900 text-[var(--brand-on-dark,#FF8F63)]'
                       : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
@@ -686,17 +686,17 @@ export const LogisticsScannerView: React.FC = () => {
                 <div
                   data-sq="tile"
                   data-sq-border="none"
-                  className="w-10 h-10 bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold"
+                  className="w-10 h-10 bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-semibold"
                 >
                   <Boxes size={22} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-sm text-black dark:text-white">
+                    <span className="tabular-nums font-semibold t-label text-black dark:text-white">
                       {activeBag.bagCode}
                     </span>
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      className={`t-small font-semibold px-2 py-1 rounded-full ${
                         activeBag.status === 'Sealed'
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                           : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
@@ -705,9 +705,9 @@ export const LogisticsScannerView: React.FC = () => {
                       {localizeStatus(activeBag.status, language)}
                     </span>
                   </div>
-                  <div className="text-xs text-black/55 dark:text-white/55 mt-0.5">
+                  <div className="t-cap text-black/55 dark:text-white/55 mt-0.5">
                     Destination: Wilaya {activeBag.destinationHubWilaya} • Poids:{' '}
-                    <span className="font-mono font-bold">{activeBag.totalWeightKg} kg / 25 kg</span>
+                    <span className="tabular-nums font-semibold">{activeBag.totalWeightKg} kg / 25 kg</span>
                   </div>
                 </div>
               </div>
@@ -722,7 +722,7 @@ export const LogisticsScannerView: React.FC = () => {
                     value={selectedBagId}
                     onChange={(e) => setSelectedBagId(e.target.value)}
                     aria-label={isAr ? 'اختر كيس الشحن' : 'Sélectionner un sac-navette'}
-                    className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 text-xs font-mono font-bold"
+                    className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 t-small tabular-nums font-semibold"
                   >
                     {bags.map((b) => (
                       <option key={b.id} value={b.id}>
@@ -763,7 +763,7 @@ export const LogisticsScannerView: React.FC = () => {
                     ? 'امسح باركود الشحنة بواسطة قارئ الباركود (Ex: ATR-EXP-88912)...'
                     : 'Scannez le code-barres AWB (Lecteur HID ou caméra, ex: ATR-EXP-88912)...'
                 }
-                className="lbi-field w-full bg-transparent border-0 pl-12 pr-28 py-4 text-sm font-mono font-bold text-black dark:text-white outline-hidden tracking-wider"
+                className="lbi-field w-full bg-transparent border-0 pl-12 pr-28 py-4 t-label tabular-nums font-semibold text-black dark:text-white outline-hidden"
               />
             </div>
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-black/55 dark:text-white/55 pointer-events-none">
@@ -782,10 +782,10 @@ export const LogisticsScannerView: React.FC = () => {
         <ScreenPod>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
+              <h3 className="t-small font-semibold text-black dark:text-white">
                 {isAr ? 'سجل المسح الصوتي المباشر' : 'Journal des Scans en Direct'}
               </h3>
-              <span className="text-[10px] font-mono text-black/55 dark:text-white/55">
+              <span className="t-cap tabular-nums text-black/55 dark:text-white/55">
                 {scanHistory.length} scans
               </span>
             </div>
@@ -813,19 +813,19 @@ export const LogisticsScannerView: React.FC = () => {
                     key={`${h.code}_${i}`}
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className={`p-2.5 border text-xs flex items-center justify-between gap-2 ${
+                    className={`p-3 border t-cap flex items-center justify-between gap-2 ${
                       h.status === 'success'
                         ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:rgba(6,95,70,0.5)]'
                         : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/50 [--sq-stroke:#fecaca] dark:[--sq-stroke:rgba(153,27,27,0.5)]'
                     }`}
                   >
                     <div className="space-y-0.5 truncate">
-                      <div className="font-mono font-bold text-black dark:text-white">{h.code}</div>
-                      <div className="text-[11px] text-black/70 dark:text-white/75 truncate">
+                      <div className="tabular-nums font-semibold text-black dark:text-white">{h.code}</div>
+                      <div className="t-cap text-black/70 dark:text-white/75 truncate">
                         {h.message}
                       </div>
                     </div>
-                    <span className="text-[10px] font-mono text-black/55 dark:text-white/55 shrink-0">
+                    <span className="t-cap tabular-nums text-black/55 dark:text-white/55 shrink-0">
                       {h.timestamp}
                     </span>
                   </div>
@@ -1111,8 +1111,8 @@ export const LogisticsScannerView: React.FC = () => {
           >
             <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2">
-                <ShieldCheck size={18} className="text-[#d4522f]" />
-                <h3 className="font-bold text-sm text-black dark:text-white">
+                <ShieldCheck size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <h3 className="font-semibold t-label text-black dark:text-white">
                   {isAr ? 'ختم وإغلاق كيس الشحن (Scellé de Sécurité)' : 'Pose du Scellé de Sécurité'}
                 </h3>
               </div>
@@ -1127,14 +1127,14 @@ export const LogisticsScannerView: React.FC = () => {
             </div>
 
             <form onSubmit={handleSealActiveBag} className="space-y-4">
-              <p className="text-xs text-black/55 dark:text-white/55">
+              <p className="t-cap text-black/55 dark:text-white/55">
                 {isAr
                   ? `أدخل رقم القفل البلاستيكي الفريد لغلق الكيس ${activeBag.bagCode} المتوجه إلى ولاية ${activeBag.destinationHubWilaya}:`
                   : `Veuillez saisir le numéro unique gravé sur le collier de scellé plastique pour le sac ${activeBag.bagCode} :`}
               </p>
 
               <div>
-                <label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">
+                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
                   Numéro de Scellé (Ex: SL-994821)
                 </label>
                 <div
@@ -1147,7 +1147,7 @@ export const LogisticsScannerView: React.FC = () => {
                     value={securitySealInput}
                     onChange={(e) => setSecuritySealInput(e.target.value)}
                     placeholder="SL-XXXXXX"
-                    className="lbi-field w-full bg-transparent border-0 px-4 py-2.5 font-mono font-bold text-sm text-center tracking-widest outline-hidden"
+                    className="lbi-field w-full bg-transparent border-0 px-4 py-2 tabular-nums font-semibold t-label text-center outline-hidden"
                     required
                     autoFocus
                   />

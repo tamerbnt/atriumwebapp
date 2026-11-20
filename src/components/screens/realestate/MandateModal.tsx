@@ -98,9 +98,9 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] p-6 md:p-8 text-black dark:text-[#FAFAFA]">
 <div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#27272A] mb-6">
 <div className="flex items-center gap-3">
-<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><FileText className="w-5 h-5" /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><FileText className="w-5 h-5" /></div>
 <div>
-<h2 className="text-xl font-bold tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">Nouveau Mandat d'Agence (Décret 09-18)</h2>
+<h2 className="t-dialog font-semibold">Nouveau Mandat d'Agence (Décret 09-18)</h2>
 </div>
 </div>
 <button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
@@ -139,7 +139,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 							]} />
 </div>
 <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141416] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#232328] space-y-4">
-<div className="flex items-center gap-2 text-xs font-semibold text-[#d4522f] uppercase tracking-wider">
+<div className="flex items-center gap-2 t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
 <ShieldCheck className="w-4 h-4" />
 <span>Identité Légale du Mandant (Propriétaire)</span>
 </div>
@@ -190,19 +190,19 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 </div>}
 <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#FDF4F0] dark:bg-[#1C1816] [--sq-stroke:rgba(212,82,47,0.3)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
 <div className="flex items-center gap-3">
-<div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-[#d4522f] text-white flex items-center justify-center font-bold"><Calculator className="w-5 h-5" /></div>
+<div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-[var(--brand-fill,#C9461F)] text-white flex items-center justify-center font-semibold"><Calculator className="w-5 h-5" /></div>
 <div>
-<div className="text-xs text-black/70 dark:text-white/75">
+<div className="t-cap text-black/70 dark:text-white/75">
 {commissionMode === "DecreeTranches" ? "Honoraires Légaux Dégressifs (Décret 09-18 Art. 34)" : `Honoraires Forfaitaires (${commissionRatePercent}%)`}
 </div>
-<div className="text-sm font-semibold text-black dark:text-white">
+<div className="t-label font-semibold text-black dark:text-white">
 {"Base HT: "}
-<span className="font-mono tabular-nums text-[#d4522f] font-bold">
+<span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
 {commissionCalc.baseHt.toLocaleString()}
 {" DZD"}
 </span>
 {" · TVA (19%): "}
-<span className="font-mono tabular-nums">
+<span className="tabular-nums">
 {commissionCalc.tva.toLocaleString()}
 {" DZD"}
 </span>
@@ -210,8 +210,8 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 </div>
 </div>
 <div className="text-right">
-<span className="text-xs uppercase text-black/70 dark:text-white/75 font-semibold">Total TTC</span>
-<div className="text-lg font-bold font-mono tabular-nums text-[#d4522f]">
+<span className="t-small text-black/70 dark:text-white/75 font-semibold">Total TTC</span>
+<div className="t-pod font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
 {commissionCalc.totalTtc.toLocaleString()}
 {" DZD"}
 </div>
@@ -234,8 +234,8 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 									}
 								]} />
 <div className="flex items-center gap-3 pt-5">
-<label className="flex items-center gap-2 cursor-pointer text-sm font-medium">
-<input type="checkbox" checked={isExclusive} onChange={(e) => setIsExclusive(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] border-[#E6DED6] text-[#d4522f] focus:ring-[#d4522f]" />
+<label className="flex items-center gap-2 cursor-pointer t-label font-medium">
+<input type="checkbox" checked={isExclusive} onChange={(e) => setIsExclusive(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] border-[#E6DED6] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
 <span>Mandat d'Exclusivité Accordé</span>
 </label>
 </div>

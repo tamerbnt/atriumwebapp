@@ -710,10 +710,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               />
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-black dark:text-white text-xs truncate max-w-[200px]">
+              <div className="font-semibold text-black dark:text-white t-small truncate max-w-[200px]">
                 {item.title}
               </div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+              <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                 {item.sku} · {item.category}
               </div>
             </div>
@@ -726,7 +726,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         width: '1.5*',
         minWidth: '160px',
         renderCell: (item) => (
-          <div className="text-xs text-black/70 dark:text-white/75 font-mono">{item.dimensions}</div>
+          <div className="t-cap text-black/70 dark:text-white/75 tabular-nums">{item.dimensions}</div>
         ),
       },
       {
@@ -736,7 +736,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         minWidth: '130px',
         align: 'right',
         renderCell: (item) => (
-          <div className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+          <div className="tabular-nums t-small font-semibold text-black dark:text-white">
             {formatMoney(item.unitCostDzd, 'DZD')}
           </div>
         ),
@@ -789,17 +789,17 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 data-sq="ctl-sm"
                 className={`p-1 transition-colors cursor-pointer ${
                   isPinned
-                    ? 'text-[#d4522f] bg-[#d4522f]/10'
+                    ? 'text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-[#d4522f]/10'
                     : 'text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80'
                 }`}
               >
                 <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
               </button>
               <div>
-                <div className="font-mono font-bold text-xs text-black dark:text-white">
+                <div className="tabular-nums font-semibold t-small text-black dark:text-white">
                   {order.orderNumber}
                 </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[170px]">
+                <div className="t-cap text-black/55 dark:text-white/55 truncate max-w-[170px]">
                   {order.projectTitle}
                 </div>
               </div>
@@ -813,14 +813,14 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         width: '2.5*',
         minWidth: '220px',
         renderCell: (order) => (
-          <div className="text-xs text-black/70 dark:text-white/75 space-y-0.5">
+          <div className="t-cap text-black/70 dark:text-white/75 space-y-0.5">
             {order.items.slice(0, 2).map((it, idx) => (
               <div key={idx} className="truncate">
                 • {it.quantity}x {it.itemTitle}
               </div>
             ))}
             {order.items.length > 2 && (
-              <div className="text-[10px] text-black/55 dark:text-white/55 italic">
+              <div className="t-cap text-black/55 dark:text-white/55 italic">
                 + {order.items.length - 2} autre(s) référence(s)
               </div>
             )}
@@ -835,7 +835,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         sortable: true,
         align: 'right',
         renderCell: (order) => (
-          <div className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+          <div className="tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(order.totalCostDzd, 'DZD')}
           </div>
         ),
@@ -849,7 +849,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         renderCell: (order) => {
           const badge = getOrderStatusBadge(order.status, language);
           return (
-            <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.pillClass}`}>
+            <span className={`inline-flex px-2.5 py-1 rounded-full t-small font-semibold ${badge.pillClass}`}>
               {badge.label}
             </span>
           );
@@ -881,10 +881,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               />
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-xs text-black dark:text-white truncate">
+              <div className="font-semibold t-small text-black dark:text-white truncate">
                 {bat.title}
               </div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">
                 {bat.projectTitle} · {bat.versionCode}
               </div>
             </div>
@@ -897,7 +897,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         width: '1.5*',
         minWidth: '150px',
         renderCell: (bat) => (
-          <span className="font-mono text-xs text-black/70 dark:text-white/75">
+          <span className="tabular-nums t-cap text-black/70 dark:text-white/75">
             {bat.colorSpace} · {bat.resolutionDpi} DPI · {bat.bleedMm}mm
           </span>
         ),
@@ -910,7 +910,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         renderCell: (bat) => {
           const badge = getBatStatusBadge(bat.approvalStatus, language);
           return (
-            <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.pillClass}`}>
+            <span className={`inline-flex px-2.5 py-1 rounded-full t-small font-semibold ${badge.pillClass}`}>
               {badge.label}
             </span>
           );
@@ -929,10 +929,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         minWidth: '200px',
         renderCell: (exp) => (
           <div className="min-w-0">
-            <div className="font-semibold text-xs text-black dark:text-white truncate">
+            <div className="font-semibold t-small text-black dark:text-white truncate">
               {exp.title}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate">
               {exp.declaredByUserName} · {exp.category}
             </div>
           </div>
@@ -945,7 +945,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         minWidth: '130px',
         align: 'right',
         renderCell: (exp) => (
-          <span className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+          <span className="tabular-nums t-small font-semibold text-black dark:text-white">
             {formatMoney(exp.amountDzd, 'DZD')}
           </span>
         ),
@@ -965,7 +965,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 e.stopPropagation();
                 setSelectedReceiptUrl(exp.receiptPhotoUrl || null);
               }}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer ml-auto"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer ml-auto"
             >
               <Eye className="w-4 h-4" />
             </button>
@@ -1117,7 +1117,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         <div className="space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
+              <h2 className="t-label font-semibold text-black dark:text-white">
                 {isAr
                   ? 'سير العمليات ومخطط الإنتاج والتنفيذ'
                   : isEn
@@ -1173,35 +1173,35 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
                 <div>
-                  <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
+                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
                     {isAr
                       ? 'مراقبة سقف المصاريف الميدانية'
                       : isEn
                       ? 'Field Expense Burn-Rate Control'
                       : 'Contrôle des Plafonds Dépenses Terrain'}
                   </span>
-                  <h3 className="text-lg font-bold text-black dark:text-white mt-0.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <h3 className="t-pod font-semibold text-black dark:text-white mt-0.5">
                     {selectedProject?.title}
                   </h3>
-                  <div className="text-xs text-black/55 dark:text-white/55">
+                  <div className="t-cap text-black/55 dark:text-white/55">
                     {isAr ? 'العميل:' : isEn ? 'Client:' : 'Client :'}{' '}
                     <span className="font-semibold text-black/70 dark:text-white/75">
                       {selectedProject?.clientName}
                     </span>{' '}
                     · {isAr ? 'السقف المعتمد:' : isEn ? 'Cap:' : 'Plafond autorisé :'}{' '}
-                    <span className="font-mono font-bold">
+                    <span className="tabular-nums font-semibold">
                       {formatMoney(selectedProject?.maxFieldExpensesDzd || 0, 'DZD')}
                     </span>
                   </div>
                 </div>
-                <div className="w-full sm:w-64 space-y-1.5">
-                  <div className="flex justify-between text-xs font-semibold">
+                <div className="w-full sm:w-64 space-y-2">
+                  <div className="flex justify-between t-small font-semibold">
                     <span className="text-black/55 dark:text-white/55">
                       {isAr ? 'المستهلك ميدانياً:' : isEn ? 'Consumed:' : 'Consommé Terrain :'}
                     </span>
                     <span
-                      className={`font-mono tabular-nums ${
-                        isOverThreshold ? 'text-red-600 font-bold' : 'text-black dark:text-white'
+                      className={`tabular-nums ${
+                        isOverThreshold ? 'text-red-600 font-semibold' : 'text-black dark:text-white'
                       }`}
                     >
                       {formatMoney(totalExpensesSpent, 'DZD')} ({burnRatePercent}%)
@@ -1240,26 +1240,26 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <span className="text-[11px] font-bold text-[#d4522f] uppercase truncate">
+                        <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] truncate">
                           {p.clientName}
                         </span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
+                        <span className="px-2 py-1 rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
                           {p.status}
                         </span>
                       </div>
-                      <h4 className="text-sm font-bold text-black dark:text-white mb-2 truncate">
+                      <h4 className="t-label font-semibold text-black dark:text-white mb-2 truncate">
                         {p.title}
                       </h4>
-                      <div className="space-y-1 text-xs text-black/55 dark:text-white/55">
+                      <div className="space-y-1 t-cap text-black/55 dark:text-white/55">
                         <div className="flex justify-between">
                           <span>{isAr ? 'الميزانية الإجمالية:' : isEn ? 'Global Cap:' : 'Plafond Global:'}</span>
-                          <span className="font-mono font-bold text-black dark:text-white">
+                          <span className="tabular-nums font-semibold text-black dark:text-white">
                             {formatMoney(p.budgetCapDzd, 'DZD')}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>{isAr ? 'مصاريف الميدان:' : isEn ? 'Field Spend:' : 'Dépenses Terrain:'}</span>
-                          <span className="font-mono">
+                          <span className="tabular-nums">
                             {formatMoney(spent, 'DZD')} / {formatMoney(limit, 'DZD')}
                           </span>
                         </div>
@@ -1365,19 +1365,19 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                           />
                         </div>
                       )}
-                      <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 font-mono">
+                      <div className="flex items-center justify-between t-cap text-black/55 dark:text-white/55 tabular-nums">
                         <span>{item.sku}</span>
-                        <span className="uppercase text-[#d4522f] font-bold">{item.category}</span>
+                        <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">{item.category}</span>
                       </div>
-                      <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">
+                      <h3 className="t-label font-semibold text-black dark:text-white line-clamp-1">
                         {item.title}
                       </h3>
-                      <p className="text-xs text-black/55 dark:text-white/55 font-mono">
+                      <p className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                         {item.dimensions}
                       </p>
                     </div>
                     <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
-                      <span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">
+                      <span className="tabular-nums font-semibold t-label text-black dark:text-white">
                         {formatMoney(item.unitCostDzd, 'DZD')}
                       </span>
                       <AtriumButton
@@ -1514,16 +1514,16 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 renderCard={(order) => (
                   <div className="flex flex-col justify-between h-full space-y-3">
                     <div>
-                      <div className="flex items-center justify-between text-xs font-mono font-bold text-black dark:text-white mb-1">
+                      <div className="flex items-center justify-between t-small tabular-nums font-semibold text-black dark:text-white mb-1">
                         <span>{order.orderNumber}</span>
                         <span className="text-black/55 dark:text-white/55 font-normal">
                           {getOrderStatusBadge(order.status, language).label}
                         </span>
                       </div>
-                      <h4 className="text-sm font-semibold text-black dark:text-white">
+                      <h4 className="t-label font-semibold text-black dark:text-white">
                         {order.projectTitle}
                       </h4>
-                      <div className="text-xs text-black/55 dark:text-white/55 mt-2 space-y-1">
+                      <div className="t-cap text-black/55 dark:text-white/55 mt-2 space-y-1">
                         {order.items.map((it, idx) => (
                           <div key={idx}>
                             • {it.quantity}x {it.itemTitle}
@@ -1531,9 +1531,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         ))}
                       </div>
                     </div>
-                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex justify-between items-center text-xs">
+                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex justify-between items-center t-cap">
                       <span className="text-black/55 dark:text-white/55">Total :</span>
-                      <span className="font-mono font-bold text-black dark:text-white tabular-nums">
+                      <span className="tabular-nums font-semibold text-black dark:text-white">
                         {formatMoney(order.totalCostDzd, 'DZD')}
                       </span>
                     </div>
@@ -1684,17 +1684,17 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         />
                       </div>
                       <div className="flex items-start justify-between gap-2">
-                        <span className="text-xs font-bold text-[#d4522f] uppercase truncate">
+                        <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] truncate">
                           {bat.projectTitle}
                         </span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${badge.pillClass}`}>
+                        <span className={`px-2 py-1 rounded-full t-small font-semibold ${badge.pillClass}`}>
                           {badge.label}
                         </span>
                       </div>
-                      <h3 className="text-sm font-bold text-black dark:text-white truncate">
+                      <h3 className="t-label font-semibold text-black dark:text-white truncate">
                         {bat.title}
                       </h3>
-                      <div className="flex items-center gap-2 text-xs text-black/55 dark:text-white/55 font-mono">
+                      <div className="flex items-center gap-2 t-cap text-black/55 dark:text-white/55 tabular-nums">
                         <span>{bat.colorSpace}</span>
                         <span>·</span>
                         <span>{bat.resolutionDpi} DPI</span>
@@ -1704,7 +1704,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       {bat.revisionComments && (
                         <div
                           data-sq="ctl"
-                          className="p-2.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 text-xs"
+                          className="p-3 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 t-cap"
                         >
                           Note CDP : {bat.revisionComments}
                         </div>
@@ -1719,7 +1719,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                           }}
                           data-sq="ctl"
                           data-sq-border="solid"
-                          className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                          className="px-3 py-2 t-small font-semibold text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                         >
                           {isAr ? 'طلب تعديل' : isEn ? 'Revision' : 'Demander Révision'}
                         </button>
@@ -1730,7 +1730,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                             handleApproveBat(bat.id);
                           }}
                           data-sq="ctl"
-                          className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors cursor-pointer"
+                          className="px-3 py-2 t-small font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors cursor-pointer"
                         >
                           {isAr ? 'اعتماد BAT' : isEn ? 'Approve' : 'Valider BAT'}
                         </button>
@@ -1810,18 +1810,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     <div className="p-4 flex items-center justify-between gap-4">
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                          <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
                             {exp.category}
                           </span>
-                          <span className="font-semibold text-xs text-black dark:text-white truncate">
+                          <span className="font-semibold t-small text-black dark:text-white truncate">
                             {exp.title}
                           </span>
                         </div>
-                        <div className="text-[11px] text-black/55 dark:text-white/55">
+                        <div className="t-cap text-black/55 dark:text-white/55">
                           {exp.declaredByUserName} · {exp.status}
                         </div>
                       </div>
-                      <span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums shrink-0">
+                      <span className="tabular-nums font-semibold t-label text-black dark:text-white shrink-0">
                         {formatMoney(exp.amountDzd, 'DZD')}
                       </span>
                     </div>
@@ -1835,13 +1835,13 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 className="lg:col-span-5 p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4 self-start"
               >
                 <div>
-                  <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
+                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
                     {isAr ? 'التصريح بمشتريات الميدان' : isEn ? 'Field Purchase Declaration' : "Déclaration d'Achat Terrain"}
                   </span>
-                  <h3 className="text-base font-bold text-black dark:text-white mt-0.5">
+                  <h3 className="t-card font-semibold text-black dark:text-white mt-0.5">
                     {isAr ? 'إدخال فوري وترميز المخزون' : isEn ? 'Quick Entry & Asset Coding' : 'Saisie Immédiate & Codage Stock'}
                   </h3>
-                  <p className="text-xs text-black/55 dark:text-white/55">
+                  <p className="t-cap text-black/55 dark:text-white/55">
                     {isAr
                       ? 'ينشئ تلقائياً مرجع أصل للوكالة عند المصادقة.'
                       : isEn
@@ -1853,7 +1853,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-xs text-emerald-800 dark:text-emerald-300"
+                    className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] t-cap text-emerald-800 dark:text-emerald-300"
                   >
                     {purchaseSuccessMessage}
                   </div>
@@ -2269,8 +2269,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           <div className="w-full max-w-md bg-white dark:bg-neutral-900 h-full p-6 flex flex-col justify-between shadow-2xl border-l border-[#E6DED6] dark:border-neutral-800">
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
-                <h3 className="text-base font-bold text-black dark:text-white flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-[#d4522f]" />
+                <h3 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   {isAr ? 'أمر طلب الطباعة' : isEn ? 'Print Order Cart' : 'Bon de Commande Impression'}
                 </h3>
                 <button
@@ -2284,10 +2284,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 </button>
               </div>
               <div className="space-y-1">
-                <span className="text-xs text-black/55 dark:text-white/55">
+                <span className="t-cap text-black/55 dark:text-white/55">
                   {isAr ? 'الحملة المرتبطة:' : isEn ? 'Campaign:' : 'Campagne Associée :'}
                 </span>
-                <div className="font-bold text-xs text-black dark:text-white">
+                <div className="font-semibold t-small text-black dark:text-white">
                   {selectedProject?.title}
                 </div>
               </div>
@@ -2313,13 +2313,13 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     <div
                       key={ci.item.id}
                       data-sq="ctl"
-                      className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 flex items-center justify-between gap-3 text-xs"
+                      className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 flex items-center justify-between gap-3 t-cap"
                     >
                       <div className="min-w-0">
                         <div className="font-semibold text-black dark:text-white truncate">
                           {ci.item.title}
                         </div>
-                        <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+                        <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                           {formatMoney(ci.item.unitCostDzd, 'DZD')} / unité
                         </div>
                       </div>
@@ -2328,16 +2328,16 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                           type="button"
                           onClick={() => handleUpdateQuantity(ci.item.id, -1)}
                           data-sq="check"
-                          className="w-6 h-6 bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer"
+                          className="w-6 h-6 bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-semibold cursor-pointer"
                         >
                           -
                         </button>
-                        <span className="font-mono font-bold w-6 text-center">{ci.quantity}</span>
+                        <span className="tabular-nums font-semibold w-6 text-center">{ci.quantity}</span>
                         <button
                           type="button"
                           onClick={() => handleUpdateQuantity(ci.item.id, 1)}
                           data-sq="check"
-                          className="w-6 h-6 bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer"
+                          className="w-6 h-6 bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-semibold cursor-pointer"
                         >
                           +
                         </button>
@@ -2356,9 +2356,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               </div>
             </div>
             <div className="pt-4 border-t border-[#E6DED6] dark:border-neutral-800 space-y-3">
-              <div className="flex justify-between items-center text-sm font-bold">
+              <div className="flex justify-between items-center t-label font-semibold">
                 <span>{isAr ? 'الإجمالي التقديري:' : 'Total Estimé HT :'}</span>
-                <span className="font-mono text-base text-[#d4522f] tabular-nums">
+                <span className="tabular-nums t-body text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                   {formatMoney(cartTotalDzd, 'DZD')}
                 </span>
               </div>
@@ -2393,8 +2393,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-[#d4522f]" />
+                <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   {isAr ? 'طلب تعديل على BAT' : 'Demande de Correction BAT'}
                 </h3>
                 <button
@@ -2416,7 +2416,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     ? 'اذكر التعديلات المطلوبة...'
                     : 'Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille texte)...'
                 }
-                className="w-full px-3 py-2 text-xs rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+                className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
               />
               <div className="flex justify-end gap-2">
                 <AtriumButton
@@ -2450,8 +2450,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-[#d4522f]" />
+                <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
+                  <Receipt className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   {isAr ? 'وصل الشراء الميداني' : "Justificatif d'Achat Terrain"}
                 </h3>
                 <button
@@ -2477,7 +2477,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   type="button"
                   onClick={() => setSelectedReceiptUrl(null)}
                   data-sq="ctl"
-                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
                 >
                   {isAr ? 'إغلاق' : 'Fermer'}
                 </button>

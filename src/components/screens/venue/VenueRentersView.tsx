@@ -387,12 +387,12 @@ export const VenueRentersView: React.FC = () => {
         sortable: true,
         renderCell: (renter) => (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
+            <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
               {renter.fullName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <div className="font-bold text-black dark:text-white truncate">{renter.fullName}</div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+              <div className="font-semibold text-black dark:text-white truncate">{renter.fullName}</div>
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">
                 {renter.companyName ||
                   (renter.idDocNumber
                     ? `ID: ${renter.idDocNumber}`
@@ -415,7 +415,7 @@ export const VenueRentersView: React.FC = () => {
         renderCell: (renter) => {
           const bInfo = resolveRecordBranch(renter, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -428,12 +428,12 @@ export const VenueRentersView: React.FC = () => {
         width: '2*',
         minWidth: '180px',
         renderCell: (renter) => (
-          <div className="space-y-0.5 text-xs">
-            <div className="flex items-center gap-1.5 text-black/70 dark:text-white/75 font-mono text-[11px]">
+          <div className="space-y-0.5 t-cap">
+            <div className="flex items-center gap-2 text-black/70 dark:text-white/75 tabular-nums t-cap">
               <Phone size={12} className="text-black/55 dark:text-white/55 shrink-0" />
               <span>{renter.phone}</span>
             </div>
-            <div className="flex items-center gap-1.5 text-black/55 dark:text-white/75 truncate text-[11px]">
+            <div className="flex items-center gap-2 text-black/55 dark:text-white/75 truncate t-cap">
               <Mail size={12} className="text-black/55 dark:text-white/55 shrink-0" />
               <span className="truncate">{renter.email}</span>
             </div>
@@ -447,7 +447,7 @@ export const VenueRentersView: React.FC = () => {
         minWidth: '110px',
         sortable: true,
         renderCell: (renter) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
             {renter.totalBookings} {isAr ? 'حجز' : isFr ? 'réservations' : 'bookings'}
           </span>
         ),
@@ -459,7 +459,7 @@ export const VenueRentersView: React.FC = () => {
         minWidth: '130px',
         sortable: true,
         renderCell: (renter) => (
-          <span className="font-bold text-black dark:text-white tabular-nums font-mono">
+          <span className="font-semibold text-black dark:text-white tabular-nums">
             {formatCurrencyAmount(renter.totalSpent, renter.currency)}
           </span>
         ),
@@ -946,10 +946,10 @@ export const VenueRentersView: React.FC = () => {
             >
             <div className="p-6 border-b border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-black dark:text-white">
+                <h3 className="t-pod font-semibold text-black dark:text-white">
                   {renterToEdit ? t('venue_renters_btn_edit') : t('venue_renters_btn_add')}
                 </h3>
-                <p className="text-xs text-black/55 dark:text-white/55 mt-0.5">
+                <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
                   {isAr
                     ? 'تسجيل بيانات المنظم، وثائق الهوية والشركة'
                     : isFr
@@ -1018,7 +1018,7 @@ export const VenueRentersView: React.FC = () => {
                 onChange={(v) => setIdDocNumber(extractStr(v))}
               />
               <div>
-                <label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">
+                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
                   {isAr
                     ? 'ملاحظات وتفضيلات الحجز'
                     : isFr
@@ -1036,7 +1036,7 @@ export const VenueRentersView: React.FC = () => {
                       ? 'Exigences techniques, historique...'
                       : 'Technical needs, catering...'
                   }
-                  className="w-full px-3.5 py-2.5 rounded-[var(--r-ctl,12px)] border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+                  className="w-full px-4 py-2 rounded-[var(--r-ctl,12px)] border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 t-cap text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                 />
               </div>
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-700/60">
@@ -1045,7 +1045,7 @@ export const VenueRentersView: React.FC = () => {
                   onClick={() => setIsAddModalOpen(false)}
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                 >
                   {isAr ? 'إلغاء' : isFr ? 'Annuler' : 'Cancel'}
                 </button>

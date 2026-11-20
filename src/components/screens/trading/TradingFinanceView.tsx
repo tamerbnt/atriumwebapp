@@ -285,7 +285,7 @@ export const TradingFinanceView: React.FC = () => {
         width: '175px',
         sortable: true,
         renderCell: (doc) => (
-          <span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
+          <span className="tabular-nums font-semibold t-small text-black dark:text-white">{doc.docNumber}</span>
         ),
       },
       {
@@ -294,9 +294,9 @@ export const TradingFinanceView: React.FC = () => {
         width: '135px',
         sortable: true,
         renderCell: (doc) => (
-          <div className="text-xs font-mono">
+          <div className="t-cap tabular-nums">
             <div className="text-black dark:text-white">{doc.date}</div>
-            <div className="text-[10px] text-black/55 dark:text-white/55">Éch: {doc.dueDate || '30j'}</div>
+            <div className="t-cap text-black/55 dark:text-white/55">Éch: {doc.dueDate || '30j'}</div>
           </div>
         ),
       },
@@ -305,7 +305,7 @@ export const TradingFinanceView: React.FC = () => {
         header: t('trading_sales_col_client', 'Client B2B'),
         minWidth: '200px',
         sortable: true,
-        renderCell: (doc) => <span className="text-xs font-bold text-black dark:text-white">{doc.clientName}</span>,
+        renderCell: (doc) => <span className="t-small font-semibold text-black dark:text-white">{doc.clientName}</span>,
       },
       {
         key: 'branch',
@@ -314,7 +314,7 @@ export const TradingFinanceView: React.FC = () => {
         renderCell: (doc) => {
           const b = resolveRecordBranch(doc, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -327,7 +327,7 @@ export const TradingFinanceView: React.FC = () => {
         width: '145px',
         sortable: true,
         renderCell: (doc) => (
-          <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+          <span className="tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(doc.netToPay)}
           </span>
         ),
@@ -338,7 +338,7 @@ export const TradingFinanceView: React.FC = () => {
         width: '135px',
         renderCell: (doc) => (
           <span
-            className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-semibold ${
+            className={`px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold ${
               doc.status === 'Paid'
                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                 : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
@@ -369,13 +369,13 @@ export const TradingFinanceView: React.FC = () => {
                 }}
                 data-sq="ctl-sm"
                 data-sq-border="none"
-                className="px-3 py-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-3 py-1 t-small font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <CheckCircle size={13} />
                 <span>{t('trading_finance_settle_invoice', 'Encaisser')}</span>
               </button>
             ) : (
-              <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">Soldée ✓</span>
+              <span className="t-small tabular-nums text-emerald-600 dark:text-emerald-400 font-medium">Soldée ✓</span>
             )}
           </div>
         ),
@@ -458,10 +458,10 @@ export const TradingFinanceView: React.FC = () => {
 
       <ScreenPod>
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-black/55 dark:text-white/55">
+          <span className="t-small font-semibold text-black/55 dark:text-white/55">
             {isAr ? 'تحليل أعمار الديون (Balance Âgée)' : 'Balance Âgée des Créances Commerciales (4 Paliers)'}
           </span>
-          <span className="text-[11px] font-mono text-black/55 dark:text-white/55">
+          <span className="t-cap tabular-nums text-black/55 dark:text-white/55">
             Base : Date d'émission facture fiscale
           </span>
         </div>
@@ -479,13 +479,13 @@ export const TradingFinanceView: React.FC = () => {
               agingBucketFilter === '0_30' ? '[--sq-stroke:#10B981]' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'
             }`}
           >
-            <span className="text-xs font-semibold text-black/55 dark:text-white/55 block mb-1">
+            <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
               {t('trading_finance_aging_current', '0 à 30 jours (Courant)')}
             </span>
-            <div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
+            <div className="t-dialog font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
               {formatMoney(agingAnalysis.bucketCurrent)}
             </div>
-            <span className="text-[10px] text-black/55 dark:text-white/55 mt-1 block">Créances normales</span>
+            <span className="t-cap text-black/55 dark:text-white/55 mt-1 block">Créances normales</span>
           </button>
 
           <button
@@ -501,13 +501,13 @@ export const TradingFinanceView: React.FC = () => {
               agingBucketFilter === '31_60' ? '[--sq-stroke:#F59E0B]' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'
             }`}
           >
-            <span className="text-xs font-semibold text-black/55 dark:text-white/55 block mb-1">
+            <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
               {t('trading_finance_aging_31_60', '31 à 60 jours')}
             </span>
-            <div className="text-xl font-bold font-mono text-amber-600 dark:text-amber-400 tabular-nums">
+            <div className="t-dialog font-semibold tabular-nums text-amber-600 dark:text-amber-400">
               {formatMoney(agingAnalysis.bucket31_60)}
             </div>
-            <span className="text-[10px] text-amber-600/80 mt-1 block">Relance commerciale</span>
+            <span className="t-cap text-amber-600/80 mt-1 block">Relance commerciale</span>
           </button>
 
           <button
@@ -523,13 +523,13 @@ export const TradingFinanceView: React.FC = () => {
               agingBucketFilter === '61_90' ? '[--sq-stroke:#F97316]' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'
             }`}
           >
-            <span className="text-xs font-semibold text-black/55 dark:text-white/55 block mb-1">
+            <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
               {t('trading_finance_aging_61_90', '61 à 90 jours')}
             </span>
-            <div className="text-xl font-bold font-mono text-orange-600 dark:text-orange-400 tabular-nums">
+            <div className="t-dialog font-semibold tabular-nums text-orange-600 dark:text-orange-400">
               {formatMoney(agingAnalysis.bucket61_90)}
             </div>
-            <span className="text-[10px] text-orange-600/80 mt-1 block">Mise en demeure requise</span>
+            <span className="t-cap text-orange-600/80 mt-1 block">Mise en demeure requise</span>
           </button>
 
           <button
@@ -545,13 +545,13 @@ export const TradingFinanceView: React.FC = () => {
               agingBucketFilter === '90_plus' ? '[--sq-stroke:#F43F5E]' : '[--sq-stroke:#FDA4AF] dark:[--sq-stroke:rgba(136,19,55,0.6)]'
             }`}
           >
-            <span className="text-xs font-semibold text-rose-700 dark:text-rose-400 block mb-1">
+            <span className="t-small font-semibold text-rose-700 dark:text-rose-400 block mb-1">
               {t('trading_finance_aging_90_plus', '> 90 jours (Contentieux)')}
             </span>
-            <div className="text-xl font-bold font-mono text-rose-600 dark:text-rose-400 tabular-nums">
+            <div className="t-dialog font-semibold tabular-nums text-rose-600 dark:text-rose-400">
               {formatMoney(agingAnalysis.bucket90Plus)}
             </div>
-            <span className="text-[10px] text-rose-500 mt-1 block">Recouvrement forcé</span>
+            <span className="t-cap text-rose-500 mt-1 block">Recouvrement forcé</span>
           </button>
         </div>
       </ScreenPod>
@@ -818,7 +818,7 @@ export const TradingFinanceView: React.FC = () => {
           <div className="sq-elev-pop relative w-full max-w-md">
           <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 space-y-4">
             <div className="flex items-center justify-between border-b pb-3 border-neutral-200 dark:border-neutral-800">
-              <h2 className="text-base font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h2 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
                 <CheckCircle size={18} className="text-emerald-600" />
                 <span>Enregistrer le Règlement Client</span>
               </h2>
@@ -833,21 +833,21 @@ export const TradingFinanceView: React.FC = () => {
                 <X size={18} />
               </button>
             </div>
-            <div data-sq="card" data-sq-border="solid" className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] text-xs space-y-1.5 font-mono">
+            <div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] t-cap space-y-2 tabular-nums">
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55 font-sans">Facture :</span>
-                <span className="font-bold text-black dark:text-white">{settlementDoc.docNumber}</span>
+                <span className="font-semibold text-black dark:text-white">{settlementDoc.docNumber}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55 font-sans">Client :</span>
                 <span className="text-black dark:text-white">{settlementDoc.clientName}</span>
               </div>
-              <div className="flex justify-between text-emerald-600 font-bold text-sm pt-1.5 border-t border-neutral-200 dark:border-neutral-700">
+              <div className="flex justify-between text-emerald-600 font-semibold t-label pt-2 border-t border-neutral-200 dark:border-neutral-700">
                 <span className="font-sans">Montant Net :</span>
                 <span>{formatMoney(settlementDoc.netToPay)}</span>
               </div>
             </div>
-            <form onSubmit={handleConfirmSettlement} className="space-y-3 text-xs">
+            <form onSubmit={handleConfirmSettlement} className="space-y-3 t-cap">
               <LabelSelect
                 label="Mode de Règlement Encaissé *"
                 value={settleMethod}

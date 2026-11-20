@@ -178,10 +178,10 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60">
           <div>
-            <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+            <h2 className="t-card font-semibold text-black dark:text-white">
               {t('edu_roll_call_title')}
             </h2>
-            <p className="text-xs text-black/70 dark:text-white/70">
+            <p className="t-cap text-black/70 dark:text-white/70">
               {activeCohort?.name || t('edu_label_cohort')} · {activeSession?.date || t('common_today')}
             </p>
           </div>
@@ -195,7 +195,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
         </div>
 
         {/* Filters & Tally */}
-        <div className="px-6 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="px-6 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-wrap items-center justify-between gap-3 t-cap">
           <div className="flex items-center gap-3 flex-1 min-w-[240px]">
             <LabelSelect
               field="Cohort"
@@ -249,7 +249,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
               data-sq="ctl-sm"
               data-sq-border="solid"
               onClick={markAllPresent}
-              className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 font-semibold text-black dark:text-white cursor-pointer"
+              className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 font-semibold text-black dark:text-white cursor-pointer"
             >
               {t('edu_mark_all_present')}
             </button>
@@ -257,7 +257,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
         </div>
 
         {/* Student Roster Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-2 text-xs">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-2 t-cap">
           {studentsInCohort.map((student) => {
             const currentStatus = rollState[student.id]?.status || 'Present';
 
@@ -272,7 +272,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                   <div
                     data-sq="ctl-sm"
                     data-sq-border="solid"
-                    className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"
+                    className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0 border border-neutral-200 dark:border-neutral-700"
                   >
                     {student.fullName.charAt(0)}
                   </div>
@@ -280,7 +280,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                     <div className="font-semibold text-black dark:text-white">
                       {student.fullName}
                     </div>
-                    <div className="text-[10px] text-black/55 dark:text-white/55">
+                    <div className="t-cap text-black/55 dark:text-white/55">
                       {student.guardianName
                         ? t('edu_guardian_prefix', { name: student.guardianName })
                         : student.phone}
@@ -288,7 +288,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   {(['Present', 'Late', 'Absent', 'Excused'] as AttendanceStatus[]).map((st) => (
                     <button
                       key={st}
@@ -296,7 +296,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                       data-sq="ctl-sm"
                       data-sq-border="none"
                       onClick={() => handleStatusChange(student.id, st)}
-                      className={`px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                      className={`px-3 py-2 t-small font-semibold transition-colors cursor-pointer ${
                         currentStatus === st
                           ? st === 'Present'
                             ? 'bg-emerald-600 text-white'

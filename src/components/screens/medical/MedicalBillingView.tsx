@@ -503,15 +503,15 @@ export const MedicalBillingView: React.FC<any> = () => {
           const isPinned = pinnedIds.has(c.id);
           return (
             <div className="flex items-center gap-3 min-w-0">
-              <div data-sq="tile" data-sq-border="solid" className="w-9 h-9 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-100 dark:border-neutral-800 [--sq-stroke:#d1fae5] dark:[--sq-stroke:#262626]">
+              <div data-sq="tile" data-sq-border="solid" className="w-9 h-9 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-semibold t-small shrink-0 border border-emerald-100 dark:border-neutral-800 [--sq-stroke:#d1fae5] dark:[--sq-stroke:#262626]">
                 <Receipt size={16} />
               </div>
               <div className="min-w-0">
-                <div className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 truncate">
+                <div className="font-semibold t-small text-black dark:text-white flex items-center gap-2 truncate">
                   {c.patientName}
-                  {isPinned && <span className="text-[10px] text-amber-500 font-bold">PIN</span>}
+                  {isPinned && <span className="t-small text-amber-500 font-semibold">PIN</span>}
                 </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55 font-mono truncate">
+                <div className="t-cap text-black/55 dark:text-white/55 tabular-nums truncate">
                   {c.ticketNumber ? `Ticket: ${c.ticketNumber} · ` : ''}
                   {c.ngapCode || 'C'} · {c.consultationDate.split('T')[0]}
                 </div>
@@ -526,7 +526,7 @@ export const MedicalBillingView: React.FC<any> = () => {
         sortable: true,
         width: '1.5*',
         renderCell: (c) => (
-          <span className="text-xs font-medium text-black/70 dark:text-white/75 truncate block max-w-[140px]">
+          <span className="t-small font-medium text-black/70 dark:text-white/75 truncate block max-w-[140px]">
             {resolveRecordBranch(c, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -537,7 +537,7 @@ export const MedicalBillingView: React.FC<any> = () => {
         sortable: true,
         width: '1.4*',
         renderCell: (c) => (
-          <div className="font-mono font-bold text-xs text-black dark:text-white">
+          <div className="tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(c.consultationFeeDzd, 'DZD')}
           </div>
         ),
@@ -547,7 +547,7 @@ export const MedicalBillingView: React.FC<any> = () => {
         header: isAr ? 'حصة المريض' : 'Part Patient (TM)',
         width: '1.4*',
         renderCell: (c) => (
-          <div className="font-mono text-xs text-black/70 dark:text-white/75">
+          <div className="tabular-nums t-cap text-black/70 dark:text-white/75">
             {formatMoney(c.copayAmountDzd || 0, 'DZD')}
           </div>
         ),
@@ -557,7 +557,7 @@ export const MedicalBillingView: React.FC<any> = () => {
         header: isAr ? 'تغطية Chifa' : 'Tiers Payant Chifa',
         width: '1.4*',
         renderCell: (c) => (
-          <div className="font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold">
+          <div className="tabular-nums t-small text-blue-600 dark:text-blue-400 font-semibold">
             {formatMoney(c.insuranceShareDzd || 0, 'DZD')}
           </div>
         ),
@@ -569,7 +569,7 @@ export const MedicalBillingView: React.FC<any> = () => {
         width: '1.3*',
         renderCell: (c) => (
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+            className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold border ${
               c.isPaid
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                 : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
@@ -632,9 +632,9 @@ export const MedicalBillingView: React.FC<any> = () => {
                 data-sq="thumb"
                 data-sq-border="none"
                 onClick={() => setBillingMainTab(t.id)}
-                className={`px-3 py-1.5 text-xs font-semibold cursor-pointer transition-all ${
+                className={`px-3 py-2 t-small font-semibold cursor-pointer transition-all ${
                   billingMainTab === t.id
-                    ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold'
+                    ? 'bg-white dark:bg-neutral-700 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
                     : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
                 }`}
               >
@@ -831,11 +831,11 @@ export const MedicalBillingView: React.FC<any> = () => {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-neutral-200 dark:border-neutral-700">
               <div>
-                <h2 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                <h2 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
                   <Building2 size={16} className="text-blue-600" />
                   <span>Bordereau Mensuel de Télétransmission Chifa / CNAS</span>
                 </h2>
-                <p className="text-[11px] text-black/55 dark:text-white/55">
+                <p className="t-cap text-black/55 dark:text-white/55">
                   Période: Mai 2026 · Bordereau N° BOR-2026-05-ALGER · Centre de Paiement CNAS 1601
                 </p>
               </div>
@@ -853,7 +853,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                     });
                     window.print();
                   }}
-                  className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 t-small font-semibold flex items-center gap-2 cursor-pointer"
                 >
                   <Download size={13} />
                   <span>Exporter PDF CNAS</span>
@@ -871,46 +871,46 @@ export const MedicalBillingView: React.FC<any> = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
-                <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">
+                <span className="t-small text-black/55 dark:text-white/55 font-semibold">
                   Total Fiches Chifa
                 </span>
-                <div className="text-xl font-bold font-mono text-black dark:text-white mt-1">
+                <div className="t-dialog font-semibold tabular-nums text-black dark:text-white mt-1">
                   {totalClaimsCount} dossiers
                 </div>
-                <span className="text-[10px] text-emerald-600 font-medium">
+                <span className="t-small text-emerald-600 font-medium">
                   {transmittedCount} télétransmis
                 </span>
               </div>
               <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
-                <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">
+                <span className="t-small text-black/55 dark:text-white/55 font-semibold">
                   Total Honoraires NGAP
                 </span>
-                <div className="text-xl font-bold font-mono tabular-nums text-black dark:text-white mt-1">
+                <div className="t-dialog font-semibold tabular-nums text-black dark:text-white mt-1">
                   {formatMoney(totalClaimsCount * 2800, 'DZD')}
                 </div>
-                <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+                <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                   Tarifs conventionnels
                 </span>
               </div>
               <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
-                <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">
+                <span className="t-small text-black/55 dark:text-white/55 font-semibold">
                   Créance Due par la CNAS
                 </span>
-                <div className="text-xl font-bold font-mono tabular-nums text-blue-600 dark:text-blue-400 mt-1">
+                <div className="t-dialog font-semibold tabular-nums text-blue-600 dark:text-blue-400 mt-1">
                   {formatMoney(totalCnasShare, 'DZD')}
                 </div>
-                <span className="text-[10px] text-blue-500 font-medium">
+                <span className="t-small text-blue-500 font-medium">
                   À virer au compte polyclinique
                 </span>
               </div>
               <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700">
-                <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">
+                <span className="t-small text-black/55 dark:text-white/55 font-semibold">
                   Ticket Modérateur Encaissé
                 </span>
-                <div className="text-xl font-bold font-mono tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
+                <div className="t-dialog font-semibold tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
                   {formatMoney(totalTicketModerateur, 'DZD')}
                 </div>
-                <span className="text-[10px] text-black/55 dark:text-white/55">
+                <span className="t-cap text-black/55 dark:text-white/55">
                   Payé par les assurés
                 </span>
               </div>
@@ -962,7 +962,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                   header: 'N° Dossier',
                   width: '1.1*',
                   renderCell: (claim) => (
-                    <span className="font-mono font-semibold text-xs text-black dark:text-white">{claim.id}</span>
+                    <span className="tabular-nums font-semibold t-small text-black dark:text-white">{claim.id}</span>
                   ),
                 },
                 {
@@ -971,8 +971,8 @@ export const MedicalBillingView: React.FC<any> = () => {
                   width: '2.2*',
                   renderCell: (claim) => (
                     <div className="min-w-0">
-                      <div className="font-semibold text-xs text-black dark:text-white truncate">{claim.patientName}</div>
-                      <div className="text-[11px] font-mono text-black/55 dark:text-white/55 truncate">{claim.chifaNumber}</div>
+                      <div className="font-semibold t-small text-black dark:text-white truncate">{claim.patientName}</div>
+                      <div className="t-cap tabular-nums text-black/55 dark:text-white/55 truncate">{claim.chifaNumber}</div>
                     </div>
                   ),
                 },
@@ -984,9 +984,9 @@ export const MedicalBillingView: React.FC<any> = () => {
                     const rate = claim.coverageRate ?? claim.chifaCoveragePercent ?? 80;
                     return (
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-xs text-[#d4522f]">{claim.ngapCode}</span>
+                        <span className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{claim.ngapCode}</span>
                         <span
-                          className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold ${
+                          className={`px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold ${
                             rate === 100
                               ? 'bg-purple-50 text-purple-700 border border-purple-200'
                               : 'bg-blue-50 text-blue-700 border border-blue-200'
@@ -1003,7 +1003,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                   header: 'Part CNAS',
                   width: '1.3*',
                   renderCell: (claim) => (
-                    <span className="font-mono font-bold text-xs text-blue-600">
+                    <span className="tabular-nums font-semibold t-small text-blue-600">
                       {formatMoney(claim.cnasShareDzd ?? claim.chifaShareDzd ?? 0, 'DZD')}
                     </span>
                   ),
@@ -1013,7 +1013,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                   header: 'Ticket Mod.',
                   width: '1.2*',
                   renderCell: (claim) => (
-                    <span className="font-mono text-xs text-black/70 dark:text-white/75">
+                    <span className="tabular-nums t-cap text-black/70 dark:text-white/75">
                       {formatMoney(claim.ticketModerateurDzd ?? claim.copayPaidDzd ?? 0, 'DZD')}
                     </span>
                   ),
@@ -1026,7 +1026,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                     const transmitted = claim.isTransmitted ?? claim.status === 'Submitted';
                     return (
                       <span
-                        className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-semibold ${
+                        className={`px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold ${
                           transmitted ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
                         }`}
                       >
@@ -1135,8 +1135,8 @@ export const MedicalBillingView: React.FC<any> = () => {
         <ScreenPod>
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-neutral-200 dark:border-neutral-700">
-              <h2 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                <Users size={16} className="text-[#d4522f]" />
+              <h2 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
+                <Users size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>Rétrocession des Honoraires Médicaux &amp; Quotes-parts Polyclinique</span>
               </h2>
               <button
@@ -1145,7 +1145,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                 data-sq="ctl-sm"
                 data-sq-border="solid"
                 onClick={handleExportCSV}
-                className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 t-small font-semibold flex items-center gap-2 cursor-pointer"
               >
                 <Download size={13} />
                 <span>Bordereau Comptable CSV</span>
@@ -1168,35 +1168,35 @@ export const MedicalBillingView: React.FC<any> = () => {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="min-w-0">
-                          <h3 className="font-bold text-xs text-black dark:text-white truncate">
+                          <h3 className="font-semibold t-small text-black dark:text-white truncate">
                             {docName}
                           </h3>
-                          <p className="text-[11px] text-black/55 dark:text-white/55 truncate">
+                          <p className="t-cap text-black/55 dark:text-white/55 truncate">
                             {doc.specialty}
                           </p>
                         </div>
-                        <span className="px-2 py-0.5 rounded-full bg-orange-50 text-[#d4522f] font-bold text-[10px] font-mono border border-orange-200/50 shrink-0">
+                        <span className="px-2 py-1 rounded-full bg-orange-50 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small tabular-nums border border-orange-200/50 shrink-0">
                           {docShare}% Rétrocession
                         </span>
                       </div>
-                      <div data-sq="ctl" data-sq-border="none" className="p-3 bg-neutral-50 dark:bg-neutral-900/50 space-y-1.5 text-xs font-mono">
+                      <div data-sq="ctl" data-sq-border="none" className="p-3 bg-neutral-50 dark:bg-neutral-900/50 space-y-2 t-cap tabular-nums">
                         <div className="flex justify-between text-black/55 dark:text-white/55">
                           <span>Chiffre d&apos;affaires brut:</span>
-                          <span className="font-bold text-black dark:text-white">
+                          <span className="font-semibold text-black dark:text-white">
                             {formatMoney(grossTurnover, 'DZD')}
                           </span>
                         </div>
                         <div className="flex justify-between text-emerald-600">
                           <span>Net Médecin ({docShare}%):</span>
-                          <span className="font-bold">{formatMoney(doctorPayout, 'DZD')}</span>
+                          <span className="font-semibold">{formatMoney(doctorPayout, 'DZD')}</span>
                         </div>
-                        <div className="flex justify-between text-black/55 dark:text-white/55 text-[11px]">
+                        <div className="flex justify-between text-black/55 dark:text-white/55 t-cap">
                           <span>Quote-part Polyclinique:</span>
                           <span>{formatMoney(polyclinicRetention, 'DZD')}</span>
                         </div>
                       </div>
                       <div className="flex items-center justify-between pt-1">
-                        <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+                        <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                           Cabinet: {docRoom}
                         </span>
                         <button
@@ -1214,7 +1214,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                               )}`,
                             })
                           }
-                          className="px-2.5 py-1 bg-[#d4522f] text-white font-semibold text-[11px] hover:bg-[#b3694c] transition-colors cursor-pointer"
+                          className="px-2.5 py-1 bg-[var(--brand-fill,#C9461F)] text-white font-semibold t-small hover:bg-[#b3694c] transition-colors cursor-pointer"
                         >
                           Émettre Règlement
                         </button>
@@ -1232,31 +1232,31 @@ export const MedicalBillingView: React.FC<any> = () => {
         <ScreenPod>
           <div className="space-y-5">
             <div className="pb-2 border-b border-neutral-200 dark:border-neutral-700">
-              <h2 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+              <h2 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
                 <Coins size={16} className="text-amber-500" />
                 <span>Feuille de Caisse Journalière &amp; Clôture Secrétariat</span>
               </h2>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div className="sq-elev-card">
-                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-4 text-xs">
-                  <h3 className="font-bold text-black dark:text-white text-xs uppercase tracking-wider">
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-4 t-cap">
+                  <h3 className="font-semibold text-black dark:text-white t-small">
                     Comptage Physique du Tiroir Caisse (Aujourd&apos;hui)
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800">
-                      <span className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase">
+                      <span className="t-small text-black/55 dark:text-white/55 font-semibold">
                         Espèces Attendues (Système)
                       </span>
-                      <div className="text-xl font-bold font-mono tabular-nums text-black dark:text-white mt-1">
+                      <div className="t-dialog font-semibold tabular-nums text-black dark:text-white mt-1">
                         {formatMoney(expectedCashTotal, 'DZD')}
                       </div>
-                      <span className="text-[10px] text-black/55 dark:text-white/55">
+                      <span className="t-cap text-black/55 dark:text-white/55">
                         Base tickets modérateurs encaissés
                       </span>
                     </div>
                     <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800">
-                      <label className="text-[10px] text-black/55 dark:text-white/55 font-bold uppercase block mb-1">
+                      <label className="t-small text-black/55 dark:text-white/55 font-semibold block mb-1">
                         Espèces Comptées Physiquement (DZD)
                       </label>
                       <div data-sq="ctl-sm" data-sq-border="solid" className="border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900">
@@ -1264,14 +1264,14 @@ export const MedicalBillingView: React.FC<any> = () => {
                           type="number"
                           value={countedCash}
                           onChange={(e) => setCountedCash(e.target.value)}
-                          className="lbi-field w-full px-2 py-1.5 bg-transparent border-0 font-mono font-bold text-base text-black dark:text-white"
+                          className="lbi-field w-full px-2 py-2 bg-transparent border-0 tabular-nums font-semibold t-card text-black dark:text-white"
                         />
                       </div>
                       {(() => {
                         const diff = (parseFloat(countedCash) || 0) - expectedCashTotal;
                         return (
                           <span
-                            className={`text-[10px] font-bold block mt-1 ${
+                            className={`t-small font-semibold block mt-1 ${
                               diff === 0
                                 ? 'text-emerald-600'
                                 : diff > 0
@@ -1291,7 +1291,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">
+                    <label className="block t-small font-semibold text-black/55 dark:text-white/55 mb-1">
                       Observations et Justificatifs
                     </label>
                     <div data-sq="ctl" data-sq-border="solid" className="border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900">
@@ -1299,7 +1299,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                         value={closureNotes}
                         onChange={(e) => setClosureNotes(e.target.value)}
                         rows={3}
-                        className="lbi-field w-full p-2.5 bg-transparent border-0 text-xs text-black dark:text-white"
+                        className="lbi-field w-full p-3 bg-transparent border-0 t-cap text-black dark:text-white"
                       />
                     </div>
                   </div>
@@ -1317,8 +1317,8 @@ export const MedicalBillingView: React.FC<any> = () => {
               </div>
 
               <div className="sq-elev-card">
-                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-3 text-xs">
-                  <h3 className="font-bold text-black dark:text-white text-xs uppercase tracking-wider">
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-3 t-cap">
+                  <h3 className="font-semibold text-black dark:text-white t-small">
                     Historique des Clôtures de Caisse
                   </h3>
                   <div className="space-y-2">
@@ -1327,17 +1327,17 @@ export const MedicalBillingView: React.FC<any> = () => {
                         key={cl.id}
                         data-sq="ctl"
                         data-sq-border="solid"
-                        className="p-3 bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-100 dark:border-neutral-800 space-y-1 text-xs"
+                        className="p-3 bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-100 dark:border-neutral-800 space-y-1 t-cap"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-black dark:text-white font-mono">
+                          <span className="font-semibold text-black dark:text-white tabular-nums">
                             {cl.date}
                           </span>
-                          <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+                          <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                             {cl.verifiedAt || '17:30'}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between text-[11px] font-mono text-black/70 dark:text-white/75">
+                        <div className="flex items-center justify-between t-cap tabular-nums text-black/70 dark:text-white/75">
                           <span>
                             Compté:{' '}
                             {formatMoney(
@@ -1348,8 +1348,8 @@ export const MedicalBillingView: React.FC<any> = () => {
                           <span
                             className={
                               cl.discrepancyDzd === 0
-                                ? 'text-emerald-600 font-bold'
-                                : 'text-rose-600 font-bold'
+                                ? 'text-emerald-600 font-semibold'
+                                : 'text-rose-600 font-semibold'
                             }
                           >
                             Écart:{' '}
@@ -1359,7 +1359,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                             DZD
                           </span>
                         </div>
-                        <p className="text-[11px] text-black/55 dark:text-white/55 italic">
+                        <p className="t-cap text-black/55 dark:text-white/55 italic">
                           &ldquo;{cl.notes || 'Clôture normale'}&rdquo; —{' '}
                           {cl.closedBySecretary || cl.closedByStaffName || 'Secrétariat'}
                         </p>
@@ -1378,21 +1378,21 @@ export const MedicalBillingView: React.FC<any> = () => {
           <div className="space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h3 className="font-bold text-sm text-black dark:text-white flex items-center gap-2">
-                  <Building2 size={16} className="text-[#d4522f]" />
+                <h3 className="font-semibold t-label text-black dark:text-white flex items-center gap-2">
+                  <Building2 size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   <span>
                     {isAr
                       ? 'المخزون والمستهلكات السريرية'
                       : 'Pharmacie Interne & Consommables de Soins'}
                   </span>
                 </h3>
-                <p className="text-xs text-black/55 dark:text-white/55">
+                <p className="t-cap text-black/55 dark:text-white/55">
                   {isAr
                     ? 'متابعة حية لاستهلاك القفازات، الحقن، المحاليل والمستلزمات الطبية مع الإنذار المبكر'
                     : 'Niveaux de stock temps réel, auto-décrémentation par consultation/acte et alertes de réapprovisionnement'}
                 </p>
               </div>
-              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75">
+              <span className="t-small font-semibold px-3 py-1 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75">
                 {consumables.length} {isAr ? 'عنصر مراقب' : 'fournitures tracées'}
               </span>
             </div>
@@ -1417,50 +1417,50 @@ export const MedicalBillingView: React.FC<any> = () => {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <span className="text-[10px] font-mono text-black/55 dark:text-white/55 block uppercase font-bold">
+                          <span className="t-small tabular-nums text-black/55 dark:text-white/55 block font-semibold">
                             {code} · {item.category}
                           </span>
-                          <h4 className="font-bold text-sm text-black dark:text-white mt-0.5">
+                          <h4 className="font-semibold t-label text-black dark:text-white mt-0.5">
                             {item.name}
                           </h4>
                         </div>
                         {isCritical ? (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 animate-pulse">
+                          <span className="t-small font-semibold px-2 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 animate-pulse">
                             Seuil Critique
                           </span>
                         ) : (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                          <span className="t-small font-semibold px-2 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                             Stock Optimal
                           </span>
                         )}
                       </div>
-                      <div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 gap-2 p-2.5 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-800 text-xs">
+                      <div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 gap-2 p-3 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-800 t-cap">
                         <div>
-                          <span className="text-[10px] text-black/55 dark:text-white/55 uppercase font-semibold block">
+                          <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                             Stock Actuel
                           </span>
                           <div className="flex items-baseline gap-1 mt-0.5">
                             <span
-                              className={`text-xl font-bold font-mono ${
+                              className={`t-dialog font-semibold tabular-nums ${
                                 isCritical ? 'text-rose-600' : 'text-black dark:text-white'
                               }`}
                             >
                               {currentStock}
                             </span>
-                            <span className="text-[10px] text-black/55 dark:text-white/55">
+                            <span className="t-cap text-black/55 dark:text-white/55">
                               {item.unit}
                             </span>
                           </div>
                         </div>
                         <div>
-                          <span className="text-[10px] text-black/55 dark:text-white/55 uppercase font-semibold block">
+                          <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                             Seuil d&apos;Alerte
                           </span>
                           <div className="flex items-baseline gap-1 mt-0.5">
-                            <span className="text-xl font-bold font-mono text-black/55 dark:text-white/55">
+                            <span className="t-dialog font-semibold tabular-nums text-black/55 dark:text-white/55">
                               {threshold}
                             </span>
-                            <span className="text-[10px] text-black/55 dark:text-white/55">
+                            <span className="t-cap text-black/55 dark:text-white/55">
                               {item.unit}
                             </span>
                           </div>
@@ -1493,7 +1493,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                               message: `-1 ${item.unit} déduit pour ${item.name}`,
                             });
                           }}
-                          className="px-2 py-1 text-[11px] border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                          className="px-2 py-1 t-cap border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                           title="Déduire manuellement pour un acte"
                         >
                           -1 Unité
@@ -1511,7 +1511,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                               message: `+50 ${item.unit} réapprovisionnés pour ${item.name}`,
                             });
                           }}
-                          className="px-2.5 py-1 text-[11px] bg-[#d4522f] text-white font-semibold hover:bg-[#b0674b] transition-colors cursor-pointer"
+                          className="px-2.5 py-1 t-small bg-[var(--brand-fill,#C9461F)] text-white font-semibold hover:bg-[#b0674b] transition-colors cursor-pointer"
                         >
                           +50 Réappro
                         </button>
@@ -1654,9 +1654,9 @@ export const MedicalBillingView: React.FC<any> = () => {
                         data-sq="ctl"
                         data-sq-border="solid"
                         onClick={() => setPaymentMethod(method)}
-                        className={`py-2 px-2 text-center text-xs font-semibold border transition-all cursor-pointer ${
+                        className={`py-2 px-2 text-center t-small font-semibold border transition-all cursor-pointer ${
                           paymentMethod === method
-                            ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                            ? 'border-[#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                             : 'border-[#E6DED6] dark:border-neutral-700 bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75'
                         }`}
                       >
@@ -1716,7 +1716,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                 title={isAr ? 'الطباعة والإجراءات' : 'Quittance & Suivi'}
                 index={0}
               >
-                <div className="space-y-2.5">
+                <div className="space-y-2">
                   <InspectorWideButton
                     label="Imprimer quittance patient"
                     icon={<Printer size={15} />}

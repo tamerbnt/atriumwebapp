@@ -487,22 +487,22 @@ export const AgricultureParcelsView: React.FC = () => {
         width: '2.3*',
         sortable: true,
         renderCell: (p) => (
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0"
+              className="w-8 h-8 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-semibold t-small shrink-0"
             >
               <Sprout size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-xs text-black dark:text-white flex items-center gap-1.5 truncate">
+              <div className="font-semibold t-small text-black dark:text-white flex items-center gap-2 truncate">
                 <span className="truncate">{p.name}</span>
                 {pinnedIds.has(p.id) && (
-                  <Pin size={10} className="fill-[#d4522f] text-[#d4522f] shrink-0" />
+                  <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
                 )}
               </div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">
                 {p.currentCrop || '—'}
               </div>
             </div>
@@ -515,7 +515,7 @@ export const AgricultureParcelsView: React.FC = () => {
         width: '1.1*',
         sortable: true,
         renderCell: (p) => (
-          <div className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+          <div className="tabular-nums font-semibold t-small text-black dark:text-white">
             {p.surfaceHectares} ha
           </div>
         ),
@@ -526,7 +526,7 @@ export const AgricultureParcelsView: React.FC = () => {
         width: '1.3*',
         sortable: true,
         renderCell: (p) => (
-          <div className="flex items-center gap-1.5 text-xs text-black/70 dark:text-white/75 truncate">
+          <div className="flex items-center gap-2 t-cap text-black/70 dark:text-white/75 truncate">
             <Droplets size={13} className="text-blue-500 shrink-0" />
             <span className="truncate">
               {p.irrigationType === 'Drip'
@@ -546,7 +546,7 @@ export const AgricultureParcelsView: React.FC = () => {
         width: '1.3*',
         sortable: true,
         renderCell: (p) => (
-          <div className="text-xs text-black/70 dark:text-white/75 truncate">{p.soilType}</div>
+          <div className="t-cap text-black/70 dark:text-white/75 truncate">{p.soilType}</div>
         ),
       },
       {
@@ -555,7 +555,7 @@ export const AgricultureParcelsView: React.FC = () => {
         width: '1.2*',
         sortable: true,
         renderCell: (p) => (
-          <span className="text-xs text-black/65 dark:text-white/70 truncate block">
+          <span className="t-cap text-black/65 dark:text-white/70 truncate block">
             {resolveRecordBranch(p, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -580,7 +580,7 @@ export const AgricultureParcelsView: React.FC = () => {
           }
           return (
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeColor}`}
+              className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold border ${badgeColor}`}
             >
               {label}
             </span>
@@ -593,7 +593,7 @@ export const AgricultureParcelsView: React.FC = () => {
         width: '1.1*',
         sortable: true,
         renderCell: (p) => (
-          <div className="text-xs font-mono text-black/70 dark:text-white/75">
+          <div className="t-cap tabular-nums text-black/70 dark:text-white/75">
             {p.expectedHarvestDate || '—'}
           </div>
         ),

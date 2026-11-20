@@ -349,11 +349,18 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, [data-atrium-theme="dark"], [data-atrium-theme="dark"] *, .dark, .dark *));
 
-/* Offline fallback font-face strictly locked at weight 400 (Google Fonts provides regular 400 online) */
+/* Offline fallback font-face for Barlow Condensed (400 display KPIs + 700 bold page headers) */
 @font-face {
   font-family: 'Barlow Condensed Fallback';
   src: url('/fonts/BarlowCondensed-Medium.woff2') format('woff2');
   font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow Condensed Fallback';
+  src: url('/fonts/BarlowCondensed-Bold.woff2') format('woff2');
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -514,7 +521,7 @@
     line-height: 1.6;
   }
 
-  /* Page & Screen Display Titles — strictly weight 400 and >= 40px */
+  /* Page & Screen Display Titles — 700 bold, >= 40px */
   h1,
   .screen-title,
   .screen-header-title,
@@ -556,7 +563,7 @@
   [dir="rtl"] [data-screen-title="true"],
   :is([dir="rtl"], [dir="rtl"] *) h1 {
     font-family: 'Cairo', var(--font-display);
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: normal;
     line-height: 1.24;
     text-transform: none;
@@ -599,7 +606,7 @@
 
 [dir="rtl"] .t-page {
   font-family: 'Cairo', var(--font-ui);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 32px;
   line-height: 40px;
   letter-spacing: normal;

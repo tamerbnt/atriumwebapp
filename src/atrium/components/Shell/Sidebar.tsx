@@ -196,8 +196,8 @@ export function Sidebar({
   };
 
   const onListPointerLeave = (e: React.PointerEvent) => {
-    const related = e.relatedTarget as Node | null;
-    if (listRef.current && related && listRef.current.contains(related)) return;
+    const related = e.relatedTarget;
+    if (listRef.current && related instanceof Node && listRef.current.contains(related)) return;
     lastTargetBtn.current = null;
     hoverBody.current?.setHover(null);
   };

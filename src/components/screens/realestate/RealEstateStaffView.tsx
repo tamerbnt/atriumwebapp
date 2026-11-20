@@ -17,19 +17,19 @@ export const RealEstateStaffView: React.FC = () => {
       sortable: true,
       cell: (member) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold t-small flex items-center justify-center shrink-0">
             {member.fullName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-black dark:text-white text-xs truncate">
+            <div className="font-semibold text-black dark:text-white t-small truncate">
               {member.fullName}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 truncate flex items-center gap-1.5">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate flex items-center gap-2">
               <span>{member.role}</span>
               {member.carteProfessionnelleNumber && (
                 <>
                   <span>·</span>
-                  <span className="font-mono text-[#d4522f]">{member.carteProfessionnelleNumber}</span>
+                  <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{member.carteProfessionnelleNumber}</span>
                 </>
               )}
             </div>
@@ -62,7 +62,7 @@ export const RealEstateStaffView: React.FC = () => {
                   : 'bg-neutral-400'
               }`}
             />
-            <span className="text-xs font-medium text-black dark:text-white">
+            <span className="t-small font-medium text-black dark:text-white">
               {member.status === 'active'
                 ? isPresent
                   ? isAr
@@ -102,7 +102,7 @@ export const RealEstateStaffView: React.FC = () => {
       header: isAr ? 'البطاقة المهنية (مرسوم 09-18)' : isEn ? 'Professional Card No.' : 'Carte Pro (Décret 09-18)',
       accessorKey: 'carteProfessionnelleNumber',
       cell: (member) => (
-        <span className="text-xs font-mono text-black/70 dark:text-white/75">
+        <span className="t-cap tabular-nums text-black/70 dark:text-white/75">
           {member.carteProfessionnelleNumber || (isAr ? 'قيد الاعتماد' : 'En instruction')}
         </span>
       ),
@@ -112,14 +112,14 @@ export const RealEstateStaffView: React.FC = () => {
       header: isAr ? 'صلاحية توقيع العقود' : isEn ? 'Mandate Signing' : 'Signature Mandats',
       accessorKey: 'canSignMandates',
       cell: (member) => (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {member.canSignMandates ? (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+            <span className="inline-flex items-center gap-1 t-small font-semibold text-emerald-600 dark:text-emerald-400">
               <ShieldCheck size={13} />
               <span>{isAr ? 'مفوض رسمي' : 'Habilité Mandats'}</span>
             </span>
           ) : (
-            <span className="text-[11px] text-black/55 dark:text-white/55">
+            <span className="t-cap text-black/55 dark:text-white/55">
               {isAr ? 'غير مفوض' : 'Collaborateur'}
             </span>
           )}
@@ -131,7 +131,7 @@ export const RealEstateStaffView: React.FC = () => {
       header: isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
       accessorKey: 'phoneNumber',
       cell: (member) => (
-        <span className="text-xs text-black/70 dark:text-white/75 tabular-nums">
+        <span className="t-cap text-black/70 dark:text-white/75 tabular-nums">
           {member.phoneNumber || '—'}
         </span>
       ),

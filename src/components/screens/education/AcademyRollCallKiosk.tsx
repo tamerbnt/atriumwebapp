@@ -257,7 +257,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
         icon={<GraduationCap size={22} />}
         title={isRtl ? 'الحضور السريع' : isEn ? 'Roll Call Kiosk' : 'Appel Rapide'}
         secondaryActions={
-          <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             <div
               data-sq="ctl"
               data-sq-border="solid"
@@ -267,7 +267,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 value={selectedSessionId}
                 onChange={(e) => setSelectedSessionId(e.target.value)}
                 aria-label={isRtl ? 'اختيار الحصة' : 'Sélectionner la séance'}
-                className="lbi-field w-full h-full px-3 bg-transparent border-0 text-xs font-semibold text-black dark:text-white cursor-pointer focus:outline-none"
+                className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-semibold text-black dark:text-white cursor-pointer focus:outline-none"
               >
                 {eduSessions.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -282,7 +282,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 data-sq="ctl"
                 data-sq-border="solid"
                 onClick={() => setIsPinModalOpen(true)}
-                className="h-10 px-3.5 border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 text-xs font-bold flex items-center gap-1.5 hover:bg-amber-100 cursor-pointer"
+                className="h-10 px-4 border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 t-small font-semibold flex items-center gap-2 hover:bg-amber-100 cursor-pointer"
               >
                 <Unlock size={14} />
                 <span>{isRtl ? 'إلغاء القفل (PIN)' : 'Déverrouiller (PIN)'}</span>
@@ -333,15 +333,15 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="bg-[#F3EDE7]/65 dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs"
+              className="bg-[#F3EDE7]/65 dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap"
             >
               <div className="flex items-center gap-2">
-                <BookOpen size={16} className="text-[#d4522f] shrink-0" />
+                <BookOpen size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
                 <div>
-                  <span className="text-2xs text-black/55 dark:text-white/55 block">
+                  <span className="t-cap text-black/55 dark:text-white/55 block">
                     {isRtl ? 'الفوج / الدورة' : 'Promotion'}
                   </span>
-                  <span className="font-bold text-black dark:text-white truncate block">
+                  <span className="font-semibold text-black dark:text-white truncate block">
                     {activeCohort?.name || activeSession.cohortName}
                   </span>
                 </div>
@@ -349,10 +349,10 @@ export const AcademyRollCallKiosk: React.FC = () => {
               <div className="flex items-center gap-2">
                 <MapPin size={16} className="text-emerald-600 shrink-0" />
                 <div>
-                  <span className="text-2xs text-black/55 dark:text-white/55 block">
+                  <span className="t-cap text-black/55 dark:text-white/55 block">
                     {isRtl ? 'القاعة' : 'Salle'}
                   </span>
-                  <span className="font-bold text-black dark:text-white">
+                  <span className="font-semibold text-black dark:text-white">
                     {activeSession.classroomName || 'Salle Polyvalente'}
                   </span>
                 </div>
@@ -360,10 +360,10 @@ export const AcademyRollCallKiosk: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Clock size={16} className="text-blue-600 shrink-0" />
                 <div>
-                  <span className="text-2xs text-black/55 dark:text-white/55 block">
+                  <span className="t-cap text-black/55 dark:text-white/55 block">
                     {isRtl ? 'التوقيت' : 'Horaires'}
                   </span>
-                  <span className="font-mono font-bold text-black dark:text-white">
+                  <span className="tabular-nums font-semibold text-black dark:text-white">
                     {activeSession.startTime} — {activeSession.endTime}
                   </span>
                 </div>
@@ -371,10 +371,10 @@ export const AcademyRollCallKiosk: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Users size={16} className="text-indigo-600 shrink-0" />
                 <div>
-                  <span className="text-2xs text-black/55 dark:text-white/55 block">
+                  <span className="t-cap text-black/55 dark:text-white/55 block">
                     {isRtl ? 'الأستاذ المعين' : 'Formateur'}
                   </span>
-                  <span className="font-bold text-black dark:text-white truncate block">
+                  <span className="font-semibold text-black dark:text-white truncate block">
                     {activeSession.instructorName || currentUser?.fullName || 'Professeur Titulaire'}
                   </span>
                 </div>
@@ -394,12 +394,12 @@ export const AcademyRollCallKiosk: React.FC = () => {
             data-sq-border="none"
             disabled={isSessionLocked}
             onClick={handleMarkAllPresent}
-            className="h-10 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
+            className="h-10 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
           >
             <Check size={16} />
             <span>{isRtl ? 'تحديد الكل حاضرون بلمسة واحدة' : 'Tout Marquer Présent (1 Clic)'}</span>
           </button>
-          <span className="text-xs text-black/55 dark:text-white/55 hidden sm:inline">
+          <span className="t-cap text-black/55 dark:text-white/55 hidden sm:inline">
             {isRtl
               ? 'ثم انقر على الغائبين لتعديل حالتهم فورياً'
               : 'Puis basculez les 1 ou 2 absents individuellement.'}
@@ -417,7 +417,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={isRtl ? 'بحث باسم الطالب أو الهاتف...' : 'Filtrer par nom ou tél...'}
-              className="lbi-field w-full h-full pl-9 pr-3 bg-transparent border-0 text-xs font-medium focus:outline-none"
+              className="lbi-field w-full h-full pl-9 pr-3 bg-transparent border-0 t-small font-medium focus:outline-none"
             />
           </div>
         </div>
@@ -447,18 +447,18 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     <div
                       data-sq="tile"
                       data-sq-border="solid"
-                      className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-sm shrink-0 border border-neutral-200 dark:border-neutral-700"
+                      className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-label shrink-0 border border-neutral-200 dark:border-neutral-700"
                     >
                       {student.fullName.charAt(0)}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-bold text-xs text-black dark:text-white truncate">{student.fullName}</h3>
-                      <p className="text-2xs text-black/55 dark:text-white/55 font-mono">
+                      <h3 className="font-semibold t-small text-black dark:text-white truncate">{student.fullName}</h3>
+                      <p className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                         ID: {student.id.slice(0, 10)} {student.phone && `· ${student.phone}`}
                       </p>
                     </div>
                   </div>
-                  <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 shrink-0">
+                  <span className="t-small font-semibold px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 shrink-0">
                     {student.attendanceRatePercent ?? 95}% {isRtl ? 'حضور' : 'assiduité'}
                   </span>
                 </div>
@@ -466,7 +466,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="grid grid-cols-4 gap-1.5 p-[3px] bg-neutral-100 dark:bg-neutral-800"
+                  className="grid grid-cols-4 gap-2 p-[3px] bg-neutral-100 dark:bg-neutral-800"
                 >
                   <button
                     type="button"
@@ -474,7 +474,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     data-sq-border="none"
                     disabled={isSessionLocked}
                     onClick={() => handleSetStatus(student.id, 'present')}
-                    className={`h-9 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:cursor-not-allowed ${
+                    className={`h-9 t-small font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:cursor-not-allowed ${
                       status === 'present'
                         ? 'bg-emerald-600 text-white'
                         : 'text-black/70 dark:text-white/75 hover:text-black'
@@ -482,7 +482,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     title={isRtl ? 'حاضر' : 'Présent'}
                   >
                     <span>P</span>
-                    <span className="text-[10px] hidden sm:inline">{isRtl ? 'حاضر' : 'Présent'}</span>
+                    <span className="t-cap hidden sm:inline">{isRtl ? 'حاضر' : 'Présent'}</span>
                   </button>
                   <button
                     type="button"
@@ -490,7 +490,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     data-sq-border="none"
                     disabled={isSessionLocked}
                     onClick={() => handleSetStatus(student.id, 'absent')}
-                    className={`h-9 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:cursor-not-allowed ${
+                    className={`h-9 t-small font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:cursor-not-allowed ${
                       status === 'absent'
                         ? 'bg-rose-600 text-white'
                         : 'text-black/70 dark:text-white/75 hover:text-rose-600'
@@ -498,7 +498,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     title={isRtl ? 'غائب' : 'Absent'}
                   >
                     <span>A</span>
-                    <span className="text-[10px] hidden sm:inline">{isRtl ? 'غائب' : 'Absent'}</span>
+                    <span className="t-cap hidden sm:inline">{isRtl ? 'غائب' : 'Absent'}</span>
                   </button>
                   <button
                     type="button"
@@ -506,7 +506,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     data-sq-border="none"
                     disabled={isSessionLocked}
                     onClick={() => handleSetStatus(student.id, 'late')}
-                    className={`h-9 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:cursor-not-allowed ${
+                    className={`h-9 t-small font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:cursor-not-allowed ${
                       status === 'late'
                         ? 'bg-amber-600 text-white'
                         : 'text-black/70 dark:text-white/75 hover:text-amber-600'
@@ -514,7 +514,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     title={isRtl ? 'متأخر' : 'En retard'}
                   >
                     <span>R</span>
-                    <span className="text-[10px] hidden sm:inline">{isRtl ? 'تأخر' : 'Retard'}</span>
+                    <span className="t-cap hidden sm:inline">{isRtl ? 'تأخر' : 'Retard'}</span>
                   </button>
                   <button
                     type="button"
@@ -522,7 +522,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     data-sq-border="none"
                     disabled={isSessionLocked}
                     onClick={() => handleSetStatus(student.id, 'excused')}
-                    className={`h-9 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:cursor-not-allowed ${
+                    className={`h-9 t-small font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:cursor-not-allowed ${
                       status === 'excused'
                         ? 'bg-blue-600 text-white'
                         : 'text-black/70 dark:text-white/75 hover:text-blue-600'
@@ -530,12 +530,12 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     title={isRtl ? 'غياب مبرر' : 'Excusé'}
                   >
                     <span>E</span>
-                    <span className="text-[10px] hidden sm:inline">{isRtl ? 'مبرر' : 'Excusé'}</span>
+                    <span className="t-cap hidden sm:inline">{isRtl ? 'مبرر' : 'Excusé'}</span>
                   </button>
                 </div>
 
               {status === 'absent' && (
-                <div className="mt-3 pt-2.5 border-t border-rose-200/60 dark:border-rose-900/40 flex items-center justify-between text-2xs text-rose-700 dark:text-rose-300">
+                <div className="mt-3 pt-2.5 border-t border-rose-200/60 dark:border-rose-900/40 flex items-center justify-between t-cap text-rose-700 dark:text-rose-300">
                   <span className="truncate">
                     {student.guardianName
                       ? `${student.guardianRelation || 'Tuteur'}: ${student.guardianName}`
@@ -546,7 +546,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     data-sq="ctl-sm"
                     data-sq-border="none"
                     onClick={() => setNotifyingStudent(student)}
-                    className="flex items-center gap-1 px-2 py-1 bg-rose-100 hover:bg-rose-200 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 font-bold cursor-pointer transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 bg-rose-100 hover:bg-rose-200 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 font-semibold cursor-pointer transition-colors"
                   >
                     <MessageCircle size={12} />
                     <span>{isRtl ? 'إشعار الولي' : "Avis d'absence"}</span>
@@ -565,12 +565,12 @@ export const AcademyRollCallKiosk: React.FC = () => {
           data-sq-border="solid"
           className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 space-y-4"
         >
-        <h3 className="text-xs font-bold uppercase tracking-wider text-black/55 dark:text-white/55">
+        <h3 className="t-small font-semibold text-black/55 dark:text-white/55">
           {isRtl ? 'دفتر المتابعة البيداغوجية للحصة' : 'Cahier de Texte & Progression du Cours'}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">
+            <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
               {isRtl ? 'موضوع الدرس المنجز اليوم' : 'Objectifs & Chapitre Traité'}
             </label>
             <div
@@ -588,12 +588,12 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     ? 'مثال: الوحدة 4 - قواعد التراكيب والنحو...'
                     : 'Ex: Module 3 - Exercices pratiques et analyse de cas'
                 }
-                className="lbi-field w-full h-full px-3 bg-transparent border-0 text-xs font-medium focus:outline-none"
+                className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-medium focus:outline-none"
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">
+            <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
               {isRtl ? 'الواجبات المنزلية للحصة القادمة' : 'Devoirs & Consignes pour la Prochaine Séance'}
             </label>
             <div
@@ -609,7 +609,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 placeholder={
                   isRtl ? 'مثال: إنجاز التمرين رقم 5 صفحة 42...' : 'Ex: Préparer les exercices 4 et 5 page 68'
                 }
-                className="lbi-field w-full h-full px-3 bg-transparent border-0 text-xs font-medium focus:outline-none"
+                className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-medium focus:outline-none"
               />
             </div>
           </div>
@@ -627,7 +627,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
               data-sq-border="solid"
               className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 w-full p-6 animate-in fade-in zoom-in-95 duration-150"
             >
-            <div className="flex items-center gap-2.5 mb-4">
+            <div className="flex items-center gap-2 mb-4">
               <div
                 data-sq="tile"
                 data-sq-border="none"
@@ -636,10 +636,10 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 <MessageCircle size={20} />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-black dark:text-white">
+                <h3 className="t-label font-semibold text-black dark:text-white">
                   {isRtl ? 'إشعار فوري بغياب الطالب' : "Notification d'Absence Immédiate"}
                 </h3>
-                <p className="text-2xs text-black/55 dark:text-white/55">
+                <p className="t-cap text-black/55 dark:text-white/55">
                   {notifyingStudent.fullName} · {notifyingStudent.guardianPhone || notifyingStudent.phone}
                 </p>
               </div>
@@ -647,12 +647,12 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="card"
               data-sq-border="none"
-              className="bg-neutral-50 dark:bg-neutral-800/60 p-4 text-xs space-y-2 mb-4"
+              className="bg-neutral-50 dark:bg-neutral-800/60 p-4 t-cap space-y-2 mb-4"
             >
-              <span className="text-2xs text-black/55 dark:text-white/55 uppercase font-semibold block">
+              <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                 {isRtl ? 'نص الرسالة الموجهة للولي' : 'Aperçu du Message WhatsApp'}
               </span>
-              <p className="text-xs text-black/70 dark:text-white/75 leading-relaxed font-sans">
+              <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed font-sans">
                 {isRtl
                   ? `السلام عليكم، نعلمكم بغياب الطالب(ة) ${notifyingStudent.fullName} اليوم في حصة [${
                       activeCohort?.name || activeSession?.cohortName
@@ -668,7 +668,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 data-sq="ctl"
                 data-sq-border="none"
                 onClick={() => setNotifyingStudent(null)}
-                className="flex-1 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 text-xs font-semibold text-black/70 dark:text-white/75 cursor-pointer"
+                className="flex-1 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 t-small font-semibold text-black/70 dark:text-white/75 cursor-pointer"
               >
                 {isRtl ? 'إلغاء' : 'Annuler'}
               </button>
@@ -677,7 +677,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 data-sq="ctl"
                 data-sq-border="none"
                 onClick={() => handleSendGuardianAlert(notifyingStudent)}
-                className="flex-1 py-2.5 bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                className="flex-1 py-2 bg-[#25D366] hover:bg-[#20ba59] text-white t-small font-semibold flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Send size={14} />
                 <span>{isRtl ? 'إرسال عبر واتساب' : 'Envoyer WhatsApp'}</span>

@@ -117,19 +117,19 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 shrink-0">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <div
               data-sq="tile"
               data-sq-border="none"
-              className="w-10 h-10 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold"
+              className="w-10 h-10 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-semibold"
             >
               <ShieldCheck size={22} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h3 className="font-semibold t-card text-black dark:text-white">
                 {isAr ? 'تبرئة ذمة السائق ومطابقة الصندوق (Double-Lock)' : 'Clôture Tournée & Billet de Décharge'}
               </h3>
-              <p className="text-xs text-black/55 dark:text-white/55">
+              <p className="t-cap text-black/55 dark:text-white/55">
                 {manifest.manifestNumber} • Chauffeur: {manifest.driverName} ({manifest.vehiclePlate})
               </p>
             </div>
@@ -151,12 +151,12 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60"
+              className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60"
             >
-              <span className="text-[11px] font-medium text-black/55 dark:text-white/55 block">
+              <span className="t-small font-medium text-black/55 dark:text-white/55 block">
                 {isAr ? 'المبلغ النظري المتوقع' : 'Montant Théorique Attendu'}
               </span>
-              <span className="text-lg font-bold font-mono text-black dark:text-white">
+              <span className="t-pod font-semibold tabular-nums text-black dark:text-white">
                 {formatMoney(expectedAmount, language)}
               </span>
             </div>
@@ -164,12 +164,12 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60"
+              className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60"
             >
-              <span className="text-[11px] font-medium text-black/55 dark:text-white/55 block">
+              <span className="t-small font-medium text-black/55 dark:text-white/55 block">
                 {isAr ? 'المبلغ الفعلي المعدود' : 'Total Physique Compté'}
               </span>
-              <span className="text-lg font-bold font-mono text-[#d4522f]">
+              <span className="t-pod font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 {formatMoney(balance.actualTotalDzd, language)}
               </span>
             </div>
@@ -177,7 +177,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             <div
               data-sq="card"
               data-sq-border="solid"
-              className={`p-3.5 border ${
+              className={`p-4 border ${
                 balance.status === 'Balanced'
                   ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-700 dark:text-emerald-300'
                   : balance.status === 'Shortage'
@@ -185,10 +185,10 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                   : 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 [--sq-stroke:#bfdbfe] dark:[--sq-stroke:#1e40af] text-blue-700 dark:text-blue-300'
               }`}
             >
-              <span className="text-[11px] font-medium block">
+              <span className="t-small font-medium block">
                 {isAr ? 'الفارق / الفائض' : 'Écart de Caisse'}
               </span>
-              <span className="text-lg font-bold font-mono">
+              <span className="t-pod font-semibold tabular-nums">
                 {balance.discrepancyDzd > 0 ? `+${balance.discrepancyDzd}` : balance.discrepancyDzd} DZD
               </span>
             </div>
@@ -201,21 +201,21 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3"
           >
             <div className="flex items-center justify-between">
-              <h4 className="font-bold text-xs text-black dark:text-white uppercase tracking-wider">
+              <h4 className="font-semibold t-small text-black dark:text-white">
                 {isAr ? 'تعداد الأوراق النقدية والقطع (الدينار الجزائري)' : 'Comptage des Billets & Pièces (DZD)'}
               </h4>
               <button
                 type="button"
                 onClick={handleQuickFillClean}
-                className="text-[11px] font-semibold text-[#d4522f] hover:underline cursor-pointer"
+                className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline cursor-pointer"
               >
                 {isAr ? 'مطابقة آلية فورية' : 'Ajuster automatiquement au centime'}
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 t-cap">
               <div>
-                <label className="block text-[11px] font-semibold text-black/70 dark:text-white/75 mb-1">
+                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
                   Billets 2 000 DZD
                 </label>
                 <div className="flex items-center gap-2">
@@ -229,17 +229,17 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                       min="0"
                       value={n2000}
                       onChange={(e) => setN2000(parseInt(e.target.value) || 0)}
-                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
                     />
                   </div>
-                  <span className="text-[11px] text-black/55 dark:text-white/55 shrink-0 font-mono">
+                  <span className="t-cap text-black/55 dark:text-white/55 shrink-0 tabular-nums">
                     = {formatMoney(n2000 * 2000, language)}
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-black/70 dark:text-white/75 mb-1">
+                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
                   Billets 1 000 DZD
                 </label>
                 <div className="flex items-center gap-2">
@@ -253,17 +253,17 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                       min="0"
                       value={n1000}
                       onChange={(e) => setN1000(parseInt(e.target.value) || 0)}
-                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
                     />
                   </div>
-                  <span className="text-[11px] text-black/55 dark:text-white/55 shrink-0 font-mono">
+                  <span className="t-cap text-black/55 dark:text-white/55 shrink-0 tabular-nums">
                     = {formatMoney(n1000 * 1000, language)}
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-black/70 dark:text-white/75 mb-1">
+                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
                   Billets 500 DZD
                 </label>
                 <div className="flex items-center gap-2">
@@ -277,17 +277,17 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                       min="0"
                       value={n500}
                       onChange={(e) => setN500(parseInt(e.target.value) || 0)}
-                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
                     />
                   </div>
-                  <span className="text-[11px] text-black/55 dark:text-white/55 shrink-0 font-mono">
+                  <span className="t-cap text-black/55 dark:text-white/55 shrink-0 tabular-nums">
                     = {formatMoney(n500 * 500, language)}
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-black/70 dark:text-white/75 mb-1">
+                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
                   Billets 200 DZD
                 </label>
                 <div className="flex items-center gap-2">
@@ -301,17 +301,17 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                       min="0"
                       value={n200}
                       onChange={(e) => setN200(parseInt(e.target.value) || 0)}
-                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                      className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
                     />
                   </div>
-                  <span className="text-[11px] text-black/55 dark:text-white/55 shrink-0 font-mono">
+                  <span className="t-cap text-black/55 dark:text-white/55 shrink-0 tabular-nums">
                     = {formatMoney(n200 * 200, language)}
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-black/70 dark:text-white/75 mb-1">
+                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
                   Pièces de monnaie (Total)
                 </label>
                 <div
@@ -324,7 +324,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                     min="0"
                     value={coins}
                     onChange={(e) => setCoins(parseFloat(e.target.value) || 0)}
-                    className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                    className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
                   />
                 </div>
               </div>
@@ -342,15 +342,15 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                 type="checkbox"
                 checked={courierSigned}
                 onChange={(e) => setCourierSigned(e.target.checked)}
-                className="w-4 h-4 rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
+                className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
               />
-              <span className="text-xs font-semibold text-black dark:text-white">
+              <span className="t-small font-semibold text-black dark:text-white">
                 {isAr
                   ? 'أؤكد إمضاء وموافقة السائق على المبالغ المحصلة والمسلمة للصندوق'
                   : 'Je confirme la signature conjointe du chauffeur attestant de la remise effective des fonds'}
               </span>
             </label>
-            <p className="text-[11px] text-black/55 dark:text-white/55 pl-7">
+            <p className="t-cap text-black/55 dark:text-white/55 pl-7">
               {isAr
                 ? 'إصدار محضر تبرئة الذمة يلغي مسؤولية السائق ويحول المبالغ إلى رصيد خزينة المركز'
                 : 'L\'approbation génère le bon de décharge légal et transfère la responsabilité au coffre du Hub.'}

@@ -1503,7 +1503,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
               : 'Renewal & Retention Alert',
           badgeText:
             language === 'ar'
-              ? 'تنتهي قريباً (<14j)'
+              ? 'تنتهي قريباً (<14 يوم)'
               : language === 'fr'
               ? 'expirent sous 14j'
               : 'expiring (<14d)',

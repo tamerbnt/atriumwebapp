@@ -18,14 +18,14 @@ export const PosStaffView: React.FC = () => {
       sortable: true,
       cell: (member) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold t-small flex items-center justify-center shrink-0">
             {member.fullName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-black dark:text-white text-xs truncate">
+            <div className="font-semibold text-black dark:text-white t-small truncate">
               {member.fullName}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate">
               {member.role}
             </div>
           </div>
@@ -57,7 +57,7 @@ export const PosStaffView: React.FC = () => {
                   : 'bg-neutral-400'
               }`}
             />
-            <span className="text-xs font-medium text-black dark:text-white">
+            <span className="t-small font-medium text-black dark:text-white">
               {member.status === 'active'
                 ? isPresent
                   ? isAr
@@ -97,7 +97,7 @@ export const PosStaffView: React.FC = () => {
       header: isAr ? 'رقم الصندوق المخصص' : isEn ? 'Assigned Register' : 'Caisse / Terminal Attribué',
       accessorKey: 'assignedRegisterId',
       cell: (member) => (
-        <span className="text-xs font-mono text-black/70 dark:text-white/75">
+        <span className="t-cap tabular-nums text-black/70 dark:text-white/75">
           {member.assignedRegisterId || (isAr ? 'عائم' : isEn ? 'Floating' : 'Flottant')}
         </span>
       ),
@@ -107,7 +107,7 @@ export const PosStaffView: React.FC = () => {
       header: isAr ? 'سقف صندوق النقد' : isEn ? 'Cash Float Ceiling' : 'Plafond Fond de Caisse',
       accessorKey: 'maxCashFloatLimit',
       cell: (member) => (
-        <span className="text-xs font-semibold text-black dark:text-white tabular-nums">
+        <span className="t-small font-semibold text-black dark:text-white tabular-nums">
           {member.maxCashFloatLimit ? formatMoney(member.maxCashFloatLimit) : 'Standard'}
         </span>
       ),
@@ -117,7 +117,7 @@ export const PosStaffView: React.FC = () => {
       header: isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
       accessorKey: 'phoneNumber',
       cell: (member) => (
-        <span className="text-xs text-black/70 dark:text-white/75 tabular-nums">
+        <span className="t-cap text-black/70 dark:text-white/75 tabular-nums">
           {member.phoneNumber || '—'}
         </span>
       ),

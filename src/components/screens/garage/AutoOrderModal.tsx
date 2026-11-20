@@ -159,9 +159,9 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full max-h-[92vh] flex flex-col border border-neutral-200 dark:border-neutral-800 overflow-hidden">
 <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40">
 <div className="flex items-center gap-3">
-<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"><Car size={20} /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center"><Car size={20} /></div>
 <div>
-<h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<h3 className="font-semibold t-card text-black dark:text-white">
 {language === "ar" ? "استلام مركبة جديدة وأمر تصليح (OR)" : "Fiche d'Entrée Atelier & Ordre de Réparation"}
 </h3>
 </div>
@@ -190,83 +190,83 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 							label: language === "ar" ? "4. الموافقة والتوقيع" : "4. Accord & Signature",
 							icon: /* @__PURE__ */ <PenTool size={14} />
 						}
-					].map((t) => /* @__PURE__ */ <button key={t.id} type="button" onClick={() => setActiveTab(t.id)} className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === t.id ? "border-[#d4522f] text-[#d4522f] bg-[#d4522f]/5" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>
+					].map((t) => /* @__PURE__ */ <button key={t.id} type="button" onClick={() => setActiveTab(t.id)} className={`flex items-center gap-2 px-4 py-2 t-small font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === t.id ? "border-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-[#d4522f]/5" : "border-transparent text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white"}`}>
 {t.icon}
 <span>{t.label}</span>
-{t.id === "walkaround" && damageMarkers.length > 0 && /* @__PURE__ */ <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white text-[10px] flex items-center justify-center font-mono">{damageMarkers.length}</span>}
+{t.id === "walkaround" && damageMarkers.length > 0 && /* @__PURE__ */ <span className="w-5 h-5 rounded-full bg-[var(--brand-fill,#C9461F)] text-white t-cap flex items-center justify-center tabular-nums">{damageMarkers.length}</span>}
 </button>)}
 </div>
 <div className="flex-1 overflow-y-auto p-6 space-y-6">
 {activeTab === "intake" && /* @__PURE__ */ <div className="space-y-5 animate-in fade-in">
 <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200/80 dark:border-neutral-700/80 space-y-4">
 <LabelSelect label={language === "ar" ? "المركبة والماتريكيل" : "Véhicule & Matricule"} value={selectedVehicleId} onChange={(v) => setSelectedVehicleId(extractStr(v))} options={vehicleOptions} />
-{activeVehicle && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-white dark:bg-neutral-900 p-3 border border-neutral-200/60 dark:border-neutral-800">
+{activeVehicle && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap bg-white dark:bg-neutral-900 p-3 border border-neutral-200/60 dark:border-neutral-800">
 <div>
 <span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "المالك" : "Propriétaire"}</span>
 <span className="font-semibold text-black dark:text-white">{activeVehicle.ownerName}</span>
 </div>
 <div>
 <span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "الهاتف" : "Téléphone"}</span>
-<span className="font-semibold text-black dark:text-white font-mono">{activeVehicle.ownerPhone}</span>
+<span className="font-semibold text-black dark:text-white tabular-nums">{activeVehicle.ownerPhone}</span>
 </div>
 <div>
 <span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "آخر صيانة" : "Dernier Entretien"}</span>
-<span className="font-semibold text-black dark:text-white font-mono">
+<span className="font-semibold text-black dark:text-white tabular-nums">
 {activeVehicle.lastServiceKm?.toLocaleString() || "—"}
 {" km"}
 </span>
 </div>
 <div>
 <span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "الحساب" : "Type Compte"}</span>
-<span className="font-semibold text-[#d4522f]">{activeVehicle.isFleet ? `Flotte: ${activeVehicle.fleetName}` : "Particulier"}</span>
+<span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{activeVehicle.isFleet ? `Flotte: ${activeVehicle.fleetName}` : "Particulier"}</span>
 </div>
 </div>}
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 <div className="space-y-2">
 <LabelInput label={language === "ar" ? "العداد الفعلي عند الدخول (كم)" : "Kilométrage actuel compteur (km)"} type="number" value={currentMileage} onChange={(e) => setCurrentMileage(e.target.value)} required />
-<label className="flex items-center gap-2 text-xs text-black/70 dark:text-white/75 cursor-pointer pt-1">
-<input type="checkbox" checked={isOdometerReplaced} onChange={(e) => setIsOdometerReplaced(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]" />
+<label className="flex items-center gap-2 t-cap text-black/70 dark:text-white/75 cursor-pointer pt-1">
+<input type="checkbox" checked={isOdometerReplaced} onChange={(e) => setIsOdometerReplaced(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
 <span>
 {language === "ar" ? "العداد مستبدل أو معاد للصفر" : "Compteur remplacé ou remis à zéro"}
 </span>
 </label>
 </div>
-<div className="space-y-1.5">
-<label className="text-xs font-semibold text-black/70 dark:text-white/75 flex items-center justify-between">
-<span className="flex items-center gap-1.5">
-<Fuel size={14} className="text-[#d4522f]" />
+<div className="space-y-2">
+<label className="t-small font-semibold text-black/70 dark:text-white/75 flex items-center justify-between">
+<span className="flex items-center gap-2">
+<Fuel size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
 {language === "ar" ? "مستوى الوقود" : "Niveau de carburant"}
 </span>
-<span className="font-mono text-[#d4522f] font-bold">
+<span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
 {fuelLevel}
 %
 </span>
 </label>
-<div className="grid grid-cols-5 gap-1.5 pt-1">
+<div className="grid grid-cols-5 gap-2 pt-1">
 {[
 												"0",
 												"25",
 												"50",
 												"75",
 												"100"
-											].map((lvl) => /* @__PURE__ */ <button key={lvl} type="button" data-no-liquid="true" data-sq="ctl" data-sq-border={fuelLevel === lvl ? "none" : "solid"} onClick={() => setFuelLevel(lvl)} className={`py-2 text-xs font-semibold border transition-all cursor-pointer text-center ${fuelLevel === lvl ? "bg-[#d4522f] text-white border-[#d4522f]" : "bg-neutral-50 dark:bg-neutral-800 text-black/70 dark:text-white/75 border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040] hover:border-neutral-400 hover:[--sq-stroke:#a3a3a3]"}`}>{lvl === "0" ? "Vide" : lvl === "100" ? "Plein" : `${lvl}%`}</button>)}
+											].map((lvl) => /* @__PURE__ */ <button key={lvl} type="button" data-no-liquid="true" data-sq="ctl" data-sq-border={fuelLevel === lvl ? "none" : "solid"} onClick={() => setFuelLevel(lvl)} className={`py-2 t-small font-semibold border transition-all cursor-pointer text-center ${fuelLevel === lvl ? "bg-[#d4522f] text-white border-[#d4522f]" : "bg-neutral-50 dark:bg-neutral-800 text-black/70 dark:text-white/75 border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040] hover:border-neutral-400 hover:[--sq-stroke:#a3a3a3]"}`}>{lvl === "0" ? "Vide" : lvl === "100" ? "Plein" : `${lvl}%`}</button>)}
 </div>
 </div>
 </div>
 <div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3">
 <div className="flex items-center justify-between">
-<span className="text-xs font-bold text-black dark:text-white">
+<span className="t-small font-semibold text-black dark:text-white">
 {language === "ar" ? "الملحقات والأغراض المسلمة في المركبة" : "Accessoires & Objets à Bord"}
 </span>
-<label className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800 cursor-pointer">
+<label className="flex items-center gap-2 t-cap text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800 cursor-pointer">
 <input type="checkbox" checked={isVehicleDirty} onChange={(e) => setIsVehicleDirty(e.target.checked)} className="rounded-[var(--r-check,6px)] text-amber-600" />
 <span>
 {language === "ar" ? "المركبة غير نظيفة (فحص مشروط)" : "Véhicule très sale (réserve carrosserie)"}
 </span>
 </label>
 </div>
-<div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+<div className="grid grid-cols-2 sm:grid-cols-3 gap-2 t-cap">
 {[
 											{
 												key: "spareWheel",
@@ -292,7 +292,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 <input type="checkbox" checked={accessories[item.key]} onChange={(e) => setAccessories((prev) => ({
 													...prev,
 													[item.key]: e.target.checked
-												}))} className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]" />
+												}))} className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
 <span className="text-black/70 dark:text-white/75">{item.label}</span>
 </label>)}
 </div>
@@ -300,19 +300,19 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>}
 {activeTab === "walkaround" && /* @__PURE__ */ <div className="space-y-4 animate-in fade-in">
 <div data-sq="card" data-sq-border="solid" className="flex flex-wrap items-center justify-between gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80">
-<div className="flex items-center gap-1.5">
+<div className="flex items-center gap-2">
 {[
 											"front",
 											"rear",
 											"left",
 											"right"
-										].map((view) => /* @__PURE__ */ <button key={view} type="button" data-no-liquid="true" data-sq="ctl" data-sq-border={activeCarView === view ? "none" : "solid"} onClick={() => setActiveCarView(view)} className={`px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${activeCarView === view ? "bg-[#d4522f] text-white" : "bg-white dark:bg-neutral-900 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700"}`}>
+										].map((view) => /* @__PURE__ */ <button key={view} type="button" data-no-liquid="true" data-sq="ctl" data-sq-border={activeCarView === view ? "none" : "solid"} onClick={() => setActiveCarView(view)} className={`px-3 py-2 t-small font-semibold transition-all cursor-pointer ${activeCarView === view ? "bg-[#d4522f] text-white" : "bg-white dark:bg-neutral-900 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700"}`}>
 {view === "front" ? "Face Avant" : view === "rear" ? "Face Arrière" : view === "left" ? "Côté Gauche" : "Côté Droit"}
 </button>)}
 </div>
 <div className="flex items-center gap-2">
 <div data-sq="ctl" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700">
-<select value={selectedDamageType} onChange={(e) => setSelectedDamageType(e.target.value)} className="lbi-field w-full h-full bg-transparent border-0 text-xs px-2.5 py-1.5">
+<select value={selectedDamageType} onChange={(e) => setSelectedDamageType(e.target.value)} className="lbi-field w-full h-full bg-transparent border-0 t-cap px-2.5 py-2">
 <option value="scratch">Rayure (Scratch)</option>
 <option value="dent">Bosse (Dent)</option>
 <option value="crack">Fissure / Cassure</option>
@@ -321,7 +321,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </select>
 </div>
 <div data-sq="ctl" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700">
-<select value={selectedSeverity} onChange={(e) => setSelectedSeverity(e.target.value)} className="lbi-field w-full h-full bg-transparent border-0 text-xs px-2.5 py-1.5">
+<select value={selectedSeverity} onChange={(e) => setSelectedSeverity(e.target.value)} className="lbi-field w-full h-full bg-transparent border-0 t-cap px-2.5 py-2">
 <option value="minor">Léger</option>
 <option value="moderate">Moyen</option>
 <option value="severe">Important</option>
@@ -360,25 +360,25 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 {damageMarkers.filter((m) => m.view === activeCarView).map((marker, idx) => /* @__PURE__ */ <span key={marker.id} style={{
 													left: `${marker.xPercent}%`,
 													top: `${marker.yPercent}%`
-												}} className="absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#d4522f] text-white text-xs font-bold font-mono flex items-center justify-center border-2 border-white shadow-lg animate-in zoom-in pointer-events-none" title={`${marker.damageType} (${marker.severity})`}>{idx + 1}</span>)}
-<span className="absolute bottom-3 left-4 text-[11px] text-white/75 bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-xs pointer-events-none">
+												}} className="absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold tabular-nums flex items-center justify-center border-2 border-white shadow-lg animate-in zoom-in pointer-events-none" title={`${marker.damageType} (${marker.severity})`}>{idx + 1}</span>)}
+<span className="absolute bottom-3 left-4 t-cap text-white/75 bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-xs pointer-events-none">
 {language === "ar" ? "انقر على الصورة لإضافة نقطة خدش/صدمة" : "Cliquez sur le schéma pour consigner un dommage"}
 </span>
 </button>
 </div>
 <div className="space-y-2">
-<span className="text-xs font-bold text-black/70 dark:text-white/75">
+<span className="t-small font-semibold text-black/70 dark:text-white/75">
 {language === "ar" ? "العيوب المرصودة في الفحص الأولي" : "Dommages & anomalies répertoriés"}
 {" ("}
 {damageMarkers.length}
 )
 </span>
-{damageMarkers.length === 0 ? /* @__PURE__ */ <p className="text-xs text-black/55 dark:text-white/55 italic">
+{damageMarkers.length === 0 ? /* @__PURE__ */ <p className="t-cap text-black/55 dark:text-white/55 italic">
 {language === "ar" ? "لم يتم تسجيل أي خدوش. انقر على المخطط أعلاه لتحديد الأضرار." : "Aucun dommage répertorié. Cliquez sur le schéma ci-dessus pour ajouter des repères."}
 </p> : /* @__PURE__ */ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto">
-{damageMarkers.map((m, idx) => /* @__PURE__ */ <div key={m.id} data-sq="ctl" data-sq-border="solid" className="flex items-center justify-between p-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 text-xs">
+{damageMarkers.map((m, idx) => /* @__PURE__ */ <div key={m.id} data-sq="ctl" data-sq-border="solid" className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/60 dark:border-neutral-700 t-cap">
 <div className="flex items-center gap-2">
-<span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-[10px] font-bold">{idx + 1}</span>
+<span className="w-5 h-5 rounded-full bg-[var(--brand-fill,#C9461F)] text-white flex items-center justify-center t-small font-semibold">{idx + 1}</span>
 <div>
 <span className="font-semibold text-black dark:text-white capitalize">{m.damageType}</span>
 <span className="text-black/55 dark:text-white/55 ml-1.5 capitalize">
@@ -419,8 +419,8 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 												}
 											]} />
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2 text-xs">
-<span className="font-bold text-black dark:text-white block">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2 t-cap">
+<span className="font-semibold text-black dark:text-white block">
 {language === "ar" ? "معايير الفحص الأولي للورشة" : "Protocole d'admission & sécurité atelier"}
 </span>
 <ul className="list-disc list-inside text-black/55 dark:text-white/55 space-y-1">
@@ -438,35 +438,35 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>}
 {activeTab === "signature" && /* @__PURE__ */ <div className="space-y-4 animate-in fade-in">
 <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#FDF4F0] dark:bg-neutral-800 border border-[#d4522f]/30 [--sq-stroke:rgba(212,82,47,0.3)] space-y-2">
-<div className="flex items-center gap-2 text-sm font-bold text-[#d4522f]">
+<div className="flex items-center gap-2 t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
 <ShieldCheck size={18} />
 <span>
 {language === "ar" ? "عقد استلام وحراسة قانونية (المادة 581 من القانون المدني)" : "Conditions Contradictoires de Dépôt & Garde (Art. 581 Code Civil)"}
 </span>
 </div>
-<p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
+<p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
 {language === "ar" ? "يصرح الزبون ومسؤول الاستقبال بصحة فحص الهيكل، مستوى الوقود والعداد المدونين أعلاه. الورشة مسؤولة عن حراسة المركبة طيلة فترة التصليح ضمن حدود الأضرار المبينة في هذا الأمر." : "Le propriétaire et le chef d'atelier attestent de l'exactitude de l'état descriptif, du kilométrage et de la jauge carburant consignés ci-dessus. L'atelier assume la garde juridique du véhicule dans les strictes limites de la présente fiche d'entrée."}
 </p>
 </div>
 <div data-sq="card" data-sq-border="solid" className="p-5 bg-white dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-4">
 <div className="flex items-center justify-between">
-<span className="text-xs font-bold text-black dark:text-white flex items-center gap-2">
-<PenTool size={14} className="text-[#d4522f]" />
+<span className="t-small font-semibold text-black dark:text-white flex items-center gap-2">
+<PenTool size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
 {language === "ar" ? "توقيع الزبون على الشاشة أو إقرار الاستلام" : "Signature client sur écran & accord contradictoire"}
 </span>
-{isClientSigned && /* @__PURE__ */ <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+{isClientSigned && /* @__PURE__ */ <span className="t-small text-emerald-600 font-semibold flex items-center gap-1">
 <CheckCircle2 size={14} />
 {language === "ar" ? "تم توثيق التوقيع" : "Signé & certifié"}
 </span>}
 </div>
 <button type="button" data-no-liquid="true" data-sq="empty" data-sq-border="dashed" data-sq-stroke-w={2} onClick={() => setIsClientSigned(true)} className={`w-full h-28 border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${isClientSigned ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-400 [--sq-stroke:#34d399]" : "bg-neutral-50 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 [--sq-stroke:#d4d4d4] dark:[--sq-stroke:#404040] hover:border-[#d4522f] hover:[--sq-stroke:#d4522f]"}`}>
 {isClientSigned ? /* @__PURE__ */ <span className="text-center space-y-1 block">
-<span className="font-serif italic text-xl text-black dark:text-white font-bold block">{activeVehicle?.ownerName || 'Client'}</span>
-<span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">
+<span className="italic t-dialog text-black dark:text-white font-semibold block">{activeVehicle?.ownerName || 'Client'}</span>
+<span className="t-cap text-black/55 dark:text-white/55 tabular-nums block">
 {new Date().toLocaleString()}
 {" · Signature Numérique Reçue"}
 </span>
-</span> : /* @__PURE__ */ <span className="text-center text-xs text-black/55 dark:text-white/55 space-y-1 block">
+</span> : /* @__PURE__ */ <span className="text-center t-cap text-black/55 dark:text-white/55 space-y-1 block">
 <PenTool size={20} className="mx-auto text-black/55 dark:text-white/55" />
 <span className="block">
 {language === "ar" ? "انقر هنا لتسجيل توقيع الزبون الرقمي" : "Cliquez ici pour apposer la signature du client sur verre"}

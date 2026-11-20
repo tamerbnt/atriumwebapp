@@ -306,10 +306,10 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (event) => (
           <div className="min-w-0">
-            <span className="text-[13.5px] font-semibold text-black dark:text-white truncate block">
+            <span className="t-label font-semibold text-black dark:text-white truncate block">
               {event.title}
             </span>
-            <span className="text-[11px] font-semibold text-[#d4522f] uppercase tracking-[0.04em] rtl:normal-case block mt-0.5">
+            <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-[0.04em] rtl:normal-case block mt-0.5">
               {event.category} · {event.roomOrArea}
             </span>
           </div>
@@ -321,10 +321,10 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (event) => (
           <div className="min-w-0">
-            <span className="text-[12.5px] font-semibold text-black dark:text-white block">
+            <span className="t-small font-semibold text-black dark:text-white block">
               {getDayName(event.dayOfWeek)}
             </span>
-            <span className="text-[11px] text-black/62 dark:text-white/65 truncate block">
+            <span className="t-cap text-black/62 dark:text-white/65 truncate block">
               {event.trainerOrStaff}
             </span>
           </div>
@@ -338,7 +338,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
           const isFull = event.enrolledCount >= event.capacity;
           return (
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold tabular-nums ${
+              className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold tabular-nums ${
                 isFull
                   ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
                   : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
@@ -355,7 +355,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
         header: isAr ? 'التوقيت' : isEn ? 'Time Slot' : 'Créneau Horaire',
         sortable: true,
         renderCell: (event) => (
-          <div className="flex items-center gap-1.5 font-mono text-[12.5px] font-bold text-[#d4522f] tabular-nums">
+          <div className="flex items-center gap-2 tabular-nums t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
             <Clock size={12} />
             <span>
               {event.startTime} - {event.endTime}
@@ -368,7 +368,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
         header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
         sortable: true,
         renderCell: (event) => (
-          <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+          <span className="t-small font-medium text-black/80 dark:text-white/85 truncate block">
             {resolveRecordBranch(event, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -574,7 +574,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
           <div
             data-sq="ctl"
             data-sq-border="solid"
-            className="flex items-center p-[3px] bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] gap-0.5 text-xs font-semibold overflow-x-auto max-w-full"
+            className="flex items-center p-[3px] bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] gap-0.5 t-small font-semibold overflow-x-auto max-w-full"
           >
             {days.map((d) => {
               const isActive = selectedDay === d.id;
@@ -586,9 +586,9 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                   data-sq="thumb"
                   data-sq-border="none"
                   onClick={() => setSelectedDay(d.id)}
-                  className={`px-3 py-1.5 cursor-pointer transition-all ${
+                  className={`px-3 py-2 cursor-pointer transition-all ${
                     isActive
-                      ? 'bg-[#d4522f]/12 text-[#d4522f] dark:bg-[#d4522f]/20 dark:text-[#FB923C] font-bold'
+                      ? 'bg-[#d4522f]/12 text-[var(--brand-text,#BF431F)] dark:bg-[#d4522f]/20 dark:text-[#FB923C] font-semibold'
                       : 'text-black/68 dark:text-white/72 hover:text-black dark:hover:text-white'
                   }`}
                 >
@@ -598,7 +598,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
             })}
           </div>
         </div>
-        <span className="text-xs text-black/62 dark:text-white/65 font-semibold tabular-nums">
+        <span className="t-small text-black/62 dark:text-white/65 font-semibold tabular-nums">
           {days.find((d) => d.id === selectedDay)?.label} · {currentDayEvents.length}{' '}
           {isAr ? 'حصص' : 'sessions'}
         </span>
@@ -650,36 +650,36 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                 >
                   <div className="w-full">
                     <div className="flex items-center justify-between mb-3 gap-2">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.04em] rtl:normal-case bg-[#F3EDE7] dark:bg-[#262422] text-black/72 dark:text-white/80 px-2.5 py-0.5 rounded-full">
+                      <span className="t-small font-semibold tracking-[0.04em] rtl:normal-case bg-[#F3EDE7] dark:bg-[#262422] text-black/72 dark:text-white/80 px-2.5 py-1 rounded-full">
                         {event.category}
                       </span>
-                      <span className="text-xs font-mono font-bold text-[#d4522f] flex items-center gap-1 tabular-nums">
+                      <span className="t-small tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center gap-1">
                         <Clock size={12} />
                         {event.startTime} - {event.endTime}
                       </span>
                     </div>
-                    <h3 className="font-bold text-sm text-black dark:text-white group-hover:text-[#d4522f] transition-colors mb-1">
+                    <h3 className="font-semibold t-label text-black dark:text-white group-hover:text-[var(--brand-text,#BF431F)] dark:group-hover:text-[var(--brand-on-dark,#FF8F63)] transition-colors mb-1">
                       {event.title}
                     </h3>
-                    <div className="space-y-1 text-xs text-black/62 dark:text-white/75">
-                      <div className="flex items-center gap-1.5">
+                    <div className="space-y-1 t-cap text-black/62 dark:text-white/75">
+                      <div className="flex items-center gap-2">
                         <MapPin size={12} className="shrink-0" />
                         <span>
                           {event.roomOrArea} · {branchName}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <Users size={12} className="shrink-0" />
                         <span>{event.trainerOrStaff}</span>
                       </div>
                     </div>
                   </div>
                   <div className="mt-4 pt-3 border-t border-[#E6DED6]/60 dark:border-[#3A3734] w-full">
-                    <div className="flex items-center justify-between text-xs mb-1.5">
+                    <div className="flex items-center justify-between t-cap mb-2">
                       <span className="text-black/62 dark:text-white/65">
                         {isFull ? (isAr ? 'مكتمل' : 'Complet') : isAr ? 'الأماكن' : 'Capacité'}
                       </span>
-                      <span className="font-mono font-bold text-black/75 dark:text-white/80 tabular-nums">
+                      <span className="tabular-nums font-semibold text-black/75 dark:text-white/80">
                         {event.enrolledCount}/{event.capacity}
                       </span>
                     </div>

@@ -103,17 +103,17 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({ is
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[88vh] overflow-hidden">
 <div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
 <div className="flex items-center gap-3">
-<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-bold"><Microscope size={20} /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-semibold"><Microscope size={20} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Dossier Biologique & Imagerie Médicale</h2>
-<span className="text-xs font-mono px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-black/70 dark:text-white/75">{patient.fullName}</span>
+<h2 className="t-card font-semibold text-black dark:text-white">Dossier Biologique & Imagerie Médicale</h2>
+<span className="t-cap tabular-nums px-2 py-1 rounded-full bg-neutral-200 dark:bg-neutral-700 text-black/70 dark:text-white/75">{patient.fullName}</span>
 </div>
-<p className="text-xs text-black/55 dark:text-white/55">Suivi des bilans sanguins, biochimie, NFS et rapports échographiques</p>
+<p className="t-cap text-black/55 dark:text-white/55">Suivi des bilans sanguins, biochimie, NFS et rapports échographiques</p>
 </div>
 </div>
 <div className="flex items-center gap-2">
-<div data-sq="ctl" data-sq-border="none" className="flex bg-neutral-200/80 dark:bg-neutral-800 p-[3px] text-xs font-semibold">
+<div data-sq="ctl" data-sq-border="none" className="flex bg-neutral-200/80 dark:bg-neutral-800 p-[3px] t-small font-semibold">
 <button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setActiveTab("list")} className={`px-3 py-1 transition-all cursor-pointer ${activeTab === "list" ? "bg-white dark:bg-neutral-700 text-black dark:text-white" : "text-black/70 dark:text-white/75"}`}>
 Bilans (
 {patientLabs.length}
@@ -129,37 +129,37 @@ Bilans (
 {patientLabs.map((lab: any) => /* @__PURE__ */ <div key={lab.id} data-sq="card" data-sq-border="solid" className="p-5 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-3">
 <div className="flex items-center justify-between">
 <div className="flex items-center gap-2">
-<span className="font-bold text-xs text-black dark:text-white">{lab.testCategory}</span>
-<span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+<span className="font-semibold t-small text-black dark:text-white">{lab.testCategory}</span>
+<span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
 {"· "}
 {lab.date}
 </span>
-<span className="text-[10px] font-semibold text-[#0D9488]">
+<span className="t-small font-semibold text-[#0D9488]">
 {"· "}
 {lab.doctorName}
 </span>
 </div>
-<span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">{lab.status}</span>
+<span className="t-small font-semibold tabular-nums px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">{lab.status}</span>
 </div>
 <div data-sq="table" data-sq-border="solid" className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-<table className="w-full text-xs text-left">
+<table className="w-full t-cap text-left">
 <thead>
-<tr className="bg-neutral-50 dark:bg-neutral-750 text-[10px] font-mono uppercase text-black/55 dark:text-white/55 border-b border-neutral-200 dark:border-neutral-700">
+<tr className="bg-neutral-50 dark:bg-neutral-750 t-cap tabular-nums text-black/55 dark:text-white/55 border-b border-neutral-200 dark:border-neutral-700">
 <th className="py-2 px-3">Paramètre</th>
 <th className="py-2 px-3">Valeur Mesurée</th>
 <th className="py-2 px-3">Intervalle Normal</th>
 <th className="py-2 px-3 text-right">Statut</th>
 </tr>
 </thead>
-<tbody className="divide-y divide-neutral-200 dark:divide-neutral-700 font-mono">
+<tbody className="divide-y divide-neutral-200 dark:divide-neutral-700 tabular-nums">
 {lab.parameters.map((param: any, i: number) => /* @__PURE__ */ <tr key={i} className="hover:bg-neutral-50/50">
 <td className="py-2 px-3 font-sans font-semibold text-black dark:text-white">{param.name}</td>
-<td className="py-2 px-3 font-bold text-black dark:text-white">
+<td className="py-2 px-3 font-semibold text-black dark:text-white">
 {param.value}
 {" "}
-<span className="text-[10px] text-black/55 dark:text-white/55 font-normal">{param.unit}</span>
+<span className="t-cap text-black/55 dark:text-white/55 font-normal">{param.unit}</span>
 </td>
-<td className="py-2 px-3 text-black/55 dark:text-white/55 text-[11px]">
+<td className="py-2 px-3 text-black/55 dark:text-white/55 t-cap">
 {param.min}
 {" – "}
 {param.max}
@@ -167,17 +167,17 @@ Bilans (
 {param.unit}
 </td>
 <td className="py-2 px-3 text-right">
-{param.isAbnormal ? /* @__PURE__ */ <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/15 text-red-600 dark:text-red-400">{param.status === "high" ? "ÉLEVÉ ▲" : "BAS ▼"}</span> : /* @__PURE__ */ <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">Normal ✓</span>}
+{param.isAbnormal ? /* @__PURE__ */ <span className="px-2 py-1 rounded-full t-small font-semibold bg-red-500/15 text-red-600 dark:text-red-400">{param.status === "high" ? "ÉLEVÉ ▲" : "BAS ▼"}</span> : /* @__PURE__ */ <span className="px-2 py-1 rounded-full t-small font-semibold text-emerald-600 dark:text-emerald-400">Normal ✓</span>}
 </td>
 </tr>)}
 </tbody>
 </table>
 </div>
-<div className="text-xs text-black/70 dark:text-white/75 italic pt-1">
+<div className="t-cap text-black/70 dark:text-white/75 italic pt-1">
 <strong>{"Conclusion Médicale: "}</strong>
 {lab.clinicalConclusion}
 </div>
-{lab.imagingReport && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-blue-50/60 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 [--sq-stroke:#bfdbfe] dark:[--sq-stroke:#1e40af] text-xs text-blue-900 dark:text-blue-300">
+{lab.imagingReport && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-blue-50/60 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 [--sq-stroke:#bfdbfe] dark:[--sq-stroke:#1e40af] t-cap text-blue-900 dark:text-blue-300">
 <strong>
 Rapport d'Imagerie (
 {lab.imagingModality}
@@ -225,7 +225,7 @@ Rapport d'Imagerie (
 								}))} />
 </div>
 <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-3">
-<span className="text-xs font-bold text-black/70 dark:text-white/75 uppercase tracking-wider block">Valeurs Biologiques Mesurées</span>
+<span className="t-small font-semibold text-black/70 dark:text-white/75 block">Valeurs Biologiques Mesurées</span>
 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
 <LabelInput label="Glycémie (0.7-1.1 g/L)" value={glycemieVal} onChange={(e) => setGlycemieVal(e.target.value)} />
 <LabelInput label="Créatinine (7-12 mg/L)" value={creatinineVal} onChange={(e) => setCreatinineVal(e.target.value)} />
@@ -234,9 +234,9 @@ Rapport d'Imagerie (
 </div>
 </div>
 <div>
-<label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1">Conclusion & Interprétation Clinique</label>
+<label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">Conclusion & Interprétation Clinique</label>
 <div data-sq="ctl" data-sq-border="solid" className="bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
-<textarea value={clinicalConclusion} onChange={(e) => setClinicalConclusion(e.target.value)} rows={3} className="lbi-field w-full px-3 py-2 text-xs bg-transparent border-0 text-black dark:text-white focus:outline-hidden" required />
+<textarea value={clinicalConclusion} onChange={(e) => setClinicalConclusion(e.target.value)} rows={3} className="lbi-field w-full px-3 py-2 t-cap bg-transparent border-0 text-black dark:text-white focus:outline-hidden" required />
 </div>
 </div>
 <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800 flex justify-between items-center">

@@ -474,16 +474,16 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"
+              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center tabular-nums font-semibold t-small shrink-0"
             >
               <Boxes size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
+              <div className="tabular-nums font-semibold t-small text-black dark:text-white flex items-center gap-2">
                 <span>{p.sku}</span>
-                {pinnedIds.has(p.id) && <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
+                {pinnedIds.has(p.id) && <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55 truncate">{p.locationBin}</div>
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">{p.locationBin}</div>
             </div>
           </div>
         ),
@@ -495,8 +495,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
         sortable: true,
         renderCell: (p) => (
           <div className="min-w-0">
-            <div className="font-semibold text-xs text-black dark:text-white line-clamp-1">{p.name}</div>
-            <div className="text-[11px] text-black/55 dark:text-white/55">{p.category}</div>
+            <div className="font-semibold t-small text-black dark:text-white line-clamp-1">{p.name}</div>
+            <div className="t-cap text-black/55 dark:text-white/55">{p.category}</div>
           </div>
         ),
       },
@@ -508,7 +508,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
         renderCell: (p) => {
           const info = resolveRecordBranch(p, branchesById, currentBranch, language);
           return (
-            <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">
+            <span className="t-small font-medium text-black/75 dark:text-white/80 truncate block">
               {info.name}
             </span>
           );
@@ -522,9 +522,9 @@ export const AutoGaragePartsView: React.FC<any> = () => {
         renderCell: (p) => {
           const isLow = p.stockQuantity <= p.minThreshold;
           return (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span
-                className={`font-mono font-bold text-xs px-2 py-0.5 rounded-full ${
+                className={`tabular-nums font-semibold t-small px-2 py-1 rounded-full ${
                   isLow
                     ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                     : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
@@ -544,10 +544,10 @@ export const AutoGaragePartsView: React.FC<any> = () => {
         sortable: true,
         renderCell: (p) => (
           <div>
-            <div className="font-mono font-bold text-xs text-black dark:text-white">
+            <div className="tabular-nums font-semibold t-small text-black dark:text-white">
               {formatMoney(p.sellingPriceDzd, language)}
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55">
+            <div className="t-cap text-black/55 dark:text-white/55">
               Achat: {formatMoney(p.buyingPriceDzd, language)}
             </div>
           </div>
@@ -559,8 +559,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
         width: '1.3*',
         sortable: true,
         renderCell: (p) => (
-          <div className="flex items-center gap-1 text-xs text-black/70 dark:text-white/75">
-            <MapPin size={12} className="text-[#d4522f] shrink-0" />
+          <div className="flex items-center gap-1 t-cap text-black/70 dark:text-white/75">
+            <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
             <span className="truncate">{p.locationBin}</span>
           </div>
         ),
@@ -998,16 +998,16 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <div
                   data-sq="tile"
                   data-sq-border="none"
-                  className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"
+                  className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
                 >
                   <Boxes size={20} />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <h2 className="t-card font-semibold text-black dark:text-white">
                     {partToEdit
                       ? isAr
                         ? 'تعديل صنف قطعة الغيار'
@@ -1016,7 +1016,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                       ? 'إضافة صنف جديد للمخزن'
                       : 'Nouvelle Référence Magasin'}
                   </h2>
-                  <p className="text-xs text-black/55 dark:text-white/55">
+                  <p className="t-cap text-black/55 dark:text-white/55">
                     {isAr ? 'البيانات الفنية، المخزون، والأسعار' : 'Gestion du catalogue pièces et seuils d’alerte'}
                   </p>
                 </div>
@@ -1122,16 +1122,16 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5"
           >
             <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <div
                   data-sq="tile"
                   data-sq-border="none"
-                  className="w-10 h-10 bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-bold"
+                  className="w-10 h-10 bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-semibold"
                 >
                   <Package size={20} />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <h2 className="t-card font-semibold text-black dark:text-white">
                     {isAr ? 'طلبية تموين من المورد (Bon de Commande)' : 'Bon de Commande Fournisseur Gros'}
                   </h2>
                 </div>
@@ -1215,12 +1215,12 @@ export const AutoGaragePartsView: React.FC<any> = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3.5 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-xs"
+                className="p-4 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between t-cap"
               >
                 <span className="text-black/55 dark:text-white/55">
                   {isAr ? 'إجمالي قيمة الطلبية HT:' : 'Montant Total Commande HT:'}
                 </span>
-                <span className="font-mono font-bold text-base text-black dark:text-white">
+                <span className="tabular-nums font-semibold t-card text-black dark:text-white">
                   {formatMoney((parseInt(poQuantity, 10) || 0) * (parseFloat(poUnitCost) || 0), language)}
                 </span>
               </div>

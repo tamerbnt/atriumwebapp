@@ -561,16 +561,16 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               <div
                 data-sq="tile"
                 data-sq-border="solid"
-                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800 [--sq-stroke:#ffedd5] dark:[--sq-stroke:#262626]"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-orange-100 dark:border-neutral-800 [--sq-stroke:#ffedd5] dark:[--sq-stroke:#262626]"
               >
                 <Pill size={16} />
               </div>
               <div className="min-w-0">
-                <div className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 truncate">
+                <div className="font-semibold t-small text-black dark:text-white flex items-center gap-2 truncate">
                   {rx.patientName}
-                  {isPinned && <span className="text-[10px] text-amber-500 font-bold">PIN</span>}
+                  {isPinned && <span className="t-small text-amber-500 font-semibold">PIN</span>}
                 </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55 font-mono truncate">
+                <div className="t-cap text-black/55 dark:text-white/55 tabular-nums truncate">
                   {rx.qrCodeHash} · {rx.prescriptionDate}
                 </div>
               </div>
@@ -583,7 +583,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
         header: isAr ? 'الطبيب المعالج' : 'Praticien',
         width: '1.8*',
         renderCell: (rx) => (
-          <span className="text-xs font-medium text-black/70 dark:text-white/75 truncate block">
+          <span className="t-small font-medium text-black/70 dark:text-white/75 truncate block">
             {rx.prescribingDoctorName || rx.doctorName || 'Dr. Polyclinique'}
           </span>
         ),
@@ -594,7 +594,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (rx) => (
-          <span className="text-xs font-medium text-black/70 dark:text-white/75 truncate block max-w-[140px]">
+          <span className="t-small font-medium text-black/70 dark:text-white/75 truncate block max-w-[140px]">
             {resolveRecordBranch(rx, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -604,7 +604,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
         header: isAr ? 'الأدوية الموصوفة' : 'Médicaments',
         width: '1.4*',
         renderCell: (rx) => (
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 font-mono">
+          <span className="px-2.5 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 tabular-nums">
             {rx.items.length} {isAr ? 'مستحضرات' : 'spécialités'}
           </span>
         ),
@@ -614,9 +614,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
         header: isAr ? 'الأمان والتحقق' : 'Signature & QR',
         width: '1.4*',
         renderCell: () => (
-          <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
+          <div className="flex items-center gap-2 t-small text-emerald-600 font-medium">
             <QrCode size={13} className="shrink-0" />
-            <span className="font-mono text-[11px]">Certifié Chifa</span>
+            <span className="tabular-nums t-cap">Certifié Chifa</span>
           </div>
         ),
       },
@@ -661,7 +661,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
             <div
               data-sq="ctl"
               data-sq-border="none"
-              className="flex bg-neutral-200/80 dark:bg-neutral-800 p-[3px] text-xs font-semibold"
+              className="flex bg-neutral-200/80 dark:bg-neutral-800 p-[3px] t-small font-semibold"
             >
               <button
                 type="button"
@@ -669,9 +669,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 data-sq="thumb"
                 data-sq-border="none"
                 onClick={() => setActiveMainTab('prescriptions')}
-                className={`px-3 py-1.5 transition-all cursor-pointer ${
+                className={`px-3 py-2 transition-all cursor-pointer ${
                   activeMainTab === 'prescriptions'
-                    ? 'bg-white dark:bg-neutral-700 text-black dark:text-white font-bold'
+                    ? 'bg-white dark:bg-neutral-700 text-black dark:text-white font-semibold'
                     : 'text-black/70 dark:text-white/75'
                 }`}
               >
@@ -683,9 +683,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 data-sq="thumb"
                 data-sq-border="none"
                 onClick={() => setActiveMainTab('ngap')}
-                className={`px-3 py-1.5 transition-all cursor-pointer ${
+                className={`px-3 py-2 transition-all cursor-pointer ${
                   activeMainTab === 'ngap'
-                    ? 'bg-white dark:bg-neutral-700 text-[#d4522f] font-bold'
+                    ? 'bg-white dark:bg-neutral-700 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
                     : 'text-black/70 dark:text-white/75'
                 }`}
               >
@@ -698,9 +698,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               data-sq="ctl"
               data-sq-border="solid"
               onClick={() => setIsPersonalizerOpen(true)}
-              className="px-3.5 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black/70 dark:text-white hover:border-[#d4522f] text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
+              className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black/70 dark:text-white hover:border-[#d4522f] t-small font-semibold flex items-center gap-2 transition-colors cursor-pointer"
             >
-              <Settings size={14} className="text-[#d4522f]" />
+              <Settings size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>{isAr ? 'تخصيص الأوردونونس' : 'Studio Ordonnance'}</span>
             </button>
           </div>
@@ -716,15 +716,15 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
         <ScreenPod>
           <div className="space-y-4">
             <div>
-              <h3 className="font-bold text-sm text-black dark:text-white flex items-center gap-2">
-                <Stethoscope size={16} className="text-[#d4522f]" />
+              <h3 className="font-semibold t-label text-black dark:text-white flex items-center gap-2">
+                <Stethoscope size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>
                   {isAr
                     ? 'دليل الفحوصات والأعمال الطبية (NGAP)'
                     : 'Nomenclature Générale des Actes Professionnels (NGAP)'}
                 </span>
               </h3>
-              <p className="text-xs text-black/55 dark:text-white/55">
+              <p className="t-cap text-black/55 dark:text-white/55">
                 {isAr
                   ? 'التعريفات الرسمية للضمان الاجتماعي، حصص الصندوق والتغذية التلقائية للمستهلكات'
                   : 'Codification officielle CNAS/CASNOS, tarifs conventionnés, ticket modérateur et dépréciation du stock'}
@@ -773,7 +773,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   header: 'Code NGAP',
                   width: '1.0*',
                   renderCell: (act) => (
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#d4522f]/10 border border-[#d4522f]/20 font-mono font-bold text-xs text-[#d4522f]">
+                    <span className="px-2.5 py-1 rounded-full bg-[#d4522f]/10 border border-[#d4522f]/20 tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                       {act.code}
                     </span>
                   ),
@@ -784,8 +784,8 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   width: '2.2*',
                   renderCell: (act) => (
                     <div className="min-w-0">
-                      <div className="font-semibold text-xs text-black dark:text-white truncate">{act.label}</div>
-                      <div className="text-[11px] text-black/55 dark:text-white/55 truncate">{act.category}</div>
+                      <div className="font-semibold t-small text-black dark:text-white truncate">{act.label}</div>
+                      <div className="t-cap text-black/55 dark:text-white/55 truncate">{act.category}</div>
                     </div>
                   ),
                 },
@@ -794,7 +794,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   header: 'Tarif Conv.',
                   width: '1.2*',
                   renderCell: (act) => (
-                    <span className="font-mono font-bold text-xs text-black dark:text-white">
+                    <span className="tabular-nums font-semibold t-small text-black dark:text-white">
                       {act.conventionFeeDzd.toLocaleString()} DA
                     </span>
                   ),
@@ -804,7 +804,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   header: 'Part CNAS (80%)',
                   width: '1.3*',
                   renderCell: (act) => (
-                    <span className="font-mono text-xs text-emerald-600 font-semibold">
+                    <span className="tabular-nums t-small text-emerald-600 font-semibold">
                       {act.cnasReimbursementDzd.toLocaleString()} DA
                     </span>
                   ),
@@ -814,7 +814,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   header: 'Ticket Mod.',
                   width: '1.1*',
                   renderCell: (act) => (
-                    <span className="font-mono text-xs text-black/70 dark:text-white/75">
+                    <span className="tabular-nums t-cap text-black/70 dark:text-white/75">
                       {act.ticketModerateurDzd.toLocaleString()} DA
                     </span>
                   ),
@@ -828,7 +828,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       {act.linkedConsumables.map((c, idx) => (
                         <span
                           key={idx}
-                          className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75 font-mono"
+                          className="t-cap px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75 tabular-nums"
                         >
                           {c}
                         </span>
@@ -1206,7 +1206,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         isLast
                       />
                     </InspectorCard>
-                    <div className="mt-2.5">
+                    <div className="mt-2">
                       <InspectorWideButton
                         label="Configurer le Studio Ordonnance"
                         icon={<Settings size={14} />}
@@ -1214,7 +1214,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       />
                     </div>
                     <div
-                      className={`printable-document mt-3 p-4 rounded-[var(--r-card,16px)] border bg-white text-black shadow-sm relative overflow-hidden text-[11px] font-sans ${
+                      className={`printable-document mt-3 p-4 rounded-[var(--r-card,16px)] border bg-white text-black shadow-sm relative overflow-hidden t-cap font-sans ${
                         currentDoctorConfig.usePreprintedStationery
                           ? 'border-dashed border-amber-300'
                           : 'border-neutral-200'
@@ -1222,7 +1222,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       style={{ minHeight: '340px' }}
                     >
                       {currentDoctorConfig.usePreprintedStationery ? (
-                        <div className="border border-dashed border-amber-400 bg-amber-50/60 rounded-[var(--r-ctl-sm,10px)] p-2 text-center text-amber-800 text-[10px] mb-4">
+                        <div className="border border-dashed border-amber-400 bg-amber-50/60 rounded-[var(--r-ctl-sm,10px)] p-2 text-center text-amber-800 t-cap mb-4">
                           <strong>Mode Papier En-tête Pré-imprimé Actif :</strong> L&apos;en-tête et le
                           pied de page sont masqués pour impression directe sur votre papeterie
                           physique d&apos;imprimerie.
@@ -1233,15 +1233,15 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                           style={{ borderColor: currentDoctorConfig.accentColor || '#1e3a8a' }}
                         >
                           <div
-                            className="font-bold text-sm"
+                            className="font-semibold t-label"
                             style={{ color: currentDoctorConfig.accentColor || '#1e3a8a' }}
                           >
                             {currentDoctorConfig.doctorName}
                           </div>
-                          <div className="text-[10px] text-black/75 font-medium">
+                          <div className="t-small text-black/75 font-medium">
                             {currentDoctorConfig.specialtyTitle}
                           </div>
-                          <div className="text-[10px] text-black/55">
+                          <div className="t-cap text-black/55">
                             {currentDoctorConfig.qualifications ||
                               currentDoctorConfig.academicCredentials}{' '}
                             · N° Ordre:{' '}
@@ -1250,23 +1250,23 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                           </div>
                         </div>
                       )}
-                      <div className="flex justify-between items-baseline mb-4 text-[10px] bg-neutral-50 p-2 rounded-[var(--r-ctl-sm,10px)] border border-neutral-100">
+                      <div className="flex justify-between items-baseline mb-4 t-cap bg-neutral-50 p-2 rounded-[var(--r-ctl-sm,10px)] border border-neutral-100">
                         <div>
                           Patient(e):{' '}
-                          <strong className="text-xs uppercase">{rx.patientName}</strong>
+                          <strong className="t-cap">{rx.patientName}</strong>
                         </div>
-                        <div className="font-mono text-black/55">Le : {rx.prescriptionDate}</div>
+                        <div className="tabular-nums text-black/55">Le : {rx.prescriptionDate}</div>
                       </div>
                       <div className="space-y-2 mb-6">
-                        <div className="font-serif italic font-bold text-xs underline mb-1">
+                        <div className="italic font-semibold t-small underline mb-1">
                           Ordonnance :
                         </div>
                         {rx.items.map((it, idx) => (
-                          <div key={idx} className="pl-2 border-l-2 border-neutral-200 text-[11px]">
-                            <div className="font-bold text-black">
+                          <div key={idx} className="pl-2 border-l-2 border-neutral-200 t-cap">
+                            <div className="font-semibold text-black">
                               - {it.drugName} ({it.dosage})
                             </div>
-                            <div className="text-[10px] text-black/55 font-mono">
+                            <div className="t-cap text-black/55 tabular-nums">
                               {it.frequency} pendant {it.durationDays} jours
                             </div>
                           </div>
@@ -1275,14 +1275,14 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       <div className="flex justify-between items-end pt-4 border-t border-neutral-100 mt-6">
                         <div className="flex items-center gap-2">
                           <QrCode size={36} className="text-black/75" />
-                          <div className="text-[10px] font-mono text-black/55 leading-tight">
+                          <div className="t-cap tabular-nums text-black/55 leading-tight">
                             ORD-CHIFA
                             <br />
                             {rx.qrCodeHash}
                           </div>
                         </div>
-                        <div className="border border-rose-600 rounded-[var(--r-ctl-sm,10px)] p-1.5 text-center text-rose-700 rotate-[-4deg] opacity-85 text-[10px] font-mono leading-tight">
-                          <div className="font-bold text-[10px]">
+                        <div className="border border-rose-600 rounded-[var(--r-ctl-sm,10px)] p-2 text-center text-rose-700 rotate-[-4deg] opacity-85 t-cap tabular-nums leading-tight">
+                          <div className="font-semibold t-small">
                             {currentDoctorConfig.digitalStampUrl ||
                               currentDoctorConfig.digitalStampText ||
                               'CACHET OFFICIEL'}
@@ -1308,14 +1308,14 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         data-sq="empty"
                         data-sq-border="dashed"
                         data-sq-stroke-w={2}
-                        className="p-5 bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 [--sq-stroke:rgba(212,82,47,0.4)] flex flex-col items-center justify-center space-y-2.5 text-center mb-3"
+                        className="p-5 bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 [--sq-stroke:rgba(212,82,47,0.4)] flex flex-col items-center justify-center space-y-2 text-center mb-3"
                       >
-                        <QrCode size={72} className="text-[#d4522f]" />
+                        <QrCode size={72} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                         <div>
-                          <div className="font-mono font-bold text-xs text-black dark:text-white">
+                          <div className="tabular-nums font-semibold t-small text-black dark:text-white">
                             {rx.qrCodeHash}
                           </div>
-                          <span className="text-[10px] text-black/55 dark:text-white/55">
+                          <span className="t-cap text-black/55 dark:text-white/55">
                             Signature numérique certifiée par l&apos;Ordre des Médecins
                           </span>
                         </div>
@@ -1337,7 +1337,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       title="Actions & Délivrance"
                       index={1}
                     >
-                      <div className="space-y-2.5">
+                      <div className="space-y-2">
                         <InspectorWideButton
                           label="Imprimer ordonnance PDF"
                           icon={<Printer size={15} />}
@@ -1398,19 +1398,19 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[90vh] overflow-hidden"
             >
               <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <div
                     data-sq="tile"
                     data-sq-border="none"
-                    className="w-9 h-9 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"
+                    className="w-9 h-9 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center"
                   >
                     <Pill size={18} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm text-black dark:text-white">
+                    <h3 className="font-semibold t-label text-black dark:text-white">
                       Nouvelle Prescription Médicale Sécurisée
                     </h3>
-                    <p className="text-[11px] text-black/55 dark:text-white/55">
+                    <p className="t-cap text-black/55 dark:text-white/55">
                       Contrôle automatique des contre-indications et posologies Chifa
                     </p>
                   </div>
@@ -1424,10 +1424,10 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   <X size={16} />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 t-cap">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">
+                    <label className="block t-small font-semibold text-black/55 dark:text-white/55 mb-1">
                       Médecin Prescripteur
                     </label>
                     <div
@@ -1449,7 +1449,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">
+                    <label className="block t-small font-semibold text-black/55 dark:text-white/55 mb-1">
                       Patient Destinataire
                     </label>
                     <div
@@ -1482,11 +1482,11 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   className="p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between"
                 >
                   <div className="space-y-0.5">
-                    <span className="text-[10px] text-black/55 dark:text-white/55 uppercase font-semibold">
+                    <span className="t-small text-black/55 dark:text-white/55 font-semibold">
                       Vigilances du dossier
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-black dark:text-white">
+                      <span className="font-semibold text-black dark:text-white">
                         {selectedPatientForComp.bloodGroup || 'O+'} · {selectedPatientForComp.phone}
                       </span>
                     </div>
@@ -1494,11 +1494,11 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   <div>
                     {selectedPatientForComp.allergies &&
                     selectedPatientForComp.allergies.length > 0 ? (
-                      <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px]">
+                      <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-semibold t-small">
                         ⚠️ Allergies : {selectedPatientForComp.allergies.join(', ')}
                       </span>
                     ) : (
-                      <span className="text-black/55 dark:text-white/55 text-[11px]">
+                      <span className="text-black/55 dark:text-white/55 t-cap">
                         Aucune allergie connue
                       </span>
                     )}
@@ -1511,20 +1511,20 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   data-sq-stroke-w={2}
-                  className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-500/80 [--sq-stroke:rgba(244,63,94,0.8)] text-rose-800 dark:text-rose-300 space-y-2"
+                  className="p-4 bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-500/80 [--sq-stroke:rgba(244,63,94,0.8)] text-rose-800 dark:text-rose-300 space-y-2"
                 >
-                  <div className="flex items-center gap-2 font-bold text-xs">
+                  <div className="flex items-center gap-2 font-semibold t-small">
                     <ShieldAlert size={16} className="text-rose-600 animate-pulse" />
                     <span>ALERTE DE SÉCURITÉ PHARMACOLOGIQUE (CONTRE-INDICATION SÉVÈRE)</span>
                   </div>
-                  <ul className="list-disc pl-5 space-y-1 text-[11px]">
+                  <ul className="list-disc pl-5 space-y-1 t-cap">
                     {allergyAlerts.map((alt, i) => (
                       <li key={i} className="font-medium">
                         {alt}
                       </li>
                     ))}
                   </ul>
-                  <label className="flex items-center gap-2 pt-1 font-semibold text-[11px] cursor-pointer">
+                  <label className="flex items-center gap-2 pt-1 font-semibold t-small cursor-pointer">
                     <input
                       type="checkbox"
                       checked={overrideConfirmed}
@@ -1539,9 +1539,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 </div>
               )}
 
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase">
+                  <label className="t-small font-semibold text-black/55 dark:text-white/55">
                     Lignes de Prescription ({compItems.length})
                   </label>
                   <button
@@ -1562,7 +1562,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         },
                       ])
                     }
-                    className="px-2.5 py-1 bg-[#d4522f] text-white text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center gap-1 cursor-pointer"
                   >
                     <Plus size={11} />
                     <span>Ajouter Médicament</span>
@@ -1577,7 +1577,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     className="p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-black/55 dark:text-white/55 text-xs w-4">
+                      <span className="font-semibold text-black/55 dark:text-white/55 t-small w-4">
                         {idx + 1}.
                       </span>
                       <div
@@ -1594,7 +1594,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                             updated[idx] = { ...updated[idx], drugName: e.target.value };
                             setCompItems(updated);
                           }}
-                          className="lbi-field w-full px-2.5 py-1.5 bg-transparent border-0 text-xs font-semibold"
+                          className="lbi-field w-full px-2.5 py-2 bg-transparent border-0 t-small font-semibold"
                         />
                       </div>
                       {compItems.length > 1 && (
@@ -1610,7 +1610,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="text-[10px] text-black/55 dark:text-white/55">
+                        <label className="t-cap text-black/55 dark:text-white/55">
                           Dosage
                         </label>
                         <div
@@ -1626,12 +1626,12 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                               updated[idx] = { ...updated[idx], dosage: e.target.value };
                               setCompItems(updated);
                             }}
-                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-[11px]"
+                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="text-[10px] text-black/55 dark:text-white/55">
+                        <label className="t-cap text-black/55 dark:text-white/55">
                           Fréquence / Prise
                         </label>
                         <div
@@ -1647,12 +1647,12 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                               updated[idx] = { ...updated[idx], frequency: e.target.value };
                               setCompItems(updated);
                             }}
-                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-[11px]"
+                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="text-[10px] text-black/55 dark:text-white/55">
+                        <label className="t-cap text-black/55 dark:text-white/55">
                           Durée (Jours)
                         </label>
                         <div
@@ -1671,7 +1671,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                               };
                               setCompItems(updated);
                             }}
-                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-[11px]"
+                            className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap"
                           />
                         </div>
                       </div>
@@ -1681,7 +1681,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase mb-1">
+                <label className="block t-small font-semibold text-black/55 dark:text-white/55 mb-1">
                   Recommandations au Patient
                 </label>
                 <div
@@ -1694,14 +1694,14 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     onChange={(e) => setCompNotes(e.target.value)}
                     rows={2}
                     placeholder="Conseils hygiéno-diététiques, hydratation, repos..."
-                    className="lbi-field w-full p-2.5 bg-transparent border-0 text-xs"
+                    className="lbi-field w-full p-3 bg-transparent border-0 t-cap"
                   />
                 </div>
               </div>
             </div>
 
             <div className="p-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
-              <span className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+              <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                 Code QR sécurisé généré automatiquement
               </span>
               <div className="flex gap-2">
@@ -1711,7 +1711,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   data-sq="ctl-sm"
                   data-sq-border="solid"
                   onClick={() => setIsComposerOpen(false)}
-                  className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold cursor-pointer"
+                  className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold cursor-pointer"
                 >
                   Annuler
                 </button>

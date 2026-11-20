@@ -518,3 +518,71 @@ export function calculateArt317Timbre(amountDzd: number): number {
   return Math.min(2500, Math.round(amt * 0.01));
 }
 
+const FR_NBSP = '\u00A0';
+const FR_NNBSP = '\u202F';
+
+const FR_SHORT_MONTHS = [
+  'janv.',
+  'févr.',
+  'mars',
+  'avr.',
+  'mai',
+  'juin',
+  'juil.',
+  'août',
+  'sept.',
+  'oct.',
+  'nov.',
+  'déc.',
+] as const;
+
+/**
+ * Formats numbers using French narrow no-break space (\u202F) for thousands.
+ */
+export function formatFrenchNumber(value: number, maximumFractionDigits = 2): string {
+  if (!Number.isFinite(value)) return '—';
+  const sign = value < 0 ? '-' : '';
+  const abs = Math.abs(value);
+  let fixed = abs.toFixed(maximumFractionDigits);
+  if (fixed.includes('.')) {
+    fixed = fixed.replace(/\.?0+$/, '');
+  }
+  const [intPart, decPart] = fixed.split('.');
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, FR_NNBSP);
+  return decPart ? `${sign}${grouped},${decPart}` : `${sign}${grouped}`;
+}
+
+/**
+ * Formats currency in French with narrow NBSP thousands and NBSP before unit (e.g. "12 500 DZD").
+ */
+export function formatFrenchCurrency(amount: number, currency = 'DZD', maximumFractionDigits = 0): string {
+  return `${formatFrenchNumber(amount, maximumFractionDigits)}${FR_NBSP}${currency}`;
+}
+
+/**
+ * Formats percentages in French with NBSP before "%" (e.g. "100 %").
+ */
+export function formatFrenchPercent(value: number, maximumFractionDigits = 1): string {
+  return `${formatFrenchNumber(value, maximumFractionDigits)}${FR_NBSP}%`;
+}
+
+/**
+ * Formats a date in concise French style (e.g. "6 déc. 2026").
+ */
+export function formatFrenchDate(input: Date | string | number): string {
+  const date = input instanceof Date ? input : new Date(input);
+  if (Number.isNaN(date.getTime())) return '—';
+  const day = date.getDate();
+  const month = FR_SHORT_MONTHS[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day}${FR_NBSP}${month}${FR_NBSP}${year}`;
+}
+
+/**
+ * Wraps French text in typographic guillemets with non-breaking spaces (« ... »).
+ */
+export function formatFrenchQuotes(text: string): string {
+  return `«${FR_NBSP}${text.trim()}${FR_NBSP}»`;
+}
+
+

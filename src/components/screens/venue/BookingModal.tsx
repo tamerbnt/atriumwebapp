@@ -339,7 +339,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         {/* Header */}
         <div className="px-6 py-5 border-b border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between shrink-0">
           <div>
-            <h2 className="text-xl font-semibold text-black dark:text-white">
+            <h2 className="t-dialog font-semibold text-black dark:text-white">
               {bookingToEdit ? t('venue_modal_edit_title') : t('venue_modal_new_title')}
             </h2>
           </div>
@@ -357,7 +357,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Section 1: Space & Time */}
           <div className="space-y-4">
-            <h3 className="text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-wider">
+            <h3 className="t-small font-semibold text-black/55 dark:text-white/55">
               {t('venue_modal_sec_space')}
             </h3>
 
@@ -412,7 +412,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
           {/* Section 2: Renter & Event Details */}
           <div className="space-y-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-800">
-            <h3 className="text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-wider">
+            <h3 className="t-small font-semibold text-black/55 dark:text-white/55">
               {t('venue_modal_sec_renter')}
             </h3>
 
@@ -509,7 +509,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   onChange={(e) => setAttendeeCount(Number(e.target.value))}
                 />
                 {selectedUnit?.capacity && attendeeCount > selectedUnit.capacity && (
-                  <p className="text-[11px] text-amber-500 mt-1">
+                  <p className="t-cap text-amber-500 mt-1">
                     Exceeds nominal space capacity ({selectedUnit.capacity} max).
                   </p>
                 )}
@@ -538,7 +538,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
           {/* Section 3: Add-on Equipment & Services */}
           <div className="space-y-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-800">
-            <h3 className="text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-wider">
+            <h3 className="t-small font-semibold text-black/55 dark:text-white/55">
               {t('venue_modal_sec_addons')}
             </h3>
 
@@ -549,7 +549,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     key={a.id}
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800/50 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] text-xs"
+                    className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800/50 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] t-cap"
                   >
                     <div>
                       <span className="font-medium text-black dark:text-white">{a.name}</span>
@@ -605,7 +605,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 onClick={handleAddAddon}
                 data-sq="ctl"
                 data-sq-border="none"
-                className="w-full sm:w-auto h-[42px] px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-medium text-black dark:text-white transition-colors flex items-center justify-center gap-1.5 shrink-0 mt-3 sm:mt-0 cursor-pointer"
+                className="w-full sm:w-auto h-[42px] px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 t-small font-medium text-black dark:text-white transition-colors flex items-center justify-center gap-2 shrink-0 mt-3 sm:mt-0 cursor-pointer"
               >
                 <Plus size={14} /> {t('venue_modal_btn_add_addon')}
               </button>
@@ -614,7 +614,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
           {/* Section 4: Caution, Security Deposit & Financials */}
           <div className="space-y-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-800">
-            <h3 className="text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-wider">
+            <h3 className="t-small font-semibold text-black/55 dark:text-white/55">
               {t('venue_modal_sec_financials')}
             </h3>
 
@@ -662,7 +662,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] space-y-2 text-xs"
+              className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] space-y-2 t-cap"
             >
               <div className="flex justify-between text-black/70 dark:text-white/75">
                 <span>{t('venue_modal_calc_space_base', { hours: durationHours })}</span>
@@ -680,11 +680,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               )}
               <div className="flex justify-between font-semibold text-black dark:text-white pt-2 border-t border-neutral-200 dark:border-neutral-700">
                 <span>{t('venue_modal_calc_total')}</span>
-                <span className="text-sm tabular-nums">
+                <span className="t-body tabular-nums">
                   {formatCurrencyAmount(totalAmount, selectedUnit?.currency)}
                 </span>
               </div>
-              <div className="flex justify-between text-black/55 dark:text-white/75 text-[11px]">
+              <div className="flex justify-between text-black/55 dark:text-white/75 t-cap">
                 <span>{t('venue_balance_due', 'Remaining Balance Due:')}</span>
                 <span className={`font-semibold tabular-nums ${balanceDue > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
                   {formatCurrencyAmount(balanceDue, selectedUnit?.currency)}
@@ -693,7 +693,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </div>
 
             {/* Contract Signed Checkbox */}
-            <label className="flex items-center gap-2.5 text-xs text-black/70 dark:text-white/75 cursor-pointer pt-1">
+            <label className="flex items-center gap-2 t-cap text-black/70 dark:text-white/75 cursor-pointer pt-1">
               <input
                 type="checkbox"
                 checked={contractSigned}

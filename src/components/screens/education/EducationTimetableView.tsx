@@ -368,7 +368,7 @@ export const EducationTimetableView: React.FC = () => {
       {
         id: 'rollcall',
         label: isAr ? 'مناداة الحضور' : 'Émargement',
-        icon: <ClipboardList className="w-3.5 h-3.5 text-[#d4522f]" />,
+        icon: <ClipboardList className="w-3.5 h-3.5 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
         onClick: () => {
           setRollCallSession(s);
           setIsRollCallOpen(true);
@@ -395,12 +395,12 @@ export const EducationTimetableView: React.FC = () => {
         width: '165px',
         sortable: true,
         renderCell: (s) => (
-          <div className="space-y-0.5 font-mono">
-            <div className="font-bold text-xs text-[#d4522f] flex items-center gap-1.5">
+          <div className="space-y-0.5 tabular-nums">
+            <div className="font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center gap-2">
               <CalendarIcon size={12} />
               <span>{s.date}</span>
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 flex items-center gap-1">
+            <div className="t-cap text-black/55 dark:text-white/55 flex items-center gap-1">
               <Clock size={11} />
               <span>
                 {s.startTime} - {s.endTime}
@@ -416,9 +416,9 @@ export const EducationTimetableView: React.FC = () => {
         sortable: true,
         renderCell: (s) => (
           <div>
-            <span className="font-bold text-xs text-black dark:text-white block">{s.cohortName}</span>
+            <span className="font-semibold t-small text-black dark:text-white block">{s.cohortName}</span>
             {s.topic && (
-              <span className="text-[11px] text-black/55 dark:text-white/55 line-clamp-1">{s.topic}</span>
+              <span className="t-cap text-black/55 dark:text-white/55 line-clamp-1">{s.topic}</span>
             )}
           </div>
         ),
@@ -431,7 +431,7 @@ export const EducationTimetableView: React.FC = () => {
         renderCell: (s) => {
           const b = resolveRecordBranch(s, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -443,8 +443,8 @@ export const EducationTimetableView: React.FC = () => {
         header: isAr ? 'القاعة' : isEn ? 'Classroom' : 'Salle Campus',
         width: '140px',
         renderCell: (s) => (
-          <span className="text-xs font-semibold text-black dark:text-white flex items-center gap-1">
-            <MapPin size={12} className="text-[#d4522f]" />
+          <span className="t-small font-semibold text-black dark:text-white flex items-center gap-1">
+            <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
             <span>{s.classroomName || 'Non assignée'}</span>
           </span>
         ),
@@ -454,7 +454,7 @@ export const EducationTimetableView: React.FC = () => {
         header: isAr ? 'المدرب' : isEn ? 'Instructor' : 'Formateur / Enseignant',
         width: '165px',
         renderCell: (s) => (
-          <span className="text-xs font-medium text-black/70 dark:text-white/75 flex items-center gap-1">
+          <span className="t-small font-medium text-black/70 dark:text-white/75 flex items-center gap-1">
             <User size={12} className="text-black/55 dark:text-white/55" />
             <span>{s.instructorName || 'Formateur'}</span>
           </span>
@@ -466,12 +466,12 @@ export const EducationTimetableView: React.FC = () => {
         width: '120px',
         renderCell: (s) =>
           conflicts.has(s.id) ? (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 inline-flex items-center gap-1">
+            <span className="px-2 py-1 rounded-full t-small font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 inline-flex items-center gap-1">
               <AlertTriangle size={10} />
               Conflit
             </span>
           ) : (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 inline-flex items-center gap-1">
+            <span className="px-2 py-1 rounded-full t-small font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 inline-flex items-center gap-1">
               <CheckCircle2 size={10} />
               Planifiée
             </span>
@@ -505,18 +505,18 @@ export const EducationTimetableView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="bg-white dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-700/80 p-3.5 space-y-3 h-full"
+                className="bg-white dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-700/80 p-4 space-y-3 h-full"
               >
               <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-[#d4522f]" />
-                  <span className="font-mono text-xs font-bold text-black dark:text-white">{dateStr}</span>
+                  <span className="tabular-nums t-small font-semibold text-black dark:text-white">{dateStr}</span>
                 </div>
-                <span className="text-[10px] font-semibold text-black/55 dark:text-white/55 px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-full">
+                <span className="t-small font-semibold text-black/55 dark:text-white/55 px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded-full">
                   {daySessions.length} {isAr ? 'حصص' : 'séances'}
                 </span>
               </div>
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {daySessions.map((s) => {
                   const hasConflict = conflicts.has(s.id);
                   const isSelected = activeSession?.id === s.id;
@@ -536,26 +536,26 @@ export const EducationTimetableView: React.FC = () => {
                           : 'border-neutral-200/70 dark:border-neutral-700/60 hover:border-[#d4522f]/60 bg-neutral-50/50 dark:bg-neutral-800/40'
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-1 mb-1.5">
-                        <span className="font-mono text-[11px] font-bold text-[#d4522f] flex items-center gap-1">
+                      <div className="flex items-center justify-between gap-1 mb-2">
+                        <span className="tabular-nums t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center gap-1">
                           <Clock size={11} />
                           {s.startTime} - {s.endTime}
                         </span>
                         {hasConflict && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+                          <span className="px-2 py-1 rounded-full t-small font-semibold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
                             Conflit
                           </span>
                         )}
                       </div>
-                      <div className="font-bold text-xs text-black dark:text-white truncate">{s.cohortName}</div>
+                      <div className="font-semibold t-small text-black dark:text-white truncate">{s.cohortName}</div>
                       {s.topic && (
-                        <div className="text-[11px] text-black/55 dark:text-white/55 line-clamp-1 mt-0.5">
+                        <div className="t-cap text-black/55 dark:text-white/55 line-clamp-1 mt-0.5">
                           {s.topic}
                         </div>
                       )}
-                      <div className="mt-2 pt-2 border-t border-neutral-200/50 dark:border-neutral-700/50 flex items-center justify-between text-[10px] text-black/55 dark:text-white/55">
+                      <div className="mt-2 pt-2 border-t border-neutral-200/50 dark:border-neutral-700/50 flex items-center justify-between t-cap text-black/55 dark:text-white/55">
                         <span className="flex items-center gap-1 truncate max-w-[110px]">
-                          <MapPin size={10} className="text-[#d4522f]" />
+                          <MapPin size={10} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                           {s.classroomName || 'Salle'}
                         </span>
                         <span className="flex items-center gap-1 truncate max-w-[110px]">
@@ -600,7 +600,7 @@ export const EducationTimetableView: React.FC = () => {
             <div
               data-sq="ctl"
               data-sq-border="none"
-              className="flex items-center gap-1.5 px-3 py-2 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 text-xs font-semibold"
+              className="flex items-center gap-2 px-3 py-2 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 t-small font-semibold"
             >
               <AlertTriangle size={14} />
               <span>{conflicts.size} Conflits détectés</span>
@@ -949,8 +949,8 @@ export const EducationTimetableView: React.FC = () => {
             >
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2">
-                  <CalendarIcon size={20} className="text-[#d4522f]" />
-                  <h3 className="font-bold text-base text-black dark:text-white">{t('edu_btn_add_session')}</h3>
+                  <CalendarIcon size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                  <h3 className="font-semibold t-card text-black dark:text-white">{t('edu_btn_add_session')}</h3>
                 </div>
                 <button
                   type="button"
@@ -984,7 +984,7 @@ export const EducationTimetableView: React.FC = () => {
                   onChange={(v) => setFormData({ ...formData, date: extractStr(v) })}
                   required
                 />
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-2 gap-2">
                   <LabelInput
                     label="Début"
                     type="time"

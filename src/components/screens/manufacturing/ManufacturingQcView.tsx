@@ -265,7 +265,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
         width: '1.4*',
         sortable: true,
         renderCell: (o) => (
-          <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded-[var(--r-check,6px)] border border-[#d4522f]/20">
+          <span className="tabular-nums font-semibold t-small bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] px-2 py-1 rounded-[var(--r-check,6px)] border border-[#d4522f]/20">
             {o.orderNumber}
           </span>
         ),
@@ -276,8 +276,8 @@ export const ManufacturingQcView: React.FC<any> = () => {
         width: '2.8*',
         renderCell: (o) => (
           <div className="min-w-0">
-            <span className="font-bold text-xs text-black dark:text-white block truncate">{o.productName}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+            <span className="font-semibold t-small text-black dark:text-white block truncate">{o.productName}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               Lot: {o.batchLotNumber || 'LOT-2026-STD'}
             </span>
           </div>
@@ -291,8 +291,8 @@ export const ManufacturingQcView: React.FC<any> = () => {
         renderCell: (o) => {
           const b = resolveRecordBranch(o, branchesById, currentBranch, language);
           return (
-            <div className="text-xs font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-1.5">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="t-small font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-2">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -304,7 +304,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
         width: '1.1*',
         sortable: true,
         renderCell: (o) => (
-          <span className="font-mono text-xs font-bold text-black dark:text-white">
+          <span className="tabular-nums t-small font-semibold text-black dark:text-white">
             {o.actualQuantityProduced || o.targetQuantity} pcs
           </span>
         ),
@@ -316,7 +316,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
         sortable: true,
         renderCell: (o) => {
           const qty = o.actualQuantityProduced || o.targetQuantity || 1;
-          return <span className="font-mono text-xs font-bold text-black/70 dark:text-white/75">{formatMoney(Math.round(o.totalCostDzd / qty), language)}</span>;
+          return <span className="tabular-nums t-small font-semibold text-black/70 dark:text-white/75">{formatMoney(Math.round(o.totalCostDzd / qty), language)}</span>;
         },
       },
       {
@@ -325,7 +325,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
         width: '1.5*',
         renderCell: (o) => (
           <span
-            className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${
+            className={`t-small font-semibold px-2.5 py-1 rounded-full inline-flex items-center gap-1 ${
               o.status === 'Completed'
                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                 : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
@@ -618,25 +618,25 @@ export const ManufacturingQcView: React.FC<any> = () => {
             return (
               <div className="flex flex-col justify-between w-full space-y-3">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded-[var(--r-check,6px)]">
+                  <span className="tabular-nums font-semibold t-small bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] px-2 py-1 rounded-[var(--r-check,6px)]">
                     {o.orderNumber}
                   </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                  <span className="t-small font-semibold px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                     98.8% Conforme
                   </span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-black dark:text-white line-clamp-2">{o.productName}</h4>
-                  <p className="text-[10px] text-black/55 dark:text-white/55 font-mono mt-0.5">
+                  <h4 className="font-semibold t-small text-black dark:text-white line-clamp-2">{o.productName}</h4>
+                  <p className="t-cap text-black/55 dark:text-white/55 tabular-nums mt-0.5">
                     Lot: {o.batchLotNumber || 'LOT-2026-STD'} · {qty} pcs
                   </p>
                 </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between t-cap">
                   <div>
-                    <span className="text-[10px] text-black/55 dark:text-white/55 block">Coût Unitaire</span>
-                    <span className="font-mono font-bold text-black/70 dark:text-white/75">{formatMoney(unitCost, language)}</span>
+                    <span className="t-cap text-black/55 dark:text-white/55 block">Coût Unitaire</span>
+                    <span className="tabular-nums font-semibold text-black/70 dark:text-white/75">{formatMoney(unitCost, language)}</span>
                   </div>
-                  <span className="text-emerald-600 font-bold text-xs">
+                  <span className="text-emerald-600 font-semibold t-small">
                     {o.status === 'Completed' ? 'Libéré ✓' : 'En contrôle'}
                   </span>
                 </div>
@@ -696,7 +696,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
         onSelectItem={(o) => handleSelectOrder(o)}
         onClose={() => setSelectedOrder(null)}
         renderBody={(ord, tab) => (
-          <div className="space-y-4 text-xs">
+          <div className="space-y-4 t-cap">
             <div className="flex items-center gap-2 flex-wrap">
               <AtriumButton
                 type="button"
@@ -722,29 +722,29 @@ export const ManufacturingQcView: React.FC<any> = () => {
               <div className="space-y-4">
                 <div className="sq-elev-card">
                   <div data-sq="card" data-sq-border="none" className="p-4 bg-[#1F1D1B] text-white space-y-2">
-                    <div className="flex items-center justify-between text-white/80 text-[11px]">
+                    <div className="flex items-center justify-between text-white/80 t-cap">
                       <span>Statut Libération du Lot</span>
-                      <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">ISO 9001</span>
+                      <span className="bg-[#3D2817] text-[#FB923C] t-small font-semibold px-2 py-1 rounded-full">ISO 9001</span>
                     </div>
-                    <div className="text-2xl font-black tracking-tight text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                    <div className="t-kpi-m uppercase text-white tabular-nums">
                       98.8% Conforme
                     </div>
-                    <p className="text-[10px] text-white/75">
+                    <p className="t-cap text-white/75">
                       Échantillonnage AQL 1.5 validé par le laboratoire de métrologie interne.
                     </p>
                   </div>
                 </div>
                 <div data-sq="card" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
+                  <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                     Spécifications de Fabrication
                   </span>
                   <div className="flex items-center justify-between">
                     <span className="text-black/55 dark:text-white/55">Désignation:</span>
-                    <span className="font-bold text-black dark:text-white">{ord.productName}</span>
+                    <span className="font-semibold text-black dark:text-white">{ord.productName}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-black/55 dark:text-white/55">Taille du Lot:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">
+                    <span className="tabular-nums font-semibold text-black dark:text-white">
                       {ord.actualQuantityProduced || ord.targetQuantity} unités
                     </span>
                   </div>
@@ -758,21 +758,21 @@ export const ManufacturingQcView: React.FC<any> = () => {
 
             {tab === 'metrologie' && (
               <div data-sq="card" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
+                <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                   Rapport Dimensionnel & Tolérances
                 </span>
                 <div className="space-y-2">
                   <div data-sq="ctl" data-sq-border="solid" className="flex justify-between p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
                     <span>Cote Critique Longueur (±0.5mm):</span>
-                    <span className="font-mono font-bold text-emerald-600">+0.12mm (OK)</span>
+                    <span className="tabular-nums font-semibold text-emerald-600">+0.12mm (OK)</span>
                   </div>
                   <div data-sq="ctl" data-sq-border="solid" className="flex justify-between p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
                     <span>Épaisseur & Planéité (±0.2mm):</span>
-                    <span className="font-mono font-bold text-emerald-600">-0.05mm (OK)</span>
+                    <span className="tabular-nums font-semibold text-emerald-600">-0.05mm (OK)</span>
                   </div>
                   <div data-sq="ctl" data-sq-border="solid" className="flex justify-between p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
                     <span>Adhérence Finition / Revêtement:</span>
-                    <span className="font-mono font-bold text-emerald-600">Grade 5B (Parfait)</span>
+                    <span className="tabular-nums font-semibold text-emerald-600">Grade 5B (Parfait)</span>
                   </div>
                 </div>
               </div>
@@ -780,24 +780,24 @@ export const ManufacturingQcView: React.FC<any> = () => {
 
             {tab === 'couts' && (
               <div data-sq="card" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                <span className="text-[10px] uppercase tracking-wider text-black/55 dark:text-white/55 font-semibold block">
+                <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                   Décomposition Coût de Revient
                 </span>
                 <div className="flex items-center justify-between">
                   <span className="text-black/55 dark:text-white/55">Matières Premières:</span>
-                  <span className="font-mono font-bold text-black dark:text-white">
+                  <span className="tabular-nums font-semibold text-black dark:text-white">
                     {formatMoney(ord.totalMaterialCostDzd, language)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-black/55 dark:text-white/55">Main d'Œuvre Directe:</span>
-                  <span className="font-mono font-bold text-black dark:text-white">
+                  <span className="tabular-nums font-semibold text-black dark:text-white">
                     {formatMoney(ord.totalLaborCostDzd, language)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between pt-1 border-t border-neutral-200 dark:border-neutral-800">
                   <span className="font-semibold text-black dark:text-white">Coût Total Lot:</span>
-                  <span className="font-mono font-bold text-[#d4522f]">{formatMoney(ord.totalCostDzd, language)}</span>
+                  <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(ord.totalCostDzd, language)}</span>
                 </div>
               </div>
             )}
@@ -811,14 +811,14 @@ export const ManufacturingQcView: React.FC<any> = () => {
             <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 sm:p-8 border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center gap-3">
-                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 text-emerald-800 flex items-center justify-center font-semibold">
                     <ShieldCheck size={22} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-base text-black dark:text-white">
+                    <h3 className="font-semibold t-card text-black dark:text-white">
                       {isAr ? 'شهادة المطابقة الصناعية IANOR / ISO' : 'Certificat de Conformité & Libération Lot'}
                     </h3>
-                    <p className="text-xs text-black/55 dark:text-white/55">Norme ISO 9001:2015 & IANOR NA 1620</p>
+                    <p className="t-cap text-black/55 dark:text-white/55">Norme ISO 9001:2015 & IANOR NA 1620</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -828,7 +828,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
                     data-sq="ctl"
                     data-sq-border="none"
                     onClick={() => window.print()}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
                   >
                     <Printer size={14} />
                     <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
@@ -846,39 +846,39 @@ export const ManufacturingQcView: React.FC<any> = () => {
               <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-emerald-600/40 text-black space-y-5 font-sans shadow-xs">
                 <div className="flex justify-between items-start border-b pb-4">
                   <div>
-                    <div className="font-black text-sm tracking-tight text-black">ATRIUM MANUFACTURE & CONTRÔLE QUALITÉ</div>
-                    <div className="text-[10px] text-black/55 font-medium">
+                    <div className="font-semibold t-label text-black">ATRIUM MANUFACTURE & CONTRÔLE QUALITÉ</div>
+                    <div className="t-small text-black/55 font-medium">
                       Laboratoire de Métrologie Industrielle • Alger • Agrément ONML N° 2026/88
                     </div>
-                    <div className="text-xs font-bold text-emerald-700 mt-1 uppercase tracking-wide">
+                    <div className="t-small font-semibold text-emerald-700 mt-1 tracking-wide">
                       BULLETIN D'ANALYSE & CERTIFICAT DE CONFORMITÉ PRODUIT FINI
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-mono font-bold text-xs text-emerald-700">
+                    <div className="tabular-nums font-semibold t-small text-emerald-700">
                       CERT-2026-{orderForCertificate.orderNumber.replace(/[^0-9]/g, '')}
                     </div>
-                    <div className="text-[11px] text-black/55 mt-0.5">Date : {new Date().toISOString().split('T')[0]}</div>
+                    <div className="t-cap text-black/55 mt-0.5">Date : {new Date().toISOString().split('T')[0]}</div>
                   </div>
                 </div>
-                <div className="bg-neutral-50 p-3.5 rounded-[var(--r-ctl,12px)] border border-neutral-200 text-xs space-y-1.5">
+                <div className="bg-neutral-50 p-4 rounded-[var(--r-ctl,12px)] border border-neutral-200 t-cap space-y-2">
                 <div className="flex justify-between">
                   <span className="text-black/55">Article inspecté :</span>
-                  <span className="font-bold text-black">{orderForCertificate.productName}</span>
+                  <span className="font-semibold text-black">{orderForCertificate.productName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-black/55">Ordre de Fabrication :</span>
-                  <span className="font-mono font-semibold text-black">{orderForCertificate.orderNumber}</span>
+                  <span className="tabular-nums font-semibold text-black">{orderForCertificate.orderNumber}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-black/55">N° de Lot de Traçabilité :</span>
-                  <span className="font-mono font-bold text-[#d4522f]">
+                  <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     {orderForCertificate.batchLotNumber || 'LOT-202610-0089'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-black/55">Quantité libérée :</span>
-                  <span className="font-mono font-bold text-emerald-700">
+                  <span className="tabular-nums font-semibold text-emerald-700">
                     {orderForCertificate.actualQuantityProduced ||
                       orderForCertificate.quantityProduced ||
                       orderForCertificate.targetQuantity}{' '}
@@ -886,36 +886,36 @@ export const ManufacturingQcView: React.FC<any> = () => {
                   </span>
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <div className="text-xs font-bold text-black uppercase tracking-wider">
+              <div className="space-y-2">
+                <div className="t-small font-semibold text-black">
                   Résultats des Contrôles Métrologiques & Essais
                 </div>
-                <div className="p-3 bg-emerald-50/60 rounded-[var(--r-ctl,12px)] border border-emerald-200 text-xs space-y-1">
+                <div className="p-3 bg-emerald-50/60 rounded-[var(--r-ctl,12px)] border border-emerald-200 t-cap space-y-1">
                   <div className="flex justify-between">
                     <span>Tolérance dimensionnelle (Calibre Vernier) :</span>
-                    <span className="font-bold text-emerald-800">Conforme (+/- 0.2mm)</span>
+                    <span className="font-semibold text-emerald-800">Conforme (+/- 0.2mm)</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Essai de résistance mécanique / charge :</span>
-                    <span className="font-bold text-emerald-800">Validé 100% sans déformation</span>
+                    <span className="font-semibold text-emerald-800">Validé 100% sans déformation</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Adhérence et état de surface (Aspect A) :</span>
-                    <span className="font-bold text-emerald-800">Grade 5B ISO 2409</span>
+                    <span className="font-semibold text-emerald-800">Grade 5B ISO 2409</span>
                   </div>
                 </div>
               </div>
-              <div className="p-3 bg-neutral-100 rounded-[var(--r-ctl,12px)] text-[11px] text-black/75 font-medium">
+              <div className="p-3 bg-neutral-100 rounded-[var(--r-ctl,12px)] t-small text-black/75 font-medium">
                 Le Responsable Assurance Qualité atteste que le lot ci-dessus référencé répond strictement aux spécifications techniques du cahier des charges et est libéré pour livraison client.
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t text-center text-xs">
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t text-center t-cap">
                 <div>
-                  <span className="text-black/55 text-[10px] block">Ingénieur Métrologie & CQ</span>
-                  <div className="h-10 flex items-center justify-center font-serif text-black italic">Ing. Sofiane Mokrani</div>
+                  <span className="text-black/55 t-cap block">Ingénieur Métrologie & CQ</span>
+                  <div className="h-10 flex items-center justify-center text-black italic">Ing. Sofiane Mokrani</div>
                 </div>
                 <div>
-                  <span className="text-black/55 text-[10px] block">Cachet & Signature Direction</span>
-                  <div className="h-10 flex items-center justify-center font-serif text-black italic">Direction Qualité Atrium</div>
+                  <span className="text-black/55 t-cap block">Cachet & Signature Direction</span>
+                  <div className="h-10 flex items-center justify-center text-black italic">Direction Qualité Atrium</div>
                 </div>
               </div>
             </div>

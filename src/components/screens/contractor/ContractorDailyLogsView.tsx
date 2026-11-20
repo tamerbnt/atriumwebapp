@@ -689,8 +689,8 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         width: '1.2*',
         sortable: true,
         renderCell: (log) => (
-          <div className="flex items-center gap-2 font-mono font-bold text-xs text-black dark:text-white">
-            <Calendar size={13} className="text-[#d4522f]" />
+          <div className="flex items-center gap-2 tabular-nums font-semibold t-small text-black dark:text-white">
+            <Calendar size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
             <span>{log.date}</span>
           </div>
         ),
@@ -700,7 +700,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         header: isAr ? 'الطقس' : 'Météo',
         width: '1.2*',
         renderCell: (log) => (
-          <span className="px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-[11px] font-semibold flex items-center gap-1 w-max">
+          <span className="px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 t-small font-semibold flex items-center gap-1 w-max">
             <Sun size={12} />
             {log.weather}
           </span>
@@ -712,7 +712,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         width: '1.1*',
         sortable: true,
         renderCell: (log) => (
-          <span className="px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-[11px] font-semibold flex items-center gap-1 w-max">
+          <span className="px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 t-small font-semibold flex items-center gap-1 w-max">
             <Users size={12} />
             {log.headcountWorkers} ouvriers
           </span>
@@ -723,7 +723,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         header: isAr ? 'الأعمال المنجزة' : 'Travaux Accomplis',
         width: '2.4*',
         renderCell: (log) => (
-          <p className="text-xs text-black dark:text-white line-clamp-2 leading-relaxed">
+          <p className="t-cap text-black dark:text-white line-clamp-2 leading-relaxed">
             {log.tasksAccomplished}
           </p>
         ),
@@ -736,8 +736,8 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         renderCell: (log) => {
           const b = resolveRecordBranch(log, branchesById, currentBranch, language);
           return (
-            <div className="flex items-center gap-1 text-xs text-black/75 dark:text-white/75 truncate">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="flex items-center gap-1 t-cap text-black/75 dark:text-white/75 truncate">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -748,7 +748,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         header: isAr ? 'المشرف' : 'Validation HSE',
         width: '1.4*',
         renderCell: (log) => (
-          <div className="flex items-center gap-1.5 text-xs text-black/70 dark:text-white/75">
+          <div className="flex items-center gap-2 t-cap text-black/70 dark:text-white/75">
             <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
             <span className="truncate font-medium">{log.supervisorSignature}</span>
           </div>
@@ -859,15 +859,15 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
           onClick={() => setActiveSection('logs')}
           data-sq="thumb"
           data-sq-border="none"
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 t-small font-semibold transition-all cursor-pointer ${
             activeSection === 'logs'
-              ? 'bg-white dark:bg-neutral-800 text-[#d4522f]'
+              ? 'bg-white dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
               : 'text-black/70 dark:text-white/75 hover:text-black'
           }`}
         >
           <Calendar size={14} />
           <span>{isAr ? 'محاضر الورشة والحضور' : 'Journaux & Effectifs'}</span>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700">
+          <span className="t-cap tabular-nums px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-700">
             {projectLogs.length}
           </span>
         </button>
@@ -876,15 +876,15 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
           onClick={() => setActiveSection('concrete')}
           data-sq="thumb"
           data-sq-border="none"
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 t-small font-semibold transition-all cursor-pointer ${
             activeSection === 'concrete'
-              ? 'bg-white dark:bg-neutral-800 text-[#d4522f]'
+              ? 'bg-white dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
               : 'text-black/70 dark:text-white/75 hover:text-black'
           }`}
         >
           <Layers size={14} />
           <span>{isAr ? 'صبات الخرسانة ومطابقة CTC' : 'Coulées Béton & CTC (CBA 93)'}</span>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700">
+          <span className="t-cap tabular-nums px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-700">
             {projectConcretePours.length}
           </span>
         </button>
@@ -893,15 +893,15 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
           onClick={() => setActiveSection('equipment')}
           data-sq="thumb"
           data-sq-border="none"
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2 t-small font-semibold transition-all cursor-pointer ${
             activeSection === 'equipment'
-              ? 'bg-white dark:bg-neutral-800 text-[#d4522f]'
+              ? 'bg-white dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
               : 'text-black/70 dark:text-white/75 hover:text-black'
           }`}
         >
           <Fuel size={14} />
           <span>{isAr ? 'ساعات العتاد والوقود' : 'Parc Engins & Gasoil'}</span>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700">
+          <span className="t-cap tabular-nums px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-700">
             {projectEquipmentLogs.length}
           </span>
         </button>
@@ -1041,7 +1041,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
           className="bg-[#F3EDE7] dark:bg-[#141312] p-3 border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-4"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
+            <h2 className="t-label font-semibold text-black dark:text-white">
               {isAr
                 ? 'سجل صبات الخرسانة ومطابقة المخابر المعتمدة CTC'
                 : 'Contrôle des Bétons & Écrasement d’Éprouvettes (CBA 93 / CTC)'}
@@ -1079,60 +1079,60 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   data-sq-border="solid"
                   className="bg-white dark:bg-neutral-850 p-4 border border-[#E6DED6] dark:border-neutral-800 flex flex-col justify-between space-y-3"
                 >
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-black dark:text-white flex items-center gap-1.5">
-                        <Calendar size={13} className="text-[#d4522f]" />
+                      <span className="tabular-nums t-small font-semibold text-black dark:text-white flex items-center gap-2">
+                        <Calendar size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                         {pour.pourDate}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#d4522f]/15 text-[#d4522f]">
+                      <span className="px-2 py-1 rounded-full t-small font-semibold bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                         {pour.concreteGrade}
                       </span>
                     </div>
-                    <h3 className="font-bold text-sm text-black dark:text-white leading-tight">
+                    <h3 className="font-semibold t-label text-black dark:text-white leading-tight">
                       {pour.elementPoured}
                     </h3>
-                    <p className="text-[11px] text-black/55 dark:text-white/55">
+                    <p className="t-cap text-black/55 dark:text-white/55">
                       {pour.supplierName} · BL:{' '}
-                      <span className="font-mono font-semibold">{pour.deliverySlipNumber}</span>
+                      <span className="tabular-nums font-semibold">{pour.deliverySlipNumber}</span>
                     </p>
                   </div>
                   <div className="grid grid-cols-3 gap-2 py-2 border-y border-neutral-100 dark:border-neutral-800 text-center">
                     <div>
-                      <span className="text-[10px] text-black/55 dark:text-white/55 block">
+                      <span className="t-cap text-black/55 dark:text-white/55 block">
                         Volume
                       </span>
-                      <span className="text-xs font-bold font-mono text-black dark:text-white">
+                      <span className="t-small font-semibold tabular-nums text-black dark:text-white">
                         {pour.volumePouredM3} m³
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-black/55 dark:text-white/55 block">
+                      <span className="t-cap text-black/55 dark:text-white/55 block">
                         Slump
                       </span>
-                      <span className="text-xs font-bold font-mono text-black dark:text-white">
+                      <span className="t-small font-semibold tabular-nums text-black dark:text-white">
                         {pour.slumpCm} cm
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-black/55 dark:text-white/55 block">
+                      <span className="t-cap text-black/55 dark:text-white/55 block">
                         Éprouvettes
                       </span>
-                      <span className="text-xs font-bold font-mono text-black dark:text-white">
+                      <span className="t-small font-semibold tabular-nums text-black dark:text-white">
                         {pour.testCylindersTaken} cyl.
                       </span>
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between t-cap">
                       <span className="text-black/55 dark:text-white/55">Résistance 7 jours:</span>
-                      <span className="font-mono font-bold text-black dark:text-white">
+                      <span className="tabular-nums font-semibold text-black dark:text-white">
                         {pour.strength7DaysMpa ? `${pour.strength7DaysMpa} MPa` : 'En attente'}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center justify-between t-cap">
                       <span className="text-black/55 dark:text-white/55">Cible f_c28 requise:</span>
-                      <span className="font-mono font-semibold text-black/70 dark:text-white/75">
+                      <span className="tabular-nums font-semibold text-black/70 dark:text-white/75">
                         {targetMpa} MPa
                       </span>
                     </div>
@@ -1142,13 +1142,13 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                       data-sq="ctl"
                       data-sq-border="solid"
                       style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
-                      className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 space-y-1"
+                      className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 space-y-1"
                     >
-                      <div className="flex items-center gap-1.5 font-bold text-[11px]">
+                      <div className="flex items-center gap-2 font-semibold t-small">
                         <AlertOctagon size={13} className="text-amber-600 shrink-0" />
                         <span>Alerte CTC : Lockout Décoffrage</span>
                       </div>
-                      <p className="text-[10px] leading-tight">
+                      <p className="t-cap leading-tight">
                         {val7?.requiredAction ||
                           'Maintien des étais obligatoire jusqu au contrôle 28 jours.'}
                       </p>
@@ -1158,7 +1158,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                       data-sq="ctl"
                       data-sq-border="solid"
                       style={{ '--sq-stroke': 'rgba(16, 185, 129, 0.35)' } as React.CSSProperties}
-                      className="p-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 text-[11px] font-semibold"
+                      className="p-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-300 flex items-center gap-2 t-small font-semibold"
                     >
                       <CheckCircle2 size={13} className="shrink-0" />
                       <span>Conforme · Visa CTC accordé</span>
@@ -1218,7 +1218,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 header: isAr ? 'التاريخ' : 'Date',
                 width: '1.1*',
                 renderCell: (log) => (
-                  <span className="font-mono font-semibold text-xs text-black dark:text-white">
+                  <span className="tabular-nums font-semibold t-small text-black dark:text-white">
                     {log.date}
                   </span>
                 ),
@@ -1229,10 +1229,10 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 width: '2.2*',
                 renderCell: (log) => (
                   <div className="min-w-0">
-                    <div className="font-bold text-xs text-black dark:text-white truncate">
+                    <div className="font-semibold t-small text-black dark:text-white truncate">
                       {log.equipmentName}
                     </div>
-                    <div className="text-[10px] text-black/55 dark:text-white/55 font-mono truncate">
+                    <div className="t-cap text-black/55 dark:text-white/55 tabular-nums truncate">
                       {log.matriculeNumber}
                     </div>
                   </div>
@@ -1243,7 +1243,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 header: isAr ? 'السائق' : 'Opérateur',
                 width: '1.3*',
                 renderCell: (log) => (
-                  <span className="text-xs text-black/75 dark:text-white/75 truncate">
+                  <span className="t-cap text-black/75 dark:text-white/75 truncate">
                     {log.operatorName}
                   </span>
                 ),
@@ -1253,10 +1253,10 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 header: isAr ? 'الساعات / الوقود' : 'Heures & Gasoil',
                 width: '1.4*',
                 renderCell: (log) => (
-                  <div className="font-mono text-xs">
-                    <span className="font-bold text-black dark:text-white">{log.operatingHours} h</span>
+                  <div className="tabular-nums t-cap">
+                    <span className="font-semibold text-black dark:text-white">{log.operatingHours} h</span>
                     <span className="text-black/40 dark:text-white/40 mx-1">·</span>
-                    <span className="font-bold text-amber-600 dark:text-amber-400">{log.fuelAddedLiters} L</span>
+                    <span className="font-semibold text-amber-600 dark:text-amber-400">{log.fuelAddedLiters} L</span>
                   </div>
                 ),
               },
@@ -1273,14 +1273,14 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   return (
                     <div className="flex items-center gap-2">
                       <span
-                        className={`font-mono font-bold text-xs ${
+                        className={`tabular-nums font-semibold t-small ${
                           anomaly.isAnomaly ? 'text-rose-600 dark:text-rose-400' : 'text-black dark:text-white'
                         }`}
                       >
                         {anomaly.actualRateLph} / {log.theoreticalHourlyBurnRate} L/h
                       </span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`px-2 py-1 rounded-full t-small font-semibold ${
                           anomaly.isAnomaly
                             ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300'
                             : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
@@ -1567,8 +1567,8 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
             >
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2">
-                  <Calendar size={20} className="text-[#d4522f]" />
-                  <h3 className="font-bold text-base text-black dark:text-white">
+                  <Calendar size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                  <h3 className="font-semibold t-card text-black dark:text-white">
                     {isAr ? 'محضر ورشة يومي وتعداد المهن' : 'Nouveau Rapport Journalier & Pointage'}
                   </h3>
                 </div>
@@ -1576,7 +1576,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsLogModalOpen(false)}
-                  className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <X size={18} />
                 </button>
@@ -1605,22 +1605,22 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3.5 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-3"
+                className="p-4 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-black dark:text-white block">
+                    <span className="t-small font-semibold text-black dark:text-white block">
                       {isAr ? 'تعداد العمالة الفورية حسب المهن' : 'Pointage Rapide par Corps d’État'}
                     </span>
-                    <span className="text-[10px] text-black/55 dark:text-white/55">
+                    <span className="t-cap text-black/55 dark:text-white/55">
                       {isAr ? 'انقر على الزر للتعديل السريع' : 'Cliquez sur + ou - pour ajuster'}
                     </span>
                   </div>
-                  <div className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-mono font-bold text-xs">
+                  <div className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 tabular-nums font-semibold t-small">
                     {totalHeadcount} ouvriers
                   </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {[
                     { label: 'Maçons', value: craftMasons, set: setCraftMasons },
                     { label: 'Ferrailleurs', value: craftIronworkers, set: setCraftIronworkers },
@@ -1635,8 +1635,8 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                       className="p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between"
                     >
                       <div>
-                        <span className="text-[11px] font-medium block">{c.label}</span>
-                        <span className="text-xs font-mono font-bold text-[#d4522f]">{c.value}</span>
+                        <span className="t-small font-medium block">{c.label}</span>
+                        <span className="t-small tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{c.value}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <button
@@ -1715,8 +1715,8 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
             >
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2">
-                  <Layers size={20} className="text-[#d4522f]" />
-                  <h3 className="font-bold text-base text-black dark:text-white">
+                  <Layers size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                  <h3 className="font-semibold t-card text-black dark:text-white">
                     {isAr
                       ? 'تسجيل صبة خرسانة وعينات مخبرية CTC'
                       : 'Enregistrement Coulée & Prélèvement CTC'}
@@ -1726,7 +1726,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsConcreteModalOpen(false)}
-                  className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <X size={18} />
                 </button>
@@ -1829,8 +1829,8 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
             >
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2">
-                  <Fuel size={20} className="text-[#d4522f]" />
-                  <h3 className="font-bold text-base text-black dark:text-white">
+                  <Fuel size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                  <h3 className="font-semibold t-card text-black dark:text-white">
                     {isAr ? 'تسجيل ساعات عمل الآلية والوقود' : 'Relevé Compteur Horaire & Plein Gasoil'}
                   </h3>
                 </div>
@@ -1838,7 +1838,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsEquipmentModalOpen(false)}
-                  className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <X size={18} />
                 </button>

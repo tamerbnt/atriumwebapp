@@ -170,11 +170,11 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/70 shrink-0">
           <div className="flex items-center gap-3">
-            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold">
+            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
               <Boxes size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h2 className="t-pod font-semibold text-black dark:text-white">
                 {t('trading_stock_modal_title')}
               </h2>
             </div>
@@ -190,10 +190,10 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
         </div>
 
         {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 flex-1 text-sm">
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 flex-1 t-body">
           {/* Movement Type Switcher */}
           <div>
-            <label className="block text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider mb-2">
+            <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-2">
               {t('trading_stock_dir')}
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -205,9 +205,9 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 }}
                 data-sq="ctl"
                 data-sq-border="solid"
-                className={`flex items-center justify-center gap-2 p-3 text-xs font-semibold transition-all ${
+                className={`flex items-center justify-center gap-2 p-3 t-small font-semibold transition-all ${
                   type === 'entree'
-                    ? '[--sq-stroke:#10B981] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold'
+                    ? '[--sq-stroke:#10B981] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold'
                     : '[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] text-black/70 dark:text-white/75'
                 }`}
               >
@@ -223,9 +223,9 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 }}
                 data-sq="ctl"
                 data-sq-border="solid"
-                className={`flex items-center justify-center gap-2 p-3 text-xs font-semibold transition-all ${
+                className={`flex items-center justify-center gap-2 p-3 t-small font-semibold transition-all ${
                   type === 'sortie'
-                    ? '[--sq-stroke:#F43F5E] bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 font-bold'
+                    ? '[--sq-stroke:#F43F5E] bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 font-semibold'
                     : '[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] text-black/70 dark:text-white/75'
                 }`}
               >
@@ -241,9 +241,9 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 }}
                 data-sq="ctl"
                 data-sq-border="solid"
-                className={`flex items-center justify-center gap-2 p-3 text-xs font-semibold transition-all ${
+                className={`flex items-center justify-center gap-2 p-3 t-small font-semibold transition-all ${
                   type === 'transfert'
-                    ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f] font-bold'
+                    ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
                     : '[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] text-black/70 dark:text-white/75'
                 }`}
               >
@@ -326,7 +326,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           {/* Items */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider">
+              <h3 className="t-small font-semibold text-black/70 dark:text-white/75">
                 {t('trading_stock_items_title')} ({items.length})
               </h3>
               <button
@@ -334,7 +334,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 onClick={addItemRow}
                 data-sq="ctl-sm"
                 data-sq-border="none"
-                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-[#d4522f]/10 text-[#d4522f] hover:bg-[#d4522f]/20 transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 py-1 t-small font-medium bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:bg-[#d4522f]/20 transition-colors"
               >
                 <Plus size={13} />
                 <span>{t('trading_stock_add_item')}</span>
@@ -347,7 +347,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                   key={idx}
                   data-sq="card"
                   data-sq-border="solid"
-                  className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-2.5 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-white dark:bg-stone-900"
+                  className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-3 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-white dark:bg-stone-900"
                 >
                   <div className="sm:col-span-8">
                     <LabelSelect
@@ -376,7 +376,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                       type="button"
                       onClick={() => removeItemRow(idx)}
                       disabled={items.length <= 1}
-                      className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 disabled:opacity-30 transition-colors cursor-pointer"
+                      className="p-2 text-black/55 dark:text-white/55 hover:text-rose-600 disabled:opacity-30 transition-colors cursor-pointer"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -397,9 +397,9 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           </div>
 
           {/* Total Valuation Footer */}
-          <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-stone-50 dark:bg-stone-800/40 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] flex items-center justify-between text-xs font-mono">
+          <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-stone-50 dark:bg-stone-800/40 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] flex items-center justify-between t-cap tabular-nums">
             <span className="text-black/55 dark:text-white/55">{t('trading_stock_est_valuation')}</span>
-            <span className="text-black dark:text-white font-bold text-sm">
+            <span className="text-black dark:text-white font-semibold t-label">
               {formatMoney(totalValuation)}
             </span>
           </div>

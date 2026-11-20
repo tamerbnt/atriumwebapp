@@ -258,10 +258,10 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (apt) => (
           <div className="min-w-0">
-            <span className="text-[13.5px] font-semibold text-black dark:text-white truncate block">
+            <span className="t-label font-semibold text-black dark:text-white truncate block">
               {apt.clientName}
             </span>
-            <span className="text-[11px] font-mono text-[#d4522f] font-semibold block">
+            <span className="t-small tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold block">
               {apt.date} · {apt.startTime} ({apt.durationMinutes}m)
             </span>
           </div>
@@ -273,10 +273,10 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (apt) => (
           <div className="min-w-0">
-            <span className="text-[12.5px] font-semibold text-black dark:text-white truncate block">
+            <span className="t-small font-semibold text-black dark:text-white truncate block">
               {apt.serviceName}
             </span>
-            <span className="text-[11px] text-black/62 dark:text-white/65 truncate block">
+            <span className="t-cap text-black/62 dark:text-white/65 truncate block">
               {apt.staffName}
               {apt.colorFormula ? ` · 🧪 ${apt.colorFormula}` : ''}
             </span>
@@ -292,7 +292,7 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
           const isInChair = apt.status === 'InChair';
           return (
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold ${
+              className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold ${
                 isCompleted
                   ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
                   : isInChair
@@ -316,10 +316,10 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (apt) => (
           <div className="tabular-nums">
-            <span className="font-mono text-[13px] font-bold text-black dark:text-white block">
+            <span className="tabular-nums t-label font-semibold text-black dark:text-white block">
               {formatMoney(apt.price)}
             </span>
-            <span className="text-[11px] text-black/62 dark:text-white/65 block">
+            <span className="t-cap text-black/62 dark:text-white/65 block">
               {apt.paymentMethod || 'Non payé'}
             </span>
           </div>
@@ -330,7 +330,7 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
         header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
         sortable: true,
         renderCell: (apt) => (
-          <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+          <span className="t-small font-medium text-black/80 dark:text-white/85 truncate block">
             {resolveRecordBranch(apt, branchesById, currentBranch, language).name}
           </span>
         ),

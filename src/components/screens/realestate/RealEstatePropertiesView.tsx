@@ -367,15 +367,15 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
           const isPinned = pinnedIds.has(p.id);
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div data-sq="tile" data-sq-border="solid" className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]">
+              <div data-sq="tile" data-sq-border="solid" className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]">
                 <Building2 size={18} />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-black dark:text-white truncate">{p.title}</span>
-                  {isPinned && <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
+                  <span className="t-small font-semibold text-black dark:text-white truncate">{p.title}</span>
+                  {isPinned && <span className="t-small text-amber-500 font-semibold">📌 VIP</span>}
                 </div>
-                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
+                <div className="flex items-center gap-2 mt-0.5 t-cap text-black/55 dark:text-white/55 tabular-nums">
                   <span>{p.cityWilaya}</span>
                   <span>·</span>
                   <span>{p.surfaceM2} m²</span>
@@ -393,8 +393,8 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
         width: '2.2*',
         renderCell: (p) => (
           <div>
-            <div className="text-xs font-semibold text-black dark:text-white truncate">{p.ownerName}</div>
-            <div className="text-[11px] font-mono text-black/55 dark:text-white/55 mt-0.5">{p.ownerPhone}</div>
+            <div className="t-small font-semibold text-black dark:text-white truncate">{p.ownerName}</div>
+            <div className="t-cap tabular-nums text-black/55 dark:text-white/55 mt-0.5">{p.ownerPhone}</div>
           </div>
         ),
       },
@@ -406,8 +406,8 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
         renderCell: (p) => {
           const b = resolveRecordBranch(p, branchesById, currentBranch, language);
           return (
-            <div className="text-xs font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-1.5">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="t-small font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-2">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -420,8 +420,8 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
         sortable: true,
         renderCell: (p) => (
           <div>
-            <span className="text-xs font-mono font-bold text-[#d4522f]">{formatMoney(p.priceDzd, language)}</span>
-            <div className="text-[10px] text-black/55 dark:text-white/55">
+            <span className="t-small tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(p.priceDzd, language)}</span>
+            <div className="t-cap text-black/55 dark:text-white/55">
               {p.listingType === 'Rental' ? (isAr ? '/ شهر' : '/ mois') : (isAr ? 'بيع' : 'Vente')}
             </div>
           </div>
@@ -437,7 +437,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
           return (
             <div className="text-center">
               <span
-                className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold border ${
+                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold border ${
                   isRented
                     ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200/60'
                     : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200/60'

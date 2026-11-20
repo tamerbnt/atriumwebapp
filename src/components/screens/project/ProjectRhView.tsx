@@ -446,8 +446,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               className="w-10 h-10 rounded-full object-cover border border-[#E6DED6] shrink-0 bg-neutral-100"
             />
             <div className="min-w-0">
-              <div className="font-bold text-black dark:text-white truncate">{talent.fullName}</div>
-              <span className="text-[11px] text-black/55 dark:text-white/55 truncate block">
+              <div className="font-semibold text-black dark:text-white truncate">{talent.fullName}</div>
+              <span className="t-cap text-black/55 dark:text-white/55 truncate block">
                 {talent.phone}
               </span>
             </div>
@@ -462,7 +462,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         renderCell: (talent) => (
           <div>
             <div className="font-semibold text-black dark:text-white">{talent.wilayaName}</div>
-            <span className="text-[11px] text-black/55 dark:text-white/55">{talent.commune}</span>
+            <span className="t-cap text-black/55 dark:text-white/55">{talent.commune}</span>
           </div>
         ),
       },
@@ -472,9 +472,9 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         width: '1.8*',
         minWidth: '140px',
         renderCell: (talent) => (
-          <div className="font-mono font-semibold text-black/70 dark:text-white/75">
+          <div className="tabular-nums font-semibold text-black/70 dark:text-white/75">
             <div>{talent.ccpNumber}</div>
-            <span className="text-[10px] text-black/55 dark:text-white/55">Clé: {talent.ccpKey}</span>
+            <span className="t-cap text-black/55 dark:text-white/55">Clé: {talent.ccpKey}</span>
           </div>
         ),
       },
@@ -486,11 +486,11 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         sortable: true,
         renderCell: (talent) => (
           <div className="text-center">
-            <div className="inline-flex items-center gap-1 font-bold text-amber-500 font-mono">
+            <div className="inline-flex items-center gap-1 font-semibold text-amber-500 tabular-nums">
               <Star className="w-3.5 h-3.5 fill-amber-400" />
               <span>{talent.consolidatedScore}</span>
             </div>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block font-normal">
+            <span className="t-cap text-black/55 dark:text-white/55 block font-normal">
               {talent.completedMissionsCount} missions
             </span>
           </div>
@@ -504,12 +504,12 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         renderCell: (talent) => (
           <div className="space-y-0.5">
             {talent.hasDriverLicense && (
-              <span className="inline-block px-1.5 py-0.5 rounded-[var(--r-check,6px)] bg-[#F3EDE7] dark:bg-neutral-800 text-[10px] font-semibold text-black/70 dark:text-white/75 mr-1">
+              <span className="inline-block px-2 py-1 rounded-[var(--r-check,6px)] bg-[#F3EDE7] dark:bg-neutral-800 t-small font-semibold text-black/70 dark:text-white/75 mr-1">
                 Permis B
               </span>
             )}
             {talent.isVehicleOwner && (
-              <span className="inline-block px-1.5 py-0.5 rounded-[var(--r-check,6px)] bg-blue-100 dark:bg-blue-950/60 text-[10px] font-semibold text-blue-700 dark:text-blue-300">
+              <span className="inline-block px-2 py-1 rounded-[var(--r-check,6px)] bg-blue-100 dark:bg-blue-950/60 t-small font-semibold text-blue-700 dark:text-blue-300">
                 Véhiculé
               </span>
             )}
@@ -689,16 +689,16 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
+              className={`flex items-center gap-2 py-2 px-4 border-b-2 font-medium t-small whitespace-nowrap transition-colors cursor-pointer ${
                 isActive
-                  ? 'border-[#d4522f] text-[#d4522f]'
+                  ? 'border-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                   : 'border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white'
               }`}
             >
               <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
+                <span className="px-2 py-1 rounded-full t-small tabular-nums font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
                   {tab.count}
                 </span>
               )}
@@ -833,31 +833,31 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     referrerPolicy="no-referrer"
                     className="w-24 h-24 rounded-full object-cover border-2 border-[#d4522f] shadow-md mb-4 bg-neutral-100"
                   />
-                  <h3 className="text-[16px] font-bold text-black dark:text-white truncate max-w-[210px] mb-1 tracking-tight">
+                  <h3 className="t-card font-semibold text-black dark:text-white truncate max-w-[210px] mb-1">
                     {talent.fullName}
                   </h3>
-                  <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-2 truncate max-w-[200px]">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-2 truncate max-w-[200px]">
                     {talent.wilayaName} ({talent.commune})
                   </span>
-                  <div className="flex items-center gap-1 font-bold text-amber-500 font-mono text-sm mb-3">
+                  <div className="flex items-center gap-1 font-semibold text-amber-500 tabular-nums t-label mb-3">
                     <Star className="w-4 h-4 fill-amber-400" />
                     <span>{talent.consolidatedScore}</span>
-                    <span className="text-[11px] text-black/55 dark:text-white/55 font-normal ml-1">
+                    <span className="t-cap text-black/55 dark:text-white/55 font-normal ml-1">
                       · {talent.completedMissionsCount} missions
                     </span>
                   </div>
-                  <div className="w-full pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 text-xs space-y-1.5 text-center">
-                    <div className="font-mono text-black/70 dark:text-white/75 text-[11px]">
+                  <div className="w-full pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 t-cap space-y-2 text-center">
+                    <div className="tabular-nums text-black/70 dark:text-white/75 t-cap">
                       CCP: {talent.ccpNumber} (Clé: {talent.ccpKey})
                     </div>
-                    <div className="flex items-center justify-center gap-1.5 pt-1">
+                    <div className="flex items-center justify-center gap-2 pt-1">
                       {talent.hasDriverLicense && (
-                        <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] bg-[#F3EDE7] dark:bg-neutral-800 text-[10px] font-semibold text-black/70 dark:text-white/75">
+                        <span className="px-2 py-1 rounded-[var(--r-check,6px)] bg-[#F3EDE7] dark:bg-neutral-800 t-small font-semibold text-black/70 dark:text-white/75">
                           Permis B
                         </span>
                       )}
                       {talent.isVehicleOwner && (
-                        <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] bg-blue-100 dark:bg-blue-950/60 text-[10px] font-semibold text-blue-700 dark:text-blue-300">
+                        <span className="px-2 py-1 rounded-[var(--r-check,6px)] bg-blue-100 dark:bg-blue-950/60 t-small font-semibold text-blue-700 dark:text-blue-300">
                           Véhiculé
                         </span>
                       )}
@@ -908,25 +908,25 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h2 className="text-xl font-bold text-black dark:text-white">
+                        <h2 className="t-dialog font-semibold text-black dark:text-white">
                           {selectedTalent.fullName}
                         </h2>
                         {selectedTalent.isHrVerified && (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold flex items-center gap-1">
+                          <span className="px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 t-small font-semibold flex items-center gap-1">
                             <CheckCircle className="w-3 h-3" /> Vérifié par RH
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-black/55 dark:text-white/55 mt-0.5">
+                      <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
                         {selectedTalent.age} ans · Wilaya de {selectedTalent.wilayaName} ({selectedTalent.commune}) · {selectedTalent.phone}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-black/55 dark:text-white/55 block">
+                    <span className="t-cap text-black/55 dark:text-white/55 block">
                       {t('pm_rh_col_consolidated_score')}
                     </span>
-                    <div className="flex items-center gap-1.5 text-xl font-bold font-mono text-amber-500 justify-end">
+                    <div className="flex items-center gap-2 t-dialog font-semibold tabular-nums text-amber-500 justify-end">
                       <Star className="w-5 h-5 fill-amber-400" />
                       <span>{selectedTalent.consolidatedScore} / 5.0</span>
                     </div>
@@ -938,11 +938,11 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     data-sq-border="solid"
                     className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
                   >
-                    <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
-                      <Users className="w-4 h-4 text-[#d4522f]" />
+                    <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
+                      <Users className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                       {t('pm_rh_pillar1_title')}
                     </h3>
-                    <div className="text-xs space-y-1 text-black/70 dark:text-white/75">
+                    <div className="t-cap space-y-1 text-black/70 dark:text-white/75">
                       <p>
                         <strong>{t('pm_rh_pillar1_roles')}</strong>{' '}
                         {selectedTalent.desiredRoles.join(', ')}
@@ -963,18 +963,18 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     data-sq-border="solid"
                     className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
                   >
-                    <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
+                    <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
                       <CreditCard className="w-4 h-4 text-emerald-600" />
                       {t('pm_rh_pillar2_title')}
                     </h3>
-                    <div className="text-xs space-y-1 font-mono text-black dark:text-white">
+                    <div className="t-cap space-y-1 tabular-nums text-black dark:text-white">
                       <p>
                         <strong>{t('pm_rh_pillar2_ccp')}</strong> {selectedTalent.ccpNumber}
                       </p>
                       <p>
                         <strong>{t('pm_rh_pillar2_key')}</strong> {selectedTalent.ccpKey}
                       </p>
-                      <p className="text-[11px] text-emerald-600 font-sans font-medium">
+                      <p className="t-small text-emerald-600 font-sans font-medium">
                         {t('pm_rh_pillar2_verified')}
                       </p>
                     </div>
@@ -984,18 +984,18 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     data-sq-border="solid"
                     className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
                   >
-                    <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
+                    <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
                       <FileText className="w-4 h-4 text-blue-600" />
                       {t('pm_rh_pillar3_title')}
                     </h3>
-                    <div className="text-xs space-y-2">
+                    <div className="t-cap space-y-2">
                       <div
                         data-sq="ctl-sm"
                         data-sq-border="solid"
                         className="flex items-center justify-between p-2 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
                       >
                         <span>{t('pm_rh_doc_cni')}</span>
-                        <span className="text-emerald-600 font-bold text-[10px]">
+                        <span className="text-emerald-600 font-semibold t-small">
                           {t('pm_rh_doc_verified')}
                         </span>
                       </div>
@@ -1005,7 +1005,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                         className="flex items-center justify-between p-2 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
                       >
                         <span>{t('pm_rh_doc_license')}</span>
-                        <span className="text-emerald-600 font-bold text-[10px]">
+                        <span className="text-emerald-600 font-semibold t-small">
                           {t('pm_rh_doc_compliant')}
                         </span>
                       </div>
@@ -1016,11 +1016,11 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     data-sq-border="solid"
                     className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
                   >
-                    <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
+                    <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
                       <Star className="w-4 h-4 text-amber-500" />
                       {t('pm_rh_pillar4_title')}
                     </h3>
-                    <div className="text-xs text-black/70 dark:text-white/75 space-y-1">
+                    <div className="t-cap text-black/70 dark:text-white/75 space-y-1">
                       <p>
                         <strong>{t('pm_rh_history_completed')}</strong>{' '}
                         {selectedTalent.completedMissionsCount}
@@ -1042,7 +1042,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     onClick={() => setActiveTab('talents')}
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] cursor-pointer"
+                    className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] cursor-pointer"
                   >
                     {t('pm_rh_btn_back_pool')}
                   </button>
@@ -1074,13 +1074,13 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
           >
             <div className="space-y-4">
               <div className="text-center pb-2 border-b border-[#E6DED6] dark:border-neutral-700">
-                <span className="text-[10px] font-bold text-[#d4522f] uppercase tracking-wide">
+                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
                   {t('pm_rh_portal_join_title')}
                 </span>
-                <h3 className="text-sm font-bold text-black dark:text-white">
+                <h3 className="t-label font-semibold text-black dark:text-white">
                   {t('pm_rh_portal_form_title')}
                 </h3>
-                <p className="text-[11px] text-black/55 dark:text-white/55">
+                <p className="t-cap text-black/55 dark:text-white/55">
                   {t('pm_rh_portal_form_sub')}
                 </p>
               </div>
@@ -1088,7 +1088,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 text-xs font-semibold text-center"
+                  className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 t-small font-semibold text-center"
                 >
                   {t('pm_rh_portal_success')}
                 </div>
@@ -1160,7 +1160,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   data-sq-border="solid"
                   className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
                 >
-                  <span className="text-[11px] font-bold text-black dark:text-white block">
+                  <span className="t-small font-semibold text-black dark:text-white block">
                     {t('pm_compta_tab_ccp')}
                   </span>
                   <div className="grid grid-cols-3 gap-2">
@@ -1217,10 +1217,10 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-2xl mx-auto space-y-6"
           >
             <div>
-              <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">
+              <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
                 Saisie Express Agence
               </span>
-              <h2 className="text-xl font-bold text-black dark:text-white mt-1">
+              <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
                 Enregistrement Direct d'un Candidat Présent en Agence
               </h2>
             </div>

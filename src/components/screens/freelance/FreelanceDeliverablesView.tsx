@@ -512,7 +512,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className={`w-9 h-9 flex items-center justify-center font-bold text-xs shrink-0 border ${
+              className={`w-9 h-9 flex items-center justify-center font-semibold t-small shrink-0 border ${
                 item.isCompleted
                   ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border-emerald-200 dark:border-emerald-800 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46]'
                   : 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040]'
@@ -521,13 +521,13 @@ export const FreelanceDeliverablesView: React.FC = () => {
               {item.isCompleted ? <CheckCircle2 size={16} /> : <FileCheck size={16} />}
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-black dark:text-white truncate hover:text-[#d4522f] transition-colors">
+              <div className="font-semibold text-black dark:text-white truncate hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-colors">
                 {item.title}
               </div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 truncate flex items-center gap-1.5">
+              <div className="t-cap text-black/55 dark:text-white/55 truncate flex items-center gap-2">
                 <span>{item.projectTitle}</span>
                 <span>·</span>
-                <span className="text-[#d4522f] font-medium">{item.clientName}</span>
+                <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-medium">{item.clientName}</span>
               </div>
             </div>
           </div>
@@ -542,7 +542,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
         renderCell: (item) => {
           const bInfo = resolveRecordBranch(item.project, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -557,7 +557,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
         sortable: true,
         renderCell: (item) => (
           <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold ${
               item.stage === 'Approved'
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                 : item.stage === 'InProgress'
@@ -582,15 +582,15 @@ export const FreelanceDeliverablesView: React.FC = () => {
           const pct = Math.min(100, Math.round((item.loggedHours / (item.estimatedHours || 1)) * 100));
           return (
             <div className="space-y-1 min-w-[115px]">
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between t-cap">
                 <span
                   className={`font-semibold tabular-nums ${
-                    isCreep ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-black dark:text-white'
+                    isCreep ? 'text-rose-600 dark:text-rose-400 font-semibold' : 'text-black dark:text-white'
                   }`}
                 >
                   {item.loggedHours}h / {item.estimatedHours}h
                 </span>
-                <span className="text-[10px] text-black/55 dark:text-white/55 tabular-nums">
+                <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                   {pct}%
                 </span>
               </div>
@@ -613,7 +613,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
         minWidth: '115px',
         sortable: true,
         renderCell: (item) => (
-          <div className="flex items-center gap-1.5 text-xs text-black/70 dark:text-white/75">
+          <div className="flex items-center gap-2 t-cap text-black/70 dark:text-white/75">
             <Calendar size={12} className="text-black/55 dark:text-white/55" />
             <span>{item.dueDate}</span>
           </div>
@@ -977,7 +977,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                     const targetProj = freelanceProjects.find((p) => p.id === selectedProjectId);
                     if (targetProj) setProjectToDelete(targetProj);
                   }}
-                  className="h-10 px-3 border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0"
+                  className="h-10 px-3 border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 t-small font-semibold flex items-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0"
                   title={t('common_delete', language)}
                 >
                   <Trash2 size={13} />
@@ -1003,7 +1003,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
           >
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-              <span className="text-xs font-bold text-black dark:text-white">
+              <span className="t-small font-semibold text-black dark:text-white">
                 {selectedDeliverableIds.size}{' '}
                 {isAr
                   ? 'مهام محددة'
@@ -1016,7 +1016,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedDeliverableIds(new Set())}
-                className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
+                className="px-3 py-2 t-small text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
               >
                 {isAr ? 'إلغاء التحديد' : isFr ? 'Désélectionner' : 'Deselect'}
               </button>
@@ -1026,7 +1026,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 data-sq="ctl-sm"
                 data-sq-border="none"
                 onClick={() => handleBatchSetStage('InProgress')}
-                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
               >
                 <Clock size={12} />
                 <span>{t('free_deliv_stage_in_progress', language)}</span>
@@ -1037,7 +1037,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 data-sq="ctl-sm"
                 data-sq-border="none"
                 onClick={() => handleBatchSetStage('ClientReview')}
-                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
               >
                 <Layers size={12} />
                 <span>{t('free_deliv_stage_review', language)}</span>
@@ -1048,7 +1048,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 data-sq="ctl-sm"
                 data-sq-border="none"
                 onClick={() => handleBatchSetStage('Approved')}
-                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
               >
                 <CheckCircle size={12} />
                 <span>{t('free_deliv_stage_delivered', language)}</span>
@@ -1059,7 +1059,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 data-sq="ctl-sm"
                 data-sq-border="none"
                 onClick={handleBatchDeleteDeliverables}
-                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
               >
                 <Trash2 size={12} />
                 <span>{isAr ? 'حذف المحدد' : isFr ? 'Supprimer' : 'Delete'}</span>
@@ -1180,10 +1180,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   className="bg-white/75 dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] p-3 min-h-[480px] flex flex-col"
                 >
                   <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200/60 dark:border-neutral-800">
-                    <span className="text-xs font-bold text-black dark:text-white">
+                    <span className="t-small font-semibold text-black dark:text-white">
                       {t(STAGE_KEYS[stage.id], language)}
                     </span>
-                    <span className={`text-xs font-extrabold tabular-nums ${stage.countColor}`}>
+                    <span className={`t-small font-semibold tabular-nums ${stage.countColor}`}>
                       {itemsInStage.length}
                     </span>
                   </div>
@@ -1199,10 +1199,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
                           <div
                             data-sq="ctl"
                             data-sq-border="solid"
-                            className="p-3.5 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] hover:border-[#d4522f]/40 hover:[--sq-stroke:rgba(212,82,47,0.4)] transition-all flex flex-col justify-between gap-2.5 group"
+                            className="p-4 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] hover:border-[#d4522f]/40 hover:[--sq-stroke:rgba(212,82,47,0.4)] transition-all flex flex-col justify-between gap-2 group"
                           >
                           <div>
-                            <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 mb-1 gap-1">
+                            <div className="flex items-center justify-between t-cap text-black/55 dark:text-white/55 mb-1 gap-1">
                               <span className="truncate font-medium text-black/65 dark:text-white/75">
                                 {item.projectTitle}
                               </span>
@@ -1216,18 +1216,18 @@ export const FreelanceDeliverablesView: React.FC = () => {
                                 setDrawerOpenerEl(e.currentTarget);
                                 setSelectedDeliverableItem(item);
                               }}
-                              className="text-left rtl:text-right text-xs font-bold text-black dark:text-white leading-snug hover:text-[#d4522f] transition-colors cursor-pointer"
+                              className="text-left rtl:text-right t-small font-semibold text-black dark:text-white leading-snug hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-colors cursor-pointer"
                             >
                               {item.title}
                             </button>
                             {item.description && (
-                              <p className="text-[11px] text-black/55 dark:text-white/75 mt-1 line-clamp-2">
+                              <p className="t-cap text-black/55 dark:text-white/75 mt-1 line-clamp-2">
                                 {item.description}
                               </p>
                             )}
                           </div>
 
-                          <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1.5 text-[11px]">
+                          <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/80 space-y-2 t-cap">
                             <div className="flex items-center justify-between">
                               <span className="text-black/55 dark:text-white/55 flex items-center gap-1">
                                 <Clock size={11} />
@@ -1236,7 +1236,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                               <span
                                 className={`font-semibold tabular-nums ${
                                   isCreep
-                                    ? 'text-rose-600 dark:text-rose-400 font-bold'
+                                    ? 'text-rose-600 dark:text-rose-400 font-semibold'
                                     : 'text-black/70 dark:text-white/75'
                                 }`}
                               >
@@ -1245,7 +1245,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                             </div>
 
                             {isCreep && (
-                              <div className="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-[10px] font-semibold flex items-center gap-1">
+                              <div className="px-2 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 t-small font-semibold flex items-center gap-1">
                                 <AlertTriangle size={10} />
                                 <span>
                                   {t('free_clients_ph_over_est_label', language)} (+
@@ -1273,7 +1273,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                                 onClick={() =>
                                   handleStartTimerForDeliverable(item.project, item.deliverable)
                                 }
-                                className="h-7 px-2 bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-[#d4522f] hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                                className="h-7 px-2 bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-[#d4522f] hover:text-white t-small font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                                 title={t('free_btn_log_time', language)}
                               >
                                 <Play size={10} />
@@ -1470,9 +1470,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         data-sq="ctl"
                         data-sq-border="solid"
                         onClick={() => updateDeliverableStage(item.projectId, item.id, st.id)}
-                        className={`px-3 py-2.5 border text-xs font-semibold cursor-pointer transition-colors ${
+                        className={`px-3 py-2 border t-small font-semibold cursor-pointer transition-colors ${
                           active
-                            ? 'bg-[#d4522f] text-white border-[#d4522f]'
+                            ? 'bg-[var(--brand-fill,#C9461F)] text-white border-[#d4522f]'
                             : 'bg-[#F3EDE7] dark:bg-neutral-900 border-[#E6DED6] dark:border-neutral-800 text-black/75 dark:text-white/75 hover:border-[#d4522f]/50'
                         }`}
                       >
@@ -1543,7 +1543,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
               className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
             >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-base font-bold text-black dark:text-white">
+              <h3 className="t-card font-semibold text-black dark:text-white">
                 {t('free_deliv_btn_new', language)}
               </h3>
               <button
@@ -1555,7 +1555,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <X size={16} />
               </button>
             </div>
-            <form onSubmit={handleCreateDeliverable} className="space-y-3.5 text-xs">
+            <form onSubmit={handleCreateDeliverable} className="space-y-4 t-cap">
               <LabelSelect
                 label={`${t('free_deliv_field_project', language)} *`}
                 value={targetProjectId || freelanceProjects[0]?.id || ''}
@@ -1618,7 +1618,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsAddDeliverableModalOpen(false)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
@@ -1626,7 +1626,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   type="submit"
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="px-5 py-2 bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('free_deliv_btn_new', language)}
                 </button>
@@ -1647,7 +1647,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
               className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
             >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-base font-bold text-black dark:text-white">
+              <h3 className="t-card font-semibold text-black dark:text-white">
                 {t('free_deliv_field_project', language)}
               </h3>
               <button
@@ -1659,7 +1659,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <X size={16} />
               </button>
             </div>
-            <form onSubmit={handleCreateProject} className="space-y-3.5 text-xs">
+            <form onSubmit={handleCreateProject} className="space-y-4 t-cap">
               <div className="grid grid-cols-2 gap-3">
                 <LabelSelect
                   label={`${t('free_invoice_client', language)} *`}
@@ -1769,7 +1769,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsAddProjectModalOpen(false)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
@@ -1777,7 +1777,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   type="submit"
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="px-5 py-2 bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('free_deliv_field_project', language)}
                 </button>
@@ -1799,10 +1799,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
             >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
-                <h3 className="text-base font-bold text-black dark:text-white">
+                <h3 className="t-card font-semibold text-black dark:text-white">
                   {t('free_deliv_edit', language)}
                 </h3>
-                <p className="text-xs text-black/55 dark:text-white/55 mt-0.5">
+                <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
                   {deliverableToEdit.project.title} · {deliverableToEdit.project.clientName}
                 </p>
               </div>
@@ -1815,7 +1815,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <X size={16} />
               </button>
             </div>
-            <form onSubmit={handleEditDeliverableSubmit} className="space-y-3.5 text-xs">
+            <form onSubmit={handleEditDeliverableSubmit} className="space-y-4 t-cap">
               <LabelInput
                 id="edit-deliverable-title"
                 label={t('free_deliv_field_title', language)}
@@ -1877,7 +1877,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setDeliverableToEdit(null)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('common_cancel', language)}
                 </button>
@@ -1885,7 +1885,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   type="submit"
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="px-5 py-2 bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('common_save', language)}
                 </button>
@@ -1914,15 +1914,15 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   <AlertTriangle size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-black dark:text-white">
+                  <h3 className="t-card font-semibold text-black dark:text-white">
                     {t('free_deliv_delete', language)}
                   </h3>
-                  <p className="text-xs text-black/55 dark:text-white/55">
+                  <p className="t-cap text-black/55 dark:text-white/55">
                     {deliverableToDelete.title}
                   </p>
                 </div>
               </div>
-              <p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
+              <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
                 {isAr
                   ? `هل أنت متأكد من حذف التسليمة "${deliverableToDelete.title}"؟`
                   : isFr
@@ -1936,7 +1936,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setDeliverableToDelete(null)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('common_cancel', language)}
                 </button>
@@ -1955,7 +1955,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                     }
                     setDeliverableToDelete(null);
                   }}
-                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white t-small font-semibold transition-colors cursor-pointer"
                 >
                   {t('common_delete', language)}
                 </button>
@@ -1983,15 +1983,15 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   <AlertTriangle size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-black dark:text-white">
+                  <h3 className="t-card font-semibold text-black dark:text-white">
                     {isAr ? 'حذف المشروع' : isFr ? 'Supprimer le Projet' : 'Delete Project'}
                   </h3>
-                  <p className="text-xs text-black/55 dark:text-white/55">
+                  <p className="t-cap text-black/55 dark:text-white/55">
                     {projectToDelete.title} · {projectToDelete.clientName}
                   </p>
                 </div>
               </div>
-              <p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
+              <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
                 {isAr
                   ? `هل أنت متأكد من حذف مشروع "${projectToDelete.title}" وكافة تسليماته؟`
                   : isFr
@@ -2005,7 +2005,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setProjectToDelete(null)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('common_cancel', language)}
                 </button>
@@ -2019,7 +2019,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                     setSelectedProjectId('all');
                     setProjectToDelete(null);
                   }}
-                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white t-small font-semibold transition-colors cursor-pointer"
                 >
                   {t('common_delete', language)}
                 </button>

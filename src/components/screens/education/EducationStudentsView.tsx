@@ -455,7 +455,7 @@ export const EducationStudentsView: React.FC = () => {
       {
         id: 'cert',
         label: t('edu_drawer_issue_certificate'),
-        icon: <Award className="w-3.5 h-3.5 text-[#d4522f]" />,
+        icon: <Award className="w-3.5 h-3.5 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
         onClick: () => {
           setSelectedStudent(student);
           setActiveDrawerTab('certificates');
@@ -493,13 +493,13 @@ export const EducationStudentsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"
+              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0 border border-neutral-200 dark:border-neutral-700"
             >
               {student.fullName.charAt(0)}
             </div>
             <div className="min-w-0">
               <div className="font-semibold text-black dark:text-white truncate">{student.fullName}</div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">
                 {student.phone} {student.email ? `· ${student.email}` : ''}
               </div>
             </div>
@@ -514,7 +514,7 @@ export const EducationStudentsView: React.FC = () => {
         renderCell: (student) => {
           const b = resolveRecordBranch(student, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -532,7 +532,7 @@ export const EducationStudentsView: React.FC = () => {
               <span className="font-medium text-black dark:text-white block truncate max-w-[180px]">
                 {enrollment.cohortName}
               </span>
-              <span className="text-[10px] text-black/55 dark:text-white/55">
+              <span className="t-cap text-black/55 dark:text-white/55">
                 Enrolled {enrollment.enrolledAt ? enrollment.enrolledAt.split('T')[0] : 'Active'}
               </span>
             </div>
@@ -568,7 +568,7 @@ export const EducationStudentsView: React.FC = () => {
           const enrollment = eduEnrollments.find((e) => e.studentId === student.id && e.status === 'Active');
           return enrollment ? (
             <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase ${
+              className={`px-2 py-1 rounded-full t-small font-semibold tracking-wide ${
                 enrollment.paymentStatus === 'Paid'
                   ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                   : enrollment.paymentStatus === 'Overdue'
@@ -592,7 +592,7 @@ export const EducationStudentsView: React.FC = () => {
         student.guardianName ? (
           <div className="text-black/70 dark:text-white/75">
             <span className="font-medium block truncate">{student.guardianName}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block truncate">
+            <span className="t-cap text-black/55 dark:text-white/55 block truncate">
               {student.guardianRelation || 'Guardian'} · {student.guardianPhone}
             </span>
           </div>
@@ -1005,7 +1005,7 @@ export const EducationStudentsView: React.FC = () => {
                       data-sq="ctl-sm"
                       data-sq-border="none"
                       onClick={() => setIsCertModalOpen(true)}
-                      className="px-2.5 py-1 bg-[#d4522f] text-white text-[11px] font-semibold flex items-center gap-1 cursor-pointer hover:opacity-90"
+                      className="px-2.5 py-1 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center gap-1 cursor-pointer hover:opacity-90"
                     >
                       <Plus size={12} />
                       <span>{t('edu_btn_issue_certificate')}</span>
@@ -1193,7 +1193,7 @@ export const EducationStudentsView: React.FC = () => {
               className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 max-h-[90vh] overflow-y-auto"
             >
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h2 className="t-card font-semibold text-black dark:text-white">
                 {studentToEdit ? t('edu_modal_edit_student') : t('edu_modal_add_student')}
               </h2>
               <button
@@ -1205,7 +1205,7 @@ export const EducationStudentsView: React.FC = () => {
                 <X size={16} />
               </button>
             </div>
-            <form onSubmit={handleSaveStudent} className="space-y-4 pt-4 text-xs">
+            <form onSubmit={handleSaveStudent} className="space-y-4 pt-4 t-cap">
               <LabelInput
                 id="student-fullname"
                 label={t('edu_field_fullname')}
@@ -1271,14 +1271,14 @@ export const EducationStudentsView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3.5 border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3"
+                className="p-4 border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3"
               >
                 <label className="flex items-center gap-2 font-semibold text-black dark:text-white cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.isMinor}
                     onChange={(e) => setFormData({ ...formData, isMinor: e.target.checked })}
-                    className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
+                    className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
                   />
                   <span>{t('edu_field_is_minor')}</span>
                 </label>
@@ -1331,7 +1331,7 @@ export const EducationStudentsView: React.FC = () => {
                   type="submit"
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="px-5 py-2 bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('edu_btn_save_student')}
                 </button>

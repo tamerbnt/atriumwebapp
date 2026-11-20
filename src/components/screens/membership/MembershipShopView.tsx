@@ -364,10 +364,10 @@ export const MembershipShopView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (p) => (
           <div className="min-w-0">
-            <span className="text-[13.5px] font-semibold text-black dark:text-white truncate block">
+            <span className="t-label font-semibold text-black dark:text-white truncate block">
               {p.name}
             </span>
-            <span className="text-[11px] font-mono text-[#d4522f] font-semibold">
+            <span className="t-small tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
               {p.sku} · {p.category || 'Pro-Shop'}
             </span>
           </div>
@@ -379,7 +379,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
         accessorKey: 'category',
         sortable: true,
         renderCell: (p) => (
-          <span className="inline-block px-2 py-0.5 rounded-full bg-[#F3EDE7] dark:bg-[#262422] text-[11.5px] font-semibold text-black/75 dark:text-white/80 truncate max-w-full">
+          <span className="inline-block px-2 py-1 rounded-full bg-[#F3EDE7] dark:bg-[#262422] t-small font-semibold text-black/75 dark:text-white/80 truncate max-w-full">
             {p.category || 'Fitness & Nutrition'}
           </span>
         ),
@@ -393,7 +393,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
           const isLow = p.stockQuantity <= (p.reorderLevel || 5);
           return (
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold tabular-nums ${
+              className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold tabular-nums ${
                 p.stockQuantity <= 0
                   ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
                   : isLow
@@ -417,7 +417,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
         accessorKey: 'price.amount',
         sortable: true,
         renderCell: (p) => (
-          <span className="font-mono text-[13px] font-bold text-black dark:text-white tabular-nums">
+          <span className="tabular-nums t-label font-semibold text-black dark:text-white">
             {formatMoney(p.price.amount)}
           </span>
         ),
@@ -427,7 +427,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
         header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
         sortable: true,
         renderCell: (p) => (
-          <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+          <span className="t-small font-medium text-black/80 dark:text-white/85 truncate block">
             {resolveRecordBranch(p, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -500,7 +500,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
       {
         id: 'cart',
         label: isAr ? 'إضافة للسلة' : isEn ? 'Add to Cart' : 'Ajouter au panier',
-        icon: <ShoppingBag className="w-3.5 h-3.5 text-[#d4522f]" />,
+        icon: <ShoppingBag className="w-3.5 h-3.5 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
         onClick: () => handleAddToCart(p),
       },
       {
@@ -701,22 +701,22 @@ export const MembershipShopView: React.FC = React.memo(() => {
               className="w-full bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex flex-col max-h-[640px] overflow-hidden"
             >
             <div className="px-4 py-3 border-b border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between bg-[#FBF8F5] dark:bg-[#151413]">
-              <span className="text-xs font-bold text-black dark:text-white flex items-center gap-2">
-                <ShoppingBag size={14} className="text-[#d4522f]" />
+              <span className="t-small font-semibold text-black dark:text-white flex items-center gap-2">
+                <ShoppingBag size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>{isAr ? `السلة (${cart.length})` : `Panier (${cart.length})`}</span>
               </span>
               {cart.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setCart([])}
-                  className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                  className="t-small font-semibold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
                 >
                   {isAr ? 'تفريغ' : isEn ? 'Clear' : 'Vider'}
                 </button>
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3.5 space-y-2 min-h-[200px]">
+            <div className="flex-1 overflow-y-auto p-4 space-y-2 min-h-[200px]">
               {cart.length === 0 ? (
                 <KineticEmptyStateMotion motionKey="mem-shop-cart-empty">
                   <EmptyState
@@ -732,17 +732,17 @@ export const MembershipShopView: React.FC = React.memo(() => {
                     key={item.product.id}
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="p-2.5 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex items-center justify-between gap-2"
+                    className="p-3 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex items-center justify-between gap-2"
                   >
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-xs text-black dark:text-white truncate block">
+                      <span className="font-semibold t-small text-black dark:text-white truncate block">
                         {item.product.name}
                       </span>
-                      <span className="font-mono text-[11px] text-[#d4522f] tabular-nums">
+                      <span className="tabular-nums t-cap text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                         {formatMoney(item.product.price.amount)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
                       <button
                         type="button"
                         onClick={() => handleUpdateQty(item.product.id, -1)}
@@ -752,7 +752,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
                       >
                         <Minus size={10} />
                       </button>
-                      <span className="font-mono text-xs font-bold w-4 text-center tabular-nums">
+                      <span className="tabular-nums t-small font-semibold w-4 text-center">
                         {item.quantity}
                       </span>
                       <button
@@ -778,9 +778,9 @@ export const MembershipShopView: React.FC = React.memo(() => {
             </div>
 
             <div className="p-4 border-t border-[#E6DED6] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#151413] space-y-3">
-              <div className="flex justify-between text-xs items-baseline">
+              <div className="flex justify-between t-cap items-baseline">
                 <span className="text-black/62 dark:text-white/65">{isAr ? 'الإجمالي:' : 'Total à Payer:'}</span>
-                <span className="font-mono font-bold text-base text-black dark:text-white tabular-nums">
+                <span className="tabular-nums font-semibold t-card text-black dark:text-white">
                   {formatMoney(cartTotal)}
                 </span>
               </div>
@@ -791,9 +791,9 @@ export const MembershipShopView: React.FC = React.memo(() => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setPaymentMethod('Cash')}
-                  className={`p-2 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                  className={`p-2 t-small font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors ${
                     paymentMethod === 'Cash'
-                      ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                      ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                       : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/72 dark:text-white/75'
                   }`}
                 >
@@ -806,9 +806,9 @@ export const MembershipShopView: React.FC = React.memo(() => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setPaymentMethod('Card')}
-                  className={`p-2 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                  className={`p-2 t-small font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors ${
                     paymentMethod === 'Card'
-                      ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                      ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                       : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/72 dark:text-white/75'
                   }`}
                 >

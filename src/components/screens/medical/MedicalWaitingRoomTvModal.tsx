@@ -147,14 +147,14 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold tracking-wide uppercase text-white">
+              <span className="t-dialog font-semibold tracking-wide text-white">
                 Centre Médical El-Chifa
               </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#0D9488]/20 text-[#14B8A6] border border-[#0D9488]/40">
+              <span className="px-2.5 py-1 rounded-full t-small font-semibold bg-[#0D9488]/20 text-[#14B8A6] border border-[#0D9488]/40">
                 Écran Salle d'Attente
               </span>
             </div>
-            <p className="text-xs text-white/50 tracking-wider">
+            <p className="t-cap text-white/50">
               Système Numérique d'Appel des Patients · Polyclinique & Soins Ambulatoires
             </p>
           </div>
@@ -165,13 +165,13 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
           data-sq="card"
           data-sq-border="solid"
           style={{ '--sq-stroke': 'rgba(255, 255, 255, 0.12)' } as React.CSSProperties}
-          className="flex items-center gap-3 px-5 py-2.5 bg-white/5 border border-white/10"
+          className="flex items-center gap-3 px-5 py-2 bg-white/5 border border-white/10"
         >
-          <Clock size={20} className="text-[#d4522f]" />
-          <div className="text-2xl font-bold tracking-wider tabular-nums text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+          <Clock size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+          <div className="t-kpi-m uppercase tabular-nums text-white">
             {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
           </div>
-          <span className="text-xs text-white/50 uppercase tracking-widest pl-2 border-l border-white/10">
+          <span className="t-cap text-white/50 pl-2 border-l border-white/10">
             {currentTime.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
           </span>
         </div>
@@ -185,7 +185,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
               data-sq-border="solid"
               style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.45)' } as React.CSSProperties}
               onClick={handleEnableAudio}
-              className="px-4 py-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer animate-bounce"
+              className="px-4 py-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 t-small font-semibold flex items-center gap-2 transition-all cursor-pointer animate-bounce"
             >
               <VolumeX size={16} />
               <span>Activer le Son du Carillon</span>
@@ -199,7 +199,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
               onClick={() => {
                 playChimeTone();
               }}
-              className="px-3 py-2 bg-white/5 border border-white/10 text-emerald-400 hover:bg-white/10 text-xs font-medium flex items-center gap-2 cursor-pointer transition-colors"
+              className="px-3 py-2 bg-white/5 border border-white/10 text-emerald-400 hover:bg-white/10 t-small font-medium flex items-center gap-2 cursor-pointer transition-colors"
               title="Tester le carillon"
             >
               <Volume2 size={16} />
@@ -219,7 +219,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
               } as React.CSSProperties
             }
             onClick={() => toggleEmergencyAlarm()}
-            className={`px-3.5 py-2 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-4 py-2 t-small font-semibold flex items-center gap-2 transition-all cursor-pointer ${
               isEmergencyAlarmActive
                 ? 'bg-rose-600 text-white border border-rose-400 animate-pulse'
                 : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10'
@@ -232,7 +232,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
 
           <button
             onClick={toggleFullscreen}
-            className="p-2.5 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-3 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             title="Plein Écran"
           >
             {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
@@ -240,7 +240,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
 
           <button
             onClick={onClose}
-            className="p-2.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
+            className="p-3 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
             title="Quitter le mode TV"
           >
             <X size={20} />
@@ -250,7 +250,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
 
       {/* Emergency Flash Banner */}
       {isEmergencyAlarmActive && (
-        <div className="bg-rose-600 text-white px-8 py-3.5 text-center font-bold text-sm sm:text-base flex items-center justify-center gap-3 animate-pulse border-b-2 border-white/40 shrink-0 select-none shadow-xl">
+        <div className="bg-rose-600 text-white px-8 py-4 text-center font-semibold t-label flex items-center justify-center gap-3 animate-pulse border-b-2 border-white/40 shrink-0 select-none shadow-xl">
           <AlertCircle size={22} className="animate-spin shrink-0" />
           <span className="tracking-wide">
             🚨 URGENCE MÉDICALE EN COURS — ACCÈS SALLE DE DÉCHOCAGE ET SOINS PRIORITAIRES
@@ -264,7 +264,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
         {/* Left 7 Columns: Currently Called Ticket & Cabinet */}
         <div className="col-span-7 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-[#14B8A6] font-semibold mb-3">
+            <div className="flex items-center gap-2 t-small text-[#14B8A6] font-semibold mb-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#14B8A6] animate-ping" />
               <span>Patient Actuellement Appelé</span>
             </div>
@@ -293,25 +293,25 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
 
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-white/10 text-white/70 font-mono">
+                    <span className="t-cap px-4 py-2 rounded-full bg-white/10 text-white/70 tabular-nums">
                       Numéro d'Ordre d'Arrivée
                     </span>
-                    <span className="px-3.5 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-semibold text-xs flex items-center gap-1.5">
+                    <span className="px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-semibold t-small flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                       Consultation en cours
                     </span>
                   </div>
 
                   {/* Gigantic Ticket ID */}
-                  <div className="text-7xl font-mono font-extrabold tracking-tight text-white mb-4">
+                  <div className="text-7xl tabular-nums font-semibold text-white mb-4">
                     {currentCall.ticketNumber || 'T-101'}
                   </div>
 
                   {/* Patient Initials / Name Display */}
-                  <div className="text-3xl font-bold text-white/90 tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                  <div className="t-kpi-m uppercase text-white/90 tabular-nums">
                     {currentCall.patientName}
                   </div>
-                  <p className="text-sm text-white/50 mt-1">
+                  <p className="t-body text-white/50 mt-1">
                     Âge: {currentCall.patientAge || '—'} ans · Code Acte: {currentCall.ngapCode || 'CS'}
                   </p>
                 </div>
@@ -324,22 +324,22 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                   className="mt-8 p-6 bg-white/5 border border-white/10 flex items-center justify-between backdrop-blur-md"
                 >
                   <div>
-                    <span className="text-xs uppercase tracking-wider text-[#d4522f] font-semibold block mb-1">
+                    <span className="t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold block mb-1">
                       Veuillez vous présenter au
                     </span>
-                    <div className="text-3xl font-black text-white tracking-wide font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                    <div className="t-kpi-m uppercase text-white tracking-wide tabular-nums">
                       {currentCall.cabinetRoom || 'Cabinet 1'}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4 text-right">
-                    <ArrowRight size={32} className="text-[#d4522f] animate-pulse" />
+                    <ArrowRight size={32} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] animate-pulse" />
                     <div>
-                      <span className="text-xs text-white/60 uppercase tracking-wider block">Médecin Praticien</span>
-                      <div className="text-xl font-bold text-white">
+                      <span className="t-cap text-white/60 block">Médecin Praticien</span>
+                      <div className="t-dialog font-semibold text-white">
                         {currentCall.doctorName || 'Dr. Amine Benali'}
                       </div>
-                      <span className="text-xs text-[#14B8A6] font-medium">
+                      <span className="t-small text-[#14B8A6] font-medium">
                         {currentCall.doctorSpecialty || 'Médecine Spécialisée'}
                       </span>
                     </div>
@@ -370,7 +370,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
 
           {/* Cabinets Status Strip */}
           <div className="mt-6">
-            <span className="text-xs uppercase tracking-widest text-white/60 font-semibold block mb-3">
+            <span className="t-small text-white/60 font-semibold block mb-3">
               État d'Occupation des Cabinets Médicaux
             </span>
             <div className="grid grid-cols-4 gap-3">
@@ -382,18 +382,18 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                     data-sq="card"
                     data-sq-border="solid"
                     style={{ '--sq-stroke': 'rgba(255, 255, 255, 0.12)' } as React.CSSProperties}
-                    className="p-3.5 bg-white/5 border border-white/10 flex flex-col justify-between"
+                    className="p-4 bg-white/5 border border-white/10 flex flex-col justify-between"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-mono font-bold text-white/80">{doc.roomNumber}</span>
+                      <span className="t-small tabular-nums font-semibold text-white/80">{doc.roomNumber}</span>
                       <span
                         className={`w-2 h-2 rounded-full ${
                           isDocActive ? 'bg-amber-400 animate-ping' : doc.isAvailable ? 'bg-emerald-400' : 'bg-neutral-600'
                         }`}
                       />
                     </div>
-                    <div className="text-xs font-bold text-white truncate">{doc.fullName}</div>
-                    <span className="text-[10px] text-white/60 truncate">{doc.specialty}</span>
+                    <div className="t-small font-semibold text-white truncate">{doc.fullName}</div>
+                    <span className="t-cap text-white/60 truncate">{doc.specialty}</span>
                   </div>
                 );
               })}
@@ -410,20 +410,20 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
         >
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <div
                   data-sq="ctl-sm"
                   data-sq-border="none"
-                  className="w-8 h-8 bg-[#d4522f]/20 text-[#d4522f] flex items-center justify-center font-bold"
+                  className="w-8 h-8 bg-[#d4522f]/20 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
                 >
                   <Clock size={18} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">Prochains sur la Liste</h3>
-                  <span className="text-xs text-white/60">Ordre d'Appel Estimé</span>
+                  <h3 className="t-card font-semibold text-white">Prochains sur la Liste</h3>
+                  <span className="t-cap text-white/60">Ordre d'Appel Estimé</span>
                 </div>
               </div>
-              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white/10 text-white">
+              <span className="px-3 py-1 rounded-full t-small tabular-nums font-semibold bg-white/10 text-white">
                 {waitingQueue.length} en attente
               </span>
             </div>
@@ -442,30 +442,30 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
                     <div
                       data-sq="tile"
                       data-sq-border="none"
-                      className="w-10 h-10 bg-white/10 flex items-center justify-center font-mono font-bold text-white text-sm"
+                      className="w-10 h-10 bg-white/10 flex items-center justify-center tabular-nums font-semibold text-white t-label"
                     >
                       #{idx + 1}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-base font-mono font-bold text-white">
+                        <span className="t-card tabular-nums font-semibold text-white">
                           {patient.ticketNumber || `T-${105 + idx}`}
                         </span>
                         {patient.urgencyLevel === 'Urgence' && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">
+                          <span className="px-2 py-1 rounded-full t-small font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
                             Urgence
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-white/70 font-medium">{patient.patientName}</div>
+                      <div className="t-small text-white/70 font-medium">{patient.patientName}</div>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-xs font-semibold text-[#14B8A6] block">
+                    <span className="t-small font-semibold text-[#14B8A6] block">
                       {patient.doctorSpecialty || 'Médecine Générale'}
                     </span>
-                    <span className="text-[11px] text-white/60 font-mono">
+                    <span className="t-cap text-white/60 tabular-nums">
                       {patient.cabinetRoom || 'En attente tri'}
                     </span>
                   </div>
@@ -493,12 +493,12 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
             data-sq="card"
             data-sq-border="solid"
             style={{ '--sq-stroke': 'rgba(59, 130, 246, 0.25)' } as React.CSSProperties}
-            className="p-4 bg-blue-500/10 border border-blue-500/20 text-blue-200 text-xs flex items-start gap-3 mt-4"
+            className="p-4 bg-blue-500/10 border border-blue-500/20 text-blue-200 t-cap flex items-start gap-3 mt-4"
           >
             <AlertCircle size={18} className="text-blue-400 shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold block mb-0.5">Consignes aux Patients</span>
-              <p className="text-[11px] text-blue-300/80 leading-relaxed">
+              <p className="t-cap text-blue-300/80 leading-relaxed">
                 Prière de préparer votre <strong>carte Chifa</strong> et vos ordonnances antérieures avant d'entrer en cabinet.
                 Les enfants en bas âge et urgences prioritaires bénéficient d'un accès accéléré.
               </p>
@@ -508,15 +508,15 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
       </div>
 
       {/* Bottom Ticker Marquee */}
-      <div className="h-10 bg-[#0D9488]/15 border-t border-[#0D9488]/30 px-8 flex items-center justify-between text-xs text-[#14B8A6] font-medium shrink-0">
+      <div className="h-10 bg-[#0D9488]/15 border-t border-[#0D9488]/30 px-8 flex items-center justify-between t-small text-[#14B8A6] font-medium shrink-0">
         <div className="flex items-center gap-2">
           <Sparkles size={14} className="text-[#14B8A6]" />
           <span>Informations Polyclinique:</span>
         </div>
-        <div className="truncate text-white/80 text-[11px] font-mono px-4">
+        <div className="truncate text-white/80 t-cap tabular-nums px-4">
           Permanence médicale assurée 7j/7 · Laboratoire d'analyses et Imagerie ouverts jusqu'à 18h00 · Télétransmission Chifa instantanée · Conventionné CNAS & CASNOS
         </div>
-        <div className="text-white/60 text-[11px] font-mono shrink-0">
+        <div className="text-white/60 t-cap tabular-nums shrink-0">
           Urgences Médicales: 023 45 67 00
         </div>
       </div>

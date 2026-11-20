@@ -489,19 +489,19 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
               <div
                 data-sq="tile"
                 data-sq-border="solid"
-                className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+                className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
               >
                 <Package size={18} />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-black dark:text-white truncate">
+                  <span className="t-small font-semibold text-black dark:text-white truncate">
                     {s.recipientName}
                   </span>
-                  {isPinned && <span className="text-[10px] text-amber-500 font-bold">VIP</span>}
+                  {isPinned && <span className="t-small text-amber-500 font-semibold">VIP</span>}
                 </div>
-                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
-                  <span className="font-bold text-[#d4522f]">{s.trackingCode}</span>
+                <div className="flex items-center gap-2 mt-0.5 t-cap text-black/55 dark:text-white/55 tabular-nums">
+                  <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{s.trackingCode}</span>
                   <span>·</span>
                   <span>{s.destinationWilaya.split('-')[0].trim()}</span>
                 </div>
@@ -516,10 +516,10 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
         width: '2.2*',
         renderCell: (s) => (
           <div className="min-w-0">
-            <div className="text-xs font-semibold text-black dark:text-white truncate">
+            <div className="t-small font-semibold text-black dark:text-white truncate">
               {s.destinationAddress}
             </div>
-            <div className="text-[11px] font-mono text-black/55 dark:text-white/55 mt-0.5">
+            <div className="t-cap tabular-nums text-black/55 dark:text-white/55 mt-0.5">
               {s.recipientPhone}
             </div>
           </div>
@@ -533,8 +533,8 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
         renderCell: (s) => {
           const b = resolveRecordBranch(s, branchesById, currentBranch, language);
           return (
-            <div className="flex items-center gap-1.5 text-xs text-black/75 dark:text-white/75 truncate">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="flex items-center gap-2 t-cap text-black/75 dark:text-white/75 truncate">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -547,10 +547,10 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
         sortable: true,
         renderCell: (s) => (
           <div>
-            <span className="text-xs font-mono font-bold text-black dark:text-white tabular-nums">
+            <span className="t-small tabular-nums font-semibold text-black dark:text-white">
               {formatMoney(s.codAmountDzd)}
             </span>
-            <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               + {formatMoney(s.shippingFeeDzd)} frais
             </div>
           </div>
@@ -565,7 +565,7 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
           const isOut = s.status === 'OutForDelivery';
           return (
             <span
-              className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold border ${
+              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold border ${
                 isDelivered
                   ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200/60'
                   : isOut

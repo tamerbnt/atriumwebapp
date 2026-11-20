@@ -181,19 +181,19 @@ export const MembershipStaffView: React.FC<any> = () => {
       sortable: true,
       cell: (member) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0">
             {member.fullName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-black dark:text-white text-xs truncate">
+            <div className="font-semibold text-black dark:text-white t-small truncate">
               {member.fullName}
             </div>
-            <div className="text-[11px] text-black/62 dark:text-white/65 truncate flex items-center gap-1.5">
+            <div className="t-cap text-black/62 dark:text-white/65 truncate flex items-center gap-2">
               <span>{member.role}</span>
               {member.chairOrStudio && (
                 <>
                   <span>·</span>
-                  <span className="text-[#d4522f] font-medium">{member.chairOrStudio}</span>
+                  <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-medium">{member.chairOrStudio}</span>
                 </>
               )}
             </div>
@@ -225,7 +225,7 @@ export const MembershipStaffView: React.FC<any> = () => {
                   : 'bg-[#8A8178]'
               }`}
             />
-            <span className="text-xs font-medium text-black dark:text-white">
+            <span className="t-small font-medium text-black dark:text-white">
               {member.status === 'active'
                 ? isPresent
                   ? isAr
@@ -265,7 +265,7 @@ export const MembershipStaffView: React.FC<any> = () => {
       header: isAr ? 'رمز البادج RFID' : isEn ? 'RFID Badge' : 'Badge Tourniquet RFID',
       accessorKey: 'badgeToken',
       cell: (member) => (
-        <span className="font-mono text-xs text-black/70 dark:text-white/75">
+        <span className="tabular-nums t-cap text-black/70 dark:text-white/75">
           {member.badgeToken || member.cardId || '—'}
         </span>
       ),
@@ -275,7 +275,7 @@ export const MembershipStaffView: React.FC<any> = () => {
       header: isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
       accessorKey: 'phoneNumber',
       cell: (member) => (
-        <span className="text-xs text-black/70 dark:text-white/75 tabular-nums font-mono">
+        <span className="t-cap text-black/70 dark:text-white/75 tabular-nums">
           {member.phoneNumber || '—'}
         </span>
       ),
@@ -285,7 +285,7 @@ export const MembershipStaffView: React.FC<any> = () => {
       header: isAr ? 'نوع العقد' : isEn ? 'Contract' : 'Contrat',
       accessorKey: 'contractType',
       cell: (member) => (
-        <span className="text-xs font-bold text-black/70 dark:text-white/75">
+        <span className="t-small font-semibold text-black/70 dark:text-white/75">
           {member.contractType || member.recruitmentType || 'CDI'}
         </span>
       ),
@@ -299,8 +299,8 @@ export const MembershipStaffView: React.FC<any> = () => {
       renderCell: (member) => {
         const b = resolveRecordBranch(member, branchesById, currentBranch, language);
         return (
-          <div className="flex items-center gap-1 text-xs text-black/75 dark:text-white/75 truncate">
-            <MapPin size={12} className="text-[#d4522f] shrink-0" />
+          <div className="flex items-center gap-1 t-cap text-black/75 dark:text-white/75 truncate">
+            <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
             <span className="truncate">{b.name}</span>
           </div>
         );
@@ -311,7 +311,7 @@ export const MembershipStaffView: React.FC<any> = () => {
       header: isAr ? 'الراتب القاعدي' : isEn ? 'Base Salary' : 'Salaire de Base',
       accessorKey: 'salary',
       cell: (member) => (
-        <span className="text-xs font-bold font-mono tabular-nums text-[#d4522f]">
+        <span className="t-small font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
           {member.salary ? `${member.salary.toLocaleString()} DZD` : '—'}
         </span>
       ),

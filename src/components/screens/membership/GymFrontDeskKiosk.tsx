@@ -379,7 +379,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
             <form onSubmit={handleScanSubmit} className="relative space-y-3">
               <label
                 htmlFor="barcodeInput"
-                className="block text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white"
+                className="block t-card font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white"
               >
                 {isRtl
                   ? 'مسح رمز الباركود أو بطاقة RFID أو الاسم'
@@ -402,16 +402,16 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       ? 'امسح الباركود أو ابدأ بالكتابة...'
                       : 'Scanner le badge ou taper le nom/téléphone...'
                   }
-                  className="lbi-field w-full h-full pl-12 pr-28 bg-transparent border-0 text-base font-medium text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 focus:outline-none"
+                  className="lbi-field w-full h-full pl-12 pr-28 bg-transparent border-0 t-card font-medium text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 focus:outline-none"
                   dir="ltr"
                 />
-                <Scan size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#d4522f]" />
+                <Scan size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <button
                   type="submit"
                   data-no-liquid="true"
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-4 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-4 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold transition-colors cursor-pointer"
                 >
                   {isRtl ? 'تحقق' : 'Valider'}
                 </button>
@@ -431,19 +431,19 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                         className="w-full text-left rtl:text-right p-3 hover:bg-[#F3EDE7]/50 dark:hover:bg-[#262422] flex items-center justify-between cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center font-bold text-xs text-[#d4522f]">
+                          <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                             {m.fullName.charAt(0)}
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-black dark:text-white">{m.fullName}</p>
-                            <p className="text-[11px] text-black/62 dark:text-white/65">
+                            <p className="t-small font-semibold text-black dark:text-white">{m.fullName}</p>
+                            <p className="t-cap text-black/62 dark:text-white/65">
                               {m.phoneNumber || m.id} • {m.membershipPlanName || 'Pass'} •{' '}
                               {resolveRecordBranch(m, branchesById, currentBranch, language).name}
                             </p>
                           </div>
                         </div>
                         <span
-                          className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                          className={`t-small font-semibold px-2 py-1 rounded-full ${
                             m.status === 'Active'
                               ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
                               : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400'
@@ -492,11 +492,11 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <h3 className="text-base font-bold text-black dark:text-white">
+                      <h3 className="t-card font-semibold text-black dark:text-white">
                         {lastCheckInResult.member.fullName}
                       </h3>
                       <span
-                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                        className={`t-small font-semibold px-2.5 py-1 rounded-full ${
                           lastCheckInResult.status === 'Granted'
                             ? 'bg-emerald-200/80 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200'
                             : lastCheckInResult.status === 'Warning_Expiring'
@@ -511,12 +511,12 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                           : isRtl ? 'دخول مرفوض' : 'ACCÈS REFUSÉ'}
                       </span>
                     </div>
-                    <p className="text-xs font-medium text-black/75 dark:text-white/80 mt-1">
+                    <p className="t-small font-medium text-black/75 dark:text-white/80 mt-1">
                       {lastCheckInResult.message}
                     </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 pt-3 border-t border-[#E6DED6] dark:border-[#3A3734] text-xs">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 pt-3 border-t border-[#E6DED6] dark:border-[#3A3734] t-cap">
                       <div>
-                        <span className="text-black/62 dark:text-white/65 block text-[11px]">
+                        <span className="text-black/62 dark:text-white/65 block t-cap">
                           {isRtl ? 'الاشتراك' : 'Formule'}
                         </span>
                         <span className="font-semibold text-black dark:text-white">
@@ -524,7 +524,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                         </span>
                       </div>
                       <div>
-                        <span className="text-black/62 dark:text-white/65 block text-[11px]">
+                        <span className="text-black/62 dark:text-white/65 block t-cap">
                           {isRtl ? 'الفرع' : 'Branche'}
                         </span>
                         <span className="font-semibold text-black dark:text-white">
@@ -532,7 +532,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                         </span>
                       </div>
                       <div>
-                        <span className="text-black/62 dark:text-white/65 block text-[11px]">
+                        <span className="text-black/62 dark:text-white/65 block t-cap">
                           {isRtl ? 'الحصص المتبقية' : 'Séances restantes'}
                         </span>
                         <span className="font-semibold text-black dark:text-white tabular-nums">
@@ -551,15 +551,15 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
 
         <ScreenPod className="flex flex-col h-[520px]">
           <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6]/80 dark:border-[#3A3734]">
-            <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white flex items-center gap-2">
-              <Clock size={16} className="text-[#d4522f]" />
+            <h2 className="t-card font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white flex items-center gap-2">
+              <Clock size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>{isRtl ? 'سجل الدخول اللحظي' : 'Journal des Passages Direct'}</span>
             </h2>
-            <span className="text-[11px] text-black/62 dark:text-white/65 font-mono tabular-nums">
+            <span className="t-cap text-black/62 dark:text-white/65 tabular-nums">
               {visibleLogs.length} {isRtl ? 'عمليات' : 'entrées'}
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
+          <div className="flex-1 overflow-y-auto space-y-2 pr-1">
             {visibleLogs.length === 0 ? (
               <div className="h-full flex flex-col justify-center">
                 <KineticEmptyStateMotion motionKey="kiosk-logs-empty">
@@ -583,9 +583,9 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       setDrawerOpenerEl(e.currentTarget);
                       setInspectedLogId(log.id);
                     }}
-                    className="w-full text-left rtl:text-right p-3 bg-white dark:bg-[#262422] [--sq-stroke:rgba(230,222,214,0.8)] dark:[--sq-stroke:#3A3734] hover:[--sq-stroke:rgba(212,82,47,0.5)] flex items-center justify-between text-xs transition-colors cursor-pointer"
+                    className="w-full text-left rtl:text-right p-3 bg-white dark:bg-[#262422] [--sq-stroke:rgba(230,222,214,0.8)] dark:[--sq-stroke:#3A3734] hover:[--sq-stroke:rgba(212,82,47,0.5)] flex items-center justify-between t-cap transition-colors cursor-pointer"
                   >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <span
                       className={`w-2 h-2 rounded-full shrink-0 ${
                         log.accessStatus === 'Granted'
@@ -596,8 +596,8 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       }`}
                     />
                     <div className="min-w-0">
-                      <p className="font-bold text-black dark:text-white truncate">{log.memberName}</p>
-                      <p className="text-[11px] text-black/62 dark:text-white/65 truncate flex items-center gap-1">
+                      <p className="font-semibold text-black dark:text-white truncate">{log.memberName}</p>
+                      <p className="t-cap text-black/62 dark:text-white/65 truncate flex items-center gap-1">
                         <span>{log.planName}</span>
                         <span>·</span>
                         <Building2 size={10} className="inline shrink-0" />
@@ -606,7 +606,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                     </div>
                   </div>
                   <div className="text-right shrink-0 ml-2">
-                    <span className="text-[11px] text-black/62 dark:text-white/65 font-mono tabular-nums block">
+                    <span className="t-cap text-black/62 dark:text-white/65 tabular-nums block">
                       {new Date(log.timestamp).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -614,7 +614,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       })}
                     </span>
                     <span
-                      className={`text-[11px] font-semibold ${
+                      className={`t-small font-semibold ${
                         log.accessStatus === 'Granted'
                           ? 'text-emerald-600 dark:text-emerald-400'
                           : log.accessStatus === 'Warning_Expiring'
@@ -772,19 +772,19 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
               className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] w-full p-6"
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <div
                     data-sq="tile"
                     data-sq-border="none"
-                    className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center shrink-0"
+                    className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0"
                   >
                     <Ticket size={20} />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-black dark:text-white">
+                    <h3 className="t-card font-semibold text-black dark:text-white">
                       {isRtl ? 'إصدار تذكرة حصة منفردة (Pass)' : 'Émission Pass Séance Libre'}
                     </h3>
-                    <p className="text-[11px] text-black/62 dark:text-white/65">
+                    <p className="t-cap text-black/62 dark:text-white/65">
                       {isRtl ? 'تسجيل دخول الزائر غير المشترك' : 'Entrée ponctuelle sans abonnement'}
                     </p>
                   </div>
@@ -799,7 +799,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
               </div>
               <form onSubmit={handleCreateWalkIn} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
+                  <label className="block t-small font-semibold text-black/75 dark:text-white/80 mb-1">
                     {isRtl ? 'اسم الزائر' : 'Nom du visiteur'}
                   </label>
                   <div
@@ -813,12 +813,12 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       value={walkInName}
                       onChange={(e) => setWalkInName(e.target.value)}
                       placeholder={isRtl ? 'محمد بلقاسم' : 'Ex: Karim Benali'}
-                      className="lbi-field w-full h-full px-3 bg-transparent border-0 text-xs font-medium text-black dark:text-white focus:outline-none"
+                      className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-medium text-black dark:text-white focus:outline-none"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
+                  <label className="block t-small font-semibold text-black/75 dark:text-white/80 mb-1">
                     {isRtl ? 'رقم الهاتف (اختياري)' : 'Numéro de téléphone (optionnel)'}
                   </label>
                   <div
@@ -831,13 +831,13 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       value={walkInPhone}
                       onChange={(e) => setWalkInPhone(e.target.value)}
                       placeholder="0550 12 34 56"
-                      className="lbi-field w-full h-full px-3 bg-transparent border-0 text-xs font-medium text-black dark:text-white focus:outline-none"
+                      className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-medium text-black dark:text-white focus:outline-none"
                       dir="ltr"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
+                  <label className="block t-small font-semibold text-black/75 dark:text-white/80 mb-1">
                     {isRtl ? 'مبلغ الحصة (د.ج)' : 'Tarif de la séance (DZD)'}
                   </label>
                   <div className="grid grid-cols-3 gap-2 mb-2">
@@ -849,9 +849,9 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                         data-sq="ctl"
                         data-sq-border="solid"
                         onClick={() => setWalkInAmount(amt)}
-                        className={`py-2 text-xs font-bold font-mono tabular-nums transition-all cursor-pointer ${
+                        className={`py-2 t-small font-semibold tabular-nums transition-all cursor-pointer ${
                           walkInAmount === amt
-                            ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                            ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                             : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
                         }`}
                       >
@@ -869,13 +869,13 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       required
                       value={walkInAmount}
                       onChange={(e) => setWalkInAmount(e.target.value)}
-                      className="lbi-field w-full h-full px-3 bg-transparent border-0 text-xs font-bold font-mono tabular-nums text-black dark:text-white focus:outline-none"
+                      className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-semibold tabular-nums text-black dark:text-white focus:outline-none"
                       dir="ltr"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-black/75 dark:text-white/80 mb-1">
+                  <label className="block t-small font-semibold text-black/75 dark:text-white/80 mb-1">
                     {isRtl ? 'طريقة الدفع' : 'Mode de Paiement'}
                   </label>
                   <div className="grid grid-cols-3 gap-2">
@@ -885,9 +885,9 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       data-sq="ctl"
                       data-sq-border="solid"
                       onClick={() => setWalkInPaymentMethod('cash')}
-                      className={`py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      className={`py-2 px-3 t-small font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                         walkInPaymentMethod === 'cash'
-                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                           : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
                       }`}
                     >
@@ -900,9 +900,9 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       data-sq="ctl"
                       data-sq-border="solid"
                       onClick={() => setWalkInPaymentMethod('baridimob')}
-                      className={`py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      className={`py-2 px-3 t-small font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                         walkInPaymentMethod === 'baridimob'
-                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                           : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
                       }`}
                     >
@@ -914,9 +914,9 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       data-sq="ctl"
                       data-sq-border="solid"
                       onClick={() => setWalkInPaymentMethod('cib')}
-                      className={`py-2.5 px-3 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      className={`py-2 px-3 t-small font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                         walkInPaymentMethod === 'cib'
-                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                           : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
                       }`}
                     >
@@ -932,7 +932,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                     data-sq="ctl"
                     data-sq-border="none"
                     onClick={() => setIsWalkInModalOpen(false)}
-                    className="flex-1 py-2.5 bg-[#F3EDE7] hover:bg-[#E6DED6] dark:bg-[#262422] dark:hover:bg-[#3A3734] text-xs font-semibold text-black/75 dark:text-white/80 transition-colors cursor-pointer"
+                    className="flex-1 py-2 bg-[#F3EDE7] hover:bg-[#E6DED6] dark:bg-[#262422] dark:hover:bg-[#3A3734] t-small font-semibold text-black/75 dark:text-white/80 transition-colors cursor-pointer"
                   >
                     {isRtl ? 'إلغاء' : 'Annuler'}
                   </button>
@@ -941,7 +941,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                     data-no-liquid="true"
                     data-sq="ctl"
                     data-sq-border="none"
-                    className="flex-1 py-2.5 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="flex-1 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
                   >
                     <Printer size={14} />
                     <span>{isRtl ? 'تأكيد وطباعة التذكرة' : 'Valider & Imprimer'}</span>
@@ -968,16 +968,16 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
               >
                 <CheckCircle2 size={24} />
               </div>
-              <h3 className="text-base font-bold text-black dark:text-white mb-1">
+              <h3 className="t-card font-semibold text-black dark:text-white mb-1">
                 {isRtl ? 'تذكرة الحصة جاهزة' : 'Pass Séance Validé'}
               </h3>
-              <p className="text-xs mb-4 font-mono font-bold text-[#d4522f] tabular-nums">
+              <p className="t-small mb-4 tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 {lastPrintedTicket.ticketNumber}
               </p>
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-4 text-xs space-y-2 text-left mb-5"
+                className="bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-4 t-cap space-y-2 text-left mb-5"
               >
                 <div className="flex justify-between">
                   <span className="text-black/62 dark:text-white/65">{isRtl ? 'الزبون' : 'Client'}</span>
@@ -987,19 +987,19 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-black/62 dark:text-white/65">{isRtl ? 'المبلغ' : 'Montant'}</span>
-                  <span className="font-bold font-mono tabular-nums text-black dark:text-white">
+                  <span className="font-semibold tabular-nums text-black dark:text-white">
                     {formatMoney(lastPrintedTicket.amountDzd, 'DZD')}
                   </span>
                 </div>
                 {lastPrintedTicket.timbreFiscalDzd > 0 && (
-                  <div className="flex justify-between text-[11px] text-amber-600 dark:text-amber-400 font-medium tabular-nums">
+                  <div className="flex justify-between t-small text-amber-600 dark:text-amber-400 font-medium tabular-nums">
                     <span>{isRtl ? 'طابع المادة 317' : 'Timbre Art. 317'}</span>
                     <span>+{lastPrintedTicket.timbreFiscalDzd} DA</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 border-t border-[#E6DED6] dark:border-[#3A3734] font-bold">
+                <div className="flex justify-between pt-2 border-t border-[#E6DED6] dark:border-[#3A3734] font-semibold">
                   <span>{isRtl ? 'الإجمالي المقبوض' : 'Total Reçu'}</span>
-                  <span className="text-[#d4522f] font-mono tabular-nums">
+                  <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
                     {formatMoney(lastPrintedTicket.amountDzd + lastPrintedTicket.timbreFiscalDzd, 'DZD')}
                   </span>
                 </div>
@@ -1011,7 +1011,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                   data-sq="ctl"
                   data-sq-border="none"
                   onClick={() => setLastPrintedTicket(null)}
-                  className="flex-1 py-2.5 bg-[#F3EDE7] hover:bg-[#E6DED6] dark:bg-[#262422] dark:hover:bg-[#3A3734] text-xs font-semibold text-black/75 dark:text-white/80 transition-colors cursor-pointer"
+                  className="flex-1 py-2 bg-[#F3EDE7] hover:bg-[#E6DED6] dark:bg-[#262422] dark:hover:bg-[#3A3734] t-small font-semibold text-black/75 dark:text-white/80 transition-colors cursor-pointer"
                 >
                   {isRtl ? 'إغلاق' : 'Fermer'}
                 </button>
@@ -1024,7 +1024,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                     window.print();
                     setLastPrintedTicket(null);
                   }}
-                  className="flex-1 py-2.5 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="flex-1 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
                   <Printer size={14} />
                   <span>{isRtl ? 'طباعة' : 'Imprimer'}</span>

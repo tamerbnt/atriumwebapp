@@ -354,19 +354,19 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         header: isAr ? 'الزبون والتوقيت' : isEn ? 'Client & Time' : 'Client & Créneau',
         sortable: true,
         renderCell: (apt) => (
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <div
               data-sq="tile"
               data-sq-border="none"
-              className="w-9 h-9 bg-[#d4522f]/10 text-[#d4522f] font-bold text-[11px] font-mono flex flex-col items-center justify-center shrink-0"
+              className="w-9 h-9 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small tabular-nums flex flex-col items-center justify-center shrink-0"
             >
               <span>{apt.startTime}</span>
             </div>
             <div className="min-w-0">
-              <span className="text-[13.5px] font-semibold text-black dark:text-white truncate block">
+              <span className="t-label font-semibold text-black dark:text-white truncate block">
                 {apt.clientName}
               </span>
-              <span className="text-[11px] text-black/62 dark:text-white/65 font-mono truncate block">
+              <span className="t-cap text-black/62 dark:text-white/65 tabular-nums truncate block">
                 {apt.clientPhone || `${apt.durationMinutes} min`}
               </span>
             </div>
@@ -379,10 +379,10 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (apt) => (
           <div className="min-w-0">
-            <span className="text-[12.5px] font-semibold text-black dark:text-white truncate block">
+            <span className="t-small font-semibold text-black dark:text-white truncate block">
               {getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}
             </span>
-            <span className="text-[11px] text-black/62 dark:text-white/65 truncate block">
+            <span className="t-cap text-black/62 dark:text-white/65 truncate block">
               {apt.staffName}
             </span>
           </div>
@@ -394,7 +394,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (apt) => (
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold ${
+            className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold ${
               apt.status === 'InChair'
                 ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
                 : apt.status === 'Completed'
@@ -425,10 +425,10 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (apt) => (
           <div className="tabular-nums">
-            <span className="font-mono text-[13px] font-bold text-[#d4522f] block">
+            <span className="tabular-nums t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
               {formatMoney(apt.price)}
             </span>
-            <span className="text-[11px] font-mono text-black/62 dark:text-white/65 block">
+            <span className="t-cap tabular-nums text-black/62 dark:text-white/65 block">
               {apt.durationMinutes} min
             </span>
           </div>
@@ -439,7 +439,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
         sortable: true,
         renderCell: (apt) => (
-          <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+          <span className="t-small font-medium text-black/80 dark:text-white/85 truncate block">
             {resolveRecordBranch(apt, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -540,7 +540,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
             {
               id: 'checkout',
               label: t('salon_quick_checkout', language) || 'Encaisser',
-              icon: <CreditCard className="w-3.5 h-3.5 text-[#d4522f]" />,
+              icon: <CreditCard className="w-3.5 h-3.5 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
               onClick: () => handleOneClickCheckout(apt),
             },
           ]
@@ -636,7 +636,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
               <div
                 data-sq="ctl"
                 data-sq-border="solid"
-                className="flex items-center gap-1 bg-white dark:bg-[#262422] px-1.5 h-10 border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-xs font-semibold"
+                className="flex items-center gap-1 bg-white dark:bg-[#262422] px-2 h-10 border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] t-small font-semibold"
               >
                 <button
                   type="button"
@@ -653,7 +653,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                   data-sq="ctl-sm"
                   data-sq-border="none"
                   onClick={handleToday}
-                  className="px-2 py-1 bg-[#d4522f]/10 text-[#d4522f] font-bold cursor-pointer"
+                  className="px-2 py-1 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold cursor-pointer"
                 >
                   {t('salon_btn_today', language)}
                 </button>
@@ -661,7 +661,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="px-1 text-xs font-semibold bg-transparent text-black dark:text-white border-none focus:outline-none cursor-pointer"
+                  className="px-1 t-small font-semibold bg-transparent text-black dark:text-white border-none focus:outline-none cursor-pointer"
                 />
                 <button
                   type="button"
@@ -706,7 +706,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
               <div className="overflow-x-auto">
                 <div className="min-w-[760px]">
                   <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-[#E6DED6] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422]">
-                    <div className="p-3.5 text-center text-xs font-bold text-black/62 dark:text-white/65 uppercase tracking-wider border-r border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center">
+                    <div className="p-4 text-center t-small font-semibold text-black/62 dark:text-white/65 border-r border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center">
                       <Clock size={14} className="mr-1" />
                       {t('salon_timeline', language)}
                     </div>
@@ -715,26 +715,26 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                       return (
                         <div
                           key={stylist.id}
-                          className={`p-3.5 ${
+                          className={`p-4 ${
                             index < salonStylists.length - 1 ? 'border-r border-[#E6DED6] dark:border-[#3A3734]' : ''
                           }`}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-[#d4522f]/15 text-[#d4522f] font-bold text-xs flex items-center justify-center">
+                              <div className="w-8 h-8 rounded-full bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center">
                                 {stylist.fullName
                                   .split(' ')
                                   .map((n) => n[0])
                                   .join('')}
                               </div>
                               <div>
-                                <p className="text-xs font-bold text-black dark:text-white">{stylist.fullName}</p>
-                                <p className="text-[11px] text-black/62 dark:text-white/65">
+                                <p className="t-small font-semibold text-black dark:text-white">{stylist.fullName}</p>
+                                <p className="t-cap text-black/62 dark:text-white/65">
                                   {stylist.role} · Post {index + 1}
                                 </p>
                               </div>
                             </div>
-                            <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-[#F3EDE7] dark:bg-[#1C1B1A] text-black/75 dark:text-white/80">
+                            <span className="px-2 py-1 t-small font-semibold rounded-full bg-[#F3EDE7] dark:bg-[#1C1B1A] text-black/75 dark:text-white/80">
                               {count} RDV
                             </span>
                           </div>
@@ -748,7 +748,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                         key={time}
                         className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] min-h-[68px]"
                       >
-                        <div className="p-3 text-xs font-mono font-semibold text-black/62 dark:text-white/65 text-center border-r border-[#E6DED6] dark:border-[#3A3734] pt-3">
+                        <div className="p-3 t-small tabular-nums font-semibold text-black/62 dark:text-white/65 text-center border-r border-[#E6DED6] dark:border-[#3A3734] pt-3">
                           {time}
                         </div>
                         {salonStylists.map((stylist, index) => {
@@ -756,7 +756,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                           return (
                             <div
                               key={stylist.id}
-                              className={`p-1.5 relative group ${
+                              className={`p-2 relative group ${
                                 index < salonStylists.length - 1
                                   ? 'border-r border-[#E6DED6]/70 dark:border-[#3A3734]/70'
                                   : ''
@@ -771,7 +771,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                                     setDrawerOpenerEl(e.currentTarget);
                                     setInspectingApt(apt);
                                   }}
-                                  className={`w-full h-full text-left p-2.5 cursor-pointer transition-all border hover:border-[#d4522f] ${
+                                  className={`w-full h-full text-left p-3 cursor-pointer transition-all border hover:border-[#d4522f] ${
                                     apt.status === 'InChair'
                                       ? 'bg-amber-50 dark:bg-amber-950/35 border-amber-300 dark:border-amber-700'
                                       : apt.status === 'Completed'
@@ -780,21 +780,21 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                                   }`}
                                 >
                                   <div className="flex items-center justify-between gap-1 mb-1">
-                                    <span className="text-xs font-bold text-black dark:text-white truncate">
+                                    <span className="t-small font-semibold text-black dark:text-white truncate">
                                       {apt.clientName}
                                     </span>
-                                    <span className="text-[10px] font-bold text-[#d4522f]">
+                                    <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                                       {localizeStatus(apt.status, language)}
                                     </span>
                                   </div>
-                                  <p className="text-[11px] font-medium text-black/70 dark:text-white/75 truncate">
+                                  <p className="t-small font-medium text-black/70 dark:text-white/75 truncate">
                                     {getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}
                                   </p>
-                                  <div className="flex items-center justify-between text-[10px] text-black/62 dark:text-white/65 mt-1 font-mono">
+                                  <div className="flex items-center justify-between t-cap text-black/62 dark:text-white/65 mt-1 tabular-nums">
                                     <span>
                                       {apt.startTime}-{apt.endTime}
                                     </span>
-                                    <span className="font-bold text-[#d4522f]">{formatMoney(apt.price)}</span>
+                                    <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(apt.price)}</span>
                                   </div>
                                 </button>
                               ) : (
@@ -803,7 +803,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                                   data-sq="ctl"
                                   data-sq-border="dashed"
                                   onClick={() => handleOpenAddModal(time, stylist.id)}
-                                  className="w-full h-full min-h-[50px] border border-dashed border-transparent group-hover:border-[#D4C8BC] flex items-center justify-center text-black/55 hover:text-[#d4522f] opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                                  className="w-full h-full min-h-[50px] border border-dashed border-transparent group-hover:border-[#D4C8BC] flex items-center justify-center text-black/55 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                                 >
                                   <Plus size={14} />
                                 </button>

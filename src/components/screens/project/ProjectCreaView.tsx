@@ -372,7 +372,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         renderCell: (bat) => {
           const isPinned = pinnedBatIds.has(bat.id);
           return (
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <img
                 src={bat.previewUrl}
                 alt={bat.title}
@@ -380,11 +380,11 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 className="w-9 h-9 rounded-[var(--r-ctl-sm,10px)] object-cover shrink-0 border border-[#E6DED6] dark:border-neutral-800 bg-neutral-100"
               />
               <div className="min-w-0">
-                <div className="font-semibold text-xs text-black dark:text-white truncate max-w-[190px] flex items-center gap-1">
+                <div className="font-semibold t-small text-black dark:text-white truncate max-w-[190px] flex items-center gap-1">
                   {bat.title}
-                  {isPinned && <Pin className="w-3 h-3 fill-[#d4522f] text-[#d4522f] shrink-0" />}
+                  {isPinned && <Pin className="w-3 h-3 fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />}
                 </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+                <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                   {bat.versionCode} · {bat.fileFormat.toUpperCase()}
                 </div>
               </div>
@@ -399,7 +399,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         minWidth: '180px',
         sortable: true,
         renderCell: (bat) => (
-          <div className="text-xs text-black/70 dark:text-white/75 font-medium truncate max-w-[170px]">
+          <div className="t-small text-black/70 dark:text-white/75 font-medium truncate max-w-[170px]">
             {bat.projectTitle}
           </div>
         ),
@@ -410,9 +410,9 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         width: '1.8*',
         minWidth: '180px',
         renderCell: (bat) => (
-          <div className="flex items-center gap-1.5 text-[11px] font-mono">
+          <div className="flex items-center gap-2 t-cap tabular-nums">
             <span
-              className={`px-1.5 py-0.5 rounded-[var(--r-check,6px)] font-bold ${
+              className={`px-2 py-1 rounded-[var(--r-check,6px)] font-semibold ${
                 bat.colorSpace === 'CMJN'
                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                   : 'bg-red-100 text-red-700'
@@ -436,7 +436,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         renderCell: (bat) => {
           const badge = getBatStatusBadge(bat.approvalStatus, language);
           return (
-            <span className={`inline-flex px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-[11px] font-semibold ${badge.pillClass}`}>
+            <span className={`inline-flex px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-semibold ${badge.pillClass}`}>
               {badge.label}
             </span>
           );
@@ -713,10 +713,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
-                <span className="text-xs font-bold uppercase tracking-wider text-black/70 dark:text-white/75">
+                <span className="t-small font-semibold text-black/70 dark:text-white/75">
                   1. Reçus du Chef de Projet
                 </span>
-                <span className="w-5 h-5 rounded-full bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 font-mono text-xs flex items-center justify-center font-bold">
+                <span className="w-5 h-5 rounded-full bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums t-small flex items-center justify-center font-semibold">
                   {pmPrintOrders.filter((o) => o.status === 'sent_to_crea').length}
                 </span>
               </div>
@@ -727,20 +727,20 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                     key={order.id}
                     data-sq="card"
                     data-sq-border="solid"
-                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2.5"
+                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2"
                   >
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-mono font-bold text-[#d4522f]">
+                    <div className="flex items-center justify-between t-cap">
+                      <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                         {order.orderNumber}
                       </span>
                       <span className="text-black/55 dark:text-white/55">
                         {order.items.length} support(s)
                       </span>
                     </div>
-                    <h4 className="text-xs font-bold text-black dark:text-white">
+                    <h4 className="t-small font-semibold text-black dark:text-white">
                       {order.projectTitle}
                     </h4>
-                    <div className="text-[11px] text-black/55 dark:text-white/55">
+                    <div className="t-cap text-black/55 dark:text-white/55">
                       {order.items.map((i) => i.itemTitle).join(', ')}
                     </div>
                     <AtriumButton
@@ -763,10 +763,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
             <div className="space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-600">
+                <span className="t-small font-semibold text-amber-600">
                   2. En Revue CDP & Client
                 </span>
-                <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 font-mono text-xs flex items-center justify-center font-bold">
+                <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 tabular-nums t-small flex items-center justify-center font-semibold">
                   {pmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length}
                 </span>
               </div>
@@ -778,7 +778,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                     onClick={(e) => handleSelectBat(bat, e.currentTarget)}
                     data-sq="card"
                     data-sq-border="solid"
-                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2.5 cursor-pointer hover:[--sq-stroke:rgba(212,82,47,0.6)] transition-colors"
+                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2 cursor-pointer hover:[--sq-stroke:rgba(212,82,47,0.6)] transition-colors"
                   >
                     <img
                       src={bat.previewUrl}
@@ -788,15 +788,15 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       data-sq-border="none"
                       className="w-full h-28 object-cover bg-neutral-100"
                     />
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-bold text-black dark:text-white truncate">
+                    <div className="flex items-center justify-between t-cap">
+                      <span className="font-semibold text-black dark:text-white truncate">
                         {bat.title}
                       </span>
-                      <span className="font-mono text-black/55 dark:text-white/55">
+                      <span className="tabular-nums text-black/55 dark:text-white/55">
                         {bat.versionCode}
                       </span>
                     </div>
-                    <p className="text-[11px] text-black/55 dark:text-white/55">
+                    <p className="t-cap text-black/55 dark:text-white/55">
                       {bat.projectTitle}
                     </p>
                   </div>
@@ -805,10 +805,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
             <div className="space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+                <span className="t-small font-semibold text-emerald-600">
                   3. BAT Prêt Imprimeur
                 </span>
-                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-xs flex items-center justify-center font-bold">
+                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 tabular-nums t-small flex items-center justify-center font-semibold">
                   {pmBatDeliverables.filter((b) => b.approvalStatus === 'approved').length}
                 </span>
               </div>
@@ -820,7 +820,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                     onClick={(e) => handleSelectBat(bat, e.currentTarget)}
                     data-sq="card"
                     data-sq-border="solid"
-                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:rgba(6,78,59,0.4)] space-y-2.5 cursor-pointer hover:[--sq-stroke:#34d399] transition-colors"
+                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:rgba(6,78,59,0.4)] space-y-2 cursor-pointer hover:[--sq-stroke:#34d399] transition-colors"
                   >
                     <img
                       src={bat.previewUrl}
@@ -830,13 +830,13 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       data-sq-border="none"
                       className="w-full h-28 object-cover bg-neutral-100"
                     />
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-bold text-emerald-700 dark:text-emerald-400 truncate">
+                    <div className="flex items-center justify-between t-cap">
+                      <span className="font-semibold text-emerald-700 dark:text-emerald-400 truncate">
                         {bat.title}
                       </span>
-                      <span className="font-mono text-emerald-600">{bat.versionCode}</span>
+                      <span className="tabular-nums text-emerald-600">{bat.versionCode}</span>
                     </div>
-                    <div className="text-[11px] text-black/55 dark:text-white/55">
+                    <div className="t-cap text-black/55 dark:text-white/55">
                       Conforme CMJN 300 DPI · Prêt pour déblocage imprimeur.
                     </div>
                   </div>
@@ -949,20 +949,20 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-bold text-[#d4522f]">{bat.versionCode}</span>
-                      <span className="font-mono text-black/55 dark:text-white/55">
+                    <div className="flex justify-between items-center t-cap">
+                      <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{bat.versionCode}</span>
+                      <span className="tabular-nums text-black/55 dark:text-white/55">
                         {bat.fileFormat.toUpperCase()}
                       </span>
                     </div>
-                    <h4 className="text-sm font-bold text-black dark:text-white line-clamp-1">
+                    <h4 className="t-label font-semibold text-black dark:text-white line-clamp-1">
                       {bat.title}
                     </h4>
-                    <p className="text-xs text-black/55 dark:text-white/55 line-clamp-1">
+                    <p className="t-cap text-black/55 dark:text-white/55 line-clamp-1">
                       {bat.projectTitle}
                     </p>
                   </div>
-                  <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between text-xs font-mono">
+                  <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between t-cap tabular-nums">
                     <span>
                       {bat.colorSpace} · {bat.resolutionDpi} DPI
                     </span>
@@ -972,7 +972,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                         e.stopPropagation();
                         setSelectedPreviewBat(bat);
                       }}
-                      className="text-[#d4522f] font-semibold hover:underline cursor-pointer"
+                      className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold hover:underline cursor-pointer"
                     >
                       Inspecter →
                     </button>
@@ -1004,10 +1004,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
             className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-3xl mx-auto space-y-6"
           >
             <div>
-              <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
+              <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
                 Dépôt & Conformité Pré-Presse
               </span>
-              <h2 className="text-xl font-bold text-black dark:text-white mt-1">
+              <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
                 Validation Technique des Fichiers Imprimeur
               </h2>
             </div>
@@ -1015,7 +1015,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <div
                 data-sq="ctl"
                 data-sq-border="solid"
-                className="p-4 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold"
+                className="p-4 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 flex items-center gap-3 t-small font-semibold"
               >
                 <CheckCircle className="w-5 h-5 text-emerald-600" />
                 Livrable BAT enregistré et transmis au Chef de Projet !
@@ -1085,13 +1085,13 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <div
                 data-sq="ctl"
                 data-sq-border="solid"
-                className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex items-center justify-between text-xs"
+                className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex items-center justify-between t-cap"
               >
                 <div className="space-y-0.5">
                   <span className="font-semibold text-black dark:text-white">
                     Fond Perdu & Traits de Coupe (+3mm)
                   </span>
-                  <p className="text-[11px] text-black/55 dark:text-white/55">
+                  <p className="t-cap text-black/55 dark:text-white/55">
                     Indispensable pour éviter tout liseré blanc au massicotage.
                   </p>
                 </div>
@@ -1099,7 +1099,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   type="checkbox"
                   checked={hasBleedIncluded}
                   onChange={(e) => setHasBleedIncluded(e.target.checked)}
-                  className="w-4 h-4 rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
+                  className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
                 />
               </div>
               <AtriumButton
@@ -1127,14 +1127,14 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 data-sq-border="solid"
                 className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-3"
               >
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#d4522f] uppercase">{p.clientName}</span>
-                  <span className="font-mono text-black/55 dark:text-white/55">
+                <div className="flex items-center justify-between t-cap">
+                  <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{p.clientName}</span>
+                  <span className="tabular-nums text-black/55 dark:text-white/55">
                     Échéance KV: {p.kvDeadline}
                   </span>
                 </div>
-                <h3 className="text-sm font-bold text-black dark:text-white">{p.title}</h3>
-                <p className="text-xs text-black/70 dark:text-white/75 line-clamp-3">
+                <h3 className="t-label font-semibold text-black dark:text-white">{p.title}</h3>
+                <p className="t-cap text-black/70 dark:text-white/75 line-clamp-3">
                   {p.scopeOfWork}
                 </p>
               </div>
@@ -1265,10 +1265,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-black dark:text-white">
+                  <h3 className="t-label font-semibold text-black dark:text-white">
                     {selectedPreviewBat.title}
                   </h3>
-                  <span className="text-xs text-black/55 dark:text-white/55">
+                  <span className="t-cap text-black/55 dark:text-white/55">
                     {selectedPreviewBat.projectTitle}
                   </span>
                 </div>
@@ -1287,7 +1287,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 referrerPolicy="no-referrer"
                 className="w-full h-80 object-cover rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-800 bg-neutral-100"
               />
-              <div className="flex justify-between items-center text-xs font-mono text-black/55 dark:text-white/55">
+              <div className="flex justify-between items-center t-cap tabular-nums text-black/55 dark:text-white/55">
                 <span>
                   {selectedPreviewBat.colorSpace} · {selectedPreviewBat.resolutionDpi} DPI
                 </span>
@@ -1298,7 +1298,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   type="button"
                   onClick={() => setSelectedPreviewBat(null)}
                   data-sq="ctl"
-                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
                 >
                   Fermer
                 </button>

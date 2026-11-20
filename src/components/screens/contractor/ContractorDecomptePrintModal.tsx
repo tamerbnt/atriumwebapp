@@ -28,12 +28,12 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-6">
 <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 print:hidden">
 <div className="flex items-center gap-2">
-<div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"><FileText size={18} /></div>
+<div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0"><FileText size={18} /></div>
 <div>
-<h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<h3 className="font-semibold t-label text-black dark:text-white">
 {isAr ? "الكشف المالي المؤقت الرسمي (Décret 15-247)" : "Bordereau Officiel de Décompte Provisoire"}
 </h3>
-<p className="text-[11px] text-black/55 dark:text-white/75">
+<p className="t-cap text-black/55 dark:text-white/75">
 {dgp.dgpNumber}
 {" · "}
 {project?.projectName || "Marché BTP"}
@@ -45,23 +45,23 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
 <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 </div>
-<div className="printable-document p-6 border border-neutral-300 dark:border-neutral-700 rounded-[var(--r-card,16px)] bg-white text-black text-xs space-y-6 shadow-xs font-serif">
+<div className="printable-document p-6 border border-neutral-300 dark:border-neutral-700 rounded-[var(--r-card,16px)] bg-white text-black t-cap space-y-6 shadow-xs">
 <div className="text-center space-y-1 border-b border-neutral-300 pb-4">
-<p className="font-bold text-[13px] tracking-wider uppercase font-sans">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</p>
-<p className="text-black/75 text-[11px] font-sans">الجمهورية الجزائرية الديمقراطية الشعبية</p>
-<div className="pt-2 text-[11px] font-sans font-semibold text-black/75">
+<p className="font-semibold t-label font-sans">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</p>
+<p className="text-black/75 t-cap font-sans">الجمهورية الجزائرية الديمقراطية الشعبية</p>
+<div className="pt-2 t-small font-sans font-semibold text-black/75">
 {project?.clientName?.includes("DLEP") || project?.clientName?.includes("OPGI") ? project.clientName : "MINISTÈRE DE L'HABITAT, DE L'URBANISME ET DE LA VILLE"}
 </div>
-<p className="text-[10px] text-black/55 font-sans">DIRECTION DU LOGEMENT ET DES ÉQUIPEMENTS PUBLICS (DLEP)</p>
+<p className="t-cap text-black/55 font-sans">DIRECTION DU LOGEMENT ET DES ÉQUIPEMENTS PUBLICS (DLEP)</p>
 </div>
 <div className="flex items-center justify-between bg-neutral-50 p-3 rounded-[var(--r-ctl,12px)] border border-neutral-200 font-sans">
 <div>
-<span className="text-[10px] uppercase font-bold text-black/55">Document Légal</span>
-<h2 className="text-base font-black text-black font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<span className="t-small font-semibold text-black/55">Document Légal</span>
+<h2 className="t-card font-semibold text-black">
 {"SITUATION DE TRAVAUX N° "}
 {dgp.dgpNumber}
 </h2>
-<p className="text-[11px] text-black/75 font-medium">
+<p className="t-small text-black/75 font-medium">
 {"Période: "}
 {dgp.periodLabel}
 {" · Établie le "}
@@ -69,17 +69,17 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
 </p>
 </div>
 <div className="text-right">
-<span className="inline-flex items-center gap-1 bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+<span className="inline-flex items-center gap-1 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] px-2.5 py-1 rounded-full t-small font-semibold">
 <ShieldCheck size={13} />
 Décret Présidentiel 15-247
 </span>
-<p className="text-[10px] text-black/55 mt-1">CCAG Travaux (Art. 93-100)</p>
+<p className="t-cap text-black/55 mt-1">CCAG Travaux (Art. 93-100)</p>
 </div>
 </div>
-<div className="grid grid-cols-2 gap-4 font-sans text-[11px]">
+<div className="grid grid-cols-2 gap-4 font-sans t-cap">
 <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 space-y-1">
-<span className="text-[10px] font-bold text-black/55 uppercase">Marché & Opération</span>
-<div className="font-bold text-black">{project?.projectName || "Construction Siège"}</div>
+<span className="t-small font-semibold text-black/55">Marché & Opération</span>
+<div className="font-semibold text-black">{project?.projectName || "Construction Siège"}</div>
 <div className="text-black/75">
 {"Code Marché: "}
 {project?.projectCode || "CHANT-2026-08"}
@@ -91,13 +91,13 @@ Décret Présidentiel 15-247
 {project?.wilayaNumber || 16}
 )
 </div>
-<div className="text-black/75 font-mono">
+<div className="text-black/75 tabular-nums">
 {"Montant Initial Marché: "}
 {formatMoney(project?.contractAmountDzd || 0)}
 </div>
 </div>
 <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 space-y-1">
-<span className="text-[10px] font-bold text-black/55 uppercase">Intervenants</span>
+<span className="t-small font-semibold text-black/55">Intervenants</span>
 <div className="text-black">
 <span className="font-semibold">Maître de l'Ouvrage:</span>
 {" "}
@@ -119,10 +119,10 @@ Décret Présidentiel 15-247
 </div>
 </div>
 <div className="space-y-2 font-sans">
-<h4 className="font-bold text-xs uppercase tracking-wide text-black/75">Décompte Financier Contradictoire (Dinar Algérien)</h4>
-<table className="w-full border-collapse border border-neutral-300 text-[11px]">
+<h4 className="font-semibold t-small tracking-wide text-black/75">Décompte Financier Contradictoire (Dinar Algérien)</h4>
+<table className="w-full border-collapse border border-neutral-300 t-cap">
 <thead>
-<tr className="bg-neutral-100 text-black font-bold">
+<tr className="bg-neutral-100 text-black font-semibold">
 <th className="border border-neutral-300 p-2 text-left">Désignation des Éléments de Calcul</th>
 <th className="border border-neutral-300 p-2 text-center w-28">Référence</th>
 <th className="border border-neutral-300 p-2 text-right w-44">Montant (DZD)</th>
@@ -132,42 +132,42 @@ Décret Présidentiel 15-247
 <tr>
 <td className="border border-neutral-300 p-2 font-medium">Cumul général des travaux exécutés à ce jour HT</td>
 <td className="border border-neutral-300 p-2 text-center text-black/55">Total Attachements</td>
-<td className="border border-neutral-300 p-2 text-right font-mono font-bold">{formatMoney((dgp.previousCumulDzd || 0) + (dgp.periodGrossDzd || 0))}</td>
+<td className="border border-neutral-300 p-2 text-right tabular-nums font-semibold">{formatMoney((dgp.previousCumulDzd || 0) + (dgp.periodGrossDzd || 0))}</td>
 </tr>
 <tr>
 <td className="border border-neutral-300 p-2 font-medium text-black/75">À déduire: Situations antérieures déjà certifiées HT</td>
 <td className="border border-neutral-300 p-2 text-center text-black/55">Précédent Cumul</td>
-<td className="border border-neutral-300 p-2 text-right font-mono text-black/75">
+<td className="border border-neutral-300 p-2 text-right tabular-nums text-black/75">
 -
 {formatMoney(dgp.previousCumulDzd || 0)}
 </td>
 </tr>
-<tr className="bg-neutral-50 font-bold">
+<tr className="bg-neutral-50 font-semibold">
 <td className="border border-neutral-300 p-2 text-black">Montant Brut de la présente situation HT</td>
 <td className="border border-neutral-300 p-2 text-center text-black/55">[A]</td>
-<td className="border border-neutral-300 p-2 text-right font-mono text-black">{formatMoney(dgp.periodGrossDzd)}</td>
+<td className="border border-neutral-300 p-2 text-right tabular-nums text-black">{formatMoney(dgp.periodGrossDzd)}</td>
 </tr>
 <tr>
 <td className="border border-neutral-300 p-2">
 <span className="font-medium">Retenue de Garantie (5%)</span>
-{project?.hasBankCautionReplacement ? /* @__PURE__ */ <span className="block text-[10px] text-emerald-600 font-bold">
+{project?.hasBankCautionReplacement ? /* @__PURE__ */ <span className="block t-small text-emerald-600 font-semibold">
 {"(Couverte par Caution Bancaire N° "}
 {project.bankCautionReference || "BNA-2026"}
 )
-</span> : /* @__PURE__ */ <span className="block text-[10px] text-black/55">(Dépôt légal libérable 12 mois après réception provisoire)</span>}
+</span> : /* @__PURE__ */ <span className="block t-cap text-black/55">(Dépôt légal libérable 12 mois après réception provisoire)</span>}
 </td>
 <td className="border border-neutral-300 p-2 text-center text-black/55">Art. 99</td>
-<td className="border border-neutral-300 p-2 text-right font-mono text-amber-700">
+<td className="border border-neutral-300 p-2 text-right tabular-nums text-amber-700">
 {project?.hasBankCautionReplacement ? "0,00 DZD" : `-${formatMoney(dgp.retentionGuaranteeDzd)}`}
 </td>
 </tr>
 <tr>
 <td className="border border-neutral-300 p-2">
 <span className="font-medium">Remboursement d'Avance Forfaitaire</span>
-<span className="block text-[10px] text-black/55">Amortissement contractuel sur acomptes</span>
+<span className="block t-cap text-black/55">Amortissement contractuel sur acomptes</span>
 </td>
 <td className="border border-neutral-300 p-2 text-center text-black/55">Art. 109</td>
-<td className="border border-neutral-300 p-2 text-right font-mono text-black/75">
+<td className="border border-neutral-300 p-2 text-right tabular-nums text-black/75">
 -
 {formatMoney(dgp.advanceAmortizationDzd || 0)}
 </td>
@@ -175,44 +175,44 @@ Décret Présidentiel 15-247
 {dgp.penaltiesDeductedDzd && dgp.penaltiesDeductedDzd > 0 ? /* @__PURE__ */ <tr>
 <td className="border border-neutral-300 p-2 text-rose-700">
 <span className="font-medium">Pénalités de retard (Décret 15-247 Art. 116)</span>
-<span className="block text-[10px] text-rose-600">Plafonnées à 10% maximum du marché</span>
+<span className="block t-cap text-rose-600">Plafonnées à 10% maximum du marché</span>
 </td>
 <td className="border border-neutral-300 p-2 text-center text-black/55">Art. 116</td>
-<td className="border border-neutral-300 p-2 text-right font-mono text-rose-700">
+<td className="border border-neutral-300 p-2 text-right tabular-nums text-rose-700">
 -
 {formatMoney(dgp.penaltiesDeductedDzd)}
 </td>
 </tr> : null}
-<tr className="bg-neutral-50 font-bold">
+<tr className="bg-neutral-50 font-semibold">
 <td className="border border-neutral-300 p-2">Total Net HT à mandater</td>
 <td className="border border-neutral-300 p-2 text-center text-black/55">[B]</td>
-<td className="border border-neutral-300 p-2 text-right font-mono text-black">{formatMoney(dgp.netPayableDzd - (dgp.tvaAmountDzd || 0))}</td>
+<td className="border border-neutral-300 p-2 text-right tabular-nums text-black">{formatMoney(dgp.netPayableDzd - (dgp.tvaAmountDzd || 0))}</td>
 </tr>
 <tr>
 <td className="border border-neutral-300 p-2 font-medium">
 TVA (
 {dgp.tvaPercent || 19}
 %)
-<span className="block text-[10px] text-black/55">
+<span className="block t-cap text-black/55">
 {dgp.tvaPercent === 9 ? "Taux réduit Logement Social" : "Taux normal Travaux BTP"}
 </span>
 </td>
 <td className="border border-neutral-300 p-2 text-center text-black/55">CIDTA</td>
-<td className="border border-neutral-300 p-2 text-right font-mono text-blue-700">
+<td className="border border-neutral-300 p-2 text-right tabular-nums text-blue-700">
 +
 {formatMoney(dgp.tvaAmountDzd || 0)}
 </td>
 </tr>
-<tr className="bg-[#1F1D1B] text-white font-black text-xs">
-<td className="border border-neutral-800 p-2.5 uppercase tracking-wide">Montant Total Net à Mandater TTC</td>
-<td className="border border-neutral-800 p-2.5 text-center text-black/55">NET TTC</td>
-<td className="border border-neutral-800 p-2.5 text-right font-mono text-sm text-[#FB923C]">{formatMoney(dgp.netPayableDzd)}</td>
+<tr className="bg-[#1F1D1B] text-white font-semibold t-small">
+<td className="border border-neutral-800 p-3 tracking-wide">Montant Total Net à Mandater TTC</td>
+<td className="border border-neutral-800 p-3 text-center text-black/55">NET TTC</td>
+<td className="border border-neutral-800 p-3 text-right tabular-nums t-body text-[#FB923C]">{formatMoney(dgp.netPayableDzd)}</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 font-sans space-y-1">
-<span className="text-[10px] font-bold text-black/55 uppercase">Arrêté de la présente situation (En Toutes Lettres)</span>
+<span className="t-small font-semibold text-black/55">Arrêté de la présente situation (En Toutes Lettres)</span>
 <p className="font-semibold text-black italic">
 {"« Arrêtée la présente situation de travaux à la somme nette à mandater de : "}
 {netPayableWords}
@@ -221,16 +221,16 @@ TVA (
 </div>
 <div className="grid grid-cols-3 gap-4 pt-4 border-t border-neutral-300 text-center font-sans">
 <div className="p-2 border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] h-28 flex flex-col justify-between">
-<span className="text-[10px] font-bold text-black/75 uppercase">L'Entrepreneur</span>
-<p className="text-[10px] text-black/55">Signature & Cachet Humide</p>
+<span className="t-small font-semibold text-black/75">L'Entrepreneur</span>
+<p className="t-cap text-black/55">Signature & Cachet Humide</p>
 </div>
 <div className="p-2 border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] h-28 flex flex-col justify-between">
-<span className="text-[10px] font-bold text-black/75 uppercase">Le Maître d'Œuvre (BET)</span>
-<p className="text-[10px] text-black/55">Visa pour vérification et métrés</p>
+<span className="t-small font-semibold text-black/75">Le Maître d'Œuvre (BET)</span>
+<p className="t-cap text-black/55">Visa pour vérification et métrés</p>
 </div>
 <div className="p-2 border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] h-28 flex flex-col justify-between">
-<span className="text-[10px] font-bold text-black/75 uppercase">Le Maître de l'Ouvrage</span>
-<p className="text-[10px] text-black/55">Bon pour mandatement Trésor</p>
+<span className="t-small font-semibold text-black/75">Le Maître de l'Ouvrage</span>
+<p className="t-cap text-black/55">Bon pour mandatement Trésor</p>
 </div>
 </div>
 </div>

@@ -38,11 +38,11 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between bg-[#FBF8F5] dark:bg-neutral-800/50">
           <div className="flex items-center gap-3">
-            <div data-sq="ctl-sm" className="w-8 h-8 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs">
+            <div data-sq="ctl-sm" className="w-8 h-8 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small">
               SFP01
             </div>
             <div>
-              <h3 className="font-semibold text-black dark:text-white text-sm font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h3 className="font-semibold text-black dark:text-white t-label">
                 {t('pm_ccp_modal_title')}
               </h3>
             </div>
@@ -59,7 +59,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             <button
               onClick={onClose}
               data-sq="ctl-sm"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -77,13 +77,13 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             {/* Header Stamp */}
             <div className="flex justify-between items-start border-b-2 border-neutral-800 dark:border-neutral-300 pb-3 mb-4">
               <div>
-                <p className="font-bold text-xs uppercase tracking-wider text-black/75">
+                <p className="font-semibold t-small text-black/75">
                   {t('pm_ccp_republic')}
                 </p>
-                <p className="text-xs font-semibold text-black">
+                <p className="t-small font-semibold text-black">
                   {t('pm_ccp_ministry')}
                 </p>
-                <p className="text-xs font-bold text-[#d4522f] mt-0.5">
+                <p className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] mt-0.5">
                   {t('pm_ccp_operations')}
                 </p>
               </div>
@@ -91,11 +91,11 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
                 <span
                   data-sq="check"
                   data-sq-border="solid"
-                  className="inline-block [--sq-stroke:#262626] dark:[--sq-stroke:#e5e5e5] px-3 py-1 font-mono font-bold text-xs"
+                  className="inline-block [--sq-stroke:#262626] dark:[--sq-stroke:#e5e5e5] px-3 py-1 tabular-nums font-semibold t-small"
                 >
                   SFP 01
                 </span>
-                <p className="text-[10px] text-black/55 mt-1">{t('pm_ccp_edition')}</p>
+                <p className="t-cap text-black/55 mt-1">{t('pm_ccp_edition')}</p>
               </div>
             </div>
 
@@ -106,13 +106,13 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
                 data-sq-border="solid"
                 className="col-span-2 p-3 bg-white dark:bg-neutral-800 [--sq-stroke:#D5CBBF] dark:[--sq-stroke:#404040]"
               >
-                <span className="text-[10px] uppercase font-semibold text-black/55 block">
+                <span className="t-small font-semibold text-black/55 block">
                   {t('pm_ccp_beneficiary_name')}
                 </span>
-                <span className="font-bold text-base text-black block">
+                <span className="font-semibold t-card text-black block">
                   {slip.beneficiaryName}
                 </span>
-                <span className="text-xs text-black/55 block mt-0.5">
+                <span className="t-cap text-black/55 block mt-0.5">
                   {t('pm_compta_wilaya_label')} {slip.wilayaName}
                 </span>
               </div>
@@ -121,10 +121,10 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
                 data-sq-border="solid"
                 className="p-3 bg-white dark:bg-neutral-800 [--sq-stroke:#D5CBBF] dark:[--sq-stroke:#404040] text-right"
               >
-                <span className="text-[10px] uppercase font-semibold text-black/55 block">
+                <span className="t-small font-semibold text-black/55 block">
                   {t('pm_ccp_amount_digits')}
                 </span>
-                <span className="font-mono font-extrabold text-lg text-emerald-700 tabular-nums">
+                <span className="tabular-nums font-semibold t-pod text-emerald-700">
                   {slip.amountDzd.toLocaleString()} DA
                 </span>
               </div>
@@ -137,18 +137,18 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
               className="p-3 bg-white dark:bg-neutral-800 [--sq-stroke:#D5CBBF] dark:[--sq-stroke:#404040] mb-4 flex items-center justify-between"
             >
               <div>
-                <span className="text-[10px] uppercase font-semibold text-black/55 block">
+                <span className="t-small font-semibold text-black/55 block">
                   {t('pm_ccp_account_number')}
                 </span>
-                <span className="font-mono font-black text-xl tracking-widest text-black tabular-nums">
+                <span className="tabular-nums font-semibold t-dialog text-black">
                   {slip.ccpNumber}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] uppercase font-semibold text-black/55 block">
+                <span className="t-small font-semibold text-black/55 block">
                   {t('pm_ccp_key')}
                 </span>
-                <span className="font-mono font-black text-xl text-[#d4522f] tracking-wider tabular-nums">
+                <span className="tabular-nums font-semibold t-dialog text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                   {slip.ccpKey}
                 </span>
               </div>
@@ -160,10 +160,10 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
               data-sq-border="solid"
               className="mb-3 p-3 bg-white/80 dark:bg-neutral-800/80 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
             >
-              <span className="text-[10px] uppercase font-semibold text-black/55 block mb-0.5">
+              <span className="t-small font-semibold text-black/55 block mb-0.5">
                 {t('pm_ccp_words_fr')}
               </span>
-              <p className="font-serif italic text-sm text-black leading-snug">
+              <p className="italic t-body text-black leading-snug">
                 « {slip.amountInWordsFr} »
               </p>
             </div>
@@ -175,33 +175,33 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
               className="mb-4 p-3 bg-white/80 dark:bg-neutral-800/80 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] text-right"
               dir="rtl"
             >
-              <span className="text-[10px] uppercase font-semibold text-black/55 block mb-0.5">
+              <span className="t-small font-semibold text-black/55 block mb-0.5">
                 {t('pm_ccp_words_ar')}
               </span>
-              <p className="font-serif text-sm font-semibold text-black leading-snug">
+              <p className="t-label font-semibold text-black leading-snug">
                 « {slip.amountInWordsAr} »
               </p>
             </div>
 
             {/* Transaction Reference & Signatures */}
-            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-[#D5CBBF] dark:border-neutral-700 text-xs">
+            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-[#D5CBBF] dark:border-neutral-700 t-cap">
               <div>
-                <span className="text-[10px] uppercase text-black/55 block">{t('pm_ccp_purpose')}</span>
+                <span className="t-cap text-black/55 block">{t('pm_ccp_purpose')}</span>
                 <p className="font-medium text-black">{slip.transactionReference}</p>
                 <div className="mt-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-700">
-                  <span className="text-[10px] text-black/55 block">{t('pm_ccp_signature_order')}</span>
-                  <div className="h-12 flex items-center gap-1.5 text-black/55 text-xs italic">
+                  <span className="t-cap text-black/55 block">{t('pm_ccp_signature_order')}</span>
+                  <div className="h-12 flex items-center gap-2 text-black/55 t-cap italic">
                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
                     <span>{t('pm_ccp_signed_dg')}</span>
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] uppercase text-black/55 block">{t('pm_ccp_postal_reserved')}</span>
+                <span className="t-cap text-black/55 block">{t('pm_ccp_postal_reserved')}</span>
                 <div
                   data-sq="ctl-sm"
                   data-sq-border="solid"
-                  className="h-24 [--sq-stroke:#D5CBBF] dark:[--sq-stroke:#404040] bg-white/50 dark:bg-neutral-900/50 flex items-center justify-center text-[10px] text-black/55 mt-1"
+                  className="h-24 [--sq-stroke:#D5CBBF] dark:[--sq-stroke:#404040] bg-white/50 dark:bg-neutral-900/50 flex items-center justify-center t-cap text-black/55 mt-1"
                 >
                   {t('pm_ccp_post_stamp_box')}
                 </div>
@@ -212,14 +212,14 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between text-xs text-black/55 dark:text-white/55 bg-[#FBF8F5] dark:bg-neutral-800/50">
+        <div className="px-6 py-3 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between t-cap text-black/55 dark:text-white/55 bg-[#FBF8F5] dark:bg-neutral-800/50">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
             <span>{t('pm_ccp_compliance_footer')}</span>
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 text-xs font-medium text-black/70 hover:text-black dark:text-white/75 dark:hover:text-white transition-colors"
+            className="px-4 py-2 t-small font-medium text-black/70 hover:text-black dark:text-white/75 dark:hover:text-white transition-colors"
           >
             {t('common_close')}
           </button>

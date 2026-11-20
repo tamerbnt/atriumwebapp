@@ -50,7 +50,7 @@ export const UndoToast: React.FC<UndoToastProps> = ({
     <div
       role="status"
       aria-live="polite"
-      className={`toast fixed left-[116px] bottom-[26px] flex items-center gap-3.5 h-[50px] pl-5 pr-2.5 rounded-full bg-[#1F1D1B] text-[#F4EDE6] z-[65] font-medium text-[13px] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-white/[0.1] ${className}`}
+      className={`toast fixed left-[116px] bottom-[26px] flex items-center gap-4 h-[50px] pl-5 pr-2.5 rounded-full bg-[#1F1D1B] text-[#F4EDE6] z-[65] font-medium t-label shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-white/[0.1] ${className}`}
       style={{
         opacity,
         transform,
@@ -62,7 +62,7 @@ export const UndoToast: React.FC<UndoToastProps> = ({
         <button
           type="button"
           onClick={onUndo}
-          className="h-8 px-3.5 border-0 rounded-full bg-[#d4522f] hover:bg-[#b03b1b] text-white font-semibold text-[12px] transition-colors cursor-pointer shrink-0"
+          className="h-8 px-4 border-0 rounded-full bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white font-semibold t-small transition-colors cursor-pointer shrink-0"
         >
           Annuler
         </button>

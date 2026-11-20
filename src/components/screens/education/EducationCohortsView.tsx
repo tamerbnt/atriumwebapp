@@ -386,7 +386,7 @@ export const EducationCohortsView: React.FC = () => {
             {
               id: 'start',
               label: isAr ? 'تفعيل الفوج' : isEn ? 'Start Cycle' : 'Lancer Cycle',
-              icon: <Play className="w-3.5 h-3.5 text-[#d4522f]" />,
+              icon: <Play className="w-3.5 h-3.5 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />,
               onClick: () => updateEduCohort(cohort.id, { status: 'InProgress' }),
             },
           ]
@@ -416,13 +416,13 @@ export const EducationCohortsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
             >
               <BookOpen size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-bold text-black dark:text-white truncate">{cohort.name}</div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 truncate">{cohort.courseTitle}</div>
+              <div className="font-semibold text-black dark:text-white truncate">{cohort.name}</div>
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">{cohort.courseTitle}</div>
             </div>
           </div>
         ),
@@ -435,7 +435,7 @@ export const EducationCohortsView: React.FC = () => {
         renderCell: (cohort) => {
           const b = resolveRecordBranch(cohort, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -447,9 +447,9 @@ export const EducationCohortsView: React.FC = () => {
         header: isAr ? 'الأستاذ والمدرّج' : isEn ? 'Instructor & Room' : 'Formateur & Salle',
         minWidth: '165px',
         renderCell: (cohort) => (
-          <div className="space-y-0.5 text-xs">
+          <div className="space-y-0.5 t-cap">
             <div className="font-medium text-black dark:text-white truncate">{cohort.instructorName}</div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate">
               {cohort.classroomName || 'Room 1'}
             </div>
           </div>
@@ -463,12 +463,12 @@ export const EducationCohortsView: React.FC = () => {
         renderCell: (cohort) => {
           const pct = Math.min(100, Math.round((cohort.enrolledCount / Math.max(1, cohort.maxStudents)) * 100));
           return (
-            <div className="space-y-1 text-xs">
-              <div className="flex items-center justify-between text-[11px]">
+            <div className="space-y-1 t-cap">
+              <div className="flex items-center justify-between t-cap">
                 <span className="font-semibold text-black/70 dark:text-white/75 tabular-nums">
                   {cohort.enrolledCount} / {cohort.maxStudents}
                 </span>
-                <span className="font-bold text-[#d4522f] tabular-nums">{pct}%</span>
+                <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">{pct}%</span>
               </div>
               <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                 <div className="h-full bg-[#d4522f] rounded-full transition-all" style={{ width: `${pct}%` }} />
@@ -483,7 +483,7 @@ export const EducationCohortsView: React.FC = () => {
         width: '125px',
         sortable: true,
         renderCell: (cohort) => (
-          <span className="font-bold text-black dark:text-white tabular-nums">{formatMoney(cohort.tuitionFee)}</span>
+          <span className="font-semibold text-black dark:text-white tabular-nums">{formatMoney(cohort.tuitionFee)}</span>
         ),
       },
       {
@@ -496,7 +496,7 @@ export const EducationCohortsView: React.FC = () => {
           const isCompleted = cohort.status === 'Completed';
           return (
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+              className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold ${
                 isEnrolling
                   ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
                   : isRunning
@@ -801,13 +801,13 @@ export const EducationCohortsView: React.FC = () => {
                         </span>
                         <div className="min-w-0">
                           <span
-                            className={`font-semibold text-[13px] block ${
+                            className={`font-semibold t-label block ${
                               milestone.completed ? 'text-black/55 dark:text-white/75 line-through' : 'text-black dark:text-white'
                             }`}
                           >
                             {milestone.title}
                           </span>
-                          <span className="text-[11px] text-black/55 dark:text-white/55">
+                          <span className="t-cap text-black/55 dark:text-white/55">
                             {milestone.completed ? 'Milestone Cleared' : 'In Progress'}
                           </span>
                         </div>
@@ -949,7 +949,7 @@ export const EducationCohortsView: React.FC = () => {
               className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
             >
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_modal_add_cohort')}
               </h2>
               <button
@@ -961,7 +961,7 @@ export const EducationCohortsView: React.FC = () => {
                 <X size={16} />
               </button>
             </div>
-            <form onSubmit={handleCreateCohort} className="space-y-3.5 pt-4 text-xs">
+            <form onSubmit={handleCreateCohort} className="space-y-4 pt-4 t-cap">
               <LabelSelect
                 field="CourseCurriculum"
                 label={t('edu_field_course_title')}
@@ -1080,7 +1080,7 @@ export const EducationCohortsView: React.FC = () => {
                   type="submit"
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="px-5 py-2 bg-[#d4522f] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {t('edu_btn_save_cohort')}
                 </button>

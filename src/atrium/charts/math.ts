@@ -54,7 +54,8 @@ export function formatChartValue(
       minimumFractionDigits: 0,
       maximumFractionDigits: frac,
     }).format(abs);
-    return `${sign}${num}%`;
+    const sep = locale === 'fr' ? '\u00A0' : '';
+    return `${sign}${num}${sep}%`;
   }
 
   if (format === 'duration') {
@@ -64,17 +65,18 @@ export function formatChartValue(
       const m = mins % 60;
       return `${sign}${h}h${m > 0 ? String(m).padStart(2, '0') : ''}`;
     }
-    return `${sign}${mins} min`;
+    return `${sign}${mins}\u00A0min`;
   }
 
   let formattedNumber: string;
   if (abs >= compactAbove) {
+    const sp = locale === 'fr' ? '\u00A0' : ' ';
     if (abs >= 1_000_000_000) {
-      formattedNumber = `${getFormatter(tag, { maximumFractionDigits: 1 }).format(abs / 1_000_000_000)} Md`;
+      formattedNumber = `${getFormatter(tag, { maximumFractionDigits: 1 }).format(abs / 1_000_000_000)}${sp}Md`;
     } else if (abs >= 1_000_000) {
-      formattedNumber = `${getFormatter(tag, { maximumFractionDigits: 1 }).format(abs / 1_000_000)} M`;
+      formattedNumber = `${getFormatter(tag, { maximumFractionDigits: 1 }).format(abs / 1_000_000)}${sp}M`;
     } else {
-      formattedNumber = `${getFormatter(tag, { maximumFractionDigits: 1 }).format(abs / 1_000)} k`;
+      formattedNumber = `${getFormatter(tag, { maximumFractionDigits: 1 }).format(abs / 1_000)}${sp}k`;
     }
   } else {
     const frac = maximumFractionDigits ?? (abs < 10 && abs % 1 !== 0 ? 1 : 0);
@@ -84,10 +86,11 @@ export function formatChartValue(
     }).format(abs);
   }
 
+  const unitSep = locale === 'fr' ? '\u00A0' : ' ';
   const suffix = unit
-    ? ` ${unit}`
+    ? `${unitSep}${unit}`
     : format === 'currency'
-      ? ` ${currency}`
+      ? `${unitSep}${currency}`
       : '';
 
   return `${sign}${formattedNumber}${suffix}`;

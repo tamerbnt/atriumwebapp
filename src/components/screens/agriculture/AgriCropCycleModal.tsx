@@ -136,12 +136,12 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
               <div
                 data-sq="tile"
                 data-sq-border="none"
-                className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"
+                className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0"
               >
                 <Sprout size={20} />
               </div>
               <div>
-                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <h2 className="t-card font-semibold text-black dark:text-white">
                   {cycleToEdit
                     ? (isAr ? 'تعديل دورة المحصول الفلاحي' : 'Modifier le Cycle de Culture')
                     : (isAr ? 'فتح دورة محصول وموسم فلاحي جديد' : 'Nouveau Cycle de Culture & Assolement')}
@@ -152,7 +152,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
               type="button"
               aria-label={isAr ? 'إغلاق' : 'Fermer'}
               onClick={onClose}
-              className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+              className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
             >
               <X size={18} />
             </button>
@@ -242,9 +242,9 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 space-y-3 border border-neutral-100 dark:border-neutral-800"
+            className="p-4 bg-neutral-50 dark:bg-neutral-800/40 space-y-3 border border-neutral-100 dark:border-neutral-800"
           >
-            <span className="text-xs font-bold text-black dark:text-white">
+            <span className="t-small font-semibold text-black dark:text-white">
               {isAr ? 'أهداف الإنتاج والتكاليف التقديرية' : 'Objectifs de Rendement & Budget'}
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

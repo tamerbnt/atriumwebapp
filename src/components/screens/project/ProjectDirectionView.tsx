@@ -702,16 +702,16 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
           const isPinned = pinnedProjectIds.has(proj.id);
           return (
             <div className="flex items-center gap-3">
-              <div data-sq="ctl" className="w-9 h-9 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0">
+              <div data-sq="ctl" className="w-9 h-9 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0">
                 {proj.title.substring(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0">
-                <div className="font-semibold text-black dark:text-white text-xs truncate max-w-[200px] flex items-center gap-1">
+                <div className="font-semibold text-black dark:text-white t-small truncate max-w-[200px] flex items-center gap-1">
                   {proj.title}
-                  {isPinned && <Pin className="w-3 h-3 fill-[#d4522f] text-[#d4522f] shrink-0" />}
+                  {isPinned && <Pin className="w-3 h-3 fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />}
                 </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
-                  {proj.clientName} · <span className="font-mono text-[10px]">{proj.id.slice(0, 8)}</span>
+                <div className="t-cap text-black/55 dark:text-white/55 truncate">
+                  {proj.clientName} · <span className="tabular-nums t-cap">{proj.id.slice(0, 8)}</span>
                 </div>
               </div>
             </div>
@@ -726,7 +726,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         sortable: true,
         align: 'right',
         renderCell: (proj) => (
-          <div className="font-mono text-xs font-semibold text-black dark:text-white tabular-nums">
+          <div className="tabular-nums t-small font-semibold text-black dark:text-white">
             {formatMoney(proj.budgetCapDzd, 'DZD')}
           </div>
         ),
@@ -739,7 +739,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         sortable: true,
         align: 'center',
         renderCell: (proj) => (
-          <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-[var(--r-check,6px)]">
+          <span className="tabular-nums t-small font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-[var(--r-check,6px)]">
             {proj.targetGrossMarginPercent}%
           </span>
         ),
@@ -751,7 +751,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         minWidth: '160px',
         sortable: true,
         renderCell: (proj) => (
-          <div className="text-xs text-black/70 dark:text-white/75 font-mono">
+          <div className="t-cap text-black/70 dark:text-white/75 tabular-nums">
             {proj.startDate} <span className="text-black/45 dark:text-white/45">→</span> {proj.endDate}
           </div>
         ),
@@ -762,7 +762,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         width: '1.5*',
         minWidth: '170px',
         renderCell: (proj) => (
-          <div className="text-[11px] text-black/70 dark:text-white/75 space-y-0.5">
+          <div className="t-cap text-black/70 dark:text-white/75 space-y-0.5">
             <div>
               <span className="text-black/55 dark:text-white/55 font-medium">CDP:</span>{' '}
               {proj.projectManagerName}
@@ -784,7 +784,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         renderCell: (proj) => {
           const badge = getProjectStatusBadge(proj.status, language);
           return (
-            <span className={`inline-flex px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-[11px] font-semibold ${badge.pillClass}`}>
+            <span className={`inline-flex px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-semibold ${badge.pillClass}`}>
               {badge.label}
             </span>
           );
@@ -1057,9 +1057,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               key={tab.id}
               type="button"
               onClick={() => setActivePmSubScreen(tab.id)}
-              className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
+              className={`flex items-center gap-2 py-2 px-4 border-b-2 font-medium t-small whitespace-nowrap transition-colors cursor-pointer ${
                 isActive
-                  ? 'border-[#d4522f] text-[#d4522f]'
+                  ? 'border-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                   : 'border-transparent text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white'
               }`}
             >
@@ -1067,7 +1067,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
                 <span
-                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                  className={`px-2 py-1 rounded-full t-small tabular-nums font-semibold ${
                     tab.id === 'approvals'
                       ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300'
                       : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75'
@@ -1524,34 +1524,34 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 <div className="flex flex-col justify-between h-full space-y-4">
                   <div className="space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-[11px] font-bold text-[#d4522f] uppercase tracking-wider truncate">
+                      <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] truncate">
                         {proj.clientName}
                       </span>
-                      <span className="font-mono text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-[var(--r-check,6px)]">
+                      <span className="tabular-nums t-small font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-[var(--r-check,6px)]">
                         {proj.targetGrossMarginPercent}%
                       </span>
                     </div>
-                    <h3 className="text-base font-bold text-black dark:text-white line-clamp-1">
+                    <h3 className="t-card font-semibold text-black dark:text-white line-clamp-1">
                       {proj.title}
                     </h3>
-                    <p className="text-xs text-black/55 dark:text-white/55 line-clamp-2">
+                    <p className="t-cap text-black/55 dark:text-white/55 line-clamp-2">
                       {proj.scopeOfWork}
                     </p>
                   </div>
-                  <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 space-y-2 text-xs">
+                  <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 space-y-2 t-cap">
                     <div className="flex justify-between items-center">
                       <span className="text-black/55 dark:text-white/55">Plafond Budget:</span>
-                      <span className="font-mono font-bold text-black dark:text-white tabular-nums">
+                      <span className="tabular-nums font-semibold text-black dark:text-white">
                         {formatMoney(proj.budgetCapDzd, 'DZD')}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-black/55 dark:text-white/55">Plafond Terrain:</span>
-                      <span className="font-mono text-black/70 dark:text-white/75 tabular-nums">
+                      <span className="tabular-nums text-black/70 dark:text-white/75">
                         {formatMoney(proj.maxFieldExpensesDzd, 'DZD')}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-[11px] text-black/55 dark:text-white/55">
+                    <div className="flex justify-between items-center t-cap text-black/55 dark:text-white/55">
                       <span>CDP: {proj.projectManagerName.split(' ')[0]}</span>
                       <span>Créa: {proj.leadCreativeName.split(' ')[0]}</span>
                     </div>
@@ -1804,7 +1804,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
                   <InspectorSection index={3} title="Cahier des charges & Directives">
                     <InspectorCard className="mb-3">
-                      <p className="text-xs text-black/75 dark:text-white/80 py-2 leading-relaxed">
+                      <p className="t-cap text-black/75 dark:text-white/80 py-2 leading-relaxed">
                         {proj.scopeOfWork}
                       </p>
                     </InspectorCard>
@@ -1832,10 +1832,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
             className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] max-w-4xl mx-auto space-y-6"
           >
             <div>
-              <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">
+              <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
                 {t('pm_dir_screen_new_badge')}
               </span>
-              <h2 className="text-xl font-bold text-black dark:text-white mt-1">
+              <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
                 {t('pm_dir_screen_new_title')}
               </h2>
             </div>
@@ -1843,7 +1843,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               <div
                 data-sq="ctl"
                 data-sq-border="solid"
-                className="p-4 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold animate-in fade-in"
+                className="p-4 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 flex items-center gap-3 t-small font-semibold animate-in fade-in"
               >
                 <CheckCircle className="w-5 h-5 text-emerald-600" />
                 {t('pm_dir_screen_new_success')}
@@ -1909,7 +1909,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   corner={14}
                 />
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1">
+                  <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">
                     {t('pm_dir_field_scope')}
                   </label>
                   <textarea
@@ -1918,7 +1918,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                     placeholder={t('pm_dir_field_scope_ph')}
                     value={newProjectScope}
                     onChange={(e) => setNewProjectScope(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+                    className="w-full px-4 py-2 t-cap rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                   />
                 </div>
                 <LabelInput
@@ -1977,7 +1977,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                     setNewProjectTitle('');
                     setNewProjectScope('');
                   }}
-                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer"
                 >
                   Réinitialiser
                 </button>
@@ -1998,10 +1998,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
             className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
           >
             <div>
-              <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">
+              <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
                 {t('pm_dir_approvals_badge')}
               </span>
-              <h2 className="text-xl font-bold text-black dark:text-white mt-0.5">
+              <h2 className="t-dialog font-semibold text-black dark:text-white mt-0.5">
                 {t('pm_dir_approvals_title')}
               </h2>
             </div>
@@ -2013,7 +2013,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 openWidth={260}
                 shutSize={38}
               />
-              <div data-sq="ctl" className="flex items-center gap-1.5 p-1 bg-[#F3EDE7] dark:bg-neutral-800 text-xs">
+              <div data-sq="ctl" className="flex items-center gap-2 p-1 bg-[#F3EDE7] dark:bg-neutral-800 t-cap">
                 {(
                   [
                     { id: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous' },
@@ -2026,7 +2026,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                     type="button"
                     onClick={() => setApprovalsTab(item.id)}
                     data-sq="ctl-sm"
-                    className={`px-3 py-1.5 font-semibold transition-colors cursor-pointer ${
+                    className={`px-3 py-2 font-semibold transition-colors cursor-pointer ${
                       approvalsTab === item.id
                         ? 'bg-white dark:bg-neutral-700 text-black dark:text-white'
                         : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
@@ -2041,7 +2041,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
           {(approvalsTab === 'all' || approvalsTab === 'payroll') && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs font-bold text-black/70 dark:text-white/75 px-1">
+              <div className="flex items-center justify-between t-small font-semibold text-black/70 dark:text-white/75 px-1">
                 <span>Lots de Paie Terrain en Attente de Déblocage</span>
                 {pendingPayrollBatches.length > 0 && (
                   <button
@@ -2049,7 +2049,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                     onClick={() =>
                       batchApprovePmPayrollBatches(pendingPayrollBatches.map((b) => b.id))
                     }
-                    className="text-xs text-emerald-600 font-semibold hover:underline cursor-pointer"
+                    className="t-small text-emerald-600 font-semibold hover:underline cursor-pointer"
                   >
                     Valider tous les lots de paie ({pendingPayrollBatches.length})
                   </button>
@@ -2074,28 +2074,28 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
+                        <span className="px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
                           Lot de Paie
                         </span>
-                        <span className="font-mono text-xs font-semibold text-black dark:text-white">
+                        <span className="tabular-nums t-small font-semibold text-black dark:text-white">
                           {batch.batchNumber}
                         </span>
                         <span className="text-black/55 dark:text-white/55">·</span>
-                        <span className="text-xs text-black/70 dark:text-white/75 font-medium">
+                        <span className="t-small text-black/70 dark:text-white/75 font-medium">
                           {batch.projectTitle}
                         </span>
                       </div>
-                      <p className="text-xs text-black/55 dark:text-white/55">
-                        Mission <span className="font-mono font-semibold">{batch.missionCode}</span> ·{' '}
+                      <p className="t-cap text-black/55 dark:text-white/55">
+                        Mission <span className="tabular-nums font-semibold">{batch.missionCode}</span> ·{' '}
                         {batch.totalBeneficiaries} animateurs pointés et vérifiés par le Superviseur.
                       </p>
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
                       <div className="text-right">
-                        <span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">
+                        <span className="t-small text-black/55 dark:text-white/55 block font-medium">
                           {t('common_amount')}
                         </span>
-                        <span className="font-bold text-lg text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                        <span className="font-semibold t-pod text-black dark:text-white tabular-nums">
                           {formatMoney(batch.totalAmountDzd, 'DZD')}
                         </span>
                       </div>
@@ -2103,7 +2103,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                         type="button"
                         onClick={() => approvePmPayrollBatch(batch.id)}
                         data-sq="ctl"
-                        className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-1.5 cursor-pointer"
+                        className="px-4 py-2 t-small font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-2 cursor-pointer"
                       >
                         <CheckCircle className="w-4 h-4" />
                         {t('pm_dir_btn_validate_ccp')}
@@ -2117,13 +2117,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
           {(approvalsTab === 'all' || approvalsTab === 'expenses') && (
             <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between text-xs font-bold text-black/70 dark:text-white/75 px-1">
+              <div className="flex items-center justify-between t-small font-semibold text-black/70 dark:text-white/75 px-1">
                 <span>Achats & Notes de Frais Terrain Déclarés</span>
                 {pendingExpenses.length > 0 && (
                   <button
                     type="button"
                     onClick={() => batchApprovePmExpenses(pendingExpenses.map((e) => e.id))}
-                    className="text-xs text-emerald-600 font-semibold hover:underline cursor-pointer"
+                    className="t-small text-emerald-600 font-semibold hover:underline cursor-pointer"
                   >
                     Valider toutes les notes de frais ({pendingExpenses.length})
                   </button>
@@ -2148,19 +2148,19 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                        <span className="px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
                           {expense.category}
                         </span>
-                        <span className="text-xs font-semibold text-black dark:text-white">
+                        <span className="t-small font-semibold text-black dark:text-white">
                           {expense.title}
                         </span>
                         {expense.hasFiscalInvoice && (
-                          <span className="px-1.5 py-0.5 rounded-[var(--r-check,6px)] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
+                          <span className="px-2 py-1 rounded-[var(--r-check,6px)] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 t-small font-semibold">
                             Facture Fiscale
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-black/55 dark:text-white/55">
+                      <p className="t-cap text-black/55 dark:text-white/55">
                         Déclaré par {expense.declaredByUserName} ({expense.declaredByRole}) ·{' '}
                         {expense.projectTitle}
                       </p>
@@ -2172,17 +2172,17 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                           onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)}
                           data-sq="ctl"
                           data-sq-border="solid"
-                          className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 transition-colors flex items-center gap-1.5 cursor-pointer"
+                          className="px-3 py-2 t-cap text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 transition-colors flex items-center gap-2 cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           Justificatif
                         </button>
                       )}
                       <div className="text-right">
-                        <span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">
+                        <span className="t-small text-black/55 dark:text-white/55 block font-medium">
                           {t('common_amount')}
                         </span>
-                        <span className="font-bold text-base text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                        <span className="font-semibold t-card text-black dark:text-white tabular-nums">
                           {formatMoney(expense.amountDzd, 'DZD')}
                         </span>
                       </div>
@@ -2190,7 +2190,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                         type="button"
                         onClick={() => approvePmExpense(expense.id)}
                         data-sq="ctl"
-                        className="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-1 cursor-pointer"
+                        className="px-4 py-2 t-small font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-1 cursor-pointer"
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
                         Valider
@@ -2200,7 +2200,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                         onClick={() => setRejectionModalId(expense.id)}
                         data-sq="ctl"
                         data-sq-border="solid"
-                        className="px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 [--sq-stroke:#fecaca] dark:[--sq-stroke:#991b1b] transition-colors cursor-pointer"
+                        className="px-3 py-2 t-small font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 [--sq-stroke:#fecaca] dark:[--sq-stroke:#991b1b] transition-colors cursor-pointer"
                       >
                         Refuser
                       </button>
@@ -2222,10 +2222,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
+                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
                   Rapports d'Activité & Marges
                 </span>
-                <h2 className="text-xl font-bold text-black dark:text-white">
+                <h2 className="t-dialog font-semibold text-black dark:text-white">
                   Audit Financier Consolidé — Année 2026
                 </h2>
               </div>
@@ -2248,13 +2248,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 data-sq-border="solid"
                 className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
               >
-                <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">
+                <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
                   {t('pm_dir_kpi_cumul_ca')}
                 </span>
-                <div className="text-2xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <div className="t-dialog font-semibold text-black dark:text-white tabular-nums">
                   58,4 M DA
                 </div>
-                <span className="text-[11px] text-emerald-600 font-semibold">
+                <span className="t-small text-emerald-600 font-semibold">
                   {t('pm_dir_vs_2025')}
                 </span>
               </div>
@@ -2263,13 +2263,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 data-sq-border="solid"
                 className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
               >
-                <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">
+                <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
                   {t('pm_dir_kpi_avg_margin')}
                 </span>
-                <div className="text-2xl font-bold text-emerald-600 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <div className="t-dialog font-semibold text-emerald-600 tabular-nums">
                   31,4 %
                 </div>
-                <span className="text-[11px] text-black/55 dark:text-white/55">
+                <span className="t-cap text-black/55 dark:text-white/55">
                   {t('pm_dir_target_objective')}
                 </span>
               </div>
@@ -2278,13 +2278,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 data-sq-border="solid"
                 className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
               >
-                <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">
+                <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
                   {t('pm_dir_kpi_closed_missions')}
                 </span>
-                <div className="text-2xl font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <div className="t-dialog font-semibold text-black dark:text-white tabular-nums">
                   48
                 </div>
-                <span className="text-[11px] text-black/55 dark:text-white/55">
+                <span className="t-cap text-black/55 dark:text-white/55">
                   {t('pm_dir_coverage_wilayas')}
                 </span>
               </div>
@@ -2293,13 +2293,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 data-sq-border="solid"
                 className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
               >
-                <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">
+                <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
                   {t('pm_dir_kpi_attendance_rate')}
                 </span>
-                <div className="text-2xl font-bold text-blue-600 tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <div className="t-dialog font-semibold text-blue-600 tabular-nums">
                   98,2 %
                 </div>
-                <span className="text-[11px] text-black/55 dark:text-white/55">
+                <span className="t-cap text-black/55 dark:text-white/55">
                   {t('pm_dir_rating_avg')}
                 </span>
               </div>
@@ -2312,9 +2312,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               data-sq-border="solid"
               className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
             >
-              <h3 className="text-sm font-semibold text-black dark:text-white flex items-center justify-between">
+              <h3 className="t-label font-semibold text-black dark:text-white flex items-center justify-between">
                 <span>{t('pm_dir_client_profitability')}</span>
-                <span className="text-xs text-black/55 dark:text-white/55 font-normal">
+                <span className="t-cap text-black/55 dark:text-white/55 font-normal">
                   {t('pm_dir_turnover_share')}
                 </span>
               </h3>
@@ -2325,10 +2325,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   { name: t('pm_dir_client_cevital'), ca: '10,5 M DA', pct: 18, margin: '34%', color: 'bg-emerald-500' },
                   { name: t('pm_dir_client_others'), ca: '7,1 M DA', pct: 12, margin: '28%', color: 'bg-amber-500' },
                 ].map((cli) => (
-                  <div key={cli.name} className="space-y-1 text-xs">
+                  <div key={cli.name} className="space-y-1 t-cap">
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-black dark:text-white">{cli.name}</span>
-                      <span className="font-mono text-black/55 dark:text-white/55">
+                      <span className="tabular-nums text-black/55 dark:text-white/55">
                         {cli.ca} · Marge {cli.margin}
                       </span>
                     </div>
@@ -2345,9 +2345,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               data-sq-border="solid"
               className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
             >
-              <h3 className="text-sm font-semibold text-black dark:text-white flex items-center justify-between">
+              <h3 className="t-label font-semibold text-black dark:text-white flex items-center justify-between">
                 <span>Ventilation des Dépenses par Poste</span>
-                <span className="text-xs text-black/55 dark:text-white/55 font-normal">
+                <span className="t-cap text-black/55 dark:text-white/55 font-normal">
                   Terrain & Logistique
                 </span>
               </h3>
@@ -2358,10 +2358,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   { label: 'Transport, Carburant & Hébergement', amount: '6,5 M DA', pct: 11, color: 'bg-amber-500' },
                   { label: 'Frais de Régie & Autorisations APC', amount: '2,9 M DA', pct: 6, color: 'bg-blue-500' },
                 ].map((item) => (
-                  <div key={item.label} className="space-y-1 text-xs">
+                  <div key={item.label} className="space-y-1 t-cap">
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-black dark:text-white">{item.label}</span>
-                      <span className="font-mono text-black/55 dark:text-white/55">{item.amount}</span>
+                      <span className="tabular-nums text-black/55 dark:text-white/55">{item.amount}</span>
                     </div>
                     <div className="w-full h-2 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden">
                       <div className={`h-full ${item.color}`} style={{ width: `${item.pct}%` }} />
@@ -2383,8 +2383,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-[#d4522f]" />
+                <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
+                  <Receipt className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   Justificatif Fiscal de Paiement
                 </h3>
                 <button
@@ -2413,7 +2413,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   type="button"
                   onClick={() => setSelectedReceiptUrl(null)}
                   data-sq="ctl"
-                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 hover:bg-[#EAE1D8] cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 hover:bg-[#EAE1D8] cursor-pointer"
                 >
                   Fermer
                 </button>
@@ -2432,7 +2432,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-red-600 flex items-center gap-2">
+                <h3 className="t-label font-semibold text-red-600 flex items-center gap-2">
                   <Ban className="w-4 h-4" />
                   Motif du Rejet de la Dépense
                 </h3>
@@ -2445,7 +2445,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-xs text-black/55 dark:text-white/55">
+              <p className="t-cap text-black/55 dark:text-white/55">
                 Veuillez préciser la raison du refus (ex: justificatif illisible, montant hors barème APC, achat non approuvé).
               </p>
               <textarea
@@ -2453,13 +2453,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..."
-                className="w-full px-3 py-2 text-xs rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
               />
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setRejectionModalId(null)}
-                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer"
                 >
                   Annuler
                 </button>
@@ -2467,7 +2467,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   type="button"
                   onClick={handleRejectConfirm}
                   data-sq="ctl"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-white bg-red-600 hover:bg-red-700 cursor-pointer"
                 >
                   Confirmer le Rejet
                 </button>

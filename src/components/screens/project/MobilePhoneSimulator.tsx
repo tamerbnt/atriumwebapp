@@ -31,19 +31,19 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
         data-sq-border="solid"
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-[#F3EDE7] dark:bg-neutral-800/80 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.8)]"
       >
-        <div className="flex items-center gap-2.5">
-          <div data-sq="ctl" className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold text-xs">
+        <div className="flex items-center gap-2">
+          <div data-sq="ctl" className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small">
             📱
           </div>
           <div>
-            <div className="text-xs font-semibold text-black dark:text-white flex items-center gap-2">
+            <div className="t-small font-semibold text-black dark:text-white flex items-center gap-2">
               <span>{title}</span>
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#d4522f]/20 text-[#d4522f]">
+              <span className="t-small font-medium px-2 py-1 rounded-full bg-[#d4522f]/20 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 {t('pm_sim_badge')}
               </span>
             </div>
             {subtitle && (
-              <p className="text-[11px] text-black/55 dark:text-white/75">
+              <p className="t-cap text-black/55 dark:text-white/75">
                 {subtitle}
               </p>
             )}
@@ -61,9 +61,9 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
               type="button"
               onClick={() => setMode('mobile')}
               data-sq="ctl-sm"
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 t-small font-semibold transition-all cursor-pointer ${
                 mode === 'mobile'
-                  ? 'bg-[#d4522f] text-white'
+                  ? 'bg-[var(--brand-fill,#C9461F)] text-white'
                   : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
               }`}
             >
@@ -75,9 +75,9 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
               type="button"
               onClick={() => setMode('desktop')}
               data-sq="ctl-sm"
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 t-small font-semibold transition-all cursor-pointer ${
                 mode === 'desktop'
-                  ? 'bg-[#d4522f] text-white'
+                  ? 'bg-[var(--brand-fill,#C9461F)] text-white'
                   : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
               }`}
             >
@@ -98,13 +98,13 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
           {/* Realistic Smartphone Shell (390px wide) */}
           <div className="w-[390px] max-w-full bg-white dark:bg-neutral-900 rounded-[48px] shadow-2xl border-[10px] border-neutral-800 dark:border-neutral-700 overflow-hidden relative flex flex-col min-h-[760px]">
             {/* Status Bar */}
-            <div className="bg-neutral-900 text-white px-6 pt-3 pb-2 flex items-center justify-between text-[11px] font-semibold select-none z-10 shrink-0">
+            <div className="bg-neutral-900 text-white px-6 pt-3 pb-2 flex items-center justify-between t-small font-semibold select-none z-10 shrink-0">
               <span>{currentTime}</span>
               {/* Dynamic Island / Camera Pill */}
               <div className="w-24 h-4 bg-black rounded-full mx-auto" />
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <Signal className="w-3 h-3" />
-                <span className="text-[10px] font-bold">5G</span>
+                <span className="t-small font-semibold">5G</span>
                 <Wifi className="w-3 h-3" />
                 <Battery className="w-3.5 h-3.5" />
               </div>
@@ -116,7 +116,7 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
             </div>
 
             {/* Home Indicator Bar */}
-            <div className="py-2.5 bg-white dark:bg-neutral-900 flex justify-center shrink-0">
+            <div className="py-2 bg-white dark:bg-neutral-900 flex justify-center shrink-0">
               <div className="w-32 h-1 bg-neutral-400 dark:bg-neutral-600 rounded-full" />
             </div>
           </div>

@@ -599,13 +599,13 @@ export const ContractorBoqView: React.FC<any> = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"
+              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center tabular-nums font-semibold t-small shrink-0"
             >
               <ClipboardList size={16} />
             </div>
-            <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
+            <div className="tabular-nums font-semibold t-small text-black dark:text-white flex items-center gap-2">
               {item.itemCode}
-              {pinnedIds.has(item.id) && <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
+              {pinnedIds.has(item.id) && <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
             </div>
           </div>
         ),
@@ -617,10 +617,10 @@ export const ContractorBoqView: React.FC<any> = () => {
         sortable: true,
         renderCell: (item) => (
           <div className="min-w-0">
-            <div className="font-semibold text-xs text-black dark:text-white line-clamp-2">
+            <div className="font-semibold t-small text-black dark:text-white line-clamp-2">
               {item.designation}
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55">
+            <div className="t-cap text-black/55 dark:text-white/55">
               Unité: {item.unit} • PU: {formatMoney(item.unitPriceDzd, language)}
             </div>
           </div>
@@ -634,8 +634,8 @@ export const ContractorBoqView: React.FC<any> = () => {
         renderCell: (item) => {
           const b = resolveRecordBranch(item, branchesById, currentBranch, language);
           return (
-            <div className="flex items-center gap-1 text-xs text-black/75 dark:text-white/75 truncate">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="flex items-center gap-1 t-cap text-black/75 dark:text-white/75 truncate">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -651,13 +651,13 @@ export const ContractorBoqView: React.FC<any> = () => {
           const isOverrun = item.executedQty > item.plannedQty;
           return (
             <div className="space-y-1 w-full max-w-[140px]">
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="font-mono font-bold text-black dark:text-white">
+              <div className="flex items-center justify-between t-cap">
+                <span className="tabular-nums font-semibold text-black dark:text-white">
                   {item.executedQty} / {item.plannedQty} {item.unit}
                 </span>
                 <span
-                  className={`font-mono text-[10px] font-bold ${
-                    isOverrun ? 'text-rose-600 dark:text-rose-400' : 'text-[#d4522f]'
+                  className={`tabular-nums t-small font-semibold ${
+                    isOverrun ? 'text-rose-600 dark:text-rose-400' : 'text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                   }`}
                 >
                   {pct}%
@@ -672,7 +672,7 @@ export const ContractorBoqView: React.FC<any> = () => {
                 />
               </div>
               {isOverrun && (
-                <div className="flex items-center gap-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1 py-0.5 rounded-[var(--r-check,6px)] w-fit">
+                <div className="flex items-center gap-1 t-small font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1 py-1 rounded-[var(--r-check,6px)] w-fit">
                   <AlertTriangle size={10} className="shrink-0" />
                   <span>+{pct - 100}% Dépassement</span>
                 </div>
@@ -688,10 +688,10 @@ export const ContractorBoqView: React.FC<any> = () => {
         sortable: true,
         renderCell: (item) => (
           <div>
-            <div className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+            <div className="tabular-nums font-semibold t-small text-black dark:text-white">
               {formatMoney(item.totalPlannedDzd, language)}
             </div>
-            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">
+            <div className="t-cap text-emerald-600 dark:text-emerald-400 tabular-nums">
               Exécuté: {formatMoney(item.totalExecutedDzd, language)}
             </div>
           </div>
@@ -1037,21 +1037,21 @@ export const ContractorBoqView: React.FC<any> = () => {
               className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <div
                     data-sq="tile"
                     data-sq-border="none"
-                    className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold"
+                    className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
                   >
                     <ClipboardList size={20} />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                    <h2 className="t-card font-semibold text-black dark:text-white">
                       {itemToEdit
                         ? isAr ? 'تعديل بند المقايسة' : 'Modifier le Poste BOQ'
                         : isAr ? 'إضافة بند إلى الكشف التقديري' : 'Nouveau Poste au Bordereau BOQ'}
                     </h2>
-                    <p className="text-xs text-black/55 dark:text-white/55">
+                    <p className="t-cap text-black/55 dark:text-white/55">
                       {isAr
                         ? 'تعريف وحدات العمل والأسعار الأحادية'
                         : 'Définition du poste, prix unitaire et quantités contractuelles'}
@@ -1062,7 +1062,7 @@ export const ContractorBoqView: React.FC<any> = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsModalOpen(false)}
-                  className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                 >
                   <X size={18} />
                 </button>

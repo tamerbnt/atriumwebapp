@@ -17,14 +17,14 @@ export const MedicalStaffView: React.FC = () => {
       sortable: true,
       cell: (member) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 font-semibold t-small flex items-center justify-center shrink-0">
             {member.fullName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-black dark:text-white text-xs truncate">
+            <div className="font-semibold text-black dark:text-white t-small truncate">
               {member.fullName}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 truncate flex items-center gap-1.5">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate flex items-center gap-2">
               <span>{member.role}</span>
               {member.medicalSpecialty && (
                 <>
@@ -62,7 +62,7 @@ export const MedicalStaffView: React.FC = () => {
                   : 'bg-neutral-400'
               }`}
             />
-            <span className="text-xs font-medium text-black dark:text-white">
+            <span className="t-small font-medium text-black dark:text-white">
               {member.status === 'active'
                 ? isPresent
                   ? isAr
@@ -102,7 +102,7 @@ export const MedicalStaffView: React.FC = () => {
       header: isAr ? 'رقم عمادة الأطباء' : isEn ? 'Medical Order No.' : 'N° Ordre des Médecins',
       accessorKey: 'orderRegistrationNumber',
       cell: (member) => (
-        <span className="text-xs font-mono text-black/70 dark:text-white/75">
+        <span className="t-cap tabular-nums text-black/70 dark:text-white/75">
           {member.orderRegistrationNumber || (isAr ? 'قيد التسجيل' : 'En cours')}
         </span>
       ),
@@ -112,14 +112,14 @@ export const MedicalStaffView: React.FC = () => {
       header: isAr ? 'صلاحية الوصفات CNAS' : isEn ? 'Prescription Rights' : 'Habilitation Ordonnance',
       accessorKey: 'canPrescribe',
       cell: (member) => (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {member.canPrescribe ? (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+            <span className="inline-flex items-center gap-1 t-small font-semibold text-emerald-600 dark:text-emerald-400">
               <ShieldCheck size={13} />
               <span>{isAr ? 'معتمد' : 'Agréé CNAS'}</span>
             </span>
           ) : (
-            <span className="text-[11px] text-black/55 dark:text-white/55">
+            <span className="t-cap text-black/55 dark:text-white/55">
               {isAr ? 'غير مصرح' : 'Non prescripteur'}
             </span>
           )}
@@ -131,7 +131,7 @@ export const MedicalStaffView: React.FC = () => {
       header: isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
       accessorKey: 'phoneNumber',
       cell: (member) => (
-        <span className="text-xs text-black/70 dark:text-white/75 tabular-nums">
+        <span className="t-cap text-black/70 dark:text-white/75 tabular-nums">
           {member.phoneNumber || '—'}
         </span>
       ),

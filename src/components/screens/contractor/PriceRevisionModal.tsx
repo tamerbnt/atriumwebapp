@@ -68,41 +68,41 @@ export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, 
 <div className="sq-elev-pop w-full max-w-2xl">
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 w-full space-y-5 max-h-[90vh] overflow-y-auto">
 <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-<div className="flex items-center gap-2.5">
-<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"><Calculator size={20} /></div>
+<div className="flex items-center gap-2">
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0"><Calculator size={20} /></div>
 <div>
-<h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<h2 className="t-card font-semibold text-black dark:text-white">
 {isAr ? "حاسبة مراجعة الأسعار التعاقدية (CCAG المادة 54)" : "Calculateur de Révision des Prix (CCAG Art. 54)"}
 </h2>
-<p className="text-xs text-black/55 dark:text-white/55">
+<p className="t-cap text-black/55 dark:text-white/55">
 {project.projectCode}
 {" · "}
 {project.projectName}
 </p>
 </div>
 </div>
-<button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
+<button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-1">
-<div className="flex items-center gap-2 text-xs font-bold text-black dark:text-white">
-<Info size={14} className="text-[#d4522f]" />
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-1">
+<div className="flex items-center gap-2 t-small font-semibold text-black dark:text-white">
+<Info size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
 <span>Formule Paramétrique Réglementaire Algérienne</span>
 </div>
-<p className="text-[11px] text-black/55 dark:text-white/55 font-mono">P = P0 × [a + b × (S / S0) + c × (M / M0)]</p>
-<p className="text-[10px] text-black/55 dark:text-white/55">
+<p className="t-cap text-black/55 dark:text-white/55 tabular-nums">P = P0 × [a + b × (S / S0) + c × (M / M0)]</p>
+<p className="t-cap text-black/55 dark:text-white/55">
 Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du Ministère des Travaux Publics.
 </p>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-3">
-<span className="text-xs font-bold text-black dark:text-white block">Main d'Œuvre & Salaires (S)</span>
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-3">
+<span className="t-small font-semibold text-black dark:text-white block">Main d'Œuvre & Salaires (S)</span>
 <div className="grid grid-cols-2 gap-2">
 <LabelInput label="Indice Base S0" type="number" value={baseLaborS0} onChange={setBaseLaborS0} />
 <LabelInput label="Indice Actuel S" type="number" value={currentLaborS} onChange={setCurrentLaborS} />
 </div>
-<div className="flex justify-between items-center text-[11px] text-black/55 dark:text-white/55 pt-1">
+<div className="flex justify-between items-center t-cap text-black/55 dark:text-white/55 pt-1">
 <span>Ratio S / S0:</span>
-<span className="font-mono font-bold text-black dark:text-white">
+<span className="tabular-nums font-semibold text-black dark:text-white">
 {calculation.laborRatio}
 {" (+"}
 {Math.round((calculation.laborRatio - 1) * 100)}
@@ -110,15 +110,15 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </span>
 </div>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-3">
-<span className="text-xs font-bold text-black dark:text-white block">Matériaux & Carburant (M)</span>
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-3">
+<span className="t-small font-semibold text-black dark:text-white block">Matériaux & Carburant (M)</span>
 <div className="grid grid-cols-2 gap-2">
 <LabelInput label="Indice Base M0" type="number" value={baseMaterialM0} onChange={setBaseMaterialM0} />
 <LabelInput label="Indice Actuel M" type="number" value={currentMaterialM} onChange={setCurrentMaterialM} />
 </div>
-<div className="flex justify-between items-center text-[11px] text-black/55 dark:text-white/55 pt-1">
+<div className="flex justify-between items-center t-cap text-black/55 dark:text-white/55 pt-1">
 <span>Ratio M / M0:</span>
-<span className="font-mono font-bold text-black dark:text-white">
+<span className="tabular-nums font-semibold text-black dark:text-white">
 {calculation.materialRatio}
 {" (+"}
 {Math.round((calculation.materialRatio - 1) * 100)}
@@ -127,10 +127,10 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </div>
 </div>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-2">
-<div className="flex justify-between items-center text-xs">
-<span className="font-bold text-black dark:text-white">Pondération Contractuelle du Marché</span>
-<span className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-2">
+<div className="flex justify-between items-center t-cap">
+<span className="font-semibold text-black dark:text-white">Pondération Contractuelle du Marché</span>
+<span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
 {"Total = "}
 {(parseFloat(coeffA) + parseFloat(coeffB) + parseFloat(coeffC)).toFixed(2)}
 </span>
@@ -147,32 +147,32 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 <div className="sq-elev-card">
 <div data-sq="card" data-sq-border="none" className="p-4 bg-[#1F1D1B] text-white space-y-3">
 <div className="flex items-center justify-between">
-<span className="text-xs font-semibold text-white/80">Résultat Paramétrique (Coefficient K)</span>
-<span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-[#3D2817] text-[#FB923C]">
+<span className="t-small font-semibold text-white/80">Résultat Paramétrique (Coefficient K)</span>
+<span className="px-2.5 py-1 rounded-full t-small tabular-nums font-semibold bg-[#3D2817] text-[#FB923C]">
 {"K = "}
 {calculation.kCoeff}
 </span>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-neutral-800">
 <div>
-<span className="text-[10px] text-white/75 block uppercase tracking-wider">Montant Initial HT</span>
-<span className="text-base font-bold font-mono">{formatMoney(parseFloat(contractBaseAmount) || 0)}</span>
+<span className="t-cap text-white/75 block">Montant Initial HT</span>
+<span className="t-card font-semibold tabular-nums">{formatMoney(parseFloat(contractBaseAmount) || 0)}</span>
 </div>
 <div>
-<span className="text-[10px] text-white/75 block uppercase tracking-wider">Plus-value Révision</span>
-<span className="text-base font-bold font-mono text-emerald-400">
+<span className="t-cap text-white/75 block">Plus-value Révision</span>
+<span className="t-card font-semibold tabular-nums text-emerald-400">
 +
 {formatMoney(calculation.revisionAllowanceDzd)}
 </span>
-<span className="text-[10px] text-emerald-500 block">
+<span className="t-cap text-emerald-500 block">
 (+
 {calculation.percentChange}
 %)
 </span>
 </div>
 <div>
-<span className="text-[10px] text-white/75 block uppercase tracking-wider">Nouveau Montant Révisé HT</span>
-<span className="text-base font-bold font-mono text-[#FB923C]">{formatMoney(calculation.revisedTotalDzd)}</span>
+<span className="t-cap text-white/75 block">Nouveau Montant Révisé HT</span>
+<span className="t-card font-semibold tabular-nums text-[#FB923C]">{formatMoney(calculation.revisedTotalDzd)}</span>
 </div>
 </div>
 </div>

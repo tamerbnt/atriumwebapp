@@ -546,16 +546,16 @@ export const ContractorSitesView: React.FC = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"
+              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center tabular-nums font-semibold t-small shrink-0"
             >
               <HardHat size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
+              <div className="tabular-nums font-semibold t-small text-black dark:text-white flex items-center gap-2">
                 {p.projectCode}
-                {pinnedIds.has(p.id) && <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
+                {pinnedIds.has(p.id) && <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55">
+              <div className="t-cap text-black/55 dark:text-white/55">
                 {p.startDate ? `ODS: ${p.startDate}` : 'BTP'}
               </div>
             </div>
@@ -569,10 +569,10 @@ export const ContractorSitesView: React.FC = () => {
         sortable: true,
         renderCell: (p) => (
           <div className="min-w-0">
-            <div className="font-semibold text-xs text-black dark:text-white line-clamp-1">
+            <div className="font-semibold t-small text-black dark:text-white line-clamp-1">
               {p.projectName}
             </div>
-            <div className="text-[11px] text-black/70 dark:text-white/75 flex items-center gap-1 truncate">
+            <div className="t-cap text-black/70 dark:text-white/75 flex items-center gap-1 truncate">
               <Building size={11} className="text-black/55 dark:text-white/55 shrink-0" />
               <span className="truncate">{p.clientName}</span>
             </div>
@@ -587,8 +587,8 @@ export const ContractorSitesView: React.FC = () => {
         renderCell: (p) => {
           const b = resolveRecordBranch(p, branchesById, currentBranch, language);
           return (
-            <div className="flex items-center gap-1 text-xs text-black/75 dark:text-white/75 truncate">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="flex items-center gap-1 t-cap text-black/75 dark:text-white/75 truncate">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -601,11 +601,11 @@ export const ContractorSitesView: React.FC = () => {
         sortable: true,
         renderCell: (p) => (
           <div className="space-y-1 w-full max-w-[130px]">
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="font-mono font-bold text-black dark:text-white">
+            <div className="flex items-center justify-between t-cap">
+              <span className="tabular-nums font-semibold text-black dark:text-white">
                 {p.progressPercent}%
               </span>
-              <span className="text-[10px] text-black/55 dark:text-white/55">
+              <span className="t-cap text-black/55 dark:text-white/55">
                 {p.targetEndDate}
               </span>
             </div>
@@ -625,10 +625,10 @@ export const ContractorSitesView: React.FC = () => {
         sortable: true,
         renderCell: (p) => (
           <div>
-            <div className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+            <div className="tabular-nums font-semibold t-small text-black dark:text-white">
               {formatMoney(p.contractAmountDzd, language)}
             </div>
-            <div className="text-[10px] text-emerald-600 dark:text-emerald-400">
+            <div className="t-cap text-emerald-600 dark:text-emerald-400">
               Ret. 5%: {formatMoney(p.retentionAmountDzd, language)}
             </div>
           </div>
@@ -653,7 +653,7 @@ export const ContractorSitesView: React.FC = () => {
           }
           return (
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeColor}`}
+              className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold border ${badgeColor}`}
             >
               {label}
             </span>

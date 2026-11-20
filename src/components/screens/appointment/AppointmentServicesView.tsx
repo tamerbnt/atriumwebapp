@@ -407,16 +407,16 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         header: isAr ? 'الخدمة والعناية' : isEn ? 'Service' : 'Prestation / Soin',
         sortable: true,
         renderCell: (service) => (
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <div
               className="w-3 h-3 rounded-full shrink-0"
               style={{ backgroundColor: service.color || '#d4522f' }}
             />
             <div className="min-w-0">
-              <span className="text-[13.5px] font-semibold text-black dark:text-white truncate block">
+              <span className="t-label font-semibold text-black dark:text-white truncate block">
                 {service.name}
               </span>
-              <span className="text-[11px] text-black/62 dark:text-white/65 truncate block">
+              <span className="t-cap text-black/62 dark:text-white/65 truncate block">
                 {CATEGORY_LABELS[service.category] || service.category}
               </span>
             </div>
@@ -428,12 +428,12 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         header: isAr ? 'المدة والعمولة' : isEn ? 'Duration & Comm.' : 'Durée & Comm.',
         sortable: true,
         renderCell: (service) => (
-          <div className="text-[12.5px] tabular-nums">
+          <div className="t-cap tabular-nums">
             <span className="font-semibold text-black dark:text-white block">
               {service.durationMinutes} min
               {service.bufferMinutes ? ` (+${service.bufferMinutes}m)` : ''}
             </span>
-            <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 block">
+            <span className="t-small font-semibold text-emerald-600 dark:text-emerald-400 block">
               {service.commissionRate || 40}% commission
             </span>
           </div>
@@ -445,10 +445,10 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (service) => (
           <div className="tabular-nums">
-            <span className="text-[13px] font-bold font-mono text-[#d4522f] block">
+            <span className="t-label font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
               {formatMoney(service.price)}
             </span>
-            <span className="text-[11px] text-black/62 dark:text-white/65 font-mono block">
+            <span className="t-cap text-black/62 dark:text-white/65 tabular-nums block">
               Coût: {formatMoney(service.costPrice || 0)}
             </span>
           </div>
@@ -459,7 +459,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
         sortable: true,
         renderCell: (service) => (
-          <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+          <span className="t-small font-medium text-black/80 dark:text-white/85 truncate block">
             {resolveRecordBranch(service, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -768,7 +768,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                 </InspectorSection>
                 {service.description && (
                   <InspectorSection index={1} title="Description technique">
-                    <InspectorCard className="py-3.5 text-[13px] text-black/75 dark:text-white/80">
+                    <InspectorCard className="py-4 t-body text-black/75 dark:text-white/80">
                       <p className="py-1 leading-relaxed">{service.description}</p>
                     </InspectorCard>
                   </InspectorSection>
@@ -840,13 +840,13 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
               className="bg-white dark:bg-[#1C1B1A] w-full p-6 border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-4"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
-                <h3 className="text-base font-bold text-black dark:text-white">
+                <h3 className="t-card font-semibold text-black dark:text-white">
                   {editingService ? 'Modifier la Prestation' : 'Nouvelle Prestation'}
                 </h3>
                 <button
                   type="button"
                   onClick={() => setIsServiceModalOpen(false)}
-                  className="p-1.5 rounded-full text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  className="p-2 rounded-full text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                 >
                   <X size={18} />
                 </button>

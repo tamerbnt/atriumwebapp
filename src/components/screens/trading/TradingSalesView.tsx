@@ -309,10 +309,10 @@ export const TradingSalesView: React.FC = () => {
               : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-400';
           return (
             <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold font-mono uppercase ${typeBadge}`}>
+              <span className={`px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold tabular-nums ${typeBadge}`}>
                 {doc.type.slice(0, 3)}
               </span>
-              <span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
+              <span className="tabular-nums font-semibold t-small text-black dark:text-white">{doc.docNumber}</span>
             </div>
           );
         },
@@ -323,10 +323,10 @@ export const TradingSalesView: React.FC = () => {
         width: '130px',
         sortable: true,
         renderCell: (doc) => (
-          <div className="text-xs font-mono">
+          <div className="t-cap tabular-nums">
             <div className="text-black dark:text-white">{doc.date}</div>
             {doc.dueDate && (
-              <div className="text-[10px] text-black/55 dark:text-white/55">Éch: {doc.dueDate}</div>
+              <div className="t-cap text-black/55 dark:text-white/55">Éch: {doc.dueDate}</div>
             )}
           </div>
         ),
@@ -337,9 +337,9 @@ export const TradingSalesView: React.FC = () => {
         minWidth: '200px',
         sortable: true,
         renderCell: (doc) => (
-          <div className="text-xs">
-            <span className="font-bold text-black dark:text-white block">{doc.clientName}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+          <div className="t-cap">
+            <span className="font-semibold text-black dark:text-white block">{doc.clientName}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               NIF: {doc.clientNif || 'Non renseigné'}
             </span>
           </div>
@@ -353,7 +353,7 @@ export const TradingSalesView: React.FC = () => {
         renderCell: (doc) => {
           const b = resolveRecordBranch(doc, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -366,7 +366,7 @@ export const TradingSalesView: React.FC = () => {
         width: '130px',
         sortable: true,
         renderCell: (doc) => (
-          <span className="text-xs font-mono font-semibold text-black/70 dark:text-white/75 tabular-nums">
+          <span className="t-small tabular-nums font-semibold text-black/70 dark:text-white/75">
             {formatMoney(doc.totalHtFinal || doc.totalHtRaw || 0)}
           </span>
         ),
@@ -377,7 +377,7 @@ export const TradingSalesView: React.FC = () => {
         width: '140px',
         sortable: true,
         renderCell: (doc) => (
-          <span className="text-xs font-mono font-bold text-black dark:text-white tabular-nums">
+          <span className="t-small tabular-nums font-semibold text-black dark:text-white">
             {formatMoney(doc.netToPay)}
           </span>
         ),
@@ -392,7 +392,7 @@ export const TradingSalesView: React.FC = () => {
           const isValidated = doc.status === 'Validated';
           return (
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold ${
+              className={`inline-flex items-center px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold ${
                 isPaid
                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
                   : isDelivered
@@ -423,7 +423,7 @@ export const TradingSalesView: React.FC = () => {
               title={t('action_print', 'Imprimer')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <Printer size={14} />
             </button>
@@ -437,7 +437,7 @@ export const TradingSalesView: React.FC = () => {
               title={t('action_edit', 'Modifier')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <Edit size={14} />
             </button>
@@ -451,7 +451,7 @@ export const TradingSalesView: React.FC = () => {
                 title={t('trading_sales_convert_to_bl', 'Convertir en Bon de Livraison')}
                 data-sq="check"
                 data-sq-border="none"
-                className="px-2 py-0.5 text-[10px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 transition-colors cursor-pointer"
+                className="px-2 py-1 t-small font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 transition-colors cursor-pointer"
               >
                 BL →
               </button>
@@ -466,7 +466,7 @@ export const TradingSalesView: React.FC = () => {
                 title={t('trading_sales_convert_to_invoice', 'Facturer ce bon de livraison')}
                 data-sq="check"
                 data-sq-border="none"
-                className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 transition-colors cursor-pointer"
+                className="px-2 py-1 t-small font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 transition-colors cursor-pointer"
               >
                 {isAr ? 'فوترة ←' : 'Facturer →'}
               </button>
@@ -481,7 +481,7 @@ export const TradingSalesView: React.FC = () => {
               title={t('action_delete', 'Supprimer')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
             >
               <Trash2 size={14} />
             </button>

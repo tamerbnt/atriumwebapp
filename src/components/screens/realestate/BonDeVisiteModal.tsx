@@ -133,18 +133,18 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] p-6 md:p-8 text-black dark:text-[#FAFAFA]">
 <div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#27272A] mb-5">
 <div className="flex items-center gap-3">
-<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Shield className="w-5 h-5" /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><Shield className="w-5 h-5" /></div>
 <div>
-<h2 className="text-xl font-bold tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">Bon de Visite Numérique Certifié</h2>
+<h2 className="t-dialog font-semibold">Bon de Visite Numérique Certifié</h2>
 </div>
 </div>
 <button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-[#F3EDE7] dark:bg-[#141416] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#232328] mb-5 flex items-center justify-between">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141416] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#232328] mb-5 flex items-center justify-between">
 <div>
-<div className="text-xs text-black/70 dark:text-white/75 uppercase font-semibold">Bien Visité</div>
-<div className="text-sm font-bold text-black dark:text-white truncate max-w-md">{activeProp?.title}</div>
-<div className="text-xs text-black/70 dark:text-white/75">
+<div className="t-small text-black/70 dark:text-white/75 font-semibold">Bien Visité</div>
+<div className="t-label font-semibold text-black dark:text-white truncate max-w-md">{activeProp?.title}</div>
+<div className="t-cap text-black/70 dark:text-white/75">
 {activeProp?.address}
 {" ("}
 {activeProp?.cityWilaya}
@@ -152,8 +152,8 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 </div>
 </div>
 <div className="text-right">
-<div className="text-xs text-black/70 dark:text-white/75">Prix Annoncé</div>
-<div className="text-sm font-bold font-mono text-[#d4522f]">
+<div className="t-cap text-black/70 dark:text-white/75">Prix Annoncé</div>
+<div className="t-label font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
 {activeProp?.priceDzd.toLocaleString()}
 {" DZD"}
 </div>
@@ -166,12 +166,12 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 <LabelInput label="N° CNI (18 Chiffres)" value={clientNationalId} onChange={(e) => setClientNationalId(e.target.value)} placeholder="Ex: 109823487192837461" required />
 </div>
 <div data-sq="card" data-sq-border="solid" className="p-3 bg-[#FDF4F0] dark:bg-[#1C1816] [--sq-stroke:rgba(212,82,47,0.3)] flex items-center justify-between">
-<div className="flex items-center gap-2.5">
-<MapPin className="w-4 h-4 text-[#d4522f]" />
-<div className="text-xs">
+<div className="flex items-center gap-2">
+<MapPin className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+<div className="t-cap">
 <span className="font-semibold text-black dark:text-white">Géolocalisation d'Intervention:</span>
 {" "}
-{isGpsLoading ? /* @__PURE__ */ <span className="text-[#d4522f] animate-pulse">Recherche signal satellite GPS...</span> : gpsLatitude ? /* @__PURE__ */ <span className="font-mono text-black/70 dark:text-white/75">
+{isGpsLoading ? /* @__PURE__ */ <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] animate-pulse">Recherche signal satellite GPS...</span> : gpsLatitude ? /* @__PURE__ */ <span className="tabular-nums text-black/70 dark:text-white/75">
 {gpsLatitude}
 {"° N, "}
 {gpsLongitude}
@@ -181,28 +181,28 @@ m)
 </span> : /* @__PURE__ */ <span className="text-amber-600">Signal GPS faible</span>}
 </div>
 </div>
-<button type="button" onClick={handleCaptureGps} className="text-xs text-[#d4522f] hover:underline font-semibold cursor-pointer">Actualiser GPS</button>
+<button type="button" onClick={handleCaptureGps} className="t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline font-semibold cursor-pointer">Actualiser GPS</button>
 </div>
-<div className="space-y-1.5">
-<div className="flex items-center justify-between text-xs">
+<div className="space-y-2">
+<div className="flex items-center justify-between t-cap">
 <span className="font-semibold text-black dark:text-white">Signature Tactile de l'Acquéreur (Sur l'écran)</span>
-<button type="button" onClick={clearSignature} className="flex items-center gap-1 text-black/70 dark:text-white/75 hover:text-[#d4522f] transition-colors cursor-pointer">
+<button type="button" onClick={clearSignature} className="flex items-center gap-1 text-black/70 dark:text-white/75 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-colors cursor-pointer">
 <RotateCcw className="w-3.5 h-3.5" />
 <span>Effacer</span>
 </button>
 </div>
 <div data-sq="card" data-sq-border="dashed" data-sq-stroke-w="2" className="relative [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] bg-white dark:bg-[#141416] overflow-hidden">
 <canvas ref={canvasRef} width={560} height={140} className="w-full h-[140px] touch-none cursor-crosshair" onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={startDrawing} onTouchMove={draw} onTouchEnd={stopDrawing} />
-{!hasSignature && /* @__PURE__ */ <div className="absolute inset-0 pointer-events-none flex items-center justify-center text-xs text-black/55 dark:text-white/55">Signez avec le doigt ou le stylet ici</div>}
+{!hasSignature && /* @__PURE__ */ <div className="absolute inset-0 pointer-events-none flex items-center justify-center t-cap text-black/55 dark:text-white/55">Signez avec le doigt ou le stylet ici</div>}
 </div>
-<p className="text-[11px] text-black/70 dark:text-white/75 leading-relaxed">
+<p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
 * En signant, le client reconnaît avoir visité le bien par l'entremise de l'agence Atrium et s'interdit de traiter directement avec le vendeur pendant 12 mois.
 </p>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 <div>
-<label className="block text-xs font-semibold text-black dark:text-white mb-1.5">Impression de Visite</label>
-<select value={clientImpression} onChange={(e) => setClientImpression(e.target.value as 'Interested' | 'NeedsNegotiation' | 'OfferSubmitted' | 'PriceTooHigh' | 'Unfavorable')} className="w-full px-3.5 py-2.5 rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-[#27272A] bg-white dark:bg-[#141416] text-xs font-medium focus:ring-2 focus:ring-[#d4522f]">
+<label className="block t-small font-semibold text-black dark:text-white mb-2">Impression de Visite</label>
+<select value={clientImpression} onChange={(e) => setClientImpression(e.target.value as 'Interested' | 'NeedsNegotiation' | 'OfferSubmitted' | 'PriceTooHigh' | 'Unfavorable')} className="w-full px-4 py-2 rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-[#27272A] bg-white dark:bg-[#141416] t-small font-medium focus:ring-2 focus:ring-[#d4522f]">
 <option value="Interested">Très Intéressé (Candidat Solide)</option>
 <option value="NeedsNegotiation">Intéressé sous réserve de négociation</option>
 <option value="OfferSubmitted">Offre Ferme Soumise</option>
@@ -214,11 +214,11 @@ m)
 </div>
 <LabelInput label="Notes de Visite & Remarques du Négociateur" value={feedbackNotes} onChange={(e) => setFeedbackNotes(e.target.value)} placeholder="Ex: Travaux peinture à prévoir, visite seconde fois avec son conjoint..." />
 <div className="flex items-center justify-between pt-4 border-t border-[#E6DED6] dark:border-[#27272A]">
-<div className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
+<div className="flex items-center gap-2 t-small text-emerald-600 font-semibold">
 <CheckCircle className="w-4 h-4" />
 <span>Copie WhatsApp générée automatiquement</span>
 </div>
-<div className="flex items-center gap-2.5">
+<div className="flex items-center gap-2">
 <AtriumButton variant="secondary" onClick={onClose} type="button">Annuler</AtriumButton>
 <AtriumButton variant="primary" icon={<CheckCircle size={14} />} type="submit">Certifier le Bon de Visite</AtriumButton>
 </div>

@@ -131,10 +131,10 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
         <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5">
           <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
             <div className="flex items-center gap-2">
-              <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
+              <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
                 <Stethoscope size={16} />
               </div>
-              <h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h3 className="font-semibold t-label text-black dark:text-white">
                 {language === 'ar' ? 'فحص واستشارة جديدة' : 'Nouvelle Consultation & Triage'}
               </h3>
             </div>
@@ -149,7 +149,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {errorMessage && (
-              <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-red-500/10 border border-red-500/30 [--sq-stroke:rgba(239,68,68,0.3)] text-red-600 dark:text-red-400 text-xs flex items-center gap-2 animate-in fade-in">
+              <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-red-500/10 border border-red-500/30 [--sq-stroke:rgba(239,68,68,0.3)] text-red-600 dark:text-red-400 t-cap flex items-center gap-2 animate-in fade-in">
                 <AlertTriangle size={16} className="shrink-0" />
                 <span>{errorMessage}</span>
               </div>
@@ -177,11 +177,11 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
             />
 
             {/* Urgency Level Triage */}
-            <div data-sq="card" data-sq-border="solid" className="flex items-center justify-between p-2.5 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700">
-              <span className="text-xs font-semibold text-black dark:text-white">
+            <div data-sq="card" data-sq-border="solid" className="flex items-center justify-between p-3 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700">
+              <span className="t-small font-semibold text-black dark:text-white">
                 {language === 'ar' ? 'درجة الإلحاح / الفرز' : 'Priorité Triage'}
               </span>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 {(['Normal', 'Prioritaire', 'Urgence'] as const).map((lvl) => (
                   <button
                     key={lvl}
@@ -190,12 +190,12 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
                     data-sq="ctl-sm"
                     data-sq-border="none"
                     onClick={() => setUrgency(lvl)}
-                    className={`px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 t-small font-semibold transition-all cursor-pointer ${
                       urgency === lvl
                         ? lvl === 'Urgence'
                           ? 'bg-rose-600 text-white'
                           : lvl === 'Prioritaire'
-                          ? 'bg-[#d4522f] text-white'
+                          ? 'bg-[var(--brand-fill,#C9461F)] text-white'
                           : 'bg-[#0D9488] text-white'
                         : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                     }`}
@@ -214,7 +214,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
               required
             />
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <LabelInput
                 label={language === 'ar' ? 'ضغط الدم (TA)' : 'Tension (TA)'}
                 value={bp}

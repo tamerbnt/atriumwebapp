@@ -360,16 +360,16 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         width: '2.8*',
         sortable: true,
         renderCell: (l) => (
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0">
               <Key size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-xs text-black dark:text-white flex items-center gap-1.5 truncate">
+              <div className="font-semibold t-small text-black dark:text-white flex items-center gap-2 truncate">
                 <span className="truncate">{l.propertyTitle}</span>
-                {pinnedIds.has(l.id) && <Pin size={10} className="fill-[#d4522f] text-[#d4522f] shrink-0" />}
+                {pinnedIds.has(l.id) && <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+              <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                 Du {l.startDate} au {l.endDate}
               </div>
             </div>
@@ -383,8 +383,8 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         sortable: true,
         renderCell: (l) => (
           <div>
-            <div className="font-semibold text-xs text-black dark:text-white truncate">{l.tenantName}</div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">{l.tenantPhone}</div>
+            <div className="font-semibold t-small text-black dark:text-white truncate">{l.tenantName}</div>
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">{l.tenantPhone}</div>
           </div>
         ),
       },
@@ -396,8 +396,8 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         renderCell: (l) => {
           const b = resolveRecordBranch(l, branchesById, currentBranch, language);
           return (
-            <div className="text-xs font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-1.5">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="t-small font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-2">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -408,14 +408,14 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         header: isAr ? 'الإيجار الشهري' : 'Loyer Mensuel',
         width: '1.6*',
         sortable: true,
-        renderCell: (l) => <div className="font-mono font-bold text-xs text-[#d4522f]">{formatMoney(l.monthlyRentDzd, language)}</div>,
+        renderCell: (l) => <div className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(l.monthlyRentDzd, language)}</div>,
       },
       {
         key: 'securityDeposit',
         header: isAr ? 'الوديعة الضامنة' : 'Caution Déposée',
         width: '1.6*',
         sortable: true,
-        renderCell: (l) => <div className="font-mono text-xs text-black/70 dark:text-white/75">{formatMoney(l.securityDepositDzd, language)}</div>,
+        renderCell: (l) => <div className="tabular-nums t-cap text-black/70 dark:text-white/75">{formatMoney(l.securityDepositDzd, language)}</div>,
       },
       {
         key: 'status',
@@ -424,7 +424,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         sortable: true,
         renderCell: (l) => (
           <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold border ${
               l.status === 'Active'
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                 : 'bg-neutral-100 text-black/70 border-neutral-200 dark:bg-neutral-800 dark:text-white/75'

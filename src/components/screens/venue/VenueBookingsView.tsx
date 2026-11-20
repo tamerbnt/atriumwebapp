@@ -391,7 +391,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
         renderCell: (b) => (
           <div className="min-w-0">
             <div className="font-semibold text-black dark:text-white truncate">{b.purpose}</div>
-            <div className="text-[11px] text-black/55 dark:text-white/75 truncate flex items-center gap-1.5 mt-0.5">
+            <div className="t-cap text-black/55 dark:text-white/75 truncate flex items-center gap-2 mt-0.5">
               <span className="font-medium text-black/70 dark:text-white/75">{b.renterName}</span>
               {b.renterCompany && <span>({b.renterCompany})</span>}
             </div>
@@ -407,7 +407,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
         renderCell: (b) => {
           const bInfo = resolveRecordBranch(b, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -422,10 +422,10 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
         sortable: true,
         renderCell: (b) => (
           <div>
-            <span className="text-xs font-semibold text-black dark:text-white block truncate">
+            <span className="t-small font-semibold text-black dark:text-white block truncate">
               {b.unitName}
             </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block mt-0.5">
+            <span className="t-cap text-black/55 dark:text-white/55 block mt-0.5">
               {t('venue_guests_count', language, { count: b.attendeeCount })}
             </span>
           </div>
@@ -438,11 +438,11 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
         minWidth: '160px',
         sortable: true,
         renderCell: (b) => (
-          <div className="text-xs space-y-0.5">
-            <div className="font-medium text-black dark:text-white font-mono text-[11px]">
+          <div className="t-cap space-y-0.5">
+            <div className="font-medium text-black dark:text-white tabular-nums t-small">
               {b.startDateTime.replace('T', ' ').slice(0, 16)}
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 flex items-center gap-1">
+            <div className="t-cap text-black/55 dark:text-white/55 flex items-center gap-1">
               <Clock size={10} />
               <span>
                 {b.durationHours}h {t('venue_inv_hourly_short')}
@@ -459,10 +459,10 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
         sortable: true,
         renderCell: (b) => (
           <div>
-            <div className="font-bold text-black dark:text-white tabular-nums font-mono text-xs">
+            <div className="font-semibold text-black dark:text-white tabular-nums t-small">
               {formatCurrencyAmount(b.totalAmount, b.currency)}
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55">
+            <div className="t-cap text-black/55 dark:text-white/55">
               {t('venue_col_caution')}: {formatCurrencyAmount(b.depositAmount, b.currency)}
             </div>
           </div>
@@ -481,7 +481,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
           const isCompleted = b.status === 'Completed';
           return (
             <span
-              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase ${
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full t-small font-semibold ${
                 isCheckedIn
                   ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
                   : isConfirmed
@@ -551,7 +551,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               onClick={() => setIsCloudSyncModalOpen(true)}
               data-sq="ctl"
               data-sq-border="solid"
-              className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
+              className="h-10 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
               title="Inspect Supabase live tables and row writes"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -1125,10 +1125,10 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
             >
             <div className="flex justify-between items-center border-b border-neutral-200 dark:border-neutral-800 pb-4">
               <div>
-                <h3 className="text-lg font-bold text-black dark:text-white">
+                <h3 className="t-pod font-semibold text-black dark:text-white">
                   {t('venue_voucher_title')}
                 </h3>
-                <span className="text-xs font-mono text-black/55 dark:text-white/55">
+                <span className="t-cap tabular-nums text-black/55 dark:text-white/55">
                   {t('venue_voucher_ref', language, { id: printedBooking.id })}
                 </span>
               </div>
@@ -1137,12 +1137,12 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                 onClick={() => setPrintedBooking(null)}
                 data-sq="ctl-sm"
                 data-sq-border="none"
-                className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer"
+                className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
-            <div className="space-y-4 text-xs">
+            <div className="space-y-4 t-cap">
               <div
                 data-sq="card"
                 data-sq-border="solid"
@@ -1170,7 +1170,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                   <span className="text-black/55 dark:text-white/55">
                     {t('venue_voucher_phone')}
                   </span>
-                  <span className="font-mono text-black dark:text-white">
+                  <span className="tabular-nums text-black dark:text-white">
                     {printedBooking.renterPhone}
                   </span>
                 </div>
@@ -1186,7 +1186,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                   <span className="text-black/55 dark:text-white/55">
                     {t('venue_voucher_window')}
                   </span>
-                  <span className="font-mono text-black dark:text-white">
+                  <span className="tabular-nums text-black dark:text-white">
                     {printedBooking.startDateTime.replace('T', ' ').slice(0, 16)} -{' '}
                     {printedBooking.endDateTime.split('T')[1]?.slice(0, 5)}
                   </span>
@@ -1199,13 +1199,13 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               >
                 <div className="flex justify-between font-semibold text-black dark:text-white">
                   <span>{t('venue_voucher_total_hire')}</span>
-                  <span className="tabular-nums font-mono">
+                  <span className="tabular-nums">
                     {formatCurrencyAmount(printedBooking.totalAmount, printedBooking.currency)}
                   </span>
                 </div>
                 <div className="flex justify-between text-black/70 dark:text-white/75">
                   <span>{t('venue_voucher_caution_held')}</span>
-                  <span className="font-medium text-emerald-600 tabular-nums font-mono">
+                  <span className="font-medium text-emerald-600 tabular-nums">
                     {formatCurrencyAmount(printedBooking.depositAmount, printedBooking.currency)} (
                     {printedBooking.depositStatus === 'Held'
                       ? t('venue_held_status')
@@ -1217,7 +1217,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                 </div>
                 <div className="flex justify-between text-black/70 dark:text-white/75">
                   <span>{t('venue_voucher_balance_due')}</span>
-                  <span className="font-medium tabular-nums font-mono">
+                  <span className="font-medium tabular-nums">
                     {formatCurrencyAmount(printedBooking.balanceDue, printedBooking.currency)}
                   </span>
                 </div>
@@ -1225,7 +1225,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               <div
                 data-sq="ctl"
                 data-sq-border="none"
-                className="p-3 bg-neutral-100 dark:bg-neutral-800 text-[11px] text-black/55 dark:text-white/75 leading-relaxed"
+                className="p-3 bg-neutral-100 dark:bg-neutral-800 t-cap text-black/55 dark:text-white/75 leading-relaxed"
               >
                 {t('venue_voucher_disclaimer')}
               </div>
@@ -1236,7 +1236,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                 onClick={() => window.print()}
                 data-sq="ctl"
                 data-sq-border="none"
-                className="px-5 py-2 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
               >
                 <Printer size={14} /> {t('venue_btn_print_agreement')}
               </button>

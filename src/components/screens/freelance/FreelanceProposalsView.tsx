@@ -467,20 +467,20 @@ export const FreelanceProposalsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"
+              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0 border border-neutral-200 dark:border-neutral-700"
             >
               <FileText size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-black dark:text-white truncate hover:text-[#d4522f] transition-colors">
+              <div className="font-semibold text-black dark:text-white truncate hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-colors">
                 {proposal.title}
               </div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 truncate flex items-center gap-1.5">
+              <div className="t-cap text-black/55 dark:text-white/55 truncate flex items-center gap-2">
                 <span>{proposal.clientName}</span>
                 {proposal.clientCompany && (
                   <>
                     <span>·</span>
-                    <span className="text-[#d4522f] font-medium">{proposal.clientCompany}</span>
+                    <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-medium">{proposal.clientCompany}</span>
                   </>
                 )}
               </div>
@@ -497,7 +497,7 @@ export const FreelanceProposalsView: React.FC = () => {
         renderCell: (proposal) => {
           const bInfo = resolveRecordBranch(proposal, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -516,10 +516,10 @@ export const FreelanceProposalsView: React.FC = () => {
         sortable: true,
         renderCell: (proposal) => (
           <div>
-            <span className="font-bold text-black dark:text-white tabular-nums block">
+            <span className="font-semibold text-black dark:text-white tabular-nums block">
               {formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}
             </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55">
+            <span className="t-cap text-black/55 dark:text-white/55">
               {proposal.pricingModel} · {proposal.estimatedTimelineWeeks}{' '}
               {isAr ? 'أسابيع' : 'wks'}
             </span>
@@ -534,7 +534,7 @@ export const FreelanceProposalsView: React.FC = () => {
         sortable: true,
         renderCell: (proposal) => (
           <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold ${
               proposal.status === 'Accepted'
                 ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                 : proposal.status === 'Declined'
@@ -565,7 +565,7 @@ export const FreelanceProposalsView: React.FC = () => {
         minWidth: '115px',
         sortable: true,
         renderCell: (proposal) => (
-          <div className="flex items-center gap-1.5 text-xs text-black/70 dark:text-white/75">
+          <div className="flex items-center gap-2 t-cap text-black/70 dark:text-white/75">
             <Calendar size={12} className="text-black/55 dark:text-white/55" />
             <span>{proposal.validUntil}</span>
           </div>
@@ -861,7 +861,7 @@ export const FreelanceProposalsView: React.FC = () => {
           >
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-              <span className="text-xs font-bold text-black dark:text-white">
+              <span className="t-small font-semibold text-black dark:text-white">
                 {selectedProposalIds.size}{' '}
                 {isAr
                   ? 'عروض محددة'
@@ -874,7 +874,7 @@ export const FreelanceProposalsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedProposalIds(new Set())}
-                className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
+                className="px-3 py-2 t-small text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
               >
                 {isAr ? 'إلغاء التحديد' : isFr ? 'Désélectionner' : 'Deselect'}
               </button>
@@ -884,7 +884,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 data-sq="ctl-sm"
                 data-sq-border="none"
                 onClick={handleBatchAccept}
-                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
               >
                 <CheckCircle size={13} />
                 <span>
@@ -897,7 +897,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 data-sq="ctl-sm"
                 data-sq-border="none"
                 onClick={handleBatchDecline}
-                className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
               >
                 <XCircle size={13} />
                 <span>
@@ -910,7 +910,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 data-sq="ctl-sm"
                 data-sq-border="none"
                 onClick={handleBatchDelete}
-                className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
               >
                 <Trash2 size={13} />
                 <span>{isAr ? 'حذف المحدد' : isFr ? 'Supprimer' : 'Delete'}</span>
@@ -1231,7 +1231,7 @@ export const FreelanceProposalsView: React.FC = () => {
               className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
             >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-base font-bold text-black dark:text-white">
+              <h3 className="t-card font-semibold text-black dark:text-white">
                 {t('free_prop_modal_new_title', language)}
               </h3>
               <button
@@ -1243,7 +1243,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 <X size={16} />
               </button>
             </div>
-            <form onSubmit={handleSubmitProposal} className="space-y-3.5 text-xs">
+            <form onSubmit={handleSubmitProposal} className="space-y-4 t-cap">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   id="draft-client-name"
@@ -1304,7 +1304,7 @@ export const FreelanceProposalsView: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleAddScopeItem}
-                    className="text-[#d4522f] hover:underline font-semibold cursor-pointer"
+                    className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline font-semibold cursor-pointer"
                   >
                     {t('free_prop_btn_add_item', language)}
                   </button>
@@ -1327,7 +1327,7 @@ export const FreelanceProposalsView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleRemoveScopeItem(idx)}
-                          className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"
+                          className="p-2 text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"
                           aria-label="Remove item"
                         >
                           <X size={14} />
@@ -1412,7 +1412,7 @@ export const FreelanceProposalsView: React.FC = () => {
               className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
             >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-base font-bold text-black dark:text-white">
+              <h3 className="t-card font-semibold text-black dark:text-white">
                 {isAr
                   ? 'تعديل عرض السعر ونطاق العمل'
                   : isFr
@@ -1428,7 +1428,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 <X size={16} />
               </button>
             </div>
-            <form onSubmit={handleEditProposalSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleEditProposalSubmit} className="space-y-4 t-cap">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   id="edit-client-name"
@@ -1495,7 +1495,7 @@ export const FreelanceProposalsView: React.FC = () => {
                         scopeItems: [...editFormData.scopeItems, ''],
                       })
                     }
-                    className="text-[11px] font-semibold text-[#d4522f] hover:underline cursor-pointer"
+                    className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline cursor-pointer"
                   >
                     {isAr ? '+ إضافة تسليمة' : isFr ? '+ Ajouter un livrable' : '+ Add Item'}
                   </button>
@@ -1626,15 +1626,15 @@ export const FreelanceProposalsView: React.FC = () => {
                   <AlertTriangle size={20} />
                 </div>
               <div>
-                <h3 className="text-base font-bold text-black dark:text-white">
+                <h3 className="t-card font-semibold text-black dark:text-white">
                   {isAr ? 'حذف عرض السعر' : isFr ? 'Supprimer le Devis' : 'Delete Proposal'}
                 </h3>
-                <p className="text-xs text-black/55 dark:text-white/55">
+                <p className="t-cap text-black/55 dark:text-white/55">
                   {proposalToDelete.clientName}
                 </p>
               </div>
             </div>
-            <p className="text-xs text-black/70 dark:text-white/75 leading-relaxed">
+            <p className="t-cap text-black/70 dark:text-white/75 leading-relaxed">
               {isAr
                 ? `هل أنت متأكد من حذف عرض السعر "${proposalToDelete.title}"؟`
                 : isFr

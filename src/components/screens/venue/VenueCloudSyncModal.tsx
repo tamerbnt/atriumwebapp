@@ -300,7 +300,7 @@ ON CONFLICT (id) DO NOTHING;
               <Cloud size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h2 className="t-pod font-semibold text-black dark:text-white">
                 Supabase Live Cloud Verification
               </h2>
             </div>
@@ -326,14 +326,14 @@ ON CONFLICT (id) DO NOTHING;
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
+                <span className="t-small font-semibold text-black dark:text-white">
                   Supabase Client Status
                 </span>
-                <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] bg-emerald-100 dark:bg-emerald-900/40 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                <span className="px-2 py-1 rounded-[var(--r-check,6px)] bg-emerald-100 dark:bg-emerald-900/40 t-small font-semibold text-emerald-700 dark:text-emerald-300">
                   Connected
                 </span>
               </div>
-              <p className="text-xs text-black/55 dark:text-white/75 mt-1 font-mono">
+              <p className="t-cap text-black/55 dark:text-white/75 mt-1 tabular-nums">
                 Project: tzzncsbvezywtaknwind.supabase.co
               </p>
             </div>
@@ -343,7 +343,7 @@ ON CONFLICT (id) DO NOTHING;
               disabled={isLoading}
               data-sq="ctl"
               data-sq-border="solid"
-              className="px-3 py-1.5 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#525252] text-xs font-medium text-black/70 dark:text-white flex items-center gap-1.5 transition-colors self-start sm:self-auto cursor-pointer"
+              className="px-3 py-2 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#525252] t-small font-medium text-black/70 dark:text-white flex items-center gap-2 transition-colors self-start sm:self-auto cursor-pointer"
             >
               <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
               Refresh Status
@@ -353,13 +353,13 @@ ON CONFLICT (id) DO NOTHING;
           {/* Local vs Cloud Matrix */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold text-black/70 dark:text-white/75 uppercase tracking-wider">
+              <h3 className="t-small font-semibold text-black/70 dark:text-white/75">
                 Rental Database Tables & Live Row Counts
               </h3>
               <button
                 onClick={handleSyncAllLocalToCloud}
                 disabled={isLoading}
-                className="text-xs text-[var(--color-accent)] hover:underline font-semibold flex items-center gap-1"
+                className="t-small text-[var(--color-accent)] hover:underline font-semibold flex items-center gap-1"
               >
                 <Layers size={13} />
                 Upload All Local Data to Supabase
@@ -370,69 +370,69 @@ ON CONFLICT (id) DO NOTHING;
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+                className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
               >
-                <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Rentable Spaces</span>
+                <span className="t-small font-medium text-black/55 dark:text-white/55">Rentable Spaces</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-xl font-bold text-black dark:text-white tabular-nums">
+                  <span className="t-dialog font-semibold text-black dark:text-white tabular-nums">
                     {rentableUnits.length}
                   </span>
-                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="t-small font-medium text-emerald-600 dark:text-emerald-400">
                     ({cloudCounts.units !== null ? `${cloudCounts.units} in Cloud` : 'checking...'})
                   </span>
                 </div>
-                <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block mt-1">rentable_units</span>
+                <span className="t-cap text-black/55 dark:text-white/55 tabular-nums block mt-1">rentable_units</span>
               </div>
 
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+                className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
               >
-                <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Reservations</span>
+                <span className="t-small font-medium text-black/55 dark:text-white/55">Reservations</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-xl font-bold text-black dark:text-white tabular-nums">
+                  <span className="t-dialog font-semibold text-black dark:text-white tabular-nums">
                     {rentalBookings.length}
                   </span>
-                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="t-small font-medium text-emerald-600 dark:text-emerald-400">
                     ({cloudCounts.bookings !== null ? `${cloudCounts.bookings} in Cloud` : 'checking...'})
                   </span>
                 </div>
-                <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block mt-1">rental_bookings</span>
+                <span className="t-cap text-black/55 dark:text-white/55 tabular-nums block mt-1">rental_bookings</span>
               </div>
 
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+                className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
               >
-                <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Renters & Clients</span>
+                <span className="t-small font-medium text-black/55 dark:text-white/55">Renters & Clients</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-xl font-bold text-black dark:text-white tabular-nums">
+                  <span className="t-dialog font-semibold text-black dark:text-white tabular-nums">
                     {rentalRenters.length}
                   </span>
-                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="t-small font-medium text-emerald-600 dark:text-emerald-400">
                     ({cloudCounts.renters !== null ? `${cloudCounts.renters} in Cloud` : 'checking...'})
                   </span>
                 </div>
-                <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block mt-1">rental_renters</span>
+                <span className="t-cap text-black/55 dark:text-white/55 tabular-nums block mt-1">rental_renters</span>
               </div>
 
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+                className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
               >
-                <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Caution Escrow</span>
+                <span className="t-small font-medium text-black/55 dark:text-white/55">Caution Escrow</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-xl font-bold text-black dark:text-white tabular-nums">
+                  <span className="t-dialog font-semibold text-black dark:text-white tabular-nums">
                     {securityDeposits.length}
                   </span>
-                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="t-small font-medium text-emerald-600 dark:text-emerald-400">
                     ({cloudCounts.deposits !== null ? `${cloudCounts.deposits} in Cloud` : 'checking...'})
                   </span>
                 </div>
-                <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block mt-1">security_deposits</span>
+                <span className="t-cap text-black/55 dark:text-white/55 tabular-nums block mt-1">security_deposits</span>
               </div>
             </div>
           </div>
@@ -447,26 +447,26 @@ ON CONFLICT (id) DO NOTHING;
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                  <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-300 uppercase tracking-wider">
+                  <h4 className="t-small font-semibold text-emerald-900 dark:text-emerald-300">
                     Verified Row Confirmed In Supabase Table
                   </h4>
                 </div>
-                <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-900/50 px-2 py-0.5 rounded-[var(--r-check,6px)]">
+                <span className="t-cap tabular-nums text-emerald-700 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-900/50 px-2 py-1 rounded-[var(--r-check,6px)]">
                   table: rental_bookings
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-black dark:text-white mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 t-cap text-black dark:text-white mt-2">
                 <div>
-                  <span className="text-black/55 dark:text-white/75 text-[11px] block">Event & Renter:</span>
+                  <span className="text-black/55 dark:text-white/75 t-cap block">Event & Renter:</span>
                   <span className="font-semibold">{latestBooking.purpose}</span> · {latestBooking.renterName}
                 </div>
                 <div>
-                  <span className="text-black/55 dark:text-white/75 text-[11px] block">Space & Amount:</span>
-                  <span className="font-medium">{latestBooking.unitName}</span> · <span className="font-bold tabular-nums">{latestBooking.totalAmount} {latestBooking.currency}</span>
+                  <span className="text-black/55 dark:text-white/75 t-cap block">Space & Amount:</span>
+                  <span className="font-medium">{latestBooking.unitName}</span> · <span className="font-semibold tabular-nums">{latestBooking.totalAmount} {latestBooking.currency}</span>
                 </div>
                 <div>
-                  <span className="text-black/55 dark:text-white/75 text-[11px] block">Created In Supabase:</span>
-                  <span className="font-mono text-[11px]">{new Date(latestBooking.createdAt).toLocaleString()}</span>
+                  <span className="text-black/55 dark:text-white/75 t-cap block">Created In Supabase:</span>
+                  <span className="tabular-nums t-cap">{new Date(latestBooking.createdAt).toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -480,11 +480,11 @@ ON CONFLICT (id) DO NOTHING;
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h4 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                <h4 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
                   <Send size={15} className="text-purple-600 dark:text-purple-400" />
                   Live Cloud Verification Test
                 </h4>
-                <p className="text-xs text-black/70 dark:text-white/75 mt-0.5">
+                <p className="t-cap text-black/70 dark:text-white/75 mt-0.5">
                   Send an actual reservation to your Supabase project right now to verify row insertion.
                 </p>
               </div>
@@ -494,7 +494,7 @@ ON CONFLICT (id) DO NOTHING;
                 disabled={isLoading}
                 data-sq="ctl"
                 data-sq-border="none"
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold transition-colors shrink-0 flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white t-small font-semibold transition-colors shrink-0 flex items-center gap-2 cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -515,7 +515,7 @@ ON CONFLICT (id) DO NOTHING;
               <div
                 data-sq="ctl"
                 data-sq-border="solid"
-                className={`mt-4 p-3.5 text-xs flex items-start gap-2.5 ${
+                className={`mt-4 p-4 t-cap flex items-start gap-2 ${
                   testResult.success
                     ? 'bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#A7F3D0] dark:[--sq-stroke:#065F46] text-emerald-800 dark:text-emerald-200'
                     : 'bg-rose-50 dark:bg-rose-950/40 [--sq-stroke:#FECDD3] dark:[--sq-stroke:#881337] text-rose-800 dark:text-rose-200'
@@ -545,7 +545,7 @@ ON CONFLICT (id) DO NOTHING;
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Database size={15} className="text-black/55 dark:text-white/55" />
-                <h4 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
+                <h4 className="t-small font-semibold text-black dark:text-white">
                   Supabase 10-Second SQL Fix (If no rows appear)
                 </h4>
               </div>
@@ -553,7 +553,7 @@ ON CONFLICT (id) DO NOTHING;
                 onClick={handleCopySql}
                 data-sq="ctl-sm"
                 data-sq-border="solid"
-                className="px-3 py-1 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#525252] text-xs font-medium text-black dark:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3 py-1 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#525252] t-small font-medium text-black dark:text-white flex items-center gap-2 transition-colors cursor-pointer"
               >
                 {copied ? (
                   <>
@@ -569,14 +569,14 @@ ON CONFLICT (id) DO NOTHING;
               </button>
             </div>
 
-            <p className="text-xs text-black/55 dark:text-white/75 mb-3">
+            <p className="t-cap text-black/55 dark:text-white/75 mb-3">
               If your Supabase project was created with strict foreign keys or RLS, run this script once in your Supabase SQL Editor. It allows direct, seamless saves from the application:
             </p>
 
             <pre
               data-sq="ctl"
               data-sq-border="solid"
-              className="p-3 bg-neutral-900 text-white text-[11px] font-mono overflow-x-auto max-h-40 [--sq-stroke:#262626]"
+              className="p-3 bg-neutral-900 text-white t-cap tabular-nums overflow-x-auto max-h-40 [--sq-stroke:#262626]"
             >
               {sqlRepairScript}
             </pre>
@@ -585,14 +585,14 @@ ON CONFLICT (id) DO NOTHING;
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-800/30">
-          <span className="text-xs text-black/55 dark:text-white/75">
+          <span className="t-cap text-black/55 dark:text-white/75">
             All app reservations are saved both locally in browser storage & synced to Supabase
           </span>
           <button
             onClick={onClose}
             data-sq="ctl"
             data-sq-border="none"
-            className="px-4 py-2 bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-black text-xs font-semibold transition-colors cursor-pointer"
+            className="px-4 py-2 bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-black t-small font-semibold transition-colors cursor-pointer"
           >
             Close
           </button>

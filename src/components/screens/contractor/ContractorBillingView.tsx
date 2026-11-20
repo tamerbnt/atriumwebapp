@@ -521,16 +521,16 @@ export const ContractorBillingView: React.FC<any> = () => {
               <div
                 data-sq="ctl-sm"
                 data-sq-border="solid"
-                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800 [--sq-stroke:#ffedd5] dark:[--sq-stroke:#262626]"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-orange-100 dark:border-neutral-800 [--sq-stroke:#ffedd5] dark:[--sq-stroke:#262626]"
               >
                 <Building2 size={16} />
               </div>
               <div className="min-w-0">
-                <div className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 truncate">
+                <div className="font-semibold t-small text-black dark:text-white flex items-center gap-2 truncate">
                   {d.dgpNumber}
-                  {isPinned && <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
+                  {isPinned && <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
                 </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[180px]">
+                <div className="t-cap text-black/55 dark:text-white/55 truncate max-w-[180px]">
                   {d.periodLabel}
                 </div>
               </div>
@@ -546,8 +546,8 @@ export const ContractorBillingView: React.FC<any> = () => {
         renderCell: (d) => {
           const b = resolveRecordBranch(d, branchesById, currentBranch, language);
           return (
-            <div className="flex items-center gap-1 text-xs text-black/75 dark:text-white/75 truncate">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="flex items-center gap-1 t-cap text-black/75 dark:text-white/75 truncate">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -559,7 +559,7 @@ export const ContractorBillingView: React.FC<any> = () => {
         width: '1.4*',
         sortable: true,
         renderCell: (d) => (
-          <div className="font-mono text-xs text-black dark:text-white tabular-nums">
+          <div className="tabular-nums t-cap text-black dark:text-white">
             {formatMoney(d.periodGrossDzd, language)}
           </div>
         ),
@@ -569,7 +569,7 @@ export const ContractorBillingView: React.FC<any> = () => {
         header: isAr ? 'اقتطاع الضمان (5%)' : 'Retenue (5%)',
         width: '1.3*',
         renderCell: (d) => (
-          <div className="font-mono text-xs text-amber-600 dark:text-amber-400 tabular-nums">
+          <div className="tabular-nums t-cap text-amber-600 dark:text-amber-400">
             {formatMoney(d.retentionGuaranteeDzd, language)}
           </div>
         ),
@@ -580,7 +580,7 @@ export const ContractorBillingView: React.FC<any> = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (d) => (
-          <div className="font-mono font-bold text-xs text-[#d4522f] tabular-nums">
+          <div className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
             {formatMoney(d.netPayableDzd, language)}
           </div>
         ),
@@ -591,7 +591,7 @@ export const ContractorBillingView: React.FC<any> = () => {
         width: '1.2*',
         renderCell: (d) => (
           <span
-            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full t-small font-semibold border ${
               d.status === 'Paid'
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                 : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
@@ -952,11 +952,11 @@ export const ContractorBillingView: React.FC<any> = () => {
                   <div
                     data-sq="ctl-sm"
                     data-sq-border="none"
-                    className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"
+                    className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
                   >
                     <Plus size={16} />
                   </div>
-                  <h3 className="font-bold text-sm text-black dark:text-white">
+                  <h3 className="font-semibold t-label text-black dark:text-white">
                     {isAr ? 'تحرير كشف حساب جديد (DGP)' : 'Établir une Nouvelle Situation DGP'}
                   </h3>
                 </div>
@@ -1004,10 +1004,10 @@ export const ContractorBillingView: React.FC<any> = () => {
                 className="p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between"
               >
                 <div>
-                  <div className="text-xs font-semibold text-black dark:text-white">
+                  <div className="t-small font-semibold text-black dark:text-white">
                     {isAr ? 'تعويض اقتطاع الضمان بكفالة بنكية' : 'Caution bancaire de substitution'}
                   </div>
-                  <div className="text-[11px] text-black/55 dark:text-white/55">
+                  <div className="t-cap text-black/55 dark:text-white/55">
                     {isAr
                       ? 'إلغاء الاقتطاع المالي 5% بموجب كفالة معتمدة'
                       : 'Dispense de retenue 5% (Art. 99 Décret 15-247)'}
@@ -1017,7 +1017,7 @@ export const ContractorBillingView: React.FC<any> = () => {
                   type="checkbox"
                   checked={hasBankCaution}
                   onChange={(e) => setHasBankCaution(e.target.checked)}
-                  className="w-4 h-4 rounded-[var(--r-check,6px)] text-[#d4522f] accent-[#d4522f] cursor-pointer"
+                  className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] accent-[#d4522f] cursor-pointer"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">

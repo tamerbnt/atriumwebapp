@@ -370,16 +370,16 @@ export const ManufacturingBomView: React.FC<any> = () => {
         width: '2.0*',
         sortable: true,
         renderCell: (b) => (
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center tabular-nums font-semibold t-small shrink-0">
               <Layers size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
+              <div className="tabular-nums font-semibold t-small text-black dark:text-white flex items-center gap-2">
                 {b.bomCode}
-                {pinnedIds.has(b.id) && <Pin size={10} className="fill-[#d4522f] text-[#d4522f]" />}
+                {pinnedIds.has(b.id) && <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55">
+              <div className="t-cap text-black/55 dark:text-white/55">
                 Rendement: {b.batchYield} {b.unit}
               </div>
             </div>
@@ -393,8 +393,8 @@ export const ManufacturingBomView: React.FC<any> = () => {
         sortable: true,
         renderCell: (b) => (
           <div className="min-w-0">
-            <div className="font-semibold text-xs text-black dark:text-white truncate">{b.finishedProductName}</div>
-            <div className="text-[11px] text-black/55 dark:text-white/55">{b.components?.length || 0} composants intégrés</div>
+            <div className="font-semibold t-small text-black dark:text-white truncate">{b.finishedProductName}</div>
+            <div className="t-cap text-black/55 dark:text-white/55">{b.components?.length || 0} composants intégrés</div>
           </div>
         ),
       },
@@ -406,8 +406,8 @@ export const ManufacturingBomView: React.FC<any> = () => {
         renderCell: (bom) => {
           const b = resolveRecordBranch(bom, branchesById, currentBranch, language);
           return (
-            <div className="text-xs font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-1.5">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="t-small font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-2">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -419,9 +419,9 @@ export const ManufacturingBomView: React.FC<any> = () => {
         width: '1.3*',
         sortable: true,
         renderCell: (b) => (
-          <div className="flex items-center gap-1 text-xs text-black/70 dark:text-white/75">
-            <Clock size={13} className="text-[#d4522f] shrink-0" />
-            <span className="font-mono font-bold">{b.standardLaborHours} h</span>
+          <div className="flex items-center gap-1 t-cap text-black/70 dark:text-white/75">
+            <Clock size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
+            <span className="tabular-nums font-semibold">{b.standardLaborHours} h</span>
           </div>
         ),
       },
@@ -431,7 +431,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
         width: '1.6*',
         sortable: true,
         renderCell: (b) => (
-          <div className="font-mono font-bold text-xs text-black dark:text-white">{formatMoney(b.estimatedCostDzd, language)}</div>
+          <div className="tabular-nums font-semibold t-small text-black dark:text-white">{formatMoney(b.estimatedCostDzd, language)}</div>
         ),
       },
       {
@@ -440,7 +440,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
         width: '1.2*',
         renderCell: (b) => (
           <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold border ${
               b.isActive
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                 : 'bg-neutral-100 text-black/70 border-neutral-200 dark:bg-neutral-800 dark:text-white/75'
@@ -683,11 +683,11 @@ export const ManufacturingBomView: React.FC<any> = () => {
           renderCard={(b) => (
             <div className="space-y-3 w-full">
               <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2.5 py-1 rounded-full border border-[#d4522f]/20">
+                <span className="tabular-nums font-semibold t-small bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] px-2.5 py-1 rounded-full border border-[#d4522f]/20">
                   {b.bomCode}
                 </span>
                 <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  className={`t-small font-semibold px-2 py-1 rounded-full ${
                     b.isActive
                       ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                       : 'bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75'
@@ -697,19 +697,19 @@ export const ManufacturingBomView: React.FC<any> = () => {
                 </span>
               </div>
               <div>
-                <h3 className="text-sm font-bold text-black dark:text-white line-clamp-1">{b.finishedProductName}</h3>
-                <div className="text-xs text-black/55 dark:text-white/55 font-medium mt-0.5">
+                <h3 className="t-label font-semibold text-black dark:text-white line-clamp-1">{b.finishedProductName}</h3>
+                <div className="t-small text-black/55 dark:text-white/55 font-medium mt-0.5">
                   {b.components?.length || 0} matières & pièces associées
                 </div>
               </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between t-cap">
                 <div>
-                  <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Coût Estimé</div>
-                  <div className="font-mono font-bold text-black dark:text-white mt-0.5">{formatMoney(b.estimatedCostDzd, language)}</div>
+                  <div className="t-cap text-black/55 dark:text-white/55">Coût Estimé</div>
+                  <div className="tabular-nums font-semibold text-black dark:text-white mt-0.5">{formatMoney(b.estimatedCostDzd, language)}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] text-black/55 dark:text-white/55 uppercase tracking-wider">Gamme MO</div>
-                  <div className="font-mono font-semibold text-black/70 dark:text-white/75 mt-0.5">{b.standardLaborHours}h</div>
+                  <div className="t-cap text-black/55 dark:text-white/55">Gamme MO</div>
+                  <div className="tabular-nums font-semibold text-black/70 dark:text-white/75 mt-0.5">{b.standardLaborHours}h</div>
                 </div>
               </div>
             </div>
@@ -804,11 +804,11 @@ export const ManufacturingBomView: React.FC<any> = () => {
             </div>
 
             {tab === 'fiche' && (
-              <div className="space-y-3.5 text-xs">
-                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 space-y-2 border border-neutral-100 dark:border-neutral-800">
+              <div className="space-y-4 t-cap">
+                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-4 space-y-2 border border-neutral-100 dark:border-neutral-800">
                   <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">Code Formule:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">{bom.bomCode}</span>
+                    <span className="tabular-nums font-semibold text-black dark:text-white">{bom.bomCode}</span>
                   </div>
                   <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">Produit Cible:</span>
@@ -816,26 +816,26 @@ export const ManufacturingBomView: React.FC<any> = () => {
                   </div>
                   <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">Rendement de lot:</span>
-                    <span className="font-mono font-bold text-[#d4522f]">
+                    <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                       {bom.batchYield} {bom.unit}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-1">
                     <span className="text-black/55 dark:text-white/55">Gamme Opératoire:</span>
-                    <span className="font-mono text-black dark:text-white">{bom.standardLaborHours} heures MO</span>
+                    <span className="tabular-nums text-black dark:text-white">{bom.standardLaborHours} heures MO</span>
                   </div>
                 </div>
-                <div data-sq="card" data-sq-border="solid" className="p-3.5 bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 [--sq-stroke:#ffedd5] dark:[--sq-stroke:rgba(124,45,18,0.3)]">
+                <div data-sq="card" data-sq-border="solid" className="p-4 bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 [--sq-stroke:#ffedd5] dark:[--sq-stroke:rgba(124,45,18,0.3)]">
                   <div className="flex justify-between items-center">
                     <span className="text-black/70 dark:text-white/75">Coût Standard Unitaire:</span>
-                    <span className="font-mono font-bold text-[#d4522f]">{formatMoney(bom.estimatedCostDzd, language)}</span>
+                    <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(bom.estimatedCostDzd, language)}</span>
                   </div>
                 </div>
               </div>
             )}
 
             {tab === 'composants' && (
-              <div className="space-y-2.5 text-xs">
+              <div className="space-y-2 t-cap">
                 {(bom.components || []).map((c, i) => (
                   <div
                     key={i}
@@ -844,12 +844,12 @@ export const ManufacturingBomView: React.FC<any> = () => {
                     className="p-3 border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-black dark:text-white text-[11px]">{c.rawProductName}</span>
-                      <span className="font-mono font-bold text-black dark:text-white">
+                      <span className="font-semibold text-black dark:text-white t-small">{c.rawProductName}</span>
+                      <span className="tabular-nums font-semibold text-black dark:text-white">
                         {formatMoney(c.quantity * c.unitCostDzd, language)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-[10px] text-black/55 dark:text-white/55">
+                    <div className="flex items-center justify-between t-cap text-black/55 dark:text-white/55">
                       <span>
                         Dose: {c.quantity} {c.unit}
                       </span>
@@ -861,11 +861,11 @@ export const ManufacturingBomView: React.FC<any> = () => {
             )}
 
             {tab === 'costs' && (
-              <div className="space-y-3.5 text-xs">
-                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 space-y-2 border border-neutral-100 dark:border-neutral-800">
+              <div className="space-y-4 t-cap">
+                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-4 space-y-2 border border-neutral-100 dark:border-neutral-800">
                   <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">Matières Premières:</span>
-                    <span className="font-mono font-bold text-black dark:text-white">
+                    <span className="tabular-nums font-semibold text-black dark:text-white">
                       {formatMoney(
                         (bom.components || []).reduce((acc, c) => acc + c.quantity * c.unitCostDzd, 0),
                         language
@@ -874,7 +874,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                   </div>
                   <div className="flex justify-between items-center py-1">
                     <span className="text-black/55 dark:text-white/55">Main d'oeuvre estimée:</span>
-                    <span className="font-mono text-black dark:text-white">
+                    <span className="tabular-nums text-black dark:text-white">
                       {formatMoney(bom.standardLaborHours * 1500, language)}
                     </span>
                   </div>
@@ -883,8 +883,8 @@ export const ManufacturingBomView: React.FC<any> = () => {
             )}
 
             {tab === 'notes' && (
-              <div className="space-y-3 text-xs">
-                <p className="text-black/55 dark:text-white/55 text-[11px]">
+              <div className="space-y-3 t-cap">
+                <p className="text-black/55 dark:text-white/55 t-cap">
                   Directives techniques d'usinage, tolérances et normes d'assemblage :
                 </p>
                 <div data-sq="card" data-sq-border="solid" className="border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800">
@@ -893,7 +893,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                     value={inspectorNotes}
                     onChange={(e) => setInspectorNotes(e.target.value)}
                     placeholder="Noter les étapes opératoires, réglages de coupe, temps de séchage..."
-                    className="lbi-field w-full p-2.5 bg-transparent border-0 text-black dark:text-white text-xs outline-hidden resize-none"
+                    className="lbi-field w-full p-3 bg-transparent border-0 text-black dark:text-white t-cap outline-hidden resize-none"
                   />
                 </div>
                 <AtriumButton
@@ -917,17 +917,17 @@ export const ManufacturingBomView: React.FC<any> = () => {
           <div className="sq-elev-pop max-w-lg w-full">
             <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold">
+                <div className="flex items-center gap-2">
+                  <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
                     <Layers size={20} />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                    <h2 className="t-card font-semibold text-black dark:text-white">
                       {bomToEdit
                         ? isAr ? 'تعديل جدول المكونات (BOM)' : 'Modifier la Nomenclature'
                         : isAr ? 'إنشاء جدول مكونات جديد (BOM)' : 'Nouvelle Nomenclature Produit'}
                     </h2>
-                    <p className="text-xs text-black/55 dark:text-white/55">
+                    <p className="t-cap text-black/55 dark:text-white/55">
                       {isAr ? 'تحديد مواصفات تصنيع المنتجات والمواد' : 'Définition de la recette de fabrication et standard de coût'}
                     </p>
                   </div>
@@ -936,7 +936,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsModalOpen(false)}
-                  className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                 >
                   <X size={18} />
                 </button>

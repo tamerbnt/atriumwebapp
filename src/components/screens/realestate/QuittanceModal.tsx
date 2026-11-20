@@ -110,11 +110,11 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#27272A] mb-5">
           <div className="flex items-center gap-3">
-            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
+            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
               <Receipt className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">Encaissement & Quittance de Loyer</h2>
+              <h2 className="t-dialog font-semibold">Encaissement & Quittance de Loyer</h2>
             </div>
           </div>
           <button
@@ -194,40 +194,40 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
 
           {/* Fiscal Calculation Breakdown Pod */}
           <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141416] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#232328] space-y-3">
-            <div className="flex items-center justify-between text-xs font-semibold text-black/70 dark:text-white/75 uppercase">
+            <div className="flex items-center justify-between t-small font-semibold text-black/70 dark:text-white/75">
               <span>Décompte Légal de la Quittance</span>
-              <span className="flex items-center gap-1 text-[#d4522f]">
+              <span className="flex items-center gap-1 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 <Stamp className="w-3.5 h-3.5" />
                 <span>Code du Timbre Art. 317</span>
               </span>
             </div>
 
-            <div className="space-y-1.5 text-xs">
+            <div className="space-y-2 t-cap">
               <div className="flex justify-between py-1 border-b border-[#E6DED6] dark:border-[#232328]">
                 <span>Loyer Principal HT + Charges</span>
-                <span className="font-mono font-semibold">{subTotal.toLocaleString()} DZD</span>
+                <span className="tabular-nums font-semibold">{subTotal.toLocaleString()} DZD</span>
               </div>
 
               <div className="flex justify-between py-1 border-b border-[#E6DED6] dark:border-[#232328]">
                 <span className="flex items-center gap-1">
                   <span>Droit de Timbre Fiscal ({paymentMethod === 'Cash' ? '1% progressif' : 'Exonéré'})</span>
                 </span>
-                <span className="font-mono font-bold text-[#d4522f]">
+                <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                   {timbreFiscalDzd > 0 ? `+ ${timbreFiscalDzd.toLocaleString()} DZD` : '0 DZD (Exonéré)'}
                 </span>
               </div>
 
-              <div className="flex justify-between py-1.5 text-sm font-bold text-black dark:text-white">
+              <div className="flex justify-between py-2 t-label font-semibold text-black dark:text-white">
                 <span>Total Net Encaissé du Locataire</span>
-                <span className="font-mono text-base text-[#d4522f]">
+                <span className="tabular-nums t-body text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                   {totalCollectedDzd.toLocaleString()} DZD
                 </span>
               </div>
             </div>
 
-            <div data-sq="ctl" data-sq-border="solid" className="p-2.5 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] text-[11px] text-black/70 dark:text-white/75 flex items-center justify-between">
+            <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] t-cap text-black/70 dark:text-white/75 flex items-center justify-between">
               <span>Commission Agence ({managementRate}% + TVA 19%): <strong className="text-black dark:text-white">{(agencyCommissionFeeDzd + agencyCommissionTvaDzd).toLocaleString()} DZD</strong></span>
-              <span>Reversé au Propriétaire: <strong className="text-emerald-600 dark:text-emerald-400 font-mono">{netDisbursedToOwnerDzd.toLocaleString()} DZD</strong></span>
+              <span>Reversé au Propriétaire: <strong className="text-emerald-600 dark:text-emerald-400 tabular-nums">{netDisbursedToOwnerDzd.toLocaleString()} DZD</strong></span>
             </div>
           </div>
 

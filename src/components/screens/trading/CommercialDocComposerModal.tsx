@@ -227,20 +227,20 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-stone-900 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] flex flex-col max-h-[92vh] overflow-hidden">
 <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/70 shrink-0">
 <div className="flex items-center gap-3">
-<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold"><FileText size={20} /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><FileText size={20} /></div>
 <div>
 <div className="flex items-center gap-2">
-<h2 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isEdit ? t("trading_composer_edit_title") : t("trading_composer_title")}</h2>
-<span className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-xs font-mono font-medium bg-[#d4522f]/15 text-[#d4522f]">{generatedDocNumber}</span>
+<h2 className="t-pod font-semibold text-black dark:text-white">{isEdit ? t("trading_composer_edit_title") : t("trading_composer_title")}</h2>
+<span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small tabular-nums font-medium bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{generatedDocNumber}</span>
 </div>
-<p className="text-xs text-black/55 dark:text-white/75">{t("trading_composer_fiscal_standards")}</p>
+<p className="t-cap text-black/55 dark:text-white/75">{t("trading_composer_fiscal_standards")}</p>
 </div>
 </div>
 <button onClick={onClose} data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"><X size={20} /></button>
 </div>
-<div className="p-6 overflow-y-auto space-y-6 flex-1 text-sm">
+<div className="p-6 overflow-y-auto space-y-6 flex-1 t-body">
 <div>
-<label className="block text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider mb-2">{t("trading_composer_doc_type")}</label>
+<label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-2">{t("trading_composer_doc_type")}</label>
 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
 {[
 								{
@@ -270,7 +270,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 								}
 							].map((item) => {
 								const isSelected = docType === item.type;
-								return /* @__PURE__ */ <button key={item.type} type="button" onClick={() => setDocType(item.type as CommercialDocType)} data-sq="ctl" data-sq-border="solid" className={`flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium transition-all ${isSelected ? "[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f] font-bold" : "[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-white dark:bg-stone-900 text-black/70 dark:text-white/75"}`}>
+								return /* @__PURE__ */ <button key={item.type} type="button" onClick={() => setDocType(item.type as CommercialDocType)} data-sq="ctl" data-sq-border="solid" className={`flex items-center justify-center gap-2 px-3 py-2 t-small font-medium transition-all ${isSelected ? "[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold" : "[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-white dark:bg-stone-900 text-black/70 dark:text-white/75"}`}>
 <span className="w-2 h-2 rounded-full bg-current opacity-70" />
 <span>{item.label}</span>
 </button>;
@@ -283,18 +283,18 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 											value: c.id,
 											label: `${c.companyName} ${c.city ? `(${c.city})` : ""}`
 										}))} />
-{selectedClient && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="mt-2 p-2 bg-white dark:bg-stone-900 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] text-[11px] space-y-1 text-black/55 dark:text-white/55">
+{selectedClient && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="mt-2 p-2 bg-white dark:bg-stone-900 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] t-cap space-y-1 text-black/55 dark:text-white/55">
 <div className="flex justify-between">
 <span>NIF (15 chiffres):</span>
-<span className="font-mono text-black/70 dark:text-white/75">{selectedClient.nif || "Non renseigné"}</span>
+<span className="tabular-nums text-black/70 dark:text-white/75">{selectedClient.nif || "Non renseigné"}</span>
 </div>
 <div className="flex justify-between">
 <span>Registre Comm. (RC):</span>
-<span className="font-mono text-black/70 dark:text-white/75">{selectedClient.rc || "Non renseigné"}</span>
+<span className="tabular-nums text-black/70 dark:text-white/75">{selectedClient.rc || "Non renseigné"}</span>
 </div>
 <div className="flex justify-between">
 <span>Encours / Crédit:</span>
-<span className="font-mono text-black/70 dark:text-white/75">
+<span className="tabular-nums text-black/70 dark:text-white/75">
 {formatMoney(selectedClient.outstandingBalance || 0)}
 {" / "}
 {formatMoney(selectedClient.creditLimit || 0)}
@@ -307,8 +307,8 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 										value: w.id,
 										label: `${w.code} — ${w.name}`
 									}))} />
-<div className="mt-2 text-[11px] text-black/55 dark:text-white/55 flex items-center gap-1.5">
-<Building2 size={13} className="text-[#d4522f]" />
+<div className="mt-2 t-cap text-black/55 dark:text-white/55 flex items-center gap-2">
+<Building2 size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
 <span>
 {selectedDepot?.address}
 {", "}
@@ -379,35 +379,35 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </div>
 <div>
 <div className="flex items-center justify-between mb-2">
-<h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider">
+<h3 className="t-small font-semibold text-black/70 dark:text-white/75">
 {t("trading_composer_items_services")}
 {" ("}
 {items.length}
 )
 </h3>
-<button type="button" onClick={addItemRow} data-sq="ctl-sm" data-sq-border="none" className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-[#d4522f]/10 text-[#d4522f] hover:bg-[#d4522f]/20 transition-colors">
+<button type="button" onClick={addItemRow} data-sq="ctl-sm" data-sq-border="none" className="inline-flex items-center gap-2 px-3 py-1 t-small font-medium bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:bg-[#d4522f]/20 transition-colors">
 <Plus size={14} />
 <span>{t("trading_composer_add_line")}</span>
 </button>
 </div>
 <div data-sq="table" data-sq-border="solid" className="overflow-x-auto [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-white dark:bg-stone-900">
-<table className="w-full text-left text-xs">
+<table className="w-full text-left t-cap">
 <thead className="bg-stone-50 dark:bg-stone-800/60 border-b border-stone-200 dark:border-stone-800 text-black/55 dark:text-white/55">
 <tr>
-<th className="py-2.5 px-3 w-[260px]">Article / Service</th>
-<th className="py-2.5 px-2 w-[80px]">Unité</th>
-<th className="py-2.5 px-2 w-[70px] text-right">Qté</th>
-<th className="py-2.5 px-2 w-[110px] text-right">P.U. HT (DA)</th>
-<th className="py-2.5 px-2 w-[70px] text-right">TVA %</th>
-<th className="py-2.5 px-2 w-[70px] text-right">Remise %</th>
-<th className="py-2.5 px-3 w-[110px] text-right">Total HT</th>
-<th className="py-2.5 px-2 w-[40px] text-center" />
+<th className="py-2 px-3 w-[260px]">Article / Service</th>
+<th className="py-2 px-2 w-[80px]">Unité</th>
+<th className="py-2 px-2 w-[70px] text-right">Qté</th>
+<th className="py-2 px-2 w-[110px] text-right">P.U. HT (DA)</th>
+<th className="py-2 px-2 w-[70px] text-right">TVA %</th>
+<th className="py-2 px-2 w-[70px] text-right">Remise %</th>
+<th className="py-2 px-3 w-[110px] text-right">Total HT</th>
+<th className="py-2 px-2 w-[40px] text-center" />
 </tr>
 </thead>
 <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
 {items.map((item: any, idx: number) => /* @__PURE__ */ <tr key={item.id} className="hover:bg-stone-50/50 dark:hover:bg-stone-800/30">
 <td className="p-2 space-y-1">
-<select className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-black dark:text-white focus:outline-hidden focus:border-[#d4522f]" value={item.productId || ""} onChange={(e) => handleProductSelect(idx, e.target.value)}>
+<select className="w-full t-cap rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-black dark:text-white focus:outline-hidden focus:border-[#d4522f]" value={item.productId || ""} onChange={(e) => handleProductSelect(idx, e.target.value)}>
 <option value="">-- Choisir dans le catalogue --</option>
 {products.map((p) => /* @__PURE__ */ <option key={p.id} value={p.id}>
 {p.sku ? `[${p.sku}] ` : ""}
@@ -417,10 +417,10 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 {" DA)"}
 </option>)}
 </select>
-<input type="text" placeholder="Désignation détaillée / référence" value={item.description} onChange={(e) => handleItemChange(idx, "description", e.target.value)} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-black dark:text-white focus:outline-hidden focus:border-[#d4522f]" />
+<input type="text" placeholder="Désignation détaillée / référence" value={item.description} onChange={(e) => handleItemChange(idx, "description", e.target.value)} className="w-full t-cap rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-black dark:text-white focus:outline-hidden focus:border-[#d4522f]" />
 </td>
 <td className="p-2">
-<select value={item.unit} onChange={(e) => handleItemChange(idx, "unit", e.target.value)} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-1 py-1">
+<select value={item.unit} onChange={(e) => handleItemChange(idx, "unit", e.target.value)} className="w-full t-cap rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-1 py-1">
 <option value="u">u</option>
 <option value="pcs">pcs</option>
 <option value="sac">sac</option>
@@ -435,22 +435,22 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </select>
 </td>
 <td className="p-2">
-<input type="number" min="0.01" step="any" value={item.quantity} onChange={(e) => handleItemChange(idx, "quantity", parseFloat(e.target.value) || 0)} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right font-mono" />
+<input type="number" min="0.01" step="any" value={item.quantity} onChange={(e) => handleItemChange(idx, "quantity", parseFloat(e.target.value) || 0)} className="w-full t-cap rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right tabular-nums" />
 </td>
 <td className="p-2">
-<input type="number" min="0" step="any" value={item.unitPriceHt} onChange={(e) => handleItemChange(idx, "unitPriceHt", parseFloat(e.target.value) || 0)} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right font-mono" />
+<input type="number" min="0" step="any" value={item.unitPriceHt} onChange={(e) => handleItemChange(idx, "unitPriceHt", parseFloat(e.target.value) || 0)} className="w-full t-cap rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right tabular-nums" />
 </td>
 <td className="p-2">
-<select value={item.tvaPercent} onChange={(e) => handleItemChange(idx, "tvaPercent", parseInt(e.target.value, 10))} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-1 py-1 text-right font-mono">
+<select value={item.tvaPercent} onChange={(e) => handleItemChange(idx, "tvaPercent", parseInt(e.target.value, 10))} className="w-full t-cap rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-1 py-1 text-right tabular-nums">
 <option value="19">19%</option>
 <option value="9">9%</option>
 <option value="0">0%</option>
 </select>
 </td>
 <td className="p-2">
-<input type="number" min="0" max="100" value={item.discountPercent || 0} onChange={(e) => handleItemChange(idx, "discountPercent", parseFloat(e.target.value) || 0)} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right font-mono" />
+<input type="number" min="0" max="100" value={item.discountPercent || 0} onChange={(e) => handleItemChange(idx, "discountPercent", parseFloat(e.target.value) || 0)} className="w-full t-cap rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right tabular-nums" />
 </td>
-<td className="p-2 text-right font-mono font-semibold text-black dark:text-white tabular-nums">{formatMoney(item.totalHt)}</td>
+<td className="p-2 text-right tabular-nums font-semibold text-black dark:text-white">{formatMoney(item.totalHt)}</td>
 <td className="p-2 text-center">
 <button type="button" onClick={() => removeItemRow(idx)} disabled={items.length <= 1} className="p-1 text-black/55 dark:text-white/55 hover:text-rose-600 disabled:opacity-30 disabled:hover:text-black/55 dark:disabled:hover:text-white/55 transition-colors"><Trash2 size={14} /></button>
 </td>
@@ -460,10 +460,10 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </div>
 </div>
 <div data-sq="card" data-sq-border="solid" className="[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] overflow-hidden">
-<button type="button" onClick={() => setShowAdvancedOptions(!showAdvancedOptions)} className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800/40 flex items-center justify-between text-xs font-semibold text-black/70 dark:text-white/75 hover:bg-stone-100 dark:hover:bg-stone-800/60 transition-colors">
+<button type="button" onClick={() => setShowAdvancedOptions(!showAdvancedOptions)} className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800/40 flex items-center justify-between t-small font-semibold text-black/70 dark:text-white/75 hover:bg-stone-100 dark:hover:bg-stone-800/60 transition-colors">
 <div className="flex items-center gap-2">
 <span>{t("trading_composer_advanced_accordion")}</span>
-{(generalDiscountPercent > 0 || guaranteeRetentionPercent > 0 || isCashFiscalStampEnabled) && /* @__PURE__ */ <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#d4522f]/15 text-[#d4522f] font-mono">{t("trading_composer_options_active")}</span>}
+{(generalDiscountPercent > 0 || guaranteeRetentionPercent > 0 || isCashFiscalStampEnabled) && /* @__PURE__ */ <span className="px-2 py-1 rounded-full t-cap bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">{t("trading_composer_options_active")}</span>}
 </div>
 {showAdvancedOptions ? /* @__PURE__ */ <ChevronUp size={16} /> : /* @__PURE__ */ <ChevronDown size={16} />}
 </button>
@@ -471,16 +471,16 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div>
 <LabelInput type="number" label={t("trading_composer_general_discount")} value={generalDiscountPercent} min={0} max={100} step={0.5} onChange={(e) => setGeneralDiscountPercent(parseFloat(e.target.value) || 0)} />
-<p className="text-[11px] text-black/55 dark:text-white/55 mt-1">S'applique après les remises à la ligne.</p>
+<p className="t-cap text-black/55 dark:text-white/55 mt-1">S'applique après les remises à la ligne.</p>
 </div>
 <div>
 <LabelInput type="number" label={t("trading_composer_guarantee_retention")} value={guaranteeRetentionPercent} min={0} max={20} step={1} onChange={(e) => setGuaranteeRetentionPercent(parseFloat(e.target.value) || 0)} />
-<p className="text-[11px] text-black/55 dark:text-white/55 mt-1">Usuellement 5% ou 10% pour les marchés et chantiers.</p>
+<p className="t-cap text-black/55 dark:text-white/55 mt-1">Usuellement 5% ou 10% pour les marchés et chantiers.</p>
 </div>
 <div className="flex flex-col justify-end">
-<label data-sq="ctl-sm" data-sq-border="solid" className="flex items-center gap-2 cursor-pointer p-2.5 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#44403C] hover:bg-stone-50 dark:hover:bg-stone-800">
-<input type="checkbox" checked={isCashFiscalStampEnabled} onChange={(e) => setIsCashFiscalStampEnabled(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]" />
-<span className="text-xs font-medium text-black/70 dark:text-white/75">{t("trading_composer_fiscal_stamp")}</span>
+<label data-sq="ctl-sm" data-sq-border="solid" className="flex items-center gap-2 cursor-pointer p-3 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#44403C] hover:bg-stone-50 dark:hover:bg-stone-800">
+<input type="checkbox" checked={isCashFiscalStampEnabled} onChange={(e) => setIsCashFiscalStampEnabled(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
+<span className="t-small font-medium text-black/70 dark:text-white/75">{t("trading_composer_fiscal_stamp")}</span>
 </label>
 </div>
 </div>
@@ -489,61 +489,61 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 <LabelInput label={t("trading_composer_notes_bottom")} placeholder="Ex: Marchandise vendue agréée, aucun retour après 48h..." value={notesBottom} onChange={(e) => setNotesBottom(e.target.value)} />
 </div>
 <div className="pt-1">
-<label className="flex items-center gap-2 cursor-pointer text-xs text-black/70 dark:text-white/75">
-<input type="checkbox" checked={includeStampSignature} onChange={(e) => setIncludeStampSignature(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]" />
+<label className="flex items-center gap-2 cursor-pointer t-cap text-black/70 dark:text-white/75">
+<input type="checkbox" checked={includeStampSignature} onChange={(e) => setIncludeStampSignature(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
 <span>{t("trading_composer_include_stamp")}</span>
 </label>
 </div>
 </div>}
 </div>
 <div data-sq="card" data-sq-border="solid" className="p-4 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-stone-50 dark:bg-stone-800/40 space-y-2">
-<div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
+<div className="grid grid-cols-2 sm:grid-cols-4 gap-4 t-cap tabular-nums">
 <div>
-<span className="text-black/55 dark:text-white/55 block text-[11px]">{t("trading_composer_total_raw_ht")}</span>
-<span className="text-black dark:text-white font-semibold text-sm">{formatMoney(calculations.totalHtRaw)}</span>
+<span className="text-black/55 dark:text-white/55 block t-cap">{t("trading_composer_total_raw_ht")}</span>
+<span className="text-black dark:text-white font-semibold t-label">{formatMoney(calculations.totalHtRaw)}</span>
 </div>
 {generalDiscountPercent > 0 && /* @__PURE__ */ <div>
-<span className="text-black/55 dark:text-white/55 block text-[11px]">
+<span className="text-black/55 dark:text-white/55 block t-cap">
 {t("trading_composer_general_discount")}
 {" ("}
 {generalDiscountPercent}
 %)
 </span>
-<span className="text-rose-600 font-semibold text-sm">
+<span className="text-rose-600 font-semibold t-label">
 -
 {formatMoney(calculations.totalHtRaw - calculations.totalHtFinal)}
 </span>
 </div>}
 <div>
-<span className="text-black/55 dark:text-white/55 block text-[11px]">{t("trading_composer_total_final_ht")}</span>
-<span className="text-black dark:text-white font-semibold text-sm">{formatMoney(calculations.totalHtFinal)}</span>
+<span className="text-black/55 dark:text-white/55 block t-cap">{t("trading_composer_total_final_ht")}</span>
+<span className="text-black dark:text-white font-semibold t-label">{formatMoney(calculations.totalHtFinal)}</span>
 </div>
 <div>
-<span className="text-black/55 dark:text-white/55 block text-[11px]">{t("trading_composer_total_tva")}</span>
-<span className="text-black dark:text-white font-semibold text-sm">{formatMoney(calculations.totalTva)}</span>
+<span className="text-black/55 dark:text-white/55 block t-cap">{t("trading_composer_total_tva")}</span>
+<span className="text-black dark:text-white font-semibold t-label">{formatMoney(calculations.totalTva)}</span>
 </div>
 {calculations.timbreFiscal > 0 && /* @__PURE__ */ <div>
-<span className="text-black/55 dark:text-white/55 block text-[11px]">{t("trading_composer_fiscal_stamp")}</span>
-<span className="text-amber-600 font-semibold text-sm">
+<span className="text-black/55 dark:text-white/55 block t-cap">{t("trading_composer_fiscal_stamp")}</span>
+<span className="text-amber-600 font-semibold t-label">
 +
 {formatMoney(calculations.timbreFiscal)}
 </span>
 </div>}
 {calculations.guaranteeRetentionAmount > 0 && /* @__PURE__ */ <div>
-<span className="text-black/55 dark:text-white/55 block text-[11px]">
+<span className="text-black/55 dark:text-white/55 block t-cap">
 {t("trading_composer_guarantee_retention")}
 {" ("}
 {guaranteeRetentionPercent}
 %)
 </span>
-<span className="text-blue-600 font-semibold text-sm">
+<span className="text-blue-600 font-semibold t-label">
 -
 {formatMoney(calculations.guaranteeRetentionAmount)}
 </span>
 </div>}
 <div data-sq="ctl-sm" data-sq-border="solid" className="col-span-2 sm:col-span-1 p-2 bg-[#d4522f]/10 [--sq-stroke:rgba(212,82,47,0.3)] sm:ml-auto w-full text-right">
-<span className="text-[#d4522f] block text-[11px] font-semibold uppercase">{t("trading_composer_net_to_pay")}</span>
-<span className="text-[#d4522f] font-bold text-base tabular-nums">{formatMoney(calculations.netToPay)}</span>
+<span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block t-small font-semibold">{t("trading_composer_net_to_pay")}</span>
+<span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-card tabular-nums">{formatMoney(calculations.netToPay)}</span>
 </div>
 </div>
 </div>

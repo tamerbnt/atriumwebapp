@@ -17,14 +17,14 @@ export const FreelanceStaffView: React.FC = () => {
       sortable: true,
       cell: (member) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-semibold t-small flex items-center justify-center shrink-0">
             {member.fullName.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-black dark:text-white text-xs truncate">
+            <div className="font-semibold text-black dark:text-white t-small truncate">
               {member.fullName}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate">
               {member.role}
             </div>
           </div>
@@ -48,7 +48,7 @@ export const FreelanceStaffView: React.FC = () => {
                 : 'bg-neutral-400'
             }`}
           />
-          <span className="text-xs font-medium text-black dark:text-white">
+          <span className="t-small font-medium text-black dark:text-white">
             {member.status === 'active'
               ? isAr
                 ? 'متاح للمشاريع'
@@ -81,7 +81,7 @@ export const FreelanceStaffView: React.FC = () => {
       header: isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone',
       accessorKey: 'phoneNumber',
       cell: (member) => (
-        <span className="text-xs text-black/70 dark:text-white/75 tabular-nums">
+        <span className="t-cap text-black/70 dark:text-white/75 tabular-nums">
           {member.phoneNumber || '—'}
         </span>
       ),
@@ -91,7 +91,7 @@ export const FreelanceStaffView: React.FC = () => {
       header: isAr ? 'صيغة التعاقد' : isEn ? 'Contract Model' : 'Type Collaboration',
       accessorKey: 'contractType',
       cell: (member) => (
-        <span className="text-xs font-medium text-black/70 dark:text-white/75">
+        <span className="t-small font-medium text-black/70 dark:text-white/75">
           {member.contractType === 'cdi' ? 'Sous-traitance Régulière' : 'Mission Ponctuelle'}
         </span>
       ),

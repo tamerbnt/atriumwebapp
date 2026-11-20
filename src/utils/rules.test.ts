@@ -611,4 +611,23 @@ test('Category 17 Agriculture: Quadruple Traceability on Parcels, Cycles, Milkin
   }
 });
 
+test('French typographic polish helpers enforce NBSP, narrow NBSP thousands, abbreviated months, and guillemets', async () => {
+  const {
+    formatFrenchNumber,
+    formatFrenchCurrency,
+    formatFrenchPercent,
+    formatFrenchDate,
+    formatFrenchQuotes,
+  } = await import('./rules.ts');
+
+  assert.equal(formatFrenchNumber(12500), '12\u202F500');
+  assert.equal(formatFrenchNumber(12500.75), '12\u202F500,75');
+  assert.equal(formatFrenchCurrency(12500, 'DZD'), '12\u202F500\u00A0DZD');
+  assert.equal(formatFrenchCurrency(0, 'DZD'), '0\u00A0DZD');
+  assert.equal(formatFrenchPercent(100), '100\u00A0%');
+  assert.equal(formatFrenchDate(new Date(2026, 11, 6)), '6\u00A0déc.\u00A02026');
+  assert.equal(formatFrenchQuotes('Atrium'), '«\u00A0Atrium\u00A0»');
+});
+
+
 

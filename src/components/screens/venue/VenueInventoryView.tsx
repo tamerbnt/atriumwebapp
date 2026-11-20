@@ -481,7 +481,7 @@ export const VenueInventoryView: React.FC = () => {
               />
               <div className="min-w-0">
                 <div className="font-semibold text-black dark:text-white truncate">{u.name}</div>
-                <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+                <div className="t-cap text-black/55 dark:text-white/55 truncate">
                   {u.code} · {localizedType}
                 </div>
               </div>
@@ -498,7 +498,7 @@ export const VenueInventoryView: React.FC = () => {
         renderCell: (u) => {
           const bInfo = resolveRecordBranch(u, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -512,7 +512,7 @@ export const VenueInventoryView: React.FC = () => {
         minWidth: '105px',
         sortable: true,
         renderCell: (u) => (
-          <span className="font-medium text-xs text-black dark:text-white tabular-nums">
+          <span className="font-medium t-small text-black dark:text-white tabular-nums">
             {t('venue_card_capacity', language, { count: u.capacity })}
           </span>
         ),
@@ -524,7 +524,7 @@ export const VenueInventoryView: React.FC = () => {
         minWidth: '100px',
         sortable: true,
         renderCell: (u) => (
-          <span className="text-xs text-black/70 dark:text-white/75 tabular-nums">
+          <span className="t-cap text-black/70 dark:text-white/75 tabular-nums">
             {u.surfaceAreaSqm
               ? t('venue_inv_surface_unit', language, { surface: u.surfaceAreaSqm })
               : '--'}
@@ -538,11 +538,11 @@ export const VenueInventoryView: React.FC = () => {
         minWidth: '160px',
         sortable: true,
         renderCell: (u) => (
-          <div className="text-xs space-y-0.5">
-            <div className="font-semibold text-black dark:text-white tabular-nums font-mono">
+          <div className="t-cap space-y-0.5">
+            <div className="font-semibold text-black dark:text-white tabular-nums">
               {formatCurrencyAmount(u.hourlyRate, u.currency)} / {t('venue_inv_hourly_short')}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 tabular-nums font-mono">
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               {formatCurrencyAmount(u.dailyRate, u.currency)} / {t('venue_inv_daily_short')}
             </div>
           </div>
@@ -569,7 +569,7 @@ export const VenueInventoryView: React.FC = () => {
               : 'Maintenance';
           return (
             <span
-              className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide uppercase ${
+              className={`inline-block px-2.5 py-1 rounded-full t-small font-semibold tracking-wide ${
                 u.status === 'Available'
                   ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
                   : u.status === 'Occupied'
@@ -1103,10 +1103,10 @@ export const VenueInventoryView: React.FC = () => {
             >
             <div className="p-6 border-b border-neutral-100 dark:border-neutral-700 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-black dark:text-white">
+                <h3 className="t-pod font-semibold text-black dark:text-white">
                   {unitToEdit ? t('venue_inv_btn_edit') : t('venue_inv_btn_new_space')}
                 </h3>
-                <p className="text-xs text-black/55 dark:text-white/55 mt-0.5">
+                <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
                   {isAr
                     ? 'تكوين مواصفات القاعة، الطاقة الاستيعابية والتعريفات'
                     : isFr
@@ -1195,7 +1195,7 @@ export const VenueInventoryView: React.FC = () => {
                 onChange={(v) => setAmenitiesStr(extractStr(v))}
               />
               <div>
-                <label className="block text-xs font-semibold text-black/70 dark:text-white/75 mb-1">
+                <label className="block t-small font-semibold text-black/70 dark:text-white/75 mb-1">
                   {t('venue_inv_desc')}
                 </label>
                 <textarea
@@ -1203,7 +1203,7 @@ export const VenueInventoryView: React.FC = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Description commerciale de l'espace..."
-                  className="w-full px-3.5 py-2 rounded-[var(--r-ctl,12px)] border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+                  className="w-full px-4 py-2 rounded-[var(--r-ctl,12px)] border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 t-cap text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                 />
               </div>
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-700">
@@ -1212,7 +1212,7 @@ export const VenueInventoryView: React.FC = () => {
                   onClick={() => setIsAddModalOpen(false)}
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                 >
                   {isAr ? 'إلغاء' : isFr ? 'Annuler' : 'Cancel'}
                 </button>

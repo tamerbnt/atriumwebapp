@@ -464,14 +464,14 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (tx) => (
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-[#262422] flex items-center justify-center text-xs font-bold text-[#d4522f] shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-[#262422] flex items-center justify-center t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
               {tx.memberName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <span className="text-[13.5px] font-semibold text-black dark:text-white truncate block">
+              <span className="t-label font-semibold text-black dark:text-white truncate block">
                 {tx.memberName}
               </span>
-              <span className="font-mono text-[11px] text-[#d4522f] font-semibold block">
+              <span className="tabular-nums t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold block">
                 {tx.id} · {tx.date}
               </span>
             </div>
@@ -485,10 +485,10 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (tx) => (
           <div className="min-w-0">
-            <span className="text-[12.5px] font-semibold text-black dark:text-white truncate block">
+            <span className="t-small font-semibold text-black dark:text-white truncate block">
               {tx.plan}
             </span>
-            <span className="text-[11px] text-black/62 dark:text-white/65">
+            <span className="t-cap text-black/62 dark:text-white/65">
               {tx.paymentMethod === 'BaridiMob'
                 ? 'BaridiMob'
                 : tx.paymentMethod === 'Card'
@@ -507,7 +507,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (tx) => (
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold ${
+            className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold ${
               tx.status === 'Settled'
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
                 : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300'
@@ -531,10 +531,10 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (tx) => (
           <div className="tabular-nums">
-            <span className="font-mono text-[13px] font-bold text-black dark:text-white block">
+            <span className="tabular-nums t-label font-semibold text-black dark:text-white block">
               {formatMoney(tx.amount)}
             </span>
-            <span className="text-[11px] text-black/62 dark:text-white/65 block">{tx.date}</span>
+            <span className="t-cap text-black/62 dark:text-white/65 block">{tx.date}</span>
           </div>
         ),
       },
@@ -544,7 +544,7 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
         accessorKey: 'branchName',
         sortable: true,
         renderCell: (tx) => (
-          <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+          <span className="t-small font-medium text-black/80 dark:text-white/85 truncate block">
             {tx.branchName || currentBranch?.name || 'Main'}
           </span>
         ),

@@ -998,7 +998,7 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (a) => (
-          <div className="font-mono font-bold text-xs text-[#d4522f]">{a.matterReference}</div>
+          <div className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{a.matterReference}</div>
         ),
       },
       {
@@ -1006,11 +1006,11 @@ export const LegalTrustView: React.FC<any> = () => {
         header: isAr ? 'المشتري ➔ البائع المستفيد' : 'Acquéreur ➔ Vendeur',
         width: '2.6*',
         renderCell: (a) => (
-          <div className="text-xs min-w-0">
-            <span className="font-bold text-black dark:text-white block truncate">
+          <div className="t-cap min-w-0">
+            <span className="font-semibold text-black dark:text-white block truncate">
               {a.clientName}
             </span>
-            <span className="text-[11px] text-black/55 dark:text-white/55 truncate block">
+            <span className="t-cap text-black/55 dark:text-white/55 truncate block">
               ➔ {a.beneficiaryName}
             </span>
           </div>
@@ -1022,7 +1022,7 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '1.7*',
         sortable: true,
         renderCell: (a) => (
-          <div className="font-mono text-xs font-bold text-[#d4522f] tabular-nums">
+          <div className="tabular-nums t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
             {formatMoney(a.currentBalanceDzd, language)}
           </div>
         ),
@@ -1033,8 +1033,8 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '1.6*',
         sortable: true,
         renderCell: (a) => (
-          <span className="inline-flex items-center gap-1.5 text-xs text-black/75 dark:text-white/80 truncate">
-            <MapPin size={12} className="text-[#d4522f] shrink-0" />
+          <span className="inline-flex items-center gap-2 t-cap text-black/75 dark:text-white/80 truncate">
+            <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
             <span className="truncate">
               {resolveRecordBranch(a, branchesById, currentBranch, language).name}
             </span>
@@ -1047,7 +1047,7 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '1.6*',
         renderCell: (a) => (
           <span
-            className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+            className={`t-small font-semibold px-2 py-1 rounded-full inline-flex items-center gap-1 ${
               a.isLocked
                 ? 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
                 : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
@@ -1376,7 +1376,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   title={isAr ? 'الشرط الأول: الإشهار العقاري' : 'Verrou 1 : Publicité Foncière'}
                   action={
                     esc.cadastralClearanceProof?.volume ? (
-                      <span className="text-[10px] font-bold text-[#096b40] dark:text-[#5BE3A3] flex items-center gap-1">
+                      <span className="t-small font-semibold text-[#096b40] dark:text-[#5BE3A3] flex items-center gap-1">
                         <CheckCircle2 size={12} />
                         {isAr ? 'تم التحقق' : 'Conforme'}
                       </span>
@@ -1400,7 +1400,7 @@ export const LegalTrustView: React.FC<any> = () => {
                     <div
                       data-sq="card"
                       data-sq-border="solid"
-                      className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2.5"
+                      className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2"
                     >
                       <div className="grid grid-cols-2 gap-2">
                         <LabelInput
@@ -1429,7 +1429,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   <div
                     data-sq="card"
                     data-sq-border="solid"
-                    className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2.5"
+                    className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2"
                   >
                     <LabelInput
                       label={
@@ -1524,7 +1524,7 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (e) => (
-          <div className="font-mono font-bold text-xs text-[#d4522f]">{e.entryNumber}</div>
+          <div className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{e.entryNumber}</div>
         ),
       },
       {
@@ -1532,7 +1532,7 @@ export const LegalTrustView: React.FC<any> = () => {
         header: 'Jrn',
         width: '0.8*',
         renderCell: (e) => (
-          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-black/75 dark:text-white/80">
+          <span className="tabular-nums t-small font-semibold px-2 py-1 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-black/75 dark:text-white/80">
             {e.journalCode}
           </span>
         ),
@@ -1543,10 +1543,10 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '2.8*',
         renderCell: (e) => (
           <div className="min-w-0">
-            <span className="font-bold text-xs text-black dark:text-white block truncate">
+            <span className="font-semibold t-small text-black dark:text-white block truncate">
               {e.libelle}
             </span>
-            <span className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               Réf: {e.pieceJustificativeRef} · {e.date}
             </span>
           </div>
@@ -1558,7 +1558,7 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (e) => (
-          <span className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+          <span className="tabular-nums t-small font-semibold text-black dark:text-white">
             {formatMoney(e.totalDebitDzd, language)}
           </span>
         ),
@@ -1569,8 +1569,8 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (e) => (
-          <span className="inline-flex items-center gap-1.5 text-xs text-black/75 dark:text-white/80 truncate">
-            <MapPin size={12} className="text-[#d4522f] shrink-0" />
+          <span className="inline-flex items-center gap-2 t-cap text-black/75 dark:text-white/80 truncate">
+            <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
             <span className="truncate">
               {resolveRecordBranch(e, branchesById, currentBranch, language).name}
             </span>
@@ -1854,8 +1854,8 @@ export const LegalTrustView: React.FC<any> = () => {
               >
               <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
                 <div className="flex items-center gap-2">
-                  <Scale size={20} className="text-[#d4522f]" />
-                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <Scale size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                  <h2 className="t-card font-semibold text-black dark:text-white">
                     {isAr
                       ? 'تسجيل قيد محاسبي مزدوج (SCF)'
                       : "Saisie d'une Écriture Comptable SCF"}
@@ -1866,12 +1866,12 @@ export const LegalTrustView: React.FC<any> = () => {
                   data-no-liquid="true"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsSCFModalOpen(false)}
-                  className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   <X size={18} />
                 </button>
               </div>
-              <form onSubmit={handleSaveSCFEntry} className="space-y-3 text-xs">
+              <form onSubmit={handleSaveSCFEntry} className="space-y-3 t-cap">
                 <div className="grid grid-cols-2 gap-3">
                   <LabelSelect
                     label={isAr ? 'دفتر اليومية' : 'Code Journal'}
@@ -1922,19 +1922,19 @@ export const LegalTrustView: React.FC<any> = () => {
                 <div
                   data-sq="card"
                   data-sq-border="none"
-                  className="p-3 bg-neutral-50 dark:bg-neutral-800/60 space-y-1 font-mono text-[11px]"
+                  className="p-3 bg-neutral-50 dark:bg-neutral-800/60 space-y-1 tabular-nums t-cap"
                 >
                   <div className="flex justify-between">
                     <span>Compte 706000 (Crédit HT):</span>
-                    <span className="font-bold">{formatMoney(scfDebitAmount, language)}</span>
+                    <span className="font-semibold">{formatMoney(scfDebitAmount, language)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Compte 445700 (TVA {scfTvaRate}%):</span>
-                    <span className="font-bold">
+                    <span className="font-semibold">
                       {formatMoney(Math.round(scfDebitAmount * (scfTvaRate / 100)), language)}
                     </span>
                   </div>
-                  <div className="flex justify-between border-t border-neutral-200 dark:border-neutral-700 pt-1 font-bold text-[#d4522f]">
+                  <div className="flex justify-between border-t border-neutral-200 dark:border-neutral-700 pt-1 font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     <span>Compte 411000 (Débit TTC):</span>
                     <span>
                       {formatMoney(
@@ -2014,7 +2014,7 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (r) => (
-          <div className="font-mono font-bold text-xs text-[#d4522f]">{r.receiptNumber}</div>
+          <div className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{r.receiptNumber}</div>
         ),
       },
       {
@@ -2023,10 +2023,10 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '2.6*',
         renderCell: (r) => (
           <div className="min-w-0">
-            <span className="font-bold text-xs text-black dark:text-white block truncate">
+            <span className="font-semibold t-small text-black dark:text-white block truncate">
               {r.clientName}
             </span>
-            <span className="text-[11px] text-black/55 dark:text-white/55 truncate block">
+            <span className="t-cap text-black/55 dark:text-white/55 truncate block">
               {r.matterTitle}
             </span>
           </div>
@@ -2037,7 +2037,7 @@ export const LegalTrustView: React.FC<any> = () => {
         header: isAr ? 'طابع م 317' : 'Timbre Art. 317',
         width: '1.4*',
         renderCell: (r) => (
-          <span className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400 tabular-nums">
+          <span className="tabular-nums t-small font-semibold text-amber-600 dark:text-amber-400">
             +{formatMoney(r.timbreFiscalDzd, language)}
           </span>
         ),
@@ -2048,8 +2048,8 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (r) => (
-          <span className="inline-flex items-center gap-1.5 text-xs text-black/75 dark:text-white/80 truncate">
-            <MapPin size={12} className="text-[#d4522f] shrink-0" />
+          <span className="inline-flex items-center gap-2 t-cap text-black/75 dark:text-white/80 truncate">
+            <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
             <span className="truncate">
               {resolveRecordBranch(r, branchesById, currentBranch, language).name}
             </span>
@@ -2062,7 +2062,7 @@ export const LegalTrustView: React.FC<any> = () => {
         width: '1.6*',
         sortable: true,
         renderCell: (r) => (
-          <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+          <span className="tabular-nums t-small font-semibold text-emerald-600 dark:text-emerald-400">
             {formatMoney(r.netCollectedDzd, language)}
           </span>
         ),
@@ -2342,8 +2342,8 @@ export const LegalTrustView: React.FC<any> = () => {
               >
               <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
                 <div className="flex items-center gap-2">
-                  <CreditCard size={20} className="text-[#d4522f]" />
-                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <CreditCard size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                  <h2 className="t-card font-semibold text-black dark:text-white">
                     {isAr
                       ? 'قبض مبلغ نقدي مع طابع المادة 317'
                       : 'Encaissement Espèces & Timbre Art. 317'}
@@ -2354,12 +2354,12 @@ export const LegalTrustView: React.FC<any> = () => {
                   data-no-liquid="true"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsNewReceiptModalOpen(false)}
-                  className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   <X size={18} />
                 </button>
               </div>
-              <form onSubmit={handleSaveCashReceipt} className="space-y-3 text-xs">
+              <form onSubmit={handleSaveCashReceipt} className="space-y-3 t-cap">
                 <LabelInput
                   label={isAr ? 'اسم الموكل / الدافع *' : 'Nom du Client / Payeur *'}
                   placeholder="Ex: Hadj Amine Mansouri"
@@ -2390,7 +2390,7 @@ export const LegalTrustView: React.FC<any> = () => {
                     <div
                       data-sq="card"
                       data-sq-border="none"
-                      className="p-3 bg-neutral-50 dark:bg-neutral-800/60 space-y-1 font-mono text-[11px]"
+                      className="p-3 bg-neutral-50 dark:bg-neutral-800/60 space-y-1 tabular-nums t-cap"
                     >
                       <div className="flex justify-between">
                         <span>Montant HT:</span>
@@ -2400,15 +2400,15 @@ export const LegalTrustView: React.FC<any> = () => {
                         <span>TVA (19%):</span>
                         <span>{formatMoney(tva, language)}</span>
                       </div>
-                      <div className="flex justify-between text-amber-600 font-bold">
+                      <div className="flex justify-between text-amber-600 font-semibold">
                         <span>Timbre Fiscal Progressif (Art. 317):</span>
                         <span>+{formatMoney(stamp, language)}</span>
                       </div>
-                      <div className="flex justify-between border-t border-neutral-200 dark:border-neutral-700 pt-1 font-bold text-sm text-emerald-600">
+                      <div className="flex justify-between border-t border-neutral-200 dark:border-neutral-700 pt-1 font-semibold t-label text-emerald-600">
                         <span>Total Net à Encaisser en Espèces:</span>
                         <span>{formatMoney(netCollected, language)}</span>
                       </div>
-                      <p className="text-[10px] text-black/55 dark:text-white/55 font-sans mt-1">
+                      <p className="t-cap text-black/55 dark:text-white/55 font-sans mt-1">
                         Droit de timbre gradué (Art. 317) : Exonéré &lt; 500 DA, 20-200 DA, puis 1% plafonné à 2 500 DA.
                       </p>
                     </div>
@@ -2502,7 +2502,7 @@ export const LegalTrustView: React.FC<any> = () => {
       width: '1.4*',
       sortable: true,
       renderCell: (m) => (
-        <div className="font-mono font-bold text-xs text-[#d4522f]">{m.matterNumber}</div>
+        <div className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{m.matterNumber}</div>
       ),
     },
     {
@@ -2511,10 +2511,10 @@ export const LegalTrustView: React.FC<any> = () => {
       width: '2.6*',
       renderCell: (m) => (
         <div className="min-w-0">
-          <span className="font-bold text-xs text-black dark:text-white block truncate">
+          <span className="font-semibold t-small text-black dark:text-white block truncate">
             {isAr && m.titleAr ? m.titleAr : m.title}
           </span>
-          <span className="text-[11px] text-black/55 dark:text-white/55 truncate block">
+          <span className="t-cap text-black/55 dark:text-white/55 truncate block">
             {m.clientName} · {m.category}
           </span>
         </div>
@@ -2526,7 +2526,7 @@ export const LegalTrustView: React.FC<any> = () => {
       width: '1.4*',
       sortable: true,
       renderCell: (m) => (
-        <span className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+        <span className="tabular-nums t-small font-semibold text-black dark:text-white">
           {formatMoney(m.retainerAmountDzd, language)}
         </span>
       ),
@@ -2537,7 +2537,7 @@ export const LegalTrustView: React.FC<any> = () => {
       width: '1.5*',
       sortable: true,
       renderCell: (m) => (
-        <div className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 tabular-nums">
+        <div className="tabular-nums t-small font-semibold text-blue-600 dark:text-blue-400">
           {formatMoney(m.trustEscrowBalanceDzd || 0, language)}
         </div>
       ),
@@ -2548,8 +2548,8 @@ export const LegalTrustView: React.FC<any> = () => {
       width: '1.5*',
       sortable: true,
       renderCell: (m) => (
-        <span className="inline-flex items-center gap-1.5 text-xs text-black/75 dark:text-white/80 truncate">
-          <MapPin size={12} className="text-[#d4522f] shrink-0" />
+        <span className="inline-flex items-center gap-2 t-cap text-black/75 dark:text-white/80 truncate">
+          <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
           <span className="truncate">
             {resolveRecordBranch(m, branchesById, currentBranch, language).name}
           </span>

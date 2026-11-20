@@ -479,7 +479,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         renderCell: (m) => {
           const isPinned = pinnedMissionIds.has(m.id);
           return (
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 aria-label="Pin"
@@ -490,7 +490,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 data-sq="ctl-sm"
                 className={`p-1 transition-colors cursor-pointer ${
                   isPinned
-                    ? 'text-[#d4522f] bg-[#d4522f]/10'
+                    ? 'text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-[#d4522f]/10'
                     : 'text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80'
                 }`}
               >
@@ -498,10 +498,10 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               </button>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-xs text-[#d4522f]">{m.code}</span>
-                  <span className="font-semibold text-xs text-black dark:text-white">{m.title}</span>
+                  <span className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{m.code}</span>
+                  <span className="font-semibold t-small text-black dark:text-white">{m.title}</span>
                 </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[200px]">
+                <div className="t-cap text-black/55 dark:text-white/55 truncate max-w-[200px]">
                   {m.projectTitle}
                 </div>
               </div>
@@ -515,9 +515,9 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         width: '2*',
         minWidth: '180px',
         renderCell: (m) => (
-          <div className="text-xs text-black/70 dark:text-white/75">
+          <div className="t-cap text-black/70 dark:text-white/75">
             <div className="font-semibold">{m.venueName}</div>
-            <div className="text-[11px] text-black/55 dark:text-white/55">
+            <div className="t-cap text-black/55 dark:text-white/55">
               {m.address} ({m.wilayaName})
             </div>
           </div>
@@ -529,9 +529,9 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         width: '1.5*',
         minWidth: '150px',
         renderCell: (m) => (
-          <div className="text-xs text-black/70 dark:text-white/75 font-mono">
+          <div className="t-cap text-black/70 dark:text-white/75 tabular-nums">
             <div>{m.startDate}</div>
-            <div className="text-[11px] text-black/55 dark:text-white/55">
+            <div className="t-cap text-black/55 dark:text-white/55">
               {m.dailyStartHour} - {m.dailyEndHour}
             </div>
           </div>
@@ -544,7 +544,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         minWidth: '120px',
         align: 'center',
         renderCell: (m) => (
-          <span className="font-mono text-xs font-bold text-black dark:text-white">
+          <span className="tabular-nums t-small font-semibold text-black dark:text-white">
             {m.requiredStaffCount} pers.
           </span>
         ),
@@ -558,7 +558,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         renderCell: (m) => {
           const badge = getMissionStatusBadge(m.status, language);
           return (
-            <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.pillClass}`}>
+            <span className={`px-2.5 py-1 rounded-full t-small font-semibold ${badge.pillClass}`}>
               {badge.label}
             </span>
           );
@@ -598,13 +598,13 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         width: '2.5*',
         minWidth: '220px',
         renderCell: (att) => (
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-[#d4522f] shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
               {att.talentName.substring(0, 2).toUpperCase()}
             </div>
             <div>
-              <div className="font-semibold text-xs text-black dark:text-white">{att.talentName}</div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+              <div className="font-semibold t-small text-black dark:text-white">{att.talentName}</div>
+              <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                 {isAr ? 'الوصول:' : 'Arrivée :'} {att.checkInTime || 'Non pointé'}
               </div>
             </div>
@@ -618,7 +618,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         minWidth: '140px',
         align: 'right',
         renderCell: (att) => (
-          <div className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+          <div className="tabular-nums t-small font-semibold text-black dark:text-white">
             {formatMoney(att.grossPayableDzd, 'DZD')}
           </div>
         ),
@@ -632,7 +632,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         renderCell: (att) => {
           if (isMissionLocked) {
             return (
-              <span className="font-semibold text-xs text-black/70 dark:text-white/75 capitalize">
+              <span className="font-semibold t-small text-black/70 dark:text-white/75 capitalize">
                 {getAttendanceBadge(att.status, language).label} (Verrouillé)
               </span>
             );
@@ -643,7 +643,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 type="button"
                 onClick={() => updatePmAttendanceStatus(att.id, 'present')}
                 data-sq="check"
-                className={`px-2 py-0.5 text-[11px] font-bold cursor-pointer ${
+                className={`px-2 py-1 t-small font-semibold cursor-pointer ${
                   att.status === 'present'
                     ? 'bg-emerald-600 text-white'
                     : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-emerald-50'
@@ -655,7 +655,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 type="button"
                 onClick={() => updatePmAttendanceStatus(att.id, 'late', 15)}
                 data-sq="check"
-                className={`px-2 py-0.5 text-[11px] font-bold cursor-pointer ${
+                className={`px-2 py-1 t-small font-semibold cursor-pointer ${
                   att.status === 'late'
                     ? 'bg-amber-500 text-white'
                     : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-amber-50'
@@ -667,7 +667,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 type="button"
                 onClick={() => updatePmAttendanceStatus(att.id, 'absent')}
                 data-sq="check"
-                className={`px-2 py-0.5 text-[11px] font-bold cursor-pointer ${
+                className={`px-2 py-1 t-small font-semibold cursor-pointer ${
                   att.status === 'absent'
                     ? 'bg-red-600 text-white'
                     : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-red-50'
@@ -700,13 +700,13 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 className="w-9 h-9 rounded-full object-cover border border-[#d4522f] shrink-0"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-[#d4522f] shrink-0">
+              <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
                 {tal.fullName.slice(0, 2).toUpperCase()}
               </div>
             )}
             <div className="min-w-0">
-              <div className="font-bold text-xs text-black dark:text-white truncate">{tal.fullName}</div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+              <div className="font-semibold t-small text-black dark:text-white truncate">{tal.fullName}</div>
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">
                 {tal.wilayaName} · {tal.commune}
               </div>
             </div>
@@ -719,7 +719,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         width: '1*',
         minWidth: '100px',
         renderCell: (tal) => (
-          <span className="inline-flex items-center gap-1 font-mono text-xs text-amber-500 font-bold">
+          <span className="inline-flex items-center gap-1 tabular-nums t-small text-amber-500 font-semibold">
             <Star className="w-3.5 h-3.5 fill-current" />
             {tal.consolidatedScore.toFixed(1)}
           </span>
@@ -731,7 +731,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         width: '1.2*',
         minWidth: '120px',
         renderCell: (tal) => (
-          <span className="text-xs text-black/70 dark:text-white/75">
+          <span className="t-cap text-black/70 dark:text-white/75">
             {tal.isVehicleOwner
               ? isAr
                 ? 'سيارة خاصة'
@@ -827,9 +827,9 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             onClick={() => setShowPhoneSimulator((prev) => !prev)}
             data-sq="ctl"
             data-sq-border={showPhoneSimulator ? 'none' : 'solid'}
-            className={`h-10 px-3.5 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`h-10 px-4 t-small font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
               showPhoneSimulator
-                ? 'bg-[#d4522f] text-white'
+                ? 'bg-[var(--brand-fill,#C9461F)] text-white'
                 : 'bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#FBF8F5]'
             }`}
           >
@@ -921,7 +921,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
       <ScreenPod>
         <div className="space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
+            <h2 className="t-label font-semibold text-black dark:text-white">
               {isAr
                 ? 'مركز العمليات الميدانية والتنقيط الحي'
                 : isEn
@@ -1046,16 +1046,16 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 renderCard={(mission) => (
                   <div className="flex flex-col justify-between h-full space-y-3">
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs font-mono font-bold text-[#d4522f]">
+                      <div className="flex items-center justify-between t-small tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                         <span>{mission.code}</span>
                         <span className="text-black/55 dark:text-white/55 font-normal">
                           {mission.activationType}
                         </span>
                       </div>
-                      <h4 className="text-sm font-bold text-black dark:text-white line-clamp-1">
+                      <h4 className="t-label font-semibold text-black dark:text-white line-clamp-1">
                         {mission.title}
                       </h4>
-                      <div className="text-xs text-black/55 dark:text-white/55 space-y-0.5">
+                      <div className="t-cap text-black/55 dark:text-white/55 space-y-0.5">
                         <div className="font-semibold text-black/70 dark:text-white/75">
                           {mission.venueName}
                         </div>
@@ -1064,8 +1064,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                         </div>
                       </div>
                     </div>
-                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex justify-between items-center text-xs">
-                      <span className="font-mono text-black/55 dark:text-white/55">
+                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex justify-between items-center t-cap">
+                      <span className="tabular-nums text-black/55 dark:text-white/55">
                         {mission.startDate}
                       </span>
                       <button
@@ -1075,7 +1075,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                           setSelectedMissionId(mission.id);
                           setActiveTab('attendance');
                         }}
-                        className="text-[#d4522f] font-semibold hover:underline cursor-pointer"
+                        className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold hover:underline cursor-pointer"
                       >
                         {isAr ? 'تنقيط ➔' : isEn ? 'Roll Call ➔' : 'Pointer ➔'}
                       </button>
@@ -1095,7 +1095,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider">
+                    <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                       {isAr
                         ? 'ورقة الحضور والتنقيط الحي'
                         : isEn
@@ -1103,7 +1103,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                         : 'Feuille de Présence & Pointage'}
                     </span>
                     {isMissionLocked && (
-                      <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 flex items-center gap-1">
+                      <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 flex items-center gap-1">
                         <Lock className="w-3 h-3" />
                         {isAr ? 'مغلق' : isEn ? 'Locked' : 'Verrouillé'}
                       </span>
@@ -1114,7 +1114,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                       value={selectedMission?.id || ''}
                       onChange={(e) => setSelectedMissionId(e.target.value)}
                       aria-label={isAr ? 'اختيار المهمة' : 'Sélectionner la mission'}
-                      className="h-9 px-3 rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-[#FBF8F5] dark:bg-neutral-800 text-xs font-bold text-black dark:text-white cursor-pointer"
+                      className="h-9 px-3 rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-[#FBF8F5] dark:bg-neutral-800 t-small font-semibold text-black dark:text-white cursor-pointer"
                     >
                       {pmMissions.map((m) => (
                         <option key={m.id} value={m.id}>
@@ -1123,7 +1123,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                       ))}
                     </select>
                   </div>
-                  <div className="text-xs text-black/55 dark:text-white/55">
+                  <div className="t-cap text-black/55 dark:text-white/55">
                     {selectedMission?.venueName} · {selectedMission?.startDate} (
                     {selectedMission?.dailyStartHour} - {selectedMission?.dailyEndHour})
                   </div>
@@ -1131,7 +1131,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 <div className="flex items-center gap-3 flex-wrap">
                   <div
                     data-sq="ctl"
-                    className="flex items-center gap-3 text-xs font-bold font-mono px-4 py-2 bg-[#FBF8F5] dark:bg-neutral-800"
+                    className="flex items-center gap-3 t-small font-semibold tabular-nums px-4 py-2 bg-[#FBF8F5] dark:bg-neutral-800"
                   >
                     <span className="text-emerald-600">
                       {presentCount} {isAr ? 'حاضر' : isEn ? 'Present' : 'Présents'}
@@ -1150,7 +1150,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                       type="button"
                       onClick={handleCloseShift}
                       data-sq="ctl"
-                      className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                      className="px-4 py-2 t-small font-semibold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer"
                     >
                       <Lock className="w-3.5 h-3.5" />
                       {isAr
@@ -1277,24 +1277,24 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 renderCard={(att) => (
                   <div className="flex flex-col justify-between h-full space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-bold text-sm text-[#d4522f] shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
                         {att.talentName.substring(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-black dark:text-white line-clamp-1">
+                        <h4 className="t-label font-semibold text-black dark:text-white line-clamp-1">
                           {att.talentName}
                         </h4>
-                        <p className="text-xs text-black/55 dark:text-white/55 font-mono">
+                        <p className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                           Arrivée : {att.checkInTime || 'Non pointé'}
                         </p>
                       </div>
                     </div>
                     <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
-                      <span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">
+                      <span className="tabular-nums font-semibold t-label text-black dark:text-white">
                         {formatMoney(att.grossPayableDzd, 'DZD')}
                       </span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`px-2 py-1 rounded-full t-small font-semibold ${
                           getAttendanceBadge(att.status, language).pillClass
                         }`}
                       >
@@ -1374,18 +1374,18 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                         className="w-12 h-12 rounded-full object-cover border border-[#d4522f] shrink-0"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-bold text-sm text-[#d4522f] shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
                         {talent.fullName.slice(0, 2).toUpperCase()}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <div className="font-bold text-xs text-black dark:text-white truncate">
+                      <div className="font-semibold t-small text-black dark:text-white truncate">
                         {talent.fullName}
                       </div>
-                      <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+                      <div className="t-cap text-black/55 dark:text-white/55 truncate">
                         {talent.wilayaName} · {talent.commune}
                       </div>
-                      <div className="flex items-center gap-1 font-mono text-[11px] text-amber-500 font-bold mt-1">
+                      <div className="flex items-center gap-1 tabular-nums t-small text-amber-500 font-semibold mt-1">
                         <Star className="w-3 h-3 fill-current" />
                         <span>{talent.consolidatedScore.toFixed(1)}</span>
                       </div>
@@ -1403,10 +1403,10 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] max-w-xl mx-auto space-y-4"
             >
               <div>
-                <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
+                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
                   {isAr ? 'مصاريف الميدان الطارئة' : isEn ? 'Emergency Field Expense' : "Dépense d'Urgence Terrain"}
                 </span>
-                <h3 className="text-lg font-bold text-black dark:text-white mt-0.5">
+                <h3 className="t-pod font-semibold text-black dark:text-white mt-0.5">
                   {isAr ? 'مصاريف التسيير والمستهلكات' : isEn ? 'Site Petty Cash & Consumables' : 'Frais de Régie & Consommables'}
                 </h3>
               </div>
@@ -1414,7 +1414,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-xs text-emerald-800 dark:text-emerald-300"
+                  className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] t-cap text-emerald-800 dark:text-emerald-300"
                 >
                   {isAr
                     ? 'تم إرسال النفقة إلى الإدارة للمصادقة!'
@@ -1724,7 +1724,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             <button
               type="button"
               onClick={() => setShowPhoneSimulator(false)}
-              className="absolute -top-10 right-0 text-white font-bold text-xs bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded-full cursor-pointer flex items-center gap-1.5"
+              className="absolute -top-10 right-0 text-white font-semibold t-small bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-full cursor-pointer flex items-center gap-2"
             >
               <X className="w-3.5 h-3.5" />
               <span>{isAr ? 'إغلاق المحاكي' : 'Fermer le Simulateur'}</span>
@@ -1736,18 +1736,18 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                   data-sq-border="solid"
                   className="p-3 bg-[#FBF8F5] dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
                 >
-                  <div className="text-xs font-bold text-[#d4522f]">
+                  <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     {selectedMission?.code || 'MIS-104'}
                   </div>
-                  <div className="text-sm font-bold text-black dark:text-white">
+                  <div className="t-label font-semibold text-black dark:text-white">
                     {selectedMission?.title || 'Activation Terrain'}
                   </div>
-                  <div className="text-[11px] text-black/55 dark:text-white/55">
+                  <div className="t-cap text-black/55 dark:text-white/55">
                     {selectedMission?.venueName} ({selectedMission?.wilayaName})
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-xs font-bold text-black/70 dark:text-white/75">
+                  <div className="t-small font-semibold text-black/70 dark:text-white/75">
                     Équipe Affectée ({missionAttendances.length} animateurs)
                   </div>
                   {missionAttendances.map((att) => (
@@ -1755,18 +1755,18 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                       key={att.id}
                       data-sq="ctl"
                       data-sq-border="solid"
-                      className="p-3 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] flex items-center justify-between text-xs"
+                      className="p-3 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] flex items-center justify-between t-cap"
                     >
                       <div>
                         <div className="font-semibold text-black dark:text-white">
                           {att.talentName}
                         </div>
-                        <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+                        <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                           {att.status.toUpperCase()} · {formatMoney(att.grossPayableDzd, 'DZD')}
                         </div>
                       </div>
                       <span
-                        className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold ${
+                        className={`px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold ${
                           getAttendanceBadge(att.status, language).pillClass
                         }`}
                       >

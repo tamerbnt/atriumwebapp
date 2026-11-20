@@ -312,7 +312,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   ? 'Select Manufacturing Order'
                   : 'Sélectionner Ordre de Fabrication'
               }
-              className="lbi-field w-full h-full px-3 bg-transparent border-0 text-xs font-semibold text-black dark:text-white cursor-pointer outline-none"
+              className="lbi-field w-full h-full px-3 bg-transparent border-0 t-small font-semibold text-black dark:text-white cursor-pointer outline-none"
             >
               {orders.map((o) => (
                 <option key={o.id} value={o.id}>
@@ -350,19 +350,19 @@ export const ManufacturingWorkstationView: React.FC = () => {
             role="alert"
             data-sq="card"
             data-sq-border="none"
-            className="bg-red-600 text-white px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            className="bg-red-600 text-white px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
           >
             <div className="flex items-center gap-3">
               <BellRing size={20} className="animate-bounce shrink-0" />
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider">
+                <p className="t-small font-semibold">
                   {isAr
                     ? 'حالة طوارئ أندون نشطة — المحطة 03'
                     : isEn
                     ? 'Active Andon Alert — Station 03'
                     : "Appel Andon Actif — Poste 03 Découpe & Usinage CNC"}
                 </p>
-                <p className="text-xs text-white/90">
+                <p className="t-cap text-white/90">
                   {isAr
                     ? 'تم إشعار رئيس الورشة وفريق الصيانة بالتدخل الفوري.'
                     : isEn
@@ -377,7 +377,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={handleCancelAndon}
-              className="px-3.5 py-2 bg-white text-red-700 text-xs font-bold hover:bg-red-50 transition-colors cursor-pointer shrink-0"
+              className="px-4 py-2 bg-white text-red-700 t-small font-semibold hover:bg-red-50 transition-colors cursor-pointer shrink-0"
             >
               {isAr ? 'إغلاق النداء' : isEn ? 'Close Alert' : 'Clôturer Andon'}
             </button>
@@ -454,14 +454,14 @@ export const ManufacturingWorkstationView: React.FC = () => {
             <div className="sq-elev-card">
               <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 space-y-3">
                 <div className="flex items-center justify-between px-1 pt-1">
-                  <span className="text-xs font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
+                  <span className="t-small font-semibold text-black/55 dark:text-white/55">
                     {isAr
                       ? 'أمر التصنيع المخصص'
                       : isEn
                       ? 'Assigned Manufacturing Order'
                       : 'Ordre de Fabrication Actif'}
                   </span>
-                  <span className="text-xs font-mono font-bold text-[#d4522f]">
+                  <span className="t-small tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     {orders.length} {isAr ? 'أوامر متاحة' : isEn ? 'available' : 'OFs disponibles'}
                   </span>
                 </div>
@@ -469,11 +469,11 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 {currentOrder ? (
                   <div data-sq="ctl" data-sq-border="solid" className="p-4 bg-[#F3EDE7]/65 dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-black/55 dark:text-white/55 font-mono">
+                    <span className="t-small font-semibold text-black/55 dark:text-white/55 tabular-nums">
                       Lot: {currentOrder.batchLotNumber || 'LOT-2026-05'}
                     </span>
                     <span
-                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                      className={`t-small font-semibold px-2.5 py-1 rounded-full ${
                         currentOrder.status === 'Completed'
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                           : currentOrder.status === 'InProduction'
@@ -484,26 +484,26 @@ export const ManufacturingWorkstationView: React.FC = () => {
                       {currentOrder.status}
                     </span>
                   </div>
-                  <div className="text-base font-bold text-black dark:text-white">
+                  <div className="t-card font-semibold text-black dark:text-white">
                     {currentOrder.productName}
                   </div>
-                  <div className="text-[11px] font-mono text-black/55 dark:text-white/55">
+                  <div className="t-cap tabular-nums text-black/55 dark:text-white/55">
                     {currentOrder.orderNumber}
                   </div>
-                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#E6DED6] dark:border-neutral-700 text-xs">
+                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#E6DED6] dark:border-neutral-700 t-cap">
                     <div>
-                      <span className="text-black/55 dark:text-white/55 block text-[11px]">
+                      <span className="text-black/55 dark:text-white/55 block t-cap">
                         {isAr ? 'الهدف' : isEn ? 'OF Target' : 'Cible OF'}
                       </span>
-                      <span className="font-mono font-bold text-black dark:text-white text-sm">
+                      <span className="tabular-nums font-semibold text-black dark:text-white t-label">
                         {currentOrder.targetQuantity} {isAr ? 'وحدة' : isEn ? 'units' : 'unités'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-black/55 dark:text-white/55 block text-[11px]">
+                      <span className="text-black/55 dark:text-white/55 block t-cap">
                         {isAr ? 'المنجز' : isEn ? 'Conforming' : 'Conformes'}
                       </span>
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                      <span className="tabular-nums font-semibold text-emerald-600 dark:text-emerald-400 t-label">
                         {producedCount} {isAr ? 'وحدة' : isEn ? 'units' : 'unités'}
                       </span>
                     </div>
@@ -519,9 +519,9 @@ export const ManufacturingWorkstationView: React.FC = () => {
                           setInspectorTab('of');
                           setIsInspectorOpen(true);
                         }}
-                        className="w-full py-2.5 px-3 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 hover:border-[#d4522f] text-xs font-bold text-black dark:text-white flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                        className="w-full py-2 px-3 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 hover:border-[#d4522f] t-small font-semibold text-black dark:text-white flex items-center justify-center gap-2 transition-colors cursor-pointer"
                       >
-                        <Eye size={14} className="text-[#d4522f]" />
+                        <Eye size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                         <span>
                           {isAr ? 'معاينة أمر التصنيع والمواصفات' : isEn ? 'Inspect MO & Specs' : 'Inspecter OF / Specs'}
                         </span>
@@ -529,7 +529,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div data-sq="ctl" data-sq-border="none" className="p-4 bg-[#F3EDE7]/50 dark:bg-neutral-800/40 text-xs text-black/55 dark:text-white/55">
+                  <div data-sq="ctl" data-sq-border="none" className="p-4 bg-[#F3EDE7]/50 dark:bg-neutral-800/40 t-cap text-black/55 dark:text-white/55">
                     {isAr ? 'لا يوجد أمر تصنيع محدد' : isEn ? 'No manufacturing order selected' : 'Aucun OF sélectionné'}
                   </div>
                 )}
@@ -540,8 +540,8 @@ export const ManufacturingWorkstationView: React.FC = () => {
               <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck size={18} className="text-[#d4522f] shrink-0" />
-                  <h3 className="text-sm font-bold text-black dark:text-white">
+                  <ShieldCheck size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
+                  <h3 className="t-label font-semibold text-black dark:text-white">
                     {isAr
                       ? 'إجراءات السلامة والوقاية (قانون 88-07)'
                       : isEn
@@ -550,7 +550,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   </h3>
                 </div>
                 <span
-                  className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${
+                  className={`t-small font-semibold px-2.5 py-1 rounded-full shrink-0 ${
                     isSafetyChecklistComplete
                       ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                       : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
@@ -569,7 +569,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     : 'Validation Requise'}
                 </span>
               </div>
-              <p className="text-xs text-black/55 dark:text-white/75">
+              <p className="t-cap text-black/55 dark:text-white/75">
                 {isAr
                   ? 'وفقاً للتشريع الجزائري، يُلزم المشغل بارتداء معدات الحماية قبل تفعيل محطة التشغيل.'
                   : isEn
@@ -607,14 +607,14 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     data-sq-border="solid"
                     aria-pressed={epi.active}
                     onClick={epi.toggle}
-                    className={`p-3.5 border text-left rtl:text-right flex items-center gap-3 transition-all cursor-pointer ${
+                    className={`p-4 border text-left rtl:text-right flex items-center gap-3 transition-all cursor-pointer ${
                       epi.active
-                        ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 [--sq-stroke:#6ee7b7] dark:[--sq-stroke:#047857] text-emerald-800 dark:text-emerald-300 font-bold'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 [--sq-stroke:#6ee7b7] dark:[--sq-stroke:#047857] text-emerald-800 dark:text-emerald-300 font-semibold'
                         : 'bg-[#FBF8F5] dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040] text-black/70 dark:text-white/75'
                     }`}
                   >
                     <div
-                      className={`w-6 h-6 rounded-[var(--r-check,6px)] flex items-center justify-center text-xs font-bold shrink-0 ${
+                      className={`w-6 h-6 rounded-[var(--r-check,6px)] flex items-center justify-center t-small font-semibold shrink-0 ${
                         epi.active
                           ? 'bg-emerald-600 text-white'
                           : 'bg-neutral-200 dark:bg-neutral-700 text-black/55 dark:text-white/55'
@@ -622,7 +622,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     >
                       ✓
                     </div>
-                    <span className="text-xs leading-snug">{epi.label}</span>
+                    <span className="t-cap leading-snug">{epi.label}</span>
                   </button>
                 ))}
               </div>
@@ -633,8 +633,8 @@ export const ManufacturingWorkstationView: React.FC = () => {
           <div className="lg:col-span-7 space-y-5">
             <div className="sq-elev-card">
               <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-6 sm:p-8 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col items-center justify-center text-center space-y-6">
-              <div className="flex items-center gap-2 text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-widest">
-                <Clock size={16} className="text-[#d4522f]" />
+              <div className="flex items-center gap-2 t-small font-semibold text-black/55 dark:text-white/55">
+                <Clock size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>
                   {isAr
                     ? 'عداد وقت التشغيل النشط'
@@ -643,10 +643,10 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     : 'Temps de Cycle Machine'}
                 </span>
               </div>
-              <div className="font-mono font-black text-6xl sm:text-7xl lg:text-8xl tracking-tight text-black dark:text-white tabular-nums select-none">
+              <div className="tabular-nums text-6xl lg:text-8xl text-black dark:text-white select-none">
                 {formatTimer(elapsedSeconds)}
               </div>
-              <div className="flex items-center gap-3 text-xs text-black/55 dark:text-white/55">
+              <div className="flex items-center gap-3 t-cap text-black/55 dark:text-white/55">
                 <span
                   className={`w-3 h-3 rounded-full ${
                     isRunning ? 'bg-emerald-500 animate-ping' : 'bg-neutral-300 dark:bg-neutral-600'
@@ -675,7 +675,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                       data-sq="ctl"
                       data-sq-border="none"
                       onClick={handleStartTimer}
-                      className="w-full h-16 bg-[#d4522f] hover:bg-[#b0674b] active:scale-[0.98] text-white font-bold text-base sm:text-lg flex items-center justify-center gap-3 transition-all cursor-pointer"
+                      className="w-full h-16 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b0674b] active:scale-[0.98] text-white font-semibold t-card flex items-center justify-center gap-3 transition-all cursor-pointer"
                     >
                       <Play size={22} fill="currentColor" />
                       <span>
@@ -691,7 +691,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                       data-sq="ctl"
                       data-sq-border="none"
                       onClick={handlePauseTimer}
-                      className="w-full h-16 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-bold text-base sm:text-lg flex items-center justify-center gap-3 transition-all cursor-pointer"
+                      className="w-full h-16 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-semibold t-card flex items-center justify-center gap-3 transition-all cursor-pointer"
                     >
                       <Pause size={22} fill="currentColor" />
                       <span>{isAr ? 'إيقاف مؤقت' : isEn ? 'Pause Cycle' : 'Mettre en Pause'}</span>
@@ -706,7 +706,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     data-sq-border="none"
                     onClick={handleOpenFinishModal}
                     disabled={elapsedSeconds === 0 && !isRunning}
-                    className={`w-full h-16 font-bold text-base sm:text-lg flex items-center justify-center gap-3 transition-all ${
+                    className={`w-full h-16 font-semibold t-card flex items-center justify-center gap-3 transition-all ${
                       elapsedSeconds > 0 || isRunning
                         ? 'bg-[#1F1D1B] hover:bg-black text-white active:scale-[0.98] cursor-pointer'
                         : 'bg-neutral-200 dark:bg-neutral-800 text-black/45 dark:text-white/40 cursor-not-allowed'
@@ -729,30 +729,30 @@ export const ManufacturingWorkstationView: React.FC = () => {
             <div className="grid grid-cols-3 gap-3">
               <div className="sq-elev-card">
                 <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 text-center">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">
+                  <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                     {isAr ? 'الوقت المستهدف' : isEn ? 'Target Rate' : 'Cadence Prévue'}
                   </span>
-                  <span className="font-mono font-bold text-base text-black dark:text-white">
+                  <span className="tabular-nums font-semibold t-card text-black dark:text-white">
                     12 min / u
                   </span>
                 </div>
               </div>
               <div className="sq-elev-card">
                 <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 text-center">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">
+                  <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                     {isAr ? 'معدل التوافر' : isEn ? 'Availability' : 'Disponibilité'}
                   </span>
-                  <span className="font-mono font-bold text-base text-emerald-600 dark:text-emerald-400">
+                  <span className="tabular-nums font-semibold t-card text-emerald-600 dark:text-emerald-400">
                     96.4%
                   </span>
                 </div>
               </div>
               <div className="sq-elev-card">
                 <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 text-center">
-                  <span className="text-[11px] text-black/55 dark:text-white/55 font-semibold block">
+                  <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                     {isAr ? 'الخردة المسجلة' : isEn ? 'Total Scrap' : 'Rebuts Cumulés'}
                   </span>
-                  <span className="font-mono font-bold text-base text-amber-600 dark:text-amber-400">
+                  <span className="tabular-nums font-semibold t-card text-amber-600 dark:text-amber-400">
                     {scrapCount} u
                   </span>
                 </div>
@@ -772,18 +772,18 @@ export const ManufacturingWorkstationView: React.FC = () => {
             <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-6">
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-3">
-                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-semibold">
                     <CheckCircle2 size={22} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-black dark:text-white">
+                    <h3 className="t-pod font-semibold text-black dark:text-white">
                       {isAr
                         ? 'تسجيل كميات الإنتاج والخردة'
                         : isEn
                         ? 'Declare Output & Scrap'
                         : 'Déclaration de Fin de Cycle & Rebuts'}
                     </h3>
-                    <p className="text-xs text-black/55 dark:text-white/55">
+                    <p className="t-cap text-black/55 dark:text-white/55">
                       {currentOrder?.orderNumber} • {currentOrder?.productName}
                     </p>
                   </div>
@@ -812,14 +812,14 @@ export const ManufacturingWorkstationView: React.FC = () => {
                       : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40'
                   }`}
                 >
-                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 block mb-1">
+                  <span className="t-small font-semibold text-emerald-700 dark:text-emerald-400 block mb-1">
                     {isAr
                       ? 'القطع السليمة المطابقة'
                       : isEn
                       ? 'Conforming Units'
                       : 'Pièces Bonnes (Conformes)'}
                   </span>
-                  <span className="font-black text-3xl text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                  <span className="t-kpi-m uppercase text-black dark:text-white tabular-nums">
                     {goodQuantityInput}
                   </span>
                 </button>
@@ -837,14 +837,14 @@ export const ManufacturingWorkstationView: React.FC = () => {
                       : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40'
                   }`}
                 >
-                  <span className="text-xs font-bold text-red-600 dark:text-red-400 block mb-1">
+                  <span className="t-small font-semibold text-red-600 dark:text-red-400 block mb-1">
                     {isAr
                       ? 'القطع المرفوضة / خردة'
                       : isEn
                       ? 'Scrapped Units'
                       : 'Pièces Rebutées (Chutes)'}
                   </span>
-                  <span className="font-black text-3xl text-red-600 dark:text-red-400 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                  <span className="t-kpi-m uppercase text-red-600 dark:text-red-400 tabular-nums">
                     {scrapQuantityInput}
                   </span>
                 </button>
@@ -852,7 +852,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
 
               {parseInt(scrapQuantityInput, 10) > 0 && (
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-black/70 dark:text-white/75 block">
+                  <label className="t-small font-semibold text-black/70 dark:text-white/75 block">
                     {isAr
                       ? 'سبب رفض القطع (التشريع الصناعي)'
                       : isEn
@@ -868,9 +868,9 @@ export const ManufacturingWorkstationView: React.FC = () => {
                         data-sq="ctl"
                         data-sq-border="solid"
                         onClick={() => setSelectedScrapReason(code.id)}
-                        className={`p-2.5 border text-xs text-left rtl:text-right cursor-pointer transition-all ${
+                        className={`p-3 border t-cap text-left rtl:text-right cursor-pointer transition-all ${
                           selectedScrapReason === code.id
-                            ? 'border-red-500 bg-red-50 dark:bg-neutral-800 text-red-700 dark:text-red-300 font-bold'
+                            ? 'border-red-500 bg-red-50 dark:bg-neutral-800 text-red-700 dark:text-red-300 font-semibold'
                             : 'border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
                         }`}
                       >
@@ -881,7 +881,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-3 gap-2">
                 {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '00'].map((digit) => (
                   <button
                     key={digit}
@@ -890,7 +890,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     data-sq="ctl"
                     data-sq-border="none"
                     onClick={() => handleNumpadPress(digit)}
-                    className={`h-14 font-mono text-xl font-bold flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
+                    className={`h-14 tabular-nums t-dialog font-semibold flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
                       digit === 'C'
                         ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 hover:bg-red-200'
                         : 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700'
@@ -908,7 +908,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsFinishModalOpen(false)}
-                  className="flex-1 py-3.5 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 font-bold text-sm cursor-pointer"
+                  className="flex-1 py-4 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 font-semibold t-label cursor-pointer"
                 >
                   {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
                 </button>
@@ -919,7 +919,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     data-sq="ctl"
                     data-sq-border="none"
                     onClick={handleConfirmFinish}
-                    className="w-full py-3.5 bg-[#d4522f] hover:bg-[#b0674b] text-white font-bold text-sm cursor-pointer transition-all"
+                    className="w-full py-4 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b0674b] text-white font-semibold t-label cursor-pointer transition-all"
                   >
                     {isAr
                       ? 'تأكيد التسجيل وتحديث أمر التصنيع'

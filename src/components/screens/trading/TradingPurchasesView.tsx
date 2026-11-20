@@ -367,10 +367,10 @@ export const TradingPurchasesView: React.FC = () => {
               : 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-400';
           return (
             <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold font-mono uppercase ${badgeColor}`}>
+              <span className={`px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold tabular-nums ${badgeColor}`}>
                 {doc.type === 'po' ? 'PO' : doc.type === 'br' ? 'BR' : 'FF'}
               </span>
-              <span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
+              <span className="tabular-nums font-semibold t-small text-black dark:text-white">{doc.docNumber}</span>
             </div>
           );
         },
@@ -381,7 +381,7 @@ export const TradingPurchasesView: React.FC = () => {
         width: '125px',
         sortable: true,
         renderCell: (doc) => (
-          <span className="text-xs font-mono text-black/70 dark:text-white/75">{doc.orderDate}</span>
+          <span className="t-cap tabular-nums text-black/70 dark:text-white/75">{doc.orderDate}</span>
         ),
       },
       {
@@ -390,9 +390,9 @@ export const TradingPurchasesView: React.FC = () => {
         minWidth: '200px',
         sortable: true,
         renderCell: (doc) => (
-          <div className="text-xs">
-            <span className="font-bold text-black dark:text-white block">{doc.supplierName}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+          <div className="t-cap">
+            <span className="font-semibold text-black dark:text-white block">{doc.supplierName}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               {t('trading_sales_col_depot', 'Dépôt')}: {doc.depotName || 'Dépôt Central'}
             </span>
           </div>
@@ -406,7 +406,7 @@ export const TradingPurchasesView: React.FC = () => {
         renderCell: (doc) => {
           const b = resolveRecordBranch(doc, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -419,7 +419,7 @@ export const TradingPurchasesView: React.FC = () => {
         width: '140px',
         sortable: true,
         renderCell: (doc) => (
-          <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+          <span className="tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(doc.totalTtc)}
           </span>
         ),
@@ -432,7 +432,7 @@ export const TradingPurchasesView: React.FC = () => {
           const isReceived = doc.status === 'Received';
           return (
             <span
-              className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-semibold inline-block ${
+              className={`px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold inline-block ${
                 isReceived
                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
                   : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
@@ -465,7 +465,7 @@ export const TradingPurchasesView: React.FC = () => {
               title={t('action_print', 'Imprimer')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-[#d4522f] hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <Printer size={14} />
             </button>
@@ -478,14 +478,14 @@ export const TradingPurchasesView: React.FC = () => {
                 }}
                 data-sq="ctl-sm"
                 data-sq-border="none"
-                className="px-2.5 py-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 transition-colors cursor-pointer"
+                className="px-2.5 py-1 t-small font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <CheckCircle2 size={13} />
                 <span>{t('trading_purchases_receive_stock', 'Réceptionner à quai')}</span>
               </button>
             )}
             {doc.type === 'br' && (
-              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
+              <span className="t-small tabular-nums text-emerald-600 dark:text-emerald-400 font-medium">
                 {t('trading_purchases_received_badge', 'Stock incrémenté')}
               </span>
             )}
@@ -852,8 +852,8 @@ export const TradingPurchasesView: React.FC = () => {
               className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 space-y-4"
             >
             <div className="flex items-center justify-between border-b pb-3 border-neutral-200 dark:border-neutral-800">
-              <h2 className="text-base font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                <Truck size={18} className="text-[#d4522f]" />
+              <h2 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
+                <Truck size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>Nouvelle Commande d'Achat Fournisseur (PO)</span>
               </h2>
               <button
@@ -867,7 +867,7 @@ export const TradingPurchasesView: React.FC = () => {
                 <X size={18} />
               </button>
             </div>
-            <form onSubmit={handleCreatePo} className="space-y-4 text-xs">
+            <form onSubmit={handleCreatePo} className="space-y-4 t-cap">
               <div className="grid grid-cols-2 gap-3">
                 <LabelSelect
                   label="Fournisseur *"

@@ -545,7 +545,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         header: 'N° OR',
         width: '1.2*',
         sortable: true,
-        renderCell: (o) => <span className="font-mono font-bold text-xs text-[#d4522f]">{o.orderNumber}</span>,
+        renderCell: (o) => <span className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{o.orderNumber}</span>,
       },
       {
         key: 'vehicle',
@@ -554,8 +554,8 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         sortable: true,
         renderCell: (o) => (
           <div>
-            <span className="font-semibold text-xs text-black dark:text-white block font-mono">{o.vehiclePlate}</span>
-            <span className="text-[11px] text-black/55 dark:text-white/55 block truncate">{o.vehicleModel}</span>
+            <span className="font-semibold t-small text-black dark:text-white block tabular-nums">{o.vehiclePlate}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 block truncate">{o.vehicleModel}</span>
           </div>
         ),
       },
@@ -566,8 +566,8 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         sortable: true,
         renderCell: (o) => (
           <div>
-            <span className="font-medium text-xs text-black dark:text-white block truncate">{o.clientName}</span>
-            <span className="text-[11px] text-[#d4522f]">
+            <span className="font-medium t-small text-black dark:text-white block truncate">{o.clientName}</span>
+            <span className="t-cap text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
               {o.clientType === 'corporate_fleet' ? `Flotte: ${o.fleetName}` : 'Particulier'}
             </span>
           </div>
@@ -580,7 +580,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         sortable: true,
         renderCell: (o) => {
           const info = resolveRecordBranch(o, branchesById, currentBranch, language);
-          return <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">{info.name}</span>;
+          return <span className="t-small font-medium text-black/75 dark:text-white/80 truncate block">{info.name}</span>;
         },
       },
       {
@@ -591,7 +591,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
           const settled = o.status === 'Delivered' || Boolean(o.isPaid);
           return (
             <span
-              className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold ${
+              className={`t-small px-2.5 py-1 rounded-full font-semibold ${
                 settled
                   ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                   : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
@@ -608,7 +608,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         width: '1.4*',
         sortable: true,
         renderCell: (o) => (
-          <div className="text-right font-mono font-black text-xs text-black dark:text-white">
+          <div className="text-right tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
           </div>
         ),
@@ -633,8 +633,8 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               <Receipt size={15} />
             </div>
             <div>
-              <span className="font-mono font-bold text-xs text-black dark:text-white block">{inv.invoiceNumber}</span>
-              <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">{inv.orderNumber}</span>
+              <span className="tabular-nums font-semibold t-small text-black dark:text-white block">{inv.invoiceNumber}</span>
+              <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">{inv.orderNumber}</span>
             </div>
           </div>
         ),
@@ -645,8 +645,8 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         width: '2.2*',
         renderCell: (inv) => (
           <div>
-            <span className="font-semibold text-xs text-black dark:text-white block">{inv.clientName}</span>
-            <span className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+            <span className="font-semibold t-small text-black dark:text-white block">{inv.clientName}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               {inv.vehiclePlate} · {inv.vehicleModel}
             </span>
           </div>
@@ -659,7 +659,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         sortable: true,
         renderCell: (inv) => {
           const info = resolveRecordBranch(inv, branchesById, currentBranch, language);
-          return <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">{info.name}</span>;
+          return <span className="t-small font-medium text-black/75 dark:text-white/80 truncate block">{info.name}</span>;
         },
       },
       {
@@ -668,7 +668,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         width: '1.4*',
         renderCell: (inv) => (
           <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+            className={`px-2 py-1 rounded-full t-small font-semibold ${
               inv.billingType === 'facture_dgi'
                 ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
                 : 'bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75'
@@ -683,9 +683,9 @@ export const AutoGarageBillingView: React.FC<any> = () => {
         header: 'Net Payé',
         width: '1.6*',
         renderCell: (inv) => (
-          <div className="text-right font-mono">
-            <span className="text-xs font-black text-[#d4522f] block">{formatMoney(inv.netToPayDzd, language)}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55">
+          <div className="text-right tabular-nums">
+            <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">{formatMoney(inv.netToPayDzd, language)}</span>
+            <span className="t-cap text-black/55 dark:text-white/55">
               TVA: {formatMoney(inv.tvaAmount, language)} · Timbre: {formatMoney(inv.timbreFiscal, language)}
             </span>
           </div>
@@ -823,9 +823,9 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               data-sq="thumb"
               data-sq-border="none"
               onClick={() => setActiveScreenTab('orders')}
-              className={`px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-2 t-small font-semibold transition-all cursor-pointer ${
                 activeScreenTab === 'orders'
-                  ? 'bg-[#d4522f] text-white'
+                  ? 'bg-[var(--brand-fill,#C9461F)] text-white'
                   : 'text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white'
               }`}
             >
@@ -837,9 +837,9 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               data-sq="thumb"
               data-sq-border="none"
               onClick={() => setActiveScreenTab('fleets')}
-              className={`px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-2 t-small font-semibold transition-all cursor-pointer ${
                 activeScreenTab === 'fleets'
-                  ? 'bg-[#d4522f] text-white'
+                  ? 'bg-[var(--brand-fill,#C9461F)] text-white'
                   : 'text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white'
               }`}
             >
@@ -851,9 +851,9 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               data-sq="thumb"
               data-sq-border="none"
               onClick={() => setActiveScreenTab('invoices')}
-              className={`px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-2 t-small font-semibold transition-all cursor-pointer ${
                 activeScreenTab === 'invoices'
-                  ? 'bg-[#d4522f] text-white'
+                  ? 'bg-[var(--brand-fill,#C9461F)] text-white'
                   : 'text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white'
               }`}
             >
@@ -996,11 +996,11 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <span className="text-[11px] font-bold text-[#d4522f] uppercase tracking-wider block">
+                      <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
                         Contrat B2B Flotte · {fleetBranch.name}
                       </span>
-                      <h3 className="font-bold text-sm text-black dark:text-white mt-0.5">{fleet.companyName}</h3>
-                      <span className="text-xs text-black/55 dark:text-white/55">{fleet.tradeName}</span>
+                      <h3 className="font-semibold t-label text-black dark:text-white mt-0.5">{fleet.companyName}</h3>
+                      <span className="t-cap text-black/55 dark:text-white/55">{fleet.tradeName}</span>
                     </div>
                     <span
                       data-sq="tile"
@@ -1010,7 +1010,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                       <Building2 size={18} />
                     </span>
                   </div>
-                  <div className="space-y-1.5 text-xs font-mono">
+                  <div className="space-y-2 t-cap tabular-nums">
                     <div className="flex justify-between text-black/55 dark:text-white/55">
                       <span>NIF / NIS :</span>
                       <span className="font-semibold text-black dark:text-white">{fleet.nif}</span>
@@ -1028,10 +1028,10 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="space-y-1.5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                    <div className="flex justify-between text-xs font-mono">
+                  <div className="space-y-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                    <div className="flex justify-between t-cap tabular-nums">
                       <span className="text-black/55 dark:text-white/55">Encours Actuel :</span>
-                      <span className={`font-black ${isOverLimit ? 'text-rose-600' : 'text-black dark:text-white'}`}>
+                      <span className={`font-semibold ${isOverLimit ? 'text-rose-600' : 'text-black dark:text-white'}`}>
                         {formatMoney(fleet.currentOutstandingDzd, language)}
                       </span>
                     </div>
@@ -1043,7 +1043,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                         }`}
                       />
                     </div>
-                    <div className="flex justify-between text-[10px] text-black/55 dark:text-white/55 font-mono">
+                    <div className="flex justify-between t-cap text-black/55 dark:text-white/55 tabular-nums">
                       <span>Plafond: {formatMoney(fleet.creditLimitDzd, language)}</span>
                       <span>{percentUsed}% utilisé</span>
                     </div>
@@ -1061,7 +1061,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                           message: `Génération du relevé mensuel pour ${fleet.companyName}...`,
                         });
                       }}
-                      className="flex-1 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black/70 dark:text-white/75 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      className="flex-1 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black/70 dark:text-white/75 font-semibold t-small flex items-center justify-center gap-2 transition-colors cursor-pointer"
                     >
                       <FileText size={13} />
                       <span>Relevé Mensuel</span>
@@ -1349,19 +1349,19 @@ export const AutoGarageBillingView: React.FC<any> = () => {
             className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5"
           >
             <div className="flex items-center justify-between border-b pb-3 border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <div
                   data-sq="tile"
                   data-sq-border="none"
-                  className="w-9 h-9 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center"
+                  className="w-9 h-9 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center"
                 >
                   <CreditCard size={18} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-black dark:text-white">
+                  <h3 className="font-semibold t-label text-black dark:text-white">
                     {isAr ? 'تسوية المستحقات وإصدار الفاتورة' : 'Règlement Financier & Facturation'}
                   </h3>
-                  <span className="text-xs text-black/55 dark:text-white/55 font-mono">
+                  <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                     {orderToSettle.orderNumber} · {orderToSettle.vehiclePlate}
                   </span>
                 </div>
@@ -1387,8 +1387,8 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                   data-sq="thumb"
                   data-sq-border="none"
                   onClick={() => setBillingType('facture_dgi')}
-                  className={`py-2 text-xs font-bold transition-all cursor-pointer ${
-                    billingType === 'facture_dgi' ? 'bg-[#d4522f] text-white' : 'text-black/55 dark:text-white/55'
+                  className={`py-2 t-small font-semibold transition-all cursor-pointer ${
+                    billingType === 'facture_dgi' ? 'bg-[var(--brand-fill,#C9461F)] text-white' : 'text-black/55 dark:text-white/55'
                   }`}
                 >
                   Facture DGI (19% TVA)
@@ -1399,16 +1399,16 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                   data-sq="thumb"
                   data-sq-border="none"
                   onClick={() => setBillingType('bon_caisse')}
-                  className={`py-2 text-xs font-bold transition-all cursor-pointer ${
-                    billingType === 'bon_caisse' ? 'bg-[#d4522f] text-white' : 'text-black/55 dark:text-white/55'
+                  className={`py-2 t-small font-semibold transition-all cursor-pointer ${
+                    billingType === 'bon_caisse' ? 'bg-[var(--brand-fill,#C9461F)] text-white' : 'text-black/55 dark:text-white/55'
                   }`}
                 >
                   Bon de Caisse (Atelier)
                 </button>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-black/70 dark:text-white/75 block">Mode de Paiement</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="space-y-2">
+                <label className="t-small font-semibold text-black/70 dark:text-white/75 block">Mode de Paiement</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 t-cap">
                   {(
                     [
                       { id: 'especes', label: 'Espèces (Cash)' },
@@ -1424,9 +1424,9 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                       data-sq="ctl"
                       data-sq-border="solid"
                       onClick={() => setPaymentMethod(pm.id)}
-                      className={`p-2.5 border font-semibold text-center transition-all cursor-pointer ${
+                      className={`p-3 border font-semibold text-center transition-all cursor-pointer ${
                         paymentMethod === pm.id
-                          ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                          ? 'border-[#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
                           : 'border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
                       }`}
                     >
@@ -1438,7 +1438,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs font-mono"
+                className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 space-y-2 t-cap tabular-nums"
               >
                 <div className="flex justify-between text-black/55 dark:text-white/55">
                   <span>Main d'œuvre :</span>
@@ -1451,7 +1451,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 {billingType === 'facture_dgi' && (
                   <div className="flex justify-between text-black/55 dark:text-white/55">
                     <span>TVA Réglementaire (19%) :</span>
-                    <span className="text-[#d4522f] font-bold">
+                    <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
                       {formatMoney((orderToSettle.finalCostDzd || 19250) * 0.19, language)}
                     </span>
                   </div>
@@ -1459,7 +1459,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 {paymentMethod === 'especes' && (
                   <div className="flex justify-between text-amber-700 dark:text-amber-400">
                     <span>Droit de Timbre Fiscal (Espèces) :</span>
-                    <span className="font-bold">
+                    <span className="font-semibold">
                       {formatMoney(
                         computeAlgerianTimbreFiscal(
                           (orderToSettle.finalCostDzd || 19250) * (billingType === 'facture_dgi' ? 1.19 : 1),
@@ -1470,9 +1470,9 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700 text-sm font-black text-black dark:text-white">
+                <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700 t-label font-semibold text-black dark:text-white">
                   <span>Net à Payer Client :</span>
-                  <span className="text-[#d4522f]">
+                  <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     {formatMoney(
                       (orderToSettle.finalCostDzd || 19250) * (billingType === 'facture_dgi' ? 1.19 : 1) +
                         (paymentMethod === 'especes'
@@ -1505,9 +1505,9 @@ export const AutoGarageBillingView: React.FC<any> = () => {
           <div className="printable-document bg-white rounded-[var(--r-panel,28px)] max-w-2xl w-full p-8 shadow-2xl border border-neutral-200 text-black space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between border-b pb-4 border-neutral-200">
               <div>
-                <h2 className="text-xl font-black tracking-tight text-black">ATRIUM AUTO GARAGE & FLEET DZ</h2>
-                <p className="text-xs text-black/55 mt-0.5">Réparation Mécanique, Électricité & Maintenance Flottes B2B</p>
-                <div className="text-[10px] text-black/55 font-mono mt-1 space-x-2">
+                <h2 className="t-dialog font-semibold text-black">ATRIUM AUTO GARAGE & FLEET DZ</h2>
+                <p className="t-cap text-black/55 mt-0.5">Réparation Mécanique, Électricité & Maintenance Flottes B2B</p>
+                <div className="t-cap text-black/55 tabular-nums mt-1 space-x-2">
                   <span>RC: 16/00-0987654B20</span>
                   <span>·</span>
                   <span>NIF: 002016012345678</span>
@@ -1518,18 +1518,18 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 </div>
               </div>
               <div className="text-right">
-                <span className="font-mono text-base font-black text-[#d4522f] block">
+                <span className="tabular-nums t-card font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
                   {activePrintInvoice.invoiceNumber}
                 </span>
-                <span className="text-xs text-black/55 block font-mono">
+                <span className="t-cap text-black/55 block tabular-nums">
                   {new Date(activePrintInvoice.issuedAt).toLocaleDateString()}
                 </span>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 p-4 rounded-[var(--r-card,16px)] bg-neutral-50 text-xs font-mono">
+            <div className="grid grid-cols-2 gap-4 p-4 rounded-[var(--r-card,16px)] bg-neutral-50 t-cap tabular-nums">
               <div>
                 <span className="text-black/55 block">Client / Bénéficiaire :</span>
-                <span className="font-bold text-black block text-sm">{activePrintInvoice.clientName}</span>
+                <span className="font-semibold text-black block t-label">{activePrintInvoice.clientName}</span>
                 <span className="text-black/55">{activePrintInvoice.clientPhone}</span>
                 {activePrintInvoice.clientNif && (
                   <span className="text-black/55 block">NIF Client: {activePrintInvoice.clientNif}</span>
@@ -1537,12 +1537,12 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               </div>
               <div>
                 <span className="text-black/55 block">Véhicule Pris en Charge :</span>
-                <span className="font-bold text-black block text-sm">{activePrintInvoice.vehiclePlate}</span>
+                <span className="font-semibold text-black block t-label">{activePrintInvoice.vehiclePlate}</span>
                 <span className="text-black/55">{activePrintInvoice.vehicleModel}</span>
                 <span className="text-black/55 block">Réf OR: {activePrintInvoice.orderNumber}</span>
               </div>
             </div>
-            <table className="w-full text-xs font-mono">
+            <table className="w-full t-cap tabular-nums">
               <thead>
                 <tr className="border-b border-neutral-300 text-black/55 text-left">
                   <th className="py-2">Désignation des Prestations & Pièces</th>
@@ -1551,23 +1551,23 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               </thead>
               <tbody className="divide-y divide-neutral-100">
                 <tr>
-                  <td className="py-2.5">Main d'œuvre mécanique spécialisée & diagnostic</td>
-                  <td className="py-2.5 text-right font-bold">{activePrintInvoice.laborTotalHt.toLocaleString()} DA</td>
+                  <td className="py-2">Main d'œuvre mécanique spécialisée & diagnostic</td>
+                  <td className="py-2 text-right font-semibold">{activePrintInvoice.laborTotalHt.toLocaleString()} DA</td>
                 </tr>
                 <tr>
-                  <td className="py-2.5">Pièces de rechange et lubrifiants certifiés conformes</td>
-                  <td className="py-2.5 text-right font-bold">{activePrintInvoice.partsTotalHt.toLocaleString()} DA</td>
+                  <td className="py-2">Pièces de rechange et lubrifiants certifiés conformes</td>
+                  <td className="py-2 text-right font-semibold">{activePrintInvoice.partsTotalHt.toLocaleString()} DA</td>
                 </tr>
                 {activePrintInvoice.discountHt > 0 && (
                   <tr className="text-emerald-700">
-                    <td className="py-2.5">Remise commerciale accordée</td>
-                    <td className="py-2.5 text-right font-bold">-{activePrintInvoice.discountHt.toLocaleString()} DA</td>
+                    <td className="py-2">Remise commerciale accordée</td>
+                    <td className="py-2 text-right font-semibold">-{activePrintInvoice.discountHt.toLocaleString()} DA</td>
                   </tr>
                 )}
               </tbody>
             </table>
             <div className="border-t border-neutral-200 pt-3 flex justify-end">
-              <div className="w-64 space-y-1.5 text-xs font-mono">
+              <div className="w-64 space-y-2 t-cap tabular-nums">
                 <div className="flex justify-between text-black/55">
                   <span>Total HT :</span>
                   <span>{activePrintInvoice.subtotalHt.toLocaleString()} DA</span>
@@ -1584,17 +1584,17 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                     <span>{activePrintInvoice.timbreFiscal.toLocaleString()} DA</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 border-t border-neutral-300 text-sm font-black text-black">
+                <div className="flex justify-between pt-2 border-t border-neutral-300 t-label font-semibold text-black">
                   <span>Net à Payer :</span>
-                  <span className="text-[#d4522f]">{activePrintInvoice.netToPayDzd.toLocaleString()} DA</span>
+                  <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{activePrintInvoice.netToPayDzd.toLocaleString()} DA</span>
                 </div>
               </div>
             </div>
-            <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] text-[11px] text-black/75 font-serif italic border border-neutral-200">
+            <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] t-cap text-black/75 italic border border-neutral-200">
               Arrêté la présente facture à la somme de : {activePrintInvoice.netToPayDzd.toLocaleString()} Dinars Algériens.
             </div>
             <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
-              <div className="text-center w-40 border border-neutral-300 rounded-[var(--r-ctl,12px)] p-2 h-20 text-[10px] text-black/55">
+              <div className="text-center w-40 border border-neutral-300 rounded-[var(--r-ctl,12px)] p-2 h-20 t-cap text-black/55">
                 Cachet de l'Atelier
               </div>
               <div className="flex items-center gap-2">
@@ -1619,8 +1619,8 @@ export const AutoGarageBillingView: React.FC<any> = () => {
             className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4"
           >
             <div className="flex items-center justify-between border-b pb-3 border-neutral-100 dark:border-neutral-800">
-              <h3 className="font-bold text-sm text-black dark:text-white flex items-center gap-2">
-                <Wallet size={16} className="text-[#d4522f]" />
+              <h3 className="font-semibold t-label text-black dark:text-white flex items-center gap-2">
+                <Wallet size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>Point de Caisse Journalier (Z de Caisse)</span>
               </h3>
               <button
@@ -1632,10 +1632,10 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 <X size={16} />
               </button>
             </div>
-            <div className="space-y-3 text-xs font-mono">
+            <div className="space-y-3 t-cap tabular-nums">
               <div data-sq="card" data-sq-border="none" className="p-3 bg-neutral-50 dark:bg-neutral-800 flex justify-between">
                 <span>Total Espèces en Caisse :</span>
-                <span className="font-bold text-emerald-600">
+                <span className="font-semibold text-emerald-600">
                   {formatMoney(
                     invoices.filter((i) => i.paymentMethod === 'especes').reduce((acc, i) => acc + i.netToPayDzd, 0),
                     language
@@ -1644,7 +1644,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               </div>
               <div data-sq="card" data-sq-border="none" className="p-3 bg-neutral-50 dark:bg-neutral-800 flex justify-between">
                 <span>Total Cartes CIB / Dahabia :</span>
-                <span className="font-bold text-blue-600">
+                <span className="font-semibold text-blue-600">
                   {formatMoney(
                     invoices.filter((i) => i.paymentMethod === 'cib_dahabia').reduce((acc, i) => acc + i.netToPayDzd, 0),
                     language
@@ -1653,7 +1653,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               </div>
               <div data-sq="card" data-sq-border="none" className="p-3 bg-neutral-50 dark:bg-neutral-800 flex justify-between">
                 <span>Total Chèques & Virements :</span>
-                <span className="font-bold text-black dark:text-white">
+                <span className="font-semibold text-black dark:text-white">
                   {formatMoney(
                     invoices
                       .filter((i) => i.paymentMethod === 'cheque' || i.paymentMethod === 'virement')

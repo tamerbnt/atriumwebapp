@@ -386,7 +386,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
         sortable: true,
         width: '1.3*',
         renderCell: (cert) => (
-          <div className="font-mono font-semibold text-xs text-black/75 dark:text-white/80">
+          <div className="tabular-nums font-semibold t-small text-black/75 dark:text-white/80">
             {cert.issueDate}
           </div>
         ),
@@ -398,10 +398,10 @@ export const MedicalCertificatesView: React.FC<any> = () => {
         width: '2.2*',
         renderCell: (cert) => (
           <div>
-            <div className="font-semibold text-xs text-black dark:text-white">
+            <div className="font-semibold t-small text-black dark:text-white">
               {getCertTypeLabel(cert.certificateType)}
             </div>
-            <div className="text-[11px] font-mono text-black/55 dark:text-white/55">
+            <div className="t-cap tabular-nums text-black/55 dark:text-white/55">
               {cert.qrHash}
             </div>
           </div>
@@ -414,10 +414,10 @@ export const MedicalCertificatesView: React.FC<any> = () => {
         width: '2.2*',
         renderCell: (cert) => (
           <div className="min-w-0">
-            <div className="font-bold text-xs text-black dark:text-white truncate">
+            <div className="font-semibold t-small text-black dark:text-white truncate">
               {cert.patientName}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate">
               {cert.doctorName} · {cert.doctorSpecialty}
             </div>
           </div>
@@ -429,7 +429,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
         sortable: true,
         width: '1.5*',
         renderCell: (cert) => (
-          <span className="text-xs font-medium text-black/70 dark:text-white/75 truncate block max-w-[140px]">
+          <span className="t-small font-medium text-black/70 dark:text-white/75 truncate block max-w-[140px]">
             {getCertBranchName(cert)}
           </span>
         ),
@@ -439,14 +439,14 @@ export const MedicalCertificatesView: React.FC<any> = () => {
         header: isAr ? 'التفاصيل' : 'Détails / Période',
         width: '2.2*',
         renderCell: (cert) => (
-          <div className="text-xs">
+          <div className="t-cap">
             {cert.certificateType === 'ArretDeTravail' && (
-              <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+              <span className="tabular-nums text-emerald-600 dark:text-emerald-400 font-semibold">
                 {cert.durationDays}j ({cert.startDate} → {cert.endDate})
               </span>
             )}
             {cert.certificateType === 'CertificatDescriptifITT' && (
-              <span className="font-mono text-amber-600 font-bold">ITT: {cert.ittDays} jours</span>
+              <span className="tabular-nums text-amber-600 font-semibold">ITT: {cert.ittDays} jours</span>
             )}
             {(cert.certificateType === 'AptitudePhysique' ||
               cert.certificateType === 'LettreOrientation') && (
@@ -813,7 +813,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 title={isAr ? 'الطباعة الرسمية' : 'Impression & Archivage'}
                 index={0}
               >
-                <div className="space-y-2.5">
+                <div className="space-y-2">
                   <InspectorWideButton
                     label={isAr ? 'فتح وطباعة الشهادة الرسمية' : 'Ouvrir & Imprimer Certificat Officiel'}
                     icon={<Printer size={15} />}
@@ -838,10 +838,10 @@ export const MedicalCertificatesView: React.FC<any> = () => {
             <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full border border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden">
               <div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
                 <div className="flex items-center gap-3">
-                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
                     <FileBadge size={20} />
                   </div>
-                  <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <h2 className="t-card font-semibold text-black dark:text-white">
                     Établir un Certificat Médical
                   </h2>
                 </div>
@@ -936,15 +936,15 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                       ) + 1;
                     if (diffDays > 30) {
                       return (
-                        <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-amber-500/10 border border-amber-500/30 [--sq-stroke:rgba(245,158,11,0.3)] text-amber-800 dark:text-amber-300 text-xs space-y-1 animate-in fade-in">
-                          <div className="flex items-center gap-1.5 font-bold">
+                        <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-amber-500/10 border border-amber-500/30 [--sq-stroke:rgba(245,158,11,0.3)] text-amber-800 dark:text-amber-300 t-cap space-y-1 animate-in fade-in">
+                          <div className="flex items-center gap-2 font-semibold">
                             <AlertTriangle
                               size={14}
                               className="shrink-0 text-amber-600 dark:text-amber-400"
                             />
                             <span>Avertissement Réglementaire CNAS ({diffDays} jours)</span>
                           </div>
-                          <p className="text-[11px] leading-relaxed">
+                          <p className="t-cap leading-relaxed">
                             Les arrêts de travail de plus de 30 jours consécutifs requièrent une
                             convocation et validation préalable de la commission médicale du contrôle
                             de la sécurité sociale (Art. 17 Loi 83-11).
@@ -953,7 +953,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                       );
                     }
                     return (
-                      <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+                      <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                         Durée calculée de l&apos;arrêt : <strong>{diffDays} jour(s)</strong>
                       </div>
                     );
@@ -982,7 +982,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               )}
 
               <div>
-                <label className="text-xs font-semibold text-black/70 dark:text-white/75 block mb-1">
+                <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">
                   Constatations Cliniques &amp; Mentions Légales
                 </label>
                 <div data-sq="ctl" data-sq-border="solid" className="bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
@@ -990,7 +990,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                     value={clinicalFindings}
                     onChange={(e) => setClinicalFindings(e.target.value)}
                     rows={3}
-                    className="lbi-field w-full px-3 py-2 text-xs bg-transparent border-0 text-black dark:text-white focus:outline-hidden"
+                    className="lbi-field w-full px-3 py-2 t-cap bg-transparent border-0 text-black dark:text-white focus:outline-hidden"
                     required
                   />
                 </div>
@@ -1019,34 +1019,34 @@ export const MedicalCertificatesView: React.FC<any> = () => {
           <div className="printable-document bg-white text-black w-full max-w-xl rounded-[var(--r-panel,28px)] border border-neutral-300 shadow-2xl p-8 flex flex-col justify-between max-h-[90vh] overflow-y-auto">
             <div className="border-b-2 border-[#d4522f] pb-4 flex justify-between items-start">
               <div>
-                <h2 className="text-lg font-black uppercase text-[#d4522f] font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <h2 className="t-pod font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                   {activePrintCert.doctorName}
                 </h2>
-                <p className="text-xs font-semibold text-black">
+                <p className="t-small font-semibold text-black">
                   {activePrintCert.doctorSpecialty}
                 </p>
-                <p className="text-[10px] text-black/55">
+                <p className="t-cap text-black/55">
                   Polyclinique El-Chifa · 14 Rue Didouche Mourad, Alger
                 </p>
               </div>
-              <div className="text-right text-[10px] font-mono text-black/55">
-                <p className="font-bold text-black">RÉPUBLIQUE ALGÉRIENNE</p>
+              <div className="text-right t-cap tabular-nums text-black/55">
+                <p className="font-semibold text-black">RÉPUBLIQUE ALGÉRIENNE</p>
                 <p>CERTIFICAT MÉDICAL OFFICIEL</p>
               </div>
             </div>
 
             <div className="text-center my-6">
-              <span className="text-sm font-bold uppercase tracking-widest px-4 py-1.5 border-2 border-neutral-800 rounded-[var(--r-ctl-sm,10px)] inline-block">
+              <span className="t-label font-semibold px-4 py-2 border-2 border-neutral-800 rounded-[var(--r-ctl-sm,10px)] inline-block">
                 {getCertTypeLabel(activePrintCert.certificateType)}
               </span>
             </div>
 
-            <div className="space-y-4 text-xs leading-relaxed text-black">
+            <div className="space-y-4 t-cap leading-relaxed text-black">
               <p>
                 Je soussigné, <strong>{activePrintCert.doctorName}</strong>, certifie avoir examiné
                 ce jour le/la nommé(e) :
               </p>
-              <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 space-y-1 font-mono">
+              <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 space-y-1 tabular-nums">
                 <p>
                   <strong>Nom &amp; Prénom :</strong> {activePrintCert.patientName}
                 </p>
@@ -1072,10 +1072,10 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                     En conséquence, je prescris un{' '}
                     <strong>ARRÊT DE TRAVAIL DE {activePrintCert.durationDays} JOURS</strong>.
                   </p>
-                  <p className="text-[11px] font-normal">
+                  <p className="t-cap font-normal">
                     Période : Du {activePrintCert.startDate} au {activePrintCert.endDate} inclus.
                   </p>
-                  <p className="text-[11px] font-mono text-emerald-700">
+                  <p className="t-cap tabular-nums text-emerald-700">
                     Date de reprise effective du travail : {activePrintCert.resumptionDate}.
                   </p>
                 </div>
@@ -1089,7 +1089,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 </div>
               )}
 
-              <p className="text-[11px] text-black/55 pt-2">
+              <p className="t-cap text-black/55 pt-2">
                 Certificat délivré en mains propres à l&apos;intéressé(e) pour faire valoir ce que de
                 droit.
               </p>
@@ -1098,18 +1098,18 @@ export const MedicalCertificatesView: React.FC<any> = () => {
             <div className="mt-8 pt-4 border-t border-neutral-200 flex justify-between items-end">
               <div className="flex items-center gap-3">
                 <QrCode size={40} className="text-black" />
-                <div className="text-[10px] font-mono text-black/55">
-                  <p className="font-bold text-black/75">AUTHENTICITÉ VÉRIFIÉE</p>
+                <div className="t-cap tabular-nums text-black/55">
+                  <p className="font-semibold text-black/75">AUTHENTICITÉ VÉRIFIÉE</p>
                   <p>{activePrintCert.qrHash}</p>
                 </div>
               </div>
               <div className="text-center w-36">
-                <span className="text-[10px] text-black/55 block mb-1">Cachet &amp; Signature</span>
-                <div className="w-32 h-16 border-2 border-dashed border-blue-600 rounded-[var(--r-ctl-sm,10px)] p-1.5 flex flex-col justify-center items-center text-center rotate-[-3deg] text-blue-700 bg-blue-50/50">
-                  <span className="text-[10px] font-black uppercase">
+                <span className="t-cap text-black/55 block mb-1">Cachet &amp; Signature</span>
+                <div className="w-32 h-16 border-2 border-dashed border-blue-600 rounded-[var(--r-ctl-sm,10px)] p-2 flex flex-col justify-center items-center text-center rotate-[-3deg] text-blue-700 bg-blue-50/50">
+                  <span className="t-small font-semibold">
                     {activePrintCert.doctorName}
                   </span>
-                  <span className="text-[10px] font-bold">
+                  <span className="t-small font-semibold">
                     {activePrintCert.doctorSpecialty}
                   </span>
                 </div>

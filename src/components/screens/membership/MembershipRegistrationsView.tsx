@@ -299,11 +299,11 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           <div className="flex items-center gap-3 min-w-0">
             <Avatar name={lead.fullName} size={36} />
             <div className="min-w-0">
-              <div className="text-[13.5px] font-semibold text-black dark:text-white truncate flex items-center gap-1.5">
+              <div className="t-label font-semibold text-black dark:text-white truncate flex items-center gap-2">
                 <span>{lead.fullName}</span>
-                {isPinned && <Pin size={11} className="text-[#d4522f] shrink-0" />}
+                {isPinned && <Pin size={11} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />}
               </div>
-              <div className="text-[11.5px] text-black/62 dark:text-white/70 truncate">
+              <div className="t-cap text-black/62 dark:text-white/70 truncate">
                 {lead.phoneNumber} · {lead.email}
               </div>
             </div>
@@ -316,7 +316,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       header: language === 'ar' ? 'الباقة المفضلة' : language === 'fr' ? 'Formule souhaitée' : `Preferred ${terminology.plan}`,
       sortable: true,
       renderCell: (lead) => (
-        <span className="inline-block px-2 py-0.5 rounded-full bg-[#d4522f]/10 text-[#d4522f] text-[11.5px] font-semibold border border-[#d4522f]/20 truncate max-w-full">
+        <span className="inline-block px-2 py-1 rounded-full bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] t-small font-semibold border border-[#d4522f]/20 truncate max-w-full">
           {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
         </span>
       ),
@@ -330,7 +330,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
         const isDec = lead.status === 'Declined';
         return (
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold ${
+            className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold ${
               isApp
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
                 : isDec
@@ -354,10 +354,10 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       sortable: true,
       renderCell: (lead) => (
         <div className="tabular-nums">
-          <span className="text-[12.5px] font-medium text-black dark:text-white block">
+          <span className="t-small font-medium text-black dark:text-white block">
             {new Date(lead.createdAt).toLocaleDateString()}
           </span>
-          <span className="text-[11px] text-black/62 dark:text-white/65 truncate block">
+          <span className="t-cap text-black/62 dark:text-white/65 truncate block">
             {lead.source}
           </span>
         </div>
@@ -368,7 +368,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       header: language === 'ar' ? 'الفرع' : language === 'fr' ? 'Branche' : 'Branch',
       sortable: true,
       renderCell: (lead) => (
-        <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+        <span className="t-small font-medium text-black/80 dark:text-white/85 truncate block">
           {resolveRecordBranch(lead, branchesById, currentBranch, language).name}
         </span>
       ),
@@ -960,7 +960,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-3.5 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-xs space-y-1"
+              className="p-4 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] t-cap space-y-1"
             >
               <div>
                 <strong className="text-black dark:text-white">
@@ -1003,7 +1003,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-3 bg-[#d4522f]/10 [--sq-stroke:rgba(212,82,47,0.2)] text-xs text-[#d4522f]"
+              className="p-3 bg-[#d4522f]/10 [--sq-stroke:rgba(212,82,47,0.2)] t-cap text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]"
             >
               {language === 'ar'
                 ? 'عند التأكيد، سيتم إنشاء معرف بطاقة RFID تلقائياً، واعتماد الطلب، وتسجيل المشترك مباشرة.'

@@ -65,8 +65,8 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] space-y-5">
 <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
 <div className="flex items-center gap-2">
-<div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Key size={16} /></div>
-<h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{language === "ar" ? "تحرير عقد كراء جديد" : "Nouveau Bail de Location"}</h3>
+<div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><Key size={16} /></div>
+<h3 className="font-semibold t-label text-black dark:text-white">{language === "ar" ? "تحرير عقد كراء جديد" : "Nouveau Bail de Location"}</h3>
 </div>
 <button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>

@@ -274,14 +274,14 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (payout) => (
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-[#262422] text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-[#262422] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0">
               {payout.staffName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <span className="text-[13.5px] font-semibold text-black dark:text-white truncate block">
+              <span className="t-label font-semibold text-black dark:text-white truncate block">
                 {payout.staffName}
               </span>
-              <span className="text-[11px] font-mono text-black/62 dark:text-white/65 block">
+              <span className="t-cap tabular-nums text-black/62 dark:text-white/65 block">
                 {payout.periodStart} → {payout.periodEnd}
               </span>
             </div>
@@ -294,10 +294,10 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (payout) => (
           <div className="tabular-nums">
-            <span className="text-[12.5px] font-semibold text-black dark:text-white block">
+            <span className="t-small font-semibold text-black dark:text-white block">
               {payout.totalServicesCount} soins ({payout.commissionRate}%)
             </span>
-            <span className="text-[11px] font-mono text-black/62 dark:text-white/65 block">
+            <span className="t-cap tabular-nums text-black/62 dark:text-white/65 block">
               CA: {formatMoney(payout.totalServiceRevenue)}
             </span>
           </div>
@@ -312,7 +312,7 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
           const isApproved = payout.status === 'Approved';
           return (
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold ${
+              className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold ${
                 isPaid
                   ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
                   : isApproved
@@ -336,10 +336,10 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         sortable: true,
         renderCell: (payout) => (
           <div className="tabular-nums">
-            <span className="font-mono text-[13px] font-bold text-[#d4522f] block">
+            <span className="tabular-nums t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
               {formatMoney(payout.totalPayout)}
             </span>
-            <span className="text-[11px] text-black/62 dark:text-white/65 block">
+            <span className="t-cap text-black/62 dark:text-white/65 block">
               {payout.paymentMethod ? `Via ${payout.paymentMethod}` : 'À régler'}
             </span>
           </div>
@@ -350,7 +350,7 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
         sortable: true,
         renderCell: (payout) => (
-          <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+          <span className="t-small font-medium text-black/80 dark:text-white/85 truncate block">
             {resolveRecordBranch(payout, branchesById, currentBranch, language).name}
           </span>
         ),

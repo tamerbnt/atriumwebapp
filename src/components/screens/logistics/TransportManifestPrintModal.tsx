@@ -26,8 +26,8 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4 max-h-[95vh] flex flex-col">
 <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 shrink-0 print:hidden">
 <div className="flex items-center gap-2">
-<ShieldCheck size={20} className="text-[#d4522f]" />
-<h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<ShieldCheck size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+<h3 className="font-semibold t-label text-black dark:text-white">
 {isAr ? "بيان الشحن القانوني (المرسوم التنفيذي 05-468)" : "Lettre de Voiture Routière (Décret 05-468)"}
 </h3>
 </div>
@@ -36,19 +36,19 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
 <button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 </div>
-<div className="printable-document overflow-y-auto flex-1 p-6 bg-white text-black border border-neutral-300 rounded-[var(--r-card,16px)] space-y-6 font-sans text-xs">
+<div className="printable-document overflow-y-auto flex-1 p-6 bg-white text-black border border-neutral-300 rounded-[var(--r-card,16px)] space-y-6 font-sans t-cap">
 <div className="text-center border-b pb-4 border-black/30 space-y-1">
-<div className="font-bold uppercase tracking-wider text-[11px]">الجمهورية الجزائرية الديمقراطية الشعبية</div>
-<div className="font-semibold uppercase tracking-wider text-[10px] text-black/75">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE — MINISTÈRE DES TRANSPORTS</div>
-<div className="text-base font-black uppercase pt-1 tracking-widest text-black">
+<div className="font-semibold t-small">الجمهورية الجزائرية الديمقراطية الشعبية</div>
+<div className="font-semibold t-small text-black/75">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE — MINISTÈRE DES TRANSPORTS</div>
+<div className="t-card font-semibold pt-1 text-black">
 {"LETTRE DE VOITURE ROUTIÈRE N° "}
 {manifest.manifestNumber}
 </div>
-<div className="text-[10px] text-black/75 font-medium">Conforme aux dispositions du Décret Exécutif N° 05-468 du 10 Décembre 2005</div>
+<div className="t-small text-black/75 font-medium">Conforme aux dispositions du Décret Exécutif N° 05-468 du 10 Décembre 2005</div>
 </div>
 <div className="grid grid-cols-2 gap-4 border p-3 rounded-[var(--r-ctl,12px)] border-neutral-300">
 <div>
-<div className="font-bold text-[11px] uppercase border-b pb-1 mb-2 text-black">1. Entreprise de Transport & Messagerie</div>
+<div className="font-semibold t-small border-b pb-1 mb-2 text-black">1. Entreprise de Transport & Messagerie</div>
 <div className="space-y-0.5">
 <div>
 <span className="font-semibold">Raison Sociale:</span>
@@ -74,7 +74,7 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
 </div>
 </div>
 <div>
-<div className="font-bold text-[11px] uppercase border-b pb-1 mb-2 text-black">2. Chauffeur & Véhicule Affecté</div>
+<div className="font-semibold t-small border-b pb-1 mb-2 text-black">2. Chauffeur & Véhicule Affecté</div>
 <div className="space-y-0.5">
 <div>
 <span className="font-semibold">Nom & Prénom:</span>
@@ -94,13 +94,13 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
 <div>
 <span className="font-semibold">Matricule Véhicule:</span>
 {" "}
-<span className="font-mono font-bold">{manifest.vehiclePlate}</span>
+<span className="tabular-nums font-semibold">{manifest.vehiclePlate}</span>
 </div>
 </div>
 </div>
 </div>
 <div className="border p-3 rounded-[var(--r-ctl,12px)] border-neutral-300 space-y-2">
-<div className="font-bold text-[11px] uppercase border-b pb-1 text-black flex justify-between">
+<div className="font-semibold t-small border-b pb-1 text-black flex justify-between">
 <span>3. Descriptif du Fret & Destination</span>
 <span>
 {"Date: "}
@@ -109,62 +109,62 @@ export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalPr
 </div>
 <div className="grid grid-cols-3 gap-2 py-1">
 <div>
-<span className="text-black/55 block text-[10px]">Zone de Destination:</span>
-<span className="font-bold">{manifest.zoneWilaya}</span>
+<span className="text-black/55 block t-cap">Zone de Destination:</span>
+<span className="font-semibold">{manifest.zoneWilaya}</span>
 </div>
 <div>
-<span className="text-black/55 block text-[10px]">Hub Réceptionnaire:</span>
-<span className="font-bold">{manifest.destinationHub || "Dépôt Régional"}</span>
+<span className="text-black/55 block t-cap">Hub Réceptionnaire:</span>
+<span className="font-semibold">{manifest.destinationHub || "Dépôt Régional"}</span>
 </div>
 <div>
-<span className="text-black/55 block text-[10px]">Statut Transit:</span>
-<span className="font-bold text-emerald-700">{manifest.status}</span>
+<span className="text-black/55 block t-cap">Statut Transit:</span>
+<span className="font-semibold text-emerald-700">{manifest.status}</span>
 </div>
 </div>
 <table className="w-full text-left border-collapse mt-2">
 <thead>
-<tr className="border-y border-neutral-300 bg-neutral-100 text-[10px]">
-<th className="p-1.5 font-bold">Désignation</th>
-<th className="p-1.5 font-bold">Sacs-Navette (Bags)</th>
-<th className="p-1.5 font-bold">Numéros Scellés de Sécurité</th>
-<th className="p-1.5 font-bold text-right">Poids Brut</th>
-<th className="p-1.5 font-bold text-right">Valeur Déclarée COD</th>
+<tr className="border-y border-neutral-300 bg-neutral-100 t-cap">
+<th className="p-2 font-semibold">Désignation</th>
+<th className="p-2 font-semibold">Sacs-Navette (Bags)</th>
+<th className="p-2 font-semibold">Numéros Scellés de Sécurité</th>
+<th className="p-2 font-semibold text-right">Poids Brut</th>
+<th className="p-2 font-semibold text-right">Valeur Déclarée COD</th>
 </tr>
 </thead>
 <tbody className="divide-y divide-neutral-200">
 <tr>
-<td className="p-1.5 font-medium">
+<td className="p-2 font-medium">
 Colis E-commerce & Messagerie (
 {manifest.totalShipmentsCount}
 {" colis)"}
 </td>
-<td className="p-1.5 font-mono">{manifest.bagIds && manifest.bagIds.join(", ") || "BAG-16-ORN-0042"}</td>
-<td className="p-1.5 font-mono font-bold text-[#d4522f]">{manifest.sealNumbers && manifest.sealNumbers.join(", ") || "SL-994821"}</td>
-<td className="p-1.5 text-right font-mono">
+<td className="p-2 tabular-nums">{manifest.bagIds && manifest.bagIds.join(", ") || "BAG-16-ORN-0042"}</td>
+<td className="p-2 tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{manifest.sealNumbers && manifest.sealNumbers.join(", ") || "SL-994821"}</td>
+<td className="p-2 text-right tabular-nums">
 {manifest.totalGrossWeightKg || 28.5}
 {" kg"}
 </td>
-<td className="p-1.5 text-right font-mono font-bold">{formatMoney(manifest.totalCodExpectedDzd, "fr")}</td>
+<td className="p-2 text-right tabular-nums font-semibold">{formatMoney(manifest.totalCodExpectedDzd, "fr")}</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div className="grid grid-cols-3 gap-3 pt-3 items-end">
-<div className="border p-2.5 rounded-[var(--r-ctl,12px)] border-neutral-300 h-28 flex flex-col justify-between">
-<span className="font-bold text-[10px] text-black/75 uppercase">Visa & Cachet Hub Émetteur</span>
-<div className="text-[10px] text-black/55 italic">Signature autorisée Baraki</div>
+<div className="border p-3 rounded-[var(--r-ctl,12px)] border-neutral-300 h-28 flex flex-col justify-between">
+<span className="font-semibold t-small text-black/75">Visa & Cachet Hub Émetteur</span>
+<div className="t-cap text-black/55 italic">Signature autorisée Baraki</div>
 </div>
-<div className="border p-2.5 rounded-[var(--r-ctl,12px)] border-neutral-300 h-28 flex flex-col justify-between">
-<span className="font-bold text-[10px] text-black/75 uppercase">Signature Chauffeur Transporteur</span>
-<div className="text-[10px] text-black/55 italic">Reconnaissance de prise en charge</div>
+<div className="border p-3 rounded-[var(--r-ctl,12px)] border-neutral-300 h-28 flex flex-col justify-between">
+<span className="font-semibold t-small text-black/75">Signature Chauffeur Transporteur</span>
+<div className="t-cap text-black/55 italic">Reconnaissance de prise en charge</div>
 </div>
 <div className="border p-2 rounded-[var(--r-ctl,12px)] border-neutral-300 h-28 flex flex-col items-center justify-center text-center bg-neutral-50">
-<div className="w-14 h-14 bg-black/10 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center font-mono text-[10px] text-black/75 p-1">[QR SECURE DECRET 05-468]</div>
-<span className="font-mono text-[10px] text-black/55 mt-1 truncate max-w-full">{offlineHash}</span>
-<span className="text-[10px] font-bold text-emerald-700">Contrôle Routier Validé</span>
+<div className="w-14 h-14 bg-black/10 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center tabular-nums t-cap text-black/75 p-1">[QR SECURE DECRET 05-468]</div>
+<span className="tabular-nums t-cap text-black/55 mt-1 truncate max-w-full">{offlineHash}</span>
+<span className="t-small font-semibold text-emerald-700">Contrôle Routier Validé</span>
 </div>
 </div>
-<div className="text-[10px] text-black/55 text-center pt-2">
+<div className="t-cap text-black/55 text-center pt-2">
 Document officiel à présenter à toute réquisition des services de Gendarmerie Nationale, Sûreté Nationale et Contrôle des Transports.
 </div>
 </div>

@@ -125,16 +125,16 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
           className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
         >
           <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <div
                 data-sq="tile"
                 data-sq-border="none"
-                className="w-9 h-9 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"
+                className="w-9 h-9 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0"
               >
                 <Sprout size={20} />
               </div>
             <div>
-              <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h2 className="t-card font-semibold text-black dark:text-white">
                 {initialData
                   ? (isAr ? 'تعديل بيانات القطعة الفلاحية' : 'Modifier la Parcelle Agricole')
                   : (isAr ? 'تسجيل قطعة فلاحية / امتياز جديد' : 'Nouvelle Parcelle Agricole & Cadastre')}
@@ -174,9 +174,9 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3"
+            className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3"
           >
-            <span className="text-[11px] font-bold text-black dark:text-white uppercase tracking-wider block rtl:normal-case rtl:tracking-normal">
+            <span className="t-small font-semibold text-black dark:text-white block rtl:normal-case rtl:tracking-normal">
               {isAr ? 'البيانات العقارية والمسح الفلاحي' : 'Régime Foncier & Concession (Loi 10-03)'}
             </span>
 
@@ -301,7 +301,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
               onClick={onClose}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="px-4 py-2 text-xs font-semibold bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-black dark:text-white cursor-pointer"
+              className="px-4 py-2 t-small font-semibold bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-black dark:text-white cursor-pointer"
             >
               {isAr ? 'إلغاء' : 'Annuler'}
             </button>

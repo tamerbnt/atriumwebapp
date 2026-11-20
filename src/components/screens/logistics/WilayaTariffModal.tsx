@@ -147,16 +147,16 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 shrink-0">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <div
               data-sq="tile"
               data-sq-border="none"
-              className="w-9 h-9 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"
+              className="w-9 h-9 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
             >
               <MapPin size={18} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h3 className="font-semibold t-card text-black dark:text-white">
                 {isAr ? 'شبكة تسعير التوصيل عبر 58 ولاية' : 'Grille Tarifaire des 58 Wilayas & Zones'}
               </h3>
             </div>
@@ -184,21 +184,21 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <div>
-                    <h4 className="font-bold text-sm text-black dark:text-white">
+                    <h4 className="font-semibold t-label text-black dark:text-white">
                       {isAr ? z.nameAr : z.nameFr}
                     </h4>
-                    <span className="text-[11px] text-black/55 dark:text-white/75">
+                    <span className="t-cap text-black/55 dark:text-white/75">
                       {z.wilayasExample}
                     </span>
                   </div>
-                  <span className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-[#d4522f]/15 text-[#d4522f]">
+                  <span className="t-small tabular-nums font-semibold px-2.5 py-1 rounded-full bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     Franchise: {rule.baseWeightKg} kg
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap">
                   <div>
-                    <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
+                    <label className="block t-small font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'توصيل للمنزل (DZD)' : 'Domicile (DZD)'}
                     </label>
                     <div
@@ -212,13 +212,13 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                         onChange={(e) =>
                           handleUpdate(z.id, 'homeBasePriceDzd', parseFloat(e.target.value) || 0)
                         }
-                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
+                    <label className="block t-small font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'استلام مكتب Stop-Desk' : 'Stop-Desk (DZD)'}
                     </label>
                     <div
@@ -232,13 +232,13 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                         onChange={(e) =>
                           handleUpdate(z.id, 'stopDeskBasePriceDzd', parseFloat(e.target.value) || 0)
                         }
-                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold text-emerald-600 dark:text-emerald-400"
+                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold text-emerald-600 dark:text-emerald-400"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
+                    <label className="block t-small font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'زيادة الكيلوغرام (+DZD/kg)' : '+ Par Kg supp.'}
                     </label>
                     <div
@@ -252,13 +252,13 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                         onChange={(e) =>
                           handleUpdate(z.id, 'overweightPerKgDzd', parseFloat(e.target.value) || 0)
                         }
-                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-black/55 dark:text-white/55 mb-1">
+                    <label className="block t-small font-medium text-black/55 dark:text-white/55 mb-1">
                       {isAr ? 'عناية هشة (+DZD)' : 'Fragile (+DZD)'}
                     </label>
                     <div
@@ -272,7 +272,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                         onChange={(e) =>
                           handleUpdate(z.id, 'fragileHandlingSurchargeDzd', parseFloat(e.target.value) || 0)
                         }
-                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-1.5 font-mono font-bold"
+                        className="lbi-field w-full h-full bg-transparent border-0 px-3 py-2 tabular-nums font-semibold"
                       />
                     </div>
                   </div>

@@ -94,7 +94,7 @@ const WhiteKpiCard: React.FC<{
         </div>
         <div>
           <span
-            className={`inline-flex items-center h-[var(--badge-h,22px)] t-small px-[var(--s2,8px)] rounded-full transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 ${chipClass}`}
+            className={`inline-flex items-center gap-[var(--s1,4px)] h-[var(--badge-h,22px)] t-small px-[var(--s2,8px)] rounded-full transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 ${chipClass}`}
           >
             {isEmerald ? (
               card.badgeText
@@ -102,8 +102,8 @@ const WhiteKpiCard: React.FC<{
               <>
                 <span ref={chipCountRef}>
                   {card.formatValue ? card.formatValue(card.count) : card.count}
-                </span>{' '}
-                {card.badgeText}
+                </span>
+                <span>{card.badgeText}</span>
               </>
             )}
           </span>

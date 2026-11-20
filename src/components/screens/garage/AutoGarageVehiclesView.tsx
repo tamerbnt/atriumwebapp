@@ -384,30 +384,30 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
               <div
                 data-sq="tile"
                 data-sq-border="solid"
-                className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+                className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
               >
                 <Car size={18} />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-bold text-black dark:text-white truncate">
+                  <span className="t-small font-semibold text-black dark:text-white truncate">
                     {v.brand} {v.model}
                   </span>
-                  {isPinned && <span className="text-[10px] text-amber-500 font-bold">VIP</span>}
+                  {isPinned && <span className="t-small text-amber-500 font-semibold">VIP</span>}
                   {v.isFleet && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200/50">
+                    <span className="t-small px-2 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200/50">
                       Flotte B2B
                     </span>
                   )}
                   {inShop && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1">
+                    <span className="t-small px-2 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
                       <Wrench size={10} />
                       {isAr ? 'في الورشة' : 'En Atelier'}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
-                  <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-bold">
+                <div className="flex items-center gap-2 mt-0.5 t-cap text-black/55 dark:text-white/55 tabular-nums">
+                  <span className="px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-semibold">
                     {v.plateNumber}
                   </span>
                   <span>·</span>
@@ -431,11 +431,11 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
         sortable: true,
         renderCell: (v) => (
           <div className="min-w-0">
-            <div className="text-xs font-semibold text-black dark:text-white truncate flex items-center gap-1.5">
-              {v.isFleet && <Building2 size={12} className="text-[#d4522f] shrink-0" />}
+            <div className="t-small font-semibold text-black dark:text-white truncate flex items-center gap-2">
+              {v.isFleet && <Building2 size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />}
               <span className="truncate">{v.ownerName}</span>
             </div>
-            <div className="text-[11px] font-mono text-black/55 dark:text-white/55 mt-0.5">{v.ownerPhone}</div>
+            <div className="t-cap tabular-nums text-black/55 dark:text-white/55 mt-0.5">{v.ownerPhone}</div>
           </div>
         ),
       },
@@ -447,7 +447,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
         renderCell: (v) => {
           const info = resolveRecordBranch(v, branchesById, currentBranch, language);
           return (
-            <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">
+            <span className="t-small font-medium text-black/75 dark:text-white/80 truncate block">
               {info.name}
             </span>
           );
@@ -463,19 +463,19 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
           const needsOilChange = estKm - (v.lastServiceKm || v.mileageKm - 5000) >= 9500;
           return (
             <div className="space-y-0.5">
-              <div className="text-xs font-mono font-bold text-black dark:text-white flex items-center gap-1.5">
-                <Gauge size={13} className="text-[#d4522f]" />
+              <div className="t-small tabular-nums font-semibold text-black dark:text-white flex items-center gap-2">
+                <Gauge size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>{estKm.toLocaleString()} km</span>
-                <span className="text-[10px] text-black/55 dark:text-white/55 font-normal">(est.)</span>
+                <span className="t-cap text-black/55 dark:text-white/55 font-normal">(est.)</span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 {needsOilChange ? (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-0.5">
+                  <span className="t-small font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-0.5">
                     <AlertTriangle size={9} />
                     {isAr ? 'تغيير زيت مطلوب' : 'Vidange requise'}
                   </span>
                 ) : (
-                  <span className="text-[10px] font-medium text-black/55 dark:text-white/55">
+                  <span className="t-small font-medium text-black/55 dark:text-white/55">
                     Dernière: {v.lastServiceKm ? `${v.lastServiceKm.toLocaleString()} km` : v.lastServiceDate || '—'}
                   </span>
                 )}
@@ -492,7 +492,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
           const vehOrders = vehicleOrdersMap.get(v.plateNumber) || [];
           return (
             <div className="text-center">
-              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 {vehOrders.length} {isAr ? 'أوامر' : 'ORs'}
               </span>

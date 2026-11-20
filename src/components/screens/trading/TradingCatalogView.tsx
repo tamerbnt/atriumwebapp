@@ -377,7 +377,7 @@ export const TradingCatalogView: React.FC = () => {
         header: 'Réf. SKU',
         width: '120px',
         sortable: true,
-        renderCell: (p) => <span className="font-mono text-xs font-bold text-black dark:text-white">{p.sku || 'N/A'}</span>,
+        renderCell: (p) => <span className="tabular-nums t-small font-semibold text-black dark:text-white">{p.sku || 'N/A'}</span>,
       },
       {
         key: 'name',
@@ -385,9 +385,9 @@ export const TradingCatalogView: React.FC = () => {
         minWidth: '210px',
         sortable: true,
         renderCell: (p) => (
-          <div className="text-xs">
-            <span className="font-bold text-black dark:text-white block">{p.name}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55">{p.category}</span>
+          <div className="t-cap">
+            <span className="font-semibold text-black dark:text-white block">{p.name}</span>
+            <span className="t-cap text-black/55 dark:text-white/55">{p.category}</span>
           </div>
         ),
       },
@@ -399,7 +399,7 @@ export const TradingCatalogView: React.FC = () => {
         renderCell: (p) => {
           const b = resolveRecordBranch(p, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -410,14 +410,14 @@ export const TradingCatalogView: React.FC = () => {
         key: 'unit',
         header: 'Unité',
         width: '70px',
-        renderCell: (p) => <span className="text-xs font-mono text-black/55 dark:text-white/55">{p.unit || 'u'}</span>,
+        renderCell: (p) => <span className="t-cap tabular-nums text-black/55 dark:text-white/55">{p.unit || 'u'}</span>,
       },
       {
         key: 'tva',
         header: 'TVA %',
         width: '70px',
         renderCell: (p) => (
-          <span className="text-xs font-mono text-black/70 dark:text-white/75">{p.taxRate ?? 19}%</span>
+          <span className="t-cap tabular-nums text-black/70 dark:text-white/75">{p.taxRate ?? 19}%</span>
         ),
       },
       {
@@ -426,7 +426,7 @@ export const TradingCatalogView: React.FC = () => {
         width: '125px',
         sortable: true,
         renderCell: (p) => (
-          <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+          <span className="tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(p.price?.amount || 0)}
           </span>
         ),
@@ -436,7 +436,7 @@ export const TradingCatalogView: React.FC = () => {
         header: "Coût d'Achat HT",
         width: '120px',
         renderCell: (p) => (
-          <span className="font-mono text-xs text-black/55 dark:text-white/55 tabular-nums">
+          <span className="tabular-nums t-cap text-black/55 dark:text-white/55">
             {formatMoney(p.cost?.amount || p.costPrice || 0)}
           </span>
         ),
@@ -449,7 +449,7 @@ export const TradingCatalogView: React.FC = () => {
               width: '95px',
               sortable: true,
               renderCell: (p: Product) => (
-                <span className="font-mono font-bold text-xs tabular-nums text-black dark:text-white">
+                <span className="tabular-nums font-semibold t-small text-black dark:text-white">
                   {p.stockQuantity || 0}
                 </span>
               ),
@@ -471,7 +471,7 @@ export const TradingCatalogView: React.FC = () => {
               aria-label={t('action_edit', 'Modifier')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
             >
               <Edit size={14} />
             </button>
@@ -485,7 +485,7 @@ export const TradingCatalogView: React.FC = () => {
               aria-label={t('action_delete', 'Supprimer')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-rose-600 cursor-pointer"
             >
               <Trash2 size={14} />
             </button>
@@ -931,10 +931,10 @@ export const TradingCatalogView: React.FC = () => {
               data-sq-border="solid"
               className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 space-y-4"
             >
-            <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+            <h2 className="t-card font-semibold text-black dark:text-white">
               {editingProduct ? "Modifier l'Article" : 'Ajouter au Catalogue'}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-3 text-xs">
+            <form onSubmit={handleSubmit} className="space-y-3 t-cap">
               <LabelInput
                 label="Désignation Commerciale *"
                 placeholder="Ex: Ciment Portland CPJ-42.5"

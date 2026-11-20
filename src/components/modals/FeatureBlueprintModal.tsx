@@ -780,7 +780,7 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
             style={{ '--sq-stroke': 'rgba(212,82,47,0.3)' } as React.CSSProperties}
             className="card-opt p-[var(--card-pad,20px)] bg-gradient-to-r from-[#1C1A18] to-neutral-900 flex items-center gap-[var(--s4,16px)]"
           >
-            <div className="t-kpi-m text-[var(--brand-accent,#D9532B)] uppercase tabular-nums shrink-0">
+            <div className="t-kpi-m text-[var(--brand-on-dark,#FF8F63)] uppercase tabular-nums shrink-0">
               {data.result.stat}
             </div>
             <div className="t-body text-white/90">

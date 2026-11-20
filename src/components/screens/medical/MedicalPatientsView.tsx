@@ -424,24 +424,24 @@ export const MedicalPatientsView: React.FC<any> = () => {
             (p.chronicConditions && p.chronicConditions.length > 0);
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+              <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
                 {p.fullName.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-black dark:text-white capitalize truncate">
+                  <span className="t-small font-semibold text-black dark:text-white capitalize truncate">
                     {p.fullName}
                   </span>
                   {isPinned && (
-                    <span className="text-[10px] text-amber-500 font-bold">VIP</span>
+                    <span className="t-small text-amber-500 font-semibold">VIP</span>
                   )}
                   {hasVigilance && (
-                    <span className="text-[10px] text-rose-500 font-semibold flex items-center gap-0.5">
+                    <span className="t-small text-rose-500 font-semibold flex items-center gap-0.5">
                       <ShieldAlert size={11} />
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
+                <div className="flex items-center gap-2 mt-0.5 t-cap text-black/55 dark:text-white/55 tabular-nums">
                   <span>
                     NSS: {p.nationalId ? `${p.nationalId.slice(0, 8)}...` : 'CHIFA-OK'}
                   </span>
@@ -463,7 +463,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
         renderCell: (p) => {
           const bName = resolveRecordBranch(p, branchesById, currentBranch, language).name;
           return (
-            <span className="text-xs font-medium text-black/70 dark:text-white/75 truncate block max-w-[150px]">
+            <span className="t-small font-medium text-black/70 dark:text-white/75 truncate block max-w-[150px]">
               {bName}
             </span>
           );
@@ -475,9 +475,9 @@ export const MedicalPatientsView: React.FC<any> = () => {
         width: '2.1*',
         renderCell: (p) => (
           <div>
-            <div className="text-xs font-mono font-medium text-black dark:text-white">{p.phone}</div>
+            <div className="t-small tabular-nums font-medium text-black dark:text-white">{p.phone}</div>
             {p.emergencyContact && (
-              <div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[170px] mt-0.5">
+              <div className="t-cap text-black/55 dark:text-white/55 truncate max-w-[170px] mt-0.5">
                 {p.emergencyContact} ({p.emergencyPhone || '—'})
               </div>
             )}
@@ -494,18 +494,18 @@ export const MedicalPatientsView: React.FC<any> = () => {
           return (
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs font-mono">
+                <span className="px-2 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-semibold t-small tabular-nums">
                   {p.bloodGroup || 'O+'}
                 </span>
                 {hasAllergies && p.allergies && (
-                  <span className="text-[10px] font-semibold text-rose-500 flex items-center gap-1 bg-rose-50/50 dark:bg-rose-950/30 px-2 py-0.5 rounded-full">
+                  <span className="t-small font-semibold text-rose-500 flex items-center gap-1 bg-rose-50/50 dark:bg-rose-950/30 px-2 py-1 rounded-full">
                     <AlertCircle size={10} />
                     {p.allergies[0]}
                   </span>
                 )}
               </div>
               {p.chronicConditions && p.chronicConditions.length > 0 && (
-                <span className="text-[10px] text-black/55 dark:text-white/55 truncate max-w-[150px]">
+                <span className="t-cap text-black/55 dark:text-white/55 truncate max-w-[150px]">
                   {p.chronicConditions.join(', ')}
                 </span>
               )}
@@ -520,7 +520,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
         renderCell: (p) => {
           const patientCons = consultations.filter((c) => c.patientId === p.id);
           return (
-            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               {patientCons.length} {isAr ? 'فحوصات' : 'visites'}
             </span>
@@ -957,7 +957,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                       <div
                         data-sq="ctl"
                         data-sq-border="solid"
-                        className="mt-2 px-3 py-2 bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/40 border border-[#F5BDB3] dark:border-[#5C2B24] [--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] text-[11px] font-semibold text-[#B8321C] dark:text-[#FF8D7A] flex items-center gap-2"
+                        className="mt-2 px-3 py-2 bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/40 border border-[#F5BDB3] dark:border-[#5C2B24] [--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] t-small font-semibold text-[#B8321C] dark:text-[#FF8D7A] flex items-center gap-2"
                       >
                         <ShieldAlert size={13} className="shrink-0" />
                         <span>
@@ -1039,13 +1039,13 @@ export const MedicalPatientsView: React.FC<any> = () => {
                           className="p-3 bg-white dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700"
                         >
                         <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-1.5">
-                            <Activity size={13} className="text-[#d4522f]" />
-                            <span className="text-xs font-bold text-black dark:text-white">
+                          <div className="flex items-center gap-2">
+                            <Activity size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                            <span className="t-small font-semibold text-black dark:text-white">
                               {isAr ? 'منحنى ضغط الدم (mmHg)' : 'Courbe Tension Artérielle (mmHg)'}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-[10px] font-mono">
+                          <div className="flex items-center gap-2 t-cap tabular-nums">
                             <span className="flex items-center gap-1 text-rose-600 font-semibold">
                               <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />
                               Sys
@@ -1126,7 +1126,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                                 })}
                               </>
                             ) : (
-                              <text x="160" y="55" textAnchor="middle" fill="#9ca3af" fontSize="11">
+                              <text x="160" y="55" textAnchor="middle" fill="#9ca3af" fontSize="12">
                                 Historique insuffisant pour tracer la courbe
                               </text>
                             )}
@@ -1140,10 +1140,10 @@ export const MedicalPatientsView: React.FC<any> = () => {
                             .map((h, i) => (
                               <div
                                 key={i}
-                                className="flex items-center justify-between text-[11px] py-1 border-b border-neutral-100 dark:border-neutral-800 last:border-0 font-mono"
+                                className="flex items-center justify-between t-cap py-1 border-b border-neutral-100 dark:border-neutral-800 last:border-0 tabular-nums"
                               >
                                 <span className="text-black/55 dark:text-white/55">{h.date}</span>
-                                <span className="font-bold text-black dark:text-white">
+                                <span className="font-semibold text-black dark:text-white">
                                   {h.systolicBp ?? h.systolic}/{h.diastolicBp ?? h.diastolic} mmHg
                                 </span>
                                 <span className="text-black/55 dark:text-white/55">
@@ -1170,78 +1170,78 @@ export const MedicalPatientsView: React.FC<any> = () => {
                         <div
                           data-sq="card"
                           data-sq-border="solid"
-                          className="mt-3 p-3 bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700 space-y-2.5 text-xs"
+                          className="mt-3 p-3 bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700 space-y-2 t-cap"
                         >
-                          <div className="text-[11px] font-bold text-black/70 dark:text-white/75 uppercase">
+                          <div className="t-small font-semibold text-black/70 dark:text-white/75">
                             Nouvelle Prise de Constantes
                           </div>
                           <div className="grid grid-cols-3 gap-2">
                             <div>
-                              <label className="text-[10px] text-black/55 dark:text-white/55">Sys (mmHg)</label>
+                              <label className="t-cap text-black/55 dark:text-white/55">Sys (mmHg)</label>
                               <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
                                 <input
                                   type="number"
                                   value={newSys}
                                   onChange={(e) => setNewSys(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
                                 />
                               </div>
                             </div>
                             <div>
-                              <label className="text-[10px] text-black/55 dark:text-white/55">Dia (mmHg)</label>
+                              <label className="t-cap text-black/55 dark:text-white/55">Dia (mmHg)</label>
                               <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
                                 <input
                                   type="number"
                                   value={newDia}
                                   onChange={(e) => setNewDia(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
                                 />
                               </div>
                             </div>
                             <div>
-                              <label className="text-[10px] text-black/55 dark:text-white/55">Pouls (bpm)</label>
+                              <label className="t-cap text-black/55 dark:text-white/55">Pouls (bpm)</label>
                               <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
                                 <input
                                   type="number"
                                   value={newHr}
                                   onChange={(e) => setNewHr(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
                                 />
                               </div>
                             </div>
                           </div>
                           <div className="grid grid-cols-3 gap-2">
                             <div>
-                              <label className="text-[10px] text-black/55 dark:text-white/55">Poids (kg)</label>
+                              <label className="t-cap text-black/55 dark:text-white/55">Poids (kg)</label>
                               <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
                                 <input
                                   type="number"
                                   value={newWeight}
                                   onChange={(e) => setNewWeight(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
                                 />
                               </div>
                             </div>
                             <div>
-                              <label className="text-[10px] text-black/55 dark:text-white/55">Glycémie (mg/dL)</label>
+                              <label className="t-cap text-black/55 dark:text-white/55">Glycémie (mg/dL)</label>
                               <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
                                 <input
                                   type="number"
                                   step="1"
                                   value={newSugar}
                                   onChange={(e) => setNewSugar(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
                                 />
                               </div>
                             </div>
                             <div>
-                              <label className="text-[10px] text-black/55 dark:text-white/55">SpO₂ (%)</label>
+                              <label className="t-cap text-black/55 dark:text-white/55">SpO₂ (%)</label>
                               <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700">
                                 <input
                                   type="number"
                                   value={newSpo2}
                                   onChange={(e) => setNewSpo2(e.target.value)}
-                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 text-xs font-mono"
+                                  className="lbi-field w-full px-2 py-1 bg-transparent border-0 t-cap tabular-nums"
                                 />
                               </div>
                             </div>
@@ -1250,7 +1250,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                             <button
                               type="button"
                               onClick={() => setShowAddVitals(false)}
-                              className="px-2.5 py-1 text-xs text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
+                              className="px-2.5 py-1 t-cap text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
                             >
                               Annuler
                             </button>
@@ -1298,7 +1298,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                                 });
                               }}
                               data-sq="ctl-sm"
-                              className="px-3 py-1 bg-[#d4522f] text-white text-xs font-semibold cursor-pointer"
+                              className="px-3 py-1 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold cursor-pointer"
                             >
                               Enregistrer
                             </button>

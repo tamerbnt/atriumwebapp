@@ -463,15 +463,15 @@ export const FreelanceClientsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700"
+              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0 border border-neutral-200 dark:border-neutral-700"
             >
               {client.name.charAt(0)}
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-black dark:text-white truncate hover:text-[#d4522f] transition-colors">
+              <div className="font-semibold text-black dark:text-white truncate hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-colors">
                 {client.name}
               </div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">
                 {client.company || t('free_clients_private_client', language)}
               </div>
             </div>
@@ -487,7 +487,7 @@ export const FreelanceClientsView: React.FC = () => {
         renderCell: (client) => {
           const bInfo = resolveRecordBranch(client, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -501,11 +501,11 @@ export const FreelanceClientsView: React.FC = () => {
         minWidth: '130px',
         renderCell: (client) => (
           <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold ${
               client.status === 'ActiveRetainer'
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                 : client.status === 'ProjectBased'
-                ? 'bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] border border-[#F5E2D8] dark:border-neutral-700'
+                ? 'bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] border border-[#F5E2D8] dark:border-neutral-700'
                 : 'bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75'
             }`}
           >
@@ -524,13 +524,13 @@ export const FreelanceClientsView: React.FC = () => {
         minWidth: '140px',
         sortable: true,
         renderCell: (client) => (
-          <div className="text-xs">
+          <div className="t-cap">
             <span className="font-semibold text-black dark:text-white tabular-nums">
               {formatCurrencyAmount(client.hourlyRate, client.currency)}
               {t('free_dash_per_hour', language)}
             </span>
             {client.monthlyRetainerHours ? (
-              <span className="block text-[10px] text-black/55 dark:text-white/55">
+              <span className="block t-cap text-black/55 dark:text-white/55">
                 {client.monthlyRetainerHours}h Retainer
               </span>
             ) : null}
@@ -545,7 +545,7 @@ export const FreelanceClientsView: React.FC = () => {
         renderCell: (client) => {
           const count = freelanceProjects.filter((p) => p.clientId === client.id).length;
           return (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
+            <span className="inline-flex items-center px-2 py-1 rounded-full t-small font-medium bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
               {count} {t('free_nav_deliverables', language)}
             </span>
           );
@@ -559,11 +559,11 @@ export const FreelanceClientsView: React.FC = () => {
         renderCell: (client) => {
           const unbilled = getClientUnbilledTime(client.id);
           return unbilled.amount > 0 ? (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 tabular-nums">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full t-small font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 tabular-nums">
               {unbilled.hours}h · {formatCurrencyAmount(unbilled.amount, client.currency)}
             </span>
           ) : (
-            <span className="text-black/55 dark:text-white/55 text-xs">0h</span>
+            <span className="text-black/55 dark:text-white/55 t-cap">0h</span>
           );
         },
       },
@@ -779,7 +779,7 @@ export const FreelanceClientsView: React.FC = () => {
         >
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
-            <span className="text-xs font-bold text-black dark:text-white">
+            <span className="t-small font-semibold text-black dark:text-white">
               {selectedClientIds.size}{' '}
               {isAr ? 'عملاء محددين' : isFr ? 'clients sélectionnés' : 'clients selected'}
             </span>
@@ -788,7 +788,7 @@ export const FreelanceClientsView: React.FC = () => {
             <button
               type="button"
               onClick={() => setSelectedClientIds(new Set())}
-              className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
+              className="px-3 py-2 t-small text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white font-medium cursor-pointer"
             >
               {isAr ? 'إلغاء التحديد' : isFr ? 'Désélectionner' : 'Deselect'}
             </button>
@@ -798,7 +798,7 @@ export const FreelanceClientsView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={handleBatchSetRetainer}
-              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
             >
               <CheckCircle size={13} />
               <span>{isAr ? 'تحويل لعقد شهري' : isFr ? 'Passer en Retainer' : 'Set Active Retainer'}</span>
@@ -809,7 +809,7 @@ export const FreelanceClientsView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={handleBatchSetProject}
-              className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
             >
               <Briefcase size={13} />
               <span>{isAr ? 'تحويل لمشروع' : isFr ? 'Passer au Projet' : 'Set Project Based'}</span>
@@ -820,7 +820,7 @@ export const FreelanceClientsView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={handleBatchDelete}
-              className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white t-small font-semibold flex items-center gap-2 cursor-pointer"
             >
               <Trash2 size={13} />
               <span>{isAr ? 'حذف المحدد' : isFr ? 'Supprimer' : 'Delete'}</span>
@@ -1071,7 +1071,7 @@ export const FreelanceClientsView: React.FC = () => {
                         setSelectedClient(null);
                         setScreen('scheduler');
                       }}
-                      className="text-[#d4522f] hover:underline text-[11px] font-semibold cursor-pointer"
+                      className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline t-small font-semibold cursor-pointer"
                     >
                       {t('free_clients_manage_deliv', language)}
                     </button>
@@ -1267,12 +1267,12 @@ export const FreelanceClientsView: React.FC = () => {
             >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
-                <h3 className="text-base font-bold text-black dark:text-white">
+                <h3 className="t-card font-semibold text-black dark:text-white">
                   {clientToEdit
                     ? t('free_clients_modal_title_edit', language)
                     : t('free_clients_modal_title_add', language)}
                 </h3>
-                <p className="text-xs text-black/55 dark:text-white/55 mt-0.5">
+                <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
                   {t('free_clients_modal_desc', language)}
                 </p>
               </div>
@@ -1286,7 +1286,7 @@ export const FreelanceClientsView: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmitClient} className="space-y-4 text-xs">
+            <form onSubmit={handleSubmitClient} className="space-y-4 t-cap">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   field="ClientName"
@@ -1457,7 +1457,7 @@ export const FreelanceClientsView: React.FC = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
@@ -1465,7 +1465,7 @@ export const FreelanceClientsView: React.FC = () => {
                   type="submit"
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="px-5 py-2 bg-[#d4522f] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                  className="px-5 py-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {clientToEdit
                     ? t('free_clients_save_changes', language)
@@ -1496,16 +1496,16 @@ export const FreelanceClientsView: React.FC = () => {
                   <AlertTriangle size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-black dark:text-white">
+                  <h3 className="t-card font-semibold text-black dark:text-white">
                     {t('free_clients_delete', language)}
                   </h3>
-                  <p className="text-xs text-black/55 dark:text-white/55">
+                  <p className="t-cap text-black/55 dark:text-white/55">
                     {t('free_clients_delete_warning', language)}
                   </p>
                 </div>
               </div>
 
-              <p className="text-xs text-black/70 dark:text-white/75">
+              <p className="t-cap text-black/70 dark:text-white/75">
                 {t('free_clients_delete_confirm', language)}{' '}
                 <strong className="text-black dark:text-white font-semibold">
                   {clientToDelete.name}
@@ -1516,19 +1516,19 @@ export const FreelanceClientsView: React.FC = () => {
               <label
                 data-sq="card"
                 data-sq-border="solid"
-                className="flex items-start gap-2.5 p-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs text-black/70 dark:text-white/75 cursor-pointer"
+                className="flex items-start gap-2 p-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 t-cap text-black/70 dark:text-white/75 cursor-pointer"
               >
                 <input
                   type="checkbox"
                   checked={deleteCascade}
                   onChange={(e) => setDeleteCascade(e.target.checked)}
-                  className="mt-0.5 rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
+                  className="mt-0.5 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
                 />
               <div>
                 <span className="font-semibold block text-black dark:text-white">
                   {t('free_clients_cascade_delete', language)}
                 </span>
-                <span className="text-[11px] text-black/55 dark:text-white/75 block mt-0.5">
+                <span className="t-cap text-black/55 dark:text-white/75 block mt-0.5">
                   {t('free_clients_cascade_desc', language)}
                 </span>
               </div>

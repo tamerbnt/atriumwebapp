@@ -510,7 +510,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         renderCell: (slip) => {
           const isPinned = pinnedSlipIds.has(slip.id);
           return (
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 aria-label="Pin"
@@ -520,7 +520,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 }}
                 className={`p-1 transition-colors cursor-pointer ${
                   isPinned
-                    ? 'text-[#d4522f] bg-[#d4522f]/10'
+                    ? 'text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-[#d4522f]/10'
                     : 'text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80'
                 }`}
                 data-sq="ctl-sm"
@@ -528,10 +528,10 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
               </button>
               <div>
-                <div className="font-semibold text-xs text-black dark:text-white">
+                <div className="font-semibold t-small text-black dark:text-white">
                   {slip.beneficiaryName}
                 </div>
-                <div className="text-[11px] text-black/55 dark:text-white/55 truncate max-w-[190px]">
+                <div className="t-cap text-black/55 dark:text-white/55 truncate max-w-[190px]">
                   {slip.wilayaName} · {slip.transactionReference}
                 </div>
               </div>
@@ -545,9 +545,9 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         width: '1.8*',
         minWidth: '170px',
         renderCell: (slip) => (
-          <div className="font-mono text-xs text-black/70 dark:text-white/75">
-            <span className="font-bold">{slip.ccpNumber}</span> / Clé{' '}
-            <span className="font-bold">{slip.ccpKey}</span>
+          <div className="tabular-nums t-cap text-black/70 dark:text-white/75">
+            <span className="font-semibold">{slip.ccpNumber}</span> / Clé{' '}
+            <span className="font-semibold">{slip.ccpKey}</span>
           </div>
         ),
       },
@@ -559,7 +559,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         sortable: true,
         align: 'right',
         renderCell: (slip) => (
-          <div className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+          <div className="tabular-nums t-small font-semibold text-black dark:text-white">
             {formatMoney(slip.amountDzd, 'DZD')}
           </div>
         ),
@@ -572,7 +572,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         align: 'center',
         renderCell: (slip) => (
           <span
-            className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+            className={`inline-flex px-2.5 py-1 rounded-full t-small font-semibold ${
               slip.isPrinted
                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                 : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
@@ -596,7 +596,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               setSelectedSlip(slip);
             }}
             data-sq="ctl-sm"
-            className="px-2.5 py-1 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 flex items-center gap-1.5 cursor-pointer ml-auto"
+            className="px-2.5 py-1 t-small font-semibold text-white bg-[#DC2626] hover:bg-red-700 flex items-center gap-2 cursor-pointer ml-auto"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Mandat</span>
@@ -616,8 +616,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         minWidth: '220px',
         renderCell: (exp) => (
           <div>
-            <div className="font-semibold text-xs text-black dark:text-white">{exp.title}</div>
-            <div className="text-[11px] text-black/55 dark:text-white/55">
+            <div className="font-semibold t-small text-black dark:text-white">{exp.title}</div>
+            <div className="t-cap text-black/55 dark:text-white/55">
               Par {exp.declaredByUserName} ({exp.declaredByRole}) · {exp.projectTitle}
             </div>
           </div>
@@ -629,7 +629,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         width: '1.4*',
         minWidth: '130px',
         renderCell: (exp) => (
-          <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[11px] font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
+          <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
             {exp.category}
           </span>
         ),
@@ -641,7 +641,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         minWidth: '130px',
         align: 'right',
         renderCell: (exp) => (
-          <div className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+          <div className="tabular-nums t-small font-semibold text-black dark:text-white">
             {formatMoney(exp.amountDzd, 'DZD')}
           </div>
         ),
@@ -654,7 +654,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         align: 'center',
         renderCell: (exp) => (
           <span
-            className={`text-[11px] font-bold ${
+            className={`t-small font-semibold ${
               exp.hasFiscalInvoice ? 'text-emerald-600' : 'text-black/55 dark:text-white/55'
             }`}
           >
@@ -677,7 +677,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 e.stopPropagation();
                 setSelectedReceiptUrl(exp.receiptPhotoUrl || null);
               }}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer ml-auto"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer ml-auto"
             >
               <Eye className="w-4 h-4" />
             </button>
@@ -695,11 +695,11 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         width: '2.5*',
         minWidth: '220px',
         renderCell: (eq) => (
-          <div className="flex items-center gap-2.5">
-            <div className="font-mono text-xs font-bold text-[#d4522f]">{eq.assetCode}</div>
+          <div className="flex items-center gap-2">
+            <div className="tabular-nums t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{eq.assetCode}</div>
             <div>
-              <div className="font-semibold text-xs text-black dark:text-white">{eq.title}</div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 font-mono">
+              <div className="font-semibold t-small text-black dark:text-white">{eq.title}</div>
+              <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                 Affecté à : {eq.currentCustodianName || 'Agence'}
               </div>
             </div>
@@ -713,7 +713,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         minWidth: '140px',
         align: 'right',
         renderCell: (eq) => (
-          <div className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+          <div className="tabular-nums t-small font-semibold text-black dark:text-white">
             {formatMoney(eq.acquisitionCostDzd, 'DZD')}
           </div>
         ),
@@ -727,7 +727,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         renderCell: (eq) => {
           const badge = getEquipmentStatusBadge(eq.currentStatus, language);
           return (
-            <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.pillClass}`}>
+            <span className={`px-2.5 py-1 rounded-full t-small font-semibold ${badge.pillClass}`}>
               {badge.label}
             </span>
           );
@@ -812,7 +812,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               onClick={handleExportCcpCsv}
               data-sq="ctl"
               data-sq-border="solid"
-              className="h-10 px-3.5 text-xs font-semibold text-black/75 dark:text-white/80 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#FBF8F5] flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-10 px-4 t-small font-semibold text-black/75 dark:text-white/80 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#FBF8F5] flex items-center gap-2 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
@@ -893,7 +893,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
       <ScreenPod>
         <div className="space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="text-[13.5px] font-semibold text-black dark:text-white">
+            <h2 className="t-label font-semibold text-black dark:text-white">
               {isAr
                 ? 'مركز المحاسبة، الأجور وجرد العتاد'
                 : isEn
@@ -938,14 +938,14 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
                 <div>
-                  <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
+                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
                     {isAr
                       ? 'إصدار الحوالات البريدية (SFP 01)'
                       : isEn
                       ? 'Postal Mandate Generation'
                       : 'Génération des Mandats Postaux (SFP 01)'}
                   </span>
-                  <h3 className="text-lg font-bold text-black dark:text-white mt-0.5 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                  <h3 className="t-pod font-semibold text-black dark:text-white mt-0.5">
                     {isAr ? 'صرف الخزينة البريدية' : isEn ? 'Treasury Release' : 'Déblocage Trésorerie Postale'}
                   </h3>
                 </div>
@@ -954,7 +954,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                     type="button"
                     onClick={handleGenerateAllCcpBatch}
                     data-sq="ctl"
-                    className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer shrink-0"
+                    className="px-4 py-2 t-small font-semibold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer shrink-0"
                   >
                     <Printer className="w-4 h-4" />
                     {isAr
@@ -976,15 +976,15 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono font-bold text-xs text-black dark:text-white">
+                        <span className="tabular-nums font-semibold t-small text-black dark:text-white">
                           {batch.batchNumber}
                         </span>
                         <span className="text-black/55 dark:text-white/55">·</span>
-                        <span className="text-xs text-black/70 dark:text-white/75 font-semibold">
+                        <span className="t-small text-black/70 dark:text-white/75 font-semibold">
                           {batch.projectTitle}
                         </span>
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          className={`px-2 py-1 rounded-full t-small font-semibold ${
                             batch.status === 'ccp_generated'
                               ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                               : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
@@ -995,17 +995,17 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                             : 'Validé DG — Prêt CCP'}
                         </span>
                       </div>
-                      <p className="text-xs text-black/55 dark:text-white/55">
+                      <p className="t-cap text-black/55 dark:text-white/55">
                         Mission {batch.missionCode} · {batch.totalBeneficiaries} animateurs avec
                         numéros CCP et clés vérifiés.
                       </p>
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
                       <div className="text-right rtl:text-left">
-                        <span className="text-[10px] text-black/55 dark:text-white/55 block uppercase font-medium">
+                        <span className="t-small text-black/55 dark:text-white/55 block font-medium">
                           Montant Global
                         </span>
-                        <span className="font-mono font-bold text-lg text-black dark:text-white tabular-nums">
+                        <span className="tabular-nums font-semibold t-pod text-black dark:text-white">
                           {formatMoney(batch.totalAmountDzd, 'DZD')}
                         </span>
                       </div>
@@ -1014,7 +1014,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                           type="button"
                           onClick={() => generatePmCcpSlipsForBatch(batch.id)}
                           data-sq="ctl"
-                          className="px-3.5 py-2 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                          className="px-4 py-2 t-small font-semibold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer"
                         >
                           <Printer className="w-4 h-4" />
                           <span>Générer CCP</span>
@@ -1134,21 +1134,21 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 renderCard={(slip) => (
                   <div className="flex flex-col justify-between h-full space-y-3">
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs font-bold text-black dark:text-white">
+                      <div className="flex items-center justify-between t-small font-semibold text-black dark:text-white">
                         <span>{slip.beneficiaryName}</span>
-                        <span className="font-mono text-black/55 dark:text-white/55">
+                        <span className="tabular-nums text-black/55 dark:text-white/55">
                           {slip.wilayaName}
                         </span>
                       </div>
-                      <div className="font-mono text-xs text-black/70 dark:text-white/75">
+                      <div className="tabular-nums t-cap text-black/70 dark:text-white/75">
                         CCP : {slip.ccpNumber} / {slip.ccpKey}
                       </div>
-                      <p className="text-[11px] text-black/55 dark:text-white/55 truncate">
+                      <p className="t-cap text-black/55 dark:text-white/55 truncate">
                         {slip.transactionReference}
                       </p>
                     </div>
                     <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
-                      <span className="font-mono font-bold text-sm text-[#DC2626] tabular-nums">
+                      <span className="tabular-nums font-semibold t-label text-[#DC2626]">
                         {formatMoney(slip.amountDzd, 'DZD')}
                       </span>
                       <button
@@ -1158,7 +1158,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                           setSelectedSlip(slip);
                         }}
                         data-sq="ctl-sm"
-                        className="px-2.5 py-1 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 flex items-center gap-1 cursor-pointer"
+                        className="px-2.5 py-1 t-small font-semibold text-white bg-[#DC2626] hover:bg-red-700 flex items-center gap-1 cursor-pointer"
                       >
                         <Printer className="w-3 h-3" />
                         Mandat
@@ -1296,27 +1296,27 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 renderCard={(exp) => (
                   <div className="flex flex-col justify-between h-full space-y-3">
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-mono text-black/55 dark:text-white/55">
+                      <div className="flex items-center justify-between t-cap">
+                        <span className="tabular-nums text-black/55 dark:text-white/55">
                           {exp.missionCode || exp.projectTitle}
                         </span>
                         <span className="capitalize text-black/55 dark:text-white/55 font-semibold">
                           {exp.category}
                         </span>
                       </div>
-                      <h4 className="text-sm font-bold text-black dark:text-white line-clamp-1">
+                      <h4 className="t-label font-semibold text-black dark:text-white line-clamp-1">
                         {exp.title}
                       </h4>
-                      <p className="text-xs text-black/55 dark:text-white/55">
+                      <p className="t-cap text-black/55 dark:text-white/55">
                         Par {exp.declaredByUserName}
                       </p>
                     </div>
                     <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
-                      <span className="font-mono font-bold text-sm text-[#DC2626] tabular-nums">
+                      <span className="tabular-nums font-semibold t-label text-[#DC2626]">
                         {formatMoney(exp.amountDzd, 'DZD')}
                       </span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`px-2 py-1 rounded-full t-small font-semibold ${
                           exp.status === 'approved_by_direction'
                             ? 'bg-emerald-100 text-emerald-700'
                             : exp.status === 'rejected'
@@ -1424,25 +1424,25 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 renderCard={(eq) => (
                   <div className="flex flex-col justify-between h-full space-y-3">
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs font-mono font-bold text-[#d4522f]">
+                      <div className="flex items-center justify-between t-small tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                         <span>{eq.assetCode}</span>
                         <span className="text-black/55 dark:text-white/55 font-normal">
                           {eq.category}
                         </span>
                       </div>
-                      <h4 className="text-sm font-bold text-black dark:text-white line-clamp-1">
+                      <h4 className="t-label font-semibold text-black dark:text-white line-clamp-1">
                         {eq.title}
                       </h4>
-                      <p className="text-xs text-black/55 dark:text-white/55">
+                      <p className="t-cap text-black/55 dark:text-white/55">
                         État : {eq.conditionReport}
                       </p>
                     </div>
                     <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
-                      <span className="font-mono font-bold text-sm text-black dark:text-white tabular-nums">
+                      <span className="tabular-nums font-semibold t-label text-black dark:text-white">
                         {formatMoney(eq.acquisitionCostDzd, 'DZD')}
                       </span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`px-2 py-1 rounded-full t-small font-semibold ${
                           getEquipmentStatusBadge(eq.currentStatus, language).pillClass
                         }`}
                       >
@@ -1760,8 +1760,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-[#d4522f]" />
+                <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
+                  <Receipt className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   {isAr ? 'وصل الشراء الممسوح' : "Justificatif Fiscal d'Achat"}
                 </h3>
                 <button
@@ -1787,7 +1787,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   type="button"
                   onClick={() => setSelectedReceiptUrl(null)}
                   data-sq="ctl"
-                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
                 >
                   {isAr ? 'إغلاق' : 'Fermer'}
                 </button>

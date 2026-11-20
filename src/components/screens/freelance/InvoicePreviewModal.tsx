@@ -62,11 +62,11 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
         {/* Modal Top Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 no-print">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-black dark:text-white">
+            <span className="t-label font-semibold text-black dark:text-white">
               {t('free_inv_doc_invoice', language)} #{invoice.invoiceNumber}
             </span>
             <span
-              className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+              className={`t-small font-semibold px-2 py-1 rounded-full ${
                 invoice.status === 'Paid'
                   ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60'
                   : invoice.status === 'Overdue'
@@ -111,29 +111,29 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 pb-6 border-b border-neutral-200">
             <div>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-[var(--r-ctl-sm,10px)] bg-[#d4522f] text-white flex items-center justify-center font-black text-sm shadow-xs">
+                <div className="w-8 h-8 rounded-[var(--r-ctl-sm,10px)] bg-[var(--brand-fill,#C9461F)] text-white flex items-center justify-center font-semibold t-label shadow-xs">
                   {businessName.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-xl font-bold tracking-tight text-black">
+                <span className="t-dialog font-semibold text-black">
                   {businessName}
                 </span>
               </div>
-              <p className="text-xs text-black/55 mt-1">
+              <p className="t-cap text-black/55 mt-1">
                 {t('free_clients_crm_title', language)}
               </p>
-              <p className="text-[11px] text-black/55 mt-0.5">
+              <p className="t-cap text-black/55 mt-0.5">
                 {businessEmail} · {businessAddress}
               </p>
             </div>
 
             <div className={`space-y-1 ${isRtl ? 'sm:text-left text-right' : 'sm:text-right text-left'}`}>
-              <span className="text-xs font-semibold text-black/55 uppercase tracking-wider block">
+              <span className="t-small font-semibold text-black/55 block">
                 {t('free_invoice_total', language)}
               </span>
-              <span className="text-2xl font-black text-black tabular-nums block text-[#d4522f] font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <span className="t-kpi-m uppercase text-black tabular-nums block text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 {formatCurrencyAmount(invoice.totalAmount, invoice.currency)}
               </span>
-              <div className={`text-xs text-black/55 flex items-center gap-2 pt-1 ${isRtl ? 'sm:justify-start' : 'sm:justify-end'}`}>
+              <div className={`t-cap text-black/55 flex items-center gap-2 pt-1 ${isRtl ? 'sm:justify-start' : 'sm:justify-end'}`}>
                 <span>{t('free_inv_table_date', language)}: {invoice.issueDate}</span>
                 <span aria-hidden="true">·</span>
                 <span className="font-semibold text-black">
@@ -146,31 +146,31 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           {/* Billed To Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-[#F3EDE7] p-4 rounded-[var(--r-card,16px)] border border-[#E6DED6]">
             <div>
-              <span className="text-[10px] font-bold text-black/55 uppercase tracking-wider block mb-1">
+              <span className="t-small font-semibold text-black/55 block mb-1">
                 {t('free_inv_doc_bill_to', language)}
               </span>
-              <span className="text-sm font-bold text-black block">
+              <span className="t-label font-semibold text-black block">
                 {invoice.clientName}
               </span>
               {invoice.clientCompany && (
-                <span className="text-xs font-medium text-black/75 block">
+                <span className="t-small font-medium text-black/75 block">
                   {invoice.clientCompany}
                 </span>
               )}
-              <span className="text-xs text-black/55 block mt-0.5">
+              <span className="t-cap text-black/55 block mt-0.5">
                 {invoice.clientEmail}
               </span>
             </div>
 
             <div>
-              <span className="text-[10px] font-bold text-black/55 uppercase tracking-wider block mb-1">
+              <span className="t-small font-semibold text-black/55 block mb-1">
                 {t('free_inv_notes_terms', language)}
               </span>
-              <span className="text-xs text-black/75 block">
+              <span className="t-cap text-black/75 block">
                 {t('free_inv_net_prefix', language)} · <strong className="text-black">{invoice.currency}</strong>
               </span>
               {invoice.paidAt && (
-                <span className="text-xs text-emerald-600 font-semibold block mt-1">
+                <span className="t-small text-emerald-600 font-semibold block mt-1">
                   ✓ {t('free_inv_doc_paid_badge', language)} ({new Date(invoice.paidAt).toLocaleDateString(language === 'ar' ? 'ar-DZ' : language === 'fr' ? 'fr-DZ' : 'en-US')})
                 </span>
               )}
@@ -179,17 +179,17 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
           {/* Line Items Table */}
           <div className="space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-black/55 block">
+            <span className="t-small font-semibold text-black/55 block">
               {t('free_deliv_title', language)}
             </span>
             <div className="border border-neutral-200 rounded-[var(--r-card,16px)] overflow-hidden">
-              <table className="w-full border-collapse text-xs">
+              <table className="w-full border-collapse t-cap">
                 <thead>
                   <tr className="bg-neutral-50 border-b border-neutral-200 text-black/55 font-semibold">
-                    <th className={`py-2.5 px-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_inv_item_desc', language)}</th>
-                    <th className={`py-2.5 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_qty', language)}</th>
-                    <th className={`py-2.5 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_rate', language)}</th>
-                    <th className={`py-2.5 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_total', language)}</th>
+                    <th className={`py-2 px-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_inv_item_desc', language)}</th>
+                    <th className={`py-2 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_qty', language)}</th>
+                    <th className={`py-2 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_rate', language)}</th>
+                    <th className={`py-2 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_total', language)}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100 font-medium">
@@ -204,7 +204,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                       <td className={`py-3 px-4 tabular-nums text-black/75 ${isRtl ? 'text-left' : 'text-right'}`}>
                         {formatCurrencyAmount(item.unitRate, invoice.currency)}
                       </td>
-                      <td className={`py-3 px-4 tabular-nums font-bold text-black ${isRtl ? 'text-left' : 'text-right'}`}>
+                      <td className={`py-3 px-4 tabular-nums font-semibold text-black ${isRtl ? 'text-left' : 'text-right'}`}>
                         {formatCurrencyAmount(item.total, invoice.currency)}
                       </td>
                     </tr>
@@ -215,7 +215,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
             {/* Subtotal & Total Ledger */}
             <div className={`flex ${isRtl ? 'justify-start' : 'justify-end'} pt-2`}>
-              <div className="w-64 space-y-1.5 text-xs">
+              <div className="w-64 space-y-2 t-cap">
                 <div className="flex justify-between text-black/55">
                   <span>{t('free_inv_doc_subtotal', language)}</span>
                   <span className="tabular-nums font-semibold text-black">
@@ -230,9 +230,9 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 border-t border-neutral-200 text-sm font-black text-black">
+                <div className="flex justify-between pt-2 border-t border-neutral-200 t-label font-semibold text-black">
                   <span>{t('free_inv_doc_grand_total', language)}</span>
-                  <span className="text-[#d4522f] tabular-nums">
+                  <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
                     {formatCurrencyAmount(invoice.totalAmount, invoice.currency)}
                   </span>
                 </div>
@@ -244,32 +244,32 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           {invoice.paymentDetails && (
             <div className="p-4 rounded-[var(--r-card,16px)] bg-[#F3EDE7] border border-[#E6DED6] space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-black flex items-center gap-1.5">
-                  <CreditCard size={14} className="text-[#d4522f]" />
+                <span className="t-small font-semibold text-black flex items-center gap-2">
+                  <CreditCard size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   {t('free_inv_doc_rib_label', language)}
                 </span>
                 <button
                   type="button"
                   onClick={handleCopyRib}
-                  className="text-[11px] font-semibold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   {copied ? <Check size={12} /> : <Copy size={12} />}
                   <span>{copied ? t('free_inv_doc_rib_copied', language) : t('free_inv_doc_copy_rib', language)}</span>
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-black/75">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 t-cap text-black/75">
                 <div>
-                  <span className="text-[10px] uppercase text-black/55 block">{t('free_inv_doc_bank', language)}</span>
+                  <span className="t-cap text-black/55 block">{t('free_inv_doc_bank', language)}</span>
                   <span className="font-semibold text-black">{invoice.paymentDetails.bankName}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase text-black/55 block">{t('free_inv_doc_account_holder', language)}</span>
+                  <span className="t-cap text-black/55 block">{t('free_inv_doc_account_holder', language)}</span>
                   <span className="font-semibold text-black">{beneficiaryName}</span>
                 </div>
                 <div className="sm:col-span-2">
-                  <span className="text-[10px] uppercase text-black/55 block">{t('free_inv_doc_rib_iban', language)}</span>
-                  <span className="font-mono text-xs font-bold text-black tabular-nums tracking-wide">
+                  <span className="t-cap text-black/55 block">{t('free_inv_doc_rib_iban', language)}</span>
+                  <span className="tabular-nums t-small font-semibold text-black tracking-wide">
                     {invoice.paymentDetails.ribOrIban}
                   </span>
                 </div>
@@ -278,13 +278,13 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           )}
 
           {invoice.notes && (
-            <p className="text-[11px] text-black/55 italic">
+            <p className="t-cap text-black/55 italic">
               {invoice.notes}
             </p>
           )}
 
           <div className="text-center pt-4 border-t border-dashed border-neutral-200">
-            <p className="text-xs font-semibold text-black/55">
+            <p className="t-small font-semibold text-black/55">
               {t('free_inv_doc_thank_you', language)}
             </p>
           </div>
@@ -292,7 +292,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
         {/* Modal Footer */}
         <div className="px-6 py-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-900/30 no-print">
-          <span className="text-xs text-black/55 dark:text-white/55">
+          <span className="t-cap text-black/55 dark:text-white/55">
             {t('free_inv_doc_invoice', language)} #{invoice.invoiceNumber}
           </span>
           <div className="flex items-center gap-2">

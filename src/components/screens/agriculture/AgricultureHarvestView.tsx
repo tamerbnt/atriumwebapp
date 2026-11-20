@@ -667,18 +667,18 @@ export const AgricultureHarvestView: React.FC = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-mono font-bold text-xs shrink-0"
+              className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center tabular-nums font-semibold t-small shrink-0"
             >
               <Scale size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-mono font-bold text-xs text-black dark:text-white flex items-center gap-1.5">
+              <div className="tabular-nums font-semibold t-small text-black dark:text-white flex items-center gap-2">
                 {t.ticketNumber}
                 {pinnedIds.has(t.id) && (
-                  <Pin size={10} className="fill-[#d4522f] text-[#d4522f] shrink-0" />
+                  <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
                 )}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55">{t.date}</div>
+              <div className="t-cap text-black/55 dark:text-white/55">{t.date}</div>
             </div>
           </div>
         ),
@@ -690,10 +690,10 @@ export const AgricultureHarvestView: React.FC = () => {
         sortable: true,
         renderCell: (t) => (
           <div className="min-w-0">
-            <div className="font-semibold text-xs text-black dark:text-white truncate">
+            <div className="font-semibold t-small text-black dark:text-white truncate">
               {t.cropDesignation}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 font-mono truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums truncate">
               {t.vehiclePlate || t.truckPlate} • {t.driverName}
             </div>
           </div>
@@ -705,7 +705,7 @@ export const AgricultureHarvestView: React.FC = () => {
         width: '1.1*',
         sortable: true,
         renderCell: (t) => (
-          <span className="text-xs text-black/65 dark:text-white/70 truncate block">
+          <span className="t-cap text-black/65 dark:text-white/70 truncate block">
             {resolveRecordBranch(t, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -717,10 +717,10 @@ export const AgricultureHarvestView: React.FC = () => {
         sortable: true,
         renderCell: (t) => (
           <div>
-            <div className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">
+            <div className="tabular-nums font-semibold t-small text-emerald-600 dark:text-emerald-400">
               {t.netWeightKg.toLocaleString()} Kg
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55">
+            <div className="t-cap text-black/55 dark:text-white/55">
               {t.cratesCount ?? t.crateCount ?? 0} caisses
             </div>
           </div>
@@ -733,10 +733,10 @@ export const AgricultureHarvestView: React.FC = () => {
         sortable: true,
         renderCell: (t) => (
           <div>
-            <div className="font-mono font-bold text-xs text-black dark:text-white">
+            <div className="tabular-nums font-semibold t-small text-black dark:text-white">
               {formatMoney(t.netFarmPayoutDzd ?? t.paidAmountDzd ?? 0, language)}
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55">
+            <div className="t-cap text-black/55 dark:text-white/55">
               PU: {t.unitPriceDzdPerKg} DZD/Kg
             </div>
           </div>
@@ -748,7 +748,7 @@ export const AgricultureHarvestView: React.FC = () => {
         width: '1.5*',
         sortable: true,
         renderCell: (t) => (
-          <div className="text-xs text-black/70 dark:text-white/75 truncate">
+          <div className="t-cap text-black/70 dark:text-white/75 truncate">
             {t.destinationWholesaleMarket}
           </div>
         ),
@@ -1142,16 +1142,16 @@ export const AgricultureHarvestView: React.FC = () => {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="font-bold text-sm text-black dark:text-white flex items-center gap-1.5">
-                        <Users size={14} className="text-[#d4522f]" />
+                      <div className="font-semibold t-label text-black dark:text-white flex items-center gap-2">
+                        <Users size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                         {p.workerName}
                       </div>
-                      <div className="text-[11px] text-black/55 dark:text-white/55 font-mono mt-0.5">
+                      <div className="t-cap text-black/55 dark:text-white/55 tabular-nums mt-0.5">
                         NIN: {worker?.ninOrIdCard || 'Non renseigné'} · {p.parcelName}
                       </div>
                     </div>
                     <span
-                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                      className={`t-small font-semibold px-2.5 py-1 rounded-full ${
                         p.isPaid
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                           : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
@@ -1165,24 +1165,24 @@ export const AgricultureHarvestView: React.FC = () => {
                     data-sq-border="solid"
                     className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2"
                   >
-                    <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center justify-between t-cap">
                       <span className="text-black/55 dark:text-white/55 font-medium">
                         {isAr ? 'الصناديق المجنية :' : 'Caisses pointées :'}
                       </span>
-                      <span className="font-mono font-black text-lg text-black dark:text-white">
+                      <span className="tabular-nums font-semibold t-pod text-black dark:text-white">
                         {p.cratesCollected}{' '}
-                        <span className="text-xs font-normal text-black/55 dark:text-white/55">
+                        <span className="t-cap font-normal text-black/55 dark:text-white/55">
                           caisses
                         </span>
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="grid grid-cols-3 gap-2">
                       <button
                         type="button"
                         onClick={() => handleIncrementCrates(p, -1)}
                         data-sq="ctl-sm"
                         data-sq-border="solid"
-                        className="py-1.5 px-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center gap-1 text-black/70 dark:text-white/75 transition-colors cursor-pointer"
+                        className="py-2 px-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center gap-1 text-black/70 dark:text-white/75 transition-colors cursor-pointer"
                       >
                         <Minus size={12} /> 1
                       </button>
@@ -1192,7 +1192,7 @@ export const AgricultureHarvestView: React.FC = () => {
                         data-sq="ctl-sm"
                         data-sq-border="solid"
                         style={{ '--sq-stroke': 'rgba(212, 82, 47, 0.35)' } as React.CSSProperties}
-                        className="py-1.5 px-2 bg-[#d4522f]/10 border border-[#d4522f]/30 text-[#d4522f] text-xs font-bold hover:bg-[#d4522f]/20 flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        className="py-2 px-2 bg-[#d4522f]/10 border border-[#d4522f]/30 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] t-small font-semibold hover:bg-[#d4522f]/20 flex items-center justify-center gap-1 transition-colors cursor-pointer"
                       >
                         +1
                       </button>
@@ -1201,25 +1201,25 @@ export const AgricultureHarvestView: React.FC = () => {
                         onClick={() => handleIncrementCrates(p, 5)}
                         data-sq="ctl-sm"
                         data-sq-border="none"
-                        className="py-1.5 px-2 bg-[#d4522f] text-white text-xs font-bold hover:bg-[#b06a4e] flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        className="py-2 px-2 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold hover:bg-[#b06a4e] flex items-center justify-center gap-1 transition-colors cursor-pointer"
                       >
                         +5
                       </button>
                     </div>
                   </div>
-                  <div className="space-y-1.5 text-xs text-black/70 dark:text-white/75">
+                  <div className="space-y-2 t-cap text-black/70 dark:text-white/75">
                     <div className="flex justify-between">
                       <span className="text-black/55 dark:text-white/55">
                         Rémunération brute ({worker?.defaultPieceRateDzd || 40} DA/caisse):
                       </span>
-                      <span className="font-mono font-semibold">
+                      <span className="tabular-nums font-semibold">
                         {formatMoney(p.calculatedWageDzd, language)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-amber-600 dark:text-amber-400">
                       <span>Acompte perçu:</span>
                       <div className="flex items-center gap-1">
-                        <span className="font-mono font-semibold">
+                        <span className="tabular-nums font-semibold">
                           -{formatMoney(p.cashAdvancePaidDzd, language)}
                         </span>
                         <button
@@ -1228,15 +1228,15 @@ export const AgricultureHarvestView: React.FC = () => {
                           data-sq="check"
                           data-sq-border="solid"
                           style={{ '--sq-stroke': 'rgba(217, 119, 6, 0.4)' } as React.CSSProperties}
-                          className="px-1.5 py-0.5 text-[10px] bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700 cursor-pointer"
+                          className="px-2 py-1 t-cap bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700 cursor-pointer"
                         >
                           +500
                         </button>
                       </div>
                     </div>
-                    <div className="flex justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 font-bold text-black dark:text-white">
+                    <div className="flex justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 font-semibold text-black dark:text-white">
                       <span>Net à verser:</span>
-                      <span className="font-mono text-sm text-[#d4522f]">
+                      <span className="tabular-nums t-body text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                         {formatMoney(p.netDueDzd, language)}
                       </span>
                     </div>
@@ -1247,7 +1247,7 @@ export const AgricultureHarvestView: React.FC = () => {
                         data-sq="ctl"
                         data-sq-border="solid"
                         style={{ '--sq-stroke': 'rgba(16, 185, 129, 0.35)' } as React.CSSProperties}
-                        className="w-full py-2 text-center text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center gap-1.5"
+                        className="w-full py-2 text-center t-small font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center gap-2"
                       >
                         <CheckCircle2 size={14} />{' '}
                         {isAr ? 'تم تسليم الأجر نقداً' : 'Payé en espèces (Caisse)'}
@@ -1467,16 +1467,16 @@ export const AgricultureHarvestView: React.FC = () => {
               className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <div
                     data-sq="tile"
                     data-sq-border="none"
-                    className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold shrink-0"
+                    className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0"
                   >
                     <Scale size={20} />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                    <h2 className="t-card font-semibold text-black dark:text-white">
                       {ticketToEdit
                         ? isAr
                           ? 'تعديل وصل وزن المحصول'
@@ -1485,7 +1485,7 @@ export const AgricultureHarvestView: React.FC = () => {
                         ? 'تسجيل وصل وزن قبان جديد'
                         : 'Nouveau Bon de Pesée Pont-Bascule'}
                     </h2>
-                    <p className="text-xs text-black/55 dark:text-white/55">
+                    <p className="t-cap text-black/55 dark:text-white/55">
                       {isAr
                         ? 'قياس الحمولة الصافية والأسعار للطن'
                         : 'Calcul automatique du poids net et net domaine'}
@@ -1496,7 +1496,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsModalOpen(false)}
-                  className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <X size={18} />
                 </button>
@@ -1595,16 +1595,16 @@ export const AgricultureHarvestView: React.FC = () => {
               className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5"
             >
               <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <div
                     data-sq="tile"
                     data-sq-border="none"
-                    className="w-9 h-9 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"
+                    className="w-9 h-9 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0"
                   >
                     <Users size={20} />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                    <h2 className="t-card font-semibold text-black dark:text-white">
                       {isAr ? 'تسجيل حضور وجني لعامل' : 'Pointer un Ouvrier Saisonnier'}
                     </h2>
                   </div>
@@ -1613,7 +1613,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsPointageModalOpen(false)}
-                  className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <X size={18} />
                 </button>
@@ -1655,23 +1655,23 @@ export const AgricultureHarvestView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 text-xs space-y-1"
+                className="p-3 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 t-cap space-y-1"
               >
                 <div className="flex justify-between">
                   <span className="text-black/55 dark:text-white/55">Rémunération calculée :</span>
-                  <span className="font-mono font-bold text-black dark:text-white">
+                  <span className="tabular-nums font-semibold text-black dark:text-white">
                     {formatMoney((parseInt(pointageCrates, 10) || 0) * 40, language)}
                   </span>
                 </div>
                 <div className="flex justify-between text-amber-600 dark:text-amber-400">
                   <span>Acompte déduit :</span>
-                  <span className="font-mono font-semibold">
+                  <span className="tabular-nums font-semibold">
                     -{formatMoney(parseFloat(pointageAdvance) || 0, language)}
                   </span>
                 </div>
-                <div className="flex justify-between font-bold text-[#d4522f] pt-1 border-t border-neutral-200 dark:border-neutral-700">
+                <div className="flex justify-between font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] pt-1 border-t border-neutral-200 dark:border-neutral-700">
                   <span>Solde net dû :</span>
-                  <span className="font-mono">
+                  <span className="tabular-nums">
                     {formatMoney(
                       Math.max(
                         0,

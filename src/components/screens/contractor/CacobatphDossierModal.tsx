@@ -40,9 +40,9 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626] space-y-6">
 <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 print:hidden">
 <div className="flex items-center gap-2">
-<div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold shrink-0"><Cloud size={18} /></div>
+<div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-blue-500/15 text-blue-600 flex items-center justify-center font-semibold shrink-0"><Cloud size={18} /></div>
 <div>
-<h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+<h3 className="font-semibold t-label text-black dark:text-white">
 {isAr ? "ملف التصريح بالتوقف عن العمل بسبب سوء الأحوال الجوية (CACOBATPH)" : "Dossier d'Arrêt Intempéries CACOBATPH (Délai Légal 48h)"}
 </h3>
 </div>
@@ -52,29 +52,29 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 <button type="button" onClick={onClose} aria-label={isAr ? "إغلاق" : "Fermer"} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 </div>
-<div data-sq="card" data-sq-border="solid" style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties} className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-start gap-3 print:hidden">
+<div data-sq="card" data-sq-border="solid" style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties} className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-start gap-3 print:hidden">
 <AlertTriangle size={18} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-<div className="text-xs text-amber-800 dark:text-amber-300 space-y-0.5">
-<div className="font-bold">
+<div className="t-cap text-amber-800 dark:text-amber-300 space-y-0.5">
+<div className="font-semibold">
 {isAr ? "تنبيه الأجل القانوني: 48 ساعة من تاريخ توقف الأشغال" : "Délai d'urgence : Déclaration obligatoire sous 48 heures"}
 </div>
-<p className="text-[11px] text-amber-700 dark:text-amber-400">
+<p className="t-cap text-amber-700 dark:text-amber-400">
 {isAr ? "يجب إيداع هذا الملف لدى صندوق CACOBATPH مرفقا بالنشرة الرسمية للأرصاد الجوية (ONM) لتعويض أجور العمال." : "Tout retard au-delà de 48h entraîne la forclusion et la perte des indemnités chômage-intempéries dues aux travailleurs."}
 </p>
 </div>
 </div>
-<div className="printable-document p-5 border border-neutral-300 dark:border-neutral-700 rounded-[var(--r-card,16px)] bg-white text-black text-xs space-y-5 font-sans">
+<div className="printable-document p-5 border border-neutral-300 dark:border-neutral-700 rounded-[var(--r-card,16px)] bg-white text-black t-cap space-y-5 font-sans">
 <div className="text-center space-y-1 border-b border-neutral-300 pb-3">
-<p className="font-bold text-xs uppercase tracking-wide">CAISSE NATIONALE DES CONGÉS PAYÉS ET DU CHÔMAGE-INTEMPÉRIES DU BTPH</p>
-<p className="text-[10px] text-black/75 font-semibold">
+<p className="font-semibold t-small tracking-wide">CAISSE NATIONALE DES CONGÉS PAYÉS ET DU CHÔMAGE-INTEMPÉRIES DU BTPH</p>
+<p className="t-small text-black/75 font-semibold">
 الصندوق الوطني للعطل المدفوعة الأجر والبطالة الناجمة عن سوء الأحوال الجوية لقطاعات البناء والأشغال العمومية
 </p>
-<div className="text-xs font-bold text-[#d4522f] pt-1">DÉCLARATION D'ARRÊT DE CHANTIER POUR INTEMPÉRIES</div>
+<div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] pt-1">DÉCLARATION D'ARRÊT DE CHANTIER POUR INTEMPÉRIES</div>
 </div>
-<div className="grid grid-cols-2 gap-3 text-[11px]">
-<div className="space-y-1 p-2.5 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200">
-<span className="font-bold text-black/75 uppercase text-[10px]">Chantier & Entreprise</span>
-<div className="font-bold text-black">{project?.projectName || "Chantier Réalisation"}</div>
+<div className="grid grid-cols-2 gap-3 t-cap">
+<div className="space-y-1 p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200">
+<span className="font-semibold text-black/75 t-small">Chantier & Entreprise</span>
+<div className="font-semibold text-black">{project?.projectName || "Chantier Réalisation"}</div>
 <div>
 {"Lieu: "}
 {project?.siteLocation || "Alger"}
@@ -87,8 +87,8 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 {cacobatphCenter}
 </div>
 </div>
-<div className="space-y-1 p-2.5 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200">
-<span className="font-bold text-black/75 uppercase text-[10px]">Justificatif Météorologique</span>
+<div className="space-y-1 p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200">
+<span className="font-semibold text-black/75 t-small">Justificatif Météorologique</span>
 <div>
 {"Date d'arrêt: "}
 {dailyLog?.date || (/* @__PURE__ */ new Date()).toISOString().split("T")[0]}
@@ -98,7 +98,7 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 {stoppageHours}
 {" heures consécutives"}
 </div>
-<div className="font-mono text-black">
+<div className="tabular-nums text-black">
 {"N° Bulletin ONM: "}
 {onmBulletin}
 </div>
@@ -114,46 +114,46 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 <LabelInput label="Agence régionale CACOBATPH" value={cacobatphCenter} onChange={(e) => setCacobatphCenter(e.target.value)} />
 </div>
 </div>
-<div className="space-y-1.5">
-<span className="font-bold text-black/75 text-[11px] flex items-center gap-1.5">
+<div className="space-y-2">
+<span className="font-semibold text-black/75 t-small flex items-center gap-2">
 <Users size={14} />
 État nominatif sommaire des travailleurs en chômage-intempéries (
 {workerCount}
 {" déclarés)"}
 </span>
-<table className="w-full border-collapse border border-neutral-300 text-[10px]">
+<table className="w-full border-collapse border border-neutral-300 t-cap">
 <thead>
-<tr className="bg-neutral-100 font-bold text-black/75">
-<th className="border border-neutral-300 p-1.5 text-left">N° Immatriculation CNAS</th>
-<th className="border border-neutral-300 p-1.5 text-left">Nom & Prénom</th>
-<th className="border border-neutral-300 p-1.5 text-left">Qualification</th>
-<th className="border border-neutral-300 p-1.5 text-center">Heures</th>
+<tr className="bg-neutral-100 font-semibold text-black/75">
+<th className="border border-neutral-300 p-2 text-left">N° Immatriculation CNAS</th>
+<th className="border border-neutral-300 p-2 text-left">Nom & Prénom</th>
+<th className="border border-neutral-300 p-2 text-left">Qualification</th>
+<th className="border border-neutral-300 p-2 text-center">Heures</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td className="border border-neutral-300 p-1.5 font-mono">16-7844-0912-14</td>
-<td className="border border-neutral-300 p-1.5 font-medium">Bensalem Ahmed</td>
-<td className="border border-neutral-300 p-1.5">Coffreur Boiseur Qualifié</td>
-<td className="border border-neutral-300 p-1.5 text-center font-mono">
+<td className="border border-neutral-300 p-2 tabular-nums">16-7844-0912-14</td>
+<td className="border border-neutral-300 p-2 font-medium">Bensalem Ahmed</td>
+<td className="border border-neutral-300 p-2">Coffreur Boiseur Qualifié</td>
+<td className="border border-neutral-300 p-2 text-center tabular-nums">
 {stoppageHours}
 h
 </td>
 </tr>
 <tr>
-<td className="border border-neutral-300 p-1.5 font-mono">16-8120-4491-08</td>
-<td className="border border-neutral-300 p-1.5 font-medium">Messaoudi Karim</td>
-<td className="border border-neutral-300 p-1.5">Ferrailleur Chef d'Équipe</td>
-<td className="border border-neutral-300 p-1.5 text-center font-mono">
+<td className="border border-neutral-300 p-2 tabular-nums">16-8120-4491-08</td>
+<td className="border border-neutral-300 p-2 font-medium">Messaoudi Karim</td>
+<td className="border border-neutral-300 p-2">Ferrailleur Chef d'Équipe</td>
+<td className="border border-neutral-300 p-2 text-center tabular-nums">
 {stoppageHours}
 h
 </td>
 </tr>
 <tr>
-<td className="border border-neutral-300 p-1.5 font-mono">16-9055-1234-90</td>
-<td className="border border-neutral-300 p-1.5 font-medium">Zitouni Mustapha</td>
-<td className="border border-neutral-300 p-1.5">Conducteur d'Engin / Grutier</td>
-<td className="border border-neutral-300 p-1.5 text-center font-mono">
+<td className="border border-neutral-300 p-2 tabular-nums">16-9055-1234-90</td>
+<td className="border border-neutral-300 p-2 font-medium">Zitouni Mustapha</td>
+<td className="border border-neutral-300 p-2">Conducteur d'Engin / Grutier</td>
+<td className="border border-neutral-300 p-2 text-center tabular-nums">
 {stoppageHours}
 h
 </td>
@@ -161,14 +161,14 @@ h
 </tbody>
 </table>
 </div>
-<div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-300 text-center text-[10px]">
+<div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-300 text-center t-cap">
 <div className="p-2 border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] h-24 flex flex-col justify-between">
-<span className="font-bold text-black/75 uppercase">Pour l'Entreprise de BTPH</span>
-<p className="text-[10px] text-black/55">Nom, Signature & Cachet de l'Employeur</p>
+<span className="font-semibold text-black/75">Pour l'Entreprise de BTPH</span>
+<p className="t-cap text-black/55">Nom, Signature & Cachet de l'Employeur</p>
 </div>
 <div className="p-2 border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] h-24 flex flex-col justify-between">
-<span className="font-bold text-black/75 uppercase">Visa de l'Inspection du Travail / BET</span>
-<p className="text-[10px] text-black/55">Confirmation de l'arrêt effectif des travaux</p>
+<span className="font-semibold text-black/75">Visa de l'Inspection du Travail / BET</span>
+<p className="t-cap text-black/55">Confirmation de l'arrêt effectif des travaux</p>
 </div>
 </div>
 </div>

@@ -470,26 +470,26 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
             const hasAllergies = client.segmentData?.allergies && client.segmentData.allergies.length > 0;
             return (
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-[#262422] text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-[#262422] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0">
                   {client.fullName.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[13.5px] font-semibold text-black dark:text-white truncate">
+                  <div className="flex items-center gap-2">
+                    <span className="t-label font-semibold text-black dark:text-white truncate">
                       {client.fullName}
                     </span>
                     {isVip && (
-                      <span className="px-1.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                      <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300">
                         VIP
                       </span>
                     )}
                     {hasAllergies && (
-                      <span className="px-1.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-rose-500/15 text-rose-700 dark:text-rose-300 flex items-center gap-0.5">
+                      <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-rose-500/15 text-rose-700 dark:text-rose-300 flex items-center gap-0.5">
                         <AlertTriangle size={10} />
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] text-black/62 dark:text-white/65 font-mono truncate block">
+                  <span className="t-cap text-black/62 dark:text-white/65 tabular-nums truncate block">
                     {client.phoneNumber || '—'}
                   </span>
                 </div>
@@ -506,10 +506,10 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
             const lastFormula = seg?.colorFormulas?.[0]?.formula;
             return (
               <div className="min-w-0">
-                <span className="text-[12.5px] font-semibold text-black dark:text-white block truncate">
+                <span className="t-small font-semibold text-black dark:text-white block truncate">
                   {seg?.hairType || 'Ondulé'} · {seg?.hairLength || 'Mi-long'}
                 </span>
-                <span className="text-[11px] font-mono text-black/62 dark:text-white/65 truncate block">
+                <span className="t-cap tabular-nums text-black/62 dark:text-white/65 truncate block">
                   {lastFormula || (seg?.scalpCondition || 'Normal')}
                 </span>
               </div>
@@ -521,8 +521,8 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           header: isAr ? 'المصففة' : isEn ? 'Stylist' : 'Styliste',
           sortable: true,
           renderCell: (client) => (
-            <div className="flex items-center gap-1.5 text-[12.5px] text-black/80 dark:text-white/85 min-w-0">
-              <User size={13} className="text-[#d4522f] shrink-0" />
+            <div className="flex items-center gap-2 t-cap text-black/80 dark:text-white/85 min-w-0">
+              <User size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate font-medium">
                 {client.segmentData?.preferredStylistName || 'Sarah Louati'}
               </span>
@@ -535,10 +535,10 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           sortable: true,
           renderCell: (client) => (
             <div className="tabular-nums">
-              <span className="text-[12.5px] font-bold font-mono text-[#d4522f] block">
+              <span className="t-small font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
                 {formatMoney(client.segmentData?.lifetimeSpent || 0)}
               </span>
-              <span className="text-[11px] text-black/62 dark:text-white/65 block">
+              <span className="t-cap text-black/62 dark:text-white/65 block">
                 {client.segmentData?.totalVisits || client.remainingSessions || 1} visites
               </span>
             </div>
@@ -549,7 +549,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           header: isAr ? 'الفرع' : isEn ? 'Branch' : 'Branche',
           sortable: true,
           renderCell: (client) => (
-            <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+            <span className="t-small font-medium text-black/80 dark:text-white/85 truncate block">
               {resolveRecordBranch(client, branchesById, currentBranch, language).name}
             </span>
           ),
@@ -860,7 +860,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
               return (
                 <>
                   <InspectorSection index={0} title={isAr ? 'إضافة وصفة صبغة' : isEn ? 'Add Color Formula' : 'Nouvelle formulation'}>
-                    <InspectorCard className="py-3.5">
+                    <InspectorCard className="py-4">
                       <form onSubmit={handleAddFormula} className="space-y-3 py-1">
                         <LabelInput
                           field="Formula"
@@ -872,7 +872,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                           height={42}
                           corner={12}
                         />
-                        <div className="grid grid-cols-2 gap-2.5">
+                        <div className="grid grid-cols-2 gap-2">
                           <LabelSelect
                             field="Stylist"
                             label="Styliste"

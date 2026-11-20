@@ -250,21 +250,21 @@ export const LegalMattersView: React.FC<any> = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
             >
               <BookOpen size={18} />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-black dark:text-white truncate">
+                <span className="t-small font-semibold text-black dark:text-white truncate">
                   {isAr && d.titleAr ? d.titleAr : d.title}
                 </span>
                 {pinnedIds.has(d.id) && (
-                  <span className="text-[10px] text-amber-500 font-bold shrink-0">★ VIP</span>
+                  <span className="t-small text-amber-500 font-semibold shrink-0">★ VIP</span>
                 )}
               </div>
-              <div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
-                <span className="font-bold text-[#d4522f]">{d.repertoireNumber}</span>
+              <div className="flex items-center gap-2 mt-0.5 t-cap text-black/55 dark:text-white/55 tabular-nums">
+                <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{d.repertoireNumber}</span>
                 <span>·</span>
                 <span>{d.actType.replace('_', ' ').toUpperCase()}</span>
               </div>
@@ -277,11 +277,11 @@ export const LegalMattersView: React.FC<any> = () => {
         header: isAr ? 'الأطراف الموقعة (NIN)' : 'Parties Contractantes (NIN)',
         width: '2.5*',
         renderCell: (d) => (
-          <div className="text-xs min-w-0">
+          <div className="t-cap min-w-0">
             <div className="font-medium text-black dark:text-white truncate">
               {d.parties.vendorName} {'➔'} {d.parties.purchaserName}
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 font-mono mt-0.5 truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums mt-0.5 truncate">
               NIN: {d.parties.purchaserNin}
             </div>
           </div>
@@ -293,11 +293,11 @@ export const LegalMattersView: React.FC<any> = () => {
         width: '2*',
         sortable: true,
         renderCell: (d) => (
-          <div className="text-xs">
-            <div className="font-bold font-mono text-black dark:text-white tabular-nums">
+          <div className="t-cap">
+            <div className="font-semibold tabular-nums text-black dark:text-white">
               {formatMoney(d.transactionValueDzd, language)}
             </div>
-            <div className="text-[10px] font-mono text-[#d4522f] mt-0.5">
+            <div className="t-cap tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] mt-0.5">
               HT: {formatMoney(d.financials.honorairesHtDzd, language)}
             </div>
           </div>
@@ -311,8 +311,8 @@ export const LegalMattersView: React.FC<any> = () => {
         renderCell: (d) => {
           const br = resolveRecordBranch(d, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs text-black/75 dark:text-white/80 truncate">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <span className="inline-flex items-center gap-2 t-cap text-black/75 dark:text-white/80 truncate">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{br.name}</span>
             </span>
           );
@@ -326,7 +326,7 @@ export const LegalMattersView: React.FC<any> = () => {
           const isPublished = d.status === 'publie_conservation';
           return (
             <span
-              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+              className={`t-small font-semibold px-2 py-1 rounded-full ${
                 isPublished
                   ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
                   : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
@@ -357,21 +357,21 @@ export const LegalMattersView: React.FC<any> = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
             >
               <Gavel size={18} />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-black dark:text-white truncate">
+                <span className="t-small font-semibold text-black dark:text-white truncate">
                   {isAr && m.titleAr ? m.titleAr : m.title}
                 </span>
                 {pinnedIds.has(m.id) && (
-                  <span className="text-[10px] text-amber-500 font-bold shrink-0">★ VIP</span>
+                  <span className="t-small text-amber-500 font-semibold shrink-0">★ VIP</span>
                 )}
               </div>
-              <div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
-                <span className="font-bold text-[#d4522f]">{m.matterNumber}</span>
+              <div className="flex items-center gap-2 mt-0.5 t-cap text-black/55 dark:text-white/55 tabular-nums">
+                <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{m.matterNumber}</span>
                 <span>·</span>
                 <span>{m.category}</span>
               </div>
@@ -384,12 +384,12 @@ export const LegalMattersView: React.FC<any> = () => {
         header: isAr ? 'المحكمة والغرفة' : 'Juridiction & Chambre',
         width: '2.2*',
         renderCell: (m) => (
-          <div className="text-xs min-w-0">
+          <div className="t-cap min-w-0">
             <div className="font-semibold text-black dark:text-white truncate">
               {m.courtJurisdiction}
             </div>
             {m.nextHearingDate && (
-              <div className="text-[10px] text-amber-600 dark:text-amber-400 font-mono mt-0.5 flex items-center gap-1">
+              <div className="t-cap text-amber-600 dark:text-amber-400 tabular-nums mt-0.5 flex items-center gap-1">
                 <Calendar size={10} />
                 <span>
                   {isAr ? 'جلسة: ' : 'Audience : '}
@@ -405,11 +405,11 @@ export const LegalMattersView: React.FC<any> = () => {
         header: isAr ? 'الموكل والطرف الخصم' : 'Client & Partie Adverse',
         width: '2.2*',
         renderCell: (m) => (
-          <div className="text-xs min-w-0">
+          <div className="t-cap min-w-0">
             <div className="font-medium text-black dark:text-white truncate">
               {isAr && m.clientNameAr ? m.clientNameAr : m.clientName}
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 truncate mt-0.5">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate mt-0.5">
               c/ {m.adversePartyName || 'N/A'}
             </div>
           </div>
@@ -423,8 +423,8 @@ export const LegalMattersView: React.FC<any> = () => {
         renderCell: (m) => {
           const br = resolveRecordBranch(m, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs text-black/75 dark:text-white/80 truncate">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <span className="inline-flex items-center gap-2 t-cap text-black/75 dark:text-white/80 truncate">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{br.name}</span>
             </span>
           );
@@ -436,11 +436,11 @@ export const LegalMattersView: React.FC<any> = () => {
         width: '1.8*',
         sortable: true,
         renderCell: (m) => (
-          <div className="text-xs font-mono tabular-nums">
-            <div className="font-bold text-black dark:text-white">
+          <div className="t-cap tabular-nums">
+            <div className="font-semibold text-black dark:text-white">
               {formatMoney(m.retainerAmountDzd, language)}
             </div>
-            <div className="text-[10px] text-[#d4522f] mt-0.5">
+            <div className="t-cap text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] mt-0.5">
               CARPA: {formatMoney(m.trustEscrowBalanceDzd || 0, language)}
             </div>
           </div>

@@ -173,11 +173,11 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/70 shrink-0">
           <div className="flex items-center gap-3">
-            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold">
+            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
               <Building2 size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h2 className="t-pod font-semibold text-black dark:text-white">
                 {isEdit
                   ? isSupplier
                     ? t('trading_entity_modal_edit_supplier')
@@ -186,7 +186,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   ? t('trading_entity_modal_new_supplier')
                   : t('trading_entity_modal_new_client')}
               </h2>
-              <p className="text-xs text-black/55 dark:text-white/55">
+              <p className="t-cap text-black/55 dark:text-white/55">
                 {t('trading_entity_modal_sub')}
               </p>
             </div>
@@ -202,11 +202,11 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
         </div>
 
         {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1 text-sm">
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1 t-body">
           {/* Identity & Contact */}
           <div>
-            <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Building2 size={14} className="text-[#d4522f]" />
+            <h3 className="t-small font-semibold text-black/70 dark:text-white/75 mb-3 flex items-center gap-2">
+              <Building2 size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>{t('trading_entity_company_identity')}</span>
             </h3>
 
@@ -273,12 +273,12 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
           {/* Legal & Fiscal Algerian Prerequisite Fields */}
           <div data-sq="card" data-sq-border="solid" className="p-4 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-stone-50/50 dark:bg-stone-800/20 space-y-4">
-            <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider flex items-center justify-between">
+            <h3 className="t-small font-semibold text-black/70 dark:text-white/75 flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <FileText size={14} className="text-[#d4522f]" />
+                <FileText size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>{t('trading_entity_fiscal_ids')}</span>
               </span>
-              <span className="text-[10px] text-black/55 dark:text-white/55 font-normal">
+              <span className="t-cap text-black/55 dark:text-white/55 font-normal">
                 {t('trading_entity_fiscal_sub')}
               </span>
             </h3>
@@ -333,8 +333,8 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
           {/* Primary Contact Person */}
           <div>
-            <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <User size={14} className="text-[#d4522f]" />
+            <h3 className="t-small font-semibold text-black/70 dark:text-white/75 mb-3 flex items-center gap-2">
+              <User size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>{t('trading_entity_primary_contact')}</span>
             </h3>
 
@@ -381,8 +381,8 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
           {/* Commercial & Financial Conditions */}
           <div data-sq="card" data-sq-border="solid" className="p-4 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-white dark:bg-stone-900 space-y-4">
-            <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider flex items-center gap-2">
-              <CreditCard size={14} className="text-[#d4522f]" />
+            <h3 className="t-small font-semibold text-black/70 dark:text-white/75 flex items-center gap-2">
+              <CreditCard size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>{t('trading_entity_commercial_terms')}</span>
             </h3>
 

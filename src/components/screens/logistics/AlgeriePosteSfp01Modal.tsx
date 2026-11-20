@@ -71,16 +71,16 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 shrink-0">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <div
               data-sq="tile"
               data-sq-border="none"
-              className="w-10 h-10 bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold"
+              className="w-10 h-10 bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center font-semibold"
             >
               <Building2 size={22} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h3 className="font-semibold t-card text-black dark:text-white">
                 {isAr ? 'تصدير ملف بريد الجزائر CCP SFP 01 / B1' : 'Export Fichier Algérie Poste CCP (SFP 01 / B1)'}
               </h3>
             </div>
@@ -99,21 +99,21 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between"
+          className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between"
         >
           <div>
-            <span className="text-[11px] text-black/55 dark:text-white/55 block">
+            <span className="t-cap text-black/55 dark:text-white/55 block">
               {isAr ? 'المتاجر المشمولة بالدفعة' : 'Commerçants dans le lot'}
             </span>
-            <span className="text-sm font-bold text-black dark:text-white">
+            <span className="t-label font-semibold text-black dark:text-white">
               {batches.length} {isAr ? 'تحويلات تجارية' : 'virements marchands'}
             </span>
           </div>
           <div className="text-right">
-            <span className="text-[11px] text-black/55 dark:text-white/55 block">
+            <span className="t-cap text-black/55 dark:text-white/55 block">
               {isAr ? 'إجمالي مستحقات الدفعة' : 'Total Net à Verser'}
             </span>
-            <span className="text-lg font-bold font-mono text-[#d4522f]">
+            <span className="t-pod font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
               {formatMoney(totalNet, language)}
             </span>
           </div>
@@ -121,14 +121,14 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
 
         {/* ASCII Code Area */}
         <div className="flex-1 overflow-y-auto space-y-2">
-          <div className="flex items-center justify-between text-xs text-black/55 dark:text-white/55 px-1">
+          <div className="flex items-center justify-between t-cap text-black/55 dark:text-white/55 px-1">
             <span>Structure: Centre(5) + Compte(10) + Clé(2) + Centimes(12) + Nom(30)</span>
-            <span className="font-mono">{lines.length} lignes</span>
+            <span className="tabular-nums">{lines.length} lignes</span>
           </div>
           <pre
             data-sq="card"
             data-sq-border="solid"
-            className="p-4 bg-neutral-950 text-emerald-400 font-mono text-xs overflow-x-auto whitespace-pre selection:bg-emerald-900 border border-neutral-800 leading-relaxed"
+            className="p-4 bg-neutral-950 text-emerald-400 tabular-nums t-cap overflow-x-auto whitespace-pre selection:bg-emerald-900 border border-neutral-800 leading-relaxed"
           >
             {fullText}
           </pre>

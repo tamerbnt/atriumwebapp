@@ -208,30 +208,30 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
           <>
             {/* Col 1: Contact */}
             <div className="flex flex-col min-w-0 justify-center">
-              <h4 className="m-0 mb-1.5 font-sans text-[11px] font-semibold tracking-[0.06em] uppercase text-[var(--atr-ink-4,rgba(0,0,0,0.56))] dark:text-white/60">
+              <h4 className="m-0 mb-2 font-sans t-small font-semibold tracking-[0.06em] text-[var(--atr-ink-4,rgba(0,0,0,0.56))] dark:text-white/60">
                 Contact
               </h4>
-              <p className="m-0 mb-1 font-mono text-[13px] tabular-nums text-[var(--atr-ink,#000000)] dark:text-white font-semibold truncate">
+              <p className="m-0 mb-1 tabular-nums t-label text-[var(--atr-ink,#000000)] dark:text-white font-semibold truncate">
                 {contactInfo?.phone || 'Non renseigné'}
               </p>
-              <p className="m-0 text-[12.5px] text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 truncate">
+              <p className="m-0 t-cap text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 truncate">
                 {contactInfo?.email || 'Sans email'}
               </p>
             </div>
 
             {/* Col 2: Forfait */}
             <div className="flex flex-col min-w-0 justify-center">
-              <h4 className="m-0 mb-1.5 font-sans text-[11px] font-semibold tracking-[0.06em] uppercase text-[var(--atr-ink-4,rgba(0,0,0,0.56))] dark:text-white/60">
+              <h4 className="m-0 mb-2 font-sans t-small font-semibold tracking-[0.06em] text-[var(--atr-ink-4,rgba(0,0,0,0.56))] dark:text-white/60">
                 Forfait
               </h4>
-              <p className="m-0 mb-1 text-[13px] font-bold text-[var(--atr-ink,#000000)] dark:text-white truncate">
+              <p className="m-0 mb-1 t-label font-semibold text-[var(--atr-ink,#000000)] dark:text-white truncate">
                 {planInfo?.planName || 'Standard'}
               </p>
-              <p className="m-0 mb-0.5 text-[12px] tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 truncate">
+              <p className="m-0 mb-0.5 t-cap tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 truncate">
                 Échéance {planInfo?.expiry || '—'} · {planInfo?.daysLeft || ''}
               </p>
               {planInfo?.remainingSessions !== undefined && (
-                <p className="m-0 text-[12px] font-semibold tabular-nums text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]">
+                <p className="m-0 t-small font-semibold tabular-nums text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]">
                   {planInfo.remainingSessions} séances restantes
                 </p>
               )}
@@ -239,16 +239,16 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
 
             {/* Col 3: Notes */}
             <div className="flex flex-col min-w-0 justify-center">
-              <h4 className="m-0 mb-1.5 font-sans text-[11px] font-semibold tracking-[0.06em] uppercase text-[var(--atr-ink-4,rgba(0,0,0,0.56))] dark:text-white/60">
+              <h4 className="m-0 mb-2 font-sans t-small font-semibold tracking-[0.06em] text-[var(--atr-ink-4,rgba(0,0,0,0.56))] dark:text-white/60">
                 Notes
               </h4>
-              <p className="m-0 text-[12.5px] leading-snug text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 line-clamp-3">
+              <p className="m-0 t-cap leading-snug text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 line-clamp-3">
                 {notes || 'Aucune note.'}
               </p>
             </div>
 
             {/* Col 4: Action cluster (.db) */}
-            <div className="db grid grid-cols-2 gap-1.5 self-center shrink-0">
+            <div className="db grid grid-cols-2 gap-2 self-center shrink-0">
               {detailActions.map((btn) => (
                 <button
                   key={btn.id}
@@ -261,7 +261,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
                     e.stopPropagation();
                     btn.onClick();
                   }}
-                  className="h-[30px] px-3 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white dark:hover:bg-[var(--atr-acc,#e8643f)] dark:hover:text-white text-[var(--atr-ink,#000000)] dark:text-white font-medium text-[11.5px] flex items-center gap-1.5 transition-colors duration-140 cursor-pointer whitespace-nowrap"
+                  className="h-[30px] px-3 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white dark:hover:bg-[var(--atr-acc,#e8643f)] dark:hover:text-white text-[var(--atr-ink,#000000)] dark:text-white font-medium t-small flex items-center gap-2 transition-colors duration-140 cursor-pointer whitespace-nowrap"
                 >
                   {btn.icon}
                   <span className="truncate">{btn.label}</span>

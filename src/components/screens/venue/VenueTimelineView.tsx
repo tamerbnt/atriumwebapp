@@ -412,7 +412,7 @@ export const VenueTimelineView: React.FC = () => {
         renderCell: (b) => (
           <div className="min-w-0">
             <div className="font-semibold text-black dark:text-white truncate">{b.purpose}</div>
-            <div className="text-[11px] text-black/55 dark:text-white/75 truncate">
+            <div className="t-cap text-black/55 dark:text-white/75 truncate">
               {b.renterName} {b.renterCompany ? `(${b.renterCompany})` : ''}
             </div>
           </div>
@@ -427,7 +427,7 @@ export const VenueTimelineView: React.FC = () => {
         renderCell: (b) => {
           const bInfo = resolveRecordBranch(b, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -441,7 +441,7 @@ export const VenueTimelineView: React.FC = () => {
         minWidth: '140px',
         sortable: true,
         renderCell: (b) => (
-          <span className="text-xs font-semibold text-black dark:text-white truncate block">
+          <span className="t-small font-semibold text-black dark:text-white truncate block">
             {b.unitName}
           </span>
         ),
@@ -453,7 +453,7 @@ export const VenueTimelineView: React.FC = () => {
         minWidth: '160px',
         sortable: true,
         renderCell: (b) => (
-          <div className="text-xs font-mono text-black dark:text-white">
+          <div className="t-cap tabular-nums text-black dark:text-white">
             {b.startDateTime.replace('T', ' ').slice(0, 16)} ({b.durationHours}h)
           </div>
         ),
@@ -465,7 +465,7 @@ export const VenueTimelineView: React.FC = () => {
         minWidth: '120px',
         sortable: true,
         renderCell: (b) => (
-          <span className="font-bold font-mono text-xs text-black dark:text-white tabular-nums">
+          <span className="font-semibold tabular-nums t-small text-black dark:text-white">
             {formatCurrencyAmount(b.totalAmount, b.currency)}
           </span>
         ),
@@ -489,7 +489,7 @@ export const VenueTimelineView: React.FC = () => {
               aria-label="Previous day"
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <ChevronLeft size={16} className="rtl:rotate-180" />
             </button>
@@ -498,7 +498,7 @@ export const VenueTimelineView: React.FC = () => {
               onClick={handleToday}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="px-3 py-1 text-xs font-semibold text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="px-3 py-1 t-small font-semibold text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               {t('venue_timeline_today')}
             </button>
@@ -507,7 +507,7 @@ export const VenueTimelineView: React.FC = () => {
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               aria-label="Selected date"
-              className="bg-transparent text-xs font-semibold text-black dark:text-white px-2 focus:outline-hidden"
+              className="bg-transparent t-small font-semibold text-black dark:text-white px-2 focus:outline-hidden"
             />
             <button
               type="button"
@@ -515,12 +515,12 @@ export const VenueTimelineView: React.FC = () => {
               aria-label="Next day"
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-1.5 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <ChevronRight size={16} className="rtl:rotate-180" />
             </button>
           </div>
-          <span className="text-xs font-semibold text-black/65 dark:text-white/65">
+          <span className="t-small font-semibold text-black/65 dark:text-white/65">
             {t('venue_space_asset_header', language, { count: filteredUnits.length })}
           </span>
         </div>
@@ -531,13 +531,13 @@ export const VenueTimelineView: React.FC = () => {
           className="bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] overflow-x-auto"
         >
           <div className="min-w-[920px]">
-            <div className="flex border-b border-[#E6DED6] dark:border-neutral-700/80 bg-neutral-50/80 dark:bg-neutral-800/80 sticky top-0 z-10 text-[11px] font-mono text-black/55 dark:text-white/55">
+            <div className="flex border-b border-[#E6DED6] dark:border-neutral-700/80 bg-neutral-50/80 dark:bg-neutral-800/80 sticky top-0 z-10 t-cap tabular-nums text-black/55 dark:text-white/55">
               <div className="w-56 sm:w-64 p-3 font-semibold text-black/70 dark:text-white/75 border-r border-[#E6DED6] dark:border-neutral-700/80 shrink-0">
                 {t('venue_space_asset_header', language, { count: filteredUnits.length })}
               </div>
               <div className="flex-1 grid grid-cols-16 divide-x divide-neutral-200/50 dark:divide-neutral-700/50">
                 {HOURS.map((hour) => (
-                  <div key={hour} className="py-2.5 text-center truncate">
+                  <div key={hour} className="py-2 text-center truncate">
                     {hour}:00
                   </div>
                 ))}
@@ -546,7 +546,7 @@ export const VenueTimelineView: React.FC = () => {
 
             <div className="divide-y divide-[#E6DED6] dark:divide-neutral-700/60">
               {filteredUnits.length === 0 ? (
-                <div className="p-8 text-center text-sm text-black/55 dark:text-white/55">
+                <div className="p-8 text-center t-body text-black/55 dark:text-white/55">
                   {t('venue_no_spaces_filter')}
                 </div>
               ) : (
@@ -565,11 +565,11 @@ export const VenueTimelineView: React.FC = () => {
                             className="w-2.5 h-2.5 rounded-full shrink-0"
                             style={{ backgroundColor: unit.colorHex || '#8B5CF6' }}
                           />
-                          <span className="font-bold text-xs text-black dark:text-white truncate">
+                          <span className="font-semibold t-small text-black dark:text-white truncate">
                             {unit.name}
                           </span>
                         </div>
-                        <div className="text-[11px] text-black/55 dark:text-white/75 mt-1 flex items-center gap-1.5 flex-wrap">
+                        <div className="t-cap text-black/55 dark:text-white/75 mt-1 flex items-center gap-2 flex-wrap">
                           <span>
                             {unit.type === 'Hall'
                               ? t('venue_type_hall')
@@ -584,7 +584,7 @@ export const VenueTimelineView: React.FC = () => {
                           <span>·</span>
                           <span>{t('venue_card_capacity', language, { count: unit.capacity })}</span>
                           <span>·</span>
-                          <span className="tabular-nums font-mono font-semibold text-black/70 dark:text-white/75">
+                          <span className="tabular-nums font-semibold text-black/70 dark:text-white/75">
                             {formatCurrencyAmount(unit.hourlyRate, unit.currency)}
                             {t('venue_per_hour')}
                           </span>
@@ -625,7 +625,7 @@ export const VenueTimelineView: React.FC = () => {
                               style={{ left: layout.left, width: layout.width }}
                               data-sq="ctl"
                               data-sq-border="solid"
-                              className={`absolute top-2 bottom-2 z-10 px-2.5 py-1.5 cursor-pointer transition-all flex flex-col justify-center overflow-hidden text-left ${
+                              className={`absolute top-2 bottom-2 z-10 px-2.5 py-2 cursor-pointer transition-all flex flex-col justify-center overflow-hidden text-left ${
                                 isCheckedIn
                                   ? 'bg-purple-600/95 hover:bg-purple-600 text-white [--sq-stroke:#a855f7]'
                                   : isConfirmed
@@ -635,10 +635,10 @@ export const VenueTimelineView: React.FC = () => {
                                   : 'bg-neutral-700 hover:bg-neutral-800 text-white [--sq-stroke:#525252]'
                               }`}
                             >
-                              <div className="font-bold text-xs truncate leading-tight">
+                              <div className="font-semibold t-small truncate leading-tight">
                                 {booking.purpose}
                               </div>
-                              <div className="text-[10px] opacity-90 truncate mt-0.5">
+                              <div className="t-cap opacity-90 truncate mt-0.5">
                                 {booking.renterName}{' '}
                                 {booking.renterCompany && `(${booking.renterCompany})`}
                               </div>
@@ -684,7 +684,7 @@ export const VenueTimelineView: React.FC = () => {
               onClick={() => setIsCloudSyncModalOpen(true)}
               data-sq="ctl"
               data-sq-border="solid"
-              className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
+              className="h-10 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
               title="Inspect Supabase live tables and row writes"
             >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />

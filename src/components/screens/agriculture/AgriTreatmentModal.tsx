@@ -197,12 +197,12 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
               <div
                 data-sq="tile"
                 data-sq-border="none"
-                className="w-10 h-10 bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold shrink-0"
+                className="w-10 h-10 bg-amber-500/15 text-amber-600 flex items-center justify-center font-semibold shrink-0"
               >
                 <ShieldCheck size={20} />
               </div>
               <div>
-                <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+                <h2 className="t-card font-semibold text-black dark:text-white">
                   {logToEdit
                     ? (isAr ? 'تعديل المعالجة النباتية' : 'Modifier le Traitement Phytosanitaire')
                     : (isAr ? 'قيد معالجة جديدة وفترة الأمان DAR' : 'Consigner un Traitement & Délai DAR (INPV)')}
@@ -213,7 +213,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
               type="button"
               aria-label={isAr ? 'إغلاق' : 'Fermer'}
               onClick={onClose}
-              className="p-1.5 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+              className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
             >
               <X size={18} />
             </button>
@@ -226,12 +226,12 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
             className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold text-black/70 dark:text-white flex items-center gap-1.5">
-                <Zap size={13} className="text-[#d4522f]" />
+              <span className="t-small font-semibold text-black/70 dark:text-white flex items-center gap-2">
+                <Zap size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 {isAr ? 'مواد معتمدة ومطابقة لوزارة الفلاحة (INPV)' : 'Produits Homologués INPV Algérie (Pré-remplissage 1-clic)'}
               </span>
             </div>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {INPV_PRESETS.map((p) => (
                 <button
                   key={p.name}
@@ -240,13 +240,13 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
                   data-sq="ctl-sm"
                   data-sq-border="solid"
                   style={productName === p.name ? ({ '--sq-stroke': '#d4522f' } as React.CSSProperties) : undefined}
-                  className={`text-[10.5px] px-2.5 py-1 border transition font-medium cursor-pointer ${
+                  className={`t-small px-2.5 py-1 border transition font-medium cursor-pointer ${
                     productName === p.name
-                      ? 'bg-[#d4522f] text-white border-[#d4522f]'
+                      ? 'bg-[var(--brand-fill,#C9461F)] text-white border-[#d4522f]'
                       : 'bg-white dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700 hover:[--sq-stroke:#d4522f]'
                   }`}
                 >
-                  {p.name} <span className="opacity-70 text-[10px]">({p.darDays}j DAR)</span>
+                  {p.name} <span className="opacity-70 t-cap">({p.darDays}j DAR)</span>
                 </button>
               ))}
             </div>
@@ -336,16 +336,16 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
             data-sq="card"
             data-sq-border="solid"
             style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
-            className="p-3 bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300"
+            className="p-3 bg-amber-500/10 border border-amber-500/25 flex items-start gap-2 t-cap text-amber-800 dark:text-amber-300"
           >
             <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">
+              <span className="font-semibold">
                 {isAr
                   ? `الحصاد سيكون محظوراً حتى: `
                   : `Verrouillage sanitaire de la récolte jusqu’au : `}
               </span>
-              <span className="font-mono font-bold underline">
+              <span className="tabular-nums font-semibold underline">
                 {(() => {
                   const d = new Date(treatmentDate);
                   const n = parseInt(darDays, 10) || 0;
@@ -353,7 +353,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
                   return d.toISOString().split('T')[0];
                 })()}
               </span>
-              <p className="text-[11px] opacity-80 mt-0.5">
+              <p className="t-cap opacity-80 mt-0.5">
                 {isAr
                   ? 'سيتم تعطيل إصدار وصولات الجني للقطعة حتى انقضاء المدة.'
                   : 'L’émission de bons de récolte sera physiquement bloquée sur cette parcelle durant le DAR.'}
@@ -367,9 +367,9 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
               id="safetyGear"
               checked={safetyGearConfirmed}
               onChange={(e) => setSafetyGearConfirmed(e.target.checked)}
-              className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
+              className="rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
             />
-            <label htmlFor="safetyGear" className="text-xs text-black/70 dark:text-white cursor-pointer">
+            <label htmlFor="safetyGear" className="t-cap text-black/70 dark:text-white cursor-pointer">
               {isAr
                 ? 'أؤكد ارتداء معدات الوقاية الفردية (EPI) ومراعاة اتجاه الرياح'
                 : 'Je confirme le port des Équipements de Protection Individuelle (EPI) et le respect des normes INPV'}

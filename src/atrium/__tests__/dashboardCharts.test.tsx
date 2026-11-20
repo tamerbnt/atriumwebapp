@@ -425,7 +425,7 @@ describe('All 19 Atrium dashboard components — render states, edge cases, ARIA
         />
       </div>
     );
-    expect(html).toContain('0 DZD');
+    expect(html).toContain('0\u00A0DZD');
     expect(html).toContain('Md');
     expect(html).not.toContain('NaN');
   });

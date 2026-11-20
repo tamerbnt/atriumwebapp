@@ -101,11 +101,11 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
               <div
                 data-sq="ctl-sm"
                 data-sq-border="none"
-                className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"
+                className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
               >
                 <UserPlus size={16} />
               </div>
-              <h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+              <h3 className="font-semibold t-label text-black dark:text-white">
                 {patientToEdit
                   ? (language === 'ar' ? 'تعديل الملف الطبي' : 'Modifier le Dossier Patient')
                   : (language === 'ar' ? 'فتح ملف مريض جديد (EHR)' : 'Nouveau Dossier Patient (EHR)')}
@@ -153,7 +153,7 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
                 onChange={(e) => setDob(e.target.value)}
               />
               <div>
-                <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider mb-1">
+                <label className="block t-small font-semibold text-black/55 dark:text-white/55 mb-1">
                   {language === 'ar' ? 'الجنس' : 'Sexe'}
                 </label>
                 <LiveSegmentedControl

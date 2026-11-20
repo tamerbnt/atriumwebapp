@@ -348,16 +348,16 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
           const isPinned = pinnedIds.has(o.id);
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div data-sq="tile" data-sq-border="solid" className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]">
+              <div data-sq="tile" data-sq-border="solid" className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]">
                 <Factory size={18} />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-black dark:text-white truncate">{o.productName}</span>
-                  {isPinned && <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
+                  <span className="t-small font-semibold text-black dark:text-white truncate">{o.productName}</span>
+                  {isPinned && <span className="t-small text-amber-500 font-semibold">📌 VIP</span>}
                 </div>
-                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-black/55 dark:text-white/55 font-mono">
-                  <span className="font-bold text-[#d4522f]">{o.orderNumber}</span>
+                <div className="flex items-center gap-2 mt-0.5 t-cap text-black/55 dark:text-white/55 tabular-nums">
+                  <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{o.orderNumber}</span>
                   <span>·</span>
                   <span>{o.batchLotNumber || 'LOT-2026'}</span>
                 </div>
@@ -376,11 +376,11 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
           const pct = Math.min(100, Math.round((done / target) * 100));
           return (
             <div className="space-y-1">
-              <div className="flex items-center justify-between text-xs font-mono font-semibold text-black dark:text-white">
+              <div className="flex items-center justify-between t-small tabular-nums font-semibold text-black dark:text-white">
                 <span>
                   {done} / {target} u
                 </span>
-                <span className="text-[10px] text-black/55 dark:text-white/55">{pct}%</span>
+                <span className="t-cap text-black/55 dark:text-white/55">{pct}%</span>
               </div>
               <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-1.5 overflow-hidden">
                 <div className="bg-[#d4522f] h-1.5 rounded-full transition-all" style={{ width: `${pct}%` }} />
@@ -397,8 +397,8 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
         renderCell: (o) => {
           const b = resolveRecordBranch(o, branchesById, currentBranch, language);
           return (
-            <div className="text-xs font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-1.5">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="t-small font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-2">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -411,8 +411,8 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
         sortable: true,
         renderCell: (o) => (
           <div>
-            <span className="text-xs font-mono font-bold text-black dark:text-white">{formatMoney(o.totalCostDzd, language)}</span>
-            <div className="text-[10px] text-black/55 dark:text-white/55">{isAr ? 'مواد + عمالة' : 'Matières + MO'}</div>
+            <span className="t-small tabular-nums font-semibold text-black dark:text-white">{formatMoney(o.totalCostDzd, language)}</span>
+            <div className="t-cap text-black/55 dark:text-white/55">{isAr ? 'مواد + عمالة' : 'Matières + MO'}</div>
           </div>
         ),
       },
@@ -426,7 +426,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
           return (
             <div className="text-center">
               <span
-                className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold border ${
+                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold border ${
                   isDone
                     ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200/60'
                     : isProg
@@ -703,26 +703,26 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
             const done = o.actualQuantityProduced || o.quantityProduced || 0;
             return (
               <div className="flex flex-col items-center justify-center w-full">
-                <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center t-dialog font-semibold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700 tabular-nums">
                   <Factory size={32} />
                 </div>
-                <div className="flex items-center gap-1.5 max-w-[210px] mb-0.5">
-                  <h3 className="text-base font-bold text-black dark:text-white truncate tracking-tight">{o.productName}</h3>
-                  {isPinned && <span className="text-xs text-amber-500">📌</span>}
+                <div className="flex items-center gap-2 max-w-[210px] mb-0.5">
+                  <h3 className="t-card font-semibold text-black dark:text-white truncate">{o.productName}</h3>
+                  {isPinned && <span className="t-cap text-amber-500">📌</span>}
                 </div>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-3 border border-neutral-200 dark:border-neutral-700">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full t-small tabular-nums font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-3 border border-neutral-200 dark:border-neutral-700">
                   {o.orderNumber}
                 </span>
-                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-                  <div className="text-black dark:text-white font-mono font-bold text-[13px]">{formatMoney(o.totalCostDzd, language)}</div>
-                  <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 text-[10px]">
-                    <span className="text-black/55 dark:text-white/55 font-mono">
+                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 t-cap space-y-1 text-center">
+                  <div className="text-black dark:text-white tabular-nums font-semibold t-label">{formatMoney(o.totalCostDzd, language)}</div>
+                  <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 t-cap">
+                    <span className="text-black/55 dark:text-white/55 tabular-nums">
                       {done} / {target} unités
                     </span>
                     {isDone ? (
-                      <span className="text-emerald-600 font-bold">{isAr ? 'مكتمل' : 'Terminé'}</span>
+                      <span className="text-emerald-600 font-semibold">{isAr ? 'مكتمل' : 'Terminé'}</span>
                     ) : (
-                      <span className="text-amber-600 font-bold">{isAr ? 'قيد التصنيع' : 'En Cours'}</span>
+                      <span className="text-amber-600 font-semibold">{isAr ? 'قيد التصنيع' : 'En Cours'}</span>
                     )}
                   </div>
                 </div>
@@ -836,28 +836,28 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
             </div>
 
             {tab === 'details' && (
-              <div className="space-y-3 text-xs">
-                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
+              <div className="space-y-3 t-cap">
+                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-4 border border-neutral-100 dark:border-neutral-800 space-y-2">
+                  <div className="t-small font-semibold text-black/55 dark:text-white/55">
                     {isAr ? 'معلومات الدفعة' : 'Paramètres de Fabrication'}
                   </div>
                   <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">{isAr ? 'المنتج النهائي' : 'Produit fini'}</span>
-                    <span className="font-bold text-black dark:text-white text-right max-w-[210px] truncate">{ord.productName}</span>
+                    <span className="font-semibold text-black dark:text-white text-right max-w-[210px] truncate">{ord.productName}</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">{isAr ? 'رقم الدفعة' : 'N° de Lot (Batch)'}</span>
-                    <span className="font-mono font-semibold text-black dark:text-white">{ord.batchLotNumber || 'LOT-2026-05'}</span>
+                    <span className="tabular-nums font-semibold text-black dark:text-white">{ord.batchLotNumber || 'LOT-2026-05'}</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">{isAr ? 'الكمية المستهدفة' : 'Quantité cible'}</span>
-                    <span className="font-mono font-bold text-black dark:text-white">
+                    <span className="tabular-nums font-semibold text-black dark:text-white">
                       {ord.targetQuantity || ord.quantityOrdered || 1} unités
                     </span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">{isAr ? 'الكمية المنتجة' : 'Quantité produite'}</span>
-                    <span className="font-mono font-bold text-[#d4522f]">
+                    <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                       {ord.actualQuantityProduced || ord.quantityProduced || 0} unités
                     </span>
                   </div>
@@ -870,43 +870,43 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
             )}
 
             {tab === 'costing' && (
-              <div className="space-y-3 text-xs">
-                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                  <div className="text-[11px] font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
+              <div className="space-y-3 t-cap">
+                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-4 border border-neutral-100 dark:border-neutral-800 space-y-2">
+                  <div className="t-small font-semibold text-black/55 dark:text-white/55">
                     {isAr ? 'تفكيك التكاليف الصناعية' : 'Décomposition Coût de Revient'}
                   </div>
                   <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">{isAr ? 'المواد الأولية' : 'Matières premières'}</span>
-                    <span className="font-mono font-semibold text-black dark:text-white">
+                    <span className="tabular-nums font-semibold text-black dark:text-white">
                       {formatMoney(ord.totalMaterialCostDzd || 0, language)}
                     </span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
                     <span className="text-black/55 dark:text-white/55">{isAr ? 'اليد العاملة المباشرة' : "Main d'œuvre atelier"}</span>
-                    <span className="font-mono font-semibold text-black dark:text-white">
+                    <span className="tabular-nums font-semibold text-black dark:text-white">
                       {formatMoney(ord.totalLaborCostDzd || 0, language)}
                     </span>
                   </div>
-                  <div className="flex justify-between py-1.5 font-bold text-black dark:text-white text-[13px]">
+                  <div className="flex justify-between py-2 font-semibold text-black dark:text-white t-label">
                     <span>{isAr ? 'التكلفة الإجمالية' : 'Coût Total de Fabrication'}</span>
-                    <span className="font-mono text-[#d4522f]">{formatMoney(ord.totalCostDzd, language)}</span>
+                    <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(ord.totalCostDzd, language)}</span>
                   </div>
                 </div>
               </div>
             )}
 
             {tab === 'bom' && (
-              <div className="space-y-2 text-xs">
+              <div className="space-y-2 t-cap">
                 {ord.bomId && bomMap.has(ord.bomId) ? (
                   (() => {
                     const b = bomMap.get(ord.bomId)!;
                     return (
                       <div className="space-y-2">
-                        <div data-sq="ctl" data-sq-border="none" className="p-2.5 bg-neutral-100 dark:bg-neutral-800 font-bold text-black dark:text-white flex items-center justify-between">
+                        <div data-sq="ctl" data-sq-border="none" className="p-3 bg-neutral-100 dark:bg-neutral-800 font-semibold text-black dark:text-white flex items-center justify-between">
                           <span>{b.bomCode}</span>
-                          <span className="font-mono text-[#d4522f]">{formatMoney(b.estimatedCostDzd, language)} / u</span>
+                          <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(b.estimatedCostDzd, language)} / u</span>
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           {b.components.map((c, i) => (
                             <div
                               key={i}
@@ -915,7 +915,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                               className="p-2 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex items-center justify-between"
                             >
                               <span className="text-black/70 dark:text-white/75 truncate max-w-[190px]">{c.rawProductName}</span>
-                              <span className="font-mono text-black/55 dark:text-white/55">
+                              <span className="tabular-nums text-black/55 dark:text-white/55">
                                 {c.quantity} {c.unit}
                               </span>
                             </div>
@@ -937,8 +937,8 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
             )}
 
             {tab === 'notes' && (
-              <div className="space-y-3 text-xs">
-                <label className="block text-[11px] font-bold text-black/55 dark:text-white/55 uppercase">
+              <div className="space-y-3 t-cap">
+                <label className="block t-small font-semibold text-black/55 dark:text-white/55">
                   {isAr ? 'ملاحظات وتوجيهات الورشة' : "Consignes d'Atelier & Rebuts"}
                 </label>
                 <div data-sq="card" data-sq-border="solid" className="border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800">
@@ -947,13 +947,13 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                     onChange={(e) => setInspectorNotes(e.target.value)}
                     rows={8}
                     placeholder={isAr ? 'أدخل ملاحظات الورشة...' : 'Tolérances dimensionnelles, cadence, rebus observés...'}
-                    className="lbi-field w-full p-3 bg-transparent border-0 text-black dark:text-white text-xs outline-none"
+                    className="lbi-field w-full p-3 bg-transparent border-0 text-black dark:text-white t-cap outline-none"
                   />
                 </div>
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-black/55 dark:text-white/55">
+                  <span className="t-cap text-black/55 dark:text-white/55">
                     {noteSaved && (
-                      <span className="text-emerald-600 font-bold flex items-center gap-1">
+                      <span className="text-emerald-600 font-semibold flex items-center gap-1">
                         <Check size={12} /> {isAr ? 'تم الحفظ' : 'Enregistré'}
                       </span>
                     )}
@@ -998,14 +998,14 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
             <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 sm:p-8 border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center gap-3">
-                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
                     <Printer size={20} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-base text-black dark:text-white">
+                    <h3 className="font-semibold t-card text-black dark:text-white">
                       {isAr ? 'بطاقة التتبع المرافقة للورشة (Fiche Suiveuse)' : "Fiche Suiveuse d'Atelier & Ordre de Travail"}
                     </h3>
-                    <p className="text-xs text-black/55 dark:text-white/55">
+                    <p className="t-cap text-black/55 dark:text-white/55">
                       Document officiel d'atelier • Traçabilité Décret 05-468 & ISO 9001
                     </p>
                   </div>
@@ -1017,7 +1017,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                     data-sq="ctl"
                     data-sq-border="none"
                     onClick={() => window.print()}
-                    className="px-4 py-2 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                    className="px-4 py-2 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white t-small font-semibold flex items-center gap-2 cursor-pointer transition-colors"
                   >
                     <Printer size={14} />
                     <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
@@ -1035,45 +1035,45 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
               <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-dashed border-neutral-300 text-black space-y-5 shadow-xs font-sans">
                 <div className="flex justify-between items-start border-b pb-4">
                   <div>
-                    <div className="font-black text-lg tracking-tight text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
-                    <div className="text-[11px] text-black/55 font-medium">
+                    <div className="font-semibold t-pod text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
+                    <div className="t-small text-black/55 font-medium">
                       Zone Industrielle Oued Smar, Alger • NIF: 001916010044589 • RC: 16/00-0988421
                     </div>
-                    <div className="text-xs font-bold text-[#d4522f] mt-1">
+                    <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] mt-1">
                       FICHE SUIVEUSE DE PRODUCTION • ORDRE DE FABRICATION
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-mono font-black text-xl text-[#d4522f]">{orderForFiche.orderNumber}</div>
-                    <div className="font-mono text-xs font-bold text-black/75 mt-0.5">
+                    <div className="tabular-nums font-semibold t-dialog text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{orderForFiche.orderNumber}</div>
+                    <div className="tabular-nums t-small font-semibold text-black/75 mt-0.5">
                       {orderForFiche.batchLotNumber || 'LOT-202610-0089'}
                     </div>
-                    <div className="font-mono text-[10px] text-black/55 mt-1 tracking-widest">|||||||||||||||||||||||||||||||</div>
+                    <div className="tabular-nums t-cap text-black/55 mt-1">|||||||||||||||||||||||||||||||</div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-neutral-50 p-3.5 rounded-[var(--r-ctl,12px)] text-xs border border-neutral-200">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-neutral-50 p-4 rounded-[var(--r-ctl,12px)] t-cap border border-neutral-200">
                   <div>
-                    <span className="text-black/55 block text-[10px] uppercase font-bold">Produit Fini</span>
-                    <span className="font-bold text-black">{orderForFiche.productName}</span>
+                    <span className="text-black/55 block t-small font-semibold">Produit Fini</span>
+                    <span className="font-semibold text-black">{orderForFiche.productName}</span>
                   </div>
                   <div>
-                    <span className="text-black/55 block text-[10px] uppercase font-bold">Quantité Cible</span>
-                    <span className="font-mono font-bold text-black">{orderForFiche.targetQuantity} unités</span>
+                    <span className="text-black/55 block t-small font-semibold">Quantité Cible</span>
+                    <span className="tabular-nums font-semibold text-black">{orderForFiche.targetQuantity} unités</span>
                   </div>
                   <div>
-                    <span className="text-black/55 block text-[10px] uppercase font-bold">Poste / Ligne</span>
+                    <span className="text-black/55 block t-small font-semibold">Poste / Ligne</span>
                     <span className="font-semibold text-black">{orderForFiche.assignedStation || 'Poste 03 CNC'}</span>
                   </div>
                   <div>
-                    <span className="text-black/55 block text-[10px] uppercase font-bold">Échéance</span>
-                    <span className="font-mono font-semibold text-black">{orderForFiche.dueDate?.split('T')[0] || '2026-06-15'}</span>
+                    <span className="text-black/55 block t-small font-semibold">Échéance</span>
+                    <span className="tabular-nums font-semibold text-black">{orderForFiche.dueDate?.split('T')[0] || '2026-06-15'}</span>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-xs font-bold text-black uppercase tracking-wider">
+                  <div className="t-small font-semibold text-black">
                     Gamme Opératoire & Visas de Validation Postes
                   </div>
-                  <table className="w-full text-xs border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] overflow-hidden">
+                  <table className="w-full t-cap border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] overflow-hidden">
                   <thead className="bg-neutral-100 text-black/75 font-semibold border-b border-neutral-200">
                     <tr>
                       <th className="p-2 text-left w-12">Op.</th>
@@ -1085,54 +1085,54 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                   </thead>
                   <tbody className="divide-y divide-neutral-200">
                     <tr>
-                      <td className="p-2 font-mono font-bold text-center">010</td>
+                      <td className="p-2 tabular-nums font-semibold text-center">010</td>
                       <td className="p-2">Découpe, Dégauchissage & Calibrage brut</td>
-                      <td className="p-2 font-mono text-center">45 min</td>
-                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 text-[10px]">[ ______ ]</td>
-                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 text-[10px]">[ ______ ]</td>
+                      <td className="p-2 tabular-nums text-center">45 min</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 t-cap">[ ______ ]</td>
                     </tr>
                     <tr>
-                      <td className="p-2 font-mono font-bold text-center">020</td>
+                      <td className="p-2 tabular-nums font-semibold text-center">020</td>
                       <td className="p-2">Usinage commande numérique & Perçage CNC</td>
-                      <td className="p-2 font-mono text-center">60 min</td>
-                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 text-[10px]">[ ______ ]</td>
-                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 text-[10px]">[ ______ ]</td>
+                      <td className="p-2 tabular-nums text-center">60 min</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 t-cap">[ ______ ]</td>
                     </tr>
                     <tr>
-                      <td className="p-2 font-mono font-bold text-center">030</td>
+                      <td className="p-2 tabular-nums font-semibold text-center">030</td>
                       <td className="p-2">Assemblage mécanique & Pose quincaillerie</td>
-                      <td className="p-2 font-mono text-center">40 min</td>
-                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 text-[10px]">[ ______ ]</td>
-                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 text-[10px]">[ ______ ]</td>
+                      <td className="p-2 tabular-nums text-center">40 min</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 t-cap">[ ______ ]</td>
                     </tr>
                     <tr>
-                      <td className="p-2 font-mono font-bold text-center">040</td>
+                      <td className="p-2 tabular-nums font-semibold text-center">040</td>
                       <td className="p-2">Finition de surface & Contrôle dimensionnel final</td>
-                      <td className="p-2 font-mono text-center">30 min</td>
-                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 text-[10px]">[ ______ ]</td>
-                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 text-[10px]">[ ______ ]</td>
+                      <td className="p-2 tabular-nums text-center">30 min</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 t-cap">[ ______ ]</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-black/55 t-cap">[ ______ ]</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <div className="p-3 bg-neutral-100 rounded-[var(--r-ctl,12px)] text-[11px] text-black/75 flex items-center justify-between">
+              <div className="p-3 bg-neutral-100 rounded-[var(--r-ctl,12px)] t-cap text-black/75 flex items-center justify-between">
                 <span>
                   ⚠️ <strong>Sécurité Loi 88-07 :</strong> Port des EPI (lunettes, gants, chaussures) obligatoire sur toute la phase.
                 </span>
-                <span className="font-mono font-bold text-black">{'Tolérance Rebut : < 3%'}</span>
+                <span className="tabular-nums font-semibold text-black">{'Tolérance Rebut : < 3%'}</span>
               </div>
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t text-center text-xs">
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t text-center t-cap">
                 <div>
-                  <span className="text-black/55 text-[10px] block">Chef d'Atelier (Lancement)</span>
-                  <div className="h-10 flex items-center justify-center font-serif text-black/75 italic">M. Brahim M.</div>
+                  <span className="text-black/55 t-cap block">Chef d'Atelier (Lancement)</span>
+                  <div className="h-10 flex items-center justify-center text-black/75 italic">M. Brahim M.</div>
                 </div>
                 <div>
-                  <span className="text-black/55 text-[10px] block">Magasinier (Sortie BSM)</span>
-                  <div className="h-10 flex items-center justify-center font-serif text-black/75 italic">M. Amine T.</div>
+                  <span className="text-black/55 t-cap block">Magasinier (Sortie BSM)</span>
+                  <div className="h-10 flex items-center justify-center text-black/75 italic">M. Amine T.</div>
                 </div>
                 <div>
-                  <span className="text-black/55 text-[10px] block">Responsable Qualité (Quitus)</span>
-                  <div className="h-10 flex items-center justify-center font-serif text-black/75 italic">Ing. S. Mokrani</div>
+                  <span className="text-black/55 t-cap block">Responsable Qualité (Quitus)</span>
+                  <div className="h-10 flex items-center justify-center text-black/75 italic">Ing. S. Mokrani</div>
                 </div>
               </div>
             </div>

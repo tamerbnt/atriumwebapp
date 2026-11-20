@@ -507,9 +507,9 @@ export const AgricultureWholesaleView: React.FC = () => {
         width: '125px',
         sortable: true,
         renderCell: (t) => (
-          <div className="flex items-center gap-1.5 font-mono font-bold text-xs">
-            {pinnedIds.has(t.id) && <Pin size={11} className="text-[#d4522f] shrink-0" />}
-            <span className="bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded-[var(--r-check,6px)] border border-[#d4522f]/20">
+          <div className="flex items-center gap-2 tabular-nums font-semibold t-small">
+            {pinnedIds.has(t.id) && <Pin size={11} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />}
+            <span className="bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] px-2 py-1 rounded-[var(--r-check,6px)] border border-[#d4522f]/20">
               {t.ticketNumber}
             </span>
           </div>
@@ -521,10 +521,10 @@ export const AgricultureWholesaleView: React.FC = () => {
         sortable: true,
         renderCell: (t) => (
           <div>
-            <span className="font-bold text-xs text-black dark:text-white block">
+            <span className="font-semibold t-small text-black dark:text-white block">
               {t.cropDesignation}
             </span>
-            <span className="text-[11px] text-black/55 dark:text-white/55">
+            <span className="t-cap text-black/55 dark:text-white/55">
               {t.destinationWholesaleMarket}
             </span>
           </div>
@@ -536,7 +536,7 @@ export const AgricultureWholesaleView: React.FC = () => {
         width: '140px',
         sortable: true,
         renderCell: (t) => (
-          <span className="text-xs text-black/70 dark:text-white/75 truncate block">
+          <span className="t-cap text-black/70 dark:text-white/75 truncate block">
             {resolveRecordBranch(t, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -547,11 +547,11 @@ export const AgricultureWholesaleView: React.FC = () => {
         width: '120px',
         sortable: true,
         renderCell: (t) => (
-          <div className="font-mono text-xs tabular-nums">
-            <span className="font-bold text-black dark:text-white">
+          <div className="tabular-nums t-cap">
+            <span className="font-semibold text-black dark:text-white">
               {t.netWeightKg.toLocaleString()} kg
             </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 block">
+            <span className="t-cap text-black/55 dark:text-white/55 block">
               Brut: {t.grossWeightKg.toLocaleString()} kg
             </span>
           </div>
@@ -563,7 +563,7 @@ export const AgricultureWholesaleView: React.FC = () => {
         width: '115px',
         sortable: true,
         renderCell: (t) => (
-          <span className="font-mono text-xs font-semibold text-black/70 dark:text-white/75 tabular-nums">
+          <span className="tabular-nums t-small font-semibold text-black/70 dark:text-white/75">
             {t.unitPriceDzdPerKg} DZD/kg
           </span>
         ),
@@ -573,7 +573,7 @@ export const AgricultureWholesaleView: React.FC = () => {
         header: isAr ? 'العمولة (6%)' : 'Com. Mandataire',
         width: '125px',
         renderCell: (t) => (
-          <span className="font-mono text-xs text-amber-600 dark:text-amber-400 font-medium tabular-nums">
+          <span className="tabular-nums t-small text-amber-600 dark:text-amber-400 font-medium">
             -{formatMoney((getTicketGross(t) * getTicketFeePct(t)) / 100, language)}
           </span>
         ),
@@ -584,7 +584,7 @@ export const AgricultureWholesaleView: React.FC = () => {
         width: '135px',
         sortable: true,
         renderCell: (t) => (
-          <span className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+          <span className="tabular-nums t-small font-semibold text-black dark:text-white">
             {formatMoney(getTicketNet(t), language)}
           </span>
         ),
@@ -597,7 +597,7 @@ export const AgricultureWholesaleView: React.FC = () => {
           const isSettled = settledSet.has(t.id);
           return (
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-full t-small font-semibold inline-flex items-center gap-1 ${
                 isSettled
                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                   : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'

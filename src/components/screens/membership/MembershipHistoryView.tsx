@@ -234,16 +234,16 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
       header: language === 'ar' ? 'العميل / الوصل' : language === 'fr' ? 'Client & Ticket' : 'Customer & Receipt',
       sortable: true,
       renderCell: (sale) => (
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-[#262422] flex items-center justify-center text-xs font-bold text-black/75 dark:text-white/80 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-[#262422] flex items-center justify-center t-small font-semibold text-black/75 dark:text-white/80 shrink-0">
             {(sale.memberName || 'G').charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <span className="text-[13.5px] font-semibold text-black dark:text-white truncate block">
+            <span className="t-label font-semibold text-black dark:text-white truncate block">
               {sale.memberName ||
                 (language === 'ar' ? 'زائر غير مسجل' : language === 'fr' ? 'Client de passage' : 'Guest Walk-In')}
             </span>
-            <span className="text-[11px] font-mono text-[#d4522f] font-semibold block">
+            <span className="t-small tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold block">
               #{sale.id}
             </span>
           </div>
@@ -255,11 +255,11 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
       header: language === 'ar' ? 'طريقة الدفع' : language === 'fr' ? 'Règlement' : 'Tender',
       sortable: true,
       renderCell: (sale) => (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold bg-[#F3EDE7] dark:bg-[#262422] text-black/75 dark:text-white/80">
+        <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-[#262422] text-black/75 dark:text-white/80">
           {sale.paymentMethod === 'Cash' && <Banknote size={12} className="text-emerald-600" />}
           {sale.paymentMethod === 'Card' && <CreditCard size={12} className="text-blue-600" />}
           {sale.paymentMethod === 'Split' && <CreditCard size={12} className="text-purple-600" />}
-          {sale.paymentMethod === 'MemberBalance' && <User size={12} className="text-[#d4522f]" />}
+          {sale.paymentMethod === 'MemberBalance' && <User size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
           <span>{getLocalizedPaymentMethod(sale.paymentMethod)}</span>
         </span>
       ),
@@ -272,7 +272,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
         const isRefunded = sale.status === 'Refunded';
         return (
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold ${
+            className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold ${
               isRefunded
                 ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300'
                 : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
@@ -293,13 +293,13 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
       renderCell: (sale) => (
         <div className="tabular-nums">
           <span
-            className={`text-[13px] font-bold font-mono block ${
+            className={`t-label font-semibold tabular-nums block ${
               sale.status === 'Refunded' ? 'line-through text-black/55 dark:text-white/55' : 'text-black dark:text-white'
             }`}
           >
             {formatMoney(sale.totalAmount)}
           </span>
-          <span className="text-[11px] text-black/62 dark:text-white/65 block">
+          <span className="t-cap text-black/62 dark:text-white/65 block">
             {new Date(sale.createdAt).toLocaleDateString()}
           </span>
         </div>
@@ -310,7 +310,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
       header: language === 'ar' ? 'الفرع' : language === 'fr' ? 'Branche' : 'Branch',
       sortable: true,
       renderCell: (sale) => (
-        <span className="text-[12.5px] font-medium text-black/80 dark:text-white/85 truncate block">
+        <span className="t-small font-medium text-black/80 dark:text-white/85 truncate block">
           {resolveRecordBranch(sale, branchesById, currentBranch, language).name}
         </span>
       ),
@@ -495,7 +495,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
           <div
             data-sq="ctl"
             data-sq-border="solid"
-            className="p-3.5 bg-rose-50 dark:bg-rose-950/80 [--sq-stroke:#FDA4AF] dark:[--sq-stroke:#BE123C] text-rose-800 dark:text-rose-200 text-xs font-semibold flex items-center justify-between"
+            className="p-4 bg-rose-50 dark:bg-rose-950/80 [--sq-stroke:#FDA4AF] dark:[--sq-stroke:#BE123C] text-rose-800 dark:text-rose-200 t-small font-semibold flex items-center justify-between"
           >
             <div className="flex items-center gap-2">
               <Check size={16} className="text-rose-600" />
@@ -855,10 +855,10 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
                   <RotateCcw size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-black dark:text-white">
+                  <h3 className="t-card font-semibold text-black dark:text-white">
                     {language === 'ar' ? 'تأكيد استرجاع المعاملة' : language === 'fr' ? 'Confirmer le remboursement' : 'Confirm Transaction Refund'}
                   </h3>
-                  <p className="text-xs text-black/62 dark:text-white/65 tabular-nums">
+                  <p className="t-cap text-black/62 dark:text-white/65 tabular-nums">
                     #{selectedSale.id} • {formatMoney(selectedSale.totalAmount)}
                   </p>
                 </div>
@@ -866,7 +866,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3.5 bg-amber-50 dark:bg-amber-950/40 [--sq-stroke:#FDE68A] dark:[--sq-stroke:#92400E] text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2.5"
+                className="p-4 bg-amber-50 dark:bg-amber-950/40 [--sq-stroke:#FDE68A] dark:[--sq-stroke:#92400E] t-cap text-amber-800 dark:text-amber-200 flex items-start gap-2"
               >
                 <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
                 <span>

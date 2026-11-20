@@ -385,10 +385,10 @@ export const PosOrdersView: React.FC = () => {
         sortable: true,
         renderCell: (s) => (
           <div>
-            <span className="font-mono font-bold text-xs text-black dark:text-white block">
+            <span className="tabular-nums font-semibold t-small text-black dark:text-white block">
               #{s.id.slice(-6).toUpperCase()}
             </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums block">
               {new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
@@ -401,11 +401,11 @@ export const PosOrdersView: React.FC = () => {
         sortable: true,
         renderCell: (s) => (
           <div className="min-w-0">
-            <div className="font-bold text-xs text-black dark:text-white truncate">
+            <div className="font-semibold t-small text-black dark:text-white truncate">
               {s.memberName || t('shop_receipt_walkin')}
             </div>
             {s.customerPhone && (
-              <div className="text-[10px] text-black/55 dark:text-white/55 font-mono truncate">
+              <div className="t-cap text-black/55 dark:text-white/55 tabular-nums truncate">
                 {s.customerPhone}
               </div>
             )}
@@ -417,17 +417,17 @@ export const PosOrdersView: React.FC = () => {
         header: isAr ? 'المحتويات' : isEn ? 'Items' : 'Articles',
         minWidth: '180px',
         renderCell: (s) => (
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             {s.items.slice(0, 2).map((it, idx) => (
               <span
                 key={idx}
-                className="text-[11px] text-black/70 dark:text-white/75 font-medium bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded-[var(--r-check,6px)]"
+                className="t-small text-black/70 dark:text-white/75 font-medium bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded-[var(--r-check,6px)]"
               >
                 {it.quantity}x {it.productName.split('(')[0].trim()}
               </span>
             ))}
             {s.items.length > 2 && (
-              <span className="text-[10px] font-bold text-black/55 dark:text-white/55">
+              <span className="t-small font-semibold text-black/55 dark:text-white/55">
                 +{s.items.length - 2}
               </span>
             )}
@@ -448,13 +448,13 @@ export const PosOrdersView: React.FC = () => {
             ? 'CIB / Edahabia'
             : s.paymentMethod;
           return (
-            <div className="flex items-center gap-1.5 text-xs">
+            <div className="flex items-center gap-2 t-cap">
               {isCash ? (
                 <Banknote size={14} className="text-emerald-500 shrink-0" />
               ) : isCard ? (
                 <CreditCard size={14} className="text-blue-500 shrink-0" />
               ) : (
-                <Coins size={14} className="text-[#d4522f] shrink-0" />
+                <Coins size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               )}
               <span className="font-medium text-black dark:text-white truncate">{label}</span>
             </div>
@@ -467,7 +467,7 @@ export const PosOrdersView: React.FC = () => {
         width: '125px',
         sortable: true,
         renderCell: (s) => (
-          <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+          <span className="tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(s.totalAmount)}
           </span>
         ),
@@ -481,7 +481,7 @@ export const PosOrdersView: React.FC = () => {
           const isRefunded = s.status === 'Refunded';
           return (
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold ${
                 isRefunded
                   ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
                   : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
@@ -498,7 +498,7 @@ export const PosOrdersView: React.FC = () => {
         width: '120px',
         sortable: true,
         renderCell: (s) => (
-          <span className="text-[12px] font-medium text-black/75 dark:text-white/80 truncate block">
+          <span className="t-small font-medium text-black/75 dark:text-white/80 truncate block">
             {resolveRecordBranch(s, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -517,10 +517,10 @@ export const PosOrdersView: React.FC = () => {
               }}
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="h-8 px-2.5 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-black/70 dark:text-white flex items-center gap-1 cursor-pointer transition-colors"
+              className="h-8 px-2.5 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] hover:bg-neutral-100 dark:hover:bg-neutral-700 t-small font-semibold text-black/70 dark:text-white flex items-center gap-1 cursor-pointer transition-colors"
               title="Ticket Thermique 80mm"
             >
-              <Printer size={13} className="text-[#d4522f]" />
+              <Printer size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>{isAr ? 'وصل' : 'Reçu'}</span>
             </button>
             {s.status !== 'Refunded' && (
@@ -554,10 +554,10 @@ export const PosOrdersView: React.FC = () => {
         sortable: true,
         renderCell: (po) => (
           <div>
-            <span className="font-bold text-xs text-black dark:text-white block">
+            <span className="font-semibold t-small text-black dark:text-white block">
               {po.referenceName}
             </span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               {new Date(po.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {(po as any).cashierName || 'Caisse'}
             </span>
           </div>
@@ -568,17 +568,17 @@ export const PosOrdersView: React.FC = () => {
         header: isAr ? 'المحتويات' : 'Articles en Pause',
         minWidth: '200px',
         renderCell: (po) => (
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             {po.items.slice(0, 3).map((it, idx) => (
               <span
                 key={idx}
-                className="px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-black/70 dark:text-white/75"
+                className="px-2 py-1 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 t-small font-medium text-black/70 dark:text-white/75"
               >
                 {it.quantity}x {it.productName}
               </span>
             ))}
             {po.items.length > 3 && (
-              <span className="text-[10px] font-bold text-black/55 dark:text-white/55">
+              <span className="t-small font-semibold text-black/55 dark:text-white/55">
                 +{po.items.length - 3}
               </span>
             )}
@@ -591,7 +591,7 @@ export const PosOrdersView: React.FC = () => {
         width: '130px',
         sortable: true,
         renderCell: (po) => (
-          <span className="font-mono font-bold text-xs text-[#d4522f] tabular-nums">
+          <span className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
             {formatMoney(po.totalAmount)}
           </span>
         ),
@@ -602,7 +602,7 @@ export const PosOrdersView: React.FC = () => {
         width: '120px',
         sortable: true,
         renderCell: (po) => (
-          <span className="text-[12px] font-medium text-black/75 dark:text-white/80 truncate block">
+          <span className="t-small font-medium text-black/75 dark:text-white/80 truncate block">
             {resolveRecordBranch(po, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -622,7 +622,7 @@ export const PosOrdersView: React.FC = () => {
               }}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="h-8 px-3 bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 cursor-pointer"
+              className="h-8 px-3 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center gap-1 hover:opacity-90 cursor-pointer"
             >
               <PlayCircle size={13} />
               <span>{isAr ? 'استئناف' : 'Reprendre'}</span>
@@ -701,7 +701,7 @@ export const PosOrdersView: React.FC = () => {
             max-width: 80mm !important;
             margin: 0 !important;
             padding: 8px !important;
-            font-size: 11px !important;
+            font-size: 12px !important;
             background: white !important;
             color: black !important;
           }
@@ -1365,27 +1365,27 @@ export const PosOrdersView: React.FC = () => {
                 id="pos-orders-thermal-receipt"
                 data-sq="card"
                 data-sq-border="solid"
-                className="bg-white text-black p-4 [--sq-stroke:#D4D4D4] font-mono text-[11px] leading-relaxed"
+                className="bg-white text-black p-4 [--sq-stroke:#D4D4D4] tabular-nums t-cap leading-relaxed"
               >
               <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-neutral-400">
-                <div className="text-sm font-black uppercase tracking-wider">
+                <div className="t-label font-semibold">
                   {receiptConfig.headerTitle || currentBranch.name}
                 </div>
                 {receiptConfig.subHeader && (
-                  <div className="text-[10px] text-black/75">{receiptConfig.subHeader}</div>
+                  <div className="t-cap text-black/75">{receiptConfig.subHeader}</div>
                 )}
-                <div className="text-[10px] text-black/55">
+                <div className="t-cap text-black/55">
                   {receiptConfig.address || currentBranch.address || '8 Rue Didouche Mourad, Alger'}
                 </div>
                 {receiptConfig.phone && (
-                  <div className="text-[10px] text-black/55">Tel: {receiptConfig.phone}</div>
+                  <div className="t-cap text-black/55">Tel: {receiptConfig.phone}</div>
                 )}
                 {receiptConfig.taxId && (
-                  <div className="text-[10px] font-bold text-black/75">NIF/RC: {receiptConfig.taxId}</div>
+                  <div className="t-small font-semibold text-black/75">NIF/RC: {receiptConfig.taxId}</div>
                 )}
               </div>
 
-              <div className="py-2 text-[10px] border-b border-dashed border-neutral-400 space-y-0.5">
+              <div className="py-2 t-cap border-b border-dashed border-neutral-400 space-y-0.5">
                 <div className="flex justify-between">
                   <span>TICKET: #{selectedSaleForReceipt.id.slice(-8).toUpperCase()}</span>
                   <span>{new Date(selectedSaleForReceipt.createdAt).toLocaleDateString()}</span>
@@ -1395,40 +1395,40 @@ export const PosOrdersView: React.FC = () => {
                   <span>{new Date(selectedSaleForReceipt.createdAt).toLocaleTimeString()}</span>
                 </div>
                 {selectedSaleForReceipt.memberName && (
-                  <div className="flex justify-between font-bold">
+                  <div className="flex justify-between font-semibold">
                     <span>CLIENT:</span>
                     <span>{selectedSaleForReceipt.memberName}</span>
                   </div>
                 )}
               </div>
 
-              <div className="py-2 space-y-1 border-b border-dashed border-neutral-400 text-[11px]">
+              <div className="py-2 space-y-1 border-b border-dashed border-neutral-400 t-cap">
                 {selectedSaleForReceipt.items.map((it, idx) => (
                   <div key={idx} className="flex justify-between">
                     <span>{it.quantity}x {it.productName}</span>
-                    <span className="font-bold">{formatMoney(it.totalPrice)}</span>
+                    <span className="font-semibold">{formatMoney(it.totalPrice)}</span>
                   </div>
                 ))}
               </div>
 
               <div className="py-2 space-y-1 border-b border-dashed border-neutral-400">
-                <div className="flex justify-between text-sm font-black pt-1">
+                <div className="flex justify-between t-label font-semibold pt-1">
                   <span>TOTAL PAYÉ</span>
                   <span>{formatMoney(selectedSaleForReceipt.totalAmount)}</span>
                 </div>
-                <div className="flex justify-between text-[10px] text-black/75 pt-0.5">
+                <div className="flex justify-between t-cap text-black/75 pt-0.5">
                   <span>MODE DE PAIEMENT :</span>
-                  <span className="font-bold">{selectedSaleForReceipt.paymentMethod}</span>
+                  <span className="font-semibold">{selectedSaleForReceipt.paymentMethod}</span>
                 </div>
               </div>
 
               <div className="pt-2 text-center space-y-1">
                 {receiptConfig.showBarcode && (
-                  <div className="w-36 h-6 mx-auto bg-neutral-900 text-white text-[10px] flex items-center justify-center tracking-widest">
+                  <div className="w-36 h-6 mx-auto bg-neutral-900 text-white t-cap flex items-center justify-center">
                     |||| || ||||| || |||
                   </div>
                 )}
-                <div className="text-[10px] font-bold">
+                <div className="t-small font-semibold">
                   {receiptConfig.footerMessage || 'Merci pour votre visite !'}
                 </div>
               </div>
@@ -1439,7 +1439,7 @@ export const PosOrdersView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex-1 h-10 px-4 text-xs font-bold text-white bg-[#d4522f] rounded-full cursor-pointer hover:opacity-90 flex items-center justify-center gap-2"
+                className="flex-1 h-10 px-4 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full cursor-pointer hover:opacity-90 flex items-center justify-center gap-2"
               >
                 <Printer size={14} />
                 <span>{isAr ? 'طباعة الوصل' : 'Imprimer Ticket 80mm'}</span>
@@ -1447,7 +1447,7 @@ export const PosOrdersView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedSaleForReceipt(null)}
-                className="h-10 px-4 text-xs font-semibold text-black/70 dark:text-white/75 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                className="h-10 px-4 t-small font-semibold text-black/70 dark:text-white/75 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
                 {t('action_cancel')}
               </button>
@@ -1464,7 +1464,7 @@ export const PosOrdersView: React.FC = () => {
           subtitle={`Ticket #${selectedSaleForRefund.id.slice(-8).toUpperCase()} · ${formatMoney(selectedSaleForRefund.totalAmount)}`}
         >
           <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
-            <p className="text-xs text-black/55 dark:text-white/55">
+            <p className="t-cap text-black/55 dark:text-white/55">
               {isAr
                 ? 'سيتم إعادة الأصناف تلقائياً إلى المخزون وتسجيل حركة إرجاع في سجل التدقيق.'
                 : 'Les articles seront automatiquement réintégrés dans l’inventaire physique avec suivi complet.'}

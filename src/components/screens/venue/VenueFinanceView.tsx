@@ -340,8 +340,8 @@ export const VenueFinanceView: React.FC = () => {
         sortable: true,
         renderCell: (d) => (
           <div>
-            <span className="font-bold text-xs text-black dark:text-white block">{d.renterName}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+            <span className="font-semibold t-small text-black dark:text-white block">{d.renterName}</span>
+            <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               {d.collectedAt}
             </span>
           </div>
@@ -356,7 +356,7 @@ export const VenueFinanceView: React.FC = () => {
         renderCell: (d) => {
           const bInfo = resolveRecordBranch(d, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -370,7 +370,7 @@ export const VenueFinanceView: React.FC = () => {
         minWidth: '150px',
         sortable: true,
         renderCell: (d) => (
-          <span className="text-xs font-medium text-black/70 dark:text-white/75">{d.unitName}</span>
+          <span className="t-small font-medium text-black/70 dark:text-white/75">{d.unitName}</span>
         ),
       },
       {
@@ -380,7 +380,7 @@ export const VenueFinanceView: React.FC = () => {
         minWidth: '120px',
         sortable: true,
         renderCell: (d) => (
-          <span className="font-mono text-xs font-bold text-black dark:text-white tabular-nums">
+          <span className="tabular-nums t-small font-semibold text-black dark:text-white">
             {formatCurrencyAmount(d.amount, d.currency)}
           </span>
         ),
@@ -391,7 +391,7 @@ export const VenueFinanceView: React.FC = () => {
         width: '1.1*',
         minWidth: '110px',
         renderCell: (d) => (
-          <span className="text-xs text-black/55 dark:text-white/55 font-medium">
+          <span className="t-small text-black/55 dark:text-white/55 font-medium">
             {d.paymentMethod}
           </span>
         ),
@@ -403,7 +403,7 @@ export const VenueFinanceView: React.FC = () => {
         minWidth: '110px',
         renderCell: (d) => (
           <span
-            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+            className={`inline-block px-2.5 py-1 rounded-full t-small font-semibold ${
               d.status === 'Held'
                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
                 : d.status === 'Released'
@@ -904,7 +904,7 @@ export const VenueFinanceView: React.FC = () => {
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2">
                 <AlertTriangle size={20} className="text-red-500" />
-                <h3 className="font-bold text-base text-black dark:text-white">
+                <h3 className="font-semibold t-card text-black dark:text-white">
                   {t('venue_deduct_modal_title')}
                 </h3>
               </div>
@@ -920,14 +920,14 @@ export const VenueFinanceView: React.FC = () => {
               <div
                 data-sq="ctl"
                 data-sq-border="none"
-                className="p-3 bg-neutral-50 dark:bg-neutral-800/50 text-xs space-y-1"
+                className="p-3 bg-neutral-50 dark:bg-neutral-800/50 t-cap space-y-1"
               >
                 <div>
                   Locataire: <strong className="text-black dark:text-white">{deductionTarget.renterName}</strong>
                 </div>
                 <div>
                   Montant Caution:{' '}
-                  <strong className="font-mono text-[#d4522f]">
+                  <strong className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     {formatCurrencyAmount(deductionTarget.amount, deductionTarget.currency)}
                   </strong>
                 </div>

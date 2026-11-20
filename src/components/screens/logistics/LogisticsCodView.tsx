@@ -551,7 +551,7 @@ export const LogisticsCodView: React.FC<any> = () => {
         width: '1.3*',
         sortable: true,
         renderCell: (s) => (
-          <span className="font-mono font-bold text-xs text-[#d4522f]">{s.trackingCode}</span>
+          <span className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{s.trackingCode}</span>
         ),
       },
       {
@@ -561,10 +561,10 @@ export const LogisticsCodView: React.FC<any> = () => {
         sortable: true,
         renderCell: (s) => (
           <div className="min-w-0">
-            <div className="font-semibold text-xs text-black dark:text-white truncate">
+            <div className="font-semibold t-small text-black dark:text-white truncate">
               {s.merchantName}
             </div>
-            <div className="text-[11px] text-black/55 dark:text-white/55 truncate">
+            <div className="t-cap text-black/55 dark:text-white/55 truncate">
               {s.createdAt.split('T')[0]} • Dest: {s.recipientName}
             </div>
           </div>
@@ -578,8 +578,8 @@ export const LogisticsCodView: React.FC<any> = () => {
         renderCell: (s) => {
           const b = resolveRecordBranch(s, branchesById, currentBranch, language);
           return (
-            <div className="flex items-center gap-1 text-xs text-black/75 dark:text-white/75 truncate">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="flex items-center gap-1 t-cap text-black/75 dark:text-white/75 truncate">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -590,7 +590,7 @@ export const LogisticsCodView: React.FC<any> = () => {
         header: 'Brut Encaissé',
         width: '1.2*',
         renderCell: (s) => (
-          <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+          <span className="tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(s.codAmountDzd, language)}
           </span>
         ),
@@ -600,7 +600,7 @@ export const LogisticsCodView: React.FC<any> = () => {
         header: 'Commission',
         width: '1.1*',
         renderCell: (s) => (
-          <span className="font-mono text-xs text-black/55 dark:text-white/55 tabular-nums">
+          <span className="tabular-nums t-cap text-black/55 dark:text-white/55">
             -{formatMoney(s.shippingFeeDzd, language)}
           </span>
         ),
@@ -611,7 +611,7 @@ export const LogisticsCodView: React.FC<any> = () => {
         width: '1.3*',
         sortable: true,
         renderCell: (s) => (
-          <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400 tabular-nums">
+          <span className="tabular-nums font-semibold t-small text-emerald-600 dark:text-emerald-400">
             {formatMoney(s.codAmountDzd - s.shippingFeeDzd, language)}
           </span>
         ),
@@ -624,7 +624,7 @@ export const LogisticsCodView: React.FC<any> = () => {
           const isSettled = settledIds.includes(s.id);
           return (
             <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              className={`t-small font-semibold px-2 py-1 rounded-full ${
                 isSettled
                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                   : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
@@ -907,7 +907,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                 header: 'N° Décharge',
                 width: '1.3*',
                 renderCell: (d) => (
-                  <span className="font-mono font-bold text-xs text-[#d4522f]">{d.dischargeNumber}</span>
+                  <span className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{d.dischargeNumber}</span>
                 ),
               },
               {
@@ -916,8 +916,8 @@ export const LogisticsCodView: React.FC<any> = () => {
                 width: '1.6*',
                 renderCell: (d) => (
                   <div>
-                    <div className="font-semibold text-xs text-black dark:text-white">{d.courierStaffId}</div>
-                    <div className="text-[10px] font-mono text-black/55 dark:text-white/55">
+                    <div className="font-semibold t-small text-black dark:text-white">{d.courierStaffId}</div>
+                    <div className="t-cap tabular-nums text-black/55 dark:text-white/55">
                       {d.timestamp.replace('T', ' ').slice(0, 16)}
                     </div>
                   </div>
@@ -928,10 +928,10 @@ export const LogisticsCodView: React.FC<any> = () => {
                 header: 'Attendu / Compté',
                 width: '1.8*',
                 renderCell: (d) => (
-                  <div className="font-mono text-xs">
+                  <div className="tabular-nums t-cap">
                     <span className="text-black/60 dark:text-white/60">{formatMoney(d.expectedCodDzd, language)}</span>
                     <span className="mx-1.5 text-black/30">/</span>
-                    <span className="font-bold text-black dark:text-white">{formatMoney(d.actualCashTurnedInDzd, language)}</span>
+                    <span className="font-semibold text-black dark:text-white">{formatMoney(d.actualCashTurnedInDzd, language)}</span>
                   </div>
                 ),
               },
@@ -941,7 +941,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                 width: '1.1*',
                 renderCell: (d) => (
                   <span
-                    className={`font-mono font-bold text-xs ${
+                    className={`tabular-nums font-semibold t-small ${
                       d.discrepancyDzd === 0
                         ? 'text-emerald-600'
                         : d.discrepancyDzd < 0
@@ -959,7 +959,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                 width: '1.2*',
                 renderCell: (d) => (
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    className={`t-small font-semibold px-2 py-1 rounded-full ${
                       d.status === 'Clean'
                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                         : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
@@ -1081,7 +1081,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                 header: 'Lot N°',
                 width: '1.2*',
                 renderCell: (r) => (
-                  <span className="font-mono font-bold text-xs text-[#d4522f]">{r.batchNumber}</span>
+                  <span className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{r.batchNumber}</span>
                 ),
               },
               {
@@ -1089,7 +1089,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                 header: 'Commerçant',
                 width: '1.8*',
                 renderCell: (r) => (
-                  <span className="font-semibold text-xs text-black dark:text-white">{r.merchantName}</span>
+                  <span className="font-semibold t-small text-black dark:text-white">{r.merchantName}</span>
                 ),
               },
               {
@@ -1097,8 +1097,8 @@ export const LogisticsCodView: React.FC<any> = () => {
                 header: 'Compte CCP / Clé',
                 width: '1.8*',
                 renderCell: (r) => (
-                  <span className="font-mono text-xs text-black/70 dark:text-white/75">
-                    {r.ccpAccount} <span className="text-[#d4522f] font-bold">Clé {r.ccpKey}</span>
+                  <span className="tabular-nums t-cap text-black/70 dark:text-white/75">
+                    {r.ccpAccount} <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">Clé {r.ccpKey}</span>
                   </span>
                 ),
               },
@@ -1107,7 +1107,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                 header: 'Canal',
                 width: '1.1*',
                 renderCell: (r) => (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                  <span className="t-small font-semibold px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                     {r.paymentChannel}
                   </span>
                 ),
@@ -1117,7 +1117,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                 header: 'Net à Verser',
                 width: '1.3*',
                 renderCell: (r) => (
-                  <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">
+                  <span className="tabular-nums font-semibold t-small text-emerald-600 dark:text-emerald-400">
                     {formatMoney(r.netPayoutDzd, language)}
                   </span>
                 ),
@@ -1128,7 +1128,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                 width: '1.1*',
                 renderCell: (r) => (
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    className={`t-small font-semibold px-2 py-1 rounded-full ${
                       r.status === 'Executed'
                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                         : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
@@ -1234,38 +1234,38 @@ export const LogisticsCodView: React.FC<any> = () => {
             data-sq-border="solid"
             className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
           >
-            <div className="flex items-center gap-2.5 px-2 pt-2">
+            <div className="flex items-center gap-2 px-2 pt-2">
               <div
                 data-sq="tile"
                 data-sq-border="none"
-                className="w-9 h-9 bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold"
+                className="w-9 h-9 bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-semibold"
               >
                 <Truck size={18} />
               </div>
-              <h3 className="font-bold text-sm text-black dark:text-white">
+              <h3 className="font-semibold t-label text-black dark:text-white">
                 {isAr ? 'سائق أجير دائم (Salarié CDI)' : 'Chauffeur Salarié Flotte Interne'}
               </h3>
             </div>
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2 text-xs"
+              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2 t-cap"
             >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Base Journalière (48 000 DZD / 26j):</span>
-                <span className="font-mono font-bold">1 846 DZD</span>
+                <span className="tabular-nums font-semibold">1 846 DZD</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Prime de Rendement (18 colis × 50 DZD):</span>
-                <span className="font-mono font-bold text-emerald-600">+900 DZD</span>
+                <span className="tabular-nums font-semibold text-emerald-600">+900 DZD</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Indemnité Carburant / Péage:</span>
-                <span className="font-mono font-bold">+1 500 DZD</span>
+                <span className="tabular-nums font-semibold">+1 500 DZD</span>
               </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-bold text-sm">
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-semibold t-label">
                 <span>Net Journalier à Payer:</span>
-                <span className="font-mono text-[#d4522f]">
+                <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                   {formatMoney(salariedDriverPay.netPayoutDzd, language)}
                 </span>
               </div>
@@ -1278,15 +1278,15 @@ export const LogisticsCodView: React.FC<any> = () => {
             data-sq-border="solid"
             className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
           >
-            <div className="flex items-center gap-2.5 px-2 pt-2">
+            <div className="flex items-center gap-2 px-2 pt-2">
               <div
                 data-sq="tile"
                 data-sq-border="none"
-                className="w-9 h-9 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold"
+                className="w-9 h-9 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-semibold"
               >
                 <UserCheck size={18} />
               </div>
-              <h3 className="font-bold text-sm text-black dark:text-white">
+              <h3 className="font-semibold t-label text-black dark:text-white">
                 {isAr
                   ? 'سائق مقاول ذاتي (Auto-Entrepreneur)'
                   : 'Livreur Sous-Traitant Auto-Entrepreneur'}
@@ -1295,25 +1295,25 @@ export const LogisticsCodView: React.FC<any> = () => {
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2 text-xs"
+              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2 t-cap"
             >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Colis Livrés (26 × 220 DZD):</span>
-                <span className="font-mono font-bold">5 720 DZD</span>
+                <span className="tabular-nums font-semibold">5 720 DZD</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Retours Traités (3 × 50 DZD):</span>
-                <span className="font-mono font-bold">+150 DZD</span>
+                <span className="tabular-nums font-semibold">+150 DZD</span>
               </div>
               <div className="flex justify-between text-red-600">
                 <span>Retenue Impôt Libératoire IFU 5%:</span>
-                <span className="font-mono font-bold">
+                <span className="tabular-nums font-semibold">
                   -{formatMoney(freelanceDriverPay.taxWithheldDzd, language)}
                 </span>
               </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-bold text-sm">
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-semibold t-label">
                 <span>Net Viré au Chauffeur:</span>
-                <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                <span className="tabular-nums text-emerald-600 dark:text-emerald-400">
                   {formatMoney(freelanceDriverPay.netPayoutDzd, language)}
                 </span>
               </div>

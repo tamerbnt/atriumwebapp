@@ -360,7 +360,7 @@ export const PosFinanceView: React.FC = () => {
         width: '100px',
         sortable: true,
         renderCell: (e) => (
-          <span className="font-mono font-bold text-xs text-black dark:text-white">
+          <span className="tabular-nums font-semibold t-small text-black dark:text-white">
             {e.reference}
           </span>
         ),
@@ -372,9 +372,9 @@ export const PosFinanceView: React.FC = () => {
         sortable: true,
         renderCell: (e) => (
           <div>
-            <div className="font-bold text-xs text-black dark:text-white truncate">{e.payee}</div>
+            <div className="font-semibold t-small text-black dark:text-white truncate">{e.payee}</div>
             {e.notes && (
-              <div className="text-[10px] text-black/55 dark:text-white/55 truncate">{e.notes}</div>
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">{e.notes}</div>
             )}
           </div>
         ),
@@ -385,7 +385,7 @@ export const PosFinanceView: React.FC = () => {
         width: '120px',
         sortable: true,
         renderCell: (e) => (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
+          <span className="t-small font-semibold px-2 py-1 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
             {e.category}
           </span>
         ),
@@ -395,7 +395,7 @@ export const PosFinanceView: React.FC = () => {
         header: isAr ? 'الوسيلة' : 'Mode',
         width: '105px',
         renderCell: (e) => (
-          <span className="text-xs text-black/70 dark:text-white/75">
+          <span className="t-cap text-black/70 dark:text-white/75">
             {e.paymentMethod === 'Cash' ? 'Espèces' : e.paymentMethod}
           </span>
         ),
@@ -406,7 +406,7 @@ export const PosFinanceView: React.FC = () => {
         width: '125px',
         sortable: true,
         renderCell: (e) => (
-          <span className="font-mono font-black text-sm text-red-600 dark:text-red-400 tabular-nums">
+          <span className="tabular-nums font-semibold t-label text-red-600 dark:text-red-400">
             -{formatMoney(e.amount)}
           </span>
         ),
@@ -417,7 +417,7 @@ export const PosFinanceView: React.FC = () => {
         width: '120px',
         sortable: true,
         renderCell: (e) => (
-          <span className="text-xs font-medium text-black/75 dark:text-white/80 truncate block">
+          <span className="t-small font-medium text-black/75 dark:text-white/80 truncate block">
             {resolveRecordBranch(e, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -470,7 +470,7 @@ export const PosFinanceView: React.FC = () => {
             variant="secondary"
             size="md"
             onClick={() => setIsZReportOpen(true)}
-            icon={<Printer size={15} className="text-[#d4522f]" />}
+            icon={<Printer size={15} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />}
           >
             {isAr ? 'إصدار تقرير Z اليومي' : 'Éditer Rapport Z'}
           </AtriumButton>
@@ -516,7 +516,7 @@ export const PosFinanceView: React.FC = () => {
       {/* Drawer Equation + Live Cash Counting Bar */}
       <ScreenPod>
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#E6DED6] dark:border-[#33302D]">
-          <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+          <div className="flex flex-wrap items-center gap-3 t-cap tabular-nums">
             <span className="text-black/60 dark:text-white/65">
               Fond <strong className="text-black dark:text-white">{formatMoney(openingFloat)}</strong>
             </span>
@@ -529,29 +529,29 @@ export const PosFinanceView: React.FC = () => {
               Sorties <strong>-{formatMoney(financeTotals.totalCashPayouts)}</strong>
             </span>
             <span>=</span>
-            <span className="text-[#d4522f] font-black">
+            <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold">
               {formatMoney(financeTotals.expectedCashInDrawer)}
             </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <label className="flex items-center gap-1.5 text-[11px] font-bold text-black/65 dark:text-white/70">
+            <label className="flex items-center gap-2 t-small font-semibold text-black/65 dark:text-white/70">
               <span>{isAr ? 'الرصيد الافتتاحي:' : 'Fond initial:'}</span>
               <input
                 type="number"
                 value={openingFloat}
                 onChange={(e) => setOpeningFloat(parseFloat(e.target.value) || 0)}
-                className="w-24 h-8 px-2 text-xs font-mono font-bold rounded-[var(--r-ctl-sm,10px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white"
+                className="w-24 h-8 px-2 t-small tabular-nums font-semibold rounded-[var(--r-ctl-sm,10px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white"
               />
             </label>
-            <label className="flex items-center gap-1.5 text-[11px] font-bold text-black/65 dark:text-white/70">
+            <label className="flex items-center gap-2 t-small font-semibold text-black/65 dark:text-white/70">
               <span>{isAr ? 'المعدود فعلياً:' : 'Espèces comptées:'}</span>
               <input
                 type="number"
                 placeholder="DA réel"
                 value={actualCashInput}
                 onChange={(e) => setActualCashInput(e.target.value)}
-                className="w-28 h-8 px-2 text-xs font-mono font-bold rounded-[var(--r-ctl-sm,10px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white"
+                className="w-28 h-8 px-2 t-small tabular-nums font-semibold rounded-[var(--r-ctl-sm,10px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white"
               />
             </label>
           </div>
@@ -561,20 +561,20 @@ export const PosFinanceView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-4 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] space-y-1.5"
+            className="p-4 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] space-y-2"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Banknote size={16} className="text-emerald-500" />
-                <span className="text-xs font-bold text-black/75 dark:text-white/80">
+                <span className="t-small font-semibold text-black/75 dark:text-white/80">
                   {isAr ? 'الدفع نقداً' : 'Règlement Espèces'}
                 </span>
               </div>
-              <span className="font-mono text-xs font-bold text-black/55 dark:text-white/55">
+              <span className="tabular-nums t-small font-semibold text-black/55 dark:text-white/55">
                 {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.cashSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
               </span>
             </div>
-            <div className="text-xl font-black font-mono text-black dark:text-white tabular-nums">
+            <div className="t-dialog font-semibold tabular-nums text-black dark:text-white">
               {formatMoney(financeTotals.cashSales)}
             </div>
           </div>
@@ -582,20 +582,20 @@ export const PosFinanceView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-4 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] space-y-1.5"
+            className="p-4 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] space-y-2"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CreditCard size={16} className="text-blue-500" />
-                <span className="text-xs font-bold text-black/75 dark:text-white/80">
+                <span className="t-small font-semibold text-black/75 dark:text-white/80">
                   CIB & Carte Edahabia
                 </span>
               </div>
-              <span className="font-mono text-xs font-bold text-black/55 dark:text-white/55">
+              <span className="tabular-nums t-small font-semibold text-black/55 dark:text-white/55">
                 {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.cardSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
               </span>
             </div>
-            <div className="text-xl font-black font-mono text-black dark:text-white tabular-nums">
+            <div className="t-dialog font-semibold tabular-nums text-black dark:text-white">
               {formatMoney(financeTotals.cardSales)}
             </div>
           </div>
@@ -603,20 +603,20 @@ export const PosFinanceView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-4 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] space-y-1.5"
+            className="p-4 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] space-y-2"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Coins size={16} className="text-[#d4522f]" />
-                <span className="text-xs font-bold text-black/75 dark:text-white/80">
+                <Coins size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                <span className="t-small font-semibold text-black/75 dark:text-white/80">
                   BaridiMob & Virements
                 </span>
               </div>
-              <span className="font-mono text-xs font-bold text-black/55 dark:text-white/55">
+              <span className="tabular-nums t-small font-semibold text-black/55 dark:text-white/55">
                 {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.baridiMobSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
               </span>
             </div>
-            <div className="text-xl font-black font-mono text-black dark:text-white tabular-nums">
+            <div className="t-dialog font-semibold tabular-nums text-black dark:text-white">
               {formatMoney(financeTotals.baridiMobSales)}
             </div>
           </div>
@@ -960,13 +960,13 @@ export const PosFinanceView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsExpenseModalOpen(false)}
-              className="h-10 px-4 text-xs font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer"
+              className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer"
             >
               {t('action_cancel')}
             </button>
             <button
               type="submit"
-              className="h-10 px-5 text-xs font-bold text-white bg-[#d4522f] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
+              className="h-10 px-5 t-small font-semibold text-white bg-[var(--brand-fill,#C9461F)] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
             >
               {isAr ? 'تأكيد السحب' : 'Valider la Dépense'}
             </button>
@@ -981,66 +981,66 @@ export const PosFinanceView: React.FC = () => {
           title={isAr ? 'تقرير Z اليومي - إغلاق الصندوق' : 'Rapport Z · Clôture Journalière'}
           subtitle={`Session ${new Date().toISOString().split('T')[0]} · ${currentBranch.name}`}
         >
-          <div className="space-y-4 font-mono text-xs leading-relaxed" dir="ltr">
+          <div className="space-y-4 tabular-nums t-cap leading-relaxed" dir="ltr">
             <div
               data-sq="card"
               data-sq-border="solid"
               className="p-4 bg-white text-black [--sq-stroke:#D4D4D4] space-y-2"
             >
-              <div className="text-center font-bold pb-2 border-b border-dashed border-neutral-400">
-                <div className="text-sm font-black uppercase">RAPPORT Z - CLÔTURE DE CAISSE</div>
-                <div className="text-[10px] text-black/75">{currentBranch.name}</div>
-                <div className="text-[10px] text-black/55">{new Date().toLocaleString()}</div>
-                <div className="text-[10px] text-black/55">CAISSIER : {currentUser?.fullName || 'Amine Bentouati'}</div>
+              <div className="text-center font-semibold pb-2 border-b border-dashed border-neutral-400">
+                <div className="t-label font-semibold">RAPPORT Z - CLÔTURE DE CAISSE</div>
+                <div className="t-cap text-black/75">{currentBranch.name}</div>
+                <div className="t-cap text-black/55">{new Date().toLocaleString()}</div>
+                <div className="t-cap text-black/55">CAISSIER : {currentUser?.fullName || 'Amine Bentouati'}</div>
               </div>
-              <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 text-[11px]">
+              <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 t-cap">
                 <div className="flex justify-between">
                   <span>FOND DE CAISSE INITIAL :</span>
-                  <span className="font-bold">{formatMoney(openingFloat)}</span>
+                  <span className="font-semibold">{formatMoney(openingFloat)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>VENTES BRUTES :</span>
-                  <span className="font-bold">{formatMoney(financeTotals.totalGrossSales)}</span>
+                  <span className="font-semibold">{formatMoney(financeTotals.totalGrossSales)}</span>
                 </div>
                 <div className="flex justify-between text-red-600">
                   <span>SORTIES DE CAISSE :</span>
                   <span>-{formatMoney(financeTotals.totalCashPayouts)}</span>
                 </div>
-                <div className="flex justify-between pt-1 font-black text-sm">
+                <div className="flex justify-between pt-1 font-semibold t-label">
                   <span>SOLDE THÉORIQUE ATTENDU :</span>
                   <span>{formatMoney(financeTotals.expectedCashInDrawer)}</span>
                 </div>
               </div>
-              <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 text-[11px]">
-                <div className="font-bold text-[10px] text-black/55 uppercase">VENTILATION PAR MODE DE PAIEMENT :</div>
+              <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 t-cap">
+                <div className="font-semibold t-small text-black/55">VENTILATION PAR MODE DE PAIEMENT :</div>
                 <div className="flex justify-between">
                   <span>ESPÈCES :</span>
-                  <span className="font-bold">{formatMoney(financeTotals.cashSales)}</span>
+                  <span className="font-semibold">{formatMoney(financeTotals.cashSales)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>CARTE CIB / EDAHABIA :</span>
-                  <span className="font-bold">{formatMoney(financeTotals.cardSales)}</span>
+                  <span className="font-semibold">{formatMoney(financeTotals.cardSales)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>BARIDIMOB / VIREMENT :</span>
-                  <span className="font-bold">{formatMoney(financeTotals.baridiMobSales)}</span>
+                  <span className="font-semibold">{formatMoney(financeTotals.baridiMobSales)}</span>
                 </div>
               </div>
               {financeTotals.hasCounted && (
-                <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 text-[11px]">
-                  <div className="flex justify-between font-bold">
+                <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 t-cap">
+                  <div className="flex justify-between font-semibold">
                     <span>ESPÈCES PHYSICOMPTÉES :</span>
                     <span>{formatMoney(financeTotals.actualCounted)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>ÉCART DE CAISSE :</span>
-                    <span className={financeTotals.cashVariance >= 0 ? 'text-emerald-700 font-bold' : 'text-red-700 font-bold'}>
+                    <span className={financeTotals.cashVariance >= 0 ? 'text-emerald-700 font-semibold' : 'text-red-700 font-semibold'}>
                       {financeTotals.cashVariance >= 0 ? `+${formatMoney(financeTotals.cashVariance)}` : formatMoney(financeTotals.cashVariance)}
                     </span>
                   </div>
                 </div>
               )}
-              <div className="pt-2 text-[10px] text-center text-black/75">
+              <div className="pt-2 t-cap text-center text-black/75">
                 SIGNATURE ET VISA DU RESPONSABLE DU POINT DE VENTE
               </div>
             </div>
@@ -1048,7 +1048,7 @@ export const PosFinanceView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="h-10 px-4 rounded-full bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:opacity-90"
+                className="h-10 px-4 rounded-full bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center gap-2 cursor-pointer hover:opacity-90"
               >
                 <Printer size={14} />
                 <span>Imprimer Rapport Z 80mm</span>
@@ -1056,7 +1056,7 @@ export const PosFinanceView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsZReportOpen(false)}
-                className="h-10 px-4 rounded-full text-black/55 dark:text-white/55 hover:bg-neutral-100 text-xs font-semibold cursor-pointer"
+                className="h-10 px-4 rounded-full text-black/55 dark:text-white/55 hover:bg-neutral-100 t-small font-semibold cursor-pointer"
               >
                 Fermer
               </button>

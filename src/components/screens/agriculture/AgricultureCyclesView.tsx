@@ -157,7 +157,7 @@ export const AgricultureCyclesView: React.FC = () => {
         case 'ready_harvest':
           return {
             label: isAr ? 'جاهز للحصاد' : 'Prêt Récolte',
-            bg: 'bg-[#d4522f]/15 text-[#d4522f]',
+            bg: 'bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]',
           };
         case 'closed':
           return {
@@ -564,18 +564,18 @@ export const AgricultureCyclesView: React.FC = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold shrink-0"
+              className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0"
             >
               <Sprout size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-bold text-xs text-black dark:text-white flex items-center gap-1.5 truncate">
+              <div className="font-semibold t-small text-black dark:text-white flex items-center gap-2 truncate">
                 <span className="truncate">{c.cropName}</span>
                 {pinnedIds.has(c.id) && (
-                  <Pin size={10} className="fill-[#d4522f] text-[#d4522f] shrink-0" />
+                  <Pin size={10} className="fill-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
                 )}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55 truncate">
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">
                 {c.variety} • Campagne {c.campaignYear}
               </div>
             </div>
@@ -588,9 +588,9 @@ export const AgricultureCyclesView: React.FC = () => {
         width: '1.6*',
         sortable: true,
         renderCell: (c) => (
-          <div className="text-xs text-black/70 dark:text-white/75 min-w-0">
+          <div className="t-cap text-black/70 dark:text-white/75 min-w-0">
             <div className="font-medium truncate">{parcelNameMap.get(c.parcelId) || c.parcelId}</div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               {c.surfaceAllocatedHa} ha alloués
             </div>
           </div>
@@ -602,7 +602,7 @@ export const AgricultureCyclesView: React.FC = () => {
         width: '1.2*',
         sortable: true,
         renderCell: (c) => (
-          <span className="text-xs text-black/65 dark:text-white/70 truncate block">
+          <span className="t-cap text-black/65 dark:text-white/70 truncate block">
             {resolveRecordBranch(c, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -613,12 +613,12 @@ export const AgricultureCyclesView: React.FC = () => {
         width: '1.4*',
         sortable: true,
         renderCell: (c) => (
-          <div className="text-xs text-black/70 dark:text-white/75">
+          <div className="t-cap text-black/70 dark:text-white/75">
             <div>
-              Semis: <span className="font-mono text-black dark:text-white">{c.sowingDate}</span>
+              Semis: <span className="tabular-nums text-black dark:text-white">{c.sowingDate}</span>
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55">
-              Récolte: <span className="font-mono">{c.projectedHarvestDate}</span>
+            <div className="t-cap text-black/55 dark:text-white/55">
+              Récolte: <span className="tabular-nums">{c.projectedHarvestDate}</span>
             </div>
           </div>
         ),
@@ -629,12 +629,12 @@ export const AgricultureCyclesView: React.FC = () => {
         width: '1.3*',
         sortable: true,
         renderCell: (c) => (
-          <div className="text-xs">
-            <div className="font-mono font-bold text-black dark:text-white">
+          <div className="t-cap">
+            <div className="tabular-nums font-semibold text-black dark:text-white">
               {c.actualYieldQtx ? `${c.actualYieldQtx} / ` : ''}
               {c.projectedYieldQtx} Qtx
             </div>
-            <div className="text-[10px] text-black/55 dark:text-white/55">
+            <div className="t-cap text-black/55 dark:text-white/55">
               {Math.round(c.projectedYieldQtx / (c.surfaceAllocatedHa || 1))} Qtx/ha
             </div>
           </div>
@@ -649,11 +649,11 @@ export const AgricultureCyclesView: React.FC = () => {
           const conf = getPhaseConfig(c.currentPhase);
           return (
             <div className="flex flex-col gap-1 items-start">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${conf.bg}`}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold ${conf.bg}`}>
                 {conf.label}
               </span>
               {c.activeDarLockoutUntil && (
-                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                <span className="t-small text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
                   <AlertTriangle size={11} />
                   DAR jusqu&apos;au {c.activeDarLockoutUntil}
                 </span>
@@ -678,15 +678,15 @@ export const AgricultureCyclesView: React.FC = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold shrink-0"
+              className="w-8 h-8 bg-amber-500/15 text-amber-600 flex items-center justify-center font-semibold shrink-0"
             >
               <ShieldCheck size={16} />
             </div>
             <div className="min-w-0">
-              <div className="font-bold text-xs text-black dark:text-white truncate">
+              <div className="font-semibold t-small text-black dark:text-white truncate">
                 {t.commercialProductName}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55 truncate">
+              <div className="t-cap text-black/55 dark:text-white/55 truncate">
                 {t.activeIngredient}
               </div>
             </div>
@@ -699,9 +699,9 @@ export const AgricultureCyclesView: React.FC = () => {
         width: '1.6*',
         sortable: true,
         renderCell: (t) => (
-          <div className="text-xs text-black/70 dark:text-white/75 min-w-0">
+          <div className="t-cap text-black/70 dark:text-white/75 min-w-0">
             <div className="font-medium truncate">{t.targetPestDisease}</div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               Dose: {t.dosagePerHa}
             </div>
           </div>
@@ -713,7 +713,7 @@ export const AgricultureCyclesView: React.FC = () => {
         width: '1.3*',
         sortable: true,
         renderCell: (t) => (
-          <div className="text-xs text-black/70 dark:text-white/75 truncate">
+          <div className="t-cap text-black/70 dark:text-white/75 truncate">
             {parcelNameMap.get(t.parcelId) || t.parcelId}
           </div>
         ),
@@ -724,7 +724,7 @@ export const AgricultureCyclesView: React.FC = () => {
         width: '1.2*',
         sortable: true,
         renderCell: (t) => (
-          <span className="text-xs text-black/65 dark:text-white/70 truncate block">
+          <span className="t-cap text-black/65 dark:text-white/70 truncate block">
             {resolveRecordBranch(t, branchesById, currentBranch, language).name}
           </span>
         ),
@@ -737,10 +737,10 @@ export const AgricultureCyclesView: React.FC = () => {
         renderCell: (t) => {
           const safety = evaluateDarSafety(t.treatmentDate, t.darDays);
           return (
-            <div className="text-xs">
-              <div className="flex items-center gap-1.5">
+            <div className="t-cap">
+              <div className="flex items-center gap-2">
                 <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold ${
                     safety.isLocked
                       ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                       : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
@@ -749,13 +749,13 @@ export const AgricultureCyclesView: React.FC = () => {
                   {t.darDays} jours DAR
                 </span>
                 {safety.isLocked && (
-                  <span className="text-[10px] text-amber-600 font-mono font-bold">
+                  <span className="t-small text-amber-600 tabular-nums font-semibold">
                     ({safety.daysRemaining}j)
                   </span>
                 )}
               </div>
-              <div className="text-[10px] text-black/55 dark:text-white/55 mt-0.5">
-                Autorisé: <span className="font-mono">{t.harvestAllowedDate}</span>
+              <div className="t-cap text-black/55 dark:text-white/55 mt-0.5">
+                Autorisé: <span className="tabular-nums">{t.harvestAllowedDate}</span>
               </div>
             </div>
           );
@@ -767,9 +767,9 @@ export const AgricultureCyclesView: React.FC = () => {
         width: '1.3*',
         sortable: true,
         renderCell: (t) => (
-          <div className="text-xs text-black/70 dark:text-white/75">
+          <div className="t-cap text-black/70 dark:text-white/75">
             <div className="truncate">{t.operatorName}</div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
               {t.treatmentDate}
             </div>
           </div>
@@ -1030,16 +1030,16 @@ export const AgricultureCyclesView: React.FC = () => {
           data-sq="card"
           data-sq-border="solid"
           style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
-          className="p-3.5 bg-amber-500/10 border border-amber-500/25 flex items-center gap-3 text-amber-800 dark:text-amber-300 text-xs"
+          className="p-4 bg-amber-500/10 border border-amber-500/25 flex items-center gap-3 text-amber-800 dark:text-amber-300 t-cap"
         >
           <AlertTriangle size={20} className="shrink-0 text-amber-600" />
           <div className="flex-1">
-            <span className="font-bold">
+            <span className="font-semibold">
               {isAr
                 ? `تنبيه أمان صحي: توجد ${activeDarCyclesCount} قطع فلاحية خاضعة لفترة الأمان الكيميائي (DAR)`
                 : `Alerte Sanitaire : ${activeDarCyclesCount} cycle(s) sous verrouillage phytosanitaire DAR`}
             </span>
-            <p className="text-[11px] opacity-85 mt-0.5">
+            <p className="t-cap opacity-85 mt-0.5">
               {isAr
                 ? 'الجني محظور ومقفل نظامياً حتى انقضاء مدة الأمان المقررة في المعهد الوطني لحماية النباتات (INPV).'
                 : "L'émission de bons de récolte et de pesée reste bloquée jusqu'à expiration des délais de rémanence homologués."}
@@ -1360,10 +1360,10 @@ export const AgricultureCyclesView: React.FC = () => {
               <>
                 <InspectorSection index={0} title={isAr ? 'مؤشر المردود' : isEn ? 'Yield Progress' : 'Rendement réalisé'}>
                   <InspectorCard>
-                    <div className="py-2.5">
-                      <div className="flex justify-between items-center text-[12px] mb-1.5">
+                    <div className="py-2">
+                      <div className="flex justify-between items-center t-cap mb-2">
                         <span className="text-black/70 dark:text-white/75">{`${cycle.actualYieldQtx || 0} / ${cycle.projectedYieldQtx} Qtx`}</span>
-                        <span className="font-mono font-bold text-[#096b40] dark:text-[#5BE3A3]">{`${yieldPct}%`}</span>
+                        <span className="tabular-nums font-semibold text-[#096b40] dark:text-[#5BE3A3]">{`${yieldPct}%`}</span>
                       </div>
                       <InspectorProgressBar percent={yieldPct} animateKey={cycle.id} />
                     </div>
@@ -1548,10 +1548,10 @@ export const AgricultureCyclesView: React.FC = () => {
                 </InspectorSection>
                 <InspectorSection index={1} title={isAr ? 'تقدم مدة الأمان' : isEn ? 'Safety Window' : 'Progression DAR'}>
                   <InspectorCard>
-                    <div className="py-2.5">
-                      <div className="flex justify-between items-center text-[12px] mb-1.5">
+                    <div className="py-2">
+                      <div className="flex justify-between items-center t-cap mb-2">
                         <span className="text-black/70 dark:text-white/75">{`${treat.darDays} jours réglementaires`}</span>
-                        <span className="font-mono font-bold text-[#096b40] dark:text-[#5BE3A3]">{`${elapsedPct}%`}</span>
+                        <span className="tabular-nums font-semibold text-[#096b40] dark:text-[#5BE3A3]">{`${elapsedPct}%`}</span>
                       </div>
                       <InspectorProgressBar
                         percent={elapsedPct}

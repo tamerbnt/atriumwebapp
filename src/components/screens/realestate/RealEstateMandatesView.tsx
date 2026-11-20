@@ -328,16 +328,16 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         sortable: true,
         renderCell: (m) => (
           <div className="min-w-0">
-            <div className="font-mono font-bold text-xs text-[#d4522f] flex items-center gap-1.5">
+            <div className="tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center gap-2">
               <span>{m.mandateNumber}</span>
               {m.isExclusive && (
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-[var(--r-check,6px)] bg-[#d4522f]/15 text-[#d4522f]">
+                <span className="t-small font-semibold px-2 py-1 rounded-[var(--r-check,6px)] bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                   Exclusif
                 </span>
               )}
             </div>
-            <div className="text-xs font-semibold text-black dark:text-white truncate mt-0.5">{m.propertyTitle}</div>
-            <div className="text-[11px] text-black/55 dark:text-white/75 truncate">{m.propertyAddress}</div>
+            <div className="t-small font-semibold text-black dark:text-white truncate mt-0.5">{m.propertyTitle}</div>
+            <div className="t-cap text-black/55 dark:text-white/75 truncate">{m.propertyAddress}</div>
           </div>
         ),
       },
@@ -346,10 +346,10 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         header: isAr ? 'الموكل (المالك)' : 'Mandant (Propriétaire)',
         width: '2.0*',
         renderCell: (m) => (
-          <div className="text-xs">
+          <div className="t-cap">
             <div className="font-semibold text-black dark:text-white truncate">{m.ownerFullName}</div>
-            <div className="text-black/55 dark:text-white/75 font-mono">{m.ownerPhone}</div>
-            <div className="text-[10px] text-black/55 dark:text-white/55 font-mono">CNI: {m.ownerNationalId}</div>
+            <div className="text-black/55 dark:text-white/75 tabular-nums">{m.ownerPhone}</div>
+            <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">CNI: {m.ownerNationalId}</div>
           </div>
         ),
       },
@@ -361,8 +361,8 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         renderCell: (m) => {
           const b = resolveRecordBranch(m, branchesById, currentBranch, language);
           return (
-            <div className="text-xs font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-1.5">
-              <MapPin size={12} className="text-[#d4522f] shrink-0" />
+            <div className="t-small font-medium text-black/75 dark:text-white/75 truncate flex items-center gap-2">
+              <MapPin size={12} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span className="truncate">{b.name}</span>
             </div>
           );
@@ -374,9 +374,9 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         width: '1.7*',
         sortable: true,
         renderCell: (m) => (
-          <div className="text-xs">
-            <div className="font-mono font-bold text-black dark:text-white">{formatMoney(m.askingPriceDzd, language)}</div>
-            <div className="text-[11px] text-black/55 dark:text-white/75 mt-0.5">
+          <div className="t-cap">
+            <div className="tabular-nums font-semibold text-black dark:text-white">{formatMoney(m.askingPriceDzd, language)}</div>
+            <div className="t-cap text-black/55 dark:text-white/75 mt-0.5">
               {m.mandateType.replace(/_/g, ' ')} · {m.listingType === 'Sale' ? 'Vente' : 'Location'}
             </div>
           </div>
@@ -388,9 +388,9 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         width: '1.6*',
         sortable: true,
         renderCell: (m) => (
-          <div className="text-xs">
-            <div className="font-mono font-bold text-[#d4522f]">{formatMoney(m.commissionEstimatedTtcDzd, language)}</div>
-            <div className="text-[11px] text-black/55 dark:text-white/75">
+          <div className="t-cap">
+            <div className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(m.commissionEstimatedTtcDzd, language)}</div>
+            <div className="t-cap text-black/55 dark:text-white/75">
               {m.commissionCalculationMode === 'DecreeTranches' ? 'Décret 09-18' : `${m.commissionRatePercent}% Négocié`}
             </div>
           </div>
@@ -401,18 +401,18 @@ export const RealEstateMandatesView: React.FC<any> = () => {
         header: isAr ? 'المدة والصلاحية' : 'Validité',
         width: '1.6*',
         renderCell: (m) => (
-          <div className="text-xs">
-            <div className="text-black dark:text-white flex items-center gap-1 font-mono">
+          <div className="t-cap">
+            <div className="text-black dark:text-white flex items-center gap-1 tabular-nums">
               <Calendar className="w-3.5 h-3.5 text-black/55 dark:text-white/55" />
               <span>{m.endDate}</span>
             </div>
             {m.status === 'Expiring' ? (
-              <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-0.5">
+              <span className="t-small font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-0.5">
                 <AlertTriangle className="w-3 h-3" />
                 <span>Expire &lt;15j</span>
               </span>
             ) : (
-              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
+              <span className="t-cap text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
                 <CheckCircle className="w-3 h-3" />
                 <span>Valide</span>
               </span>

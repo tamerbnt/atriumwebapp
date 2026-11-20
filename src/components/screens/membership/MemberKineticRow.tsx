@@ -168,7 +168,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
         {/* Content grid columns */}
         <div
           onClick={() => onOpenDetails(member)}
-          className="absolute inset-0 grid items-center gap-3.5 px-4 pr-[150px] cursor-pointer"
+          className="absolute inset-0 grid items-center gap-4 px-4 pr-[150px] cursor-pointer"
           style={{
             gridTemplateColumns: '22px 40px minmax(200px, 1.5fr) minmax(140px, 1fr) 95px 145px 105px',
           }}
@@ -187,7 +187,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             }}
             className={`relative w-[22px] h-[22px] grid place-items-center transition-colors cursor-pointer ${
               isSelected
-                ? 'bg-[#E8643F] [--sq-stroke:#E8643F] text-white'
+                ? 'bg-[var(--brand-fill,#C9461F)] [--sq-stroke:#E8643F] text-white'
                 : 'bg-transparent [--sq-stroke:rgba(163,163,163,0.8)] hover:[--sq-stroke:#E8643F]'
             }`}
           >
@@ -198,24 +198,24 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
           <div
             data-sq="tile"
             data-sq-border="none"
-            className={`w-10 h-10 grid place-items-center font-bold text-[15px] font-['Barlow_Condensed'] uppercase tracking-wider shrink-0 ${tone.bg} ${tone.text}`}
+            className={`w-10 h-10 grid place-items-center font-semibold t-card shrink-0 ${tone.bg}   ${tone.text}`}
           >
             {memberInitials}
           </div>
 
           {/* Col 2: Name + ID & Phone */}
           <div className="flex flex-col min-w-0 pr-2">
-            <span className="font-semibold text-[14.5px] text-black dark:text-white truncate">
+            <span className="font-semibold t-card text-black dark:text-white truncate">
               {memberName}
             </span>
-            <span className="text-[11.5px] font-mono text-black/62 dark:text-white/75 truncate tabular-nums">
+            <span className="t-cap tabular-nums text-black/62 dark:text-white/75 truncate">
               ID: {member.id.slice(0, 8)} · {memberPhone || 'Sans tél'}
             </span>
           </div>
 
           {/* Col 3: Plan */}
           <div className="truncate">
-            <span className="inline-block max-w-full px-2.5 py-1 rounded-full bg-[#E8643F]/10 border border-[#E8643F]/40 text-[#E8643F] dark:text-[#F4A07F] text-[12px] font-medium truncate">
+            <span className="inline-block max-w-full px-2.5 py-1 rounded-full bg-[#E8643F]/10 border border-[#E8643F]/40 text-[var(--brand-text,#BF431F)] dark:text-[#F4A07F] t-small font-medium truncate">
               {memberPlan}
             </span>
           </div>
@@ -223,7 +223,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
           {/* Col 4: Status */}
           <div className="justify-self-start">
             <span
-              className={`inline-flex items-center gap-1.5 h-[26px] px-2.5 rounded-full text-[12px] font-semibold ${
+              className={`inline-flex items-center gap-2 h-[26px] px-2.5 rounded-full t-small font-semibold ${
                 isBlocked
                   ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
                   : isExp
@@ -237,12 +237,12 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
           </div>
 
           {/* Col 5: Due Date */}
-          <div className="flex flex-col text-[12.5px] leading-tight">
-            <span className="font-mono font-semibold text-black dark:text-white tabular-nums">
+          <div className="flex flex-col t-cap leading-tight">
+            <span className="tabular-nums font-semibold text-black dark:text-white">
               {memberExp || 'Non spécifié'}
             </span>
             <small
-              className={`text-[11px] tabular-nums ${
+              className={`t-cap tabular-nums ${
                 daysRemaining < 0
                   ? 'text-rose-600 dark:text-rose-400'
                   : daysRemaining <= 7
@@ -255,7 +255,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
           </div>
 
           {/* Col 6: Balance */}
-          <div className="font-mono text-[13px] font-medium text-black dark:text-white truncate">
+          <div className="tabular-nums t-label font-medium text-black dark:text-white truncate">
             {formattedBalance}
           </div>
         </div>
@@ -372,17 +372,17 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
       >
         {/* Col 1: Contact */}
         <div>
-          <h4 className="m-0 mb-2 font-semibold text-[11px] tracking-[0.06em] uppercase text-black/62 dark:text-white/75">
+          <h4 className="m-0 mb-2 font-semibold t-small tracking-[0.06em] text-black/62 dark:text-white/75">
             Contact
           </h4>
-          <p className="m-0 mb-1 font-mono text-[13px] text-black dark:text-white tabular-nums">
+          <p className="m-0 mb-1 tabular-nums t-body text-black dark:text-white">
             {memberPhone || 'Non renseigné'}
           </p>
-          <p className="m-0 text-[13px] text-black/70 dark:text-white/75 truncate">
+          <p className="m-0 t-body text-black/70 dark:text-white/75 truncate">
             {member.email || 'Sans email'}
           </p>
           {(member as any).address && (
-            <p className="m-0 mt-1 text-[11.5px] text-black/62 dark:text-white/65 truncate">
+            <p className="m-0 mt-1 t-cap text-black/62 dark:text-white/65 truncate">
               {(member as any).address}
             </p>
           )}
@@ -390,32 +390,32 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
 
         {/* Col 2: Forfait & Séances */}
         <div>
-          <h4 className="m-0 mb-2 font-semibold text-[11px] tracking-[0.06em] uppercase text-black/62 dark:text-white/75">
+          <h4 className="m-0 mb-2 font-semibold t-small tracking-[0.06em] text-black/62 dark:text-white/75">
             Forfait & Séances
           </h4>
-          <p className="m-0 mb-1 text-[13px] font-medium text-black dark:text-white">
+          <p className="m-0 mb-1 t-label font-medium text-black dark:text-white">
             {memberPlan}
           </p>
-          <p className="m-0 text-[12px] text-black/70 dark:text-white/75">
+          <p className="m-0 t-cap text-black/70 dark:text-white/75">
             {remainingText}
           </p>
-          <p className="m-0 mt-1 font-mono text-[12px] text-black/62 dark:text-white/75 tabular-nums">
+          <p className="m-0 mt-1 tabular-nums t-cap text-black/62 dark:text-white/75">
             {member.remainingSessions ?? 24} séances disponibles
           </p>
         </div>
 
         {/* Col 3: Notes du personnel */}
         <div>
-          <h4 className="m-0 mb-2 font-semibold text-[11px] tracking-[0.06em] uppercase text-black/62 dark:text-white/75">
+          <h4 className="m-0 mb-2 font-semibold t-small tracking-[0.06em] text-black/62 dark:text-white/75">
             Notes du personnel
           </h4>
-          <p className="m-0 text-[13px] text-black/70 dark:text-white/75 line-clamp-3 italic">
+          <p className="m-0 t-body text-black/70 dark:text-white/75 line-clamp-3 italic">
             {member.notes || 'Aucune note enregistrée pour cet adhérent.'}
           </p>
         </div>
 
         {/* Col 4: Action Cluster (.db + relocated hover actions) */}
-        <div className="flex flex-col justify-between items-end gap-2.5">
+        <div className="flex flex-col justify-between items-end gap-2">
           {/* Primary View & Archive */}
           <div className="flex items-center gap-2">
             <button
@@ -423,7 +423,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={() => onArchive(member)}
-              className="h-[34px] px-3.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black/70 dark:text-white font-medium text-[12.5px] flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-[34px] px-4 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black/70 dark:text-white font-medium t-small flex items-center gap-2 transition-colors cursor-pointer"
             >
               <Archive className="w-3.5 h-3.5" />
               Archiver
@@ -433,7 +433,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
               data-sq="ctl-sm"
               data-sq-border="none"
               onClick={() => onOpenDetails(member)}
-              className="h-[34px] px-4 bg-[#E8643F] hover:bg-[#d4522f] text-white font-medium text-[12.5px] flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-[34px] px-4 bg-[var(--brand-fill,#C9461F)] hover:bg-[#d4522f] text-white font-medium t-small flex items-center gap-2 transition-colors cursor-pointer"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Ouvrir la fiche
@@ -444,7 +444,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
           <div
             data-sq="ctl-sm"
             data-sq-border="solid"
-            className="flex items-center gap-1.5 p-1 bg-neutral-100/80 dark:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/60 [--sq-stroke:rgba(229,229,229,0.6)] dark:[--sq-stroke:rgba(64,64,64,0.6)]"
+            className="flex items-center gap-2 p-1 bg-neutral-100/80 dark:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/60 [--sq-stroke:rgba(229,229,229,0.6)] dark:[--sq-stroke:rgba(64,64,64,0.6)]"
           >
             {/* Freeze / Reactivate */}
             <button
@@ -452,7 +452,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
               data-sq="thumb"
               data-sq-border="none"
               onClick={() => onToggleStatus(member)}
-              className="h-[28px] px-2.5 text-[11.5px] font-medium flex items-center gap-1 text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="h-[28px] px-2.5 t-small font-medium flex items-center gap-1 text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 transition-colors cursor-pointer"
               title={isBlocked ? 'Débloquer le badge' : 'Bloquer / Geler le badge'}
             >
               {isBlocked ? (
@@ -474,7 +474,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
               data-sq="thumb"
               data-sq-border="none"
               onClick={() => onTogglePin(member)}
-              className={`h-[28px] px-2.5 text-[11.5px] font-medium flex items-center gap-1 transition-colors cursor-pointer hover:bg-white dark:hover:bg-neutral-700 ${
+              className={`h-[28px] px-2.5 t-small font-medium flex items-center gap-1 transition-colors cursor-pointer hover:bg-white dark:hover:bg-neutral-700 ${
                 isPinned ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-black/70 dark:text-white/75'
               }`}
               title={isPinned ? 'Détacher' : 'Épingler en haut'}
@@ -489,10 +489,10 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
               data-sq="thumb"
               data-sq-border="none"
               onClick={() => onPay(member)}
-              className="h-[28px] px-2.5 text-[11.5px] font-medium flex items-center gap-1 text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="h-[28px] px-2.5 t-small font-medium flex items-center gap-1 text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 transition-colors cursor-pointer"
               title="Encaisser un paiement / Cotisation"
             >
-              <CreditCard className="w-3 h-3 text-[#E8643F]" />
+              <CreditCard className="w-3 h-3 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>Encaisser</span>
             </button>
           </div>

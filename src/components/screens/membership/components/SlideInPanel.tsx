@@ -252,7 +252,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
             <div
               data-sq="tile-lg"
               data-sq-border="none"
-              className="w-[68px] h-[68px] grid place-items-center text-white font-bold text-[28px] shrink-0 select-none"
+              className="w-[68px] h-[68px] grid place-items-center text-white font-semibold t-dialog shrink-0 select-none"
               style={{ backgroundColor: avatar.bg }}
               aria-hidden="true"
             >
@@ -263,20 +263,20 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
           <div className="flex-1 min-w-0">
             <h2
               id="pnl-title"
-              className="m-0 mb-2 font-bold text-[26px] leading-tight text-black dark:text-white tracking-tight truncate"
+              className="m-0 mb-2 font-semibold t-dialog leading-tight text-black dark:text-white truncate"
             >
               {title}
             </h2>
-            {pills && <div className="flex gap-1.5 flex-wrap">{pills}</div>}
+            {pills && <div className="flex gap-2 flex-wrap">{pills}</div>}
             {subtitle && (
-              <span className="block mt-2 font-mono text-[11px] text-black/70 dark:text-white/75">
+              <span className="block mt-2 tabular-nums t-cap text-black/70 dark:text-white/75">
                 {subtitle}
               </span>
             )}
           </div>
 
           {/* Navigation Controls (.pnav) */}
-          <div className="flex gap-1.5 shrink-0">
+          <div className="flex gap-2 shrink-0">
             {onPrev && (
               <button
                 type="button"
@@ -340,7 +340,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
             <button
               type="button"
               onClick={onDelete}
-              className="border-0 bg-transparent text-[#c0283d] hover:text-[#91200E] dark:text-[#FF8D7A] font-semibold text-[13px] flex items-center gap-2 py-2 px-1 cursor-pointer transition-colors"
+              className="border-0 bg-transparent text-[#c0283d] hover:text-[#91200E] dark:text-[#FF8D7A] font-semibold t-label flex items-center gap-2 py-2 px-1 cursor-pointer transition-colors"
             >
               <Trash2 className="w-4 h-4" />
               <span>{deleteLabel}</span>
@@ -354,7 +354,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
             data-sq="ctl"
             data-sq-border="none"
             onClick={onClose}
-            className="h-[44px] px-7 border-0 bg-[#d4522f] hover:bg-[#b03b1b] text-white font-semibold text-[14px] cursor-pointer transition-colors"
+            className="h-[44px] px-7 border-0 bg-[var(--brand-fill,#C9461F)] hover:bg-[#b03b1b] text-white font-semibold t-label cursor-pointer transition-colors"
           >
             {closeLabel}
           </button>

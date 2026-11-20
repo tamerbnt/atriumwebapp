@@ -321,7 +321,7 @@ export const TradingInventoryView: React.FC = () => {
         width: '125px',
         sortable: true,
         renderCell: (prod) => (
-          <span className="font-mono text-xs font-bold text-black/70 dark:text-white/75">{prod.sku || 'N/A'}</span>
+          <span className="tabular-nums t-small font-semibold text-black/70 dark:text-white/75">{prod.sku || 'N/A'}</span>
         ),
       },
       {
@@ -330,9 +330,9 @@ export const TradingInventoryView: React.FC = () => {
         minWidth: '220px',
         sortable: true,
         renderCell: (prod) => (
-          <div className="text-xs">
-            <span className="font-bold text-black dark:text-white block">{prod.name}</span>
-            <span className="text-[10px] text-black/55 dark:text-white/55">
+          <div className="t-cap">
+            <span className="font-semibold text-black dark:text-white block">{prod.name}</span>
+            <span className="t-cap text-black/55 dark:text-white/55">
               {prod.category} {prod.supplier ? `• Fournisseur: ${prod.supplier}` : ''}
             </span>
           </div>
@@ -346,7 +346,7 @@ export const TradingInventoryView: React.FC = () => {
         renderCell: (prod) => {
           const b = resolveRecordBranch(prod, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -361,16 +361,16 @@ export const TradingInventoryView: React.FC = () => {
         renderCell: (prod) => {
           const isLow = (prod.stockQuantity || 0) <= (prod.reorderLevel || 10);
           return (
-            <div className="text-xs font-mono">
+            <div className="t-cap tabular-nums">
               <span
-                className={`font-bold tabular-nums ${
+                className={`font-semibold tabular-nums ${
                   isLow ? 'text-rose-600 dark:text-rose-400' : 'text-black dark:text-white'
                 }`}
               >
                 {prod.stockQuantity || 0} {prod.unit || 'u'}
               </span>
               {isLow && (
-                <span className="block text-[10px] text-rose-500 font-semibold uppercase">
+                <span className="block t-small text-rose-500 font-semibold">
                   {t('trading_inventory_low_stock_warning', 'Alerte Réappro')}
                 </span>
               )}
@@ -383,7 +383,7 @@ export const TradingInventoryView: React.FC = () => {
         header: t('trading_inventory_col_cost', 'Coût PMP (HT)'),
         width: '120px',
         renderCell: (prod) => (
-          <span className="font-mono text-xs text-black/70 dark:text-white/75 tabular-nums">
+          <span className="tabular-nums t-cap text-black/70 dark:text-white/75">
             {formatMoney(prod.cost?.amount || prod.costPrice || 0)}
           </span>
         ),
@@ -394,7 +394,7 @@ export const TradingInventoryView: React.FC = () => {
         width: '120px',
         sortable: true,
         renderCell: (prod) => (
-          <span className="font-mono text-xs font-semibold text-black dark:text-white tabular-nums">
+          <span className="tabular-nums t-small font-semibold text-black dark:text-white">
             {formatMoney(prod.price?.amount || 0)}
           </span>
         ),
@@ -406,7 +406,7 @@ export const TradingInventoryView: React.FC = () => {
         renderCell: (prod) => {
           const val = (prod.stockQuantity || 0) * (prod.cost?.amount || prod.costPrice || 0);
           return (
-            <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+            <span className="tabular-nums font-semibold t-small text-black dark:text-white">
               {formatMoney(val)}
             </span>
           );
@@ -430,8 +430,8 @@ export const TradingInventoryView: React.FC = () => {
               ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-400'
               : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-400';
           return (
-            <div className="flex items-center gap-2 font-mono text-xs font-bold">
-              <span className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] uppercase ${badgeColor}`}>
+            <div className="flex items-center gap-2 tabular-nums t-small font-semibold">
+              <span className={`px-2 py-1 rounded-[var(--r-check,6px)] t-cap ${badgeColor}`}>
                 {v.type === 'entree' ? 'BE' : v.type === 'sortie' ? 'BS' : 'BT'}
               </span>
               <span className="text-black dark:text-white">{v.voucherNumber}</span>
@@ -443,17 +443,17 @@ export const TradingInventoryView: React.FC = () => {
         key: 'date',
         header: 'Date',
         width: '110px',
-        renderCell: (v) => <span className="font-mono text-xs text-black/70 dark:text-white/75">{v.date}</span>,
+        renderCell: (v) => <span className="tabular-nums t-cap text-black/70 dark:text-white/75">{v.date}</span>,
       },
       {
         key: 'depots',
         header: 'Trajet / Dépôts',
         minWidth: '200px',
         renderCell: (v) => (
-          <div className="text-xs">
+          <div className="t-cap">
             <span className="font-medium text-black dark:text-white">{v.depotSourceName}</span>
             {v.type === 'transfert' && v.depotTargetName && (
-              <span className="text-black/55 dark:text-white/55 flex items-center gap-1 text-[11px]">
+              <span className="text-black/55 dark:text-white/55 flex items-center gap-1 t-cap">
                 → {v.depotTargetName}
               </span>
             )}
@@ -467,7 +467,7 @@ export const TradingInventoryView: React.FC = () => {
         renderCell: (v) => {
           const b = resolveRecordBranch(v, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-black/75 dark:text-white/80 truncate">
+            <span className="inline-flex items-center gap-2 t-small font-medium text-black/75 dark:text-white/80 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               <span className="truncate">{b.name}</span>
             </span>
@@ -479,7 +479,7 @@ export const TradingInventoryView: React.FC = () => {
         header: 'Motif',
         width: '150px',
         renderCell: (v) => (
-          <span className="text-xs font-mono text-black/70 dark:text-white/75">{v.reason.replace('_', ' ')}</span>
+          <span className="t-cap tabular-nums text-black/70 dark:text-white/75">{v.reason.replace('_', ' ')}</span>
         ),
       },
       {
@@ -487,7 +487,7 @@ export const TradingInventoryView: React.FC = () => {
         header: 'Valeur du Bon',
         width: '140px',
         renderCell: (v) => (
-          <span className="font-mono font-bold text-xs text-black dark:text-white tabular-nums">
+          <span className="tabular-nums font-semibold t-small text-black dark:text-white">
             {formatMoney(v.totalValuationDzd)}
           </span>
         ),
@@ -588,24 +588,24 @@ export const TradingInventoryView: React.FC = () => {
 
       <ScreenPod>
         <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800/60">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"
+              className="w-8 h-8 bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]"
             >
               <Warehouse size={16} />
             </div>
             <div>
-              <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
+              <span className="t-small font-semibold text-black dark:text-white">
                 {t('trading_inventory_depots_hub', 'Réseau des Dépôts & Hubs Logistiques')}
               </span>
-              <span className="text-[11px] text-black/55 dark:text-white/75 block">
+              <span className="t-cap text-black/55 dark:text-white/75 block">
                 Filtrage actif du stock par entrepôt physique ou valorisation consolidée
               </span>
             </div>
           </div>
-          <span className="text-xs font-mono font-semibold text-black/55 dark:text-white/55">
+          <span className="t-small tabular-nums font-semibold text-black/55 dark:text-white/55">
             {warehouses.length} {t('trading_depots_active', 'dépôts configurés')}
           </span>
         </div>
@@ -616,21 +616,21 @@ export const TradingInventoryView: React.FC = () => {
             data-sq="card"
             data-sq-border="solid"
             data-sq-stroke-w={selectedDepotId === 'all' ? '2' : '1'}
-            className={`p-3.5 text-left rtl:text-right transition-all cursor-pointer ${
+            className={`p-4 text-left rtl:text-right transition-all cursor-pointer ${
               selectedDepotId === 'all'
                 ? '[--sq-stroke:#d4522f] bg-white dark:bg-neutral-800'
                 : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-800/80 hover:[--sq-stroke:#D4D4D4]'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="font-bold text-xs text-black dark:text-white">
+              <span className="font-semibold t-small text-black dark:text-white">
                 {t('trading_inventory_all_depots', 'Tous')}
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-200 dark:bg-neutral-700 font-semibold">
+              <span className="t-small tabular-nums px-2 py-1 rounded-[var(--r-check,6px)] bg-neutral-200 dark:bg-neutral-700 font-semibold">
                 GLOBAL
               </span>
             </div>
-            <div className="text-xs font-bold font-mono text-[#d4522f]">{formatMoney(metrics.totalValuation)}</div>
+            <div className="t-small font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(metrics.totalValuation)}</div>
           </button>
           {warehouses.map((w) => (
             <button
@@ -640,20 +640,20 @@ export const TradingInventoryView: React.FC = () => {
               data-sq="card"
               data-sq-border="solid"
               data-sq-stroke-w={selectedDepotId === w.id ? '2' : '1'}
-              className={`p-3.5 text-left rtl:text-right transition-all cursor-pointer ${
+              className={`p-4 text-left rtl:text-right transition-all cursor-pointer ${
                 selectedDepotId === w.id
                   ? '[--sq-stroke:#d4522f] bg-white dark:bg-neutral-800'
                   : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-800/80 hover:[--sq-stroke:#D4D4D4]'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="font-bold text-xs text-black dark:text-white truncate">{w.name}</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-200 dark:bg-neutral-700 font-semibold">
+                <span className="font-semibold t-small text-black dark:text-white truncate">{w.name}</span>
+                <span className="t-small tabular-nums px-2 py-1 rounded-[var(--r-check,6px)] bg-neutral-200 dark:bg-neutral-700 font-semibold">
                   {w.code}
                 </span>
               </div>
-              <div className="text-[11px] text-black/55 dark:text-white/55 mb-0.5">{w.city}</div>
-              <div className="text-xs font-mono font-bold text-black dark:text-white">
+              <div className="t-cap text-black/55 dark:text-white/55 mb-0.5">{w.city}</div>
+              <div className="t-small tabular-nums font-semibold text-black dark:text-white">
                 {formatMoney(w.totalValuationDzd || 0)}
               </div>
             </button>
@@ -1107,11 +1107,11 @@ export const TradingInventoryView: React.FC = () => {
               data-sq-border="solid"
               className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 space-y-4"
             >
-            <h2 className="text-base font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-              <Building2 size={18} className="text-[#d4522f]" />
+            <h2 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
+              <Building2 size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>Ajouter un Nouveau Dépôt</span>
             </h2>
-            <form onSubmit={handleCreateDepot} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateDepot} className="space-y-3 t-cap">
               <LabelInput
                 label="Code Dépôt *"
                 placeholder="Ex: DEP-03"

@@ -95,7 +95,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 print:hidden">
           <div>
-            <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+            <h2 className="t-card font-semibold text-black dark:text-white">
               {t(activeCert ? 'edu_cert_modal_title_view' : 'edu_cert_modal_title')}
             </h2>
           </div>
@@ -119,10 +119,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 t-cap">
           {!activeCert ? (
             /* Creation Form */
-            <form onSubmit={handleIssue} className="space-y-3.5 max-w-xl mx-auto py-2">
+            <form onSubmit={handleIssue} className="space-y-4 max-w-xl mx-auto py-2">
               <div>
                 <LabelSelect
                   field="RecipientStudent"
@@ -229,68 +229,68 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             /* Printable Preview */
             <div className="printable-document preserve-border max-w-2xl mx-auto p-8 rounded-[var(--r-card,16px)] border-4 border-double border-[#d4522f]/40 bg-gradient-to-br from-[#FDF4F0]/40 via-white to-[#FDF4F0]/20 dark:from-neutral-900 dark:via-[#18181B] dark:to-neutral-900 shadow-xl relative overflow-hidden">
               {/* Watermark in BG */}
-              <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none text-[#d4522f]">
+              <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 <GraduationCap size={240} />
               </div>
 
               <div className="text-center space-y-4 relative z-10">
-                <div className="inline-flex items-center justify-center p-3 rounded-full bg-[#FCEEE8] text-[#d4522f] dark:bg-neutral-800 mb-1">
+                <div className="inline-flex items-center justify-center p-3 rounded-full bg-[#FCEEE8] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] dark:bg-neutral-800 mb-1">
                   <ShieldCheck size={36} />
                 </div>
 
-                <div className="uppercase tracking-widest text-xs font-bold text-[#d4522f] rtl:normal-case rtl:tracking-normal">
+                <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] rtl:normal-case rtl:tracking-normal">
                   {currentBusiness?.displayName || 'Atlas Academy & Tutoring Institute'}
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-black tracking-tight rtl:tracking-normal font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                <h2 className="t-kpi-m uppercase text-black rtl:tracking-normal tabular-nums">
                   {t('edu_cert_doc_title')}
-                </h1>
+                </h2>
 
-                <p className="text-xs text-black/70 italic">
+                <p className="t-cap text-black/70 italic">
                   {t('edu_cert_awarded_to')}
                 </p>
 
                 <div className="py-2">
-                  <div className="text-2xl sm:text-3xl font-serif font-bold text-[#d4522f] border-b-2 border-[#d4522f]/30 inline-block px-8 pb-1 font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums">
+                  <div className="t-kpi-m uppercase text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] border-b-2 border-[#d4522f]/30 inline-block px-8 pb-1 tabular-nums">
                     {activeCert.studentName}
                   </div>
                 </div>
 
-                <p className="text-sm text-black max-w-lg mx-auto leading-relaxed">
+                <p className="t-body text-black max-w-lg mx-auto leading-relaxed">
                   {t('edu_cert_for_curriculum')}
                 </p>
 
-                <div className="text-lg font-semibold text-black">
+                <div className="t-pod font-semibold text-black">
                   {activeCert.courseTitle}
                 </div>
 
                 {activeCert.honors && (
-                  <div className="inline-block text-xs font-semibold px-3 py-1 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f]">
+                  <div className="inline-block t-small font-semibold px-3 py-1 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     {activeCert.honors} · {t('edu_cert_final_score')} {activeCert.averageGradeScore}%
                   </div>
                 )}
 
                 <div className="pt-8 grid grid-cols-2 gap-8 border-t border-[#d4522f]/20 mt-8 text-left rtl:text-right">
                   <div>
-                    <div className="text-xs font-semibold text-black">
+                    <div className="t-small font-semibold text-black">
                       {activeCert.signatoryName}
                     </div>
-                    <div className="text-[11px] text-black/70">
+                    <div className="t-cap text-black/70">
                       {activeCert.signatoryTitle}
                     </div>
-                    <div className="text-[10px] text-black/55 mt-1">
+                    <div className="t-cap text-black/55 mt-1">
                       {t('edu_cert_date_issued')} {activeCert.issueDate}
                     </div>
                   </div>
 
                   <div className="text-right rtl:text-left">
-                    <div className="text-[10px] uppercase font-mono tracking-wider text-black/55 rtl:normal-case rtl:tracking-normal">
+                    <div className="t-cap tabular-nums text-black/55 rtl:normal-case rtl:tracking-normal">
                       {t('edu_cert_verif_hash')}
                     </div>
-                    <div className="text-xs font-mono font-medium text-[#d4522f]">
+                    <div className="t-small tabular-nums font-medium text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                       {activeCert.verificationHash}
                     </div>
-                    <div className="text-[10px] text-black/55 mt-1">
+                    <div className="t-cap text-black/55 mt-1">
                       {t('edu_cert_id')} #{activeCert.certificateNumber}
                     </div>
                   </div>
