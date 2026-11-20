@@ -2572,7 +2572,7 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
   transform-origin: bottom;
   clip-path: inset(100% 0 0 0);
 }
-.i svg {
+.i svg:not([data-sq-stroke]) {
   width: calc(var(--h) * .42);
   height: calc(var(--h) * .42);
   flex: none;
@@ -2746,9 +2746,12 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
 
 [data-sq]:not([data-sq="none"]) > svg[data-sq-stroke] {
   position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
+  top: calc(var(--sq-bt, 0px) * -1) !important;
+  left: calc(var(--sq-bl, 0px) * -1) !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: calc(100% + var(--sq-bl, 0px) + var(--sq-br, 0px)) !important;
+  height: calc(100% + var(--sq-bt, 0px) + var(--sq-bb, 0px)) !important;
   margin: 0 !important;
   padding: 0 !important;
   pointer-events: none !important;

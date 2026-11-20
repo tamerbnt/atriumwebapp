@@ -173,7 +173,7 @@ Format de Papier & Mode d'Impression
 </div>
 </div>
 </div>
-{formData.printMode === "preprinted_paper" && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-2.5 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px]">
+{formData.printMode === "preprinted_paper" && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-2.5 bg-amber-500/10 border border-amber-500/30 [--sq-stroke:rgba(245,158,11,0.3)] text-amber-700 dark:text-amber-300 text-[11px]">
 Mode Pré-imprimé actif: L'en-tête et le logo ne seront pas imprimés pour laisser la place à votre papier à en-tête physique. Seules les données patient et les médicaments seront imprimés avec marges calibrées.
 </div>}
 </div>

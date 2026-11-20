@@ -338,7 +338,7 @@ export const TradingFinanceView: React.FC = () => {
         width: '135px',
         renderCell: (doc) => (
           <span
-            className={`px-2 py-0.5 rounded-md text-[10px] font-semibold ${
+            className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-semibold ${
               doc.status === 'Paid'
                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                 : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
@@ -367,7 +367,9 @@ export const TradingFinanceView: React.FC = () => {
                   e.stopPropagation();
                   setSettlementDoc(doc);
                 }}
-                className="px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className="px-3 py-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <CheckCircle size={13} />
                 <span>{t('trading_finance_settle_invoice', 'Encaisser')}</span>
@@ -470,8 +472,11 @@ export const TradingFinanceView: React.FC = () => {
               setFilterMode('unpaid');
               setAgingBucketFilter((prev) => (prev === '0_30' ? 'all' : '0_30'));
             }}
-            className={`p-4 rounded-[18px] border text-left rtl:text-right bg-white dark:bg-neutral-800 shadow-2xs transition-all cursor-pointer ${
-              agingBucketFilter === '0_30' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-neutral-200 dark:border-neutral-700'
+            data-sq="card"
+            data-sq-border="solid"
+            data-sq-stroke-w={agingBucketFilter === '0_30' ? '2' : '1'}
+            className={`p-4 text-left rtl:text-right bg-white dark:bg-neutral-800 transition-all cursor-pointer ${
+              agingBucketFilter === '0_30' ? '[--sq-stroke:#10B981]' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'
             }`}
           >
             <span className="text-xs font-semibold text-black/55 dark:text-white/55 block mb-1">
@@ -489,8 +494,11 @@ export const TradingFinanceView: React.FC = () => {
               setFilterMode('unpaid');
               setAgingBucketFilter((prev) => (prev === '31_60' ? 'all' : '31_60'));
             }}
-            className={`p-4 rounded-[18px] border text-left rtl:text-right bg-white dark:bg-neutral-800 shadow-2xs transition-all cursor-pointer ${
-              agingBucketFilter === '31_60' ? 'border-amber-500 ring-2 ring-amber-500/20' : 'border-neutral-200 dark:border-neutral-700'
+            data-sq="card"
+            data-sq-border="solid"
+            data-sq-stroke-w={agingBucketFilter === '31_60' ? '2' : '1'}
+            className={`p-4 text-left rtl:text-right bg-white dark:bg-neutral-800 transition-all cursor-pointer ${
+              agingBucketFilter === '31_60' ? '[--sq-stroke:#F59E0B]' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'
             }`}
           >
             <span className="text-xs font-semibold text-black/55 dark:text-white/55 block mb-1">
@@ -508,8 +516,11 @@ export const TradingFinanceView: React.FC = () => {
               setFilterMode('unpaid');
               setAgingBucketFilter((prev) => (prev === '61_90' ? 'all' : '61_90'));
             }}
-            className={`p-4 rounded-[18px] border text-left rtl:text-right bg-white dark:bg-neutral-800 shadow-2xs transition-all cursor-pointer ${
-              agingBucketFilter === '61_90' ? 'border-orange-500 ring-2 ring-orange-500/20' : 'border-neutral-200 dark:border-neutral-700'
+            data-sq="card"
+            data-sq-border="solid"
+            data-sq-stroke-w={agingBucketFilter === '61_90' ? '2' : '1'}
+            className={`p-4 text-left rtl:text-right bg-white dark:bg-neutral-800 transition-all cursor-pointer ${
+              agingBucketFilter === '61_90' ? '[--sq-stroke:#F97316]' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'
             }`}
           >
             <span className="text-xs font-semibold text-black/55 dark:text-white/55 block mb-1">
@@ -527,8 +538,11 @@ export const TradingFinanceView: React.FC = () => {
               setFilterMode('unpaid');
               setAgingBucketFilter((prev) => (prev === '90_plus' ? 'all' : '90_plus'));
             }}
-            className={`p-4 rounded-[18px] border text-left rtl:text-right bg-rose-50/50 dark:bg-rose-950/20 shadow-2xs transition-all cursor-pointer ${
-              agingBucketFilter === '90_plus' ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-rose-300 dark:border-rose-900/60'
+            data-sq="card"
+            data-sq-border="solid"
+            data-sq-stroke-w={agingBucketFilter === '90_plus' ? '2' : '1'}
+            className={`p-4 text-left rtl:text-right bg-rose-50/50 dark:bg-rose-950/20 transition-all cursor-pointer ${
+              agingBucketFilter === '90_plus' ? '[--sq-stroke:#F43F5E]' : '[--sq-stroke:#FDA4AF] dark:[--sq-stroke:rgba(136,19,55,0.6)]'
             }`}
           >
             <span className="text-xs font-semibold text-rose-700 dark:text-rose-400 block mb-1">
@@ -801,7 +815,8 @@ export const TradingFinanceView: React.FC = () => {
 
       {settlementDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="sq-elev-pop relative w-full max-w-md">
+          <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 space-y-4">
             <div className="flex items-center justify-between border-b pb-3 border-neutral-200 dark:border-neutral-800">
               <h2 className="text-base font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 <CheckCircle size={18} className="text-emerald-600" />
@@ -811,12 +826,14 @@ export const TradingFinanceView: React.FC = () => {
                 type="button"
                 onClick={() => setSettlementDoc(null)}
                 aria-label="Fermer"
-                className="p-1 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white rounded-lg cursor-pointer"
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className="p-1 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
-            <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 text-xs space-y-1.5 font-mono">
+            <div data-sq="card" data-sq-border="solid" className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] text-xs space-y-1.5 font-mono">
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55 font-sans">Facture :</span>
                 <span className="font-bold text-black dark:text-white">{settlementDoc.docNumber}</span>
@@ -865,6 +882,7 @@ export const TradingFinanceView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+          </div>
           </div>
         </div>
       )}

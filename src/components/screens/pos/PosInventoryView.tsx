@@ -731,7 +731,9 @@ export const PosInventoryView: React.FC<any> = () => {
                 setAdjustMode('add');
                 setIsAdjustStockModalOpen(true);
               }}
-              className="p-1.5 rounded-lg text-[#d4522f] hover:bg-[#d4522f]/10 cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-[#d4522f] hover:bg-[#d4522f]/10 cursor-pointer"
               title="Adjust Stock"
             >
               <ArrowDownUp size={14} />
@@ -742,7 +744,9 @@ export const PosInventoryView: React.FC<any> = () => {
                 e.stopPropagation();
                 handleOpenEditProduct(p);
               }}
-              className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"
               title="Edit Product"
             >
               <Edit2 size={14} />
@@ -753,7 +757,9 @@ export const PosInventoryView: React.FC<any> = () => {
                 e.stopPropagation();
                 deleteProduct(p.id);
               }}
-              className="p-1.5 rounded-lg text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer"
               title="Delete Product"
             >
               <Trash2 size={14} />
@@ -777,7 +783,7 @@ export const PosInventoryView: React.FC<any> = () => {
           return (
             <div className="flex items-center gap-2">
               <span
-                className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${
+                className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold font-mono uppercase ${
                   isBr
                     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
@@ -878,7 +884,9 @@ export const PosInventoryView: React.FC<any> = () => {
                   e.stopPropagation();
                   handleReceiveRetailPo(doc.id);
                 }}
-                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <CheckCircle2 size={12} />
                 <span>{isAr ? 'استلام' : 'Réceptionner'}</span>
@@ -890,7 +898,9 @@ export const PosInventoryView: React.FC<any> = () => {
                 e.stopPropagation();
                 window.print();
               }}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               title="Imprimer"
             >
               <Printer size={14} />
@@ -1350,7 +1360,11 @@ export const PosInventoryView: React.FC<any> = () => {
               onAddFirstItem={handleOpenNewRetailPo}
             />
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-3">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-3"
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Building2 size={16} className="text-[#d4522f]" />
@@ -1370,11 +1384,13 @@ export const PosInventoryView: React.FC<any> = () => {
                 {b2bSuppliers.map((sup) => (
                   <div
                     key={sup.id}
-                    className="p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-850/50 space-y-1.5"
+                    data-sq="card"
+                    data-sq-border="solid"
+                    className="p-3.5 [--sq-stroke:#F5F5F5] dark:[--sq-stroke:#262626] bg-neutral-50/50 dark:bg-neutral-850/50 space-y-1.5"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-xs text-black dark:text-white truncate">{sup.supplierName}</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-200/60 dark:bg-neutral-700 text-black/70 dark:text-white/75">
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-200/60 dark:bg-neutral-700 text-black/70 dark:text-white/75">
                         {sup.city || 'Alger'}
                       </span>
                     </div>
@@ -1420,7 +1436,7 @@ export const PosInventoryView: React.FC<any> = () => {
         branchName={inspectingProduct ? resolveRecordBranch(inspectingProduct, branchesById, currentBranch, language).name : undefined}
         headerPills={
           inspectingProduct?.category ? (
-            <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]">
+            <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-[var(--r-check,6px)] text-[12px] font-medium bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]">
               {inspectingProduct.category}
             </span>
           ) : undefined
@@ -1889,14 +1905,36 @@ export const PosInventoryView: React.FC<any> = () => {
           subtitle={`${selectedProductForAdjust.name} (Actuel: ${selectedProductForAdjust.stockQuantity} ${selectedProductForAdjust.unit || 'pcs'})`}
         >
           <form onSubmit={handleConfirmStockAdjust} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
-            <div className="flex rounded-xl bg-neutral-100 dark:bg-neutral-800 p-1 text-xs font-bold">
-              <button type="button" onClick={() => setAdjustMode('add')} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors ${adjustMode === 'add' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs' : 'text-black/55 dark:text-white/55'}`}>
+            <div
+              data-sq="ctl"
+              data-sq-border="none"
+              className="flex bg-neutral-100 dark:bg-neutral-800 p-1 text-xs font-bold"
+            >
+              <button
+                type="button"
+                onClick={() => setAdjustMode('add')}
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className={`flex-1 py-2 cursor-pointer transition-colors ${adjustMode === 'add' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white' : 'text-black/55 dark:text-white/55'}`}
+              >
                 + {isAr ? 'إضافة تموين' : 'Ajouter'}
               </button>
-              <button type="button" onClick={() => setAdjustMode('remove')} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors ${adjustMode === 'remove' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs' : 'text-black/55 dark:text-white/55'}`}>
+              <button
+                type="button"
+                onClick={() => setAdjustMode('remove')}
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className={`flex-1 py-2 cursor-pointer transition-colors ${adjustMode === 'remove' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white' : 'text-black/55 dark:text-white/55'}`}
+              >
                 - {isAr ? 'خصم / تلف' : 'Retirer (Casse)'}
               </button>
-              <button type="button" onClick={() => setAdjustMode('set')} className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors ${adjustMode === 'set' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs' : 'text-black/55 dark:text-white/55'}`}>
+              <button
+                type="button"
+                onClick={() => setAdjustMode('set')}
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className={`flex-1 py-2 cursor-pointer transition-colors ${adjustMode === 'set' ? 'bg-white dark:bg-neutral-900 text-black dark:text-white' : 'text-black/55 dark:text-white/55'}`}
+              >
                 = {isAr ? 'تحديد دقيق' : 'Fixer Solde'}
               </button>
             </div>
@@ -2024,7 +2062,9 @@ export const PosInventoryView: React.FC<any> = () => {
               {poItems.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-850/50 grid grid-cols-1 sm:grid-cols-12 gap-2 items-center"
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="p-3 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-neutral-50 dark:bg-neutral-850/50 grid grid-cols-1 sm:grid-cols-12 gap-2 items-center"
                 >
                   <div className="sm:col-span-6">
                     <LabelSelect
@@ -2088,7 +2128,9 @@ export const PosInventoryView: React.FC<any> = () => {
                       <button
                         type="button"
                         onClick={() => setPoItems((prev) => prev.filter((_, i) => i !== idx))}
-                        className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 rounded-lg cursor-pointer transition-colors"
+                        data-sq="ctl-sm"
+                        data-sq-border="none"
+                        className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 cursor-pointer transition-colors"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -2108,7 +2150,11 @@ export const PosInventoryView: React.FC<any> = () => {
             height={44}
             corner={12}
           />
-          <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-100/60 dark:bg-neutral-800/60 flex items-center justify-between text-xs">
+          <div
+            data-sq="ctl"
+            data-sq-border="solid"
+            className="p-3.5 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-neutral-100/60 dark:bg-neutral-800/60 flex items-center justify-between text-xs"
+          >
             <span className="font-semibold text-black/70 dark:text-white/75">
               {isAr ? 'المجموع المقدر (TTC شامل 19% رسم)' : 'Total Estimé TTC (TVA 19% incluse) :'}
             </span>

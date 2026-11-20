@@ -487,7 +487,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                   e.stopPropagation();
                   handleTogglePinMission(m);
                 }}
-                className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                data-sq="ctl-sm"
+                className={`p-1 transition-colors cursor-pointer ${
                   isPinned
                     ? 'text-[#d4522f] bg-[#d4522f]/10'
                     : 'text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80'
@@ -641,7 +642,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               <button
                 type="button"
                 onClick={() => updatePmAttendanceStatus(att.id, 'present')}
-                className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${
+                data-sq="check"
+                className={`px-2 py-0.5 text-[11px] font-bold cursor-pointer ${
                   att.status === 'present'
                     ? 'bg-emerald-600 text-white'
                     : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-emerald-50'
@@ -652,7 +654,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               <button
                 type="button"
                 onClick={() => updatePmAttendanceStatus(att.id, 'late', 15)}
-                className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${
+                data-sq="check"
+                className={`px-2 py-0.5 text-[11px] font-bold cursor-pointer ${
                   att.status === 'late'
                     ? 'bg-amber-500 text-white'
                     : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-amber-50'
@@ -663,7 +666,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               <button
                 type="button"
                 onClick={() => updatePmAttendanceStatus(att.id, 'absent')}
-                className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${
+                data-sq="check"
+                className={`px-2 py-0.5 text-[11px] font-bold cursor-pointer ${
                   att.status === 'absent'
                     ? 'bg-red-600 text-white'
                     : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-red-50'
@@ -821,10 +825,12 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
           <button
             type="button"
             onClick={() => setShowPhoneSimulator((prev) => !prev)}
-            className={`h-10 px-3.5 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer ${
+            data-sq="ctl"
+            data-sq-border={showPhoneSimulator ? 'none' : 'solid'}
+            className={`h-10 px-3.5 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
               showPhoneSimulator
                 ? 'bg-[#d4522f] text-white'
-                : 'bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#FBF8F5]'
+                : 'bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#FBF8F5]'
             }`}
           >
             <Smartphone className="w-4 h-4" />
@@ -1082,7 +1088,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 
           {activeTab === 'attendance' && (
             <div className="space-y-4">
-              <div className="p-5 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div
+                data-sq="panel"
+                data-sq-border="solid"
+                className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col md:flex-row md:items-center justify-between gap-4"
+              >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider">
@@ -1093,7 +1103,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                         : 'Feuille de Présence & Pointage'}
                     </span>
                     {isMissionLocked && (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 flex items-center gap-1">
+                      <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 flex items-center gap-1">
                         <Lock className="w-3 h-3" />
                         {isAr ? 'مغلق' : isEn ? 'Locked' : 'Verrouillé'}
                       </span>
@@ -1104,7 +1114,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                       value={selectedMission?.id || ''}
                       onChange={(e) => setSelectedMissionId(e.target.value)}
                       aria-label={isAr ? 'اختيار المهمة' : 'Sélectionner la mission'}
-                      className="h-9 px-3 rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-[#FBF8F5] dark:bg-neutral-800 text-xs font-bold text-black dark:text-white cursor-pointer"
+                      className="h-9 px-3 rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-[#FBF8F5] dark:bg-neutral-800 text-xs font-bold text-black dark:text-white cursor-pointer"
                     >
                       {pmMissions.map((m) => (
                         <option key={m.id} value={m.id}>
@@ -1119,7 +1129,10 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                   </div>
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex items-center gap-3 text-xs font-bold font-mono px-4 py-2 bg-[#FBF8F5] dark:bg-neutral-800 rounded-xl">
+                  <div
+                    data-sq="ctl"
+                    className="flex items-center gap-3 text-xs font-bold font-mono px-4 py-2 bg-[#FBF8F5] dark:bg-neutral-800"
+                  >
                     <span className="text-emerald-600">
                       {presentCount} {isAr ? 'حاضر' : isEn ? 'Present' : 'Présents'}
                     </span>
@@ -1136,7 +1149,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                     <button
                       type="button"
                       onClick={handleCloseShift}
-                      className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                      data-sq="ctl"
+                      className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-1.5 cursor-pointer"
                     >
                       <Lock className="w-3.5 h-3.5" />
                       {isAr
@@ -1383,7 +1397,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
           )}
 
           {activeTab === 'expense' && (
-            <div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-2xs max-w-xl mx-auto space-y-4">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] max-w-xl mx-auto space-y-4"
+            >
               <div>
                 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
                   {isAr ? 'مصاريف الميدان الطارئة' : isEn ? 'Emergency Field Expense' : "Dépense d'Urgence Terrain"}
@@ -1393,7 +1411,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 </h3>
               </div>
               {expenseSubmitted && (
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300">
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-xs text-emerald-800 dark:text-emerald-300"
+                >
                   {isAr
                     ? 'تم إرسال النفقة إلى الإدارة للمصادقة!'
                     : 'Dépense transmise à la Direction pour arbitrage !'}
@@ -1709,7 +1731,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             </button>
             <MobilePhoneSimulator title="Superviseur Terrain" subtitle="PWA Pointage & Émargement">
               <div className="p-4 space-y-4">
-                <div className="p-3 bg-[#FBF8F5] dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700">
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="p-3 bg-[#FBF8F5] dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
+                >
                   <div className="text-xs font-bold text-[#d4522f]">
                     {selectedMission?.code || 'MIS-104'}
                   </div>
@@ -1727,7 +1753,9 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                   {missionAttendances.map((att) => (
                     <div
                       key={att.id}
-                      className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#E6DED6] dark:border-neutral-700 flex items-center justify-between text-xs shadow-xs"
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      className="p-3 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] flex items-center justify-between text-xs"
                     >
                       <div>
                         <div className="font-semibold text-black dark:text-white">
@@ -1738,7 +1766,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                         </div>
                       </div>
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold ${
                           getAttendanceBadge(att.status, language).pillClass
                         }`}
                       >

@@ -361,7 +361,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         sortable: true,
         renderCell: (l) => (
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0">
+            <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0">
               <Key size={16} />
             </div>
             <div className="min-w-0">

@@ -343,6 +343,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
             </AtriumButton>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

@@ -113,7 +113,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 <button type="button" onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
-{errorMsg && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
+{errorMsg && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-red-500/10 border border-red-500/30 [--sq-stroke:rgba(239,68,68,0.3)] text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
 <AlertTriangle size={16} />
 <span>{errorMsg}</span>
 </div>}

@@ -415,7 +415,7 @@ export const VenueRentersView: React.FC = () => {
         renderCell: (renter) => {
           const bInfo = resolveRecordBranch(renter, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -938,7 +938,12 @@ export const VenueRentersView: React.FC = () => {
 
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-800 rounded-3xl border border-neutral-200 dark:border-neutral-700 shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="sq-elev-pop w-full max-w-lg">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-800 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] w-full overflow-hidden animate-in zoom-in-95 duration-200"
+            >
             <div className="p-6 border-b border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-black dark:text-white">
@@ -1031,14 +1036,16 @@ export const VenueRentersView: React.FC = () => {
                       ? 'Exigences techniques, historique...'
                       : 'Technical needs, catering...'
                   }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+                  className="w-full px-3.5 py-2.5 rounded-[var(--r-ctl,12px)] border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                 />
               </div>
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-700/60">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                 >
                   {isAr ? 'إلغاء' : isFr ? 'Annuler' : 'Cancel'}
                 </button>
@@ -1057,6 +1064,7 @@ export const VenueRentersView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

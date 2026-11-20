@@ -407,7 +407,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
         renderCell: (b) => {
           const bInfo = resolveRecordBranch(b, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -549,7 +549,9 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
             <button
               type="button"
               onClick={() => setIsCloudSyncModalOpen(true)}
-              className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-black dark:text-white rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-2xs border border-[#E6DED6] dark:border-neutral-700"
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
               title="Inspect Supabase live tables and row writes"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -1115,7 +1117,12 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
 
       {printedBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-neutral-800 max-w-xl w-full p-6 space-y-6 shadow-2xl">
+          <div className="sq-elev-pop max-w-xl w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] w-full p-6 space-y-6"
+            >
             <div className="flex justify-between items-center border-b border-neutral-200 dark:border-neutral-800 pb-4">
               <div>
                 <h3 className="text-lg font-bold text-black dark:text-white">
@@ -1128,13 +1135,19 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => setPrintedBooking(null)}
-                className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 rounded-lg cursor-pointer"
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
             <div className="space-y-4 text-xs">
-              <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-200 dark:border-neutral-700/60 space-y-2">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-4 bg-neutral-50 dark:bg-neutral-800/50 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] space-y-2"
+              >
                 <div className="flex justify-between">
                   <span className="text-black/55 dark:text-white/55">
                     {t('venue_voucher_renter_name')}
@@ -1179,7 +1192,11 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                   </span>
                 </div>
               </div>
-              <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-200 dark:border-neutral-700/60 space-y-2">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-4 bg-neutral-50 dark:bg-neutral-800/50 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] space-y-2"
+              >
                 <div className="flex justify-between font-semibold text-black dark:text-white">
                   <span>{t('venue_voucher_total_hire')}</span>
                   <span className="tabular-nums font-mono">
@@ -1205,7 +1222,11 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                   </span>
                 </div>
               </div>
-              <div className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-[11px] text-black/55 dark:text-white/75 leading-relaxed">
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="p-3 bg-neutral-100 dark:bg-neutral-800 text-[11px] text-black/55 dark:text-white/75 leading-relaxed"
+              >
                 {t('venue_voucher_disclaimer')}
               </div>
             </div>
@@ -1213,10 +1234,13 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="px-5 py-2 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                data-sq="ctl"
+                data-sq-border="none"
+                className="px-5 py-2 bg-[#d4522f] hover:bg-[#b03b1b] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
                 <Printer size={14} /> {t('venue_btn_print_agreement')}
               </button>
+            </div>
             </div>
           </div>
         </div>

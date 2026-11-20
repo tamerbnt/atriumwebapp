@@ -434,7 +434,7 @@ export const EducationAdmissionsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700"
+              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
             >
               {lead.studentName.charAt(0)}
             </div>
@@ -599,7 +599,7 @@ export const EducationAdmissionsView: React.FC = () => {
           <div
             data-sq="ctl"
             data-sq-border="solid"
-            className="flex items-center p-[3px] bg-[#F4EFEA] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700"
+            className="flex items-center p-[3px] bg-[#F4EFEA] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700 [--sq-stroke:#E8DFD8] dark:[--sq-stroke:#404040]"
           >
             <button
               type="button"
@@ -642,7 +642,7 @@ export const EducationAdmissionsView: React.FC = () => {
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2"
+          className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040] animate-in fade-in slide-in-from-top-2"
         >
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
@@ -880,7 +880,7 @@ export const EducationAdmissionsView: React.FC = () => {
                         <div
                           data-sq="card"
                           data-sq-border="solid"
-                          className="p-3.5 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-[#d4522f]/50 transition-all space-y-2 group"
+                          className="p-3.5 border border-neutral-200 dark:border-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 hover:border-[#d4522f]/50 hover:[--sq-stroke:rgba(212,82,47,0.5)] transition-all space-y-2 group"
                         >
                         <button
                           type="button"

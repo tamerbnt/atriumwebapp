@@ -702,7 +702,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
           const isPinned = pinnedProjectIds.has(proj.id);
           return (
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0">
+              <div data-sq="ctl" className="w-9 h-9 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0">
                 {proj.title.substring(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0">
@@ -739,7 +739,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         sortable: true,
         align: 'center',
         renderCell: (proj) => (
-          <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+          <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-[var(--r-check,6px)]">
             {proj.targetGrossMarginPercent}%
           </span>
         ),
@@ -784,7 +784,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         renderCell: (proj) => {
           const badge = getProjectStatusBadge(proj.status, language);
           return (
-            <span className={`inline-flex px-2.5 py-0.5 rounded-md text-[11px] font-semibold ${badge.pillClass}`}>
+            <span className={`inline-flex px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-[11px] font-semibold ${badge.pillClass}`}>
               {badge.label}
             </span>
           );
@@ -1527,7 +1527,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                       <span className="text-[11px] font-bold text-[#d4522f] uppercase tracking-wider truncate">
                         {proj.clientName}
                       </span>
-                      <span className="font-mono text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded">
+                      <span className="font-mono text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-[var(--r-check,6px)]">
                         {proj.targetGrossMarginPercent}%
                       </span>
                     </div>
@@ -1826,7 +1826,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
       {currentScreen === 'new_project' && (
         <ScreenPod>
-          <div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs max-w-4xl mx-auto space-y-6">
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] max-w-4xl mx-auto space-y-6"
+          >
             <div>
               <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">
                 {t('pm_dir_screen_new_badge')}
@@ -1836,7 +1840,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               </h2>
             </div>
             {projectCreatedSuccess && (
-              <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold animate-in fade-in">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="p-4 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold animate-in fade-in"
+              >
                 <CheckCircle className="w-5 h-5 text-emerald-600" />
                 {t('pm_dir_screen_new_success')}
               </div>
@@ -1910,7 +1918,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                     placeholder={t('pm_dir_field_scope_ph')}
                     value={newProjectScope}
                     onChange={(e) => setNewProjectScope(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
                   />
                 </div>
                 <LabelInput
@@ -1984,7 +1992,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
       {currentScreen === 'approvals' && (
         <ScreenPod>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs">
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+          >
             <div>
               <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">
                 {t('pm_dir_approvals_badge')}
@@ -2001,7 +2013,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 openWidth={260}
                 shutSize={38}
               />
-              <div className="flex items-center gap-1.5 p-1 bg-[#F3EDE7] dark:bg-neutral-800 rounded-xl text-xs">
+              <div data-sq="ctl" className="flex items-center gap-1.5 p-1 bg-[#F3EDE7] dark:bg-neutral-800 text-xs">
                 {(
                   [
                     { id: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous' },
@@ -2013,9 +2025,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                     key={item.id}
                     type="button"
                     onClick={() => setApprovalsTab(item.id)}
-                    className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
+                    data-sq="ctl-sm"
+                    className={`px-3 py-1.5 font-semibold transition-colors cursor-pointer ${
                       approvalsTab === item.id
-                        ? 'bg-white dark:bg-neutral-700 text-black dark:text-white shadow-xs'
+                        ? 'bg-white dark:bg-neutral-700 text-black dark:text-white'
                         : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                     }`}
                   >
@@ -2055,11 +2068,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 pendingPayrollBatches.map((batch) => (
                   <div
                     key={batch.id}
-                    className="p-5 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs"
+                    data-sq="panel"
+                    data-sq-border="solid"
+                    className="p-5 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
+                        <span className="px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
                           Lot de Paie
                         </span>
                         <span className="font-mono text-xs font-semibold text-black dark:text-white">
@@ -2087,7 +2102,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                       <button
                         type="button"
                         onClick={() => approvePmPayrollBatch(batch.id)}
-                        className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                        data-sq="ctl"
+                        className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-1.5 cursor-pointer"
                       >
                         <CheckCircle className="w-4 h-4" />
                         {t('pm_dir_btn_validate_ccp')}
@@ -2126,18 +2142,20 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 pendingExpenses.map((expense) => (
                   <div
                     key={expense.id}
-                    className="p-5 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs"
+                    data-sq="panel"
+                    data-sq-border="solid"
+                    className="p-5 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                        <span className="px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
                           {expense.category}
                         </span>
                         <span className="text-xs font-semibold text-black dark:text-white">
                           {expense.title}
                         </span>
                         {expense.hasFiscalInvoice && (
-                          <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
+                          <span className="px-1.5 py-0.5 rounded-[var(--r-check,6px)] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
                             Facture Fiscale
                           </span>
                         )}
@@ -2152,7 +2170,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)}
-                          className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 border border-[#E6DED6] dark:border-neutral-700 rounded-xl hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 transition-colors flex items-center gap-1.5 cursor-pointer"
+                          data-sq="ctl"
+                          data-sq-border="solid"
+                          className="px-3 py-1.5 text-xs text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 transition-colors flex items-center gap-1.5 cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           Justificatif
@@ -2169,7 +2189,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                       <button
                         type="button"
                         onClick={() => approvePmExpense(expense.id)}
-                        className="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                        data-sq="ctl"
+                        className="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-1 cursor-pointer"
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
                         Valider
@@ -2177,7 +2198,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setRejectionModalId(expense.id)}
-                        className="px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 transition-colors cursor-pointer"
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        className="px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 [--sq-stroke:#fecaca] dark:[--sq-stroke:#991b1b] transition-colors cursor-pointer"
                       >
                         Refuser
                       </button>
@@ -2192,7 +2215,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
       {currentScreen === 'reports' && (
         <ScreenPod>
-          <div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
+          >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
@@ -2216,7 +2243,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               </AtriumButton>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-              <div className="p-4 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-[#FBF8F5]/80 dark:bg-neutral-800/40">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
+              >
                 <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">
                   {t('pm_dir_kpi_cumul_ca')}
                 </span>
@@ -2227,7 +2258,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   {t('pm_dir_vs_2025')}
                 </span>
               </div>
-              <div className="p-4 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-[#FBF8F5]/80 dark:bg-neutral-800/40">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
+              >
                 <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">
                   {t('pm_dir_kpi_avg_margin')}
                 </span>
@@ -2238,7 +2273,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   {t('pm_dir_target_objective')}
                 </span>
               </div>
-              <div className="p-4 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-[#FBF8F5]/80 dark:bg-neutral-800/40">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
+              >
                 <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">
                   {t('pm_dir_kpi_closed_missions')}
                 </span>
@@ -2249,7 +2288,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   {t('pm_dir_coverage_wilayas')}
                 </span>
               </div>
-              <div className="p-4 rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-[#FBF8F5]/80 dark:bg-neutral-800/40">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
+              >
                 <span className="text-[10px] uppercase font-bold text-black/55 dark:text-white/55 block mb-1">
                   {t('pm_dir_kpi_attendance_rate')}
                 </span>
@@ -2264,7 +2307,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
+            >
               <h3 className="text-sm font-semibold text-black dark:text-white flex items-center justify-between">
                 <span>{t('pm_dir_client_profitability')}</span>
                 <span className="text-xs text-black/55 dark:text-white/55 font-normal">
@@ -2293,7 +2340,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               </div>
             </div>
 
-            <div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
+            >
               <h3 className="text-sm font-semibold text-black dark:text-white flex items-center justify-between">
                 <span>Ventilation des Dépenses par Poste</span>
                 <span className="text-xs text-black/55 dark:text-white/55 font-normal">
@@ -2325,34 +2376,42 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
       {selectedReceiptUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-[#d4522f]" />
-                Justificatif Fiscal de Paiement
-              </h3>
-              <button
-                type="button"
-                onClick={() => setSelectedReceiptUrl(null)}
-                className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <img
-              src={selectedReceiptUrl}
-              alt="Scan Justificatif"
-              referrerPolicy="no-referrer"
-              className="w-full h-72 object-cover rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800"
-            />
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setSelectedReceiptUrl(null)}
-                className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 hover:bg-[#EAE1D8] rounded-xl cursor-pointer"
-              >
-                Fermer
-              </button>
+          <div className="sq-elev-pop max-w-lg w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                  <Receipt className="w-4 h-4 text-[#d4522f]" />
+                  Justificatif Fiscal de Paiement
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setSelectedReceiptUrl(null)}
+                  data-sq="ctl-sm"
+                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <img
+                src={selectedReceiptUrl}
+                alt="Scan Justificatif"
+                referrerPolicy="no-referrer"
+                className="w-full h-72 object-cover rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800"
+              />
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setSelectedReceiptUrl(null)}
+                  data-sq="ctl"
+                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 hover:bg-[#EAE1D8] cursor-pointer"
+                >
+                  Fermer
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -2360,45 +2419,53 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
       {rejectionModalId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-red-600 flex items-center gap-2">
-                <Ban className="w-4 h-4" />
-                Motif du Rejet de la Dépense
-              </h3>
-              <button
-                type="button"
-                onClick={() => setRejectionModalId(null)}
-                className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-xs text-black/55 dark:text-white/55">
-              Veuillez préciser la raison du refus (ex: justificatif illisible, montant hors barème APC, achat non approuvé).
-            </p>
-            <textarea
-              rows={3}
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..."
-              className="w-full px-3 py-2 text-xs rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setRejectionModalId(null)}
-                className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={handleRejectConfirm}
-                className="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs cursor-pointer"
-              >
-                Confirmer le Rejet
-              </button>
+          <div className="sq-elev-pop max-w-md w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-red-600 flex items-center gap-2">
+                  <Ban className="w-4 h-4" />
+                  Motif du Rejet de la Dépense
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setRejectionModalId(null)}
+                  data-sq="ctl-sm"
+                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-xs text-black/55 dark:text-white/55">
+                Veuillez préciser la raison du refus (ex: justificatif illisible, montant hors barème APC, achat non approuvé).
+              </p>
+              <textarea
+                rows={3}
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..."
+                className="w-full px-3 py-2 text-xs rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRejectionModalId(null)}
+                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 hover:text-black cursor-pointer"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRejectConfirm}
+                  data-sq="ctl"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 cursor-pointer"
+                >
+                  Confirmer le Rejet
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -367,7 +367,7 @@ export const TradingPurchasesView: React.FC = () => {
               : 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-400';
           return (
             <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${badgeColor}`}>
+              <span className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold font-mono uppercase ${badgeColor}`}>
                 {doc.type === 'po' ? 'PO' : doc.type === 'br' ? 'BR' : 'FF'}
               </span>
               <span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
@@ -432,7 +432,7 @@ export const TradingPurchasesView: React.FC = () => {
           const isReceived = doc.status === 'Received';
           return (
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold inline-block ${
+              className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-semibold inline-block ${
                 isReceived
                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
                   : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
@@ -463,7 +463,9 @@ export const TradingPurchasesView: React.FC = () => {
               }}
               aria-label={t('action_print', 'Imprimer')}
               title={t('action_print', 'Imprimer')}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-[#d4522f] hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-[#d4522f] hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <Printer size={14} />
             </button>
@@ -474,7 +476,9 @@ export const TradingPurchasesView: React.FC = () => {
                   e.stopPropagation();
                   receivePurchaseDoc(doc.id);
                 }}
-                className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-1 transition-colors cursor-pointer"
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className="px-2.5 py-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <CheckCircle2 size={13} />
                 <span>{t('trading_purchases_receive_stock', 'Réceptionner à quai')}</span>
@@ -841,7 +845,12 @@ export const TradingPurchasesView: React.FC = () => {
 
       {isPoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="sq-elev-pop relative w-full max-w-2xl">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 space-y-4"
+            >
             <div className="flex items-center justify-between border-b pb-3 border-neutral-200 dark:border-neutral-800">
               <h2 className="text-base font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 <Truck size={18} className="text-[#d4522f]" />
@@ -851,7 +860,9 @@ export const TradingPurchasesView: React.FC = () => {
                 type="button"
                 onClick={() => setIsPoModalOpen(false)}
                 aria-label="Fermer"
-                className="p-1 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white rounded-lg cursor-pointer"
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className="p-1 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -941,6 +952,7 @@ export const TradingPurchasesView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

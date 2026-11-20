@@ -12,7 +12,7 @@ export const SkeletonBox: React.FC<SkeletonBoxProps> = ({
   className = '',
   width,
   height,
-  rounded = 'rounded-lg',
+  rounded = 'rounded-[var(--r-ctl-sm,10px)]',
   shimmer = true,
 }) => {
   const style: React.CSSProperties = {
@@ -60,7 +60,7 @@ export const SkeletonText: React.FC<SkeletonTextProps> = ({
     <SkeletonBox
       width={width}
       className={`${heightMap[size]} ${className}`}
-      rounded="rounded-xs"
+      rounded="rounded-[var(--r-check,6px)]"
       shimmer={shimmer}
     />
   );

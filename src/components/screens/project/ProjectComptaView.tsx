@@ -518,11 +518,12 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   e.stopPropagation();
                   handleTogglePinSlip(slip);
                 }}
-                className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                className={`p-1 transition-colors cursor-pointer ${
                   isPinned
                     ? 'text-[#d4522f] bg-[#d4522f]/10'
                     : 'text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80'
                 }`}
+                data-sq="ctl-sm"
               >
                 <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
               </button>
@@ -594,7 +595,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               e.stopPropagation();
               setSelectedSlip(slip);
             }}
-            className="px-2.5 py-1 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg flex items-center gap-1.5 shadow-xs cursor-pointer ml-auto"
+            data-sq="ctl-sm"
+            className="px-2.5 py-1 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 flex items-center gap-1.5 cursor-pointer ml-auto"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Mandat</span>
@@ -627,7 +629,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         width: '1.4*',
         minWidth: '130px',
         renderCell: (exp) => (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
+          <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[11px] font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
             {exp.category}
           </span>
         ),
@@ -808,7 +810,9 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
             <button
               type="button"
               onClick={handleExportCcpCsv}
-              className="h-10 px-3.5 text-xs font-semibold text-black/75 dark:text-white/80 bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#FBF8F5] rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="h-10 px-3.5 text-xs font-semibold text-black/75 dark:text-white/80 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#FBF8F5] flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
@@ -928,7 +932,11 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
           {activeTab === 'payroll' && (
             <div className="space-y-4">
-              <div className="p-5 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div
+                data-sq="panel"
+                data-sq-border="solid"
+                className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
                 <div>
                   <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
                     {isAr
@@ -945,7 +953,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   <button
                     type="button"
                     onClick={handleGenerateAllCcpBatch}
-                    className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer shrink-0"
+                    data-sq="ctl"
+                    className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer shrink-0"
                   >
                     <Printer className="w-4 h-4" />
                     {isAr
@@ -961,7 +970,9 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 {pmPayrollBatches.map((batch) => (
                   <div
                     key={batch.id}
-                    className="p-5 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    data-sq="panel"
+                    data-sq-border="solid"
+                    className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -1002,7 +1013,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                         <button
                           type="button"
                           onClick={() => generatePmCcpSlipsForBatch(batch.id)}
-                          className="px-3.5 py-2 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                          data-sq="ctl"
+                          className="px-3.5 py-2 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-1.5 cursor-pointer"
                         >
                           <Printer className="w-4 h-4" />
                           <span>Générer CCP</span>
@@ -1145,7 +1157,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                           e.stopPropagation();
                           setSelectedSlip(slip);
                         }}
-                        className="px-2.5 py-1 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg flex items-center gap-1 cursor-pointer"
+                        data-sq="ctl-sm"
+                        className="px-2.5 py-1 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 flex items-center gap-1 cursor-pointer"
                       >
                         <Printer className="w-3 h-3" />
                         Mandat
@@ -1740,35 +1753,43 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
         >
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-[#d4522f]" />
-                {isAr ? 'وصل الشراء الممسوح' : "Justificatif Fiscal d'Achat"}
-              </h3>
-              <button
-                type="button"
-                aria-label="Fermer"
-                onClick={() => setSelectedReceiptUrl(null)}
-                className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <img
-              src={selectedReceiptUrl}
-              alt="Scan Justificatif"
-              referrerPolicy="no-referrer"
-              className="w-full h-72 object-cover rounded-xl"
-            />
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setSelectedReceiptUrl(null)}
-                className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 rounded-xl cursor-pointer"
-              >
-                {isAr ? 'إغلاق' : 'Fermer'}
-              </button>
+          <div className="sq-elev-pop max-w-lg w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                  <Receipt className="w-4 h-4 text-[#d4522f]" />
+                  {isAr ? 'وصل الشراء الممسوح' : "Justificatif Fiscal d'Achat"}
+                </h3>
+                <button
+                  type="button"
+                  aria-label="Fermer"
+                  onClick={() => setSelectedReceiptUrl(null)}
+                  data-sq="ctl-sm"
+                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <img
+                src={selectedReceiptUrl}
+                alt="Scan Justificatif"
+                referrerPolicy="no-referrer"
+                className="w-full h-72 object-cover rounded-[var(--r-ctl,12px)]"
+              />
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setSelectedReceiptUrl(null)}
+                  data-sq="ctl"
+                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
+                >
+                  {isAr ? 'إغلاق' : 'Fermer'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

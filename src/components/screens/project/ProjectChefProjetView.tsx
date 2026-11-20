@@ -701,7 +701,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               src={item.imageUrl}
               alt={item.title}
               referrerPolicy="no-referrer"
-              className="w-10 h-10 rounded-xl object-cover shrink-0 border border-[#E6DED6] dark:border-neutral-800"
+              className="w-10 h-10 rounded-[var(--r-ctl,12px)] object-cover shrink-0 border border-[#E6DED6] dark:border-neutral-800"
             />
             <div className="min-w-0">
               <div className="font-semibold text-black dark:text-white text-xs truncate max-w-[200px]">
@@ -780,7 +780,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   e.stopPropagation();
                   handleTogglePinOrder(order);
                 }}
-                className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                data-sq="ctl-sm"
+                className={`p-1 transition-colors cursor-pointer ${
                   isPinned
                     ? 'text-[#d4522f] bg-[#d4522f]/10'
                     : 'text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80'
@@ -865,7 +866,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               src={bat.previewUrl}
               alt={bat.title}
               referrerPolicy="no-referrer"
-              className="w-10 h-10 rounded-lg object-cover border border-[#E6DED6] dark:border-neutral-800 shrink-0"
+              className="w-10 h-10 rounded-[var(--r-ctl-sm,10px)] object-cover border border-[#E6DED6] dark:border-neutral-800 shrink-0"
             />
             <div className="min-w-0">
               <div className="font-semibold text-xs text-black dark:text-white truncate">
@@ -1154,7 +1155,11 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 
           {activeTab === 'portfolio' && (
             <div className="space-y-5">
-              <div className="p-5 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div
+                data-sq="panel"
+                data-sq-border="solid"
+                className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
                 <div>
                   <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
                     {isAr
@@ -1214,10 +1219,12 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       type="button"
                       key={p.id}
                       onClick={() => setSelectedProjectId(p.id)}
-                      className={`p-5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer shadow-xs ${
+                      data-sq="panel"
+                      data-sq-border="solid"
+                      className={`p-5 text-left rtl:text-right transition-all cursor-pointer ${
                         isSel
-                          ? 'border-[#d4522f] bg-[#d4522f]/5 dark:bg-[#d4522f]/10 ring-1 ring-[#d4522f]'
-                          : 'border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-[#D5CBBF]'
+                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/5 dark:bg-[#d4522f]/10'
+                          : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 hover:[--sq-stroke:#D5CBBF]'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
@@ -1337,7 +1344,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                           src={item.imageUrl}
                           alt={item.title}
                           referrerPolicy="no-referrer"
-                          className="w-full h-36 rounded-xl object-cover border border-[#E6DED6]/60 dark:border-neutral-800"
+                          className="w-full h-36 rounded-[var(--r-ctl,12px)] object-cover border border-[#E6DED6]/60 dark:border-neutral-800"
                         />
                       )}
                       <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 font-mono">
@@ -1650,7 +1657,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         src={bat.previewUrl}
                         alt={bat.title}
                         referrerPolicy="no-referrer"
-                        className="w-full h-44 rounded-xl object-cover border border-[#E6DED6]/60 dark:border-neutral-800"
+                        className="w-full h-44 rounded-[var(--r-ctl,12px)] object-cover border border-[#E6DED6]/60 dark:border-neutral-800"
                       />
                       <div className="flex items-start justify-between gap-2">
                         <span className="text-xs font-bold text-[#d4522f] uppercase truncate">
@@ -1671,7 +1678,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         <span>{bat.bleedMm}mm</span>
                       </div>
                       {bat.revisionComments && (
-                        <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 text-xs">
+                        <div
+                          data-sq="ctl"
+                          className="p-2.5 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 text-xs"
+                        >
                           Note CDP : {bat.revisionComments}
                         </div>
                       )}
@@ -1683,7 +1693,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                             setActiveBatId(bat.id);
                             setIsCorrectionModalOpen(true);
                           }}
-                          className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 border border-[#E6DED6] dark:border-neutral-700 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 rounded-xl transition-colors cursor-pointer"
+                          data-sq="ctl"
+                          data-sq-border="solid"
+                          className="px-3 py-1.5 text-xs font-semibold text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                         >
                           {isAr ? 'طلب تعديل' : isEn ? 'Revision' : 'Demander Révision'}
                         </button>
@@ -1693,7 +1705,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                             e.stopPropagation();
                             handleApproveBat(bat.id);
                           }}
-                          className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors cursor-pointer"
+                          data-sq="ctl"
+                          className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors cursor-pointer"
                         >
                           {isAr ? 'اعتماد BAT' : isEn ? 'Approve' : 'Valider BAT'}
                         </button>
@@ -1773,7 +1786,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     <div className="p-4 flex items-center justify-between gap-4">
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                          <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
                             {exp.category}
                           </span>
                           <span className="font-semibold text-xs text-black dark:text-white truncate">
@@ -1792,7 +1805,11 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 />
               </div>
 
-              <div className="lg:col-span-5 p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4 self-start">
+              <div
+                data-sq="panel"
+                data-sq-border="solid"
+                className="lg:col-span-5 p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4 self-start"
+              >
                 <div>
                   <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
                     {isAr ? 'التصريح بمشتريات الميدان' : isEn ? 'Field Purchase Declaration' : "Déclaration d'Achat Terrain"}
@@ -1809,7 +1826,11 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   </p>
                 </div>
                 {purchaseSuccessMessage && (
-                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-xs text-emerald-800 dark:text-emerald-300"
+                  >
                     {purchaseSuccessMessage}
                   </div>
                 )}
@@ -1984,7 +2005,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   src={item.imageUrl}
                   alt={item.title}
                   referrerPolicy="no-referrer"
-                  className="w-full h-48 rounded-2xl object-cover border border-[#E6DED6] dark:border-neutral-800"
+                  className="w-full h-48 rounded-[var(--r-card,16px)] object-cover border border-[#E6DED6] dark:border-neutral-800"
                 />
               </InspectorSection>
             )}
@@ -2111,7 +2132,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 src={bat.previewUrl}
                 alt={bat.title}
                 referrerPolicy="no-referrer"
-                className="w-full h-48 rounded-2xl object-cover border border-[#E6DED6] dark:border-neutral-800"
+                className="w-full h-48 rounded-[var(--r-card,16px)] object-cover border border-[#E6DED6] dark:border-neutral-800"
               />
             </InspectorSection>
             <InspectorSection index={1} title={isAr ? 'إجراءات الاعتماد' : 'Contrôle Qualité BAT'}>
@@ -2220,7 +2241,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   type="button"
                   aria-label="Fermer"
                   onClick={() => setIsCartOpen(false)}
-                  className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+                  data-sq="ctl-sm"
+                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -2254,7 +2276,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   cartItems.map((ci) => (
                     <div
                       key={ci.item.id}
-                      className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 rounded-xl flex items-center justify-between gap-3 text-xs"
+                      data-sq="ctl"
+                      className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 flex items-center justify-between gap-3 text-xs"
                     >
                       <div className="min-w-0">
                         <div className="font-semibold text-black dark:text-white truncate">
@@ -2268,7 +2291,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         <button
                           type="button"
                           onClick={() => handleUpdateQuantity(ci.item.id, -1)}
-                          className="w-6 h-6 rounded bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer"
+                          data-sq="check"
+                          className="w-6 h-6 bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer"
                         >
                           -
                         </button>
@@ -2276,7 +2300,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         <button
                           type="button"
                           onClick={() => handleUpdateQuantity(ci.item.id, 1)}
-                          className="w-6 h-6 rounded bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer"
+                          data-sq="check"
+                          className="w-6 h-6 bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-bold cursor-pointer"
                         >
                           +
                         </button>
@@ -2325,44 +2350,51 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
         >
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-[#d4522f]" />
-                {isAr ? 'طلب تعديل على BAT' : 'Demande de Correction BAT'}
-              </h3>
-              <button
-                type="button"
-                aria-label="Fermer"
-                onClick={() => setIsCorrectionModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <textarea
-              rows={4}
-              value={correctionNote}
-              onChange={(e) => setCorrectionNote(e.target.value)}
-              placeholder={
-                isAr
-                  ? 'اذكر التعديلات المطلوبة...'
-                  : 'Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille texte)...'
-              }
-              className="w-full px-3 py-2 text-xs rounded-xl border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
-            />
-            <div className="flex justify-end gap-2">
-              <AtriumButton
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsCorrectionModalOpen(false)}
-              >
-                {isAr ? 'إلغاء' : 'Annuler'}
-              </AtriumButton>
-              <AtriumButton type="button" variant="primary" size="sm" onClick={handleRequestRevision}>
-                {isAr ? 'إرسال للاستوديو' : 'Envoyer au Studio Créa'}
-              </AtriumButton>
+          <div className="sq-elev-pop max-w-md w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-[#d4522f]" />
+                  {isAr ? 'طلب تعديل على BAT' : 'Demande de Correction BAT'}
+                </h3>
+                <button
+                  type="button"
+                  aria-label="Fermer"
+                  onClick={() => setIsCorrectionModalOpen(false)}
+                  data-sq="ctl-sm"
+                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <textarea
+                rows={4}
+                value={correctionNote}
+                onChange={(e) => setCorrectionNote(e.target.value)}
+                placeholder={
+                  isAr
+                    ? 'اذكر التعديلات المطلوبة...'
+                    : 'Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille texte)...'
+                }
+                className="w-full px-3 py-2 text-xs rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+              />
+              <div className="flex justify-end gap-2">
+                <AtriumButton
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsCorrectionModalOpen(false)}
+                >
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton type="button" variant="primary" size="sm" onClick={handleRequestRevision}>
+                  {isAr ? 'إرسال للاستوديو' : 'Envoyer au Studio Créa'}
+                </AtriumButton>
+              </div>
             </div>
           </div>
         </div>
@@ -2375,35 +2407,43 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
         >
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-[#d4522f]" />
-                {isAr ? 'وصل الشراء الميداني' : "Justificatif d'Achat Terrain"}
-              </h3>
-              <button
-                type="button"
-                aria-label="Fermer"
-                onClick={() => setSelectedReceiptUrl(null)}
-                className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <img
-              src={selectedReceiptUrl}
-              alt="Justificatif"
-              referrerPolicy="no-referrer"
-              className="w-full h-72 object-cover rounded-xl"
-            />
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setSelectedReceiptUrl(null)}
-                className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 rounded-xl cursor-pointer"
-              >
-                {isAr ? 'إغلاق' : 'Fermer'}
-              </button>
+          <div className="sq-elev-pop max-w-lg w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                  <Receipt className="w-4 h-4 text-[#d4522f]" />
+                  {isAr ? 'وصل الشراء الميداني' : "Justificatif d'Achat Terrain"}
+                </h3>
+                <button
+                  type="button"
+                  aria-label="Fermer"
+                  onClick={() => setSelectedReceiptUrl(null)}
+                  data-sq="ctl-sm"
+                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <img
+                src={selectedReceiptUrl}
+                alt="Justificatif"
+                referrerPolicy="no-referrer"
+                className="w-full h-72 object-cover rounded-[var(--r-ctl,12px)]"
+              />
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setSelectedReceiptUrl(null)}
+                  data-sq="ctl"
+                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
+                >
+                  {isAr ? 'إغلاق' : 'Fermer'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

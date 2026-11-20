@@ -837,7 +837,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] w-full p-6 border border-[#E6DED6] dark:border-[#3A3734] space-y-4"
+              className="bg-white dark:bg-[#1C1B1A] w-full p-6 border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-4"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
                 <h3 className="text-base font-bold text-black dark:text-white">

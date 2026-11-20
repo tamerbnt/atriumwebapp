@@ -103,7 +103,9 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
 
           {showFilter && (
             <div
-              className="inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 self-start sm:self-auto shadow-2xs"
+              data-sq="ctl-sm"
+              data-sq-border="solid"
+              className="inline-flex items-center gap-0.5 p-0.5 bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] self-start sm:self-auto"
               role="group"
             >
               {filterOptions.map((opt) => {
@@ -113,7 +115,7 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
                     key={opt.id}
                     type="button"
                     onClick={() => handlePeriodChange(opt.id)}
-                    className={`px-2 py-0.5 rounded-md text-[10.5px] font-semibold transition-all duration-150 cursor-pointer select-none ${
+                    className={`px-2 py-0.5 rounded-[var(--r-thumb,9px)] text-[10.5px] font-semibold transition-all duration-150 cursor-pointer select-none ${
                       isSelected
                         ? 'bg-white dark:bg-neutral-700 text-[#d4522f] dark:text-[#E09070] shadow-xs'
                         : 'text-black/62 dark:text-white/68 hover:text-black dark:hover:text-white'
@@ -184,13 +186,17 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
             {/* Floating Tooltip Card */}
             {hoveredBar && hoveredIdx !== null && (
               <div
-                className="absolute z-30 pointer-events-none -top-10 transition-all duration-100 ease-out"
+                className="absolute z-30 pointer-events-none -top-10 transition-all duration-100 ease-out sq-elev-pop"
                 style={{
                   left: `${((hoveredIdx + 0.5) / normalizedBars.length) * 100}%`,
                   transform: 'translate(-50%, -100%)',
                 }}
               >
-                <div className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md rounded-xl px-2.5 py-1.5 shadow-xl border border-neutral-700/60 flex items-center gap-2 whitespace-nowrap text-left rtl:text-right">
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md px-2.5 py-1.5 border border-neutral-700/60 [--sq-stroke:rgba(64,64,64,0.6)] flex items-center gap-2 whitespace-nowrap text-left rtl:text-right"
+                >
                   <div>
                     <div className="text-[10px] text-white/70 font-medium">
                       {hoveredBar.label}
@@ -200,7 +206,7 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
                       {unit && <span className="text-[10px] text-white/75 font-sans font-normal">{unit}</span>}
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono tabular-nums font-semibold px-1.5 py-0.5 rounded-md bg-white/10 text-white/90">
+                  <span className="text-[10px] font-mono tabular-nums font-semibold px-1.5 py-0.5 rounded-[var(--r-check,6px)] bg-white/10 text-white/90">
                     {Math.round((hoveredBar.value / totalValue) * 100)}%
                   </span>
                 </div>

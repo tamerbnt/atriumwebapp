@@ -800,7 +800,11 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         sortable: true,
         renderCell: (p) => (
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-black/70 dark:text-white/75 shrink-0">
+            <div
+              data-sq="thumb"
+              data-sq-border="none"
+              className="w-7 h-7 bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-black/70 dark:text-white/75 shrink-0"
+            >
               {p.name.charAt(0)}
             </div>
             <div className="min-w-0">
@@ -819,7 +823,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         minWidth: '90px',
         sortable: true,
         renderCell: (p) => (
-          <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-black/70 dark:text-white/75">
+          <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-black/70 dark:text-white/75">
             {p.category}
           </span>
         ),
@@ -887,11 +891,13 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 e.stopPropagation();
                 addToCart(p);
               }}
-              className={`h-7 px-2.5 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className={`h-7 px-2.5 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors ${
                 isOut
                   ? 'bg-neutral-100 dark:bg-neutral-800 text-black/55 dark:text-white/55 cursor-not-allowed'
                   : inCartItem
-                  ? 'bg-[#d4522f] text-white shadow-2xs'
+                  ? 'bg-[#d4522f] text-white'
                   : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white'
               }`}
             >
@@ -932,7 +938,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             {po.items.slice(0, 3).map((it, idx) => (
               <span
                 key={idx}
-                className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-black/70 dark:text-white/75"
+                className="px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-black/70 dark:text-white/75"
               >
                 {it.quantity}x {it.productName}
               </span>
@@ -976,7 +982,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 e.stopPropagation();
                 handleResumeOrder(po);
               }}
-              className="h-8 px-3 rounded-xl bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="h-8 px-3 bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 cursor-pointer"
             >
               <PlayCircle size={13} />
               <span>{t('shop_resume_in_register')}</span>
@@ -987,7 +995,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 e.stopPropagation();
                 deleteParkedOrder(po.id);
               }}
-              className="h-8 px-2 rounded-xl text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="h-8 px-2 text-black/55 dark:text-white/55 hover:text-red-500 cursor-pointer"
               title={t('shop_discard_order')}
             >
               <Trash2 size={14} />
@@ -1023,7 +1033,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         minWidth: '100px',
         sortable: true,
         renderCell: (p) => (
-          <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-black/70 dark:text-white/75">
+          <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-black/70 dark:text-white/75">
             {p.category}
           </span>
         ),
@@ -1167,10 +1177,12 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               type="button"
               onClick={() => setSoundEnabled(!soundEnabled)}
               title={soundEnabled ? t('shop_sound_enabled_tip') : t('shop_sound_muted_tip')}
-              className={`h-10 w-10 rounded-xl border flex items-center justify-center cursor-pointer transition-colors shadow-2xs ${
+              data-sq="ctl"
+              data-sq-border="solid"
+              className={`h-10 w-10 flex items-center justify-center cursor-pointer transition-colors ${
                 soundEnabled
-                  ? 'border-emerald-300 text-emerald-600 dark:border-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
-                  : 'border-[#E6DED6] text-black/55 dark:text-white/55 dark:border-neutral-800 bg-white dark:bg-neutral-900'
+                  ? '[--sq-stroke:#6EE7B7] text-emerald-600 dark:[--sq-stroke:#065F46] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
+                  : '[--sq-stroke:#E6DED6] text-black/55 dark:text-white/55 dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900'
               }`}
             >
               {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
@@ -1222,7 +1234,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             <ScreenPod>
               <form
                 onSubmit={handleBarcodeSubmit}
-                className="p-1.5 rounded-2xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex items-center gap-2"
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-1.5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex items-center gap-2"
               >
                 <div className="flex-1">
                   <LabelInput
@@ -1238,7 +1252,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 </div>
                 <button
                   type="submit"
-                  className="px-4 py-2.5 rounded-xl bg-[#d4522f] text-white text-xs font-bold hover:opacity-90 cursor-pointer transition-opacity shrink-0 mx-1"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="px-4 py-2.5 bg-[#d4522f] text-white text-xs font-bold hover:opacity-90 cursor-pointer transition-opacity shrink-0 mx-1"
                 >
                   {t('shop_scan_btn')}
                 </button>
@@ -1376,7 +1392,12 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
           </div>
 
           {/* Sticky Checkout Cart Dock */}
-          <div className="lg:col-span-5 xl:col-span-4 rounded-[24px] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 p-4.5 shadow-sm space-y-4 sticky top-4">
+          <div className="lg:col-span-5 xl:col-span-4 sq-elev-card sticky top-4">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] p-4.5 space-y-4"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
                 <h2 className="text-base font-black text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
@@ -1396,7 +1417,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                     type="button"
                     onClick={() => setIsHoldOrderModalOpen(true)}
                     title={t('shop_hold_cart_tooltip')}
-                    className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
+                    data-sq="ctl-sm"
+                    data-sq-border="none"
+                    className="p-1.5 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
                   >
                     <PauseCircle size={17} />
                   </button>
@@ -1404,7 +1427,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                     type="button"
                     onClick={() => setCart([])}
                     title={t('shop_clear_cart_tooltip')}
-                    className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
+                    data-sq="ctl-sm"
+                    data-sq-border="none"
+                    className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -1459,11 +1484,15 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                         </div>
                       </div>
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
+                        <div
+                          data-sq="ctl-sm"
+                          data-sq-border="none"
+                          className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 p-0.5"
+                        >
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.product.id, -1)}
-                            className="w-6 h-6 rounded flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"
+                            className="w-6 h-6 rounded-[var(--r-check,6px)] flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"
                           >
                             <Minus size={12} />
                           </button>
@@ -1473,7 +1502,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.product.id, 1)}
-                            className="w-6 h-6 rounded flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"
+                            className="w-6 h-6 rounded-[var(--r-check,6px)] flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"
                           >
                             <Plus size={12} />
                           </button>
@@ -1485,7 +1514,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                             placeholder={t('shop_line_discount_ph')}
                             value={item.discount || ''}
                             onChange={(e) => updateLineDiscount(item.product.id, parseFloat(e.target.value) || 0)}
-                            className={`w-20 h-6 px-1.5 text-[11px] rounded border border-neutral-200 dark:border-neutral-700 bg-transparent font-mono ${
+                            className={`w-20 h-6 px-1.5 text-[11px] rounded-[var(--r-check,6px)] border border-neutral-200 dark:border-neutral-700 bg-transparent font-mono ${
                               isRtl ? 'text-left' : 'text-right'
                             }`}
                           />
@@ -1512,7 +1541,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                     <button
                       type="button"
                       onClick={() => setOrderDiscountType('fixed')}
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-black cursor-pointer ${
+                      className={`px-1.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-black cursor-pointer ${
                         orderDiscountType === 'fixed' ? 'bg-[#d4522f] text-white' : 'text-black/55 dark:text-white/55'
                       }`}
                     >
@@ -1521,7 +1550,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                     <button
                       type="button"
                       onClick={() => setOrderDiscountType('percent')}
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-black cursor-pointer ${
+                      className={`px-1.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-black cursor-pointer ${
                         orderDiscountType === 'percent' ? 'bg-[#d4522f] text-white' : 'text-black/55 dark:text-white/55'
                       }`}
                     >
@@ -1536,7 +1565,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                   value={orderDiscountValue || ''}
                   onChange={(e) => setOrderDiscountValue(parseFloat(e.target.value) || 0)}
                   placeholder={orderDiscountType === 'percent' ? '10%' : t('shop_order_discount_ph')}
-                  className="w-full h-8 px-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 font-mono text-black dark:text-white"
+                  className="w-full h-8 px-2 text-xs rounded-[var(--r-ctl,12px)] border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 font-mono text-black dark:text-white"
                 />
               </div>
             )}
@@ -1581,10 +1610,12 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                           setAmountTenderedInput(amt.toString());
                           handleOpenCheckout();
                         }}
-                        className={`p-1.5 rounded-xl text-[10px] font-bold font-mono tabular-nums text-center border cursor-pointer hover:border-[#d4522f] transition-colors ${
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        className={`p-1.5 text-[10px] font-bold font-mono tabular-nums text-center cursor-pointer hover:[--sq-stroke:#d4522f] transition-colors ${
                           isExact
-                            ? 'bg-neutral-900 dark:bg-white text-white dark:text-black border-transparent'
-                            : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
+                            ? 'bg-neutral-900 dark:bg-white text-white dark:text-black [--sq-stroke:transparent]'
+                            : 'bg-neutral-50 dark:bg-neutral-800 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] text-black/70 dark:text-white/75'
                         }`}
                       >
                         {isExact ? t('shop_quick_cash_exact') : `${amt.toLocaleString()} ${isAr ? 'د.ج' : 'DA'}`}
@@ -1595,20 +1626,25 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               </div>
             )}
 
-            <button
-              type="button"
-              disabled={cart.length === 0}
-              onClick={handleOpenCheckout}
-              className={`w-full h-12 rounded-2xl text-xs font-black tracking-wide uppercase flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md ${
-                cart.length === 0
-                  ? 'bg-neutral-200 dark:bg-neutral-800 text-black/55 dark:text-white/55 cursor-not-allowed shadow-none'
-                  : 'bg-[#d4522f] text-white hover:opacity-90 active:scale-98'
-              }`}
-            >
-              <Coins size={16} />
-              <span>{t('shop_charge_button', { amount: formatMoney(cartTotal) })}</span>
-              <ArrowRight size={15} className={isRtl ? 'rotate-180' : ''} />
-            </button>
+            <div className={cart.length > 0 ? 'sq-elev-card' : ''}>
+              <button
+                type="button"
+                disabled={cart.length === 0}
+                onClick={handleOpenCheckout}
+                data-sq="card"
+                data-sq-border="none"
+                className={`w-full h-12 text-xs font-black tracking-wide uppercase flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                  cart.length === 0
+                    ? 'bg-neutral-200 dark:bg-neutral-800 text-black/55 dark:text-white/55 cursor-not-allowed'
+                    : 'bg-[#d4522f] text-white hover:opacity-90 active:scale-98'
+                }`}
+              >
+                <Coins size={16} />
+                <span>{t('shop_charge_button', { amount: formatMoney(cartTotal) })}</span>
+                <ArrowRight size={15} className={isRtl ? 'rotate-180' : ''} />
+              </button>
+            </div>
+            </div>
           </div>
         </div>
       )}
@@ -1841,7 +1877,11 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             onAddFirstItem={handleOpenAddProduct}
           />
           {stockMovements.length > 0 && (
-            <div className="rounded-2xl border border-[#E6DED6] dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 space-y-3">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="[--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 p-4 space-y-3"
+            >
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-wider text-black/55 dark:text-white/55">
                   {t('shop_movements_title')}
@@ -1882,7 +1922,11 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
       {activeTab === 'receipt_settings' && (
         <ScreenPod>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 space-y-4">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
+            >
               <h2 className="text-base font-black text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
                 {t('shop_receipt_branding_title')}
               </h2>
@@ -1949,7 +1993,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                       type="checkbox"
                       checked={receiptConfig.showTaxBreakdown}
                       onChange={(e) => updateReceiptConfig({ showTaxBreakdown: e.target.checked })}
-                      className="w-4 h-4 rounded text-[#d4522f]"
+                      className="w-4 h-4 rounded-[var(--r-check,6px)] text-[#d4522f]"
                     />
                     <span>{t('shop_toggle_tax')}</span>
                   </label>
@@ -1958,7 +2002,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                       type="checkbox"
                       checked={receiptConfig.showCashier}
                       onChange={(e) => updateReceiptConfig({ showCashier: e.target.checked })}
-                      className="w-4 h-4 rounded text-[#d4522f]"
+                      className="w-4 h-4 rounded-[var(--r-check,6px)] text-[#d4522f]"
                     />
                     <span>{t('shop_toggle_cashier')}</span>
                   </label>
@@ -1967,7 +2011,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                       type="checkbox"
                       checked={receiptConfig.showBarcode}
                       onChange={(e) => updateReceiptConfig({ showBarcode: e.target.checked })}
-                      className="w-4 h-4 rounded text-[#d4522f]"
+                      className="w-4 h-4 rounded-[var(--r-check,6px)] text-[#d4522f]"
                     />
                     <span>{t('shop_toggle_barcode')}</span>
                   </label>
@@ -1975,7 +2019,11 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               </div>
             </div>
 
-            <div className="p-5 rounded-3xl bg-white dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-700 flex flex-col items-center">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="p-5 bg-white dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] flex flex-col items-center"
+            >
               <div className="text-xs font-bold text-black/55 dark:text-white/55 uppercase tracking-wider mb-3">
                 {t('shop_preview_title')}
               </div>
@@ -2354,13 +2402,19 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         subtitle={t('shop_modal_checkout_subtitle', { amount: formatMoney(cartTotal) })}
       >
         <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
-          <div className="flex rounded-xl bg-neutral-100 dark:bg-neutral-800 p-1 text-xs font-bold">
+          <div
+            data-sq="ctl"
+            data-sq-border="none"
+            className="flex bg-neutral-100 dark:bg-neutral-800 p-1 text-xs font-bold"
+          >
             <button
               type="button"
               onClick={() => setCheckoutMode('single')}
-              className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className={`flex-1 py-2 cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
                 checkoutMode === 'single'
-                  ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs'
+                  ? 'bg-white dark:bg-neutral-900 text-black dark:text-white'
                   : 'text-black/55 dark:text-white/55'
               }`}
             >
@@ -2370,9 +2424,11 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             <button
               type="button"
               onClick={() => setCheckoutMode('split')}
-              className={`flex-1 py-2 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className={`flex-1 py-2 cursor-pointer transition-colors flex items-center justify-center gap-1.5 ${
                 checkoutMode === 'split'
-                  ? 'bg-white dark:bg-neutral-900 text-black dark:text-white shadow-xs'
+                  ? 'bg-white dark:bg-neutral-900 text-black dark:text-white'
                   : 'text-black/55 dark:text-white/55'
               }`}
             >
@@ -2398,10 +2454,13 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                       key={method}
                       type="button"
                       onClick={() => setSinglePaymentMethod(method)}
-                      className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-all ${
+                      data-sq="card"
+                      data-sq-border="solid"
+                      data-sq-stroke-w={isSelected ? '2' : '1'}
+                      className={`p-3 text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-all ${
                         isSelected
-                          ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs'
-                          : 'border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
+                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f]'
+                          : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] text-black/70 dark:text-white/75'
                       }`}
                     >
                       {method === 'Cash' && <Banknote size={18} />}
@@ -2413,7 +2472,11 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 })}
               </div>
               {singlePaymentMethod === 'Cash' && (
-                <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-2">
+                <div
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="p-3.5 bg-neutral-50 dark:bg-neutral-800/60 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] space-y-2"
+                >
                   <div className="flex items-center justify-between pb-1">
                     <span className="text-[11px] font-bold text-black/55 dark:text-white/55">
                       {t('shop_cash_settlement')}
@@ -2586,10 +2649,13 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
           subtitle={t('shop_receipt_number_sub', { id: completedSale.id.slice(-6).toUpperCase() })}
         >
           <div className="space-y-4" dir="ltr">
-            <div
-              id="pos-thermal-receipt-container"
-              className="mx-auto max-w-[340px] bg-white text-black p-4 rounded-xl border border-neutral-300 font-mono text-[11px] leading-relaxed shadow-xs"
-            >
+            <div className="sq-elev-card mx-auto max-w-[340px]">
+              <div
+                id="pos-thermal-receipt-container"
+                data-sq="card"
+                data-sq-border="solid"
+                className="bg-white text-black p-4 [--sq-stroke:#D4D4D4] font-mono text-[11px] leading-relaxed"
+              >
               <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-neutral-400">
                 <div className="text-sm font-black uppercase tracking-wider">{receiptConfig.headerTitle}</div>
                 {receiptConfig.subHeader && <div className="text-[10px] text-black/75">{receiptConfig.subHeader}</div>}
@@ -2630,6 +2696,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                   </div>
                 )}
                 <div className="text-[10px] font-bold">{receiptConfig.footerMessage || t('shop_receipt_default_footer')}</div>
+              </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -2770,13 +2837,31 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         >
           <form onSubmit={handleConfirmStockAdjust} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="grid grid-cols-3 gap-2">
-              <button type="button" onClick={() => setAdjustMode('add')} className={`p-2.5 rounded-xl border text-xs font-bold cursor-pointer ${adjustMode === 'add' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-neutral-200'}`}>
+              <button
+                type="button"
+                onClick={() => setAdjustMode('add')}
+                data-sq="ctl"
+                data-sq-border="solid"
+                className={`p-2.5 text-xs font-bold cursor-pointer ${adjustMode === 'add' ? '[--sq-stroke:#10B981] bg-emerald-50 text-emerald-700' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'}`}
+              >
                 {t('shop_adjust_restock')}
               </button>
-              <button type="button" onClick={() => setAdjustMode('remove')} className={`p-2.5 rounded-xl border text-xs font-bold cursor-pointer ${adjustMode === 'remove' ? 'border-red-500 bg-red-50 text-red-700' : 'border-neutral-200'}`}>
+              <button
+                type="button"
+                onClick={() => setAdjustMode('remove')}
+                data-sq="ctl"
+                data-sq-border="solid"
+                className={`p-2.5 text-xs font-bold cursor-pointer ${adjustMode === 'remove' ? '[--sq-stroke:#EF4444] bg-red-50 text-red-700' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'}`}
+              >
                 {t('shop_adjust_damage')}
               </button>
-              <button type="button" onClick={() => setAdjustMode('set')} className={`p-2.5 rounded-xl border text-xs font-bold cursor-pointer ${adjustMode === 'set' ? 'border-[#d4522f] bg-orange-50 text-[#d4522f]' : 'border-neutral-200'}`}>
+              <button
+                type="button"
+                onClick={() => setAdjustMode('set')}
+                data-sq="ctl"
+                data-sq-border="solid"
+                className={`p-2.5 text-xs font-bold cursor-pointer ${adjustMode === 'set' ? '[--sq-stroke:#d4522f] bg-orange-50 text-[#d4522f]' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'}`}
+              >
                 {t('shop_adjust_audit')}
               </button>
             </div>

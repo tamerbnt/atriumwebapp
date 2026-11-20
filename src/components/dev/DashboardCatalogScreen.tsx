@@ -84,16 +84,20 @@ export const DashboardCatalogScreen: React.FC = () => {
     <div
       data-atrium-theme={previewTheme}
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
-      className={`ax-scope min-h-full rounded-[24px] p-4 sm:p-6 transition-colors ${
+      className={`ax-scope min-h-full rounded-[var(--r-panel,28px)] p-4 sm:p-6 transition-colors ${
         previewTheme === 'dark' ? 'bg-[#0E0D0C] text-[#F4EDE6]' : 'bg-[#F7F4F1] text-[#0A0A0A]'
       }`}
     >
       {/* Dev Catalog Control Bar */}
-      <div className="mb-6 rounded-[20px] border border-[var(--ax-bdr)] bg-[var(--ax-slab)] p-4 flex flex-col gap-3">
+      <div
+        data-sq="table"
+        data-sq-border="solid"
+        className="mb-6 border border-[var(--ax-bdr)] [--sq-stroke:var(--ax-bdr)] bg-[var(--ax-slab)] p-4 flex flex-col gap-3"
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md text-[10.5px] font-bold uppercase tracking-wider bg-[var(--ax-c1)] text-[var(--ax-tc1)]">
+              <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10.5px] font-bold uppercase tracking-wider bg-[var(--ax-c1)] text-[var(--ax-tc1)]">
                 DEV CATALOG · PHASE 1
               </span>
               <h1 className="text-lg font-bold tracking-tight">
@@ -105,7 +109,11 @@ export const DashboardCatalogScreen: React.FC = () => {
             </p>
           </div>
 
-          <div className="ax-mono text-[11px] px-3 py-1.5 rounded-xl bg-[var(--ax-soft)] flex items-center gap-3">
+          <div
+            data-sq="ctl"
+            data-sq-border="none"
+            className="ax-mono text-[11px] px-3 py-1.5 bg-[var(--ax-soft)] flex items-center gap-3"
+          >
             <span>Last batch: <strong>{perfStats.lastMs} ms</strong></span>
             <span>Peak: <strong>{perfStats.maxMs} ms</strong></span>
             <span>Per-card avg: <strong>{(perfStats.lastMs / 19).toFixed(2)} ms</strong></span>
@@ -172,7 +180,11 @@ export const DashboardCatalogScreen: React.FC = () => {
           />
 
           {/* Treemap Controls */}
-          <label className="inline-flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[var(--ax-soft)] text-[var(--ax-on)]">
+          <label
+            data-sq="ctl-sm"
+            data-sq-border="none"
+            className="inline-flex items-center gap-2 px-2.5 py-1 bg-[var(--ax-soft)] text-[var(--ax-on)]"
+          >
             <span>Treemap φ: {treemapRatio.toFixed(2)}</span>
             <input
               type="range"
@@ -188,10 +200,12 @@ export const DashboardCatalogScreen: React.FC = () => {
           <button
             type="button"
             data-no-liquid="true"
+            data-sq="ctl-sm"
+            data-sq-border="none"
             onClick={() =>
               setTreemapVariant((v) => (v === 'squarified' ? 'split' : 'squarified'))
             }
-            className="px-2.5 py-1 rounded-xl bg-[var(--ax-soft)] text-[var(--ax-on)] font-semibold cursor-pointer"
+            className="px-2.5 py-1 bg-[var(--ax-soft)] text-[var(--ax-on)] font-semibold cursor-pointer"
           >
             Treemap: {treemapVariant}
           </button>
@@ -202,7 +216,7 @@ export const DashboardCatalogScreen: React.FC = () => {
       <Profiler id="atrium-chart-catalog" onRender={handleProfile}>
         <div
           style={containerStyle}
-          className={`grid ${gridColsClass} gap-4 rounded-[20px] ${
+          className={`grid ${gridColsClass} gap-4 rounded-[var(--r-table,20px)] ${
             width !== 'fluid' ? 'p-3' : ''
           }`}
         >

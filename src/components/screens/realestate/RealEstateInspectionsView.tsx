@@ -1034,7 +1034,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                   <InspectorKeyValue label="Horodatage" value={new Date(v.visitTimestamp).toLocaleString()} isLast />
                 </InspectorCard>
                 {v.signatureSvgData && (
-                  <div className="mt-3 p-3 bg-white dark:bg-[#1C1B1A] rounded-[18px] border border-[#E6DED6] dark:border-[#3A3734]">
+                  <div data-sq="card" data-sq-border="solid" className="mt-3 p-3 bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734]">
                     <div className="text-[11px] font-semibold text-black/60 dark:text-white/60 mb-2">Signature Certifiée</div>
                     <img src={v.signatureSvgData} alt="Signature acquéreur" className="h-24 mx-auto object-contain" />
                   </div>

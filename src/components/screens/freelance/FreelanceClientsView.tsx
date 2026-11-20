@@ -775,7 +775,7 @@ export const FreelanceClientsView: React.FC = () => {
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2"
+          className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040] animate-in fade-in slide-in-from-top-2"
         >
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
@@ -1397,7 +1397,7 @@ export const FreelanceClientsView: React.FC = () => {
                 <div
                   data-sq="card"
                   data-sq-border="solid"
-                  className="grid grid-cols-2 gap-3 p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40"
+                  className="grid grid-cols-2 gap-3 p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 [--sq-stroke:rgba(253,230,138,0.6)] dark:[--sq-stroke:rgba(120,53,15,0.4)]"
                 >
                   <LabelInput
                     field="RetainerHours"
@@ -1491,7 +1491,7 @@ export const FreelanceClientsView: React.FC = () => {
                 <div
                   data-sq="tile"
                   data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60 [--sq-stroke:#fecdd3] dark:[--sq-stroke:rgba(136,19,55,0.6)]"
                 >
                   <AlertTriangle size={20} />
                 </div>

@@ -309,7 +309,7 @@ export const TradingSalesView: React.FC = () => {
               : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-400';
           return (
             <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${typeBadge}`}>
+              <span className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold font-mono uppercase ${typeBadge}`}>
                 {doc.type.slice(0, 3)}
               </span>
               <span className="font-mono font-bold text-xs text-black dark:text-white">{doc.docNumber}</span>
@@ -392,7 +392,7 @@ export const TradingSalesView: React.FC = () => {
           const isValidated = doc.status === 'Validated';
           return (
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold ${
+              className={`inline-flex items-center px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold ${
                 isPaid
                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
                   : isDelivered
@@ -421,7 +421,9 @@ export const TradingSalesView: React.FC = () => {
               }}
               aria-label={t('action_print', 'Imprimer')}
               title={t('action_print', 'Imprimer')}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <Printer size={14} />
             </button>
@@ -433,7 +435,9 @@ export const TradingSalesView: React.FC = () => {
               }}
               aria-label={t('action_edit', 'Modifier')}
               title={t('action_edit', 'Modifier')}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <Edit size={14} />
             </button>
@@ -445,7 +449,7 @@ export const TradingSalesView: React.FC = () => {
                   handleConvert(doc);
                 }}
                 title={t('trading_sales_convert_to_bl', 'Convertir en Bon de Livraison')}
-                className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 transition-colors cursor-pointer"
+                className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 transition-colors cursor-pointer"
               >
                 BL →
               </button>
@@ -458,7 +462,7 @@ export const TradingSalesView: React.FC = () => {
                   handleConvert(doc);
                 }}
                 title={t('trading_sales_convert_to_invoice', 'Facturer ce bon de livraison')}
-                className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 transition-colors cursor-pointer"
+                className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 transition-colors cursor-pointer"
               >
                 {isAr ? 'فوترة ←' : 'Facturer →'}
               </button>
@@ -471,7 +475,9 @@ export const TradingSalesView: React.FC = () => {
               }}
               aria-label={t('action_delete', 'Supprimer')}
               title={t('action_delete', 'Supprimer')}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
             >
               <Trash2 size={14} />
             </button>

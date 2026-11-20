@@ -1607,7 +1607,6 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               </div>
             </div>
           </div>
-          </div>
         </div>
       )}
 
@@ -1682,6 +1681,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                 Clôturer la Caisse (Z)
               </AtriumButton>
             </div>
+          </div>
           </div>
         </div>
       )}

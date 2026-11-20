@@ -94,15 +94,16 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 		onClose();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-<div className="relative w-full max-w-3xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E6DED6] dark:border-[#27272A] p-6 md:p-8 my-8 text-black dark:text-[#FAFAFA]">
+<div className="sq-elev-pop relative w-full max-w-3xl my-8">
+<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] p-6 md:p-8 text-black dark:text-[#FAFAFA]">
 <div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#27272A] mb-6">
 <div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><FileText className="w-5 h-5" /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><FileText className="w-5 h-5" /></div>
 <div>
 <h2 className="text-xl font-bold tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">Nouveau Mandat d'Agence (Décret 09-18)</h2>
 </div>
 </div>
-<button type="button" onClick={onClose} aria-label="Fermer" className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
+<button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
 <form onSubmit={handleSubmit} className="space-y-6">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -137,7 +138,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 								}
 							]} />
 </div>
-<div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#141416] border border-[#E6DED6] dark:border-[#232328] space-y-4">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141416] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#232328] space-y-4">
 <div className="flex items-center gap-2 text-xs font-semibold text-[#d4522f] uppercase tracking-wider">
 <ShieldCheck className="w-4 h-4" />
 <span>Identité Légale du Mandant (Propriétaire)</span>
@@ -187,9 +188,9 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 								}
 							]} />
 </div>}
-<div className="p-4 rounded-2xl bg-[#FDF4F0] dark:bg-[#1C1816] border border-[#d4522f]/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#FDF4F0] dark:bg-[#1C1816] [--sq-stroke:rgba(212,82,47,0.3)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
 <div className="flex items-center gap-3">
-<div className="w-9 h-9 rounded-xl bg-[#d4522f] text-white flex items-center justify-center font-bold"><Calculator className="w-5 h-5" /></div>
+<div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-[#d4522f] text-white flex items-center justify-center font-bold"><Calculator className="w-5 h-5" /></div>
 <div>
 <div className="text-xs text-black/70 dark:text-white/75">
 {commissionMode === "DecreeTranches" ? "Honoraires Légaux Dégressifs (Décret 09-18 Art. 34)" : `Honoraires Forfaitaires (${commissionRatePercent}%)`}
@@ -234,7 +235,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 								]} />
 <div className="flex items-center gap-3 pt-5">
 <label className="flex items-center gap-2 cursor-pointer text-sm font-medium">
-<input type="checkbox" checked={isExclusive} onChange={(e) => setIsExclusive(e.target.checked)} className="w-4 h-4 rounded border-[#E6DED6] text-[#d4522f] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={isExclusive} onChange={(e) => setIsExclusive(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] border-[#E6DED6] text-[#d4522f] focus:ring-[#d4522f]" />
 <span>Mandat d'Exclusivité Accordé</span>
 </label>
 </div>
@@ -245,6 +246,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 <AtriumButton variant="primary" icon={<CheckCircle size={14} />} type="submit">Enregistrer au Registre Officiel</AtriumButton>
 </div>
 </form>
+</div>
 </div>
 </div>;
 };

@@ -1109,7 +1109,7 @@ export function UniversalDataCollection<T>({
               {subtitle && <SkeletonText size="xs" width="220px" />}
             </div>
             {showViewToggle && (
-              <SkeletonBox width={72} height={32} rounded="rounded-xl" />
+              <SkeletonBox width={72} height={32} rounded="rounded-[var(--r-ctl,12px)]" />
             )}
           </div>
         )}
@@ -1326,19 +1326,25 @@ export function UniversalDataCollection<T>({
 
       {isLoadingMore && (
         <div className="w-full space-y-2 pt-1" aria-busy="true">
-          <div className="h-[54px] w-full rounded-2xl bg-[var(--atr-soft)] border border-[var(--atr-line)] animate-pulse" />
-          <div className="h-[54px] w-full rounded-2xl bg-[var(--atr-soft)] border border-[var(--atr-line)] animate-pulse" />
+          <div data-sq="row" data-sq-border="solid" className="h-[54px] w-full bg-[var(--atr-soft)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] animate-pulse" />
+          <div data-sq="row" data-sq-border="solid" className="h-[54px] w-full bg-[var(--atr-soft)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] animate-pulse" />
         </div>
       )}
 
       {loadMoreError && (
-        <div className="w-full px-4 py-2.5 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/30 flex items-center justify-between gap-3 text-xs text-rose-700 dark:text-rose-300">
+        <div
+          data-sq="ctl"
+          data-sq-border="solid"
+          className="w-full px-4 py-2.5 border border-rose-300 dark:border-rose-800 [--sq-stroke:#fda4af] dark:[--sq-stroke:#9f1239] bg-rose-50 dark:bg-rose-950/30 flex items-center justify-between gap-3 text-xs text-rose-700 dark:text-rose-300"
+        >
           <span>{loadMoreError}</span>
           {(onRetryLoadMore || onLoadMore) && (
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="solid"
               onClick={() => void (onRetryLoadMore || onLoadMore)?.()}
-              className="px-3 py-1 rounded-lg border border-rose-300 dark:border-rose-700 font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+              className="px-3 py-1 border border-rose-300 dark:border-rose-700 [--sq-stroke:#fda4af] dark:[--sq-stroke:#be123c] font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors cursor-pointer whitespace-nowrap shrink-0"
             >
               {storeLanguage === 'ar' ? 'إعادة المحاولة' : storeLanguage === 'fr' ? 'Réessayer' : 'Retry'}
             </button>
@@ -1359,9 +1365,11 @@ export function UniversalDataCollection<T>({
           {canLoadMore && (
             <button
               type="button"
+              data-sq="ctl"
+              data-sq-border="solid"
               disabled={isLoadingMore}
               onClick={() => void handleLoadMore()}
-              className="h-9 px-4 rounded-xl bg-[var(--atr-card)] border border-[var(--atr-line)] text-xs font-semibold text-[var(--atr-ink)] hover:border-[var(--atr-acc)] transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
+              className="h-9 px-4 bg-[var(--atr-card)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] hover:[--sq-stroke:var(--atr-acc)] text-xs font-semibold text-[var(--atr-ink)] transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
             >
               {isLoadingMore
                 ? storeLanguage === 'ar'

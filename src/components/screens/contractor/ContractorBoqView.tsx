@@ -672,7 +672,7 @@ export const ContractorBoqView: React.FC<any> = () => {
                 />
               </div>
               {isOverrun && (
-                <div className="flex items-center gap-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1 py-0.5 rounded w-fit">
+                <div className="flex items-center gap-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1 py-0.5 rounded-[var(--r-check,6px)] w-fit">
                   <AlertTriangle size={10} className="shrink-0" />
                   <span>+{pct - 100}% Dépassement</span>
                 </div>

@@ -295,7 +295,7 @@ export const LegalHearingsView: React.FC<any> = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700"
+              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
             >
               <Calendar size={18} />
             </div>
@@ -870,7 +870,7 @@ export const LegalHearingsView: React.FC<any> = () => {
                   key={date}
                   data-sq="panel"
                   data-sq-border="solid"
-                  className="bg-white/80 dark:bg-neutral-900/40 p-3 border border-[#E6DED6] dark:border-[#33302D] space-y-3"
+                  className="bg-white/80 dark:bg-neutral-900/40 p-3 border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
                 >
                   <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800 flex-wrap gap-2">
                     <div className="flex items-center gap-2">
@@ -910,7 +910,7 @@ export const LegalHearingsView: React.FC<any> = () => {
                           <div
                             data-sq="tile"
                             data-sq-border="solid"
-                            className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-600"
+                            className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-700 text-[#d4522f] font-bold flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-600 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#525252]"
                           >
                             <span className="text-xs font-mono font-black">
                               {h.hearingTime || '09:00'}

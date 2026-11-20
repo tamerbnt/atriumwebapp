@@ -175,12 +175,15 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
       {/* 1. Island Slab (.slab) - z-index: 0, height & top driven by presence spring */}
       <div
         ref={slabRef}
+        data-sq="row"
+        data-sq-border="solid"
+        data-sq-stroke-w={isSelected && !isOpen ? '1.5' : undefined}
         className={`slab ${
           isOpen
-            ? '!bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:!bg-[#2A1D18] !border-[var(--atr-acc,#d4522f)]'
+            ? '!bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:!bg-[#2A1D18] [--sq-stroke:var(--atr-acc,#d4522f)]'
             : isSelected
-            ? 'bg-white dark:bg-[#1C1B1A] !border-[var(--atr-acc,#d4522f)] shadow-[0_0_0_1px_var(--atr-acc,#d4522f)]'
-            : 'bg-white dark:bg-[#1C1B1A] border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]'
+            ? 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--atr-acc,#d4522f)]'
+            : 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734]'
         }`}
       />
 
@@ -209,16 +212,19 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
           type="button"
           role="checkbox"
           data-no-liquid="true"
+          data-sq="check"
+          data-sq-border="solid"
+          data-sq-stroke-w="1.5"
           aria-checked={isSelected}
           aria-label={`${isSelected ? 'Désélectionner' : 'Sélectionner'} ${member.name}`}
           onClick={(e) => {
             e.stopPropagation();
             onSelect?.(member.id, e);
           }}
-          className={`cb c-cb w-[22px] h-[22px] rounded-[7px] border-[1.5px] grid place-items-center p-0 cursor-pointer ${
+          className={`cb c-cb relative w-5 h-5 grid place-items-center p-0 cursor-pointer ${
             isSelected
-              ? 'bg-[var(--atr-acc,#d4522f)] border-[var(--atr-acc,#d4522f)] text-white'
-              : 'bg-white dark:bg-[#262422] border-[#D4C8BC] dark:border-[#5A5550] text-transparent hover:border-[var(--atr-acc,#d4522f)]'
+              ? 'bg-[var(--atr-acc,#d4522f)] [--sq-stroke:var(--atr-acc,#d4522f)] text-white'
+              : 'bg-white dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#5A5550] text-transparent hover:[--sq-stroke:var(--atr-acc,#d4522f)]'
           }`}
         >
           <Check
@@ -251,7 +257,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
                 {member.name}
               </button>
               {(isPinned || member.isPinned) && (
-                <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/12 px-1.5 py-0.2 rounded-md shrink-0">
+                <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/12 px-2 py-0.5 rounded-full shrink-0">
                   VIP
                 </span>
               )}
@@ -267,7 +273,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         <span className="c-fm min-w-0">
           <span
             title={member.planName}
-            className="pill inline-flex items-center max-w-full px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate"
+            className="pill inline-flex items-center max-w-full px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate"
           >
             {member.planName}
           </span>
@@ -276,7 +282,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         {/* Status Pill (.c-st) */}
         <span className="c-st">
           <span
-            className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-md text-[12px] font-medium whitespace-nowrap ${statusPillClass}`}
+            className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[12px] font-medium whitespace-nowrap ${statusPillClass}`}
           >
             <i className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
             {member.status}

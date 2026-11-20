@@ -469,7 +469,9 @@ export const TradingCatalogView: React.FC = () => {
                 handleEdit(p);
               }}
               aria-label={t('action_edit', 'Modifier')}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white rounded-lg cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white cursor-pointer"
             >
               <Edit size={14} />
             </button>
@@ -481,7 +483,9 @@ export const TradingCatalogView: React.FC = () => {
                 if (selectedProduct?.id === p.id) setSelectedProduct(null);
               }}
               aria-label={t('action_delete', 'Supprimer')}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 rounded-lg cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 cursor-pointer"
             >
               <Trash2 size={14} />
             </button>
@@ -921,7 +925,12 @@ export const TradingCatalogView: React.FC = () => {
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="sq-elev-pop relative w-full max-w-lg">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 space-y-4"
+            >
             <h2 className="text-base font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               {editingProduct ? "Modifier l'Article" : 'Ajouter au Catalogue'}
             </h2>
@@ -994,6 +1003,7 @@ export const TradingCatalogView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

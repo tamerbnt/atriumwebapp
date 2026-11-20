@@ -561,7 +561,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               <div
                 data-sq="tile"
                 data-sq-border="solid"
-                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800 [--sq-stroke:#ffedd5] dark:[--sq-stroke:#262626]"
               >
                 <Pill size={16} />
               </div>
@@ -1308,7 +1308,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         data-sq="empty"
                         data-sq-border="dashed"
                         data-sq-stroke-w={2}
-                        className="p-5 bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 flex flex-col items-center justify-center space-y-2.5 text-center mb-3"
+                        className="p-5 bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 [--sq-stroke:rgba(212,82,47,0.4)] flex flex-col items-center justify-center space-y-2.5 text-center mb-3"
                       >
                         <QrCode size={72} className="text-[#d4522f]" />
                         <div>
@@ -1511,7 +1511,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   data-sq-stroke-w={2}
-                  className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-500/80 text-rose-800 dark:text-rose-300 space-y-2"
+                  className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-500/80 [--sq-stroke:rgba(244,63,94,0.8)] text-rose-800 dark:text-rose-300 space-y-2"
                 >
                   <div className="flex items-center gap-2 font-bold text-xs">
                     <ShieldAlert size={16} className="text-rose-600 animate-pulse" />

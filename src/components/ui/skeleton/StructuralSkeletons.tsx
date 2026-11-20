@@ -614,7 +614,7 @@ const SkeletonPodCard: React.FC<{
               <SkeletonBox
                 key={`waf_${i}`}
                 height={14}
-                rounded="rounded-xs"
+                rounded="rounded-[var(--r-check,6px)]"
                 className={i < 19 ? accentBoxClass : mutedBoxClass}
               />
             ))}
@@ -626,7 +626,7 @@ const SkeletonPodCard: React.FC<{
             <SkeletonBox
               key={`hm_${i}`}
               height={24}
-              rounded="rounded-md"
+              rounded="rounded-[var(--r-check,6px)]"
               className={i % 5 === 0 ? accentBoxClass : mutedBoxClass}
             />
           ))}
@@ -639,7 +639,7 @@ const SkeletonPodCard: React.FC<{
               <SkeletonBox
                 width={`${w}%`}
                 height={24}
-                rounded="rounded-lg"
+                rounded="rounded-[var(--r-ctl-sm,10px)]"
                 className={i % 2 === 0 ? accentBoxClass : mutedBoxClass}
               />
             </div>
@@ -647,10 +647,10 @@ const SkeletonPodCard: React.FC<{
         </div>
       ) : kind === 'treemap' ? (
         <div className="grid grid-cols-12 gap-2 h-[156px]">
-          <SkeletonBox height="100%" rounded="rounded-xl" className={`col-span-7 ${accentBoxClass}`} />
+          <SkeletonBox height="100%" rounded="rounded-[var(--r-ctl,12px)]" className={`col-span-7 ${accentBoxClass}`} />
           <div className="col-span-5 grid grid-rows-2 gap-2">
-            <SkeletonBox height="100%" rounded="rounded-xl" className={mutedBoxClass} />
-            <SkeletonBox height="100%" rounded="rounded-xl" className={mutedBoxClass} />
+            <SkeletonBox height="100%" rounded="rounded-[var(--r-ctl,12px)]" className={mutedBoxClass} />
+            <SkeletonBox height="100%" rounded="rounded-[var(--r-ctl,12px)]" className={mutedBoxClass} />
           </div>
         </div>
       ) : kind === 'bubble' ? (

@@ -957,7 +957,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                       <div
                         data-sq="ctl"
                         data-sq-border="solid"
-                        className="mt-2 px-3 py-2 bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/40 border border-[#F5BDB3] dark:border-[#5C2B24] text-[11px] font-semibold text-[#B8321C] dark:text-[#FF8D7A] flex items-center gap-2"
+                        className="mt-2 px-3 py-2 bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/40 border border-[#F5BDB3] dark:border-[#5C2B24] [--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] text-[11px] font-semibold text-[#B8321C] dark:text-[#FF8D7A] flex items-center gap-2"
                       >
                         <ShieldAlert size={13} className="shrink-0" />
                         <span>
@@ -1297,7 +1297,8 @@ export const MedicalPatientsView: React.FC<any> = () => {
                                   message: `Mesure TA ${sysVal}/${diaVal} mmHg ajoutée au dossier.`,
                                 });
                               }}
-                              className="px-3 py-1 bg-[#d4522f] text-white rounded text-xs font-semibold shadow-2xs cursor-pointer"
+                              data-sq="ctl-sm"
+                              className="px-3 py-1 bg-[#d4522f] text-white text-xs font-semibold cursor-pointer"
                             >
                               Enregistrer
                             </button>

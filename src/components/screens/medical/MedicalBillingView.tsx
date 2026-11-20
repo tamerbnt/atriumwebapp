@@ -503,7 +503,7 @@ export const MedicalBillingView: React.FC<any> = () => {
           const isPinned = pinnedIds.has(c.id);
           return (
             <div className="flex items-center gap-3 min-w-0">
-              <div data-sq="tile" data-sq-border="solid" className="w-9 h-9 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-100 dark:border-neutral-800">
+              <div data-sq="tile" data-sq-border="solid" className="w-9 h-9 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-100 dark:border-neutral-800 [--sq-stroke:#d1fae5] dark:[--sq-stroke:#262626]">
                 <Receipt size={16} />
               </div>
               <div className="min-w-0">
@@ -986,7 +986,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                       <div className="flex items-center gap-2">
                         <span className="font-mono font-bold text-xs text-[#d4522f]">{claim.ngapCode}</span>
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold ${
                             rate === 100
                               ? 'bg-purple-50 text-purple-700 border border-purple-200'
                               : 'bg-blue-50 text-blue-700 border border-blue-200'
@@ -1026,7 +1026,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                     const transmitted = claim.isTransmitted ?? claim.status === 'Submitted';
                     return (
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                        className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-semibold ${
                           transmitted ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
                         }`}
                       >
@@ -1411,8 +1411,8 @@ export const MedicalBillingView: React.FC<any> = () => {
                       data-sq-stroke-w={isCritical ? 2 : 1}
                       className={`p-4 bg-white dark:bg-neutral-800 border flex flex-col justify-between space-y-3 transition-all ${
                         isCritical
-                          ? 'border-rose-300 dark:border-rose-900/60'
-                          : 'border-neutral-200 dark:border-neutral-700'
+                          ? 'border-rose-300 dark:border-rose-900/60 [--sq-stroke:#fda4af] dark:[--sq-stroke:rgba(136,19,55,0.6)]'
+                          : 'border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040]'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">

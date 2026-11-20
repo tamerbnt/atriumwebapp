@@ -592,7 +592,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] w-full p-6"
+              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] w-full p-6"
             >
               <h3 className="text-base font-bold text-black dark:text-white mb-1">
                 {isRtl ? 'تحصيل فاتورة الصالون' : 'Encaissement Express Salon'}
@@ -603,7 +603,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] p-4 text-xs space-y-2 mb-4"
+                className="bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-4 text-xs space-y-2 mb-4"
               >
               <div className="flex justify-between">
                 <span>{isRtl ? 'سعر الخدمة' : 'Prestation'}</span>
@@ -681,7 +681,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] w-full p-6"
+              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] w-full p-6"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-bold text-black dark:text-white">
@@ -701,7 +701,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
                   >
                     <select
                       value={targetStationId}
@@ -721,7 +721,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
                   >
                     <input
                       type="text"
@@ -739,7 +739,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
                   >
                     <select
                       value={selectedServiceId}
@@ -759,7 +759,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
                   >
                     <select
                       value={selectedStylistId}
@@ -805,7 +805,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] w-full p-6 text-center"
+              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] w-full p-6 text-center"
             >
               <div
                 data-sq="tile-lg"
@@ -821,7 +821,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] p-4 text-xs space-y-2 text-left mb-5"
+                className="bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-4 text-xs space-y-2 text-left mb-5"
               >
                 <div className="flex justify-between">
                   <span>Client :</span>

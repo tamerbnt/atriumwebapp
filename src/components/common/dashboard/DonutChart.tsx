@@ -94,7 +94,9 @@ export const DonutChart: React.FC<DonutChartProps> = ({
 
           {showFilter && (
             <div
-              className="inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 self-start sm:self-auto shadow-2xs"
+              data-sq="ctl-sm"
+              data-sq-border="solid"
+              className="inline-flex items-center gap-0.5 p-0.5 bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] self-start sm:self-auto"
               role="group"
             >
               {filterOptions.map((opt) => {
@@ -104,7 +106,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                     key={opt.id}
                     type="button"
                     onClick={() => handlePeriodChange(opt.id)}
-                    className={`px-2 py-0.5 rounded-md text-[10.5px] font-semibold transition-all duration-150 cursor-pointer select-none ${
+                    className={`px-2 py-0.5 rounded-[var(--r-thumb,9px)] text-[10.5px] font-semibold transition-all duration-150 cursor-pointer select-none ${
                       isSelected
                         ? 'bg-white dark:bg-neutral-700 text-[#d4522f] dark:text-[#E09070] shadow-xs'
                         : 'text-black/62 dark:text-white/68 hover:text-black dark:hover:text-white'

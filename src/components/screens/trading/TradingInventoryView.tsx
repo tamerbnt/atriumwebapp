@@ -431,7 +431,7 @@ export const TradingInventoryView: React.FC = () => {
               : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-400';
           return (
             <div className="flex items-center gap-2 font-mono text-xs font-bold">
-              <span className={`px-2 py-0.5 rounded text-[10px] uppercase ${badgeColor}`}>
+              <span className={`px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] uppercase ${badgeColor}`}>
                 {v.type === 'entree' ? 'BE' : v.type === 'sortie' ? 'BS' : 'BT'}
               </span>
               <span className="text-black dark:text-white">{v.voucherNumber}</span>
@@ -589,7 +589,11 @@ export const TradingInventoryView: React.FC = () => {
       <ScreenPod>
         <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800/60">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]">
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="w-8 h-8 bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#d4522f]"
+            >
               <Warehouse size={16} />
             </div>
             <div>
@@ -609,17 +613,20 @@ export const TradingInventoryView: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedDepotId('all')}
-            className={`p-3.5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer ${
+            data-sq="card"
+            data-sq-border="solid"
+            data-sq-stroke-w={selectedDepotId === 'all' ? '2' : '1'}
+            className={`p-3.5 text-left rtl:text-right transition-all cursor-pointer ${
               selectedDepotId === 'all'
-                ? 'border-[#d4522f] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#d4522f]/20'
-                : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/80 hover:border-neutral-300'
+                ? '[--sq-stroke:#d4522f] bg-white dark:bg-neutral-800'
+                : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-800/80 hover:[--sq-stroke:#D4D4D4]'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="font-bold text-xs text-black dark:text-white">
                 {t('trading_inventory_all_depots', 'Tous')}
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-semibold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-200 dark:bg-neutral-700 font-semibold">
                 GLOBAL
               </span>
             </div>
@@ -630,15 +637,18 @@ export const TradingInventoryView: React.FC = () => {
               key={w.id}
               type="button"
               onClick={() => setSelectedDepotId(w.id)}
-              className={`p-3.5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer ${
+              data-sq="card"
+              data-sq-border="solid"
+              data-sq-stroke-w={selectedDepotId === w.id ? '2' : '1'}
+              className={`p-3.5 text-left rtl:text-right transition-all cursor-pointer ${
                 selectedDepotId === w.id
-                  ? 'border-[#d4522f] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#d4522f]/20'
-                  : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/80 hover:border-neutral-300'
+                  ? '[--sq-stroke:#d4522f] bg-white dark:bg-neutral-800'
+                  : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-800/80 hover:[--sq-stroke:#D4D4D4]'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-bold text-xs text-black dark:text-white truncate">{w.name}</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-semibold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-200 dark:bg-neutral-700 font-semibold">
                   {w.code}
                 </span>
               </div>
@@ -1091,7 +1101,12 @@ export const TradingInventoryView: React.FC = () => {
 
       {newDepotModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 space-y-4">
+          <div className="sq-elev-pop relative w-full max-w-md">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 space-y-4"
+            >
             <h2 className="text-base font-bold text-black dark:text-white flex items-center gap-2 font-['Barlow_Condensed',sans-serif] rtl:font-sans">
               <Building2 size={18} className="text-[#d4522f]" />
               <span>Ajouter un Nouveau Dépôt</span>
@@ -1132,6 +1147,7 @@ export const TradingInventoryView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

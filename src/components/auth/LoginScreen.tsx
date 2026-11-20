@@ -385,7 +385,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   type="checkbox"
                   checked={rememberDevice}
                   onChange={(e) => setRememberDevice(e.target.checked)}
-                  className="rounded border-neutral-700 text-[#d4522f] focus:ring-0"
+                  className="rounded-[var(--r-check,6px)] border-neutral-700 text-[#d4522f] focus:ring-0"
                 />
                 <span>{language === 'ar' ? 'تذكر هذا الجهاز' : language === 'fr' ? 'Mémoriser ce terminal' : 'Remember this terminal'}</span>
               </label>

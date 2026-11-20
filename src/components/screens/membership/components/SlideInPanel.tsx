@@ -237,7 +237,9 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
         aria-modal="true"
         aria-hidden={!isOpen}
         aria-labelledby="pnl-title"
-        className={`pnl fixed right-3.5 top-3.5 bottom-3.5 w-[560px] max-w-[calc(100vw-28px)] z-[61] rounded-[30px] bg-white dark:bg-[#1C1B1A] flex flex-col shadow-[-14px_0_40px_rgba(27,25,23,0.22)] border border-[#E6DED6] dark:border-[#3A3734] overflow-hidden ${className}`}
+        data-sq="panel"
+        data-sq-border="solid"
+        className={`pnl fixed right-3.5 top-3.5 bottom-3.5 w-[560px] max-w-[calc(100vw-28px)] z-[61] bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex flex-col overflow-hidden ${className}`}
         style={{
           visibility: 'hidden',
           transform: 'translate3d(620px, 0, 0)',
@@ -248,7 +250,9 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
         <div className="flex gap-4 items-start p-6 pb-4.5 border-b border-[#E6DED6]/60 dark:border-[#3A3734]">
           {avatar && (
             <div
-              className="w-[68px] h-[68px] rounded-[22px] grid place-items-center text-white font-bold text-[28px] shrink-0 select-none shadow-sm"
+              data-sq="tile-lg"
+              data-sq-border="none"
+              className="w-[68px] h-[68px] grid place-items-center text-white font-bold text-[28px] shrink-0 select-none"
               style={{ backgroundColor: avatar.bg }}
               aria-hidden="true"
             >
@@ -347,8 +351,10 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
 
           <button
             type="button"
+            data-sq="ctl"
+            data-sq-border="none"
             onClick={onClose}
-            className="h-[44px] px-7 border-0 rounded-[12px] bg-[#d4522f] hover:bg-[#b03b1b] text-white font-semibold text-[14px] shadow-sm cursor-pointer transition-colors"
+            className="h-[44px] px-7 border-0 bg-[#d4522f] hover:bg-[#b03b1b] text-white font-semibold text-[14px] cursor-pointer transition-colors"
           >
             {closeLabel}
           </button>

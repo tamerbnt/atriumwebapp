@@ -504,12 +504,12 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         renderCell: (talent) => (
           <div className="space-y-0.5">
             {talent.hasDriverLicense && (
-              <span className="inline-block px-1.5 py-0.5 rounded bg-[#F3EDE7] dark:bg-neutral-800 text-[10px] font-semibold text-black/70 dark:text-white/75 mr-1">
+              <span className="inline-block px-1.5 py-0.5 rounded-[var(--r-check,6px)] bg-[#F3EDE7] dark:bg-neutral-800 text-[10px] font-semibold text-black/70 dark:text-white/75 mr-1">
                 Permis B
               </span>
             )}
             {talent.isVehicleOwner && (
-              <span className="inline-block px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-[10px] font-semibold text-blue-700 dark:text-blue-300">
+              <span className="inline-block px-1.5 py-0.5 rounded-[var(--r-check,6px)] bg-blue-100 dark:bg-blue-950/60 text-[10px] font-semibold text-blue-700 dark:text-blue-300">
                 Véhiculé
               </span>
             )}
@@ -852,12 +852,12 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     </div>
                     <div className="flex items-center justify-center gap-1.5 pt-1">
                       {talent.hasDriverLicense && (
-                        <span className="px-2 py-0.5 rounded bg-[#F3EDE7] dark:bg-neutral-800 text-[10px] font-semibold text-black/70 dark:text-white/75">
+                        <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] bg-[#F3EDE7] dark:bg-neutral-800 text-[10px] font-semibold text-black/70 dark:text-white/75">
                           Permis B
                         </span>
                       )}
                       {talent.isVehicleOwner && (
-                        <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-[10px] font-semibold text-blue-700 dark:text-blue-300">
+                        <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] bg-blue-100 dark:bg-blue-950/60 text-[10px] font-semibold text-blue-700 dark:text-blue-300">
                           Véhiculé
                         </span>
                       )}
@@ -884,7 +884,11 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 
       {activeTab === 'dossier' && (
         <ScreenPod>
-          <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs max-w-4xl mx-auto space-y-6">
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-4xl mx-auto space-y-6"
+          >
             {selectedTalent ? (
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E6DED6] dark:border-neutral-800">
@@ -893,7 +897,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                       src={selectedTalent.portraitPhotoUrl}
                       alt={selectedTalent.fullName}
                       referrerPolicy="no-referrer"
-                      className="w-16 h-16 rounded-2xl object-cover border-2 border-[#d4522f] bg-neutral-100"
+                      className="w-16 h-16 rounded-[var(--r-card,16px)] object-cover border-2 border-[#d4522f] bg-neutral-100"
                     />
                     <div>
                       <div className="flex items-center gap-2">
@@ -922,7 +926,11 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 rounded-xl border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
+                  >
                     <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
                       <Users className="w-4 h-4 text-[#d4522f]" />
                       {t('pm_rh_pillar1_title')}
@@ -943,7 +951,11 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                       </p>
                     </div>
                   </div>
-                  <div className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 rounded-xl border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
+                  >
                     <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
                       <CreditCard className="w-4 h-4 text-emerald-600" />
                       {t('pm_rh_pillar2_title')}
@@ -960,19 +972,31 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                       </p>
                     </div>
                   </div>
-                  <div className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 rounded-xl border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
+                  >
                     <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
                       <FileText className="w-4 h-4 text-blue-600" />
                       {t('pm_rh_pillar3_title')}
                     </h3>
                     <div className="text-xs space-y-2">
-                      <div className="flex items-center justify-between p-2 bg-white dark:bg-neutral-800 rounded-lg border border-[#E6DED6] dark:border-neutral-700">
+                      <div
+                        data-sq="ctl-sm"
+                        data-sq-border="solid"
+                        className="flex items-center justify-between p-2 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
+                      >
                         <span>{t('pm_rh_doc_cni')}</span>
                         <span className="text-emerald-600 font-bold text-[10px]">
                           {t('pm_rh_doc_verified')}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between p-2 bg-white dark:bg-neutral-800 rounded-lg border border-[#E6DED6] dark:border-neutral-700">
+                      <div
+                        data-sq="ctl-sm"
+                        data-sq-border="solid"
+                        className="flex items-center justify-between p-2 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
+                      >
                         <span>{t('pm_rh_doc_license')}</span>
                         <span className="text-emerald-600 font-bold text-[10px]">
                           {t('pm_rh_doc_compliant')}
@@ -980,7 +1004,11 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                       </div>
                     </div>
                   </div>
-                  <div className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 rounded-xl border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
+                  >
                     <h3 className="text-xs font-bold text-black dark:text-white uppercase tracking-wide flex items-center gap-1.5">
                       <Star className="w-4 h-4 text-amber-500" />
                       {t('pm_rh_pillar4_title')}
@@ -1005,7 +1033,9 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   <button
                     type="button"
                     onClick={() => setActiveTab('talents')}
-                    className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 border border-[#E6DED6] dark:border-neutral-700 rounded-xl hover:bg-[#F3EDE7] cursor-pointer"
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] cursor-pointer"
                   >
                     {t('pm_rh_btn_back_pool')}
                   </button>
@@ -1048,7 +1078,11 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 </p>
               </div>
               {formSubmittedSuccess && (
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 text-emerald-800 dark:text-emerald-300 text-xs font-semibold text-center">
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 text-xs font-semibold text-center"
+                >
                   {t('pm_rh_portal_success')}
                 </div>
               )}
@@ -1114,7 +1148,11 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     corner={14}
                   />
                 </div>
-                <div className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 rounded-xl border border-[#E6DED6] dark:border-neutral-700/60 space-y-2">
+                <div
+                  data-sq="ctl"
+                  data-sq-border="solid"
+                  className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
+                >
                   <span className="text-[11px] font-bold text-black dark:text-white block">
                     {t('pm_compta_tab_ccp')}
                   </span>
@@ -1166,7 +1204,11 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 
       {activeTab === 'walkin' && (
         <ScreenPod>
-          <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs max-w-2xl mx-auto space-y-6">
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-2xl mx-auto space-y-6"
+          >
             <div>
               <span className="text-xs font-semibold text-[#d4522f] uppercase tracking-wide">
                 Saisie Express Agence

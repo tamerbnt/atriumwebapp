@@ -1200,7 +1200,7 @@ export const FreelanceFinanceView: React.FC = () => {
                     type="checkbox"
                     checked={isTaxDeductible}
                     onChange={(e) => setIsTaxDeductible(e.target.checked)}
-                    className="rounded text-[#d4522f] focus:ring-0"
+                    className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-0"
                   />
                   <span>{t('free_fin_tax_deductible_prompt', language)}</span>
                 </label>

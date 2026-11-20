@@ -265,7 +265,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
         width: '1.4*',
         sortable: true,
         renderCell: (o) => (
-          <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded border border-[#d4522f]/20">
+          <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded-[var(--r-check,6px)] border border-[#d4522f]/20">
             {o.orderNumber}
           </span>
         ),
@@ -618,7 +618,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
             return (
               <div className="flex flex-col justify-between w-full space-y-3">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded">
+                  <span className="font-mono font-bold text-xs bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded-[var(--r-check,6px)]">
                     {o.orderNumber}
                   </span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">

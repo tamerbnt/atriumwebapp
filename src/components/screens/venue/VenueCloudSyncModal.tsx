@@ -283,11 +283,20 @@ ON CONFLICT (id) DO NOTHING;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="sq-elev-pop max-w-2xl w-full">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full max-h-[90vh] flex flex-col overflow-hidden"
+        >
         {/* Header */}
         <div className="px-6 py-5 border-b border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 flex items-center justify-center text-purple-600 dark:text-purple-400">
+            <div
+              data-sq="tile"
+              data-sq-border="solid"
+              className="w-10 h-10 bg-purple-50 dark:bg-purple-950/50 [--sq-stroke:#E9D5FF] dark:[--sq-stroke:#6B21A8] flex items-center justify-center text-purple-600 dark:text-purple-400"
+            >
               <Cloud size={20} />
             </div>
             <div>
@@ -298,7 +307,9 @@ ON CONFLICT (id) DO NOTHING;
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            data-sq="ctl-sm"
+            data-sq-border="none"
+            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -307,14 +318,18 @@ ON CONFLICT (id) DO NOTHING;
         {/* Body */}
         <div className="p-6 space-y-6 overflow-y-auto">
           {/* Status banner */}
-          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-4 bg-neutral-50 dark:bg-neutral-800/50 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          >
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
                   Supabase Client Status
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] bg-emerald-100 dark:bg-emerald-900/40 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
                   Connected
                 </span>
               </div>
@@ -326,7 +341,9 @@ ON CONFLICT (id) DO NOTHING;
             <button
               onClick={refreshCloudCounts}
               disabled={isLoading}
-              className="px-3 py-1.5 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 border border-neutral-200 dark:border-neutral-600 rounded-xl text-xs font-medium text-black/70 dark:text-white flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="px-3 py-1.5 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#525252] text-xs font-medium text-black/70 dark:text-white flex items-center gap-1.5 transition-colors self-start sm:self-auto cursor-pointer"
             >
               <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
               Refresh Status
@@ -350,7 +367,11 @@ ON CONFLICT (id) DO NOTHING;
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+              >
                 <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Rentable Spaces</span>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-xl font-bold text-black dark:text-white tabular-nums">
@@ -363,7 +384,11 @@ ON CONFLICT (id) DO NOTHING;
                 <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block mt-1">rentable_units</span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+              >
                 <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Reservations</span>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-xl font-bold text-black dark:text-white tabular-nums">
@@ -376,7 +401,11 @@ ON CONFLICT (id) DO NOTHING;
                 <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block mt-1">rental_bookings</span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+              >
                 <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Renters & Clients</span>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-xl font-bold text-black dark:text-white tabular-nums">
@@ -389,7 +418,11 @@ ON CONFLICT (id) DO NOTHING;
                 <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block mt-1">rental_renters</span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3.5 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+              >
                 <span className="text-[11px] font-medium text-black/55 dark:text-white/55">Caution Escrow</span>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-xl font-bold text-black dark:text-white tabular-nums">
@@ -406,7 +439,11 @@ ON CONFLICT (id) DO NOTHING;
 
           {/* Latest Row Found In Supabase */}
           {latestBooking && (
-            <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 [--sq-stroke:#A7F3D0] dark:[--sq-stroke:#065F46]"
+            >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
@@ -414,7 +451,7 @@ ON CONFLICT (id) DO NOTHING;
                     Verified Row Confirmed In Supabase Table
                   </h4>
                 </div>
-                <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-900/50 px-2 py-0.5 rounded-md">
+                <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-900/50 px-2 py-0.5 rounded-[var(--r-check,6px)]">
                   table: rental_bookings
                 </span>
               </div>
@@ -436,7 +473,11 @@ ON CONFLICT (id) DO NOTHING;
           )}
 
           {/* Live Action Test */}
-          <div className="p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/50">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-4 bg-purple-50/50 dark:bg-purple-950/20 [--sq-stroke:#E9D5FF] dark:[--sq-stroke:#581C87]"
+          >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h4 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
@@ -451,7 +492,9 @@ ON CONFLICT (id) DO NOTHING;
               <button
                 onClick={handleSendTestBooking}
                 disabled={isLoading}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-xl transition-colors shrink-0 flex items-center gap-2 shadow-xs"
+                data-sq="ctl"
+                data-sq-border="none"
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold transition-colors shrink-0 flex items-center gap-2 cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -470,10 +513,12 @@ ON CONFLICT (id) DO NOTHING;
             {/* Test result display */}
             {testResult.tested && (
               <div
-                className={`mt-4 p-3.5 rounded-xl border text-xs flex items-start gap-2.5 ${
+                data-sq="ctl"
+                data-sq-border="solid"
+                className={`mt-4 p-3.5 text-xs flex items-start gap-2.5 ${
                   testResult.success
-                    ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
-                    : 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#A7F3D0] dark:[--sq-stroke:#065F46] text-emerald-800 dark:text-emerald-200'
+                    : 'bg-rose-50 dark:bg-rose-950/40 [--sq-stroke:#FECDD3] dark:[--sq-stroke:#881337] text-rose-800 dark:text-rose-200'
                 }`}
               >
                 {testResult.success ? (
@@ -492,7 +537,11 @@ ON CONFLICT (id) DO NOTHING;
           </div>
 
           {/* Quick Repair Query Section */}
-          <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 bg-neutral-50 dark:bg-neutral-800/30">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-4 bg-neutral-50 dark:bg-neutral-800/30"
+          >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Database size={15} className="text-black/55 dark:text-white/55" />
@@ -502,7 +551,9 @@ ON CONFLICT (id) DO NOTHING;
               </div>
               <button
                 onClick={handleCopySql}
-                className="px-3 py-1 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 border border-neutral-200 dark:border-neutral-600 rounded-lg text-xs font-medium text-black dark:text-white flex items-center gap-1.5 transition-colors"
+                data-sq="ctl-sm"
+                data-sq-border="solid"
+                className="px-3 py-1 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#525252] text-xs font-medium text-black dark:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 {copied ? (
                   <>
@@ -522,7 +573,11 @@ ON CONFLICT (id) DO NOTHING;
               If your Supabase project was created with strict foreign keys or RLS, run this script once in your Supabase SQL Editor. It allows direct, seamless saves from the application:
             </p>
 
-            <pre className="p-3 bg-neutral-900 text-white rounded-xl text-[11px] font-mono overflow-x-auto max-h-40 border border-neutral-800">
+            <pre
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="p-3 bg-neutral-900 text-white text-[11px] font-mono overflow-x-auto max-h-40 [--sq-stroke:#262626]"
+            >
               {sqlRepairScript}
             </pre>
           </div>
@@ -535,10 +590,13 @@ ON CONFLICT (id) DO NOTHING;
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-100 text-white text-xs font-semibold rounded-xl transition-colors"
+            data-sq="ctl"
+            data-sq-border="none"
+            className="px-4 py-2 bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-black text-xs font-semibold transition-colors cursor-pointer"
           >
             Close
           </button>
+        </div>
         </div>
       </div>
     </div>

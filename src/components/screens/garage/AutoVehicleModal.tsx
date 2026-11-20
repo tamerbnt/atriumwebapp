@@ -220,7 +220,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-3.5 bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-800/40 space-y-2"
+              className="p-3.5 bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-800/40 [--sq-stroke:rgba(254,215,170,0.7)] dark:[--sq-stroke:rgba(154,52,18,0.4)] space-y-2"
             >
               <div className="flex items-center gap-2 text-xs font-bold text-[#d4522f]">
                 <Building2 size={15} />

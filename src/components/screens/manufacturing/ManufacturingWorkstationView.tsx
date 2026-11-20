@@ -609,8 +609,8 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     onClick={epi.toggle}
                     className={`p-3.5 border text-left rtl:text-right flex items-center gap-3 transition-all cursor-pointer ${
                       epi.active
-                        ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 font-bold'
-                        : 'bg-[#FBF8F5] dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 [--sq-stroke:#6ee7b7] dark:[--sq-stroke:#047857] text-emerald-800 dark:text-emerald-300 font-bold'
+                        : 'bg-[#FBF8F5] dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040] text-black/70 dark:text-white/75'
                     }`}
                   >
                     <div

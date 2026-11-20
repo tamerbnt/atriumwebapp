@@ -427,7 +427,7 @@ export const VenueTimelineView: React.FC = () => {
         renderCell: (b) => {
           const bInfo = resolveRecordBranch(b, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -478,19 +478,27 @@ export const VenueTimelineView: React.FC = () => {
     () => (
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center bg-white dark:bg-neutral-800 rounded-xl p-1 border border-neutral-200/80 dark:border-neutral-700 shadow-2xs">
+          <div
+            data-sq="ctl"
+            data-sq-border="solid"
+            className="flex items-center bg-white dark:bg-neutral-800 p-1 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]"
+          >
             <button
               type="button"
               onClick={handlePrevDay}
               aria-label="Previous day"
-              className="p-1.5 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <ChevronLeft size={16} className="rtl:rotate-180" />
             </button>
             <button
               type="button"
               onClick={handleToday}
-              className="px-3 py-1 text-xs font-semibold text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="px-3 py-1 text-xs font-semibold text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               {t('venue_timeline_today')}
             </button>
@@ -505,7 +513,9 @@ export const VenueTimelineView: React.FC = () => {
               type="button"
               onClick={handleNextDay}
               aria-label="Next day"
-              className="p-1.5 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <ChevronRight size={16} className="rtl:rotate-180" />
             </button>
@@ -515,7 +525,11 @@ export const VenueTimelineView: React.FC = () => {
           </span>
         </div>
 
-        <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E6DED6] dark:border-neutral-700/80 shadow-2xs overflow-x-auto">
+        <div
+          data-sq="table"
+          data-sq-border="solid"
+          className="bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] overflow-x-auto"
+        >
           <div className="min-w-[920px]">
             <div className="flex border-b border-[#E6DED6] dark:border-neutral-700/80 bg-neutral-50/80 dark:bg-neutral-800/80 sticky top-0 z-10 text-[11px] font-mono text-black/55 dark:text-white/55">
               <div className="w-56 sm:w-64 p-3 font-semibold text-black/70 dark:text-white/75 border-r border-[#E6DED6] dark:border-neutral-700/80 shrink-0">
@@ -609,7 +623,7 @@ export const VenueTimelineView: React.FC = () => {
                                 setInspectedBooking(booking);
                               }}
                               style={{ left: layout.left, width: layout.width }}
-                              className={`absolute top-2 bottom-2 z-10 rounded-xl px-2.5 py-1.5 cursor-pointer shadow-xs border transition-all flex flex-col justify-center overflow-hidden text-left ${
+                              className={`absolute top-2 bottom-2 z-10 rounded-[var(--r-ctl,12px)] px-2.5 py-1.5 cursor-pointer shadow-xs border transition-all flex flex-col justify-center overflow-hidden text-left ${
                                 isCheckedIn
                                   ? 'bg-purple-600/95 hover:bg-purple-600 text-white border-purple-500'
                                   : isConfirmed
@@ -663,12 +677,14 @@ export const VenueTimelineView: React.FC = () => {
         icon={<CalendarIcon size={22} />}
         title={t('venue_timeline_matrix_title')}
         secondaryActions={
-          <button
-            type="button"
-            onClick={() => setIsCloudSyncModalOpen(true)}
-            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-black dark:text-white rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-2xs border border-[#E6DED6] dark:border-neutral-700"
-            title="Inspect Supabase live tables and row writes"
-          >
+            <button
+              type="button"
+              onClick={() => setIsCloudSyncModalOpen(true)}
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
+              title="Inspect Supabase live tables and row writes"
+            >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
             <span className="hidden sm:inline">Supabase</span>

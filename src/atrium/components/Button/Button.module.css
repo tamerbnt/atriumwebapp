@@ -54,7 +54,7 @@
 }
 
 /* Icons: pass any inline SVG (Lucide works as is). Stroke style matches the brand sheets. */
-.root svg {
+.root svg:not([data-sq-stroke]) {
   width: calc(var(--h) * 0.42);
   height: calc(var(--h) * 0.42);
   flex: none;

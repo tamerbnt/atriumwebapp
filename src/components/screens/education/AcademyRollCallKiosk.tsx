@@ -385,7 +385,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3EDE7] dark:bg-[#141312] p-4 border border-neutral-200 dark:border-[#33302D]"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3EDE7] dark:bg-[#141312] p-4 border border-neutral-200 dark:border-[#33302D] [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#33302D]"
       >
         <div className="flex items-center gap-2">
           <button
@@ -434,12 +434,12 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 data-sq-stroke-w={status !== 'present' ? 2 : undefined}
                 className={`border p-4 transition-all h-full ${
                   status === 'present'
-                    ? 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800'
+                    ? 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626]'
                     : status === 'absent'
-                    ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900/60'
+                    ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900/60 [--sq-stroke:#fda4af] dark:[--sq-stroke:rgba(136,19,55,0.6)]'
                     : status === 'late'
-                    ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-900/60'
-                    : 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-900/60'
+                    ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-900/60 [--sq-stroke:#fcd34d] dark:[--sq-stroke:rgba(120,53,15,0.6)]'
+                    : 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-900/60 [--sq-stroke:#93c5fd] dark:[--sq-stroke:rgba(30,58,138,0.6)]'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3 mb-3">

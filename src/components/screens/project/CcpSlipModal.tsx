@@ -29,11 +29,16 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="sq-elev-pop max-w-3xl w-full">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full overflow-hidden flex flex-col max-h-[90vh]"
+        >
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between bg-[#FBF8F5] dark:bg-neutral-800/50">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs">
+            <div data-sq="ctl-sm" className="w-8 h-8 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold text-xs">
               SFP01
             </div>
             <div>
@@ -53,7 +58,8 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             </AtriumButton>
             <button
               onClick={onClose}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -62,7 +68,12 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
 
         {/* Official Postal Slip Document Canvas */}
         <div className="p-6 overflow-y-auto bg-[#F3EDE7]/70 dark:bg-neutral-950/40 flex justify-center">
-          <div className="w-full max-w-2xl bg-amber-50/70 dark:bg-neutral-900 border-2 border-dashed border-amber-300 dark:border-neutral-700 rounded-xl p-6 shadow-sm text-black font-sans print:shadow-none print:border-solid print:border-black">
+          <div className="sq-elev-card w-full max-w-2xl print:shadow-none">
+            <div
+              data-sq="card"
+              data-sq-border="dashed"
+              className="w-full bg-amber-50/70 dark:bg-neutral-900 [--sq-stroke:#fcd34d] dark:[--sq-stroke:#404040] p-6 text-black font-sans print:border-solid print:border-black"
+            >
             {/* Header Stamp */}
             <div className="flex justify-between items-start border-b-2 border-neutral-800 dark:border-neutral-300 pb-3 mb-4">
               <div>
@@ -77,7 +88,11 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
                 </p>
               </div>
               <div className="text-right">
-                <span className="inline-block border-2 border-neutral-800 dark:border-neutral-200 px-3 py-1 font-mono font-bold text-xs rounded">
+                <span
+                  data-sq="check"
+                  data-sq-border="solid"
+                  className="inline-block [--sq-stroke:#262626] dark:[--sq-stroke:#e5e5e5] px-3 py-1 font-mono font-bold text-xs"
+                >
                   SFP 01
                 </span>
                 <p className="text-[10px] text-black/55 mt-1">{t('pm_ccp_edition')}</p>
@@ -86,7 +101,11 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
 
             {/* Financial Amount & CCP Grid */}
             <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="col-span-2 p-3 bg-white dark:bg-neutral-800 rounded-lg border border-[#D5CBBF] dark:border-neutral-700">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="col-span-2 p-3 bg-white dark:bg-neutral-800 [--sq-stroke:#D5CBBF] dark:[--sq-stroke:#404040]"
+              >
                 <span className="text-[10px] uppercase font-semibold text-black/55 block">
                   {t('pm_ccp_beneficiary_name')}
                 </span>
@@ -97,7 +116,11 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
                   {t('pm_compta_wilaya_label')} {slip.wilayaName}
                 </span>
               </div>
-              <div className="p-3 bg-white dark:bg-neutral-800 rounded-lg border border-[#D5CBBF] dark:border-neutral-700 text-right">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="p-3 bg-white dark:bg-neutral-800 [--sq-stroke:#D5CBBF] dark:[--sq-stroke:#404040] text-right"
+              >
                 <span className="text-[10px] uppercase font-semibold text-black/55 block">
                   {t('pm_ccp_amount_digits')}
                 </span>
@@ -108,7 +131,11 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             </div>
 
             {/* CCP Account Box */}
-            <div className="p-3 bg-white dark:bg-neutral-800 rounded-lg border border-[#D5CBBF] dark:border-neutral-700 mb-4 flex items-center justify-between">
+            <div
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="p-3 bg-white dark:bg-neutral-800 [--sq-stroke:#D5CBBF] dark:[--sq-stroke:#404040] mb-4 flex items-center justify-between"
+            >
               <div>
                 <span className="text-[10px] uppercase font-semibold text-black/55 block">
                   {t('pm_ccp_account_number')}
@@ -128,7 +155,11 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             </div>
 
             {/* Legal Amount in Words: French */}
-            <div className="mb-3 p-3 bg-white/80 dark:bg-neutral-800/80 rounded-lg border border-[#E6DED6] dark:border-neutral-700">
+            <div
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="mb-3 p-3 bg-white/80 dark:bg-neutral-800/80 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
+            >
               <span className="text-[10px] uppercase font-semibold text-black/55 block mb-0.5">
                 {t('pm_ccp_words_fr')}
               </span>
@@ -138,7 +169,12 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             </div>
 
             {/* Legal Amount in Words: Arabic */}
-            <div className="mb-4 p-3 bg-white/80 dark:bg-neutral-800/80 rounded-lg border border-[#E6DED6] dark:border-neutral-700 text-right" dir="rtl">
+            <div
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="mb-4 p-3 bg-white/80 dark:bg-neutral-800/80 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] text-right"
+              dir="rtl"
+            >
               <span className="text-[10px] uppercase font-semibold text-black/55 block mb-0.5">
                 {t('pm_ccp_words_ar')}
               </span>
@@ -162,10 +198,15 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
               </div>
               <div className="text-right">
                 <span className="text-[10px] uppercase text-black/55 block">{t('pm_ccp_postal_reserved')}</span>
-                <div className="h-24 border border-[#D5CBBF] dark:border-neutral-700 rounded bg-white/50 dark:bg-neutral-900/50 flex items-center justify-center text-[10px] text-black/55 mt-1">
+                <div
+                  data-sq="ctl-sm"
+                  data-sq-border="solid"
+                  className="h-24 [--sq-stroke:#D5CBBF] dark:[--sq-stroke:#404040] bg-white/50 dark:bg-neutral-900/50 flex items-center justify-center text-[10px] text-black/55 mt-1"
+                >
                   {t('pm_ccp_post_stamp_box')}
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -182,6 +223,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
           >
             {t('common_close')}
           </button>
+        </div>
         </div>
       </div>
     </div>

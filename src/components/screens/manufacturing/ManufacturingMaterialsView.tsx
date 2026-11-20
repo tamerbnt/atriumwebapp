@@ -560,7 +560,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
         sortable: true,
         renderCell: (m) => (
           <div className="flex items-center gap-3 min-w-0">
-            <div data-sq="tile" data-sq-border="solid" className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
+            <div data-sq="tile" data-sq-border="solid" className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]">
               <Boxes size={18} />
             </div>
             <div className="min-w-0">
@@ -1000,7 +1000,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
             ]}
             renderCard={(m) => (
               <div className="flex flex-col items-center justify-center w-full">
-                <div data-sq="tile-lg" data-sq-border="solid" className="w-16 h-16 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-xl font-bold mb-3 border border-[#F5E2D8] dark:border-neutral-700">
+                <div data-sq="tile-lg" data-sq-border="solid" className="w-16 h-16 bg-[#FCEEE8] dark:bg-neutral-800 text-[#d4522f] flex items-center justify-center text-xl font-bold mb-3 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]">
                   <Boxes size={28} />
                 </div>
                 <h3 className="text-sm font-bold text-black dark:text-white text-center truncate max-w-[200px]">{m.name}</h3>

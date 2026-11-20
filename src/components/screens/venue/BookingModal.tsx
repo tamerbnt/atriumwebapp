@@ -330,7 +330,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E6DED6] dark:border-neutral-800 shadow-2xl max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden">
+      <div className="sq-elev-pop max-w-3xl w-full">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full max-h-[92vh] flex flex-col overflow-hidden"
+        >
         {/* Header */}
         <div className="px-6 py-5 border-b border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between shrink-0">
           <div>
@@ -340,7 +345,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            data-sq="ctl"
+            data-sq-border="none"
+            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -540,7 +547,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 {addons.map((a) => (
                   <div
                     key={a.id}
-                    className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-700/60 text-xs"
+                    data-sq="ctl"
+                    data-sq-border="solid"
+                    className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800/50 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] text-xs"
                   >
                     <div>
                       <span className="font-medium text-black dark:text-white">{a.name}</span>
@@ -594,7 +603,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <button
                 type="button"
                 onClick={handleAddAddon}
-                className="w-full sm:w-auto h-[42px] px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-xl text-xs font-medium text-black dark:text-white transition-colors flex items-center justify-center gap-1.5 shrink-0 mt-3 sm:mt-0 cursor-pointer"
+                data-sq="ctl"
+                data-sq-border="none"
+                className="w-full sm:w-auto h-[42px] px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-medium text-black dark:text-white transition-colors flex items-center justify-center gap-1.5 shrink-0 mt-3 sm:mt-0 cursor-pointer"
               >
                 <Plus size={14} /> {t('venue_modal_btn_add_addon')}
               </button>
@@ -648,7 +659,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </div>
 
             {/* Financial Summary Card */}
-            <div className="p-4 bg-neutral-50 dark:bg-neutral-800/40 rounded-2xl border border-neutral-200 dark:border-neutral-700/60 space-y-2 text-xs">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] space-y-2 text-xs"
+            >
               <div className="flex justify-between text-black/70 dark:text-white/75">
                 <span>{t('venue_modal_calc_space_base', { hours: durationHours })}</span>
                 <span className="font-medium text-black dark:text-white tabular-nums">
@@ -683,7 +698,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 type="checkbox"
                 checked={contractSigned}
                 onChange={(e) => setContractSigned(e.target.checked)}
-                className="w-4 h-4 rounded-md border-neutral-300 text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
+                className="w-4 h-4 rounded-[var(--r-check,6px)] border-neutral-300 text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
               />
               <span>{t('venue_modal_field_contract_signed')}</span>
             </label>
@@ -708,6 +723,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           >
             {bookingToEdit ? t('action_save') : t('venue_reserve_space')}
           </AtriumButton>
+        </div>
         </div>
       </div>
     </div>

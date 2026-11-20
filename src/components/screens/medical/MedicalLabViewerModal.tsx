@@ -177,7 +177,7 @@ Bilans (
 <strong>{"Conclusion Médicale: "}</strong>
 {lab.clinicalConclusion}
 </div>
-{lab.imagingReport && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-blue-50/60 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-300">
+{lab.imagingReport && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-blue-50/60 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 [--sq-stroke:#bfdbfe] dark:[--sq-stroke:#1e40af] text-xs text-blue-900 dark:text-blue-300">
 <strong>
 Rapport d'Imagerie (
 {lab.imagingModality}

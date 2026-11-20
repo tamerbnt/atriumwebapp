@@ -663,7 +663,7 @@ export const EducationFinanceView: React.FC = () => {
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="p-3 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150"
+          className="p-3 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040] flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150"
         >
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs font-bold">

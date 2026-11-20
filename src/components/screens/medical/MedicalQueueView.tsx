@@ -405,7 +405,7 @@ export const MedicalQueueView: React.FC<any> = () => {
               <div
                 data-sq="tile"
                 data-sq-border="solid"
-                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[#d4522f] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800 [--sq-stroke:#ffedd5] dark:[--sq-stroke:#262626]"
               >
                 {c.patientName.charAt(0).toUpperCase()}
               </div>
@@ -828,10 +828,10 @@ export const MedicalQueueView: React.FC<any> = () => {
                       }
                       className={`bg-white dark:bg-neutral-800 border p-5 space-y-3.5 transition-all ${
                         activeConsultation?.id === cons.id
-                          ? 'border-[#d4522f]'
+                          ? 'border-[#d4522f] [--sq-stroke:#d4522f]'
                           : cons.status === 'InConsultation'
-                          ? 'border-blue-400'
-                          : 'border-[#E6DED6] dark:border-neutral-700/60'
+                          ? 'border-blue-400 [--sq-stroke:#60a5fa]'
+                          : 'border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)]'
                       }`}
                     >
                     <button

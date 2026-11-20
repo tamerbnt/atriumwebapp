@@ -168,11 +168,12 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-3xl my-auto bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+      <div className="sq-elev-pop relative w-full max-w-3xl my-auto">
+      <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-stone-900 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/70 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold">
+            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold">
               <Building2 size={20} />
             </div>
             <div>
@@ -192,7 +193,9 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            data-sq="ctl-sm"
+            data-sq-border="none"
+            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             <X size={20} />
           </button>
@@ -269,7 +272,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           </div>
 
           {/* Legal & Fiscal Algerian Prerequisite Fields */}
-          <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/20 space-y-4">
+          <div data-sq="card" data-sq-border="solid" className="p-4 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-stone-50/50 dark:bg-stone-800/20 space-y-4">
             <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <FileText size={14} className="text-[#d4522f]" />
@@ -377,7 +380,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           </div>
 
           {/* Commercial & Financial Conditions */}
-          <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 space-y-4">
+          <div data-sq="card" data-sq-border="solid" className="p-4 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-white dark:bg-stone-900 space-y-4">
             <h3 className="text-xs font-semibold text-black/70 dark:text-white/75 uppercase tracking-wider flex items-center gap-2">
               <CreditCard size={14} className="text-[#d4522f]" />
               <span>{t('trading_entity_commercial_terms')}</span>
@@ -451,6 +454,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
             </AtriumButton>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

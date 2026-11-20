@@ -279,8 +279,10 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
               <button
                 type="button"
                 data-no-liquid="true"
+                data-sq="ctl-sm"
+                data-sq-border="none"
                 onClick={onResetFilters}
-                className="text-xs font-semibold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-md"
+                className="text-xs font-semibold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 py-1"
               >
                 <RotateCcw size={12} />
                 <span>

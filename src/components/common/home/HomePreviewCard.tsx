@@ -264,7 +264,7 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
           type="button"
           data-no-liquid="true"
           onClick={navigate}
-          className={`group/foot inline-flex items-center gap-1 text-[12px] font-semibold hover:underline cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 ${styles.ring} rounded ${styles.footerLink}`}
+          className={`group/foot inline-flex items-center gap-1 text-[12px] font-semibold hover:underline cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 ${styles.ring} rounded-[var(--r-check,6px)] ${styles.footerLink}`}
         >
           <span>{config.viewAllLabel || strings.viewAll}</span>
           <ArrowUpRight

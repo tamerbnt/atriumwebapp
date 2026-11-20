@@ -825,7 +825,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                     <span className="font-mono text-black dark:text-white">{bom.standardLaborHours} heures MO</span>
                   </div>
                 </div>
-                <div data-sq="card" data-sq-border="solid" className="p-3.5 bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30">
+                <div data-sq="card" data-sq-border="solid" className="p-3.5 bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 [--sq-stroke:#ffedd5] dark:[--sq-stroke:rgba(124,45,18,0.3)]">
                   <div className="flex justify-between items-center">
                     <span className="text-black/70 dark:text-white/75">Coût Standard Unitaire:</span>
                     <span className="font-mono font-bold text-[#d4522f]">{formatMoney(bom.estimatedCostDzd, language)}</span>

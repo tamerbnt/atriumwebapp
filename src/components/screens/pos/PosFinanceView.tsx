@@ -385,7 +385,7 @@ export const PosFinanceView: React.FC = () => {
         width: '120px',
         sortable: true,
         renderCell: (e) => (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
             {e.category}
           </span>
         ),
@@ -541,7 +541,7 @@ export const PosFinanceView: React.FC = () => {
                 type="number"
                 value={openingFloat}
                 onChange={(e) => setOpeningFloat(parseFloat(e.target.value) || 0)}
-                className="w-24 h-8 px-2 text-xs font-mono font-bold rounded-lg border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white"
+                className="w-24 h-8 px-2 text-xs font-mono font-bold rounded-[var(--r-ctl-sm,10px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white"
               />
             </label>
             <label className="flex items-center gap-1.5 text-[11px] font-bold text-black/65 dark:text-white/70">
@@ -551,14 +551,18 @@ export const PosFinanceView: React.FC = () => {
                 placeholder="DA réel"
                 value={actualCashInput}
                 onChange={(e) => setActualCashInput(e.target.value)}
-                className="w-28 h-8 px-2 text-xs font-mono font-bold rounded-lg border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white"
+                className="w-28 h-8 px-2 text-xs font-mono font-bold rounded-[var(--r-ctl-sm,10px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white"
               />
             </label>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-1.5">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-4 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] space-y-1.5"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Banknote size={16} className="text-emerald-500" />
@@ -575,7 +579,11 @@ export const PosFinanceView: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-1.5">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-4 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] space-y-1.5"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CreditCard size={16} className="text-blue-500" />
@@ -592,7 +600,11 @@ export const PosFinanceView: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-1.5">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-4 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] space-y-1.5"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Coins size={16} className="text-[#d4522f]" />
@@ -970,7 +982,11 @@ export const PosFinanceView: React.FC = () => {
           subtitle={`Session ${new Date().toISOString().split('T')[0]} · ${currentBranch.name}`}
         >
           <div className="space-y-4 font-mono text-xs leading-relaxed" dir="ltr">
-            <div className="p-4 bg-white text-black rounded-xl border border-neutral-300 space-y-2">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="p-4 bg-white text-black [--sq-stroke:#D4D4D4] space-y-2"
+            >
               <div className="text-center font-bold pb-2 border-b border-dashed border-neutral-400">
                 <div className="text-sm font-black uppercase">RAPPORT Z - CLÔTURE DE CAISSE</div>
                 <div className="text-[10px] text-black/75">{currentBranch.name}</div>

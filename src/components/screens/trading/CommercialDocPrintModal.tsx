@@ -35,15 +35,16 @@ export const CommercialDocPrintModal: React.FC<CommercialDocPrintModalProps> = (
 	const docTitleFr = doc.type === "facture" ? "FACTURE" : doc.type === "bl" ? "BON DE LIVRAISON" : doc.type === "devis" ? "DEVIS / FACTURE PROFORMA" : doc.type === "commande" ? "BON DE COMMANDE" : "FACTURE D'AVOIR";
 	const docTitleAr = doc.type === "facture" ? "فاتورة تجارية" : doc.type === "bl" ? "وصل تسليم بضاعة" : doc.type === "devis" ? "عرض سعر / فاتورة شكلية" : doc.type === "commande" ? "طلبية شراء" : "فاتورة إشعار دائن";
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 bg-black/70 backdrop-blur-xs overflow-y-auto print:p-0 print:bg-white print:static print:z-auto">
-<div className="relative w-full max-w-4xl my-auto bg-white border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl flex flex-col max-h-[95vh] overflow-hidden print:max-h-none print:shadow-none print:border-none print:rounded-none">
+<div className="sq-elev-pop relative w-full max-w-4xl my-auto print:max-w-none">
+<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] flex flex-col max-h-[95vh] overflow-hidden print:max-h-none print:border-none print:rounded-none">
 <div className="flex items-center justify-between px-6 py-3.5 border-b border-stone-200 dark:border-stone-800 bg-stone-900 text-white shrink-0 print:hidden">
 <div className="flex items-center gap-2">
-<span className="font-mono text-xs px-2 py-0.5 rounded bg-white/10 text-white">{doc.docNumber}</span>
+<span className="font-mono text-xs px-2 py-0.5 rounded-[var(--r-check,6px)] bg-white/10 text-white">{doc.docNumber}</span>
 <span className="text-xs text-white/75 font-medium">Aperçu officiel & Format A4 conforme</span>
 </div>
 <div className="flex items-center gap-2">
 <AtriumButton variant="primary" size="xs" onClick={handlePrint} icon={<Printer size={14} />}>Imprimer (Ctrl+P)</AtriumButton>
-<button onClick={onClose} className="p-1.5 text-white/75 hover:text-white rounded-lg transition-colors"><X size={18} /></button>
+<button onClick={onClose} data-sq="ctl-sm" data-sq-border="none" className="p-1.5 text-white/75 hover:text-white transition-colors"><X size={18} /></button>
 </div>
 </div>
 <div ref={printRef} className="p-8 sm:p-12 overflow-y-auto flex-1 bg-white text-black font-sans print:p-0 print:overflow-visible text-xs leading-relaxed">
@@ -62,7 +63,7 @@ Importation, Exportation & Distribution de Matériaux de Construction et Équipe
 {" — Email : commercial@maghreb-negoce.dz"}
 </p>
 </div>
-<div className="text-right text-[10px] space-y-0.5 text-black/75 border border-stone-300 rounded-lg p-2.5 bg-stone-50/60 font-mono">
+<div data-sq="ctl" data-sq-border="solid" className="text-right text-[10px] space-y-0.5 text-black/75 [--sq-stroke:#D6D3D1] p-2.5 bg-stone-50/60 font-mono">
 <div>
 <span className="font-bold text-black">R.C. N° :</span>
 {" 16/00-0198421B21 Alger"}
@@ -86,7 +87,7 @@ Importation, Exportation & Distribution de Matériaux de Construction et Équipe
 </div>
 </div>
 <div className="grid grid-cols-2 gap-6 mb-6">
-<div className="border border-stone-800 rounded-xl p-4 bg-stone-50/40">
+<div data-sq="card" data-sq-border="solid" className="[--sq-stroke:#292524] p-4 bg-stone-50/40">
 <div className="flex items-center justify-between mb-2">
 <span className="text-sm font-black tracking-wider text-black uppercase">{docTitleFr}</span>
 <span className="text-xs font-bold text-black/75 font-sans">{docTitleAr}</span>
@@ -112,7 +113,7 @@ Importation, Exportation & Distribution de Matériaux de Construction et Équipe
 </>}
 </div>
 </div>
-<div className="border border-stone-300 rounded-xl p-4 bg-white space-y-1.5">
+<div data-sq="card" data-sq-border="solid" className="[--sq-stroke:#D6D3D1] p-4 bg-white space-y-1.5">
 <span className="text-[10px] font-bold uppercase tracking-wider text-black/55 block mb-1">Client / Destinataire</span>
 <div className="text-sm font-black text-black">{doc.clientName}</div>
 <div className="space-y-0.5 text-[10.5px] font-mono text-black/75 pt-1">
@@ -135,12 +136,12 @@ Importation, Exportation & Distribution de Matériaux de Construction et Équipe
 </div>
 </div>
 </div>
-{doc.notesTop && /* @__PURE__ */ <div className="mb-4 p-2.5 rounded-lg bg-stone-50 border border-stone-200 text-[11px] text-black/75 italic">
+{doc.notesTop && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="mb-4 p-2.5 bg-stone-50 [--sq-stroke:#E7E5E4] text-[11px] text-black/75 italic">
 <strong>Objet / Chantier :</strong>
 {" "}
 {doc.notesTop}
 </div>}
-<div className="border border-stone-800 rounded-xl overflow-hidden mb-6">
+<div data-sq="table" data-sq-border="solid" className="[--sq-stroke:#292524] overflow-hidden mb-6">
 <table className="w-full text-left text-xs">
 <thead className="bg-stone-900 text-white font-semibold text-[10.5px] uppercase tracking-wider">
 <tr>
@@ -177,7 +178,7 @@ Importation, Exportation & Distribution de Matériaux de Construction et Équipe
 </table>
 </div>
 <div className="flex justify-end mb-6">
-<div className="w-80 border border-stone-800 rounded-xl overflow-hidden font-mono text-xs">
+<div data-sq="card" data-sq-border="solid" className="w-80 [--sq-stroke:#292524] overflow-hidden font-mono text-xs">
 <div className="flex justify-between px-3 py-1.5 border-b border-stone-200 bg-stone-50">
 <span className="text-black/75">Total Brut HT :</span>
 <span className="font-bold text-black">{formatMoney(doc.totalHtRaw)}</span>
@@ -229,7 +230,7 @@ Retenue Garantie (
 </div>
 </div>
 </div>
-<div className="p-3.5 border-2 border-stone-800 rounded-xl bg-stone-50/80 mb-6 space-y-2">
+<div data-sq="card" data-sq-border="solid" data-sq-stroke-w="2" className="p-3.5 [--sq-stroke:#292524] bg-stone-50/80 mb-6 space-y-2">
 <div className="text-[11px] text-black leading-normal">
 <strong>Arrêtée la présente pièce à la somme de :</strong>
 {" "}
@@ -248,18 +249,19 @@ Retenue Garantie (
 </div>
 </div>
 <div className="grid grid-cols-2 gap-6 pt-4 border-t border-stone-300 text-xs">
-<div className="border border-stone-300 rounded-xl p-4 h-32 flex flex-col justify-between">
+<div data-sq="card" data-sq-border="solid" className="[--sq-stroke:#D6D3D1] p-4 h-32 flex flex-col justify-between">
 <span className="font-bold text-black uppercase tracking-wider text-[10px]">Visa & Cachet du Client / Réceptionnaire</span>
 <p className="text-[10px] text-black/55 italic">Signature précédée de la mention manuscrite « Lu et approuvé »</p>
 </div>
-<div className="border border-stone-300 rounded-xl p-4 h-32 flex flex-col justify-between">
+<div data-sq="card" data-sq-border="solid" className="[--sq-stroke:#D6D3D1] p-4 h-32 flex flex-col justify-between">
 <span className="font-bold text-black uppercase tracking-wider text-[10px]">Pour la Société — Direction Commerciale & Facturation</span>
-{doc.includeStampSignature && /* @__PURE__ */ <div className="w-24 h-12 border-2 border-dashed border-[#d4522f]/60 rounded-lg flex items-center justify-center text-[10px] text-[#d4522f] font-bold uppercase rotate-[-3deg] ml-auto">Cachet & Signé</div>}
+{doc.includeStampSignature && /* @__PURE__ */ <div data-sq="ctl-sm" data-sq-border="dashed" data-sq-stroke-w="2" className="w-24 h-12 [--sq-stroke:rgba(212,82,47,0.6)] flex items-center justify-center text-[10px] text-[#d4522f] font-bold uppercase rotate-[-3deg] ml-auto">Cachet & Signé</div>}
 </div>
 </div>
 {doc.notesBottom ? /* @__PURE__ */ <p className="text-[10px] text-black/55 text-center mt-6 italic">{doc.notesBottom}</p> : /* @__PURE__ */ <p className="text-[10px] text-black/55 text-center mt-6 italic">
 En cas de contestation, seul le Tribunal de Commerce compétent du ressort du siège de notre société est habilité.
 </p>}
+</div>
 </div>
 </div>
 </div>;

@@ -151,14 +151,17 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
       <div className="absolute left-0 right-0 top-0 h-[72px]">
         {/* Background slab with border and active ring */}
         <div
-          className={`absolute inset-0 rounded-[14px] border transition-all duration-150 ${
+          data-sq="row"
+          data-sq-border="solid"
+          data-sq-stroke-w={isSelected ? '1.5' : undefined}
+          className={`slab absolute inset-0 transition-all duration-150 ${
             isSelected
-              ? 'bg-[#E8643F]/10 border-[#E8643F] shadow-[0_0_0_1px_#E8643F] dark:bg-[#E8643F]/15'
+              ? 'bg-[#E8643F]/10 [--sq-stroke:#E8643F] dark:bg-[#E8643F]/15'
               : isPinned
-              ? 'bg-white dark:bg-[#1A1A1A] border-amber-400 dark:border-amber-500 shadow-sm'
+              ? 'bg-white dark:bg-[#1A1A1A] [--sq-stroke:#fbbf24] dark:[--sq-stroke:#f59e0b]'
               : isHovered
-              ? 'bg-[#FDFCFA] dark:bg-[#202020] border-neutral-300 dark:border-neutral-700 shadow-sm'
-              : 'bg-white dark:bg-[#1A1A1A] border-neutral-200/90 dark:border-neutral-800'
+              ? 'bg-[#FDFCFA] dark:bg-[#202020] [--sq-stroke:#d4d4d4] dark:[--sq-stroke:#404040]'
+              : 'bg-white dark:bg-[#1A1A1A] [--sq-stroke:rgba(229,229,229,0.9)] dark:[--sq-stroke:#262626]'
           }`}
         />
 
@@ -174,15 +177,18 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
           <button
             type="button"
             role="checkbox"
+            data-sq="check"
+            data-sq-border="solid"
+            data-sq-stroke-w="1.5"
             aria-checked={isSelected}
             onClick={(e) => {
               e.stopPropagation();
               onToggleSelect(e);
             }}
-            className={`w-[22px] h-[22px] rounded-[6px] border-[1.5px] grid place-items-center transition-colors cursor-pointer ${
+            className={`relative w-[22px] h-[22px] grid place-items-center transition-colors cursor-pointer ${
               isSelected
-                ? 'bg-[#E8643F] border-[#E8643F] text-white'
-                : 'border-neutral-400/80 bg-transparent hover:border-[#E8643F]'
+                ? 'bg-[#E8643F] [--sq-stroke:#E8643F] text-white'
+                : 'bg-transparent [--sq-stroke:rgba(163,163,163,0.8)] hover:[--sq-stroke:#E8643F]'
             }`}
           >
             {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -190,7 +196,9 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
 
           {/* Col 1: Avatar */}
           <div
-            className={`w-10 h-10 rounded-[12px] grid place-items-center font-bold text-[15px] font-['Barlow_Condensed'] uppercase tracking-wider shrink-0 ${tone.bg} ${tone.text}`}
+            data-sq="tile"
+            data-sq-border="none"
+            className={`w-10 h-10 grid place-items-center font-bold text-[15px] font-['Barlow_Condensed'] uppercase tracking-wider shrink-0 ${tone.bg} ${tone.text}`}
           >
             {memberInitials}
           </div>
@@ -207,7 +215,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
 
           {/* Col 3: Plan */}
           <div className="truncate">
-            <span className="inline-block max-w-full px-2.5 py-1 rounded-[8px] bg-[#E8643F]/10 border border-[#E8643F]/40 text-[#E8643F] dark:text-[#F4A07F] text-[12px] font-medium truncate">
+            <span className="inline-block max-w-full px-2.5 py-1 rounded-full bg-[#E8643F]/10 border border-[#E8643F]/40 text-[#E8643F] dark:text-[#F4A07F] text-[12px] font-medium truncate">
               {memberPlan}
             </span>
           </div>
@@ -215,7 +223,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
           {/* Col 4: Status */}
           <div className="justify-self-start">
             <span
-              className={`inline-flex items-center gap-1.5 h-[26px] px-2.5 rounded-[8px] text-[12px] font-semibold ${
+              className={`inline-flex items-center gap-1.5 h-[26px] px-2.5 rounded-full text-[12px] font-semibold ${
                 isBlocked
                   ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
                   : isExp
@@ -256,6 +264,8 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
         {/* Button 2: Edit */}
         <button
           type="button"
+          data-sq="ctl-sm"
+          data-sq-border="solid"
           aria-label={`Modifier ${memberName}`}
           onClick={(e) => {
             e.stopPropagation();
@@ -269,7 +279,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             visibility: isHovered || isExpanded ? 'visible' : 'hidden',
             transition: 'transform 260ms cubic-bezier(.24,1.34,.38,1) 90ms, opacity 140ms 90ms, scale 160ms',
           }}
-          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 rounded-[11px] bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:bg-[#E8643F] hover:text-white grid place-items-center transition-colors cursor-pointer border border-neutral-200/50 dark:border-neutral-700"
+          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:bg-[#E8643F] hover:text-white grid place-items-center transition-colors cursor-pointer border border-neutral-200/50 dark:border-neutral-700 [--sq-stroke:rgba(229,229,229,0.5)] dark:[--sq-stroke:#404040]"
           title="Modifier l'adhérent"
         >
           <Pencil className="w-4 h-4" />
@@ -278,6 +288,8 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
         {/* Button 1: Email / Message */}
         <button
           type="button"
+          data-sq="ctl-sm"
+          data-sq-border="solid"
           aria-label={`Écrire à ${memberName}`}
           onClick={(e) => {
             e.stopPropagation();
@@ -291,7 +303,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             visibility: isHovered || isExpanded ? 'visible' : 'hidden',
             transition: 'transform 260ms cubic-bezier(.24,1.34,.38,1) 45ms, opacity 140ms 45ms, scale 160ms',
           }}
-          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 rounded-[11px] bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:bg-[#E8643F] hover:text-white grid place-items-center transition-colors cursor-pointer border border-neutral-200/50 dark:border-neutral-700"
+          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:bg-[#E8643F] hover:text-white grid place-items-center transition-colors cursor-pointer border border-neutral-200/50 dark:border-neutral-700 [--sq-stroke:rgba(229,229,229,0.5)] dark:[--sq-stroke:#404040]"
           title="Écrire à l'adhérent"
         >
           <Mail className="w-4 h-4" />
@@ -300,6 +312,8 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
         {/* Button 0: Delete (Red hover) */}
         <button
           type="button"
+          data-sq="ctl-sm"
+          data-sq-border="solid"
           aria-label={`Supprimer ${memberName}`}
           onClick={(e) => {
             e.stopPropagation();
@@ -313,7 +327,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             visibility: isHovered || isExpanded ? 'visible' : 'hidden',
             transition: 'transform 260ms cubic-bezier(.24,1.34,.38,1) 0ms, opacity 140ms 0ms, scale 160ms',
           }}
-          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 rounded-[11px] bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:bg-[#C0283D] hover:text-white grid place-items-center transition-colors cursor-pointer border border-neutral-200/50 dark:border-neutral-700"
+          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:bg-[#C0283D] hover:text-white grid place-items-center transition-colors cursor-pointer border border-neutral-200/50 dark:border-neutral-700 [--sq-stroke:rgba(229,229,229,0.5)] dark:[--sq-stroke:#404040]"
           title="Supprimer l'adhérent"
         >
           <Trash2 className="w-4 h-4" />
@@ -323,6 +337,8 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
         <button
           type="button"
           data-no-liquid="true"
+          data-sq="ctl-sm"
+          data-sq-border="solid"
           aria-expanded={isExpanded}
           aria-label={`Aperçu rapide de ${memberName}`}
           onClick={(e) => {
@@ -338,7 +354,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
             transition: 'transform 240ms cubic-bezier(.2,0,.2,1)',
           }}
-          className="rb absolute top-[18px] right-[14px] z-10 w-9 h-9 rounded-[11px] bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:text-black dark:hover:text-white grid place-items-center transition-colors cursor-pointer border border-neutral-200/50 dark:border-neutral-700"
+          className="rb absolute top-[18px] right-[14px] z-10 w-9 h-9 bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:text-black dark:hover:text-white grid place-items-center transition-colors cursor-pointer border border-neutral-200/50 dark:border-neutral-700 [--sq-stroke:rgba(229,229,229,0.5)] dark:[--sq-stroke:#404040]"
           title="Aperçu rapide"
         >
           <ChevronDown className="w-4 h-4" />
@@ -347,7 +363,9 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
 
       {/* ================= INLINE ACCORDION QUICK DRAWER (.dt) ================= */}
       <div
-        className="kinetic-dt absolute left-0 right-0 top-[80px] h-[150px] rounded-[14px] bg-white dark:bg-[#1A1A1A] border border-neutral-200/90 dark:border-neutral-800 grid gap-6 p-4 px-6 box-border opacity-0 select-text"
+        data-sq="card"
+        data-sq-border="solid"
+        className="kinetic-dt absolute left-0 right-0 top-[80px] h-[150px] bg-white dark:bg-[#1A1A1A] border border-neutral-200/90 dark:border-neutral-800 [--sq-stroke:rgba(229,229,229,0.9)] dark:[--sq-stroke:#262626] grid gap-6 p-4 px-6 box-border opacity-0 select-text"
         style={{
           gridTemplateColumns: '1fr 1.2fr 1.2fr auto',
         }}
@@ -402,16 +420,20 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
           <div className="flex items-center gap-2">
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={() => onArchive(member)}
-              className="h-[34px] px-3.5 rounded-[10px] bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black/70 dark:text-white font-medium text-[12.5px] flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-[34px] px-3.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black/70 dark:text-white font-medium text-[12.5px] flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Archive className="w-3.5 h-3.5" />
               Archiver
             </button>
             <button
               type="button"
+              data-sq="ctl-sm"
+              data-sq-border="none"
               onClick={() => onOpenDetails(member)}
-              className="h-[34px] px-4 rounded-[10px] bg-[#E8643F] hover:bg-[#d4522f] text-white font-medium text-[12.5px] flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              className="h-[34px] px-4 bg-[#E8643F] hover:bg-[#d4522f] text-white font-medium text-[12.5px] flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Ouvrir la fiche
@@ -419,12 +441,18 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
           </div>
 
           {/* Dedicated Secondary Action Cluster (Freeze, Pin, Pay) */}
-          <div className="flex items-center gap-1.5 p-1 rounded-[10px] bg-neutral-100/80 dark:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/60">
+          <div
+            data-sq="ctl-sm"
+            data-sq-border="solid"
+            className="flex items-center gap-1.5 p-1 bg-neutral-100/80 dark:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/60 [--sq-stroke:rgba(229,229,229,0.6)] dark:[--sq-stroke:rgba(64,64,64,0.6)]"
+          >
             {/* Freeze / Reactivate */}
             <button
               type="button"
+              data-sq="thumb"
+              data-sq-border="none"
               onClick={() => onToggleStatus(member)}
-              className="h-[28px] px-2.5 rounded-[7px] text-[11.5px] font-medium flex items-center gap-1 text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="h-[28px] px-2.5 text-[11.5px] font-medium flex items-center gap-1 text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 transition-colors cursor-pointer"
               title={isBlocked ? 'Débloquer le badge' : 'Bloquer / Geler le badge'}
             >
               {isBlocked ? (
@@ -443,8 +471,10 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             {/* Pin to Top */}
             <button
               type="button"
+              data-sq="thumb"
+              data-sq-border="none"
               onClick={() => onTogglePin(member)}
-              className={`h-[28px] px-2.5 rounded-[7px] text-[11.5px] font-medium flex items-center gap-1 transition-colors cursor-pointer hover:bg-white dark:hover:bg-neutral-700 ${
+              className={`h-[28px] px-2.5 text-[11.5px] font-medium flex items-center gap-1 transition-colors cursor-pointer hover:bg-white dark:hover:bg-neutral-700 ${
                 isPinned ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-black/70 dark:text-white/75'
               }`}
               title={isPinned ? 'Détacher' : 'Épingler en haut'}
@@ -456,8 +486,10 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             {/* Finance / Pay */}
             <button
               type="button"
+              data-sq="thumb"
+              data-sq-border="none"
               onClick={() => onPay(member)}
-              className="h-[28px] px-2.5 rounded-[7px] text-[11.5px] font-medium flex items-center gap-1 text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="h-[28px] px-2.5 text-[11.5px] font-medium flex items-center gap-1 text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 transition-colors cursor-pointer"
               title="Encaisser un paiement / Cotisation"
             >
               <CreditCard className="w-3 h-3 text-[#E8643F]" />

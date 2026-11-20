@@ -177,8 +177,8 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
             data-sq-border="solid"
             className={`p-3.5 border text-xs flex items-start gap-3 transition-all ${
               stockCheck.canFulfill
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300'
-                : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:rgba(6,95,70,0.6)] text-emerald-800 dark:text-emerald-300'
+                : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 [--sq-stroke:#fde68a] dark:[--sq-stroke:rgba(146,64,14,0.6)] text-amber-800 dark:text-amber-300'
             }`}
           >
             {stockCheck.canFulfill ? (

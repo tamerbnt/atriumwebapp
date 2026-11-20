@@ -509,7 +509,7 @@ export const AgricultureWholesaleView: React.FC = () => {
         renderCell: (t) => (
           <div className="flex items-center gap-1.5 font-mono font-bold text-xs">
             {pinnedIds.has(t.id) && <Pin size={11} className="text-[#d4522f] shrink-0" />}
-            <span className="bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded border border-[#d4522f]/20">
+            <span className="bg-[#d4522f]/10 text-[#d4522f] px-2 py-0.5 rounded-[var(--r-check,6px)] border border-[#d4522f]/20">
               {t.ticketNumber}
             </span>
           </div>

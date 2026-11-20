@@ -1400,7 +1400,7 @@ export const LegalTrustView: React.FC<any> = () => {
                     <div
                       data-sq="card"
                       data-sq-border="solid"
-                      className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5"
+                      className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2.5"
                     >
                       <div className="grid grid-cols-2 gap-2">
                         <LabelInput
@@ -1429,7 +1429,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   <div
                     data-sq="card"
                     data-sq-border="solid"
-                    className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2.5"
+                    className="p-3.5 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2.5"
                   >
                     <LabelInput
                       label={
@@ -1532,7 +1532,7 @@ export const LegalTrustView: React.FC<any> = () => {
         header: 'Jrn',
         width: '0.8*',
         renderCell: (e) => (
-          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-black/75 dark:text-white/80">
+          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-black/75 dark:text-white/80">
             {e.journalCode}
           </span>
         ),

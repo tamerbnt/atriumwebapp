@@ -377,7 +377,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 src={bat.previewUrl}
                 alt={bat.title}
                 referrerPolicy="no-referrer"
-                className="w-9 h-9 rounded-lg object-cover shrink-0 border border-[#E6DED6] dark:border-neutral-800 bg-neutral-100"
+                className="w-9 h-9 rounded-[var(--r-ctl-sm,10px)] object-cover shrink-0 border border-[#E6DED6] dark:border-neutral-800 bg-neutral-100"
               />
               <div className="min-w-0">
                 <div className="font-semibold text-xs text-black dark:text-white truncate max-w-[190px] flex items-center gap-1">
@@ -412,7 +412,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         renderCell: (bat) => (
           <div className="flex items-center gap-1.5 text-[11px] font-mono">
             <span
-              className={`px-1.5 py-0.5 rounded font-bold ${
+              className={`px-1.5 py-0.5 rounded-[var(--r-check,6px)] font-bold ${
                 bat.colorSpace === 'CMJN'
                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                   : 'bg-red-100 text-red-700'
@@ -436,7 +436,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         renderCell: (bat) => {
           const badge = getBatStatusBadge(bat.approvalStatus, language);
           return (
-            <span className={`inline-flex px-2.5 py-0.5 rounded-md text-[11px] font-semibold ${badge.pillClass}`}>
+            <span className={`inline-flex px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-[11px] font-semibold ${badge.pillClass}`}>
               {badge.label}
             </span>
           );
@@ -725,7 +725,9 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 .map((order) => (
                   <div
                     key={order.id}
-                    className="p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-2.5"
+                    data-sq="panel"
+                    data-sq-border="solid"
+                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2.5"
                   >
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="font-mono font-bold text-[#d4522f]">
@@ -774,13 +776,15 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   <div
                     key={bat.id}
                     onClick={(e) => handleSelectBat(bat, e.currentTarget)}
-                    className="p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-2.5 cursor-pointer hover:border-[#d4522f]/60 transition-colors"
+                    data-sq="panel"
+                    data-sq-border="solid"
+                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2.5 cursor-pointer hover:[--sq-stroke:rgba(212,82,47,0.6)] transition-colors"
                   >
                     <img
                       src={bat.previewUrl}
                       alt={bat.title}
                       referrerPolicy="no-referrer"
-                      className="w-full h-28 rounded-xl object-cover bg-neutral-100"
+                      className="w-full h-28 rounded-[var(--r-ctl,12px)] object-cover bg-neutral-100"
                     />
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="font-bold text-black dark:text-white truncate">
@@ -812,13 +816,15 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   <div
                     key={bat.id}
                     onClick={(e) => handleSelectBat(bat, e.currentTarget)}
-                    className="p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-emerald-200 dark:border-emerald-900/40 shadow-xs space-y-2.5 cursor-pointer hover:border-emerald-400 transition-colors"
+                    data-sq="panel"
+                    data-sq-border="solid"
+                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:rgba(6,78,59,0.4)] space-y-2.5 cursor-pointer hover:[--sq-stroke:#34d399] transition-colors"
                   >
                     <img
                       src={bat.previewUrl}
                       alt={bat.title}
                       referrerPolicy="no-referrer"
-                      className="w-full h-28 rounded-xl object-cover bg-neutral-100"
+                      className="w-full h-28 rounded-[var(--r-ctl,12px)] object-cover bg-neutral-100"
                     />
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="font-bold text-emerald-700 dark:text-emerald-400 truncate">
@@ -931,7 +937,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       src={bat.previewUrl}
                       alt={bat.title}
                       referrerPolicy="no-referrer"
-                      className="w-full h-36 rounded-xl object-cover border border-[#E6DED6]/60 dark:border-neutral-800 bg-neutral-100"
+                      className="w-full h-36 rounded-[var(--r-ctl,12px)] object-cover border border-[#E6DED6]/60 dark:border-neutral-800 bg-neutral-100"
                     />
                     <div className="flex justify-between items-center text-xs">
                       <span className="font-bold text-[#d4522f]">{bat.versionCode}</span>
@@ -982,7 +988,11 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
       {activeTab === 'upload' && (
         <ScreenPod>
-          <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs max-w-3xl mx-auto space-y-6">
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-3xl mx-auto space-y-6"
+          >
             <div>
               <span className="text-xs font-bold text-[#d4522f] uppercase tracking-wider block">
                 Dépôt & Conformité Pré-Presse
@@ -992,7 +1002,11 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               </h2>
             </div>
             {uploadSuccess && (
-              <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="p-4 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold"
+              >
                 <CheckCircle className="w-5 h-5 text-emerald-600" />
                 Livrable BAT enregistré et transmis au Chef de Projet !
               </div>
@@ -1058,7 +1072,11 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   corner={12}
                 />
               </div>
-              <div className="p-4 rounded-xl bg-[#FBF8F5] dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between text-xs">
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex items-center justify-between text-xs"
+              >
                 <div className="space-y-0.5">
                   <span className="font-semibold text-black dark:text-white">
                     Fond Perdu & Traits de Coupe (+3mm)
@@ -1071,7 +1089,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   type="checkbox"
                   checked={hasBleedIncluded}
                   onChange={(e) => setHasBleedIncluded(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#d4522f] focus:ring-[#d4522f]"
+                  className="w-4 h-4 rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]"
                 />
               </div>
               <AtriumButton
@@ -1095,7 +1113,9 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
             {pmProjects.map((p) => (
               <div
                 key={p.id}
-                className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs space-y-3"
+                data-sq="panel"
+                data-sq-border="solid"
+                className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-3"
               >
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-[#d4522f] uppercase">{p.clientName}</span>
@@ -1154,7 +1174,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 src={bat.previewUrl}
                 alt={bat.title}
                 referrerPolicy="no-referrer"
-                className="w-full h-44 object-cover rounded-[18px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-neutral-100"
+                className="w-full h-44 object-cover rounded-[var(--r-card,16px)] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-neutral-100"
               />
             </InspectorSection>
 
@@ -1227,44 +1247,52 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
       {selectedPreviewBat && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-[#E6DED6] dark:border-neutral-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-black dark:text-white">
-                  {selectedPreviewBat.title}
-                </h3>
-                <span className="text-xs text-black/55 dark:text-white/55">
-                  {selectedPreviewBat.projectTitle}
-                </span>
+          <div className="sq-elev-pop max-w-xl w-full">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-black dark:text-white">
+                    {selectedPreviewBat.title}
+                  </h3>
+                  <span className="text-xs text-black/55 dark:text-white/55">
+                    {selectedPreviewBat.projectTitle}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPreviewBat(null)}
+                  data-sq="ctl-sm"
+                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedPreviewBat(null)}
-                className="p-1 rounded-lg hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <img
-              src={selectedPreviewBat.previewUrl}
-              alt={selectedPreviewBat.title}
-              referrerPolicy="no-referrer"
-              className="w-full h-80 object-cover rounded-xl border border-[#E6DED6] dark:border-neutral-800 bg-neutral-100"
-            />
-            <div className="flex justify-between items-center text-xs font-mono text-black/55 dark:text-white/55">
-              <span>
-                {selectedPreviewBat.colorSpace} · {selectedPreviewBat.resolutionDpi} DPI
-              </span>
-              <span>Fond perdu : +{selectedPreviewBat.bleedMm}mm</span>
-            </div>
-            <div className="flex justify-end gap-2 pt-2 border-t border-[#E6DED6]/60 dark:border-neutral-800">
-              <button
-                type="button"
-                onClick={() => setSelectedPreviewBat(null)}
-                className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 rounded-xl cursor-pointer"
-              >
-                Fermer
-              </button>
+              <img
+                src={selectedPreviewBat.previewUrl}
+                alt={selectedPreviewBat.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-80 object-cover rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-800 bg-neutral-100"
+              />
+              <div className="flex justify-between items-center text-xs font-mono text-black/55 dark:text-white/55">
+                <span>
+                  {selectedPreviewBat.colorSpace} · {selectedPreviewBat.resolutionDpi} DPI
+                </span>
+                <span>Fond perdu : +{selectedPreviewBat.bleedMm}mm</span>
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#E6DED6]/60 dark:border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPreviewBat(null)}
+                  data-sq="ctl"
+                  className="px-4 py-2 text-xs font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
+                >
+                  Fermer
+                </button>
+              </div>
             </div>
           </div>
         </div>

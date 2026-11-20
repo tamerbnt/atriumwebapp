@@ -129,17 +129,18 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 		onClose();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-<div className="relative w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E6DED6] dark:border-[#27272A] p-6 md:p-8 my-8 text-black dark:text-[#FAFAFA]">
+<div className="sq-elev-pop relative w-full max-w-2xl my-8">
+<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] p-6 md:p-8 text-black dark:text-[#FAFAFA]">
 <div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#27272A] mb-5">
 <div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Shield className="w-5 h-5" /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Shield className="w-5 h-5" /></div>
 <div>
 <h2 className="text-xl font-bold tracking-tight font-['Barlow_Condensed',sans-serif] rtl:font-sans">Bon de Visite Numérique Certifié</h2>
 </div>
 </div>
-<button type="button" onClick={onClose} aria-label="Fermer" className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
+<button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
-<div className="p-3.5 rounded-2xl bg-[#F3EDE7] dark:bg-[#141416] border border-[#E6DED6] dark:border-[#232328] mb-5 flex items-center justify-between">
+<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-[#F3EDE7] dark:bg-[#141416] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#232328] mb-5 flex items-center justify-between">
 <div>
 <div className="text-xs text-black/70 dark:text-white/75 uppercase font-semibold">Bien Visité</div>
 <div className="text-sm font-bold text-black dark:text-white truncate max-w-md">{activeProp?.title}</div>
@@ -164,7 +165,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 <LabelInput label="Téléphone Portable" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="Ex: 0550 49 11 22" required />
 <LabelInput label="N° CNI (18 Chiffres)" value={clientNationalId} onChange={(e) => setClientNationalId(e.target.value)} placeholder="Ex: 109823487192837461" required />
 </div>
-<div className="p-3 rounded-2xl bg-[#FDF4F0] dark:bg-[#1C1816] border border-[#d4522f]/30 flex items-center justify-between">
+<div data-sq="card" data-sq-border="solid" className="p-3 bg-[#FDF4F0] dark:bg-[#1C1816] [--sq-stroke:rgba(212,82,47,0.3)] flex items-center justify-between">
 <div className="flex items-center gap-2.5">
 <MapPin className="w-4 h-4 text-[#d4522f]" />
 <div className="text-xs">
@@ -190,7 +191,7 @@ m)
 <span>Effacer</span>
 </button>
 </div>
-<div className="relative rounded-2xl border-2 border-dashed border-[#E6DED6] dark:border-[#27272A] bg-white dark:bg-[#141416] overflow-hidden">
+<div data-sq="card" data-sq-border="dashed" data-sq-stroke-w="2" className="relative [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] bg-white dark:bg-[#141416] overflow-hidden">
 <canvas ref={canvasRef} width={560} height={140} className="w-full h-[140px] touch-none cursor-crosshair" onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={startDrawing} onTouchMove={draw} onTouchEnd={stopDrawing} />
 {!hasSignature && /* @__PURE__ */ <div className="absolute inset-0 pointer-events-none flex items-center justify-center text-xs text-black/55 dark:text-white/55">Signez avec le doigt ou le stylet ici</div>}
 </div>
@@ -201,7 +202,7 @@ m)
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 <div>
 <label className="block text-xs font-semibold text-black dark:text-white mb-1.5">Impression de Visite</label>
-<select value={clientImpression} onChange={(e) => setClientImpression(e.target.value as 'Interested' | 'NeedsNegotiation' | 'OfferSubmitted' | 'PriceTooHigh' | 'Unfavorable')} className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DED6] dark:border-[#27272A] bg-white dark:bg-[#141416] text-xs font-medium focus:ring-2 focus:ring-[#d4522f]">
+<select value={clientImpression} onChange={(e) => setClientImpression(e.target.value as 'Interested' | 'NeedsNegotiation' | 'OfferSubmitted' | 'PriceTooHigh' | 'Unfavorable')} className="w-full px-3.5 py-2.5 rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-[#27272A] bg-white dark:bg-[#141416] text-xs font-medium focus:ring-2 focus:ring-[#d4522f]">
 <option value="Interested">Très Intéressé (Candidat Solide)</option>
 <option value="NeedsNegotiation">Intéressé sous réserve de négociation</option>
 <option value="OfferSubmitted">Offre Ferme Soumise</option>
@@ -223,6 +224,7 @@ m)
 </div>
 </div>
 </form>
+</div>
 </div>
 </div>;
 };

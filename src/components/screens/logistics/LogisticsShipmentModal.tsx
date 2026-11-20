@@ -323,7 +323,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               <div
                 data-sq="ctl"
                 data-sq-border="solid"
-                className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 focus-within:border-[#d4522f]"
+                className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040] focus-within:border-[#d4522f] focus-within:[--sq-stroke:#d4522f]"
               >
                 <input
                   type="text"

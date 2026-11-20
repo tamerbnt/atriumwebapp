@@ -331,7 +331,7 @@ export const RealEstateMandatesView: React.FC<any> = () => {
             <div className="font-mono font-bold text-xs text-[#d4522f] flex items-center gap-1.5">
               <span>{m.mandateNumber}</span>
               {m.isExclusive && (
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-sm bg-[#d4522f]/15 text-[#d4522f]">
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-[var(--r-check,6px)] bg-[#d4522f]/15 text-[#d4522f]">
                   Exclusif
                 </span>
               )}

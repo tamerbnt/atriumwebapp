@@ -134,7 +134,9 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
 
           {showPeriodFilter && (
             <div
-              className="inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700/60 self-start sm:self-auto shadow-2xs"
+              data-sq="ctl-sm"
+              data-sq-border="solid"
+              className="inline-flex items-center gap-0.5 p-0.5 bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700/60 [--sq-stroke:#E8DFD8] dark:[--sq-stroke:rgba(64,64,64,0.6)] self-start sm:self-auto"
               role="group"
               aria-label="Hourly Filter"
             >
@@ -145,7 +147,7 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
                     key={opt.id}
                     type="button"
                     onClick={() => handlePeriodChange(opt.id)}
-                    className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition-all duration-150 cursor-pointer select-none ${
+                    className={`px-2 py-0.5 rounded-[var(--r-thumb,9px)] text-[10px] font-semibold transition-all duration-150 cursor-pointer select-none ${
                       isSelected
                         ? 'bg-white dark:bg-neutral-700 text-[#d4522f] dark:text-[#E09070] shadow-xs'
                         : 'text-black/65 dark:text-white/70 hover:text-black dark:hover:text-white'
@@ -239,13 +241,17 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
         {/* Floating Tooltip Card */}
         {activePoint && (
           <div
-            className="absolute z-20 pointer-events-none -top-10 transition-all duration-75 ease-out"
+            className="absolute z-20 pointer-events-none -top-10 transition-all duration-75 ease-out sq-elev-pop"
             style={{
               left: `${(activePoint.x / width) * 100}%`,
               transform: 'translate(-50%, -100%)',
             }}
           >
-            <div className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md rounded-xl px-2.5 py-1.5 shadow-xl border border-neutral-700/60 flex items-center gap-2 whitespace-nowrap text-left rtl:text-right">
+            <div
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md px-2.5 py-1.5 border border-neutral-700/60 [--sq-stroke:rgba(64,64,64,0.6)] flex items-center gap-2 whitespace-nowrap text-left rtl:text-right"
+            >
               <div>
                 <div className="text-[10px] text-white/70 font-medium">
                   {activeLabel}
@@ -258,7 +264,7 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
 
               {deltaPct !== null && (
                 <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md font-mono tabular-nums ${
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-[var(--r-check,6px)] font-mono tabular-nums ${
                     deltaPct >= 0
                       ? 'bg-emerald-950/80 text-emerald-400'
                       : 'bg-rose-950/80 text-rose-400'

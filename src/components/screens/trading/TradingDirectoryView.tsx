@@ -353,7 +353,9 @@ export const TradingDirectoryView: React.FC = () => {
                 setEntityModalOpen(true);
               }}
               aria-label={t('action_edit', 'Modifier')}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <Edit size={14} />
             </button>
@@ -364,7 +366,9 @@ export const TradingDirectoryView: React.FC = () => {
                 setDeleteTarget(c);
               }}
               aria-label={t('action_delete', 'Supprimer')}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
             >
               <Trash2 size={14} />
             </button>
@@ -455,7 +459,9 @@ export const TradingDirectoryView: React.FC = () => {
                 setEntityModalOpen(true);
               }}
               aria-label={t('action_edit', 'Modifier')}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <Edit size={14} />
             </button>
@@ -466,7 +472,9 @@ export const TradingDirectoryView: React.FC = () => {
                 setDeleteTarget(s);
               }}
               aria-label={t('action_delete', 'Supprimer')}
-              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="p-1.5 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
             >
               <Trash2 size={14} />
             </button>

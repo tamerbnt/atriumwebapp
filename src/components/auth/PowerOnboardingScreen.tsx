@@ -654,7 +654,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           </AnimatePresence>
 
           {/* Luxury Edge Lighting Vignette */}
-          <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.55)] rounded-xl" />
+          <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.55)] rounded-[var(--r-card,16px)]" />
 
           {/* Sleek Minimal Progress Indicators (Floating Glass Dots, Zero Text) */}
           <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-1.5 z-20 pointer-events-none">
@@ -1027,7 +1027,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               <button
                 type="button"
                 onClick={() => setStep9WideView(false)}
-                className="text-[11px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-md border border-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
+                data-sq="ctl-sm"
+                data-sq-border="solid"
+                className="text-[11px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 border border-white/10 [--sq-stroke:rgba(255,255,255,0.1)] flex items-center gap-1.5 transition-all cursor-pointer"
               >
                 <ImageIcon className="w-3.5 h-3.5 text-[#FF8A4C]" />
                 <span>{isFr ? 'Vue avec carte visuelle' : isAr ? 'عرض مع البطاقة المرئية' : 'View with visual card'}</span>
@@ -1128,7 +1130,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <button
                         type="button"
                         onClick={() => setStep9WideView(true)}
-                        className="text-[11px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded border border-white/10 flex items-center gap-1 transition-all cursor-pointer"
+                        className="text-[11px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-[var(--r-check,6px)] border border-white/10 flex items-center gap-1 transition-all cursor-pointer"
                       >
                         <Maximize2 className="w-3 h-3 text-[#FF8A4C]" />
                         <span>{isFr ? 'Plein écran (4 colonnes)' : isAr ? 'شاشة كاملة (4 أعمدة)' : 'Full screen (4 columns)'}</span>
@@ -1243,7 +1245,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       id="terms"
                       checked={termsAccepted}
                       onChange={(e) => setTermsAccepted(e.target.checked)}
-                      className="rounded border-white/20 bg-[rgba(20,17,15,0.6)] text-[#E8622C] focus:ring-[#E8622C] cursor-pointer"
+                      className="rounded-[var(--r-check,6px)] border-white/20 bg-[rgba(20,17,15,0.6)] text-[#E8622C] focus:ring-[#E8622C] cursor-pointer"
                     />
                     <label htmlFor="terms" className="text-[11px] text-[#D9BEB0] cursor-pointer select-none">
                       {isAr
@@ -1779,7 +1781,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   </div>
 
                   {/* Trades Grid Container (Scrollable Multi-column, Custom Scrollbar) */}
-                  <div className="overflow-y-auto pr-1 h-[210px] max-h-[210px] rounded-xl space-y-1.5 focus:outline-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
+                  <div data-sq="card" data-sq-border="none" className="overflow-y-auto pr-1 h-[210px] max-h-[210px] space-y-1.5 focus:outline-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
                     {filteredCatalogTrades.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-2">
                         {filteredCatalogTrades.map((trade) => {
@@ -1953,7 +1955,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               setManualCategoryOverride(catKey);
                               setIsOverrideSelectorOpen(false);
                             }}
-                            className={`w-full flex items-center justify-between px-2 py-1 rounded-lg text-left transition-colors cursor-pointer ${
+                            data-sq="ctl-sm"
+                            data-sq-border="none"
+                            className={`w-full flex items-center justify-between px-2 py-1 text-left transition-colors cursor-pointer ${
                               isPicked
                                 ? 'bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white font-semibold'
                                 : 'hover:bg-white/10 text-[#F0DACF]'
@@ -2042,7 +2046,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         <button
           type="button"
           onClick={handleReplayIntro}
-          className="text-[10px] text-[#E8622C]/85 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2 py-0.5 rounded border border-[#d4522f]/25 hover:border-[#d4522f]/50 bg-black/30 hover:bg-black/50"
+          className="text-[10px] text-[#E8622C]/85 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2 py-0.5 rounded-[var(--r-check,6px)] border border-[#d4522f]/25 hover:border-[#d4522f]/50 bg-black/30 hover:bg-black/50"
         >
           <span>↺ Replay</span>
         </button>

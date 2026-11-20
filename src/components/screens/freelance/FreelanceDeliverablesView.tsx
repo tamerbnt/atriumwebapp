@@ -514,8 +514,8 @@ export const FreelanceDeliverablesView: React.FC = () => {
               data-sq-border="solid"
               className={`w-9 h-9 flex items-center justify-center font-bold text-xs shrink-0 border ${
                 item.isCompleted
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border-emerald-200 dark:border-emerald-800'
-                  : 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border-emerald-200 dark:border-emerald-800 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46]'
+                  : 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040]'
               }`}
             >
               {item.isCompleted ? <CheckCircle2 size={16} /> : <FileCheck size={16} />}
@@ -999,7 +999,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2"
+            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040] animate-in fade-in slide-in-from-top-2"
           >
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
@@ -1199,7 +1199,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                           <div
                             data-sq="card"
                             data-sq-border="solid"
-                            className="p-3.5 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 hover:border-[#d4522f]/40 transition-all flex flex-col justify-between gap-2.5 group"
+                            className="p-3.5 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] hover:border-[#d4522f]/40 hover:[--sq-stroke:rgba(212,82,47,0.4)] transition-all flex flex-col justify-between gap-2.5 group"
                           >
                           <div>
                             <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 mb-1 gap-1">
@@ -1909,7 +1909,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <div
                   data-sq="tile"
                   data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60 [--sq-stroke:#fecdd3] dark:[--sq-stroke:rgba(136,19,55,0.6)]"
                 >
                   <AlertTriangle size={20} />
                 </div>
@@ -1978,7 +1978,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <div
                   data-sq="tile"
                   data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60 [--sq-stroke:#fecdd3] dark:[--sq-stroke:rgba(136,19,55,0.6)]"
                 >
                   <AlertTriangle size={20} />
                 </div>

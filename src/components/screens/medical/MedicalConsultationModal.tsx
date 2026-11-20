@@ -149,7 +149,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {errorMessage && (
-              <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2 animate-in fade-in">
+              <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-red-500/10 border border-red-500/30 [--sq-stroke:rgba(239,68,68,0.3)] text-red-600 dark:text-red-400 text-xs flex items-center gap-2 animate-in fade-in">
                 <AlertTriangle size={16} className="shrink-0" />
                 <span>{errorMessage}</span>
               </div>

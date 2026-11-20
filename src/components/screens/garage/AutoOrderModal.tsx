@@ -250,7 +250,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 												"50",
 												"75",
 												"100"
-											].map((lvl) => /* @__PURE__ */ <button key={lvl} type="button" data-no-liquid="true" data-sq="ctl" data-sq-border={fuelLevel === lvl ? "none" : "solid"} onClick={() => setFuelLevel(lvl)} className={`py-2 text-xs font-semibold border transition-all cursor-pointer text-center ${fuelLevel === lvl ? "bg-[#d4522f] text-white border-[#d4522f]" : "bg-neutral-50 dark:bg-neutral-800 text-black/70 dark:text-white/75 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400"}`}>{lvl === "0" ? "Vide" : lvl === "100" ? "Plein" : `${lvl}%`}</button>)}
+											].map((lvl) => /* @__PURE__ */ <button key={lvl} type="button" data-no-liquid="true" data-sq="ctl" data-sq-border={fuelLevel === lvl ? "none" : "solid"} onClick={() => setFuelLevel(lvl)} className={`py-2 text-xs font-semibold border transition-all cursor-pointer text-center ${fuelLevel === lvl ? "bg-[#d4522f] text-white border-[#d4522f]" : "bg-neutral-50 dark:bg-neutral-800 text-black/70 dark:text-white/75 border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040] hover:border-neutral-400 hover:[--sq-stroke:#a3a3a3]"}`}>{lvl === "0" ? "Vide" : lvl === "100" ? "Plein" : `${lvl}%`}</button>)}
 </div>
 </div>
 </div>
@@ -437,7 +437,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 </div>}
 {activeTab === "signature" && /* @__PURE__ */ <div className="space-y-4 animate-in fade-in">
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#FDF4F0] dark:bg-neutral-800 border border-[#d4522f]/30 space-y-2">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#FDF4F0] dark:bg-neutral-800 border border-[#d4522f]/30 [--sq-stroke:rgba(212,82,47,0.3)] space-y-2">
 <div className="flex items-center gap-2 text-sm font-bold text-[#d4522f]">
 <ShieldCheck size={18} />
 <span>
@@ -459,7 +459,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 {language === "ar" ? "تم توثيق التوقيع" : "Signé & certifié"}
 </span>}
 </div>
-<button type="button" data-no-liquid="true" data-sq="empty" data-sq-border="dashed" data-sq-stroke-w={2} onClick={() => setIsClientSigned(true)} className={`w-full h-28 border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${isClientSigned ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-400" : "bg-neutral-50 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 hover:border-[#d4522f]"}`}>
+<button type="button" data-no-liquid="true" data-sq="empty" data-sq-border="dashed" data-sq-stroke-w={2} onClick={() => setIsClientSigned(true)} className={`w-full h-28 border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${isClientSigned ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-400 [--sq-stroke:#34d399]" : "bg-neutral-50 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 [--sq-stroke:#d4d4d4] dark:[--sq-stroke:#404040] hover:border-[#d4522f] hover:[--sq-stroke:#d4522f]"}`}>
 {isClientSigned ? /* @__PURE__ */ <span className="text-center space-y-1 block">
 <span className="font-serif italic text-xl text-black dark:text-white font-bold block">{activeVehicle?.ownerName || 'Client'}</span>
 <span className="text-[10px] text-black/55 dark:text-white/55 font-mono block">

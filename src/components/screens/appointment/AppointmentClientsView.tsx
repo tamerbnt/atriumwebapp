@@ -479,12 +479,12 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                       {client.fullName}
                     </span>
                     {isVip && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                      <span className="px-1.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300">
                         VIP
                       </span>
                     )}
                     {hasAllergies && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/15 text-rose-700 dark:text-rose-300 flex items-center gap-0.5">
+                      <span className="px-1.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-bold bg-rose-500/15 text-rose-700 dark:text-rose-300 flex items-center gap-0.5">
                         <AlertTriangle size={10} />
                       </span>
                     )}

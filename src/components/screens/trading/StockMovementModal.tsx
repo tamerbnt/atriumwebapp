@@ -165,11 +165,12 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-2xl my-auto bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+      <div className="sq-elev-pop relative w-full max-w-2xl my-auto">
+      <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-stone-900 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/70 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold">
+            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold">
               <Boxes size={20} />
             </div>
             <div>
@@ -180,7 +181,9 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            data-sq="ctl-sm"
+            data-sq-border="none"
+            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             <X size={20} />
           </button>
@@ -200,10 +203,12 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                   setType('entree');
                   setReason('reception_achat');
                 }}
-                className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-semibold transition-all ${
+                data-sq="ctl"
+                data-sq-border="solid"
+                className={`flex items-center justify-center gap-2 p-3 text-xs font-semibold transition-all ${
                   type === 'entree'
-                    ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold'
-                    : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 text-black/70 dark:text-white/75'
+                    ? '[--sq-stroke:#10B981] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold'
+                    : '[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] text-black/70 dark:text-white/75'
                 }`}
               >
                 <TrendingUp size={16} />
@@ -216,10 +221,12 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                   setType('sortie');
                   setReason('sortie_client');
                 }}
-                className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-semibold transition-all ${
+                data-sq="ctl"
+                data-sq-border="solid"
+                className={`flex items-center justify-center gap-2 p-3 text-xs font-semibold transition-all ${
                   type === 'sortie'
-                    ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 font-bold'
-                    : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 text-black/70 dark:text-white/75'
+                    ? '[--sq-stroke:#F43F5E] bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 font-bold'
+                    : '[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] text-black/70 dark:text-white/75'
                 }`}
               >
                 <TrendingDown size={16} />
@@ -232,10 +239,12 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                   setType('transfert');
                   setReason('transfert');
                 }}
-                className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-semibold transition-all ${
+                data-sq="ctl"
+                data-sq-border="solid"
+                className={`flex items-center justify-center gap-2 p-3 text-xs font-semibold transition-all ${
                   type === 'transfert'
-                    ? 'border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] font-bold'
-                    : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 text-black/70 dark:text-white/75'
+                    ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f] font-bold'
+                    : '[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] text-black/70 dark:text-white/75'
                 }`}
               >
                 <ArrowRight size={16} />
@@ -245,7 +254,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           </div>
 
           {/* Depots & Reason */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/20">
+          <div data-sq="card" data-sq-border="solid" className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-stone-50/50 dark:bg-stone-800/20">
             <div>
               <LabelSelect
                 label={type === 'transfert' ? t('trading_stock_depot_source') : t('trading_stock_depot_concerned')}
@@ -323,7 +332,9 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               <button
                 type="button"
                 onClick={addItemRow}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-[#d4522f]/10 text-[#d4522f] hover:bg-[#d4522f]/20 transition-colors"
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-[#d4522f]/10 text-[#d4522f] hover:bg-[#d4522f]/20 transition-colors"
               >
                 <Plus size={13} />
                 <span>{t('trading_stock_add_item')}</span>
@@ -334,7 +345,9 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               {items.map((it, idx) => (
                 <div
                   key={idx}
-                  className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900"
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-2.5 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-white dark:bg-stone-900"
                 >
                   <div className="sm:col-span-8">
                     <LabelSelect
@@ -384,7 +397,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           </div>
 
           {/* Total Valuation Footer */}
-          <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs font-mono">
+          <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-stone-50 dark:bg-stone-800/40 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] flex items-center justify-between text-xs font-mono">
             <span className="text-black/55 dark:text-white/55">{t('trading_stock_est_valuation')}</span>
             <span className="text-black dark:text-white font-bold text-sm">
               {formatMoney(totalValuation)}
@@ -412,6 +425,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
             </AtriumButton>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

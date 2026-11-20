@@ -105,11 +105,12 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-[28px] shadow-2xl border border-[#E6DED6] dark:border-[#27272A] p-6 md:p-8 my-8 text-black dark:text-[#FAFAFA]">
+      <div className="sq-elev-pop relative w-full max-w-2xl my-8">
+      <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] p-6 md:p-8 text-black dark:text-[#FAFAFA]">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#27272A] mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
+            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold">
               <Receipt className="w-5 h-5" />
             </div>
             <div>
@@ -120,7 +121,9 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="p-2 rounded-xl text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+            data-sq="ctl-sm"
+            data-sq-border="none"
+            className="p-2 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -190,7 +193,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
           </div>
 
           {/* Fiscal Calculation Breakdown Pod */}
-          <div className="p-4 rounded-2xl bg-[#F3EDE7] dark:bg-[#141416] border border-[#E6DED6] dark:border-[#232328] space-y-3">
+          <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141416] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#232328] space-y-3">
             <div className="flex items-center justify-between text-xs font-semibold text-black/70 dark:text-white/75 uppercase">
               <span>Décompte Légal de la Quittance</span>
               <span className="flex items-center gap-1 text-[#d4522f]">
@@ -222,7 +225,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
               </div>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-[#27272A] text-[11px] text-black/70 dark:text-white/75 flex items-center justify-between">
+            <div data-sq="ctl" data-sq-border="solid" className="p-2.5 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] text-[11px] text-black/70 dark:text-white/75 flex items-center justify-between">
               <span>Commission Agence ({managementRate}% + TVA 19%): <strong className="text-black dark:text-white">{(agencyCommissionFeeDzd + agencyCommissionTvaDzd).toLocaleString()} DZD</strong></span>
               <span>Reversé au Propriétaire: <strong className="text-emerald-600 dark:text-emerald-400 font-mono">{netDisbursedToOwnerDzd.toLocaleString()} DZD</strong></span>
             </div>
@@ -245,6 +248,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             </AtriumButton>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

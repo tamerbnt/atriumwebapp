@@ -421,7 +421,7 @@ export const PosOrdersView: React.FC = () => {
             {s.items.slice(0, 2).map((it, idx) => (
               <span
                 key={idx}
-                className="text-[11px] text-black/70 dark:text-white/75 font-medium bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded"
+                className="text-[11px] text-black/70 dark:text-white/75 font-medium bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded-[var(--r-check,6px)]"
               >
                 {it.quantity}x {it.productName.split('(')[0].trim()}
               </span>
@@ -515,7 +515,9 @@ export const PosOrdersView: React.FC = () => {
                 e.stopPropagation();
                 setSelectedSaleForReceipt(s);
               }}
-              className="h-8 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-black/70 dark:text-white flex items-center gap-1 cursor-pointer transition-colors"
+              data-sq="ctl-sm"
+              data-sq-border="solid"
+              className="h-8 px-2.5 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-black/70 dark:text-white flex items-center gap-1 cursor-pointer transition-colors"
               title="Ticket Thermique 80mm"
             >
               <Printer size={13} className="text-[#d4522f]" />
@@ -528,7 +530,9 @@ export const PosOrdersView: React.FC = () => {
                   e.stopPropagation();
                   setSelectedSaleForRefund(s);
                 }}
-                className="h-8 px-2 rounded-lg text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
+                data-sq="ctl-sm"
+                data-sq-border="none"
+                className="h-8 px-2 text-black/55 dark:text-white/55 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
                 title="Refund / Avoir"
               >
                 <RotateCcw size={13} />
@@ -568,7 +572,7 @@ export const PosOrdersView: React.FC = () => {
             {po.items.slice(0, 3).map((it, idx) => (
               <span
                 key={idx}
-                className="px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-black/70 dark:text-white/75"
+                className="px-2 py-0.5 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-[10px] font-medium text-black/70 dark:text-white/75"
               >
                 {it.quantity}x {it.productName}
               </span>
@@ -616,7 +620,9 @@ export const PosOrdersView: React.FC = () => {
                 resumeParkedOrder(po.id);
                 setScreen('shop');
               }}
-              className="h-8 px-3 rounded-xl bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 cursor-pointer shadow-xs"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="h-8 px-3 bg-[#d4522f] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 cursor-pointer"
             >
               <PlayCircle size={13} />
               <span>{isAr ? 'استئناف' : 'Reprendre'}</span>
@@ -627,7 +633,9 @@ export const PosOrdersView: React.FC = () => {
                 e.stopPropagation();
                 deleteParkedOrder(po.id);
               }}
-              className="h-8 px-2 rounded-xl text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"
+              data-sq="ctl-sm"
+              data-sq-border="none"
+              className="h-8 px-2 text-black/55 dark:text-white/55 hover:text-rose-500 cursor-pointer"
               title="Supprimer le ticket"
             >
               <Trash2 size={14} />
@@ -1352,10 +1360,13 @@ export const PosOrdersView: React.FC = () => {
           subtitle={`Ticket #${selectedSaleForReceipt.id.slice(-8).toUpperCase()}`}
         >
           <div className="space-y-4" dir="ltr">
-            <div
-              id="pos-orders-thermal-receipt"
-              className="mx-auto max-w-[340px] bg-white text-black p-4 rounded-xl border border-neutral-300 font-mono text-[11px] leading-relaxed shadow-xs"
-            >
+            <div className="sq-elev-card mx-auto max-w-[340px]">
+              <div
+                id="pos-orders-thermal-receipt"
+                data-sq="card"
+                data-sq-border="solid"
+                className="bg-white text-black p-4 [--sq-stroke:#D4D4D4] font-mono text-[11px] leading-relaxed"
+              >
               <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-neutral-400">
                 <div className="text-sm font-black uppercase tracking-wider">
                   {receiptConfig.headerTitle || currentBranch.name}
@@ -1421,6 +1432,7 @@ export const PosOrdersView: React.FC = () => {
                   {receiptConfig.footerMessage || 'Merci pour votre visite !'}
                 </div>
               </div>
+            </div>
             </div>
 
             <div className="flex items-center gap-2">

@@ -61,7 +61,7 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 </div>
 <button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-center justify-between">
+<div data-sq="card" data-sq-border="solid" className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 [--sq-stroke:#fde68a] dark:[--sq-stroke:#92400e] flex items-center justify-between">
 <div className="flex items-center gap-2">
 <Package size={18} className="text-amber-600 dark:text-amber-400" />
 <div>
@@ -89,7 +89,7 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 <div className="space-y-1.5">
 <label className="block text-xs font-bold text-black dark:text-white">{isAr ? "رمز التحقق السري (SMS OTP)" : "Code de Retrait OTP (4 Chiffres)"}</label>
 <div className="flex items-center gap-2">
-<div data-sq="ctl" data-sq-border="solid" className={`w-full bg-white dark:bg-neutral-900 border ${otpError ? "border-red-500" : "border-neutral-200 dark:border-neutral-700 focus-within:border-[#d4522f]"}`}>
+<div data-sq="ctl" data-sq-border="solid" className={`w-full bg-white dark:bg-neutral-900 border ${otpError ? "border-red-500 [--sq-stroke:#ef4444]" : "border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040] focus-within:border-[#d4522f] focus-within:[--sq-stroke:#d4522f]"}`}>
 <input type="text" maxLength={6} value={enteredOtp} onChange={(e) => {
 											setEnteredOtp(e.target.value);
 											setOtpError(false);

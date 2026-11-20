@@ -223,19 +223,20 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 	};
 	if (!isOpen) return null;
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs overflow-y-auto">
-<div className="relative w-full max-w-5xl my-auto bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+<div className="sq-elev-pop relative w-full max-w-5xl my-auto">
+<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-stone-900 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] flex flex-col max-h-[92vh] overflow-hidden">
 <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/70 shrink-0">
 <div className="flex items-center gap-3">
-<div className="w-10 h-10 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold"><FileText size={20} /></div>
+<div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center font-bold"><FileText size={20} /></div>
 <div>
 <div className="flex items-center gap-2">
 <h2 className="text-lg font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{isEdit ? t("trading_composer_edit_title") : t("trading_composer_title")}</h2>
-<span className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-[#d4522f]/15 text-[#d4522f]">{generatedDocNumber}</span>
+<span className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-xs font-mono font-medium bg-[#d4522f]/15 text-[#d4522f]">{generatedDocNumber}</span>
 </div>
 <p className="text-xs text-black/55 dark:text-white/75">{t("trading_composer_fiscal_standards")}</p>
 </div>
 </div>
-<button onClick={onClose} className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"><X size={20} /></button>
+<button onClick={onClose} data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"><X size={20} /></button>
 </div>
 <div className="p-6 overflow-y-auto space-y-6 flex-1 text-sm">
 <div>
@@ -269,20 +270,20 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 								}
 							].map((item) => {
 								const isSelected = docType === item.type;
-								return /* @__PURE__ */ <button key={item.type} type="button" onClick={() => setDocType(item.type as CommercialDocType)} className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all ${isSelected ? "border-[#d4522f] bg-[#d4522f]/10 text-[#d4522f] shadow-xs font-bold" : "border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-black/70 dark:text-white/75 hover:border-stone-300"}`}>
+								return /* @__PURE__ */ <button key={item.type} type="button" onClick={() => setDocType(item.type as CommercialDocType)} data-sq="ctl" data-sq-border="solid" className={`flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium transition-all ${isSelected ? "[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[#d4522f] font-bold" : "[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-white dark:bg-stone-900 text-black/70 dark:text-white/75"}`}>
 <span className="w-2 h-2 rounded-full bg-current opacity-70" />
 <span>{item.label}</span>
 </button>;
 							})}
 </div>
 </div>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/40 dark:bg-stone-800/20">
+<div data-sq="card" data-sq-border="solid" className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-stone-50/40 dark:bg-stone-800/20">
 <div className="md:col-span-1">
 <LabelSelect label={t("trading_composer_client_label")} value={clientId} onChange={(val) => setClientId(typeof val === "string" ? val : val?.target?.value || val)} options={b2bClients.map((c) => ({
 											value: c.id,
 											label: `${c.companyName} ${c.city ? `(${c.city})` : ""}`
 										}))} />
-{selectedClient && /* @__PURE__ */ <div className="mt-2 p-2 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-[11px] space-y-1 text-black/55 dark:text-white/55">
+{selectedClient && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="mt-2 p-2 bg-white dark:bg-stone-900 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] text-[11px] space-y-1 text-black/55 dark:text-white/55">
 <div className="flex justify-between">
 <span>NIF (15 chiffres):</span>
 <span className="font-mono text-black/70 dark:text-white/75">{selectedClient.nif || "Non renseigné"}</span>
@@ -384,12 +385,12 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 {items.length}
 )
 </h3>
-<button type="button" onClick={addItemRow} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-[#d4522f]/10 text-[#d4522f] hover:bg-[#d4522f]/20 transition-colors">
+<button type="button" onClick={addItemRow} data-sq="ctl-sm" data-sq-border="none" className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-[#d4522f]/10 text-[#d4522f] hover:bg-[#d4522f]/20 transition-colors">
 <Plus size={14} />
 <span>{t("trading_composer_add_line")}</span>
 </button>
 </div>
-<div className="overflow-x-auto border border-stone-200 dark:border-stone-800 rounded-xl bg-white dark:bg-stone-900">
+<div data-sq="table" data-sq-border="solid" className="overflow-x-auto [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-white dark:bg-stone-900">
 <table className="w-full text-left text-xs">
 <thead className="bg-stone-50 dark:bg-stone-800/60 border-b border-stone-200 dark:border-stone-800 text-black/55 dark:text-white/55">
 <tr>
@@ -406,7 +407,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
 {items.map((item: any, idx: number) => /* @__PURE__ */ <tr key={item.id} className="hover:bg-stone-50/50 dark:hover:bg-stone-800/30">
 <td className="p-2 space-y-1">
-<select className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-black dark:text-white focus:outline-hidden focus:border-[#d4522f]" value={item.productId || ""} onChange={(e) => handleProductSelect(idx, e.target.value)}>
+<select className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-black dark:text-white focus:outline-hidden focus:border-[#d4522f]" value={item.productId || ""} onChange={(e) => handleProductSelect(idx, e.target.value)}>
 <option value="">-- Choisir dans le catalogue --</option>
 {products.map((p) => /* @__PURE__ */ <option key={p.id} value={p.id}>
 {p.sku ? `[${p.sku}] ` : ""}
@@ -416,10 +417,10 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 {" DA)"}
 </option>)}
 </select>
-<input type="text" placeholder="Désignation détaillée / référence" value={item.description} onChange={(e) => handleItemChange(idx, "description", e.target.value)} className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-black dark:text-white focus:outline-hidden focus:border-[#d4522f]" />
+<input type="text" placeholder="Désignation détaillée / référence" value={item.description} onChange={(e) => handleItemChange(idx, "description", e.target.value)} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-black dark:text-white focus:outline-hidden focus:border-[#d4522f]" />
 </td>
 <td className="p-2">
-<select value={item.unit} onChange={(e) => handleItemChange(idx, "unit", e.target.value)} className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-1 py-1">
+<select value={item.unit} onChange={(e) => handleItemChange(idx, "unit", e.target.value)} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-1 py-1">
 <option value="u">u</option>
 <option value="pcs">pcs</option>
 <option value="sac">sac</option>
@@ -434,20 +435,20 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </select>
 </td>
 <td className="p-2">
-<input type="number" min="0.01" step="any" value={item.quantity} onChange={(e) => handleItemChange(idx, "quantity", parseFloat(e.target.value) || 0)} className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right font-mono" />
+<input type="number" min="0.01" step="any" value={item.quantity} onChange={(e) => handleItemChange(idx, "quantity", parseFloat(e.target.value) || 0)} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right font-mono" />
 </td>
 <td className="p-2">
-<input type="number" min="0" step="any" value={item.unitPriceHt} onChange={(e) => handleItemChange(idx, "unitPriceHt", parseFloat(e.target.value) || 0)} className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right font-mono" />
+<input type="number" min="0" step="any" value={item.unitPriceHt} onChange={(e) => handleItemChange(idx, "unitPriceHt", parseFloat(e.target.value) || 0)} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right font-mono" />
 </td>
 <td className="p-2">
-<select value={item.tvaPercent} onChange={(e) => handleItemChange(idx, "tvaPercent", parseInt(e.target.value, 10))} className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-1 py-1 text-right font-mono">
+<select value={item.tvaPercent} onChange={(e) => handleItemChange(idx, "tvaPercent", parseInt(e.target.value, 10))} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-1 py-1 text-right font-mono">
 <option value="19">19%</option>
 <option value="9">9%</option>
 <option value="0">0%</option>
 </select>
 </td>
 <td className="p-2">
-<input type="number" min="0" max="100" value={item.discountPercent || 0} onChange={(e) => handleItemChange(idx, "discountPercent", parseFloat(e.target.value) || 0)} className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right font-mono" />
+<input type="number" min="0" max="100" value={item.discountPercent || 0} onChange={(e) => handleItemChange(idx, "discountPercent", parseFloat(e.target.value) || 0)} className="w-full text-xs rounded-[var(--r-check,6px)] border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1 text-right font-mono" />
 </td>
 <td className="p-2 text-right font-mono font-semibold text-black dark:text-white tabular-nums">{formatMoney(item.totalHt)}</td>
 <td className="p-2 text-center">
@@ -458,7 +459,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </table>
 </div>
 </div>
-<div className="border border-stone-200 dark:border-stone-800 rounded-xl overflow-hidden">
+<div data-sq="card" data-sq-border="solid" className="[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] overflow-hidden">
 <button type="button" onClick={() => setShowAdvancedOptions(!showAdvancedOptions)} className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800/40 flex items-center justify-between text-xs font-semibold text-black/70 dark:text-white/75 hover:bg-stone-100 dark:hover:bg-stone-800/60 transition-colors">
 <div className="flex items-center gap-2">
 <span>{t("trading_composer_advanced_accordion")}</span>
@@ -477,8 +478,8 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 <p className="text-[11px] text-black/55 dark:text-white/55 mt-1">Usuellement 5% ou 10% pour les marchés et chantiers.</p>
 </div>
 <div className="flex flex-col justify-end">
-<label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800">
-<input type="checkbox" checked={isCashFiscalStampEnabled} onChange={(e) => setIsCashFiscalStampEnabled(e.target.checked)} className="rounded text-[#d4522f] focus:ring-[#d4522f]" />
+<label data-sq="ctl-sm" data-sq-border="solid" className="flex items-center gap-2 cursor-pointer p-2.5 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#44403C] hover:bg-stone-50 dark:hover:bg-stone-800">
+<input type="checkbox" checked={isCashFiscalStampEnabled} onChange={(e) => setIsCashFiscalStampEnabled(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]" />
 <span className="text-xs font-medium text-black/70 dark:text-white/75">{t("trading_composer_fiscal_stamp")}</span>
 </label>
 </div>
@@ -489,13 +490,13 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </div>
 <div className="pt-1">
 <label className="flex items-center gap-2 cursor-pointer text-xs text-black/70 dark:text-white/75">
-<input type="checkbox" checked={includeStampSignature} onChange={(e) => setIncludeStampSignature(e.target.checked)} className="rounded text-[#d4522f] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={includeStampSignature} onChange={(e) => setIncludeStampSignature(e.target.checked)} className="rounded-[var(--r-check,6px)] text-[#d4522f] focus:ring-[#d4522f]" />
 <span>{t("trading_composer_include_stamp")}</span>
 </label>
 </div>
 </div>}
 </div>
-<div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-2">
+<div data-sq="card" data-sq-border="solid" className="p-4 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-stone-50 dark:bg-stone-800/40 space-y-2">
 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
 <div>
 <span className="text-black/55 dark:text-white/55 block text-[11px]">{t("trading_composer_total_raw_ht")}</span>
@@ -540,7 +541,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 {formatMoney(calculations.guaranteeRetentionAmount)}
 </span>
 </div>}
-<div className="col-span-2 sm:col-span-1 p-2 rounded-lg bg-[#d4522f]/10 border border-[#d4522f]/30 sm:ml-auto w-full text-right">
+<div data-sq="ctl-sm" data-sq-border="solid" className="col-span-2 sm:col-span-1 p-2 bg-[#d4522f]/10 [--sq-stroke:rgba(212,82,47,0.3)] sm:ml-auto w-full text-right">
 <span className="text-[#d4522f] block text-[11px] font-semibold uppercase">{t("trading_composer_net_to_pay")}</span>
 <span className="text-[#d4522f] font-bold text-base tabular-nums">{formatMoney(calculations.netToPay)}</span>
 </div>
@@ -554,6 +555,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 <AtriumButton type="button" variant="primary" onClick={() => handleSubmit("Validated")} icon={<CheckCircle size={15} />}>
 {isEdit ? t("trading_composer_btn_save_changes") : t("trading_composer_btn_validate")}
 </AtriumButton>
+</div>
 </div>
 </div>
 </div>

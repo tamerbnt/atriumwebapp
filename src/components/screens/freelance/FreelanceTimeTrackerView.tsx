@@ -1548,7 +1548,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   onChange={(e) =>
                     setManualForm({ ...manualForm, isBillable: e.target.checked })
                   }
-                  className="rounded text-[#d4522f]"
+                  className="rounded-[var(--r-check,6px)] text-[#d4522f]"
                 />
                 <label
                   htmlFor="billableManual"
@@ -1663,7 +1663,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   onChange={(e) =>
                     setEditLogForm({ ...editLogForm, isBillable: e.target.checked })
                   }
-                  className="rounded text-[#d4522f]"
+                  className="rounded-[var(--r-check,6px)] text-[#d4522f]"
                 />
                 <label
                   htmlFor="billableEdit"
@@ -1699,7 +1699,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 <div
                   data-sq="tile"
                   data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60 [--sq-stroke:#fecdd3] dark:[--sq-stroke:rgba(136,19,55,0.6)]"
                 >
                   <AlertTriangle size={20} />
                 </div>

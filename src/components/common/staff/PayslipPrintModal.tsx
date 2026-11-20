@@ -76,13 +76,13 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
             <p className="text-[11px] text-black/70 mt-0.5">
               Complexe Sportif & Salle de Musculation · Alger Centre · NIF: 002416098124589 · RC: 16/00-88124
             </p>
-            <div className="inline-block mt-2 px-4 py-1 bg-black text-white font-bold text-xs uppercase tracking-wider rounded-sm">
+            <div className="inline-block mt-2 px-4 py-1 bg-black text-white font-bold text-xs uppercase tracking-wider rounded-[var(--r-check,6px)]">
               Bulletin de Paie · {slip.periodLabel}
             </div>
           </div>
 
           {/* Employee & Administrative Information */}
-          <div className="grid grid-cols-2 gap-4 p-3 bg-neutral-50 rounded-lg border border-neutral-200 mb-4">
+          <div data-sq="card" data-sq-border="solid" className="grid grid-cols-2 gap-4 p-3 bg-neutral-50 border border-neutral-200 [--sq-stroke:#e5e5e5] mb-4">
             <div className="space-y-1">
               <p><span className="font-bold text-black/70">Collaborateur :</span> <strong className="text-black text-sm">{slip.staffFullName}</strong></p>
               <p><span className="font-bold text-black/70">Matricule :</span> <span className="font-mono font-bold tabular-nums">{slip.matricule}</span></p>
@@ -191,13 +191,13 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
           </table>
 
           {/* Employer Contributions (Quote-part patronale) */}
-          <div className="p-2.5 bg-neutral-50 rounded-lg border border-neutral-200 mb-4 text-[10px] text-black/70 flex justify-between items-center tabular-nums">
+          <div data-sq="card" data-sq-border="solid" className="p-2.5 bg-neutral-50 border border-neutral-200 [--sq-stroke:#e5e5e5] mb-4 text-[10px] text-black/70 flex justify-between items-center tabular-nums">
             <span><strong>Quote-part patronale Sécurité Sociale (26%) :</strong> <span className="font-mono">{slip.cnasPatronal.toLocaleString()} DZD</span></span>
             <span><strong>Coût global du poste pour l'employeur :</strong> <span className="font-mono font-bold text-black">{(slip.salaireBrutCotisable + slip.cnasPatronal + (slip.primesNonImposables?.reduce((s, p) => s + p.amount, 0) || 0)).toLocaleString()} DZD</span></span>
           </div>
 
           {/* Net to Pay Box */}
-          <div className="flex items-center justify-between p-4 bg-black text-white rounded-lg mb-4 tabular-nums">
+          <div data-sq="card" data-sq-border="none" className="flex items-center justify-between p-4 bg-black text-white mb-4 tabular-nums">
             <div>
               <p className="text-[10px] uppercase font-bold tracking-widest text-white/70">Net à Payer (DZD)</p>
               <p className="text-xl font-black font-mono tracking-tight mt-0.5 text-white">

@@ -40,9 +40,20 @@ interface CachedEntry {
   s: number;
   strokeWidth: number;
   needsStroke: boolean;
+  bt: number;
+  br: number;
+  bb: number;
+  bl: number;
+  overflowAdjusted: boolean;
+}
+
+interface SavedOverflowStyle {
+  overflow: string;
+  minWidth: string;
 }
 
 const cachedEntries = new WeakMap<HTMLElement, CachedEntry>();
+const savedOverflowStyles = new WeakMap<HTMLElement, SavedOverflowStyle>();
 const trackedElements = new Set<HTMLElement>();
 const dirtyQueue = new Set<HTMLElement>();
 
@@ -81,7 +92,69 @@ export function invalidateSquircleTokenCache(): void {
   trackedElements.forEach((el) => enqueueSquircleElement(el));
 }
 
-function resolveRadiusPx(el: HTMLElement, rootTokens: Record<string, number>): number {
+function roundSubpx(v: number): number {
+  return Math.round(v * 100) / 100;
+}
+
+interface BorderBoxMetrics {
+  w: number;
+  h: number;
+  bt: number;
+  br: number;
+  bb: number;
+  bl: number;
+}
+
+function measureBorderBox(el: HTMLElement, cs: CSSStyleDeclaration): BorderBoxMetrics {
+  const bt = parseFloat(cs.borderTopWidth) || 0;
+  const br = parseFloat(cs.borderRightWidth) || 0;
+  const bb = parseFloat(cs.borderBottomWidth) || 0;
+  const bl = parseFloat(cs.borderLeftWidth) || 0;
+
+  const offW = el.offsetWidth;
+  const offH = el.offsetHeight;
+  const cssW = parseFloat(cs.width);
+  const cssH = parseFloat(cs.height);
+
+  let w = 0;
+  let h = 0;
+
+  if (Number.isFinite(cssW) && cssW > 0) {
+    const padX =
+      cs.boxSizing === 'border-box'
+        ? 0
+        : (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0) + bl + br;
+    const candidateW = cssW + padX;
+    if (offW === 0 || Math.abs(candidateW - offW) <= 1.5) {
+      w = roundSubpx(candidateW);
+    }
+  }
+  if (Number.isFinite(cssH) && cssH > 0) {
+    const padY =
+      cs.boxSizing === 'border-box'
+        ? 0
+        : (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) + bt + bb;
+    const candidateH = cssH + padY;
+    if (offH === 0 || Math.abs(candidateH - offH) <= 1.5) {
+      h = roundSubpx(candidateH);
+    }
+  }
+
+  if (w <= 0) {
+    w = offW || roundSubpx(el.getBoundingClientRect().width);
+  }
+  if (h <= 0) {
+    h = offH || roundSubpx(el.getBoundingClientRect().height);
+  }
+
+  return { w, h, bt, br, bb, bl };
+}
+
+function resolveRadiusPx(
+  el: HTMLElement,
+  rootTokens: Record<string, number>,
+  cs: CSSStyleDeclaration,
+): number {
   const attr = el.getAttribute('data-sq');
   if (!attr || attr === 'none') return 0;
   if (attr in rootTokens) {
@@ -91,34 +164,45 @@ function resolveRadiusPx(el: HTMLElement, rootTokens: Record<string, number>): n
   if (!Number.isNaN(numeric) && numeric >= 0) {
     return numeric;
   }
-  const inlineVar = parseFloat(getComputedStyle(el).getPropertyValue('--sq-r'));
+  const inlineVar = parseFloat(cs.getPropertyValue('--sq-r'));
   if (!Number.isNaN(inlineVar) && inlineVar >= 0) {
     return inlineVar;
   }
   return TOKEN_DEFAULTS.card;
 }
 
-function resolveStrokeWidth(el: HTMLElement): { needsStroke: boolean; strokeWidth: number } {
+function resolveStrokeWidth(
+  el: HTMLElement,
+  cs: CSSStyleDeclaration,
+  bt: number,
+  br: number,
+  bb: number,
+  bl: number,
+): { needsStroke: boolean; strokeWidth: number } {
   const borderMode = el.getAttribute('data-sq-border');
   if (borderMode === 'none') {
     return { needsStroke: false, strokeWidth: 0 };
   }
   const explicitW = parseFloat(el.getAttribute('data-sq-stroke-w') || '');
+  const maxBw = Math.max(bt, br, bb, bl);
   if (borderMode === 'solid' || borderMode === 'dashed') {
+    const detected = bt > 0 ? bt : maxBw;
     return {
       needsStroke: true,
-      strokeWidth: !Number.isNaN(explicitW) && explicitW > 0 ? explicitW : 1,
+      strokeWidth: !Number.isNaN(explicitW) && explicitW > 0 ? explicitW : detected > 0 ? detected : 1,
     };
   }
-  // Auto-detect from borderTopWidth or dashed style if data-sq-border not explicitly set
-  const cs = getComputedStyle(el);
-  const bw = parseFloat(cs.borderTopWidth) || 0;
+  // Auto-detect full-box border or explicit --sq-stroke token
+  const hasFullBorder = bt > 0 && br > 0 && bb > 0 && bl > 0;
   const hasVarStroke = cs.getPropertyValue('--sq-stroke').trim() !== '';
-  if (bw > 0 || hasVarStroke) {
+  if (hasFullBorder || hasVarStroke) {
     if (cs.borderTopStyle === 'dashed' && el.getAttribute('data-sq-dash') === null) {
       el.setAttribute('data-sq-dash', '');
     }
-    return { needsStroke: true, strokeWidth: bw > 0 ? bw : 1 };
+    return {
+      needsStroke: true,
+      strokeWidth: !Number.isNaN(explicitW) && explicitW > 0 ? explicitW : bt > 0 ? bt : 1,
+    };
   }
   return { needsStroke: false, strokeWidth: 0 };
 }
@@ -132,12 +216,16 @@ function ensureStrokeOverlay(el: HTMLElement): SVGPathElement | null {
     svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('data-sq-stroke', '');
     svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('preserveAspectRatio', 'none');
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('vector-effect', 'non-scaling-stroke');
     path.setAttribute('fill', 'none');
     svg.appendChild(path);
     el.appendChild(svg);
     return path;
+  }
+  if (svg.getAttribute('preserveAspectRatio') !== 'none') {
+    svg.setAttribute('preserveAspectRatio', 'none');
   }
   let path = svg.querySelector<SVGPathElement>('path');
   if (!path) {
@@ -154,6 +242,34 @@ function removeStrokeOverlay(el: HTMLElement): void {
   if (svg) svg.remove();
 }
 
+function restoreOverflowStyle(el: HTMLElement): void {
+  const saved = savedOverflowStyles.get(el);
+  if (!saved) return;
+  el.style.overflow = saved.overflow;
+  el.style.minWidth = saved.minWidth;
+  savedOverflowStyles.delete(el);
+}
+
+function applyStrokeBoxVars(
+  svg: SVGSVGElement,
+  bt: number,
+  br: number,
+  bb: number,
+  bl: number,
+): void {
+  if (bt === 0 && br === 0 && bb === 0 && bl === 0) {
+    svg.style.removeProperty('--sq-bt');
+    svg.style.removeProperty('--sq-br');
+    svg.style.removeProperty('--sq-bb');
+    svg.style.removeProperty('--sq-bl');
+    return;
+  }
+  svg.style.setProperty('--sq-bt', `${bt}px`);
+  svg.style.setProperty('--sq-br', `${br}px`);
+  svg.style.setProperty('--sq-bb', `${bb}px`);
+  svg.style.setProperty('--sq-bl', `${bl}px`);
+}
+
 interface PendingWrite {
   el: HTMLElement;
   w: number;
@@ -162,7 +278,14 @@ interface PendingWrite {
   s: number;
   strokeWidth: number;
   needsStroke: boolean;
+  bt: number;
+  br: number;
+  bb: number;
+  bl: number;
   needsPosRelative: boolean;
+  needsOverflowRelease: boolean;
+  needsMinWidthZero: boolean;
+  wasOverflowAdjusted: boolean;
   clipPathStr: string;
   strokePathStr: string;
 }
@@ -184,22 +307,33 @@ function flushDirtyQueue(): void {
     const attr = el.getAttribute('data-sq');
     if (!attr || attr === 'none') {
       el.style.clipPath = '';
-      el.style.webkitClipPath = '';
+      (el.style as any).webkitClipPath = '';
       removeStrokeOverlay(el);
+      restoreOverflowStyle(el);
       cachedEntries.delete(el);
       return;
     }
 
-    const w = el.offsetWidth || Math.round(el.getBoundingClientRect().width);
-    const h = el.offsetHeight || Math.round(el.getBoundingClientRect().height);
+    const cs = getComputedStyle(el);
+    const { w, h, bt, br, bb, bl } = measureBorderBox(el, cs);
     if (w <= 0 || h <= 0) return;
 
-    const r = resolveRadiusPx(el, tokens);
-    const { needsStroke, strokeWidth } = resolveStrokeWidth(el);
-    const needsPosRelative =
-      needsStroke && !VOID_TAGS.has(el.tagName) && getComputedStyle(el).position === 'static';
-
+    const r = resolveRadiusPx(el, tokens, cs);
+    const { needsStroke, strokeWidth } = resolveStrokeWidth(el, cs, bt, br, bb, bl);
+    const isVoid = VOID_TAGS.has(el.tagName);
+    const needsPosRelative = needsStroke && !isVoid && cs.position === 'static';
+    const hasNonZeroBorder = bt > 0 || br > 0 || bb > 0 || bl > 0;
     const prev = cachedEntries.get(el);
+    const wasOverflowAdjusted = Boolean(prev?.overflowAdjusted);
+    // When overflow:hidden is set on a bordered [data-sq] host, CSS clips children to the padding box,
+    // which would slice away the outer border-box stroke; clip-path already clips at the squircle border-box.
+    const needsOverflowRelease =
+      needsStroke &&
+      !isVoid &&
+      hasNonZeroBorder &&
+      ((cs.overflowX === 'hidden' && cs.overflowY === 'hidden') || wasOverflowAdjusted);
+    const needsMinWidthZero = needsOverflowRelease && cs.minWidth === 'auto';
+
     if (
       prev &&
       prev.w === w &&
@@ -207,7 +341,12 @@ function flushDirtyQueue(): void {
       prev.r === r &&
       prev.s === smooth &&
       prev.strokeWidth === strokeWidth &&
-      prev.needsStroke === needsStroke
+      prev.needsStroke === needsStroke &&
+      prev.bt === bt &&
+      prev.br === br &&
+      prev.bb === bb &&
+      prev.bl === bl &&
+      prev.overflowAdjusted === needsOverflowRelease
     ) {
       if (needsPosRelative) {
         el.style.position = 'relative';
@@ -235,7 +374,14 @@ function flushDirtyQueue(): void {
       s: smooth,
       strokeWidth,
       needsStroke,
+      bt,
+      br,
+      bb,
+      bl,
       needsPosRelative,
+      needsOverflowRelease,
+      needsMinWidthZero,
+      wasOverflowAdjusted,
       clipPathStr: `path('${outerD}')`,
       strokePathStr: strokeD,
     });
@@ -254,7 +400,14 @@ function flushDirtyQueue(): void {
       s,
       strokeWidth,
       needsStroke,
+      bt,
+      br,
+      bb,
+      bl,
       needsPosRelative,
+      needsOverflowRelease,
+      needsMinWidthZero,
+      wasOverflowAdjusted,
       clipPathStr,
       strokePathStr,
     } = item;
@@ -262,15 +415,43 @@ function flushDirtyQueue(): void {
     if (needsPosRelative) {
       el.style.position = 'relative';
     }
+    if (needsOverflowRelease) {
+      if (!savedOverflowStyles.has(el)) {
+        savedOverflowStyles.set(el, {
+          overflow: el.style.overflow,
+          minWidth: el.style.minWidth,
+        });
+      }
+      el.style.overflow = 'visible';
+      if (needsMinWidthZero) {
+        el.style.minWidth = '0px';
+      }
+    } else if (wasOverflowAdjusted) {
+      restoreOverflowStyle(el);
+    }
+
     el.style.clipPath = clipPathStr;
     (el.style as any).webkitClipPath = clipPathStr;
-    cachedEntries.set(el, { w, h, r, s, strokeWidth, needsStroke });
+    cachedEntries.set(el, {
+      w,
+      h,
+      r,
+      s,
+      strokeWidth,
+      needsStroke,
+      bt,
+      br,
+      bb,
+      bl,
+      overflowAdjusted: needsOverflowRelease,
+    });
 
     if (needsStroke && strokePathStr) {
       const pathEl = ensureStrokeOverlay(el);
       if (pathEl) {
         const svg = pathEl.parentElement as unknown as SVGSVGElement;
         svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        applyStrokeBoxVars(svg, bt, br, bb, bl);
         pathEl.setAttribute('d', strokePathStr);
       }
     } else {
@@ -290,18 +471,34 @@ export function enqueueSquircleElement(el: HTMLElement): void {
 export function syncSquircleNow(el: HTMLElement | null): void {
   if (!el || !el.isConnected) return;
   const attr = el.getAttribute('data-sq');
-  if (!attr || attr === 'none') return;
-  const w = el.offsetWidth || Math.round(el.getBoundingClientRect().width);
-  const h = el.offsetHeight || Math.round(el.getBoundingClientRect().height);
+  if (!attr || attr === 'none') {
+    el.style.clipPath = '';
+    (el.style as any).webkitClipPath = '';
+    removeStrokeOverlay(el);
+    restoreOverflowStyle(el);
+    cachedEntries.delete(el);
+    return;
+  }
+
+  const cs = getComputedStyle(el);
+  const { w, h, bt, br, bb, bl } = measureBorderBox(el, cs);
   if (w <= 0 || h <= 0) return;
 
   const { smooth, tokens } = readRootTokens();
-  const r = resolveRadiusPx(el, tokens);
-  const { needsStroke, strokeWidth } = resolveStrokeWidth(el);
-  const needsPosRelative =
-    needsStroke && !VOID_TAGS.has(el.tagName) && getComputedStyle(el).position === 'static';
-
+  const r = resolveRadiusPx(el, tokens, cs);
+  const { needsStroke, strokeWidth } = resolveStrokeWidth(el, cs, bt, br, bb, bl);
+  const isVoid = VOID_TAGS.has(el.tagName);
+  const needsPosRelative = needsStroke && !isVoid && cs.position === 'static';
+  const hasNonZeroBorder = bt > 0 || br > 0 || bb > 0 || bl > 0;
   const prev = cachedEntries.get(el);
+  const wasOverflowAdjusted = Boolean(prev?.overflowAdjusted);
+  const needsOverflowRelease =
+    needsStroke &&
+    !isVoid &&
+    hasNonZeroBorder &&
+    ((cs.overflowX === 'hidden' && cs.overflowY === 'hidden') || wasOverflowAdjusted);
+  const needsMinWidthZero = needsOverflowRelease && cs.minWidth === 'auto';
+
   if (
     prev &&
     prev.w === w &&
@@ -309,7 +506,12 @@ export function syncSquircleNow(el: HTMLElement | null): void {
     prev.r === r &&
     prev.s === smooth &&
     prev.strokeWidth === strokeWidth &&
-    prev.needsStroke === needsStroke
+    prev.needsStroke === needsStroke &&
+    prev.bt === bt &&
+    prev.br === br &&
+    prev.bb === bb &&
+    prev.bl === bl &&
+    prev.overflowAdjusted === needsOverflowRelease
   ) {
     if (needsPosRelative) {
       el.style.position = 'relative';
@@ -322,6 +524,21 @@ export function syncSquircleNow(el: HTMLElement | null): void {
   if (needsPosRelative) {
     el.style.position = 'relative';
   }
+  if (needsOverflowRelease) {
+    if (!savedOverflowStyles.has(el)) {
+      savedOverflowStyles.set(el, {
+        overflow: el.style.overflow,
+        minWidth: el.style.minWidth,
+      });
+    }
+    el.style.overflow = 'visible';
+    if (needsMinWidthZero) {
+      el.style.minWidth = '0px';
+    }
+  } else if (wasOverflowAdjusted) {
+    restoreOverflowStyle(el);
+  }
+
   const clipStr = `path('${outerD}')`;
   el.style.clipPath = clipStr;
   (el.style as any).webkitClipPath = clipStr;
@@ -340,13 +557,26 @@ export function syncSquircleNow(el: HTMLElement | null): void {
     if (pathEl && strokeD) {
       const svg = pathEl.parentElement as unknown as SVGSVGElement;
       svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      applyStrokeBoxVars(svg, bt, br, bb, bl);
       pathEl.setAttribute('d', strokeD);
     }
   } else {
     removeStrokeOverlay(el);
   }
 
-  cachedEntries.set(el, { w, h, r, s: smooth, strokeWidth, needsStroke });
+  cachedEntries.set(el, {
+    w,
+    h,
+    r,
+    s: smooth,
+    strokeWidth,
+    needsStroke,
+    bt,
+    br,
+    bb,
+    bl,
+    overflowAdjusted: needsOverflowRelease,
+  });
 }
 
 function registerNode(el: HTMLElement): void {
@@ -364,6 +594,7 @@ function unregisterNode(el: HTMLElement): void {
   }
   dirtyQueue.delete(el);
   cachedEntries.delete(el);
+  savedOverflowStyles.delete(el);
 }
 
 function scanSubtree(root: ParentNode): void {
@@ -413,6 +644,7 @@ export function initSquircleEngine(): void {
               m.target.style.clipPath = '';
               (m.target.style as any).webkitClipPath = '';
               removeStrokeOverlay(m.target);
+              restoreOverflowStyle(m.target);
               unregisterNode(m.target);
             }
           }

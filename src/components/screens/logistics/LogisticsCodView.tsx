@@ -1232,7 +1232,7 @@ export const LogisticsCodView: React.FC<any> = () => {
           <div
             data-sq="panel"
             data-sq-border="solid"
-            className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] space-y-3"
+            className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
           >
             <div className="flex items-center gap-2.5 px-2 pt-2">
               <div
@@ -1249,7 +1249,7 @@ export const LogisticsCodView: React.FC<any> = () => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2 text-xs"
+              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2 text-xs"
             >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Base Journalière (48 000 DZD / 26j):</span>
@@ -1276,7 +1276,7 @@ export const LogisticsCodView: React.FC<any> = () => {
           <div
             data-sq="panel"
             data-sq-border="solid"
-            className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] space-y-3"
+            className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
           >
             <div className="flex items-center gap-2.5 px-2 pt-2">
               <div
@@ -1295,7 +1295,7 @@ export const LogisticsCodView: React.FC<any> = () => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] space-y-2 text-xs"
+              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2 text-xs"
             >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Colis Livrés (26 × 220 DZD):</span>

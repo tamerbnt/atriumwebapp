@@ -356,7 +356,7 @@ export const VenueFinanceView: React.FC = () => {
         renderCell: (d) => {
           const bInfo = resolveRecordBranch(d, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--r-check,6px)] text-xs font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -895,7 +895,12 @@ export const VenueFinanceView: React.FC = () => {
 
       {deductionTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-md shadow-xl space-y-5">
+          <div className="sq-elev-pop w-full max-w-md">
+            <div
+              data-sq="panel"
+              data-sq-border="solid"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 w-full space-y-5"
+            >
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2">
                 <AlertTriangle size={20} className="text-red-500" />
@@ -912,7 +917,11 @@ export const VenueFinanceView: React.FC = () => {
               </button>
             </div>
             <form onSubmit={handleConfirmDeduct} className="space-y-4">
-              <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-xs space-y-1">
+              <div
+                data-sq="ctl"
+                data-sq-border="none"
+                className="p-3 bg-neutral-50 dark:bg-neutral-800/50 text-xs space-y-1"
+              >
                 <div>
                   Locataire: <strong className="text-black dark:text-white">{deductionTarget.renterName}</strong>
                 </div>
@@ -946,6 +955,7 @@ export const VenueFinanceView: React.FC = () => {
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

@@ -936,7 +936,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                       ) + 1;
                     if (diffDays > 30) {
                       return (
-                        <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs space-y-1 animate-in fade-in">
+                        <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-amber-500/10 border border-amber-500/30 [--sq-stroke:rgba(245,158,11,0.3)] text-amber-800 dark:text-amber-300 text-xs space-y-1 animate-in fade-in">
                           <div className="flex items-center gap-1.5 font-bold">
                             <AlertTriangle
                               size={14}

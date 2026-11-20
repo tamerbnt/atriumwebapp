@@ -26,9 +26,13 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
   return (
     <div className="space-y-4">
       {/* Viewport Control Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-[#F3EDE7] dark:bg-neutral-800/80 rounded-2xl border border-[#E6DED6] dark:border-neutral-700/80">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-[#F3EDE7] dark:bg-neutral-800/80 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.8)]"
+      >
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold text-xs">
+          <div data-sq="ctl" className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold text-xs">
             📱
           </div>
           <div>
@@ -47,38 +51,50 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
         </div>
 
         {/* Mode Toggle Switcher */}
-        <div className="flex items-center gap-1 p-1 bg-white dark:bg-neutral-900 rounded-xl border border-[#E6DED6] dark:border-neutral-800 shadow-sm self-start sm:self-auto">
-          <button
-            type="button"
-            onClick={() => setMode('mobile')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              mode === 'mobile'
-                ? 'bg-[#d4522f] text-white shadow-xs'
-                : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
-            }`}
+        <div className="sq-elev-card self-start sm:self-auto">
+          <div
+            data-sq="ctl"
+            data-sq-border="solid"
+            className="flex items-center gap-1 p-1 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
           >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>{t('pm_sim_mobile_mode')}</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setMode('mobile')}
+              data-sq="ctl-sm"
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                mode === 'mobile'
+                  ? 'bg-[#d4522f] text-white'
+                  : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
+              }`}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>{t('pm_sim_mobile_mode')}</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setMode('desktop')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              mode === 'desktop'
-                ? 'bg-[#d4522f] text-white shadow-xs'
-                : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
-            }`}
-          >
-            <Monitor className="w-3.5 h-3.5" />
-            <span>{t('pm_sim_desktop_mode')}</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setMode('desktop')}
+              data-sq="ctl-sm"
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                mode === 'desktop'
+                  ? 'bg-[#d4522f] text-white'
+                  : 'text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white'
+              }`}
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              <span>{t('pm_sim_desktop_mode')}</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Frame Container */}
       {mode === 'mobile' ? (
-        <div className="flex justify-center py-4 px-2 bg-gradient-to-b from-[#F3EDE7]/60 to-[#EAE1D8]/60 dark:from-neutral-950/40 dark:to-neutral-900/40 rounded-3xl border border-dashed border-[#D5CBBF] dark:border-neutral-800">
+        <div
+          data-sq="panel"
+          data-sq-border="dashed"
+          className="flex justify-center py-4 px-2 bg-gradient-to-b from-[#F3EDE7]/60 to-[#EAE1D8]/60 dark:from-neutral-950/40 dark:to-neutral-900/40 [--sq-stroke:#D5CBBF] dark:[--sq-stroke:#262626]"
+        >
           {/* Realistic Smartphone Shell (390px wide) */}
           <div className="w-[390px] max-w-full bg-white dark:bg-neutral-900 rounded-[48px] shadow-2xl border-[10px] border-neutral-800 dark:border-neutral-700 overflow-hidden relative flex flex-col min-h-[760px]">
             {/* Status Bar */}
@@ -106,7 +122,11 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
           </div>
         </div>
       ) : (
-        <div className="w-full bg-white dark:bg-neutral-900/60 p-4 sm:p-6 rounded-2xl border border-[#E6DED6] dark:border-neutral-800">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="w-full bg-white dark:bg-neutral-900/60 p-4 sm:p-6 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+        >
           {children}
         </div>
       )}

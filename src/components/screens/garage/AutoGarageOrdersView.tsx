@@ -875,8 +875,8 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                           data-sq-border="solid"
                           className={`p-3 border transition-all space-y-2 ${
                             activeOrder?.id === order.id
-                              ? 'bg-[#FDF4F0] dark:bg-neutral-800 border-[#d4522f]'
-                              : 'bg-[#F3EDE7] dark:bg-[#141312] border-neutral-200/60 dark:border-neutral-700/60 hover:border-neutral-400'
+                              ? 'bg-[#FDF4F0] dark:bg-neutral-800 border-[#d4522f] [--sq-stroke:#d4522f]'
+                              : 'bg-[#F3EDE7] dark:bg-[#141312] border-neutral-200/60 dark:border-neutral-700/60 [--sq-stroke:rgba(229,229,229,0.6)] dark:[--sq-stroke:rgba(64,64,64,0.6)] hover:border-neutral-400 hover:[--sq-stroke:#a3a3a3]'
                           }`}
                         >
                           <button
@@ -1127,7 +1127,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                         key={item.id}
                         data-sq="ctl"
                         data-sq-border="solid"
-                        className="flex items-center gap-2.5 p-2.5 bg-[#F3EDE7] dark:bg-[#1E1C1A] border border-[#E6DED6] dark:border-[#33302D] cursor-pointer text-xs"
+                        className="flex items-center gap-2.5 p-2.5 bg-[#F3EDE7] dark:bg-[#1E1C1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] cursor-pointer text-xs"
                       >
                         <input
                           type="checkbox"

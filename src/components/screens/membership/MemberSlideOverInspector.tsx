@@ -585,14 +585,18 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
         aria-modal="true"
         aria-hidden={!isOpen}
         aria-labelledby="member-drawer-title"
-        className="pnl pnl-inspector fixed right-[14px] top-[14px] bottom-[14px] w-[560px] max-w-[calc(100vw-28px)] z-[51] rounded-[30px] bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[var(--atr-ink,#000000)] dark:text-white shadow-[-12px_0_28px_rgba(0,0,0,0.16)] flex flex-col overflow-hidden font-sans select-none"
+        data-sq="panel"
+        data-sq-border="solid"
+        className="pnl pnl-inspector fixed right-[14px] top-[14px] bottom-[14px] w-[560px] max-w-[calc(100vw-28px)] z-[51] bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] text-[var(--atr-ink,#000000)] dark:text-white flex flex-col overflow-hidden font-sans select-none"
       >
         {activeMember && (
           <>
             {/* HEADER (.ph) */}
             <div className="ph flex gap-4 items-start px-[26px] pt-[26px] pb-[18px]">
               <span
-                className="pav w-[68px] h-[68px] rounded-[22px] bg-[var(--atr-acc,#d4522f)] text-white font-bold text-[28px] grid place-items-center shrink-0 shadow-sm"
+                data-sq="tile-lg"
+                data-sq-border="none"
+                className="pav w-[68px] h-[68px] bg-[var(--atr-acc,#d4522f)] text-white font-bold text-[28px] grid place-items-center shrink-0"
                 aria-hidden="true"
               >
                 {initials}
@@ -606,20 +610,20 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   {memberName}
                 </h2>
                 <div className="pills flex gap-1.5 flex-wrap">
-                  <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate max-w-full">
+                  <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate max-w-full">
                     {planName}
                   </span>
                   {memberBranch && (
-                    <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[#F3EDE7] dark:bg-white/[0.08] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734] truncate max-w-full">
+                    <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[#F3EDE7] dark:bg-white/[0.08] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734] truncate max-w-full">
                       {memberBranch.name}
                     </span>
                   )}
-                  <span className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-md text-[12px] font-medium ${statusPillCls}`}>
+                  <span className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[12px] font-medium ${statusPillCls}`}>
                     <i className="w-1.5 h-1.5 rounded-full bg-current" />
                     {statusLabel}
                   </span>
                   {!isBlocked && (
-                    <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-md text-[12px] font-medium bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3] border border-[#B5E8CE] dark:border-[#1E4D36]">
+                    <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3] border border-[#B5E8CE] dark:border-[#1E4D36]">
                       <ShieldCheck className="w-3 h-3" />
                       Vérifié
                     </span>
@@ -670,15 +674,17 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
             {/* TABS WITH DUAL-SPRING CLIP-PATH INDICATOR (.ptabs) */}
             <div
               ref={ptabsRef}
-              className="ptabs relative flex mx-[26px] p-1 rounded-[14px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
+              data-sq="ctl"
+              data-sq-border="none"
+              className="ptabs relative flex mx-[26px] p-[3px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
               role="tablist"
               aria-label="Sections du dossier adhérent"
             >
               <i
                 ref={pindRef}
                 aria-hidden="true"
-                className="absolute top-1 bottom-1 left-0 right-0 rounded-[10px] bg-[var(--atr-acc,#d4522f)] z-0 pointer-events-none"
-                style={{ clipPath: 'inset(0 100% 0 4px round 10px)' }}
+                className="absolute top-[3px] bottom-[3px] left-0 right-0 rounded-[var(--r-thumb,9px)] bg-[var(--atr-acc,#d4522f)] z-0 pointer-events-none"
+                style={{ clipPath: 'inset(0 100% 0 3px round 9px)' }}
               />
               {TABS.map((tab) => {
                 const isSelected = activeTab === tab.id;
@@ -693,7 +699,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                     data-t={tab.id}
                     aria-selected={isSelected}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative z-[1] flex-1 h-[38px] border-0 bg-transparent font-semibold text-[13px] rounded-[10px] transition-colors duration-160 cursor-pointer ${
+                    className={`relative z-[1] flex-1 h-[38px] border-0 bg-transparent font-semibold text-[13px] rounded-[var(--r-thumb,9px)] transition-colors duration-160 cursor-pointer ${
                       isSelected
                         ? 'text-white'
                         : 'text-[var(--atr-ink,#000000)] dark:text-white/88'
@@ -719,10 +725,12 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       <button
                         type="button"
                         data-no-liquid="true"
+                        data-sq="card"
+                        data-sq-border="solid"
                         onClick={() => onCheckIn(activeMember)}
-                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[#d4522f]/25 dark:border-[#52291F] bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] text-[12px] font-medium leading-tight text-center cursor-pointer"
+                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 border border-[#d4522f]/25 dark:border-[#52291F] [--sq-stroke:rgba(212,82,47,0.25)] dark:[--sq-stroke:#52291F] bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] text-[12px] font-medium leading-tight text-center cursor-pointer"
                       >
-                        <span className="ic w-[38px] h-[38px] rounded-[12px] bg-white dark:bg-[#1C1B1A] grid place-items-center">
+                        <span data-sq="tile" data-sq-border="none" className="ic w-[38px] h-[38px] bg-white dark:bg-[#1C1B1A] grid place-items-center">
                           <UserCheck className="w-[18px] h-[18px]" />
                         </span>
                         <span>Enregistrer présence</span>
@@ -731,10 +739,12 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       <button
                         type="button"
                         data-no-liquid="true"
+                        data-sq="card"
+                        data-sq-border="solid"
                         onClick={(e) => onEdit(activeMember, e.currentTarget)}
-                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white text-[12px] font-medium leading-tight text-center cursor-pointer"
+                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white text-[12px] font-medium leading-tight text-center cursor-pointer"
                       >
-                        <span className="ic w-[38px] h-[38px] rounded-[12px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1B1A] grid place-items-center">
+                        <span data-sq="tile" data-sq-border="none" className="ic w-[38px] h-[38px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1B1A] grid place-items-center">
                           <Pencil className="w-[18px] h-[18px]" />
                         </span>
                         <span>Modifier</span>
@@ -743,10 +753,12 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       <button
                         type="button"
                         data-no-liquid="true"
+                        data-sq="card"
+                        data-sq-border="solid"
                         onClick={() => onToggleBlock(activeMember)}
-                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white text-[12px] font-medium leading-tight text-center cursor-pointer"
+                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white text-[12px] font-medium leading-tight text-center cursor-pointer"
                       >
-                        <span className="ic w-[38px] h-[38px] rounded-[12px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1B1A] grid place-items-center">
+                        <span data-sq="tile" data-sq-border="none" className="ic w-[38px] h-[38px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1B1A] grid place-items-center">
                           {isBlocked ? (
                             <Unlock className="w-[18px] h-[18px] text-[var(--atr-ok,#096b40)]" />
                           ) : (
@@ -759,10 +771,12 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       <button
                         type="button"
                         data-no-liquid="true"
+                        data-sq="card"
+                        data-sq-border="solid"
                         onClick={() => onRenew(activeMember)}
-                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white text-[12px] font-medium leading-tight text-center cursor-pointer"
+                        className="flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white text-[12px] font-medium leading-tight text-center cursor-pointer"
                       >
-                        <span className="ic w-[38px] h-[38px] rounded-[12px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1B1A] grid place-items-center">
+                        <span data-sq="tile" data-sq-border="none" className="ic w-[38px] h-[38px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1B1A] grid place-items-center">
                           <RotateCcw className="w-[18px] h-[18px]" />
                         </span>
                         <span>Renouveler abonnement</span>
@@ -771,7 +785,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   </section>
 
                   <section style={{ '--k': 1 } as React.CSSProperties}>
-                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                    <div data-sq="card" data-sq-border="solid" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734]">
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]">
                         <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Formule d’abonnement</span>
                         <b className="font-mono text-[13px] text-right tabular-nums">{planName}</b>
@@ -802,10 +816,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                           {remainingSessions} séances
                         </b>
                       </div>
-                      <div className="bar2 h-[8px] rounded-[4px] bg-[var(--atr-line,#E6DED6)] dark:bg-[#3A3734] overflow-hidden mt-0.5 mb-3">
+                      <div className="bar2 h-[8px] rounded-full bg-[var(--atr-line,#E6DED6)] dark:bg-[#3A3734] overflow-hidden mt-0.5 mb-3">
                         <i
                           ref={barFillRef}
-                          className="block w-full h-full rounded-[4px] bg-[var(--atr-ok,#096b40)] dark:bg-[#5BE3A3] origin-left rtl:origin-right"
+                          className="block w-full h-full rounded-full bg-[var(--atr-ok,#096b40)] dark:bg-[#5BE3A3] origin-left rtl:origin-right"
                           style={{ transform: 'scaleX(0)' }}
                         />
                       </div>
@@ -814,7 +828,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
                   <section style={{ '--k': 2 } as React.CSSProperties}>
                     <h3>Contact &amp; accès</h3>
-                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                    <div data-sq="card" data-sq-border="solid" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734]">
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]">
                         <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 flex items-center gap-2">
                           <Phone className="w-[15px] h-[15px]" />
@@ -825,8 +839,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                           {memberPhone && (
                             <button
                               type="button"
+                              data-sq="ctl-sm"
+                              data-sq-border="none"
                               onClick={() => handleCopy(memberPhone, 'phone')}
-                              className="w-7 h-7 rounded-[8px] border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 hover:text-[var(--atr-acc,#d4522f)] cursor-pointer"
+                              className="w-7 h-7 border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 hover:text-[var(--atr-acc,#d4522f)] cursor-pointer"
                               aria-label="Copier le téléphone"
                             >
                               {copiedField === 'phone' ? <Check className="w-3.5 h-3.5 text-[var(--atr-ok,#096b40)]" /> : <Copy className="w-3.5 h-3.5" />}
@@ -844,8 +860,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                           {memberEmail && (
                             <button
                               type="button"
+                              data-sq="ctl-sm"
+                              data-sq-border="none"
                               onClick={() => handleCopy(memberEmail, 'email')}
-                              className="w-7 h-7 rounded-[8px] border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 hover:text-[var(--atr-acc,#d4522f)] cursor-pointer"
+                              className="w-7 h-7 border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 hover:text-[var(--atr-acc,#d4522f)] cursor-pointer"
                               aria-label="Copier l'e-mail"
                             >
                               {copiedField === 'email' ? <Check className="w-3.5 h-3.5 text-[var(--atr-ok,#096b40)]" /> : <Copy className="w-3.5 h-3.5" />}
@@ -869,7 +887,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                         }
                       }}
                       placeholder="Ajouter une note relative à cet adhérent…"
-                      className="w-full box-border min-h-[84px] rounded-[16px] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-3.5 py-3 text-[13px] text-[var(--atr-ink,#000000)] dark:text-white placeholder:text-black/48 dark:placeholder:text-white/50 resize-y"
+                      className="w-full box-border min-h-[84px] rounded-[var(--r-card,16px)] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-3.5 py-3 text-[13px] text-[var(--atr-ink,#000000)] dark:text-white placeholder:text-black/48 dark:placeholder:text-white/50 resize-y"
                     />
                   </section>
                 </>
@@ -879,14 +897,14 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                 <>
                   <section style={{ '--k': 0 } as React.CSSProperties}>
                     <h3>Badge &amp; portique</h3>
-                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                    <div data-sq="card" data-sq-border="solid" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734]">
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]">
                         <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Badge</span>
                         <b className="font-mono text-[13px] tabular-nums">RFID-{activeMember.id.slice(0, 8).toUpperCase()}</b>
                       </div>
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] text-[13px]">
                         <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Statut</span>
-                        <span className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-md text-[12px] font-medium ${statusPillCls}`}>
+                        <span className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[12px] font-medium ${statusPillCls}`}>
                           <i className="w-1.5 h-1.5 rounded-full bg-current" />
                           {statusLabel}
                         </span>
@@ -899,8 +917,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                     <div className="h-2.5" />
                     <button
                       type="button"
+                      data-sq="ctl"
+                      data-sq-border="none"
                       onClick={() => onToggleBlock(activeMember)}
-                      className="wide w-full h-[42px] border-0 rounded-[12px] bg-[#1F1D1B] dark:bg-white text-white dark:text-black font-semibold text-[13.5px] cursor-pointer"
+                      className="wide w-full h-[42px] border-0 bg-[#1F1D1B] dark:bg-white text-white dark:text-black font-semibold text-[13.5px] cursor-pointer"
                     >
                       {isBlocked ? 'Débloquer le badge' : 'Bloquer le badge'}
                     </button>
@@ -909,7 +929,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   <section style={{ '--k': 1 } as React.CSSProperties}>
                     <h3>Passages récents</h3>
                     {memberCheckInHistory.length > 0 ? (
-                      <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                      <div data-sq="card" data-sq-border="solid" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734]">
                         {memberCheckInHistory.slice(0, 8).map((log) => {
                           const ok =
                             log.accessStatus === 'Granted' ||
@@ -942,7 +962,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                                 </small>
                               </span>
                               <span
-                                className={`pill px-2.5 py-[3px] rounded-md text-[12px] font-medium ${
+                                className={`pill px-2.5 py-[3px] rounded-full text-[12px] font-medium ${
                                   ok
                                     ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3]'
                                     : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#c0283d] dark:text-[#FF8D7A]'
@@ -971,8 +991,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                     <section style={{ '--k': 2 } as React.CSSProperties}>
                       <button
                         type="button"
+                        data-sq="ctl"
+                        data-sq-border="none"
                         onClick={() => onCheckIn(activeMember)}
-                        className="wide w-full h-[42px] border-0 rounded-[12px] bg-[var(--atr-acc,#d4522f)] text-white font-semibold text-[13.5px] cursor-pointer"
+                        className="wide w-full h-[42px] border-0 bg-[var(--atr-acc,#d4522f)] text-white font-semibold text-[13.5px] cursor-pointer"
                       >
                         Enregistrer une présence
                       </button>
@@ -985,7 +1007,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                 <>
                   <section style={{ '--k': 0 } as React.CSSProperties}>
                     <h3>Solde à régler</h3>
-                    <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-3.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                    <div data-sq="card" data-sq-border="solid" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-3.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734]">
                       <div
                         className="big font-mono font-bold text-[34px] tabular-nums my-1"
                         style={{
@@ -997,8 +1019,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       {balanceAmount > 0 && (
                         <button
                           type="button"
+                          data-sq="ctl"
+                          data-sq-border="none"
                           onClick={() => showToast(`Solde encaissé pour ${memberName}`)}
-                          className="wide mt-2 w-full h-[42px] border-0 rounded-[12px] bg-[var(--atr-acc,#d4522f)] text-white font-semibold text-[13.5px] cursor-pointer"
+                          className="wide mt-2 w-full h-[42px] border-0 bg-[var(--atr-acc,#d4522f)] text-white font-semibold text-[13.5px] cursor-pointer"
                         >
                           Encaisser le solde
                         </button>
@@ -1012,8 +1036,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       {memberInvoiceHistory.length > 0 && (
                         <button
                           type="button"
+                          data-sq="ctl-sm"
+                          data-sq-border="none"
                           onClick={() => showToast(`Nouvelle facture pour ${memberName}`)}
-                          className="h-8 px-3 rounded-[9px] border-0 bg-[var(--atr-acc,#d4522f)] text-white font-semibold text-[12px] flex items-center gap-1 cursor-pointer"
+                          className="h-8 px-3 border-0 bg-[var(--atr-acc,#d4522f)] text-white font-semibold text-[12px] flex items-center gap-1 cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           Nouvelle
@@ -1021,7 +1047,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       )}
                     </div>
                     {memberInvoiceHistory.length > 0 ? (
-                      <div className="card rounded-[18px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+                      <div data-sq="card" data-sq-border="solid" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734]">
                         {memberInvoiceHistory.slice(0, 8).map((inv) => {
                           const paid = inv.status !== 'Voided' && inv.paymentMethod !== 'Credit';
                           const label =
@@ -1044,7 +1070,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                                   {Math.round(inv.totalAmount).toLocaleString('en-US')} DZD
                                 </b>
                                 <span
-                                  className={`pill px-2 py-[2px] rounded-md text-[11px] font-medium ${
+                                  className={`pill px-2 py-[2px] rounded-full text-[11px] font-medium ${
                                     paid
                                       ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3]'
                                       : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
@@ -1104,7 +1130,9 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                 }}
                 aria-label="Maintenir pour supprimer l'adhérent"
                 data-no-liquid="true"
-                className="relative overflow-hidden h-10 px-4 rounded-[12px] border border-[#F5BDB3] dark:border-[#5C2B24] text-[var(--atr-danger,#c0283d)] dark:text-[#FF8D7A] font-semibold text-[13px] flex items-center gap-2 cursor-pointer bg-[#FDE4DF]/45 dark:bg-[#3D1E1A]/40"
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="relative overflow-hidden h-10 px-4 border border-[#F5BDB3] dark:border-[#5C2B24] [--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] text-[var(--atr-danger,#c0283d)] dark:text-[#FF8D7A] font-semibold text-[13px] flex items-center gap-2 cursor-pointer bg-[#FDE4DF]/45 dark:bg-[#3D1E1A]/40"
               >
                 <span
                   ref={holdFillRef}
@@ -1119,8 +1147,10 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
               <button
                 type="button"
+                data-sq="ctl"
+                data-sq-border="none"
                 onClick={onClose}
-                className="fer h-[44px] px-7 border-0 rounded-[12px] bg-[var(--atr-acc,#d4522f)] hover:opacity-95 text-white font-semibold text-[14px] cursor-pointer"
+                className="fer h-[44px] px-7 border-0 bg-[var(--atr-acc,#d4522f)] hover:opacity-95 text-white font-semibold text-[14px] cursor-pointer"
               >
                 Fermer
               </button>

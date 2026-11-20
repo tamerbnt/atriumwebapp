@@ -179,10 +179,10 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
               data-sq-border="solid"
               className={`p-3.5 border ${
                 balance.status === 'Balanced'
-                  ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-700 dark:text-emerald-300'
                   : balance.status === 'Shortage'
-                  ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300'
-                  : 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'
+                  ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 [--sq-stroke:#fde68a] dark:[--sq-stroke:#92400e] text-amber-700 dark:text-amber-300'
+                  : 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 [--sq-stroke:#bfdbfe] dark:[--sq-stroke:#1e40af] text-blue-700 dark:text-blue-300'
               }`}
             >
               <span className="text-[11px] font-medium block">

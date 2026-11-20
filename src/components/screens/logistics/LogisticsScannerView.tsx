@@ -680,7 +680,7 @@ export const LogisticsScannerView: React.FC = () => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-4 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              className="p-4 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
               <div className="flex items-center gap-3">
                 <div
@@ -751,7 +751,7 @@ export const LogisticsScannerView: React.FC = () => {
               data-sq="ctl"
               data-sq-border="solid"
               data-sq-stroke-w={2}
-              className="w-full bg-white dark:bg-[#1C1B1A] border-2 border-[#E6DED6] dark:border-[#3A3734] focus-within:border-[#d4522f]"
+              className="w-full bg-white dark:bg-[#1C1B1A] border-2 border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] focus-within:border-[#d4522f] focus-within:[--sq-stroke:#d4522f]"
             >
               <input
                 ref={inputRef}
@@ -815,8 +815,8 @@ export const LogisticsScannerView: React.FC = () => {
                     data-sq-border="solid"
                     className={`p-2.5 border text-xs flex items-center justify-between gap-2 ${
                       h.status === 'success'
-                        ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50'
-                        : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/50'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:rgba(6,95,70,0.5)]'
+                        : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/50 [--sq-stroke:#fecaca] dark:[--sq-stroke:rgba(153,27,27,0.5)]'
                     }`}
                   >
                     <div className="space-y-0.5 truncate">
@@ -1140,7 +1140,7 @@ export const LogisticsScannerView: React.FC = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 focus-within:border-[#d4522f]"
+                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040] focus-within:border-[#d4522f] focus-within:[--sq-stroke:#d4522f]"
                 >
                   <input
                     type="text"

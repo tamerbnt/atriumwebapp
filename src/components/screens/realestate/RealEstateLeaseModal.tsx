@@ -61,13 +61,14 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 		label: `${p.title} (${p.cityWilaya})`
 	}));
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-<div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
+<div className="sq-elev-pop max-w-lg w-full">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] space-y-5">
 <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
 <div className="flex items-center gap-2">
-<div className="w-8 h-8 rounded-lg bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Key size={16} /></div>
+<div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center font-bold"><Key size={16} /></div>
 <h3 className="font-bold text-sm text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">{language === "ar" ? "تحرير عقد كراء جديد" : "Nouveau Bail de Location"}</h3>
 </div>
-<button type="button" onClick={onClose} aria-label="Fermer" className="w-8 h-8 rounded-lg flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
+<button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white cursor-pointer"><X size={16} /></button>
 </div>
 <form onSubmit={handleSubmit} className="space-y-4">
 <LabelSelect label={language === "ar" ? "العقار المؤجر" : "Bien loué"} value={propertyId} onChange={(val) => setPropertyId(extractStr(val))} options={propOptions} />
@@ -106,6 +107,7 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 <AtriumButton type="submit" variant="primary" icon={<Key size={14} />}>{language === "ar" ? "تحرير العقد" : "Établir le Contrat"}</AtriumButton>
 </div>
 </form>
+</div>
 </div>
 </div>;
 };

@@ -636,7 +636,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
               <div
                 data-sq="ctl"
                 data-sq-border="solid"
-                className="flex items-center gap-1 bg-white dark:bg-[#262422] px-1.5 h-10 border border-[#E6DED6] dark:border-[#3A3734] text-xs font-semibold"
+                className="flex items-center gap-1 bg-white dark:bg-[#262422] px-1.5 h-10 border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-xs font-semibold"
               >
                 <button
                   type="button"
@@ -701,7 +701,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
               <div
                 data-sq="table"
                 data-sq-border="solid"
-                className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] overflow-hidden"
+                className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] overflow-hidden"
               >
               <div className="overflow-x-auto">
                 <div className="min-w-[760px]">
