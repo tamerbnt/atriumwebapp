@@ -393,15 +393,15 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
         >
           <div className="flex items-center gap-2 truncate pr-2 rtl:pr-0 rtl:pl-2">
             {selectedOption?.icon && (
-              <span className="shrink-0 text-black/65 dark:text-white/70">
+              <span className="shrink-0 text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
                 {selectedOption.icon}
               </span>
             )}
             <span
-              className={`text-[13px] font-medium truncate ${
+              className={`text-[var(--t-sub)] leading-[var(--t-sub-lh)] font-medium truncate ${
                 selectedOption
-                  ? 'text-black dark:text-white'
-                  : 'text-black/55 dark:text-white/55'
+                  ? 'text-[var(--text-1)] dark:text-white'
+                  : 'text-[var(--text-2)] dark:text-[var(--text-dark-2)]'
               }`}
             >
               {selectedOption
@@ -413,9 +413,9 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           </div>
 
           <ChevronDown
-            size={15}
-            className={`shrink-0 text-black/60 dark:text-white/65 transition-transform duration-200 ${
-              isOpen ? 'rotate-180 text-[#d4522f]' : ''
+            size={16}
+            className={`shrink-0 text-[var(--text-2)] dark:text-[var(--text-dark-2)] transition-transform duration-200 ${
+              isOpen ? 'rotate-180 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]' : ''
             }`}
           />
         </button>
@@ -423,7 +423,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
         {isOpen && (
           <div
             className={`sq-elev-pop absolute left-0 right-0 z-50 ${
-              openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+              openUpward ? 'bottom-full mb-[var(--pop-offset,8px)]' : 'top-full mt-[var(--pop-offset,8px)]'
             }`}
           >
             <div
@@ -443,8 +443,8 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                     className="relative flex items-center bg-white dark:bg-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040]"
                   >
                     <Search
-                      size={13}
-                      className="absolute left-2.5 rtl:left-auto rtl:right-2.5 text-black/55 dark:text-white/60 pointer-events-none"
+                      size={16}
+                      className="absolute left-3 rtl:left-auto rtl:right-3 text-[var(--text-2)] dark:text-[var(--text-dark-2)] pointer-events-none"
                     />
                     <input
                       ref={searchInputRef}
@@ -455,14 +455,14 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                         setHighlightedIndex(0);
                       }}
                       placeholder={defaultSearchPlaceholder}
-                      className="w-full h-7 pl-7 pr-7 rtl:pr-7 rtl:pl-7 text-xs bg-transparent border-0 text-black dark:text-white focus:outline-none"
+                      className="w-full h-8 pl-8 pr-8 text-xs bg-transparent border-0 text-[var(--text-1)] dark:text-white focus:outline-none"
                     />
                     {searchQuery && (
                       <button
                         type="button"
                         data-no-liquid="true"
                         onClick={() => setSearchQuery('')}
-                        className="absolute right-2 rtl:right-auto rtl:left-2 text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white p-0.5 cursor-pointer"
+                        className="absolute right-2 rtl:right-auto rtl:left-2 text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-[var(--text-dark-2)] dark:hover:text-white p-1 cursor-pointer"
                       >
                         <X size={12} />
                       </button>
@@ -472,11 +472,11 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
               )}
 
               <ul
-                className="p-1.5 max-h-48 overflow-y-auto focus:outline-none text-xs space-y-0.5"
+                className="p-2 max-h-48 overflow-y-auto focus:outline-none text-xs flex flex-col gap-1"
                 role="listbox"
               >
                 {filteredOptions.length === 0 ? (
-                  <li className="px-3.5 py-3 text-center text-black/60 dark:text-white/60 italic">
+                  <li className="px-4 py-3 text-center text-[var(--text-2)] dark:text-[var(--text-dark-2)] italic">
                     {noOptionsText}
                   </li>
                 ) : (
@@ -497,24 +497,24 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                           if (!opt.disabled) handleSelect(opt.value);
                         }}
                         onMouseEnter={() => setHighlightedIndex(idx)}
-                        className={`relative px-2.5 py-2 flex items-center justify-between cursor-pointer transition-colors ${
+                        className={`relative px-3 py-2 flex items-center justify-between cursor-pointer transition-colors ${
                           opt.disabled
                             ? 'opacity-40 cursor-not-allowed'
                             : isSelected
-                            ? 'bg-[#d4522f]/10 text-[#d4522f] font-semibold'
+                            ? 'bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] font-semibold'
                             : isHighlighted
-                            ? 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white'
-                            : 'text-black/85 dark:text-white/85'
+                            ? 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-1)] dark:text-white'
+                            : 'text-[var(--text-1)] dark:text-white/90'
                         }`}
                       >
                         <div className="flex items-center gap-2 truncate pr-2">
                           {opt.icon && (
                             <span className="shrink-0">{opt.icon}</span>
                           )}
-                          <div className="truncate">
+                          <div className="truncate flex flex-col">
                             <div className="truncate font-medium">{opt.label}</div>
                             {opt.sublabel && (
-                              <div className="text-[10px] text-black/60 dark:text-white/65 truncate">
+                              <div className="text-xs text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
                                 {opt.sublabel}
                               </div>
                             )}
@@ -523,8 +523,8 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
 
                         {isSelected && (
                           <Check
-                            size={13}
-                            className="shrink-0 text-[#d4522f]"
+                            size={16}
+                            className="shrink-0 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]"
                             strokeWidth={2.5}
                           />
                         )}

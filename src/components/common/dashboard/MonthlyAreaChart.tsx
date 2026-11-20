@@ -126,12 +126,12 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
   const dayIndices = [1, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30];
 
   return (
-    <div className={`w-full flex flex-col justify-end pt-2 ${className}`}>
+    <div className={`w-full flex flex-col justify-end gap-2 ${className}`}>
       {/* Optional Card Header & Context-Adaptive Date Filter */}
       {(title || showPeriodFilter) && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
           {title && (
-            <span className="text-xs font-bold text-black dark:text-white">
+            <span className="text-[var(--t-sub)] font-semibold text-[var(--text-1)]">
               {title}
             </span>
           )}
@@ -140,7 +140,7 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
             <div
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="inline-flex items-center gap-0.5 p-0.5 bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700/60 [--sq-stroke:#E8DFD8] dark:[--sq-stroke:rgba(64,64,64,0.6)] self-start sm:self-auto"
+              className="inline-flex items-center gap-1 p-1 bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700/60 [--sq-stroke:#E8DFD8] dark:[--sq-stroke:rgba(64,64,64,0.6)] self-start sm:self-auto"
               role="group"
               aria-label="Monthly Filter"
             >
@@ -151,10 +151,10 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
                     key={opt.id}
                     type="button"
                     onClick={() => handlePeriodChange(opt.id)}
-                    className={`px-2 py-0.5 rounded-[var(--r-thumb,9px)] text-[10px] font-semibold transition-all duration-150 cursor-pointer select-none ${
+                    className={`px-2 h-6 rounded-[calc(var(--r-ctl-sm,10px)-2px)] text-xs font-semibold transition-all duration-150 cursor-pointer select-none ${
                       isSelected
-                        ? 'bg-white dark:bg-neutral-700 text-[#d4522f] dark:text-[#E09070] shadow-xs'
-                        : 'text-black/65 dark:text-white/70 hover:text-black dark:hover:text-white'
+                        ? 'bg-white dark:bg-neutral-700 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-xs'
+                        : 'text-[var(--text-2)] hover:text-[var(--text-1)]'
                     }`}
                   >
                     {opt.label}
@@ -254,21 +254,21 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md px-2.5 py-1.5 border border-neutral-700/60 [--sq-stroke:rgba(64,64,64,0.6)] flex items-center gap-2.5 whitespace-nowrap text-left rtl:text-right"
+              className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md px-3 py-2 border border-neutral-700/60 [--sq-stroke:rgba(64,64,64,0.6)] flex items-center gap-3 whitespace-nowrap text-left rtl:text-right"
             >
-              <div>
-                <div className="text-[10px] text-white/70 font-medium">
+              <div className="flex flex-col gap-0.5">
+                <div className="text-xs text-[var(--text-dark-2,#A99E92)] font-medium">
                   {activeDayLabel}
                 </div>
-                <div className="text-xs font-bold font-mono tabular-nums text-white flex items-center gap-1.5">
+                <div className="text-xs font-semibold tabular-nums text-white flex items-center gap-1">
                   <span>{activePoint.val.toLocaleString()}</span>
-                  <span className="text-[10px] text-[#E09070] font-sans font-semibold">{currency}</span>
+                  <span className="text-xs text-[var(--brand-on-dark,#FF8F63)] font-semibold">{currency}</span>
                 </div>
               </div>
 
               {deltaPct !== null && (
                 <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-[var(--r-check,6px)] font-mono tabular-nums ${
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-[var(--r-check,6px)] tabular-nums ${
                     deltaPct >= 0
                       ? 'bg-emerald-950/80 text-emerald-400'
                       : 'bg-rose-950/80 text-rose-400'
@@ -283,7 +283,7 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
       </div>
 
       {/* Days 1 to 30 */}
-      <div className="flex justify-between text-[10px] font-mono tabular-nums font-medium text-black/60 dark:text-white/60 pt-2 px-1">
+      <div className="flex justify-between text-xs tabular-nums font-medium text-[var(--text-2)] pt-2 px-1">
         {dayIndices.map((d) => (
           <span key={d}>{d}</span>
         ))}

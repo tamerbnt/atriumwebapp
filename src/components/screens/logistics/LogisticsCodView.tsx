@@ -1230,7 +1230,7 @@ export const LogisticsCodView: React.FC<any> = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="sq-elev-card">
           <div
-            data-sq="panel"
+            data-sq="card"
             data-sq-border="solid"
             className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
           >
@@ -1247,7 +1247,7 @@ export const LogisticsCodView: React.FC<any> = () => {
               </h3>
             </div>
             <div
-              data-sq="card"
+              data-sq="ctl"
               data-sq-border="solid"
               className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2 text-xs"
             >
@@ -1274,7 +1274,7 @@ export const LogisticsCodView: React.FC<any> = () => {
           </div>
           <div className="sq-elev-card">
           <div
-            data-sq="panel"
+            data-sq="card"
             data-sq-border="solid"
             className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
           >
@@ -1293,7 +1293,7 @@ export const LogisticsCodView: React.FC<any> = () => {
               </h3>
             </div>
             <div
-              data-sq="card"
+              data-sq="ctl"
               data-sq-border="solid"
               className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2 text-xs"
             >

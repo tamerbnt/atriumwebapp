@@ -246,7 +246,7 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
                     data-c={c}
                     role="gridcell"
                     aria-selected={isSelected}
-                    className={`ax-pop-item h-[22px] rounded-[5px] cursor-pointer ${
+                    className={`ax-pop-item h-[22px] rounded-[var(--r-check,6px)] cursor-pointer ${
                       isSelected ? 'relative z-10' : ''
                     }`}
                     style={{

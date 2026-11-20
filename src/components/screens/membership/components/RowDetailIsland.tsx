@@ -84,7 +84,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
   const islandTop = (ROW_H / 2 - ROW_B / 2) * (1 - e) + (ROW_H + ROW_G) * e;
   const islandWidth = ROW_B + (W - ROW_B) * e;
   const islandHeight = ROW_B + (ROW_DH - ROW_B) * e;
-  const islandRadius = 19 + 3 * e;
+  const islandRadius = 19 - 3 * e;
 
   let detailActions: Array<{
     id: string;

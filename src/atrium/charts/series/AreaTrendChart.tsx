@@ -357,47 +357,33 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
               }}
               aria-hidden={!activePt}
             >
-              <div className="ax-tip-hd">
-                <span className="ax-tip-lbl">{tipPt.raw.label}</span>
-                {tipDeltaPct !== null && (
-                  <span
-                    className="ax-tip-tot"
-                    dir="ltr"
-                    style={{
-                      color: tipDeltaPct >= 0 ? 'var(--ax-tip-ok)' : 'var(--ax-tip-acc)',
-                    }}
-                  >
-                    {formatChartValue(tipDeltaPct, {
-                      locale,
-                      format: 'percent',
-                      signed: true,
-                      maximumFractionDigits: 1,
-                    })}
-                  </span>
-                )}
-              </div>
-              <div className="ax-tip-row">
-                <span className="ax-tip-key">
-                  <span className="ax-tip-sw" style={{ background: 'var(--ax-c1)' }} />
-                  <span>{currentLabel || strings.currentLabel}</span>
-                </span>
-                <span className="ax-tip-val" dir="ltr">
-                  {formatChartValue(tipPt.raw.value, {
-                    locale,
-                    format,
-                    currency,
-                    unit,
-                  })}
-                </span>
-              </div>
-              {typeof tipPt.raw.previous === 'number' && (
+              <div className="ax-tip-box" data-sq="ctl" data-sq-border="solid">
+                <div className="ax-tip-hd">
+                  <span className="ax-tip-lbl">{tipPt.raw.label}</span>
+                  {tipDeltaPct !== null && (
+                    <span
+                      className="ax-tip-tot"
+                      dir="ltr"
+                      style={{
+                        color: tipDeltaPct >= 0 ? 'var(--ax-tip-ok)' : 'var(--ax-tip-acc)',
+                      }}
+                    >
+                      {formatChartValue(tipDeltaPct, {
+                        locale,
+                        format: 'percent',
+                        signed: true,
+                        maximumFractionDigits: 1,
+                      })}
+                    </span>
+                  )}
+                </div>
                 <div className="ax-tip-row">
                   <span className="ax-tip-key">
-                    <span className="ax-tip-sw" style={{ background: 'var(--ax-c4)' }} />
-                    <span>{previousLabel || strings.previousLabel}</span>
+                    <span className="ax-tip-sw" style={{ background: 'var(--ax-c1)' }} />
+                    <span>{currentLabel || strings.currentLabel}</span>
                   </span>
                   <span className="ax-tip-val" dir="ltr">
-                    {formatChartValue(tipPt.raw.previous, {
+                    {formatChartValue(tipPt.raw.value, {
                       locale,
                       format,
                       currency,
@@ -405,7 +391,23 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
                     })}
                   </span>
                 </div>
-              )}
+                {typeof tipPt.raw.previous === 'number' && (
+                  <div className="ax-tip-row">
+                    <span className="ax-tip-key">
+                      <span className="ax-tip-sw" style={{ background: 'var(--ax-c4)' }} />
+                      <span>{previousLabel || strings.previousLabel}</span>
+                    </span>
+                    <span className="ax-tip-val" dir="ltr">
+                      {formatChartValue(tipPt.raw.previous, {
+                        locale,
+                        format,
+                        currency,
+                        unit,
+                      })}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

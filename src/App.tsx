@@ -179,6 +179,7 @@ export default function App() {
   const currentBusiness = useAtriumSelector(selectCurrentBusinessFromState);
   const activeScreen = useAtriumSelector((s) => s.activeScreen);
   const theme = useAtriumSelector((s) => s.theme);
+  const density = useAtriumSelector((s) => s.density || 'default');
   const language = useAtriumSelector((s) => s.language);
   const isLanguageAuto = useAtriumSelector((s) => s.isLanguageAuto);
   const setSystemDefaultLanguage = setSystemDefaultLanguageAction;
@@ -271,10 +272,11 @@ export default function App() {
   }, [isTopBarCollapsed,
     isTopBarAutoHide, toggleTopBarCollapsed, setTopBarCollapsed]);
 
-  // Sync theme & RTL on boot
+  // Sync theme, density & RTL on boot
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('data-atrium-theme', theme);
+    document.documentElement.setAttribute('data-density', density);
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -282,7 +284,7 @@ export default function App() {
     }
     document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
     document.documentElement.setAttribute('lang', language);
-  }, [theme, language]);
+  }, [theme, density, language]);
 
   // Natively follow system default language changes if auto mode is enabled
   useEffect(() => {
@@ -1271,11 +1273,11 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setTopBarCollapsed(false)}
-                className="fixed top-2.5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-700 text-black/85 dark:text-white text-xs font-medium shadow-sm hover:shadow-md hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-all duration-200 cursor-pointer group select-none backdrop-blur-md"
+                className="fixed top-[var(--s2)] left-1/2 -translate-x-1/2 z-50 h-8 flex items-center gap-2 px-3 rounded-full bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-700 text-[var(--text-1)] dark:text-white text-xs font-medium shadow-sm hover:shadow-md hover:border-[var(--brand-fill)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] transition-all duration-200 cursor-pointer group select-none backdrop-blur-md"
                 title={t('topbar_focus_restore', "Afficher l'en-tête")}
                 aria-label={t('topbar_focus_restore', "Afficher l'en-tête")}
               >
-                <ChevronDown size={14} className="text-[var(--color-accent)] group-hover:translate-y-0.5 transition-transform" />
+                <ChevronDown size={16} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] group-hover:translate-y-0.5 transition-transform" />
                 <span>{t('topbar_focus_restore', "Afficher l'en-tête")}</span>
               </button>
             )}
@@ -1283,8 +1285,8 @@ export default function App() {
             <div
               className={
                 activeScreen === 'home'
-                  ? 'relative w-full min-h-full lg:h-full flex flex-col px-5 py-4 sm:px-7 sm:py-4 lg:px-8 lg:py-5'
-                  : 'relative w-full min-h-full flex flex-col px-5 py-5 sm:px-8 sm:py-7 lg:px-10 lg:py-8 pb-16 sm:pb-20'
+                  ? 'relative w-full min-h-full lg:h-full flex flex-col p-[var(--container-pad)]'
+                  : 'relative w-full min-h-full flex flex-col p-[var(--container-pad)]'
               }
             >
               <React.Suspense

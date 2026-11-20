@@ -1,8 +1,8 @@
-/* The rail is the only thing that takes layout space (--atr-rail). Expanding draws a panel over the
+/* The rail is the only thing that takes layout space (--sb-w). Expanding draws a panel over the
    page, clipped by one clip-path that follows --open, so nothing reflows and no icon ever moves. */
 .root {
   --open: 0;
-  --wr: var(--atr-rail, 68px);
+  --wr: var(--sb-w, 68px);
   --wx: var(--atr-rail-open, 244px);
   --bleed: 18px; /* extra panel hidden behind the clip, shown only by the spring's overshoot */
   --r: var(--atr-r-sidebar, 34px);
@@ -11,7 +11,7 @@
   height: 100%;
   z-index: 20;
   color: var(--atr-side-ink);
-  font-family: var(--atr-font-ui, inherit);
+  font-family: var(--font-ui, inherit);
 }
 
 .panel {
@@ -21,6 +21,8 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  gap: var(--sb-pad, 12px);
+  padding: var(--sb-pad, 12px) 0;
   background: var(--atr-side);
   border-radius: var(--r);
   clip-path: inset(0 calc(var(--bleed) + (1 - var(--open)) * (var(--wx) - var(--wr))) 0 0 round var(--r));
@@ -30,37 +32,41 @@
 .brand {
   display: flex;
   align-items: center;
-  height: 66px;
-  margin: 0 12px;
+  gap: var(--s2, 8px);
+  height: var(--sb-item, 44px);
+  padding: 0 var(--sb-pad, 12px);
   flex: none;
 }
-.brandMark { width: 44px; height: 44px; display: grid; place-items: center; flex: none; }
-.brandMark svg { width: 24px; height: 24px; }
+.brandMark {
+  width: var(--sb-item, 44px);
+  height: var(--sb-item, 44px);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.brandMark svg {
+  width: var(--icon-l, 24px);
+  height: var(--icon-l, 24px);
+}
 .brandTitle {
-  margin-left: 8px;
-  font-family: var(--atr-font-brand, 'Sigana Condensed', 'Cinzel', var(--atr-font-ui, sans-serif));
-  font-size: 25px;
-  line-height: 1;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  font-family: var(--font-ui, sans-serif);
+  font-size: var(--t-h2, 20px);
+  line-height: var(--lh-h2, 28px);
+  font-weight: 600;
+  letter-spacing: 0.08em;
   color: var(--atr-side-ink);
-  -webkit-text-stroke: 0.55px currentColor;
-  text-shadow: 0 0 0.5px currentColor;
-  font-synthesis: weight style;
   display: inline-flex;
   align-items: center;
-  transform: scaleY(1.08);
-  transform-origin: left center;
 }
 
 .list {
   position: relative;
   list-style: none;
-  margin: 12px 0 0;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: var(--sb-gap, 4px);
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -68,7 +74,7 @@
 }
 
 .list > li {
-  padding: 3.5px 0;
+  padding: 0;
   margin: 0;
   list-style: none;
   display: flex;
@@ -79,10 +85,10 @@
 /* Fluid terracotta magnetic hover pill: tracking pointer with velocity stretch */
 .magneticHl {
   position: absolute;
-  left: 12px;
-  width: calc(44px + var(--open) * 176px);
+  left: var(--sb-pad, 12px);
+  width: calc(var(--sb-item, 44px) + var(--open) * 176px);
   top: 0;
-  height: 44px;
+  height: var(--sb-item, 44px);
   border-radius: 22px;
   background: rgba(212, 82, 47, 0.18);
   box-shadow: 0 2px 10px rgba(212, 82, 47, 0.14);
@@ -96,13 +102,13 @@
 /* Dual-spring active terracotta liquid blob */
 .activeBlob {
   position: absolute;
-  left: 12px;
-  width: calc(44px + var(--open) * 176px);
+  left: var(--sb-pad, 12px);
+  width: calc(var(--sb-item, 44px) + var(--open) * 176px);
   top: 0;
-  height: 44px;
+  height: var(--sb-item, 44px);
   border-radius: 22px;
-  background: var(--atr-acc);
-  box-shadow: 0 4px 14px rgba(212, 82, 47, 0.38);
+  background: var(--brand-fill, #C9461F);
+  box-shadow: 0 4px 14px rgba(201, 70, 31, 0.38);
   opacity: 0;
   pointer-events: none;
   z-index: 2;
@@ -115,15 +121,16 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
-  width: calc(44px + var(--open) * 176px);
-  height: 44px;
-  margin: 0 12px;
+  width: calc(var(--sb-item, 44px) + var(--open) * 176px);
+  height: var(--sb-item, 44px);
+  margin: 0 var(--sb-pad, 12px);
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--atr-side-mut);
   font: inherit;
-  font-size: 13.5px;
+  font-size: var(--t-body, 14px);
+  line-height: var(--lh-body, 20px);
   font-weight: 500;
   letter-spacing: -0.008em;
   text-align: left;
@@ -138,18 +145,17 @@
 }
 .item:hover { color: var(--atr-side-ink); }
 .item:hover:not([aria-current='page']) .ico svg {
-  stroke: var(--atr-acc);
+  stroke: var(--brand-on-dark, #FF8F63);
   transition: stroke 0.15s ease;
 }
 .item:hover:not([aria-current='page']) .lab {
   color: var(--atr-side-ink);
 }
-.item:focus-visible { outline: 2px solid var(--atr-acc); outline-offset: 2px; }
+.item:focus-visible { outline: 2px solid var(--brand-on-dark, #FF8F63); outline-offset: 2px; }
 
-/* active pill fallback before JS measurement or in reduced/instant mode */
 .list:not([data-live]) .item[aria-current='page'] {
-  background: var(--atr-acc);
-  box-shadow: 0 4px 14px rgba(212, 82, 47, 0.38);
+  background: var(--brand-fill, #C9461F);
+  box-shadow: 0 4px 14px rgba(201, 70, 31, 0.38);
   color: #ffffff;
   font-weight: 600;
 }
@@ -166,17 +172,36 @@
   font-weight: 600;
 }
 .list[data-live='true'] .item[aria-current='page'] .lab {
+  color: #ffffff;
   font-weight: 600;
 }
+.list[data-live='true'] .item[aria-current='page'] .ico svg {
+  stroke: #ffffff;
+}
 
-.ico { position: relative; z-index: 2; width: 40px; height: 40px; flex: none; display: grid; place-items: center; }
-.ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ico {
+  position: relative;
+  z-index: 2;
+  width: var(--sb-item, 44px);
+  height: var(--sb-item, 44px);
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+.ico svg {
+  width: var(--sb-icon, 20px);
+  height: var(--sb-icon, 20px);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 
 /* labels fade and slide in after the panel has started to open, one row after another */
 .lab {
   position: relative;
   z-index: 2;
-  margin-left: 4px;
   white-space: nowrap;
   opacity: clamp(0, (var(--open) - 0.28 - var(--i, 0) * 0.035) * 2.4, 1);
   transform: translateX(calc((1 - min(1, var(--open))) * -10px));
@@ -194,26 +219,37 @@
 .badge {
   position: relative;
   margin-left: auto;
-  margin-right: 12px;
-  min-width: 18px;
-  padding: 0 5px;
-  height: 18px;
-  border-radius: 9px;
+  margin-right: var(--s3, 12px);
+  min-width: var(--badge-h, 22px);
+  padding: 0 var(--badge-px, 8px);
+  height: var(--badge-h, 22px);
+  border-radius: 9999px;
   box-sizing: border-box;
   display: grid;
   place-items: center;
-  font-size: 11px;
+  font-size: var(--t-cap, 12px);
+  line-height: var(--lh-cap, 16px);
+  letter-spacing: var(--tr-12, 0.01em);
   font-weight: 600;
-  background: var(--atr-acc);
-  color: var(--atr-onacc);
+  background: var(--brand-fill, #C9461F);
+  color: #ffffff;
   opacity: clamp(0, (var(--open) - 0.5) * 2.4, 1);
 }
-.footer { flex: none; padding: 0 0 10px; opacity: clamp(0, (var(--open) - 0.4) * 2.4, 1); font-size: 11px; letter-spacing: 0.14em; text-align: center; color: var(--atr-side-mut); }
+.footer {
+  flex: none;
+  padding: 0 var(--sb-pad, 12px);
+  opacity: clamp(0, (var(--open) - 0.4) * 2.4, 1);
+  font-size: var(--t-cap, 12px);
+  line-height: var(--lh-cap, 16px);
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--atr-side-mut);
+}
 
 /* the little handle on the panel's leading edge: rides on a transform, so it costs no layout */
 .edge {
   position: absolute;
-  top: 24px;
+  top: var(--s6, 24px);
   left: calc(var(--wr) - 11px);
   width: 22px;
   height: 22px;
@@ -228,10 +264,18 @@
   transform: translateX(calc((var(--wx) - var(--wr)) * var(--open)));
   box-shadow: 0 0 0 3px var(--atr-bg);
 }
-.edge svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transform: rotate(calc(var(--open) * 180deg)); }
+.edge svg {
+  width: var(--s3, 12px);
+  height: var(--s3, 12px);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: rotate(calc(var(--open) * 180deg));
+}
 .edge:focus-visible { outline: 2px solid var(--atr-ink); outline-offset: 2px; }
 
-/* tier "off" and reduced motion: the same CSS, the engine just jumps --open to 0 or 1 */
 @media (forced-colors: active) {
   .panel { border: 1px solid CanvasText; }
   .activeBlob { display: none; }
@@ -252,8 +296,7 @@
   transform: rotate(calc(var(--open) * -180deg + 180deg));
 }
 [dir="rtl"] .brandTitle {
-  margin-left: 0;
-  margin-right: 8px;
+  letter-spacing: 0;
   transform-origin: right center;
 }
 [dir="rtl"] .item {
@@ -262,14 +305,12 @@
 [dir="rtl"] .magneticHl,
 [dir="rtl"] .activeBlob {
   left: auto;
-  right: 10px;
+  right: var(--sb-pad, 12px);
 }
 [dir="rtl"] .lab {
-  margin-left: 0;
-  margin-right: 4px;
   transform: translateX(calc((1 - min(1, var(--open))) * 10px));
 }
 [dir="rtl"] .badge {
-  margin-left: 12px;
+  margin-left: var(--s3, 12px);
   margin-right: auto;
 }

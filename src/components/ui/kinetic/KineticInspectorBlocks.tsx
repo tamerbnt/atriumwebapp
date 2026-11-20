@@ -17,10 +17,16 @@ export const InspectorSection: React.FC<InspectorSectionProps> = ({
   children,
   className = '',
 }) => (
-  <section style={{ '--k': index } as React.CSSProperties} className={className}>
+  <section style={{ '--k': index } as React.CSSProperties} className={`flex flex-col gap-3 ${className}`}>
     {(title || action) && (
-      <div className="flex justify-between items-center mb-2.5 gap-2">
-        {title ? <h3 className="!m-0">{title}</h3> : <span />}
+      <div className="flex justify-between items-center gap-2">
+        {title ? (
+          <h3 className="!m-0 text-[var(--t-h3)] leading-[var(--lh-h3)] font-semibold text-[var(--text-1)]">
+            {title}
+          </h3>
+        ) : (
+          <span />
+        )}
         {action}
       </div>
     )}
@@ -50,7 +56,7 @@ export const InspectorQuickActions: React.FC<{
       : 'grid-cols-2 sm:grid-cols-4';
 
   return (
-    <div className={`qa grid ${colsClass} gap-2.5 ${className}`}>
+    <div className={`qa grid ${colsClass} gap-3 ${className}`}>
       {actions.slice(0, 4).map((act) => (
         <button
           key={act.id}
@@ -60,16 +66,16 @@ export const InspectorQuickActions: React.FC<{
           data-sq-border="solid"
           disabled={act.disabled}
           onClick={act.onClick}
-          className={`flex flex-col items-center gap-2 pt-3.5 px-1.5 pb-3 rounded-[var(--r-card,16px)] text-[12px] font-medium leading-tight text-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+          className={`flex flex-col items-center gap-2 p-3 rounded-[var(--r-card,16px)] text-xs font-medium leading-tight text-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
             act.primary
-              ? '[--sq-stroke:rgba(212,82,47,0.25)] dark:[--sq-stroke:#52291F] bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A]'
-              : '[--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] text-[var(--atr-ink,#000000)] dark:text-white'
+              ? '[--sq-stroke:rgba(212,82,47,0.25)] dark:[--sq-stroke:#52291F] bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)]'
+              : '[--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] text-[var(--text-1)]'
           }`}
         >
           <span
             data-sq="tile"
             data-sq-border="none"
-            className={`ic w-[38px] h-[38px] rounded-[var(--r-tile,12px)] grid place-items-center shrink-0 ${
+            className={`ic w-10 h-10 rounded-[var(--r-tile,12px)] grid place-items-center shrink-0 ${
               act.primary
                 ? 'bg-white dark:bg-[#1C1B1A]'
                 : 'bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1B1A]'
@@ -91,7 +97,7 @@ export const InspectorCard: React.FC<{
   <div
     data-sq="card"
     data-sq-border="solid"
-    className={`card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-1.5 [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] ${className}`}
+    className={`card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-4 py-2 [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] ${className}`}
   >
     {children}
   </div>
@@ -100,8 +106,8 @@ export const InspectorCard: React.FC<{
 export type InspectorValueTone = 'default' | 'accent' | 'ok' | 'danger' | 'warn';
 
 const TONE_COLOR_CLASS: Record<InspectorValueTone, string> = {
-  default: 'text-[var(--atr-ink,#000000)] dark:text-white',
-  accent: 'text-[var(--atr-acc,#d4522f)] dark:text-[#FF8D7A]',
+  default: 'text-[var(--text-1)]',
+  accent: 'text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]',
   ok: 'text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]',
   danger: 'text-[var(--atr-danger,#c0283d)] dark:text-[#FF8D7A]',
   warn: 'text-[#8A5A06] dark:text-[#FFD166]',
@@ -144,17 +150,17 @@ export const InspectorKeyValue: React.FC<InspectorKeyValueProps> = ({
 
   return (
     <div
-      className={`kv flex justify-between items-center gap-3 py-[11px] text-[13px] ${
+      className={`kv flex justify-between items-center gap-3 py-3 text-[var(--t-sub)] ${
         isLast ? '' : 'border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]'
       }`}
     >
-      <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 flex items-center gap-2 shrink-0">
+      <span className="text-[var(--text-2)] flex items-center gap-2 shrink-0">
         {icon}
         <span>{label}</span>
       </span>
-      <span className="flex items-center gap-1.5 min-w-0 justify-end">
+      <span className="flex items-center gap-2 min-w-0 justify-end">
         <b
-          className={`${mono ? 'font-mono tabular-nums' : 'font-sans'} text-[13px] text-right truncate ${
+          className={`${mono ? 'tabular-nums' : ''} text-[var(--t-sub)] text-right truncate ${
             TONE_COLOR_CLASS[tone]
           }`}
         >
@@ -165,13 +171,13 @@ export const InspectorKeyValue: React.FC<InspectorKeyValueProps> = ({
             type="button"
             data-no-liquid="true"
             onClick={handleCopy}
-            className="w-7 h-7 rounded-full border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 hover:text-[var(--atr-acc,#d4522f)] cursor-pointer shrink-0"
+            className="w-7 h-7 rounded-full border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--text-2)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] cursor-pointer shrink-0"
             aria-label={typeof label === 'string' ? `Copy ${label}` : 'Copy'}
           >
             {copied ? (
-              <Check className="w-3.5 h-3.5 text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]" />
+              <Check className="w-4 h-4 text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]" />
             ) : (
-              <Copy className="w-3.5 h-3.5" />
+              <Copy className="w-4 h-4" />
             )}
           </button>
         )}
@@ -212,11 +218,11 @@ export const InspectorProgressBar: React.FC<{
       : tone === 'warn'
       ? 'bg-[#D97706] dark:bg-[#FFD166]'
       : tone === 'accent'
-      ? 'bg-[var(--atr-acc,#d4522f)] dark:bg-[#FF8D7A]'
+      ? 'bg-[var(--brand-fill,#C9461F)] dark:bg-[#FF8D7A]'
       : 'bg-[var(--atr-ok,#096b40)] dark:bg-[#5BE3A3]';
 
   return (
-    <div className="bar2 h-[8px] rounded-full bg-[var(--atr-line,#E6DED6)] dark:bg-[#3A3734] overflow-hidden mt-0.5 mb-3">
+    <div className="bar2 h-2 rounded-full bg-[var(--atr-line,#E6DED6)] dark:bg-[#3A3734] overflow-hidden">
       <i
         ref={fillRef}
         className={`block w-full h-full rounded-full ${barTone} origin-left rtl:origin-right`}
@@ -242,20 +248,20 @@ export const InspectorBigStat: React.FC<{
       : tone === 'danger'
       ? 'text-[var(--atr-danger,#c0283d)] dark:text-[#FF8D7A]'
       : tone === 'default'
-      ? 'text-[var(--atr-ink,#000000)] dark:text-white'
-      : 'text-[var(--atr-acc,#d4522f)] dark:text-[#FF8D7A]';
+      ? 'text-[var(--text-1)]'
+      : 'text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]';
 
   return (
     <div
       data-sq="card"
       data-sq-border="solid"
-      className="card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[18px] py-3.5 [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734]"
+      className="card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] p-[var(--card-pad,20px)] card-opt [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] flex flex-col gap-2"
     >
-      <div className={`big font-mono font-bold text-[32px] tabular-nums my-0.5 ${colorClass}`}>
+      <div className={`big text-[var(--t-kpi-m)] leading-[var(--lh-kpi-m)] font-normal [font-family:var(--font-display)] tracking-[var(--tr-display)] rtl:[font-family:var(--font-ui)] rtl:font-semibold rtl:text-2xl tabular-nums ${colorClass}`}>
         {value}
       </div>
       {caption && (
-        <p className="text-[12px] text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/70 m-0 mt-0.5">
+        <p className="text-xs text-[var(--text-2)] m-0">
           {caption}
         </p>
       )}
@@ -266,10 +272,10 @@ export const InspectorBigStat: React.FC<{
           data-sq="ctl"
           data-sq-border="none"
           onClick={action.onClick}
-          className={`wide mt-3 w-full h-[42px] border-0 rounded-[var(--r-ctl,12px)] font-semibold text-[13.5px] cursor-pointer transition-opacity hover:opacity-92 ${
+          className={`wide w-full h-10 border-0 rounded-[var(--r-ctl,12px)] font-semibold text-[var(--t-sub)] cursor-pointer transition-opacity hover:opacity-92 ${
             action.tone === 'dark'
               ? 'bg-[#1F1D1B] dark:bg-white text-white dark:text-black'
-              : 'bg-[var(--atr-acc,#d4522f)] text-white'
+              : 'bg-[var(--brand-fill)] text-white'
           }`}
         >
           {action.label}
@@ -296,7 +302,7 @@ const BADGE_CLASSES: Record<'ok' | 'danger' | 'warn' | 'accent' | 'neutral', str
   danger: 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#c0283d] dark:text-[#FF8D7A]',
   warn: 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
   accent: 'bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A]',
-  neutral: 'bg-white dark:bg-[#1C1B1A] text-black/75 dark:text-white/80 border border-[#E6DED6] dark:border-[#3A3734]',
+  neutral: 'bg-white dark:bg-[#1C1B1A] text-[var(--text-1)] border border-[#E6DED6] dark:border-[#3A3734]',
 };
 
 export const InspectorListItem: React.FC<InspectorListItemProps> = ({
@@ -309,29 +315,29 @@ export const InspectorListItem: React.FC<InspectorListItemProps> = ({
 }) => (
   <div
     onClick={onClick}
-    className={`li flex justify-between items-center py-[11px] text-[13px] gap-2 ${
+    className={`li flex justify-between items-center py-3 text-[var(--t-sub)] gap-3 ${
       isLast ? '' : 'border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]'
     } ${onClick ? 'cursor-pointer hover:opacity-85 transition-opacity' : ''}`}
   >
-    <span className="min-w-0">
-      <span className="font-medium block truncate text-[var(--atr-ink,#000000)] dark:text-white">
+    <span className="min-w-0 flex flex-col gap-0.5">
+      <span className="font-medium block truncate text-[var(--text-1)]">
         {title}
       </span>
       {subtitle && (
-        <small className="font-mono text-[11px] tabular-nums text-[var(--atr-mut,rgba(0,0,0,0.68))] dark:text-white/68 block truncate">
+        <small className="text-xs tabular-nums text-[var(--text-2)] block truncate">
           {subtitle}
         </small>
       )}
     </span>
     <span className="flex items-center gap-2 shrink-0">
       {metaRight && (
-        <b className="font-mono text-[12px] tabular-nums text-[var(--atr-ink,#000000)] dark:text-white">
+        <b className="text-xs tabular-nums text-[var(--text-1)]">
           {metaRight}
         </b>
       )}
       {badge && (
         <span
-          className={`pill px-2.5 py-[3px] rounded-full text-[11.5px] font-medium whitespace-nowrap ${
+          className={`pill px-2 h-[var(--badge-h,22px)] inline-flex items-center rounded-full text-xs font-medium whitespace-nowrap ${
             BADGE_CLASSES[badge.tone || 'neutral']
           }`}
         >
@@ -374,7 +380,7 @@ export const InspectorNotesField: React.FC<{
           }
         }}
         placeholder={placeholder}
-        className="w-full box-border min-h-[84px] rounded-[var(--r-card,16px)] border-0 bg-transparent px-3.5 py-3 text-[13px] text-[var(--atr-ink,#000000)] dark:text-white placeholder:text-black/48 dark:placeholder:text-white/50 resize-y focus:outline-none"
+        className="w-full box-border min-h-[84px] rounded-[var(--r-card,16px)] border-0 bg-transparent px-4 py-3 text-[var(--t-sub)] text-[var(--text-1)] placeholder:text-[var(--text-3)] resize-y focus:outline-none"
       />
     </div>
   );
@@ -394,12 +400,12 @@ export const InspectorWideButton: React.FC<{
     data-sq-border={tone === 'neutral' ? 'solid' : 'none'}
     disabled={disabled}
     onClick={onClick}
-    className={`wide w-full h-[42px] rounded-[var(--r-ctl,12px)] font-semibold text-[13.5px] flex items-center justify-center gap-2 cursor-pointer transition-opacity hover:opacity-92 disabled:opacity-40 disabled:cursor-not-allowed ${
+    className={`wide w-full h-10 rounded-[var(--r-ctl,12px)] font-semibold text-[var(--t-sub)] flex items-center justify-center gap-2 cursor-pointer transition-opacity hover:opacity-92 disabled:opacity-40 disabled:cursor-not-allowed ${
       tone === 'dark'
         ? 'border-0 bg-[#1F1D1B] dark:bg-white text-white dark:text-black'
         : tone === 'neutral'
-        ? 'bg-white dark:bg-[#262422] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] text-[var(--atr-ink,#000000)] dark:text-white hover:bg-[#F3EDE7]'
-        : 'border-0 bg-[var(--atr-acc,#d4522f)] text-white'
+        ? 'bg-white dark:bg-[#262422] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] text-[var(--text-1)] hover:bg-[#F3EDE7]'
+        : 'border-0 bg-[var(--brand-fill)] text-white'
     }`}
   >
     {icon}

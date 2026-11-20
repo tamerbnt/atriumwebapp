@@ -1,5 +1,5 @@
 .root {
-  --h: var(--atr-h, 34px);
+  --h: var(--atr-h, 36px);
   --r: var(--r-ctl, 12px);
   --sq-stroke: var(--atr-line, #E6DED6);
 
@@ -7,7 +7,7 @@
   display: inline-flex;
   box-sizing: border-box;
   isolation: isolate;
-  padding: 3px;
+  padding: var(--seg-pad, 4px);
   border: 1px solid var(--atr-line);
   border-radius: var(--r);
   background: #FFFFFF;
@@ -30,7 +30,7 @@
 
 .bl {
   position: absolute;
-  inset: 3px;
+  inset: var(--seg-pad, 4px);
   z-index: 0;
   border-radius: var(--r-thumb, 9px);
   background: var(--atr-acc);
@@ -47,18 +47,19 @@
   margin: 0;
   background: transparent;
   box-sizing: border-box;
-  height: calc(var(--h) - 8px);
-  padding: 0 calc(var(--h) * 0.42);
+  height: calc(var(--h) - (var(--seg-pad, 4px) * 2));
+  padding: 0 var(--s3, 12px);
   border-radius: var(--r-thumb, 9px);
-  color: var(--atr-ink);
-  font-family: var(--atr-font-ui, inherit);
-  font-size: calc(var(--h) * 0.38);
-  font-weight: 600;
+  color: var(--text-1, var(--atr-ink));
+  font-family: var(--font-ui, inherit);
+  font-size: var(--t-small, 12px);
+  letter-spacing: var(--tr-12, 0.01em);
+  font-weight: 500;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: calc(var(--h) * 0.2);
+  gap: var(--s2, 8px);
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
@@ -67,9 +68,14 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.so[aria-checked='true'] {
+  color: var(--atr-onacc);
+  font-weight: 600;
+}
+
 .so svg {
-  width: calc(var(--h) * 0.42);
-  height: calc(var(--h) * 0.42);
+  width: var(--icon-s, 16px);
+  height: var(--icon-s, 16px);
   flex: none;
   fill: none;
   stroke: currentColor;
@@ -79,7 +85,7 @@
 }
 
 .ic {
-  padding: 0 calc(var(--h) * 0.3);
+  padding: 0 var(--s2, 8px);
 }
 
 .so:focus-visible {
@@ -92,8 +98,6 @@
   cursor: not-allowed;
 }
 
-/* Before the engine has measured (server render, no JS, tier "off" fallback) the selected option
-   carries the accent itself. Once the blob is live (data-live) it takes over. */
 .root:not([data-live]) .so[aria-checked='true'] {
   background: var(--atr-acc);
   color: var(--atr-onacc);

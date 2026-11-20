@@ -74,28 +74,28 @@ export const Modal: React.FC<ModalProps> = ({
           aria-modal="true"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#E6DED6] dark:border-neutral-800/80">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+          <div className="flex items-center justify-between gap-4 p-[var(--modal-pad,24px)] pb-4 border-b border-[#E6DED6] dark:border-neutral-800/80">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-[var(--t-h2)] leading-[var(--t-h2-lh)] font-semibold text-[var(--text-1)] dark:text-white">
                 {title}
               </h2>
               {subtitle && (
-                <p className="text-xs text-black/70 dark:text-white/75 mt-0.5">{subtitle}</p>
+                <p className="text-xs text-[var(--text-2)] dark:text-[var(--text-dark-2)]">{subtitle}</p>
               )}
             </div>
             <button
               type="button"
               data-no-liquid="true"
               onClick={onClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-[var(--text-dark-2)] dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
               aria-label="Close modal"
             >
-              <X size={18} />
+              <X size={20} />
             </button>
           </div>
 
           {/* Content Body */}
-          <div className="px-6 py-5 overflow-y-auto max-h-[calc(90vh-140px)]">
+          <div className="p-[var(--modal-pad,24px)] overflow-y-auto max-h-[calc(90vh-140px)]">
             {isLoading ? (
               <SkeletonModalForm fieldsCount={skeletonFieldsCount} />
             ) : (

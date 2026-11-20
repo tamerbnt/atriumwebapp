@@ -20,6 +20,7 @@ export type BusinessCategory =
 
 export type SupportedLanguage = 'en' | 'fr' | 'ar';
 export type AppTheme = 'light' | 'dark';
+export type AppDensity = 'default' | 'compact';
 
 export type MemberStatus =
   | 'Active'

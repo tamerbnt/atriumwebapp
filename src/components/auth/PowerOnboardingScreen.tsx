@@ -1130,7 +1130,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <button
                         type="button"
                         onClick={() => setStep9WideView(true)}
-                        className="text-[11px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-[var(--r-check,6px)] border border-white/10 flex items-center gap-1 transition-all cursor-pointer"
+                        data-sq="check"
+                        data-sq-border="solid"
+                        className="text-[11px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 [--sq-stroke:rgba(255,255,255,0.1)] flex items-center gap-1 transition-all cursor-pointer"
                       >
                         <Maximize2 className="w-3 h-3 text-[#FF8A4C]" />
                         <span>{isFr ? 'Plein écran (4 colonnes)' : isAr ? 'شاشة كاملة (4 أعمدة)' : 'Full screen (4 columns)'}</span>
@@ -1825,7 +1827,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <div
                         data-sq="empty"
                         data-sq-border="dashed"
-                        className="p-6 text-center rounded-[var(--r-empty,12px)] bg-white/[0.02] [--sq-stroke:rgba(255,255,255,0.16)] flex flex-col items-center justify-center gap-3"
+                        className="p-6 text-center bg-white/[0.02] [--sq-stroke:rgba(255,255,255,0.16)] flex flex-col items-center justify-center gap-3"
                       >
                         <p className="text-xs text-[#D9BEB0]">
                           {isAr
@@ -1848,7 +1850,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             };
                             handleSelectTrade(customTrade);
                           }}
-                          className="px-4 py-2 rounded-[var(--r-ctl-sm,10px)] bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer"
+                          className="px-4 py-2 bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer"
                         >
                           {isAr
                             ? `متابعة باستخدام "${catalogSearchQuery}" كنشاط رئيسي`
@@ -1903,13 +1905,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="p-2 sm:p-2.5 rounded-[var(--r-ctl,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-sm flex items-center justify-between"
+                    className="p-2 sm:p-2.5 bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-sm flex items-center justify-between"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <div
                         data-sq="ctl-sm"
                         data-sq-border="solid"
-                        className="w-7 h-7 rounded-[var(--r-ctl-sm,10px)] bg-[rgba(232,98,44,0.12)] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-center shrink-0"
+                        className="w-7 h-7 bg-[rgba(232,98,44,0.12)] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-center shrink-0"
                       >
                         <Sparkles className="w-3.5 h-3.5 text-[#FF8A4C]" />
                       </div>
@@ -1942,7 +1944,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     <div
                       data-sq="ctl"
                       data-sq-border="solid"
-                      className="p-2 rounded-[var(--r-ctl,12px)] bg-black/80 [--sq-stroke:rgba(255,255,255,0.1)] grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px] backdrop-blur-md"
+                      className="p-2 bg-black/80 [--sq-stroke:rgba(255,255,255,0.1)] grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px] backdrop-blur-md"
                     >
                       {(Object.keys(CATEGORY_METADATA) as BusinessCategory[]).map((catKey) => {
                         const meta = CATEGORY_METADATA[catKey];
@@ -1999,7 +2001,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="p-2 rounded-[var(--r-ctl,12px)] bg-white/[0.03] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-between text-xs"
+                    className="p-2 bg-white/[0.03] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center gap-2 text-[#D9BEB0]">
                       <MapPin className="w-3.5 h-3.5 text-[#FF8A4C] shrink-0" />
@@ -2046,7 +2048,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         <button
           type="button"
           onClick={handleReplayIntro}
-          className="text-[10px] text-[#E8622C]/85 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2 py-0.5 rounded-[var(--r-check,6px)] border border-[#d4522f]/25 hover:border-[#d4522f]/50 bg-black/30 hover:bg-black/50"
+          data-sq="check"
+          data-sq-border="solid"
+          className="text-[10px] text-[#E8622C]/85 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2 py-0.5 [--sq-stroke:rgba(212,82,47,0.25)] hover:[--sq-stroke:rgba(212,82,47,0.5)] bg-black/30 hover:bg-black/50"
         >
           <span>↺ Replay</span>
         </button>

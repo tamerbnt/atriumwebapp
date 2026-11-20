@@ -51,14 +51,14 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
     <div
       data-sq="card"
       data-sq-border="solid"
-      className={`bg-[#1F1D1B] p-4 sm:p-5 border border-white/[0.08] [--sq-stroke:rgba(255,255,255,0.08)] text-white relative overflow-hidden min-h-[132px] flex flex-col justify-between group select-none ${className}`}
+      className={`bg-[#1F1D1B] p-[var(--card-pad,20px)] card-opt border border-white/[0.08] [--sq-stroke:rgba(255,255,255,0.08)] text-white relative overflow-hidden min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-4 group select-none ${className}`}
     >
       {showSparkline && (
         <div className="absolute -right-3 -bottom-4 opacity-25 group-hover:opacity-40 transition-opacity pointer-events-none">
           <svg width="120" height="70" viewBox="0 0 120 70" fill="none">
             <path
               d="M5 50 L30 35 L55 42 L80 18 L110 22"
-              stroke="#FB923C"
+              stroke="#FF8F63"
               strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -67,30 +67,30 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
         </div>
       )}
 
-      <div>
-        <span className="text-[12px] font-medium tracking-[-0.005em] text-white/75 block truncate">
+      <div className="flex flex-col gap-2">
+        <span className="text-xs font-medium text-[var(--text-dark-2,#A99E92)] block truncate">
           {displayTitle}
         </span>
         {displayBadge && (
-          <div className="text-[10.5px] font-semibold mt-1.5">
-            <span className={`${currentBadgeColor} px-2.5 py-0.5 rounded-full inline-block`}>
+          <div className="text-xs font-semibold">
+            <span className={`${currentBadgeColor} px-2 h-[var(--badge-h,22px)] rounded-full inline-flex items-center`}>
               {displayBadge}
             </span>
           </div>
         )}
       </div>
 
-      <div className="flex items-baseline gap-1.5 z-10 pt-2">
-        <span className="text-[30px] lg:text-[34px] leading-[0.95] font-bold tracking-[-0.01em] text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:text-2xl">
+      <div className="flex items-baseline gap-2 z-10 mt-auto">
+        <span className="text-[var(--t-kpi-m)] leading-[var(--lh-kpi-m)] font-normal tracking-[var(--tr-display)] text-[var(--brand-on-dark,#FF8F63)] tabular-nums [font-family:var(--font-display)] rtl:[font-family:var(--font-ui)] rtl:font-semibold rtl:text-2xl">
           {value}
         </span>
         {unit && (
-          <span className="text-xs text-white/70 font-normal">
+          <span className="text-xs text-[var(--text-dark-2,#A99E92)] font-normal">
             {unit}
           </span>
         )}
         {displaySubtitle && (
-          <span className="text-[11px] text-white/65 ms-auto tabular-nums">
+          <span className="text-xs text-[var(--text-dark-2,#A99E92)] ms-auto tabular-nums">
             {displaySubtitle}
           </span>
         )}

@@ -189,7 +189,7 @@ export const SquarifiedTreemap: React.FC<SquarifiedTreemapProps> = React.memo(
         }
       >
         <div
-          className="ax-tmw relative w-full h-[218px] rounded-[14px] overflow-hidden select-none"
+          className="ax-tmw relative w-full h-[218px] rounded-[var(--r-card,16px)] overflow-hidden select-none"
           role="list"
           aria-label={ariaSummary}
           onPointerLeave={() => setActiveId(null)}
@@ -224,7 +224,7 @@ export const SquarifiedTreemap: React.FC<SquarifiedTreemapProps> = React.memo(
                 )})`}
                 className={`ax-tm-tile ax-plot-focus ax-pop-item absolute flex flex-col justify-between ${
                   rect.w < 18 || rect.h < 28 ? 'p-1.5' : 'p-2.5'
-                } rounded-[12px] border-2 border-[var(--ax-slab)] text-left rtl:text-right overflow-hidden cursor-pointer`}
+                } rounded-[var(--r-ctl,12px)] border-2 border-[var(--ax-slab)] text-left rtl:text-right overflow-hidden cursor-pointer`}
                 style={{
                   insetInlineStart: `${rect.x}%`,
                   top: `${rect.y}%`,

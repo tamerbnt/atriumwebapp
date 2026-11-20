@@ -65,12 +65,12 @@ const WhiteKpiCard: React.FC<{
     : 'bg-[radial-gradient(240px_circle_at_90%_10%,rgba(212,82,47,0.09),transparent_70%)] dark:bg-[radial-gradient(240px_circle_at_90%_10%,rgba(232,100,63,0.14),transparent_70%)]';
 
   const chipClass = isEmerald
-    ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50/90 dark:bg-emerald-950/40'
-    : 'text-[#d4522f] bg-[#d4522f]/10';
+    ? 'text-emerald-800 dark:text-emerald-300 bg-emerald-50/90 dark:bg-emerald-950/40'
+    : 'text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] bg-[#d4522f]/10';
 
   const filteredPillClass = isEmerald
-    ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-500/12'
-    : 'text-[#d4522f] dark:text-[#FF8D7A] bg-[#d4522f]/12';
+    ? 'text-emerald-800 dark:text-emerald-300 bg-emerald-500/12'
+    : 'text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] bg-[#d4522f]/12';
 
   const content = (
     <>
@@ -79,22 +79,22 @@ const WhiteKpiCard: React.FC<{
           card.isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
         }`}
       />
-      <div className="relative z-10 w-full">
+      <div className="relative z-10 w-full flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[12px] font-medium text-black/68 dark:text-white/72 truncate">
+          <span className="text-xs font-medium text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
             {card.label}
           </span>
           {card.isActive && (
             <span
-              className={`text-[10px] font-bold uppercase tracking-[0.04em] px-2 py-0.5 rounded-full shrink-0 ${filteredPillClass}`}
+              className={`h-[var(--badge-h,22px)] inline-flex items-center text-xs font-medium px-2 rounded-full shrink-0 ${filteredPillClass}`}
             >
               {filteredText}
             </span>
           )}
         </div>
-        <div className="mt-1.5">
+        <div>
           <span
-            className={`inline-block text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 ${chipClass}`}
+            className={`inline-flex items-center h-[var(--badge-h,22px)] text-xs font-medium px-2 rounded-full transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 ${chipClass}`}
           >
             {isEmerald ? (
               card.badgeText
@@ -111,14 +111,14 @@ const WhiteKpiCard: React.FC<{
       </div>
       <div
         ref={countRef}
-        className="relative z-10 text-[30px] lg:text-[32px] leading-[0.95] font-bold text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03]"
+        className="relative z-10 text-[var(--t-kpi-m)] leading-[var(--t-kpi-m-lh)] font-normal uppercase tracking-[0.01em] rtl:normal-case rtl:tracking-normal text-[var(--text-1)] dark:text-white tabular-nums font-[var(--font-display)] rtl:font-sans transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03] mt-auto"
       >
         {card.formatValue ? card.formatValue(card.count) : card.count}
       </div>
     </>
   );
 
-  const sharedClass = `relative overflow-hidden p-4.5 sm:p-5 rounded-[var(--r-card,16px)] bg-white dark:bg-neutral-800/90 text-left rtl:text-right flex flex-col justify-between min-h-[132px] h-full w-full select-none focus:outline-none ${
+  const sharedClass = `relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-white dark:bg-neutral-800/90 text-left rtl:text-right flex flex-col justify-between gap-3 min-h-[var(--kpi-min-h,168px)] h-full w-full select-none focus:outline-none ${
     card.onToggle ? 'cursor-pointer' : ''
   } ${card.isActive ? activeStrokeVars : inactiveStrokeVars}`;
 
@@ -185,30 +185,30 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
     <div
       data-sq="panel"
       data-sq-border="solid"
-      className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[var(--r-panel,28px)] p-3 space-y-3 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] ${className}`}
+      className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[var(--r-panel,28px)] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] ${className}`}
     >
-      <div className="px-2 pt-1">
-        <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
+      <div className="pt-1 px-3 pb-3">
+        <h2 className="text-[var(--t-h3)] leading-[var(--pod-head-h,22px)] font-semibold text-[var(--text-1)] dark:text-white">
           {heading}
         </h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--card-gap,12px)]">
         <WhiteKpiCard card={primaryCard} defaultTone="emerald" language={language} />
         <WhiteKpiCard card={secondaryCard} defaultTone="terracotta" language={language} />
 
-        {/* 3rd Dark #1F1D1B Card with #FB923C orange figure */}
+        {/* 3rd Dark #1F1D1B Card with #FF8F63 orange figure */}
         <div className="group sq-elev-card-hover h-full transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] motion-reduce:transition-none motion-reduce:hover:transform-none">
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="relative overflow-hidden p-4.5 sm:p-5 rounded-[var(--r-card,16px)] bg-[#1F1D1B] [--sq-stroke:rgba(255,255,255,0.08)] group-hover:[--sq-stroke:rgba(251,146,60,0.4)] text-white flex flex-col justify-between min-h-[132px] h-full"
+            className="relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-[#1F1D1B] [--sq-stroke:rgba(255,255,255,0.08)] group-hover:[--sq-stroke:rgba(255,143,99,0.4)] text-white flex flex-col justify-between gap-3 min-h-[var(--kpi-min-h,168px)] h-full"
           >
-            <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(260px_circle_at_88%_12%,rgba(251,146,60,0.14),transparent_70%)]" />
+            <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(260px_circle_at_88%_12%,rgba(255,143,99,0.14),transparent_70%)]" />
             <div className="relative z-10 flex items-center justify-between gap-2">
-              <span className="text-[12px] font-medium text-white/75 truncate">
+              <span className="text-xs font-medium text-[var(--text-dark-2)] truncate">
                 {darkCard.label}
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/25 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5 shrink-0">
+              <span className="inline-flex items-center gap-1 h-[var(--badge-h,22px)] px-2 rounded-full text-xs font-medium bg-[#3D2817] text-[var(--brand-on-dark)] border border-[#FF8F63]/25 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5 shrink-0">
                 <span ref={darkChipCountRef}>
                   {darkCard.formatBadgeValue
                     ? darkCard.formatBadgeValue(darkCard.badgeCount)
@@ -217,16 +217,16 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
                 {darkCard.badgeSuffix ? <span>{darkCard.badgeSuffix.trim()}</span> : null}
               </span>
             </div>
-            <div className="relative z-10">
+            <div className="relative z-10 flex flex-col gap-1 mt-auto">
               <div
                 ref={darkBigCountRef}
-                className="text-[30px] lg:text-[32px] leading-[0.95] font-bold text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03]"
+                className="text-[var(--t-kpi-m)] leading-[var(--t-kpi-m-lh)] font-normal uppercase tracking-[0.01em] rtl:normal-case rtl:tracking-normal text-[var(--brand-on-dark)] tabular-nums font-[var(--font-display)] rtl:font-sans transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03]"
               >
                 {darkCard.formatValue
                   ? darkCard.formatValue(darkCard.valueCount)
                   : `${darkCard.valuePrefix ?? '+'}${darkCard.valueCount}${darkCard.valueSuffix ?? ''}`}
               </div>
-              <p className="text-[11.5px] text-white/65 mt-1.5 truncate">{darkCard.caption}</p>
+              <p className="text-xs text-[var(--text-dark-2)] truncate">{darkCard.caption}</p>
             </div>
           </div>
         </div>

@@ -848,9 +848,9 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
               return (
                 <div key={col.id} className="sq-elev-card">
                 <div
-                  data-sq="panel"
+                  data-sq="card"
                   data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 flex flex-col space-y-3 min-h-[380px]"
+                  className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col space-y-3 min-h-[380px]"
                 >
                   <div className={`flex items-center justify-between pb-2 border-b-2 ${col.color}`}>
                     <span className="font-bold text-xs text-black dark:text-white">{colLabel}</span>
@@ -871,7 +871,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                       colOrders.map((order) => (
                         <div
                           key={order.id}
-                          data-sq="card"
+                          data-sq="ctl"
                           data-sq-border="solid"
                           className={`p-3 border transition-all space-y-2 ${
                             activeOrder?.id === order.id

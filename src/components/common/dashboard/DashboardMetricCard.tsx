@@ -50,21 +50,21 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
       title={tooltip}
       data-sq="card"
       data-sq-border="solid"
-      className={`relative bg-white dark:bg-neutral-800/90 p-4 sm:p-5 border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] min-h-[132px] flex flex-col justify-between ${className}`}
+      className={`relative bg-white dark:bg-neutral-800/90 p-[var(--card-pad,20px)] card-opt border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-4 ${className}`}
     >
-      <div>
-        <div className="flex items-center justify-between gap-1.5">
-          <span className="text-[12px] font-medium tracking-[-0.005em] text-black/68 dark:text-white/72 block truncate">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-medium text-[var(--text-2)] block truncate">
             {label}
           </span>
           {trend && (
             <span
-              className={`text-[10.5px] font-semibold font-mono tabular-nums ${
+              className={`text-xs font-semibold tabular-nums ${
                 trendDirection === 'down'
-                  ? 'text-red-600 dark:text-red-400'
+                  ? 'text-red-700 dark:text-red-400'
                   : trendDirection === 'neutral'
-                  ? 'text-black/56 dark:text-white/60'
-                  : 'text-emerald-600 dark:text-emerald-400'
+                  ? 'text-[var(--text-2)]'
+                  : 'text-emerald-700 dark:text-emerald-400'
               }`}
             >
               {trend}
@@ -72,22 +72,24 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
           )}
         </div>
         {displayBadge && (
-          <span
-            className={`text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full inline-block mt-1.5 ${currentBadgeColor}`}
-          >
-            {displayBadge}
-          </span>
+          <div>
+            <span
+              className={`text-xs font-semibold px-2 h-[var(--badge-h,22px)] rounded-full inline-flex items-center ${currentBadgeColor}`}
+            >
+              {displayBadge}
+            </span>
+          </div>
         )}
       </div>
 
-      <div className="pt-2">
+      <div className="flex flex-col gap-2 mt-auto">
         <div className="flex items-baseline gap-1">
-          <span className="text-[28px] lg:text-[32px] leading-[0.95] font-bold tracking-[-0.01em] text-black dark:text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:text-2xl rtl:lg:text-[26px]">
+          <span className="text-[var(--t-kpi-m)] leading-[var(--lh-kpi-m)] font-normal tracking-[var(--tr-display)] text-[var(--text-1)] tabular-nums [font-family:var(--font-display)] rtl:[font-family:var(--font-ui)] rtl:font-semibold rtl:text-2xl">
             {value}
           </span>
         </div>
         {displaySubtext && (
-          <span className="text-[11.5px] text-black/56 dark:text-white/60 font-medium tabular-nums block mt-1.5">
+          <span className="text-xs text-[var(--text-2)] font-medium tabular-nums block">
             {displaySubtext}
           </span>
         )}

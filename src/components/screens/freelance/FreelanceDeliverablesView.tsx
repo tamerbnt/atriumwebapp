@@ -1175,9 +1175,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
               return (
                 <div
                   key={stage.id}
-                  data-sq="panel"
+                  data-sq="card"
                   data-sq-border="solid"
-                  className="bg-white/75 dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-800 p-3 min-h-[480px] flex flex-col"
+                  className="bg-white/75 dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] p-3 min-h-[480px] flex flex-col"
                 >
                   <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200/60 dark:border-neutral-800">
                     <span className="text-xs font-bold text-black dark:text-white">
@@ -1197,7 +1197,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                       return (
                         <div key={item.id} className="sq-elev-card">
                           <div
-                            data-sq="card"
+                            data-sq="ctl"
                             data-sq-border="solid"
                             className="p-3.5 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] hover:border-[#d4522f]/40 hover:[--sq-stroke:rgba(212,82,47,0.4)] transition-all flex flex-col justify-between gap-2.5 group"
                           >

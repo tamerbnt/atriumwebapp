@@ -623,14 +623,16 @@ export const VenueTimelineView: React.FC = () => {
                                 setInspectedBooking(booking);
                               }}
                               style={{ left: layout.left, width: layout.width }}
-                              className={`absolute top-2 bottom-2 z-10 rounded-[var(--r-ctl,12px)] px-2.5 py-1.5 cursor-pointer shadow-xs border transition-all flex flex-col justify-center overflow-hidden text-left ${
+                              data-sq="ctl"
+                              data-sq-border="solid"
+                              className={`absolute top-2 bottom-2 z-10 px-2.5 py-1.5 cursor-pointer transition-all flex flex-col justify-center overflow-hidden text-left ${
                                 isCheckedIn
-                                  ? 'bg-purple-600/95 hover:bg-purple-600 text-white border-purple-500'
+                                  ? 'bg-purple-600/95 hover:bg-purple-600 text-white [--sq-stroke:#a855f7]'
                                   : isConfirmed
-                                  ? 'bg-[#d4522f]/95 hover:bg-[#d4522f] text-white border-[#b03b1b]'
+                                  ? 'bg-[#d4522f]/95 hover:bg-[#d4522f] text-white [--sq-stroke:#b03b1b]'
                                   : isTentative
-                                  ? 'bg-amber-500/95 hover:bg-amber-500 text-white border-amber-400'
-                                  : 'bg-neutral-700 hover:bg-neutral-800 text-white border-neutral-600'
+                                  ? 'bg-amber-500/95 hover:bg-amber-500 text-white [--sq-stroke:#fbbf24]'
+                                  : 'bg-neutral-700 hover:bg-neutral-800 text-white [--sq-stroke:#525252]'
                               }`}
                             >
                               <div className="font-bold text-xs truncate leading-tight">

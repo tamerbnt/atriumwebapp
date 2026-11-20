@@ -1492,7 +1492,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.product.id, -1)}
-                            className="w-6 h-6 rounded-[var(--r-check,6px)] flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"
+                            className="w-6 h-6 rounded-[calc(var(--r-ctl-sm,10px)-2px)] flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"
                           >
                             <Minus size={12} />
                           </button>
@@ -1502,7 +1502,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.product.id, 1)}
-                            className="w-6 h-6 rounded-[var(--r-check,6px)] flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"
+                            className="w-6 h-6 rounded-[calc(var(--r-ctl-sm,10px)-2px)] flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-white dark:hover:bg-neutral-700 cursor-pointer"
                           >
                             <Plus size={12} />
                           </button>
@@ -1541,7 +1541,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                     <button
                       type="button"
                       onClick={() => setOrderDiscountType('fixed')}
-                      className={`px-1.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-black cursor-pointer ${
+                      data-sq="check"
+                      data-sq-border="none"
+                      className={`px-1.5 py-0.5 text-[10px] font-black cursor-pointer ${
                         orderDiscountType === 'fixed' ? 'bg-[#d4522f] text-white' : 'text-black/55 dark:text-white/55'
                       }`}
                     >
@@ -1550,7 +1552,9 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                     <button
                       type="button"
                       onClick={() => setOrderDiscountType('percent')}
-                      className={`px-1.5 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-black cursor-pointer ${
+                      data-sq="check"
+                      data-sq-border="none"
+                      className={`px-1.5 py-0.5 text-[10px] font-black cursor-pointer ${
                         orderDiscountType === 'percent' ? 'bg-[#d4522f] text-white' : 'text-black/55 dark:text-white/55'
                       }`}
                     >
@@ -1923,7 +1927,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         <ScreenPod>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             <div
-              data-sq="panel"
+              data-sq="card"
               data-sq-border="solid"
               className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
             >
@@ -2020,7 +2024,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
             </div>
 
             <div
-              data-sq="panel"
+              data-sq="card"
               data-sq-border="solid"
               className="p-5 bg-white dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] flex flex-col items-center"
             >

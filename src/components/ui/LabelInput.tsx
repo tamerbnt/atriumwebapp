@@ -275,7 +275,7 @@ export function LabelInput({
   return (
     <div
       ref={boxRef}
-      className={`lbi ${className}`}
+      className={`lbi flex flex-col gap-1 ${className}`}
       data-up={Boolean(up)}
       data-focus={focus}
       data-filled={Boolean(value !== undefined && value !== null && String(value).length > 0)}
@@ -315,7 +315,7 @@ export function LabelInput({
         </label>
 
         {prefix && (
-          <div className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-black/60 dark:text-white/65">
+          <div className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
             {prefix}
           </div>
         )}
@@ -357,7 +357,7 @@ export function LabelInput({
         />
 
         {suffix && !isSecret && (
-          <div className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 z-10 flex items-center text-black/60 dark:text-white/65">
+          <div className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 z-10 flex items-center text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
             {suffix}
           </div>
         )}
@@ -381,9 +381,9 @@ export function LabelInput({
         <p
           id={resolvedErrorId}
           role="alert"
-          className="mt-1 text-[11.5px] font-medium text-[#B8321C] flex items-center gap-1"
+          className="text-xs font-medium text-[#B8321C] flex items-center gap-1"
         >
-          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+          <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </p>
       )}

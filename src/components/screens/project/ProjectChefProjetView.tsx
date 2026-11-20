@@ -697,12 +697,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         minWidth: '220px',
         renderCell: (item) => (
           <div className="flex items-center gap-3">
-            <img
-              src={item.imageUrl}
-              alt={item.title}
-              referrerPolicy="no-referrer"
-              className="w-10 h-10 rounded-[var(--r-ctl,12px)] object-cover shrink-0 border border-[#E6DED6] dark:border-neutral-800"
-            />
+            <div
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="w-10 h-10 shrink-0 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+            >
+              <img
+                src={item.imageUrl}
+                alt={item.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+              />
+            </div>
             <div className="min-w-0">
               <div className="font-semibold text-black dark:text-white text-xs truncate max-w-[200px]">
                 {item.title}
@@ -862,12 +868,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         minWidth: '220px',
         renderCell: (bat) => (
           <div className="flex items-center gap-3">
-            <img
-              src={bat.previewUrl}
-              alt={bat.title}
-              referrerPolicy="no-referrer"
-              className="w-10 h-10 rounded-[var(--r-ctl-sm,10px)] object-cover border border-[#E6DED6] dark:border-neutral-800 shrink-0"
-            />
+            <div
+              data-sq="ctl-sm"
+              data-sq-border="solid"
+              className="w-10 h-10 shrink-0 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+            >
+              <img
+                src={bat.previewUrl}
+                alt={bat.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+              />
+            </div>
             <div className="min-w-0">
               <div className="font-semibold text-xs text-black dark:text-white truncate">
                 {bat.title}
@@ -1156,7 +1168,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           {activeTab === 'portfolio' && (
             <div className="space-y-5">
               <div
-                data-sq="panel"
+                data-sq="card"
                 data-sq-border="solid"
                 className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
@@ -1219,7 +1231,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       type="button"
                       key={p.id}
                       onClick={() => setSelectedProjectId(p.id)}
-                      data-sq="panel"
+                      data-sq="card"
                       data-sq-border="solid"
                       className={`p-5 text-left rtl:text-right transition-all cursor-pointer ${
                         isSel
@@ -1340,12 +1352,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   <div className="flex flex-col justify-between h-full space-y-3">
                     <div className="space-y-2">
                       {item.imageUrl && (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.title}
-                          referrerPolicy="no-referrer"
-                          className="w-full h-36 rounded-[var(--r-ctl,12px)] object-cover border border-[#E6DED6]/60 dark:border-neutral-800"
-                        />
+                        <div
+                          data-sq="ctl"
+                          data-sq-border="solid"
+                          className="w-full h-36 [--sq-stroke:rgba(230,222,214,0.6)] dark:[--sq-stroke:#262626]"
+                        >
+                          <img
+                            src={item.imageUrl}
+                            alt={item.title}
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                       )}
                       <div className="flex items-center justify-between text-[11px] text-black/55 dark:text-white/55 font-mono">
                         <span>{item.sku}</span>
@@ -1653,12 +1671,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   const badge = getBatStatusBadge(bat.approvalStatus, language);
                   return (
                     <div className="space-y-3">
-                      <img
-                        src={bat.previewUrl}
-                        alt={bat.title}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-44 rounded-[var(--r-ctl,12px)] object-cover border border-[#E6DED6]/60 dark:border-neutral-800"
-                      />
+                      <div
+                        data-sq="ctl"
+                        data-sq-border="solid"
+                        className="w-full h-44 [--sq-stroke:rgba(230,222,214,0.6)] dark:[--sq-stroke:#262626]"
+                      >
+                        <img
+                          src={bat.previewUrl}
+                          alt={bat.title}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                       <div className="flex items-start justify-between gap-2">
                         <span className="text-xs font-bold text-[#d4522f] uppercase truncate">
                           {bat.projectTitle}
@@ -1806,7 +1830,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               </div>
 
               <div
-                data-sq="panel"
+                data-sq="card"
                 data-sq-border="solid"
                 className="lg:col-span-5 p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4 self-start"
               >
@@ -2001,12 +2025,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           <>
             {item.imageUrl && (
               <InspectorSection index={0}>
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-48 rounded-[var(--r-card,16px)] object-cover border border-[#E6DED6] dark:border-neutral-800"
-                />
+                <div
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="w-full h-48 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+                >
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </InspectorSection>
             )}
             <InspectorSection index={1}>
@@ -2128,12 +2158,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         renderBody={(bat) => (
           <>
             <InspectorSection index={0}>
-              <img
-                src={bat.previewUrl}
-                alt={bat.title}
-                referrerPolicy="no-referrer"
-                className="w-full h-48 rounded-[var(--r-card,16px)] object-cover border border-[#E6DED6] dark:border-neutral-800"
-              />
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                className="w-full h-48 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+              >
+                <img
+                  src={bat.previewUrl}
+                  alt={bat.title}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </InspectorSection>
             <InspectorSection index={1} title={isAr ? 'إجراءات الاعتماد' : 'Contrôle Qualité BAT'}>
               <InspectorQuickActions
@@ -2432,7 +2468,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 src={selectedReceiptUrl}
                 alt="Justificatif"
                 referrerPolicy="no-referrer"
-                className="w-full h-72 object-cover rounded-[var(--r-ctl,12px)]"
+                data-sq="ctl"
+                data-sq-border="none"
+                className="w-full h-72 object-cover"
               />
               <div className="flex justify-end">
                 <button

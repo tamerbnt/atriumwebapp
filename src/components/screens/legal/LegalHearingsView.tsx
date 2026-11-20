@@ -868,7 +868,7 @@ export const LegalHearingsView: React.FC<any> = () => {
               Object.entries(hearingsByDate).map(([date, dateHearings]) => (
                 <div
                   key={date}
-                  data-sq="panel"
+                  data-sq="card"
                   data-sq-border="solid"
                   className="bg-white/80 dark:bg-neutral-900/40 p-3 border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
                 >
@@ -893,7 +893,7 @@ export const LegalHearingsView: React.FC<any> = () => {
                         key={h.id}
                         type="button"
                         data-no-liquid="true"
-                        data-sq="card"
+                        data-sq="ctl"
                         data-sq-border="solid"
                         data-sq-stroke-w={activeHearing?.id === h.id ? 2 : undefined}
                         onClick={(e) => {
@@ -902,8 +902,8 @@ export const LegalHearingsView: React.FC<any> = () => {
                         }}
                         className={`w-full text-left rtl:text-right p-4 bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
                           activeHearing?.id === h.id
-                            ? 'border-[#d4522f]'
-                            : 'border-[#E6DED6] dark:border-neutral-700 hover:border-[#d4522f]/50'
+                            ? 'border-[#d4522f] [--sq-stroke:#d4522f]'
+                            : 'border-[#E6DED6] dark:border-neutral-700 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:border-[#d4522f]/50 hover:[--sq-stroke:rgba(212,82,47,0.5)]'
                         }`}
                       >
                         <div className="flex items-start gap-3 min-w-0">

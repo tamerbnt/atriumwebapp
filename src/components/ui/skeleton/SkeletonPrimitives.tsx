@@ -4,8 +4,10 @@ interface SkeletonBoxProps {
   className?: string;
   width?: string | number;
   height?: string | number;
-  rounded?: string; // e.g. "rounded-md", "rounded-xl", "rounded-2xl"
+  rounded?: string; // e.g. "rounded-[var(--r-ctl-sm,10px)]"
   shimmer?: boolean;
+  sq?: string;
+  sqBorder?: 'solid' | 'dashed' | 'none';
 }
 
 export const SkeletonBox: React.FC<SkeletonBoxProps> = ({
@@ -14,6 +16,8 @@ export const SkeletonBox: React.FC<SkeletonBoxProps> = ({
   height,
   rounded = 'rounded-[var(--r-ctl-sm,10px)]',
   shimmer = true,
+  sq,
+  sqBorder = 'none',
 }) => {
   const style: React.CSSProperties = {
     width: typeof width === 'number' ? `${width}px` : width,
@@ -24,7 +28,9 @@ export const SkeletonBox: React.FC<SkeletonBoxProps> = ({
     <div
       aria-hidden="true"
       style={style}
-      className={`relative overflow-hidden bg-neutral-200/80 dark:bg-neutral-800/80 ${rounded} ${className}`}
+      data-sq={sq}
+      data-sq-border={sq ? sqBorder : undefined}
+      className={`relative overflow-hidden bg-neutral-200/80 dark:bg-neutral-800/80 ${sq ? '' : rounded} ${className}`}
     >
       {shimmer && (
         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 dark:via-neutral-700/30 to-transparent animate-shimmer pointer-events-none" />
@@ -106,7 +112,8 @@ export const SkeletonButton: React.FC<SkeletonButtonProps> = ({
     <SkeletonBox
       width={width}
       height={height}
-      rounded="rounded-[var(--r-ctl,12px)]"
+      sq="ctl"
+      sqBorder="none"
       className={`shrink-0 ${className}`}
       shimmer={shimmer}
     />

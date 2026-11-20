@@ -273,7 +273,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
             </button>
           ))}
           {hasAnyCancelled && (
-            <span className="inline-flex items-center gap-1.5 px-2 py-[3px] rounded-[8px] border border-[var(--ax-bdr)] text-[11px] font-medium text-[var(--ax-sub)]">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full border border-[var(--ax-bdr)] text-[11px] font-medium text-[var(--ax-sub)]">
               <span className="w-2.5 h-2.5 rounded-[3px] ax-es border border-[var(--ax-bdr)] shrink-0" />
               <span>{cancelledLabel || strings.cancelledLabel}</span>
             </span>
@@ -374,25 +374,11 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
                   }}
                   aria-hidden={!activeBucket}
                 >
-                  <div className="ax-tip-hd">
-                    <span className="ax-tip-lbl">{tipBucket.label}</span>
-                    <span className="ax-tip-tot" dir="ltr">
-                      {formatChartValue(metrics.totals[tipBucketIndex] || 0, {
-                        locale,
-                        format,
-                        currency,
-                        unit,
-                      })}
-                    </span>
-                  </div>
-                  {visibleSeries.map((s) => (
-                    <div key={s.id} className="ax-tip-row">
-                      <span className="ax-tip-key">
-                        <span className="ax-tip-sw" style={{ background: s.color }} />
-                        <span>{s.label}</span>
-                      </span>
-                      <span className="ax-tip-val" dir="ltr">
-                        {formatChartValue(Math.max(0, tipBucket.values[s.id] || 0), {
+                  <div className="ax-tip-box" data-sq="ctl" data-sq-border="solid">
+                    <div className="ax-tip-hd">
+                      <span className="ax-tip-lbl">{tipBucket.label}</span>
+                      <span className="ax-tip-tot" dir="ltr">
+                        {formatChartValue(metrics.totals[tipBucketIndex] || 0, {
                           locale,
                           format,
                           currency,
@@ -400,33 +386,49 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
                         })}
                       </span>
                     </div>
-                  ))}
-                  {hasAnyCancelled && (tipBucket.cancelled || 0) > 0 && (
-                    <div className="ax-tip-row">
-                      <span className="ax-tip-key">
+                    {visibleSeries.map((s) => (
+                      <div key={s.id} className="ax-tip-row">
+                        <span className="ax-tip-key">
+                          <span className="ax-tip-sw" style={{ background: s.color }} />
+                          <span>{s.label}</span>
+                        </span>
+                        <span className="ax-tip-val" dir="ltr">
+                          {formatChartValue(Math.max(0, tipBucket.values[s.id] || 0), {
+                            locale,
+                            format,
+                            currency,
+                            unit,
+                          })}
+                        </span>
+                      </div>
+                    ))}
+                    {hasAnyCancelled && (tipBucket.cancelled || 0) > 0 && (
+                      <div className="ax-tip-row">
+                        <span className="ax-tip-key">
+                          <span
+                            className="ax-tip-sw ax-es"
+                            style={{
+                              border: '1px solid color-mix(in srgb, var(--ax-tip-on) 30%, transparent)',
+                            }}
+                          />
+                          <span>{cancelledLabel || strings.cancelledLabel}</span>
+                        </span>
                         <span
-                          className="ax-tip-sw ax-es"
-                          style={{
-                            border: '1px solid color-mix(in srgb, var(--ax-tip-on) 30%, transparent)',
-                          }}
-                        />
-                        <span>{cancelledLabel || strings.cancelledLabel}</span>
-                      </span>
-                      <span
-                        className="ax-tip-val"
-                        dir="ltr"
-                        style={{ color: 'var(--ax-tip-acc)' }}
-                      >
-                        -
-                        {formatChartValue(tipBucket.cancelled || 0, {
-                          locale,
-                          format,
-                          currency,
-                          unit,
-                        })}
-                      </span>
-                    </div>
-                  )}
+                          className="ax-tip-val"
+                          dir="ltr"
+                          style={{ color: 'var(--ax-tip-acc)' }}
+                        >
+                          -
+                          {formatChartValue(tipBucket.cancelled || 0, {
+                            locale,
+                            format,
+                            currency,
+                            unit,
+                          })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -456,7 +458,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
                     className="absolute inset-x-0 border-t-[1.5px] border-dashed border-[var(--ax-acc)] pointer-events-none z-20 flex justify-end"
                     style={{ bottom: `${avgRatio * 100}%` }}
                   >
-                    <span className="ax-tk me-1 -translate-y-1/2 px-1.5 py-[1px] rounded border border-[var(--ax-acc)]/35 bg-[var(--ax-slab)] text-[9.5px] text-[var(--ax-acc)] font-semibold leading-none shadow-xs">
+                    <span className="ax-tk me-1 -translate-y-1/2 px-1.5 py-[1px] rounded-[var(--r-check,6px)] border border-[var(--ax-acc)]/35 bg-[var(--ax-slab)] text-[9.5px] text-[var(--ax-acc)] font-semibold leading-none shadow-xs">
                       {averageLabel || strings.avgLabel}
                     </span>
                   </div>

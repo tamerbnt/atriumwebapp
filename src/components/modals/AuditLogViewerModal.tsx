@@ -189,7 +189,10 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
             {Array.from({ length: 6 }).map((_, idx) => (
               <div
                 key={idx}
-                className="h-[44px] rounded-[var(--r-ctl,12px)] bg-[var(--atr-soft)] animate-pulse border border-[var(--atr-line)]"
+                data-sq="ctl"
+                data-sq-border="solid"
+                style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
+                className="h-[44px] bg-[var(--atr-soft)] animate-pulse"
               />
             ))}
           </div>
@@ -297,8 +300,8 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
 
             {isLoadingMore && (
               <div className="p-2 space-y-2">
-                <div className="h-[44px] rounded-[var(--r-row,12px)] bg-[var(--atr-soft)] animate-pulse" />
-                <div className="h-[44px] rounded-[var(--r-row,12px)] bg-[var(--atr-soft)] animate-pulse" />
+                <div data-sq="row" data-sq-border="none" className="h-[44px] bg-[var(--atr-soft)] animate-pulse" />
+                <div data-sq="row" data-sq-border="none" className="h-[44px] bg-[var(--atr-soft)] animate-pulse" />
               </div>
             )}
           </div>

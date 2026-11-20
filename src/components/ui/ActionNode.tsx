@@ -87,8 +87,10 @@ export const ActionNode: React.FC<ActionNodeProps> = ({
     >
       {/* ── THE CARD ────────────────────────────────────── */}
       <div
+        data-sq={corner === 20 ? "table" : String(corner)}
+        data-sq-border={selected || stroke ? "solid" : "none"}
         className={`nod-card cursor-pointer select-none ${
-          selected ? "ring-2 ring-[#d4522f] border-transparent" : ""
+          selected ? "[--sq-stroke:#d4522f] [--sq-stroke-w:2px]" : ""
         }`}
         data-on={isHovered ? "true" : "false"}
         onClick={onClick}
@@ -103,6 +105,8 @@ export const ActionNode: React.FC<ActionNodeProps> = ({
         <div className="nod-top">
           {icon && (
             <div
+              data-sq={String(markCorner)}
+              data-sq-border="none"
               className="nod-mark shrink-0"
               style={{ "--nod-mark-r": `${markCorner}px` } as React.CSSProperties}
             >

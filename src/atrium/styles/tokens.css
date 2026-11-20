@@ -1,20 +1,10 @@
 /*
- * Atrium tokens
- * -------------
- * Import once, globally (e.g. in app/layout.tsx):
+ * Atrium Central Design Tokens
+ * ----------------------------
+ * Single source of truth for spacing (4pt base / 8pt rhythm), typography,
+ * layout geometry, contrast-safe ink colors, and compact density overrides.
  *
- *   import '@/atrium/styles/tokens.css';
- *
- * Theme: set data-atrium-theme="light" | "dark" on <html> or on any container.
- * Containers can nest, so a dark panel inside a light page just works.
- * Menus rendered in a portal copy the theme of the control that opened them.
- *
- * Size: every control is sized from --atr-h (its height). Radius, padding, gaps, icon size and
- * type size are all fractions of it, so a 24 px and a 44 px control have the same shape.
- *   <div data-atr-size="lg">…</div>  or  style={{ '--atr-h': '40px' }}
- *
- * Fonts: controls use --atr-font-ui, --atr-font-brand, and --atr-font-mono if defined,
- * otherwise they inherit from the page.
+ * Corner radii (--r-*) and brand surface colors are preserved intact.
  */
 
 :root,
@@ -26,19 +16,19 @@
   --atr-line: #E6DED6;
   --pod: #F3EDE7;
   --line: #E6DED6;
-  /* text: calibrated pure-ink opacity ramp */
-  --atr-ink: #000000;
-  --atr-ink-2: rgba(0, 0, 0, 0.86);
-  --atr-ink-3: rgba(0, 0, 0, 0.72);
-  --atr-ink-4: rgba(0, 0, 0, 0.56);
-  --atr-ink-5: rgba(0, 0, 0, 0.38);
-  --atr-mut: rgba(0, 0, 0, 0.72);
-  /* brand accent: #D4522F */
+  /* text: calibrated warm-ink contrast ramp (>= 4.5:1) */
+  --atr-ink: #17130F;
+  --atr-ink-2: rgba(23, 19, 15, 0.88);
+  --atr-ink-3: #5A5047;
+  --atr-ink-4: #766C62;
+  --atr-ink-5: rgba(23, 19, 15, 0.48);
+  --atr-mut: #5A5047;
+  /* brand accent: #D4522F (dark-ink safe) & #C9461F (white-ink CTA fill) */
   --atr-acc: #d4522f;
-  --atr-onacc: #000000; /* ink on orange: high contrast */
-  --atr-accq: #e8643f; /* the liquid on an accent button: lighter, so ink text stays readable */
-  --atr-acc-text: #ab391a; /* accent used as text, border or focus ring on light surfaces (>= 4.5:1 even over wash) */
-  --atr-hl: rgba(212, 82, 47, 0.12); /* soft accent wash */
+  --atr-onacc: #000000;
+  --atr-accq: #e8643f;
+  --atr-acc-text: #ab391a;
+  --atr-hl: rgba(212, 82, 47, 0.12);
   /* status */
   --atr-ok: #096b40;
   --atr-okbg: rgba(11, 122, 74, 0.12);
@@ -57,12 +47,12 @@
   color-scheme: light;
 }
 
-/* Shape lives apart from the themes on purpose: a theme container must not reset the size that a
-   parent set, so --atr-h inherits freely and only an explicit size attribute or variable changes it. */
+/* Shape, Spacing & Typography Tokens */
 :root {
   --atr-h: 34px;
-  --atr-radius-k: 0.147; /* radius = 0.147 × height */
-  /* single-source continuous 60% squircle & concentric radius tokens */
+  --atr-radius-k: 0.147;
+
+  /* Continuous 60% squircle & concentric radius tokens (preserved) */
   --sq-smooth: 0.6;
   --r-app: 40px;
   --r-panel: 28px;
@@ -76,22 +66,169 @@
   --r-tile-lg: 15px;
   --r-check: 6px;
   --r-empty: 12px;
-  /* app shell */
-  --atr-r-card: var(--r-app); /* main app container */
-  --atr-r-sidebar: 34px; /* 68px sidebar capsule (r = width/2) */
-  --atr-r-bar: 27px; /* 54px top bar capsule */
-  --atr-rail: 68px; /* collapsed sidebar width (34*2, 12px pad + 44px circle item = concentric) */
-  --atr-rail-open: 244px; /* expanded sidebar width (68 + 176) */
-  --atr-bar-h: 54px; /* top bar height */
-  --atr-shell-gap: 14px;
-  /* the sidebar is dark in both themes */
+
+  /* 1) Strict 4pt Spacing Scale */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 20px;
+  --s6: 24px;
+  --s7: 32px;
+  --s8: 48px;
+
+  /* 3) App Shell Tokens */
+  --inset: var(--s3);
+  --sb-w: 68px;
+  --sb-pad: var(--s3);
+  --sb-item: 44px;
+  --sb-icon: var(--s5);
+  --sb-gap: var(--s1);
+  --sb-to-content: var(--s4);
+  --top-h: 56px;
+  --top-pad-y: var(--s2);
+  --top-gap: var(--s2);
+  --top-ctl-h: 40px;
+  --top-to-container: var(--s4);
+  --container-pad: var(--s6);
+  --section-gap: var(--s7);
+  --ph-tile: var(--s8);
+  --ph-gap: var(--s4);
+  --ph-sub-gap: var(--s1);
+  --ph-mb: var(--s6);
+
+  /* Atrium shell aliases mapped strictly to scale tokens */
+  --atr-r-card: var(--r-app);
+  --atr-r-sidebar: 34px;
+  --atr-r-bar: 27px;
+  --atr-rail: var(--sb-w);
+  --atr-rail-open: 244px;
+  --atr-bar-h: var(--top-h);
+  --atr-shell-gap: var(--sb-to-content);
+
+  /* Sidebar is dark obsidian in both themes */
   --atr-side: #151413;
   --atr-side-ink: #ffffff;
   --atr-side-mut: rgba(255, 255, 255, 0.78);
   --atr-side-hl: rgba(255, 255, 255, 0.08);
-  --atr-font-ui: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --atr-font-brand: 'Sigana Condensed', 'Barlow Condensed', 'Cinzel', sans-serif;
-  --atr-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* 4) Pods & Cards */
+  --pod-pad: var(--s3);
+  --pod-gap: var(--s4);
+  --pod-head-pad: var(--s1) var(--s3) var(--s3) var(--s3);
+  --pod-head-h: 22px;
+  --card-gap: var(--s3);
+  --card-gap-canvas: var(--s4);
+  --card-pad: var(--s5);
+  --card-pad-y-fallback: var(--s4);
+  --card-head-gap: var(--s3);
+  --card-body-gap: var(--s5);
+  --footer-gap: var(--s3);
+  --kpi-min-h: 168px;
+
+  /* 5) Tables & Lists */
+  --table-pad: var(--s2);
+  --head-h: 36px;
+  --row-h: 64px;
+  --row-gap: var(--s2);
+  --row-inset: var(--s3);
+  --col-gap: var(--s4);
+  --check: var(--s5);
+  --expand-btn: 40px;
+  --av-table: 40px;
+  --av-list: 36px;
+  --av-to-text: var(--s3);
+  --name-sub-gap: 2px;
+  --av-overlap: -8px;
+  --list-row-pad-y: var(--s3);
+  --list-row-pad-x: var(--s4);
+  --list-row-min-h: 60px;
+
+  /* 6) Controls */
+  --btn-h: 40px;
+  --btn-px: var(--s4);
+  --btn-icon-gap: var(--s2);
+  --btn-sm-h: 32px;
+  --btn-sm-px: var(--s3);
+  --btn-sm-gap: 6px;
+  --seg-l-h: 40px;
+  --seg-m-h: 36px;
+  --seg-s-h: 32px;
+  --seg-pad: var(--s1);
+  --field-w: 240px;
+  --field-min: 200px;
+  --pill-h: 28px;
+  --pill-px: var(--s3);
+  --badge-h: 22px;
+  --badge-px: var(--s2);
+
+  /* 7) Modals, Drawers, Popovers */
+  --modal-pad: var(--s6);
+  --modal-gap: var(--s5);
+  --drawer-pad: var(--s6);
+  --drawer-section-gap: var(--s6);
+  --pop-pad-y: var(--s3);
+  --pop-pad-x: var(--s4);
+  --pop-offset: var(--s2);
+
+  /* 8) Icons & Tiles */
+  --icon-s: var(--s4);
+  --icon-m: var(--s5);
+  --icon-l: var(--s6);
+  --tile-s: var(--s7);
+  --tile-m: 40px;
+  --tile-l: var(--s8);
+  --icon-text-gap: var(--s2);
+
+  /* 9) Charts */
+  --chart-h: 160px;
+  --chart-legend-gap: var(--s3);
+  --chart-leg-row-gap: var(--s4);
+  --chart-swatch: var(--s2);
+  --chart-swatch-gap: 6px;
+  --chart-bar-gap: var(--s1);
+
+  /* 10) Typography Families & Strict Scale (minimum 12px anywhere) */
+  --font-display: 'Barlow Condensed', 'Barlow Condensed Fallback', sans-serif;
+  --font-ui: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --atr-font-ui: var(--font-ui);
+  --atr-font-brand: var(--font-display);
+
+  --t-hero: 72px;
+  --lh-hero: 72px;
+  --t-kpi: 56px;
+  --lh-kpi: 56px;
+  --t-page: 44px;
+  --lh-page: 48px;
+  --t-kpi-m: 40px;
+  --lh-kpi-m: 44px;
+  --t-unit: 24px;
+  --lh-unit: 28px;
+  --t-h2: 20px;
+  --lh-h2: 28px;
+  --t-h3: 16px;
+  --lh-h3: 22px;
+  --t-body: 14px;
+  --lh-body: 20px;
+  --t-sub: 13px;
+  --lh-sub: 18px;
+  --t-small: 12px;
+  --lh-small: 16px;
+  --t-cap: 12px;
+  --lh-cap: 16px;
+
+  --tr-display: 0.01em;
+  --tr-12: 0.01em;
+
+  /* 11) Contrast-Safe Ink & Brand Tokens */
+  --text-1: #17130F;
+  --text-2: #5A5047;
+  --text-3: #766C62;
+  --text-dark-2: #A99E92;
+  --brand-fill: #C9461F;
+  --brand-accent: #D9532B;
+  --brand-text: #BF431F;
+  --brand-on-dark: #FF8F63;
 }
 
 [data-atrium-theme='dark'] {
@@ -103,29 +240,53 @@
   --line: #33302d;
   --atr-ink: #ffffff;
   --atr-ink-2: rgba(255, 255, 255, 0.88);
-  --atr-ink-3: rgba(255, 255, 255, 0.75);
-  --atr-ink-4: rgba(255, 255, 255, 0.58);
-  --atr-ink-5: rgba(255, 255, 255, 0.42);
-  --atr-mut: rgba(255, 255, 255, 0.75);
-  --atr-acc: #e8643f; /* the brighter orange used by the logo on dark */
+  --atr-ink-3: #A99E92;
+  --atr-ink-4: #9C9286;
+  --atr-ink-5: rgba(255, 255, 255, 0.48);
+  --atr-mut: #A99E92;
+  --atr-acc: #e8643f;
   --atr-onacc: #000000;
   --atr-accq: #f28a69;
-  --atr-acc-text: #ee7452;
+  --atr-acc-text: #FF8F63;
   --atr-hl: rgba(232, 100, 63, 0.18);
   --atr-ok: #5be3a3;
   --atr-okbg: rgba(91, 227, 163, 0.12);
   --atr-okq: rgba(91, 227, 163, 0.24);
   --atr-danger: #ff7a8a;
-  /* the switch keeps the brand orange in both themes: cream on #E8643F would only reach 2.9:1 */
   --atr-sw-body: #d4522f;
   --atr-sw-liquid: #f4ede6;
   --atr-sw-knob: #000000;
-  /* on a dark surface the ink tone flips: cream body, orange liquid, ink text */
   --atr-lb-body: #ffffff;
   --atr-lb-liq: #e8643f;
   --atr-lb-t1: #000000;
   --atr-shadow-pop: 0 14px 34px rgba(0, 0, 0, 0.5);
   color-scheme: dark;
+}
+
+[data-theme='dark'],
+[data-atrium-theme='dark'],
+.dark {
+  --text-1: #FFFFFF;
+  --text-2: #A99E92;
+  --text-3: #9C9286;
+  --brand-text: #FF8F63;
+}
+
+/* 12) Compact Mode Token Overrides */
+[data-density='compact'] {
+  --container-pad: var(--s5);
+  --ph-mb: var(--s4);
+  --pod-gap: var(--s3);
+  --card-pad: var(--s4);
+  --card-body-gap: var(--s4);
+  --row-h: 56px;
+  --expand-btn: 32px;
+  --av-table: 36px;
+  --kpi-min-h: 144px;
+  --modal-pad: var(--s5);
+  --drawer-pad: var(--s5);
+  --list-row-pad-y: var(--s2);
+  --list-row-min-h: 52px;
 }
 
 [data-atr-size='sm'] {
@@ -135,5 +296,5 @@
   --atr-h: 34px;
 }
 [data-atr-size='lg'] {
-  --atr-h: 44px;
+  --atr-h: 40px;
 }

@@ -260,7 +260,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
                       {/* Bold count value stacked cleanly above bar (+ MEDIANE pill above it) */}
                       {isMedian && (
                         <span
-                          className="ax-pop-item absolute px-1.5 py-[1px] rounded-[5px] bg-[var(--ax-c1)] text-[var(--ax-tc1)] text-[9px] font-bold uppercase tracking-wider whitespace-nowrap z-20"
+                          className="ax-pop-item absolute px-1.5 py-[1px] rounded-[var(--r-check,6px)] bg-[var(--ax-c1)] text-[var(--ax-tc1)] text-[9px] font-bold uppercase tracking-wider whitespace-nowrap z-20"
                           style={{
                             bottom: `calc(${Math.max(4, heightPct)}% + 22px)`,
                             '--ax-delay': `${Math.min(idx * 42 + 120, 420)}ms`,
@@ -292,7 +292,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
                         }}
                       >
                         <div
-                          className="ax-bar-y w-full h-full rounded-t-[9px] rounded-b-[4px]"
+                          className="ax-bar-y w-full h-full rounded-t-[var(--r-thumb,9px)] rounded-b-[4px]"
                           style={{
                             background: isMedian ? 'var(--ax-c1)' : 'var(--ax-c3)',
                             boxShadow: isActive

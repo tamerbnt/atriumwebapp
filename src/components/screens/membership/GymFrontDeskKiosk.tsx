@@ -419,7 +419,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
               {searchResults.length > 0 && (
                 <div className="sq-elev-pop absolute z-20 left-0 right-0 mt-2">
                   <div
-                    data-sq="panel"
+                    data-sq="card"
                     data-sq-border="solid"
                     className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] overflow-hidden divide-y divide-[#E6DED6]/60 dark:divide-[#3A3734]"
                   >

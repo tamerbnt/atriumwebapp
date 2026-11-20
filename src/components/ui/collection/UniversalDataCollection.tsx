@@ -1109,7 +1109,7 @@ export function UniversalDataCollection<T>({
               {subtitle && <SkeletonText size="xs" width="220px" />}
             </div>
             {showViewToggle && (
-              <SkeletonBox width={72} height={32} rounded="rounded-[var(--r-ctl,12px)]" />
+              <SkeletonBox width={72} height={32} sq="ctl" />
             )}
           </div>
         )}

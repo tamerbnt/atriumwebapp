@@ -128,7 +128,7 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
                 onPointerEnter={() => setHoveredId(item.id)}
                 onFocus={() => setHoveredId(item.id)}
                 onBlur={() => setHoveredId(null)}
-                className={`ax-plot-focus absolute inset-x-0 top-0 flex flex-col justify-center gap-1.5 px-1.5 rounded-[10px] cursor-pointer ${
+                className={`ax-plot-focus absolute inset-x-0 top-0 flex flex-col justify-center gap-1.5 px-1.5 rounded-[var(--r-ctl-sm,10px)] cursor-pointer ${
                   isHovered ? 'bg-[var(--ax-soft)]' : ''
                 }`}
                 style={{
@@ -159,9 +159,9 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
                 </div>
 
                 {/* 14px Track + Compositor scaleX Fill (coral lead/hover vs ink others) */}
-                <div className="h-[14px] w-full rounded-[7px] bg-[var(--ax-soft)] overflow-hidden">
+                <div className="h-[14px] w-full rounded-full bg-[var(--ax-soft)] overflow-hidden">
                   <div
-                    className="ax-bar-x h-full w-full rounded-[7px]"
+                    className="ax-bar-x h-full w-full rounded-full"
                     style={{
                       transform: `scaleX(${ratio})`,
                       background: isAccent ? 'var(--ax-c1)' : 'var(--ax-on)',

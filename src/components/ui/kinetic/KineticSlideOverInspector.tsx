@@ -436,7 +436,7 @@ function KineticSlideOverInspectorInner<T>({
         aria-modal="true"
         aria-hidden={!isOpen}
         aria-labelledby="kinetic-pnl-title"
-        className="pnl fixed right-3.5 rtl:right-auto rtl:left-3.5 top-3.5 bottom-3.5 w-[560px] max-w-[calc(100vw-28px)] z-[61] sq-elev-pop flex flex-col"
+        className="pnl fixed right-3 rtl:right-auto rtl:left-3 top-3 bottom-3 w-[560px] max-w-[calc(100vw-24px)] z-[61] sq-elev-pop flex flex-col"
         style={{
           visibility: 'hidden',
           transform: 'translate3d(620px, 0, 0)',
@@ -449,13 +449,13 @@ function KineticSlideOverInspectorInner<T>({
           className="relative w-full h-full bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex flex-col overflow-hidden"
         >
         {/* Header (.ph) */}
-        <div className="ph flex gap-4 items-start px-[26px] pt-[26px] pb-[18px]">
+        <div className="ph flex gap-4 items-start p-[var(--drawer-pad,24px)] pb-4">
           {avatarText && (
             <div className="sq-elev-card shrink-0">
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="pav relative w-[68px] h-[68px] grid place-items-center text-white font-bold text-[26px] select-none"
+                className="pav relative w-16 h-16 grid place-items-center text-white font-semibold text-2xl select-none"
                 style={{ backgroundColor: avatarColor }}
                 aria-hidden="true"
               >
@@ -464,46 +464,46 @@ function KineticSlideOverInspectorInner<T>({
             </div>
           )}
 
-          <div className="pmeta flex-1 min-w-0">
+          <div className="pmeta flex-1 min-w-0 flex flex-col gap-2">
             <h2
               id="kinetic-pnl-title"
-              className="m-0 mb-2 font-bold text-[24px] sm:text-[26px] leading-tight text-black dark:text-white tracking-tight truncate"
+              className="m-0 font-semibold text-[var(--t-h2)] leading-[var(--lh-h2)] text-[var(--text-1)] tracking-[-0.015em] truncate"
             >
               {title}
             </h2>
-            <div className="ppills flex gap-1.5 flex-wrap items-center">
+            <div className="ppills flex gap-2 flex-wrap items-center">
               {statusLabel && (
                 <span
-                  className={`pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[12px] font-medium ${
+                  className={`pill inline-flex items-center gap-2 h-[var(--badge-h,22px)] px-2 rounded-full text-xs font-medium ${
                     statusClassName ||
                     'bg-[#DDF5E8] text-[#0B7A45] border border-[#B5E8CE]'
                   }`}
                 >
-                  <i className="w-1.5 h-1.5 rounded-full bg-current" />
+                  <i className="w-2 h-2 rounded-full bg-current" />
                   {statusLabel}
                 </span>
               )}
               {branchName && (
-                <span className="pill inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--atr-acc,#d4522f)]" />
+                <span className="pill inline-flex items-center gap-2 h-7 px-3 rounded-full text-xs font-medium bg-[#F3EDE7] dark:bg-[#262422] text-[var(--text-1)] border border-[#E6DED6] dark:border-[#3A3734]">
+                  <span className="w-2 h-2 rounded-full bg-[var(--brand-accent,#D9532B)]" />
                   {branchName}
                 </span>
               )}
               {categoryLabel && (
-                <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F]">
+                <span className="pill inline-flex items-center h-7 px-3 rounded-full text-xs font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] border border-[#d4522f]/25 dark:border-[#52291F]">
                   {categoryLabel}
                 </span>
               )}
               {headerPills}
             </div>
             {subtitle && (
-              <span className="block mt-2 font-mono text-[11px] text-black/68 dark:text-white/70 truncate">
+              <span className="block tabular-nums text-xs text-[var(--text-2)] truncate">
                 {subtitle}
               </span>
             )}
           </div>
 
-          <div className="pnav flex gap-1.5 shrink-0">
+          <div className="pnav flex gap-2 shrink-0">
             {onSelectItem && (
               <>
                 <button
@@ -512,7 +512,7 @@ function KineticSlideOverInspectorInner<T>({
                   disabled={!hasPrev}
                   onClick={() => handleStep(-1)}
                   aria-label="Previous"
-                  className="w-[34px] h-[34px] rounded-full border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center text-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
                 >
                   <ChevronUp className="w-4 h-4" />
                 </button>
@@ -522,7 +522,7 @@ function KineticSlideOverInspectorInner<T>({
                   disabled={!hasNext}
                   onClick={() => handleStep(1)}
                   aria-label="Next"
-                  className="w-[34px] h-[34px] rounded-full border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center text-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
                 >
                   <ChevronDown className="w-4 h-4" />
                 </button>
@@ -534,7 +534,7 @@ function KineticSlideOverInspectorInner<T>({
               data-no-liquid="true"
               onClick={onClose}
               aria-label={resolvedCloseLabel}
-              className="w-[34px] h-[34px] rounded-full border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center text-black dark:text-white hover:bg-[#d4522f]/12 transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-full border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] hover:bg-[#d4522f]/12 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -548,13 +548,13 @@ function KineticSlideOverInspectorInner<T>({
             role="tablist"
             data-sq="ctl"
             data-sq-border="none"
-            className="ptabs relative flex mx-[26px] p-[3px] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
+            className="ptabs relative flex mx-[var(--drawer-pad,24px)] p-1 bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
           >
             <i
               ref={pindRef}
               aria-hidden="true"
-              className="pind absolute top-[3px] bottom-[3px] left-0 right-0 rounded-[9px] bg-[var(--atr-acc,#d4522f)] pointer-events-none z-0"
-              style={{ clipPath: 'inset(0 100% 0 3px round 9px)' }}
+              className="pind absolute top-1 bottom-1 left-0 right-0 rounded-[var(--r-thumb,9px)] bg-[var(--brand-fill,#C9461F)] pointer-events-none z-0"
+              style={{ clipPath: 'inset(0 100% 0 4px round 9px)' }}
             />
             {tabs.map((tab) => {
               const isSelected = activeTab === tab.id;
@@ -569,10 +569,10 @@ function KineticSlideOverInspectorInner<T>({
                   data-no-liquid="true"
                   aria-selected={isSelected}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative z-[1] flex-1 h-[36px] border-0 bg-transparent font-semibold text-[13px] rounded-[9px] transition-colors duration-160 cursor-pointer whitespace-nowrap truncate ${
+                  className={`relative z-[1] flex-1 h-9 border-0 bg-transparent font-semibold text-[var(--t-sub)] rounded-[var(--r-thumb,9px)] transition-colors duration-160 cursor-pointer whitespace-nowrap truncate ${
                     isSelected
                       ? 'text-white'
-                      : 'text-[var(--atr-ink,#000000)] dark:text-white/88'
+                      : 'text-[var(--text-1)]'
                   }`}
                 >
                   {tab.label}
@@ -586,14 +586,14 @@ function KineticSlideOverInspectorInner<T>({
         <div
           role="tabpanel"
           data-anim={entranceEpoch & 1}
-          className="pb flex-1 overflow-y-auto px-[26px] pt-1.5 pb-[18px] select-text"
+          className="pb flex-1 overflow-y-auto px-[var(--drawer-pad,24px)] py-4 select-text"
           style={{ scrollbarWidth: 'thin' }}
         >
           {renderBody(activeItem, activeTab, entranceEpoch)}
         </div>
 
         {/* Footer (.pf) */}
-        <div className="pf flex justify-between items-center px-[26px] py-4 border-t border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+        <div className="pf flex justify-between items-center px-[var(--drawer-pad,24px)] py-4 border-t border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
           {onDelete ? (
             holdToDelete ? (
               <button
@@ -621,7 +621,7 @@ function KineticSlideOverInspectorInner<T>({
                   holdRef.current?.setTarget(0);
                   wake();
                 }}
-                className="relative overflow-hidden h-[40px] px-4 [--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] bg-[#FDE4DF]/70 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] font-semibold text-[12.5px] flex items-center gap-2 cursor-pointer select-none"
+                className="relative overflow-hidden h-10 px-4 [--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] bg-[#FDE4DF]/70 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] font-semibold text-xs flex items-center gap-2 cursor-pointer select-none"
               >
                 <span
                   ref={holdFillRef}
@@ -632,7 +632,7 @@ function KineticSlideOverInspectorInner<T>({
                   ref={holdTextWrapRef}
                   className="relative z-10 flex items-center gap-2 transition-colors duration-75"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4" />
                   <span ref={holdLabelRef}>{defaultHoldIdle}</span>
                 </span>
               </button>
@@ -644,7 +644,7 @@ function KineticSlideOverInspectorInner<T>({
                   onDelete(activeItem);
                   onClose();
                 }}
-                className="border-0 bg-transparent text-[#c0283d] hover:text-[#91200E] dark:text-[#FF8D7A] font-semibold text-[13px] flex items-center gap-2 py-2 px-1 cursor-pointer transition-colors"
+                className="border-0 bg-transparent text-[#c0283d] hover:text-[#91200E] dark:text-[#FF8D7A] font-semibold text-[var(--t-sub)] flex items-center gap-2 py-2 px-1 cursor-pointer transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
                 <span>
@@ -663,7 +663,7 @@ function KineticSlideOverInspectorInner<T>({
             data-sq="ctl"
             data-sq-border="none"
             onClick={onClose}
-            className="relative h-[40px] px-7 border-0 bg-[#d4522f] hover:bg-[#b03b1b] text-white font-semibold text-[14px] cursor-pointer transition-colors"
+            className="relative h-10 px-6 border-0 bg-[var(--brand-fill)] hover:bg-[var(--brand-accent)] text-white font-semibold text-[var(--t-body)] cursor-pointer transition-colors"
           >
             {resolvedCloseLabel}
           </button>

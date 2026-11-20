@@ -97,7 +97,7 @@ export const DashboardCatalogScreen: React.FC = () => {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10.5px] font-bold uppercase tracking-wider bg-[var(--ax-c1)] text-[var(--ax-tc1)]">
+              <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider bg-[var(--ax-c1)] text-[var(--ax-tc1)]">
                 DEV CATALOG · PHASE 1
               </span>
               <h1 className="text-lg font-bold tracking-tight">
@@ -216,8 +216,10 @@ export const DashboardCatalogScreen: React.FC = () => {
       <Profiler id="atrium-chart-catalog" onRender={handleProfile}>
         <div
           style={containerStyle}
-          className={`grid ${gridColsClass} gap-4 rounded-[var(--r-table,20px)] ${
-            width !== 'fluid' ? 'p-3' : ''
+          data-sq={width !== 'fluid' ? 'table' : undefined}
+          data-sq-border={width !== 'fluid' ? 'dashed' : undefined}
+          className={`grid ${gridColsClass} gap-4 ${
+            width !== 'fluid' ? 'p-3 [--sq-stroke:var(--ax-bdr)]' : ''
           }`}
         >
           {/* #1 KPI Spark Card */}

@@ -20,8 +20,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md', l
         color: config.color,
         border: `1px solid ${config.color}25`,
       }}
-      className={`inline-flex items-center gap-1.5 rounded-full font-bold whitespace-nowrap transition-colors shadow-2xs ${
-        size === 'sm' ? 'px-2.5 py-0.5 text-[10px]' : 'px-3 py-1 text-xs'
+      className={`inline-flex items-center rounded-full font-semibold whitespace-nowrap transition-colors shadow-2xs text-xs ${
+        size === 'sm' ? 'h-[var(--badge-h,22px)] px-2 gap-1' : 'h-7 px-3 gap-2'
       }`}
     >
       <span

@@ -24,7 +24,9 @@ export const SkeletonKpiGrid: React.FC<SkeletonKpiGridProps> = ({
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={`kpi_skel_${i}`}
-          className="p-4 rounded-[var(--r-card,16px)] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex flex-col justify-between h-[104px]"
+          data-sq="card"
+          data-sq-border="solid"
+          className="p-4 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between h-[104px]"
         >
           <div className="flex items-center justify-between">
             <SkeletonText size="xs" width="45%" />
@@ -76,20 +78,28 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
 
       {/* Top Filter & Search Bar Skeleton */}
       {showHeaderControls && (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[var(--r-card,16px)]">
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+        >
           <div className="flex items-center gap-2 flex-1 max-w-sm">
-            <SkeletonBox height={36} className="w-full" rounded="rounded-[var(--r-ctl,12px)]" />
+            <SkeletonBox height={36} className="w-full" sq="ctl" />
           </div>
           <div className="flex items-center gap-2">
-            <SkeletonBox width={100} height={36} rounded="rounded-[var(--r-ctl,12px)]" />
-            <SkeletonBox width={80} height={36} rounded="rounded-[var(--r-ctl,12px)]" />
+            <SkeletonBox width={100} height={36} sq="ctl" />
+            <SkeletonBox width={80} height={36} sq="ctl" />
             <SkeletonCircle size={36} />
           </div>
         </div>
       )}
 
       {/* Table Surface */}
-      <div className="w-full bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[var(--r-table,20px)] overflow-hidden shadow-xs">
+      <div
+        data-sq="table"
+        data-sq-border="solid"
+        className="w-full bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+      >
         {/* Table Header Row */}
         <div className="flex items-center px-4 py-3 border-b border-[#E6DED6] dark:border-neutral-800 bg-[#F3EDE7]/80 dark:bg-neutral-900/50 gap-3">
           <SkeletonBox width={18} height={18} rounded="rounded-[var(--r-check,6px)]" className="shrink-0 mr-1" />
@@ -169,7 +179,9 @@ export const SkeletonCardGrid: React.FC<SkeletonCardGridProps> = ({ count = 6 })
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={`card_skel_${i}`}
-          className="p-5 rounded-[var(--r-card,16px)] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs flex flex-col justify-between min-h-[170px]"
+          data-sq="card"
+          data-sq-border="solid"
+          className="p-5 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between min-h-[170px]"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -222,7 +234,7 @@ export const SkeletonModalForm: React.FC<SkeletonModalFormProps> = ({ fieldsCoun
         {Array.from({ length: fieldsCount }).map((_, i) => (
           <div key={`field_skel_${i}`} className={`space-y-1.5 ${i === 0 ? 'md:col-span-2' : ''}`}>
             <SkeletonText size="xs" width="35%" />
-            <SkeletonBox height={42} className="w-full" rounded="rounded-[var(--r-ctl,12px)]" />
+            <SkeletonBox height={42} className="w-full" sq="ctl" />
           </div>
         ))}
       </div>
@@ -249,7 +261,9 @@ export const SkeletonKioskGrid: React.FC<{ count?: number }> = ({ count = 8 }) =
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={`kiosk_skel_${i}`}
-          className="p-4 rounded-[var(--r-card,16px)] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 flex flex-col items-center justify-center text-center h-[130px] space-y-2.5"
+          data-sq="card"
+          data-sq-border="solid"
+          className="p-4 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col items-center justify-center text-center h-[130px] space-y-2.5"
         >
           <SkeletonCircle size={44} />
           <SkeletonText size="sm" width="70%" />
@@ -269,7 +283,9 @@ export const SkeletonChart: React.FC<{ height?: number }> = ({ height = 280 }) =
       role="status"
       aria-label="Loading visual analytics"
       style={{ height }}
-      className="w-full p-5 bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[var(--r-card,16px)] flex flex-col justify-between"
+      data-sq="card"
+      data-sq-border="solid"
+      className="w-full p-5 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between"
     >
       <span className="sr-only">Loading chart data...</span>
       <div className="flex items-center justify-between mb-4">
@@ -291,7 +307,7 @@ export const SkeletonChart: React.FC<{ height?: number }> = ({ height = 280 }) =
               <SkeletonBox
                 width="80%"
                 height={heights[i % heights.length]}
-                rounded="rounded-t-md"
+                rounded="rounded-t-[var(--r-check,6px)]"
               />
               <SkeletonText size="xs" width="60%" />
             </div>
@@ -328,7 +344,7 @@ export const SkeletonPageHeader: React.FC<SkeletonPageHeaderProps> = ({
     >
       <div className="flex items-center gap-3">
         {hasIcon && (
-          <SkeletonBox width={48} height={48} rounded="rounded-[var(--r-tile-lg,15px)]" className="shrink-0" />
+          <SkeletonBox width={48} height={48} sq="tile-lg" className="shrink-0" />
         )}
         <div className="space-y-1.5">
           <SkeletonText size="xl" width="180px" />
@@ -338,13 +354,13 @@ export const SkeletonPageHeader: React.FC<SkeletonPageHeaderProps> = ({
 
       <div className="flex items-center gap-2.5 flex-wrap">
         {hasViewToggle && (
-          <SkeletonBox width={190} height={40} rounded="rounded-[var(--r-ctl,12px)]" />
+          <SkeletonBox width={190} height={40} sq="ctl" />
         )}
         {hasActionBtn && (
           <SkeletonBox
             width={actionBtnWidth}
             height={40}
-            rounded="rounded-[var(--r-ctl,12px)]"
+            sq="ctl"
             className="!bg-[#d4522f]/25"
           />
         )}
@@ -389,7 +405,11 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
       <SkeletonPageHeader hasViewToggle hasFacility={hasFacility} hasActionBtn={hasActionBtn} actionBtnWidth={actionBtnWidth} />
 
       {/* KPI Pod Tray matching Screenshot_69 (Weekly Session Matrix & Attendance Roster) */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[var(--r-panel,28px)] p-3 space-y-3 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-3 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D]"
+      >
         <div className="space-y-1 px-2 pt-1">
           <SkeletonText size="sm" width="240px" />
           <SkeletonText size="xs" width="340px" />
@@ -397,7 +417,11 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Card 1: Scheduled Class Roster */}
-          <div className="p-5 rounded-[var(--r-card,16px)] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col justify-between h-[124px]"
+          >
             <div>
               <SkeletonText size="xs" width="130px" />
               <div className="mt-2">
@@ -411,7 +435,11 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
           </div>
 
           {/* Card 2: Athlètes Inscrits au total */}
-          <div className="p-5 rounded-[var(--r-card,16px)] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col justify-between h-[124px]"
+          >
             <div>
               <SkeletonText size="xs" width="140px" />
               <div className="mt-2">
@@ -425,7 +453,11 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
           </div>
 
           {/* Card 3: Affluence maximale en salle */}
-          <div className="p-5 rounded-[var(--r-card,16px)] bg-white dark:bg-neutral-800 border border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+          <div
+            data-sq="card"
+            data-sq-border="solid"
+            className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col justify-between h-[124px]"
+          >
             <div className="flex items-center justify-between">
               <SkeletonText size="xs" width="150px" />
               <SkeletonBox width={75} height={18} rounded="rounded-full" />
@@ -491,20 +523,20 @@ const SkeletonPodHeader: React.FC<{ extraActionsCount?: 0 | 1 | 2 }> = ({
 }) => (
   <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 sm:gap-4 pb-1 min-w-0">
     <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
-      <SkeletonBox width={48} height={48} rounded="rounded-[var(--r-tile-lg,15px)]" className="shrink-0" />
+      <SkeletonBox width={48} height={48} sq="tile-lg" className="shrink-0" />
       <SkeletonText size="2xl" width="210px" />
     </div>
     <div className="flex items-center gap-2 flex-wrap">
-      {extraActionsCount >= 2 && <SkeletonBox width={132} height={40} rounded="rounded-[var(--r-ctl,12px)]" />}
+      {extraActionsCount >= 2 && <SkeletonBox width={132} height={40} sq="ctl" />}
       {extraActionsCount >= 1 && (
         <SkeletonBox
           width={142}
           height={40}
-          rounded="rounded-[var(--r-ctl,12px)]"
+          sq="ctl"
           className="!bg-[#d4522f]/25"
         />
       )}
-      <SkeletonBox width={108} height={40} rounded="rounded-[var(--r-ctl,12px)]" />
+      <SkeletonBox width={108} height={40} sq="ctl" />
     </div>
   </div>
 );
@@ -520,7 +552,11 @@ const SkeletonPodSection: React.FC<{
       : 'grid-cols-1 lg:grid-cols-12 gap-3';
 
   return (
-    <section className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[var(--r-panel,28px)] p-3 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs space-y-3">
+    <section
+      data-sq="panel"
+      data-sq-border="solid"
+      className="bg-[#F3EDE7] dark:bg-[#141312] p-3 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
+    >
       <div className="flex items-center justify-between gap-3 px-2 pt-1">
         <SkeletonText size="base" width={titleWidth} />
       </div>
@@ -537,14 +573,16 @@ const SkeletonPodCard: React.FC<{
 }> = ({ kind, spanClass, featured = false, hasFilter = true }) => {
   const isKpi = kind === 'kpi-spark' || kind === 'kpi-inverse';
   const surfaceClass = featured
-    ? 'bg-[#151413] border-[#2A2826]'
-    : 'bg-white dark:bg-[#151413] border-[#E4DCD5] dark:border-[#2A2826]';
+    ? 'bg-[#151413] [--sq-stroke:#2A2826]'
+    : 'bg-white dark:bg-[#151413] [--sq-stroke:#E4DCD5] dark:[--sq-stroke:#2A2826]';
   const mutedBoxClass = featured ? '!bg-white/10' : '';
   const accentBoxClass = featured ? '!bg-[#ee7452]/35' : '!bg-[#d4522f]/25';
 
   return (
     <div
-      className={`${spanClass} ${surfaceClass} border rounded-[var(--r-card,16px)] p-5 flex flex-col justify-between gap-4 ${
+      data-sq="card"
+      data-sq-border="solid"
+      className={`${spanClass} ${surfaceClass} p-5 flex flex-col justify-between gap-4 ${
         isKpi ? 'min-h-[164px]' : 'min-h-[250px]'
       }`}
     >
@@ -585,7 +623,7 @@ const SkeletonPodCard: React.FC<{
                 key={`kpi_bar_${i}`}
                 width={8}
                 height={`${pct}%`}
-                rounded="rounded-t-xs"
+                rounded="rounded-t-[var(--r-check,6px)]"
                 className={i === 5 ? accentBoxClass : mutedBoxClass}
               />
             ))}
@@ -647,10 +685,10 @@ const SkeletonPodCard: React.FC<{
         </div>
       ) : kind === 'treemap' ? (
         <div className="grid grid-cols-12 gap-2 h-[156px]">
-          <SkeletonBox height="100%" rounded="rounded-[var(--r-ctl,12px)]" className={`col-span-7 ${accentBoxClass}`} />
+          <SkeletonBox height="100%" sq="ctl" className={`col-span-7 ${accentBoxClass}`} />
           <div className="col-span-5 grid grid-rows-2 gap-2">
-            <SkeletonBox height="100%" rounded="rounded-[var(--r-ctl,12px)]" className={mutedBoxClass} />
-            <SkeletonBox height="100%" rounded="rounded-[var(--r-ctl,12px)]" className={mutedBoxClass} />
+            <SkeletonBox height="100%" sq="ctl" className={mutedBoxClass} />
+            <SkeletonBox height="100%" sq="ctl" className={mutedBoxClass} />
           </div>
         </div>
       ) : kind === 'bubble' ? (
@@ -689,7 +727,7 @@ const SkeletonPodCard: React.FC<{
               key={`vb_${i}`}
               width="100%"
               height={`${h}%`}
-              rounded="rounded-t-lg"
+              rounded="rounded-t-[var(--r-check,6px)]"
               className={i === 3 || i === 7 ? accentBoxClass : mutedBoxClass}
             />
           ))}
@@ -777,15 +815,15 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
       {/* Top Header */}
       <div className="flex items-center justify-between gap-3 pb-1">
         <div className="flex items-center gap-3">
-          <SkeletonBox width={40} height={40} rounded="rounded-[var(--r-tile,12px)]" />
+          <SkeletonBox width={40} height={40} sq="tile" />
           <div className="space-y-1">
             <SkeletonText size="lg" width="160px" />
             <SkeletonText size="xs" width="220px" />
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <SkeletonBox width={120} height={38} rounded="rounded-[var(--r-ctl,12px)]" />
-          <SkeletonBox width={140} height={38} rounded="rounded-[var(--r-ctl,12px)]" className="!bg-[#d4522f]/25" />
+          <SkeletonBox width={120} height={38} sq="ctl" />
+          <SkeletonBox width={140} height={38} sq="ctl" className="!bg-[#d4522f]/25" />
         </div>
       </div>
 
@@ -805,10 +843,12 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={`pos_prod_${i}`}
-                className="p-3.5 rounded-[var(--r-card,16px)] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[155px]"
+                data-sq="card"
+                data-sq-border="solid"
+                className="p-3.5 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between h-[155px]"
               >
                 <div className="flex items-start gap-2.5">
-                  <SkeletonBox width={44} height={44} rounded="rounded-[var(--r-tile,12px)]" className="shrink-0" />
+                  <SkeletonBox width={44} height={44} sq="tile" className="shrink-0" />
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <SkeletonText size="sm" width="90%" />
                     <SkeletonText size="xs" width="60%" />
@@ -824,7 +864,11 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
         </div>
 
         {/* Right Column (35%): Cashier Ticket Receipt */}
-        <div className="lg:col-span-4 p-5 rounded-[var(--r-panel,28px)] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-md flex flex-col justify-between">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="lg:col-span-4 p-5 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between"
+        >
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
               <SkeletonText size="sm" width="120px" />
@@ -863,9 +907,9 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
             </div>
 
             <div className="grid grid-cols-3 gap-2 pt-2">
-              <SkeletonBox height={36} rounded="rounded-[var(--r-ctl,12px)]" />
-              <SkeletonBox height={36} rounded="rounded-[var(--r-ctl,12px)]" />
-              <SkeletonBox height={36} rounded="rounded-[var(--r-ctl,12px)]" />
+              <SkeletonBox height={36} sq="ctl" sqBorder="none" />
+              <SkeletonBox height={36} sq="ctl" sqBorder="none" />
+              <SkeletonBox height={36} sq="ctl" sqBorder="none" />
             </div>
 
             <SkeletonButton height={46} className="w-full !bg-[#d4522f]/35" />
@@ -896,7 +940,11 @@ export const SkeletonCalendarTimeline: React.FC<SkeletonCalendarTimelineProps> =
       <SkeletonPageHeader hasViewToggle hasFacility hasActionBtn />
 
       {/* Date ribbon bar */}
-      <div className="p-3 bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[var(--r-card,16px)] flex items-center justify-between gap-3">
+      <div
+        data-sq="card"
+        data-sq-border="solid"
+        className="p-3 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex items-center justify-between gap-3"
+      >
         <div className="flex items-center gap-1.5">
           <SkeletonCircle size={32} />
           <SkeletonText size="sm" width="130px" />
@@ -904,13 +952,17 @@ export const SkeletonCalendarTimeline: React.FC<SkeletonCalendarTimelineProps> =
         </div>
         <div className="flex items-center gap-2 overflow-x-auto">
           {Array.from({ length: 7 }).map((_, i) => (
-            <SkeletonBox key={`day_ribbon_${i}`} width={55} height={42} rounded="rounded-[var(--r-ctl,12px)]" />
+            <SkeletonBox key={`day_ribbon_${i}`} width={55} height={42} sq="ctl" />
           ))}
         </div>
       </div>
 
       {/* Resource Column Grid */}
-      <div className="bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 rounded-[var(--r-panel,28px)] p-3 shadow-xs">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] p-3"
+      >
         {/* Column Headers (Stylists / Rooms) */}
         <div className="grid grid-cols-4 gap-4 px-2 py-2 pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -931,7 +983,9 @@ export const SkeletonCalendarTimeline: React.FC<SkeletonCalendarTimelineProps> =
               {Array.from({ length: 3 }).map((_, slotIdx) => (
                 <div
                   key={`slot_card_${colIdx}_${slotIdx}`}
-                  className="p-3.5 rounded-[var(--r-card,16px)] bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-2"
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-800/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
                 >
                   <div className="flex items-center justify-between">
                     <SkeletonText size="xs" width="60px" />
@@ -980,7 +1034,9 @@ export const SkeletonKanbanPipeline: React.FC<SkeletonKanbanPipelineProps> = ({
         {Array.from({ length: columnsCount }).map((_, colIdx) => (
           <div
             key={`kanban_col_${colIdx}`}
-            className="p-3 rounded-[var(--r-panel,28px)] bg-[#F3EDE7] dark:bg-[#141312] border border-[#E6DED6] dark:border-[#33302D] flex flex-col space-y-3"
+            data-sq="panel"
+            data-sq-border="solid"
+            className="p-3 bg-[#F3EDE7] dark:bg-[#141312] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] flex flex-col space-y-3"
           >
             {/* Column Header */}
             <div className="flex items-center justify-between px-2 pt-1 pb-2 border-b border-[#E6DED6] dark:border-neutral-700/60">
@@ -993,7 +1049,9 @@ export const SkeletonKanbanPipeline: React.FC<SkeletonKanbanPipelineProps> = ({
               {Array.from({ length: 3 }).map((_, cardIdx) => (
                 <div
                   key={`kcard_${colIdx}_${cardIdx}`}
-                  className="p-4 rounded-[var(--r-card,16px)] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-2xs space-y-2.5"
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className="p-4 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2.5"
                 >
                   <div className="flex items-center justify-between">
                     <SkeletonBox width={65} height={16} rounded="rounded-full" />
@@ -1119,7 +1177,11 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
 
       {/* 2. Top Metric Pod Tray (#F3EDE7, CornerRadius 28px) with 2 White + 1 Dark #1F1D1B Cards */}
       {kpiCount > 0 && (
-        <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[var(--r-panel,28px)] p-3 space-y-3 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-3 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D]"
+        >
           <div className="px-2 pt-1">
             <SkeletonText size="sm" width="220px" />
           </div>
@@ -1129,10 +1191,12 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
               return (
                 <div
                   key={`coll_kpi_${i}`}
-                  className={`p-4.5 sm:p-5 rounded-[var(--r-card,16px)] border flex flex-col justify-between min-h-[132px] ${
+                  data-sq="card"
+                  data-sq-border="solid"
+                  className={`p-4.5 sm:p-5 flex flex-col justify-between min-h-[132px] ${
                     isDarkCard
-                      ? 'bg-[#1F1D1B] border-white/[0.08]'
-                      : 'bg-white dark:bg-neutral-800/90 border-[#E6DED6] dark:border-neutral-700/60 shadow-2xs'
+                      ? 'bg-[#1F1D1B] [--sq-stroke:rgba(255,255,255,0.08)]'
+                      : 'bg-white dark:bg-neutral-800/90 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)]'
                   }`}
                 >
                   <div className="space-y-2">
@@ -1158,15 +1222,19 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
       )}
 
       {/* 3. Collection Pod (#F3EDE7): 5 Toolbar Controls + Table / Grid */}
-      <div className="bg-[#F3EDE7] dark:bg-[#141312] rounded-[var(--r-panel,28px)] p-3 space-y-3 border border-[#E6DED6] dark:border-[#33302D] shadow-2xs">
+      <div
+        data-sq="panel"
+        data-sq-border="solid"
+        className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-3 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D]"
+      >
         <div className="flex flex-wrap items-center justify-between gap-3 px-2 pt-1">
           <SkeletonText size="sm" width="180px" />
           <div className="flex flex-wrap items-center gap-2.5 ms-auto">
-            <SkeletonBox width={40} height={40} rounded="rounded-[var(--r-ctl,12px)]" />
-            <SkeletonBox width={210} height={40} rounded="rounded-[var(--r-ctl,12px)]" />
-            <SkeletonBox width={96} height={40} rounded="rounded-[var(--r-ctl,12px)]" />
-            {hasViewToggle && <SkeletonBox width={84} height={40} rounded="rounded-[var(--r-ctl,12px)]" />}
-            <SkeletonBox width={148} height={40} rounded="rounded-[var(--r-ctl,12px)]" className="!bg-[#d4522f]/25" />
+            <SkeletonBox width={40} height={40} sq="ctl" />
+            <SkeletonBox width={210} height={40} sq="ctl" />
+            <SkeletonBox width={96} height={40} sq="ctl" />
+            {hasViewToggle && <SkeletonBox width={84} height={40} sq="ctl" />}
+            <SkeletonBox width={148} height={40} sq="ctl" className="!bg-[#d4522f]/25" />
           </div>
         </div>
 
@@ -1513,7 +1581,11 @@ export const SkeletonAnalytics: React.FC<{
         <div className="lg:col-span-8">
           <SkeletonChart height={340} />
         </div>
-        <div className="lg:col-span-4 p-6 rounded-[var(--r-card,16px)] bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-800 shadow-xs space-y-4">
+        <div
+          data-sq="card"
+          data-sq-border="solid"
+          className="lg:col-span-4 p-6 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
+        >
           <SkeletonText size="base" width="160px" />
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -1556,11 +1628,15 @@ const HOME_RATIO_CLASS_MAP: Record<string, string> = {
 };
 
 const SkeletonHomePreviewBlock: React.FC<{ rows?: number }> = ({ rows = 3 }) => (
-  <div className="bg-white dark:bg-[#161413] rounded-[var(--r-card,16px)] border border-[#E2D6CC] dark:border-[#2E2724] p-3.5 sm:p-4 space-y-2.5 h-full flex flex-col justify-between">
+  <div
+    data-sq="card"
+    data-sq-border="solid"
+    className="bg-white dark:bg-[#161413] [--sq-stroke:#E2D6CC] dark:[--sq-stroke:#2E2724] p-3.5 sm:p-4 space-y-2.5 h-full flex flex-col justify-between"
+  >
     <div className="space-y-2.5">
       <div className="flex items-start justify-between gap-2.5">
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <SkeletonBox width={36} height={36} rounded="rounded-[var(--r-tile,12px)]" className="shrink-0" />
+          <SkeletonBox width={36} height={36} sq="tile" className="shrink-0" />
           <div className="space-y-1 flex-1">
             <SkeletonText size="sm" width="56%" />
             <SkeletonText size="xs" width="40%" />
@@ -1608,7 +1684,7 @@ export const SkeletonHomeView: React.FC<{
       {/* Welcome Greeting Header Skeleton */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pb-0.5 shrink-0">
         <div className="flex items-center gap-3.5 flex-1">
-          <SkeletonBox width={48} height={48} rounded="rounded-[var(--r-tile-lg,15px)]" className="shrink-0" />
+          <SkeletonBox width={48} height={48} sq="tile-lg" className="shrink-0" />
           <div className="space-y-1.5 flex-1 max-w-md">
             <SkeletonText size="xl" width="76%" />
             <SkeletonText size="xs" width="58%" />
@@ -1623,11 +1699,19 @@ export const SkeletonHomeView: React.FC<{
       {/* Fixed-Viewport Asymmetric Two-Column Pods */}
       <div className={`lg:flex-1 lg:min-h-0 grid grid-cols-1 ${ratioClass} gap-4 items-stretch`}>
         {/* Left Pulse Pod (Warm Sandstone/Brown) */}
-        <div className="bg-[#F2E6DA] dark:bg-[#191512] rounded-[var(--r-panel,28px)] border border-[#DFCFC0] dark:border-[#382E25] p-3 space-y-3 flex flex-col">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-[#F2E6DA] dark:bg-[#191512] [--sq-stroke:#DFCFC0] dark:[--sq-stroke:#382E25] p-3 space-y-3 flex flex-col"
+        >
           <div className="px-2 pt-1">
             <SkeletonText size="base" width="150px" />
           </div>
-          <div className="bg-[#231914] rounded-[var(--r-card,16px)] p-4 min-h-[108px] flex flex-col justify-between shrink-0">
+          <div
+            data-sq="card"
+            data-sq-border="none"
+            className="bg-[#231914] p-4 min-h-[108px] flex flex-col justify-between shrink-0"
+          >
             <SkeletonText size="xs" width="45%" />
             <SkeletonText size="xl" width="60%" />
           </div>
@@ -1637,7 +1721,11 @@ export const SkeletonHomeView: React.FC<{
         </div>
 
         {/* Right Workspaces Pod (Soft Lavender-Linen 2x2) */}
-        <div className="bg-[#EFEBF7] dark:bg-[#171420] rounded-[var(--r-panel,28px)] border border-[#DDD4EC] dark:border-[#312A44] p-3 space-y-3 flex flex-col">
+        <div
+          data-sq="panel"
+          data-sq-border="solid"
+          className="bg-[#EFEBF7] dark:bg-[#171420] [--sq-stroke:#DDD4EC] dark:[--sq-stroke:#312A44] p-3 space-y-3 flex flex-col"
+        >
           <div className="px-2 pt-1">
             <SkeletonText size="base" width="165px" />
           </div>

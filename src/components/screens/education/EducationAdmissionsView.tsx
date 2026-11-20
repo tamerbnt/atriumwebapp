@@ -864,9 +864,9 @@ export const EducationAdmissionsView: React.FC = () => {
               return (
                 <div
                   key={stage.id}
-                  data-sq="panel"
+                  data-sq="card"
                   data-sq-border="solid"
-                  className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 p-3 flex flex-col space-y-3 min-h-[480px]"
+                  className="border border-neutral-200 dark:border-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900/60 p-3 flex flex-col space-y-3 min-h-[480px]"
                 >
                   <div className="flex items-center justify-between pb-2 border-b border-neutral-200/80 dark:border-neutral-800">
                     <span className="text-xs font-bold text-black dark:text-white">{stage.title}</span>
@@ -878,7 +878,7 @@ export const EducationAdmissionsView: React.FC = () => {
                     {leadsInStage.map((lead) => (
                       <div key={lead.id} className="sq-elev-card">
                         <div
-                          data-sq="card"
+                          data-sq="ctl"
                           data-sq-border="solid"
                           className="p-3.5 border border-neutral-200 dark:border-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 hover:border-[#d4522f]/50 hover:[--sq-stroke:rgba(212,82,47,0.5)] transition-all space-y-2 group"
                         >

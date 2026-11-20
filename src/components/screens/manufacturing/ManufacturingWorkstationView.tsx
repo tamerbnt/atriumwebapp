@@ -452,7 +452,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-5 space-y-5">
             <div className="sq-elev-card">
-              <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 space-y-3">
+              <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 space-y-3">
                 <div className="flex items-center justify-between px-1 pt-1">
                   <span className="text-xs font-bold text-black/55 dark:text-white/55 uppercase tracking-wider">
                     {isAr
@@ -467,7 +467,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 </div>
 
                 {currentOrder ? (
-                  <div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7]/65 dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
+                  <div data-sq="ctl" data-sq-border="solid" className="p-4 bg-[#F3EDE7]/65 dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-black/55 dark:text-white/55 font-mono">
                       Lot: {currentOrder.batchLotNumber || 'LOT-2026-05'}
@@ -529,7 +529,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7]/50 dark:bg-neutral-800/40 text-xs text-black/55 dark:text-white/55">
+                  <div data-sq="ctl" data-sq-border="none" className="p-4 bg-[#F3EDE7]/50 dark:bg-neutral-800/40 text-xs text-black/55 dark:text-white/55">
                     {isAr ? 'لا يوجد أمر تصنيع محدد' : isEn ? 'No manufacturing order selected' : 'Aucun OF sélectionné'}
                   </div>
                 )}
@@ -537,7 +537,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
             </div>
 
             <div className="sq-elev-card">
-              <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 space-y-3">
+              <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <ShieldCheck size={18} className="text-[#d4522f] shrink-0" />
@@ -603,7 +603,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     key={idx}
                     type="button"
                     data-no-liquid="true"
-                    data-sq="card"
+                    data-sq="ctl"
                     data-sq-border="solid"
                     aria-pressed={epi.active}
                     onClick={epi.toggle}
@@ -632,7 +632,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
 
           <div className="lg:col-span-7 space-y-5">
             <div className="sq-elev-card">
-              <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-6 sm:p-8 border border-[#E6DED6] dark:border-neutral-800 flex flex-col items-center justify-center text-center space-y-6">
+              <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-6 sm:p-8 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col items-center justify-center text-center space-y-6">
               <div className="flex items-center gap-2 text-xs font-semibold text-black/55 dark:text-white/55 uppercase tracking-widest">
                 <Clock size={16} className="text-[#d4522f]" />
                 <span>

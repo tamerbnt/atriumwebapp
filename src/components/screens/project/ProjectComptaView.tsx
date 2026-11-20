@@ -933,7 +933,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
           {activeTab === 'payroll' && (
             <div className="space-y-4">
               <div
-                data-sq="panel"
+                data-sq="card"
                 data-sq-border="solid"
                 className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
@@ -970,7 +970,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 {pmPayrollBatches.map((batch) => (
                   <div
                     key={batch.id}
-                    data-sq="panel"
+                    data-sq="card"
                     data-sq-border="solid"
                     className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
@@ -1778,7 +1778,9 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 src={selectedReceiptUrl}
                 alt="Scan Justificatif"
                 referrerPolicy="no-referrer"
-                className="w-full h-72 object-cover rounded-[var(--r-ctl,12px)]"
+                data-sq="ctl"
+                data-sq-border="none"
+                className="w-full h-72 object-cover"
               />
               <div className="flex justify-end">
                 <button

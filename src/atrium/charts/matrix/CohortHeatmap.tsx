@@ -226,7 +226,7 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
                     data-c={c}
                     role="gridcell"
                     aria-selected={isSelected}
-                    className={`ax-pop-item h-[26px] rounded-[6px] flex items-center justify-center ax-mono text-[10.5px] font-medium cursor-pointer ${
+                    className={`ax-pop-item h-[26px] rounded-[var(--r-check,6px)] flex items-center justify-center ax-mono text-[10.5px] font-medium cursor-pointer ${
                       isSelected ? 'relative z-10' : ''
                     }`}
                     style={{

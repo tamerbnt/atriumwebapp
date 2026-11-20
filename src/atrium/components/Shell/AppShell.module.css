@@ -1,19 +1,19 @@
 .root {
-  --gap: var(--atr-shell-gap, 14px);
-  --bar-h: var(--atr-bar-h, 54px);
+  --gap: var(--sb-to-content, 16px);
+  --bar-h: var(--top-h, 56px);
   --r: var(--r-app, 40px);
   position: relative;
   box-sizing: border-box;
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: var(--atr-rail, 68px) minmax(0, 1fr);
+  grid-template-columns: var(--sb-w, 68px) minmax(0, 1fr);
   column-gap: var(--gap);
-  padding: var(--gap);
+  padding: var(--inset, 12px);
   overflow: hidden;
   background: var(--atr-bg);
-  color: var(--atr-ink);
-  font-family: var(--atr-font-ui, inherit);
+  color: var(--text-1, var(--atr-ink));
+  font-family: var(--font-ui, inherit);
   transition: none;
 }
 /* expanded: the grid column flips once, and the content's transform (PushBody) cancels the jump */
@@ -46,8 +46,8 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 16px 0 20px;
+  gap: var(--top-gap, 8px);
+  padding: var(--top-pad-y, 8px) var(--s4, 16px);
   background: var(--atr-card);
   border: 1px solid var(--atr-line);
   border-radius: var(--atr-r-bar, 27px);
@@ -61,7 +61,7 @@
   min-width: 0;
   min-height: 0;
   position: relative;
-  margin-top: var(--gap);
+  margin-top: var(--top-to-container, 16px);
   background: var(--atr-card);
   --sq-stroke: var(--atr-line);
   will-change: transform;
@@ -82,16 +82,18 @@
 .reveal {
   position: absolute;
   left: 50%;
-  top: 8px;
+  top: var(--s2, 8px);
   z-index: 30;
   transform: translate(-50%, -200%);
-  padding: 8px 14px;
+  padding: var(--s2, 8px) var(--s3, 12px);
   border: 0;
   border-radius: 999px;
-  background: var(--atr-acc);
-  color: var(--atr-onacc);
+  background: var(--brand-fill, #C9461F);
+  color: #ffffff;
   font: inherit;
-  font-size: 12px;
+  font-size: var(--t-small, 12px);
+  line-height: var(--lh-small, 16px);
+  letter-spacing: var(--tr-12, 0.01em);
   font-weight: 600;
   cursor: pointer;
 }

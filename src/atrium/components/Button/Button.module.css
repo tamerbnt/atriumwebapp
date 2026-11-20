@@ -1,9 +1,5 @@
-/*
- * Every measurement is a fraction of --atr-h (the control's height), so the shape is identical
- * from 24 px to 44 px: radius .147, padding .5, gap .25, type .38, icon .42.
- */
 .root {
-  --h: var(--atr-h, 34px);
+  --h: var(--atr-h, 40px);
   --r: var(--r-ctl, 12px);
 
   position: relative;
@@ -13,19 +9,19 @@
   box-sizing: border-box;
   height: var(--h);
   margin: 0;
-  padding: 0 calc(var(--h) * 0.5);
+  padding: 0 var(--btn-px, 16px);
   border: 1px solid transparent;
   border-radius: var(--r);
   background: var(--b);
   color: var(--ob);
-  font-family: var(--atr-font-ui, inherit);
-  font-size: calc(var(--h) * 0.38);
+  font-family: var(--font-ui, inherit);
+  font-size: var(--t-body, 14px);
   font-weight: 500;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: calc(var(--h) * 0.25);
+  gap: var(--btn-icon-gap, 8px);
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
@@ -33,6 +29,14 @@
   -webkit-user-select: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+}
+
+.root[data-atr-size='sm'] {
+  --h: var(--btn-sm-h, 32px);
+  padding: 0 var(--btn-sm-px, 12px);
+  gap: var(--btn-sm-gap, 6px);
+  font-size: var(--t-small, 12px);
+  letter-spacing: var(--tr-12, 0.01em);
 }
 
 /* the liquid: a circle that grows from the pointer, driven by the engine */
@@ -49,14 +53,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: calc(var(--h) * 0.25);
+  gap: inherit;
   pointer-events: none;
 }
 
 /* Icons: pass any inline SVG (Lucide works as is). Stroke style matches the brand sheets. */
 .root svg:not([data-sq-stroke]) {
-  width: calc(var(--h) * 0.42);
-  height: calc(var(--h) * 0.42);
+  width: var(--icon-s, 16px);
+  height: var(--icon-s, 16px);
   flex: none;
   fill: none;
   stroke: currentColor;
@@ -78,9 +82,9 @@
 
 /* tones */
 .accent {
-  --b: var(--atr-acc);
-  --ob: var(--atr-onacc);
-  --q: var(--atr-accq);
+  --b: var(--brand-fill, #C9461F);
+  --ob: #ffffff;
+  --q: var(--brand-accent, #D9532B);
 }
 .outline {
   --b: transparent;
@@ -91,7 +95,7 @@
 }
 .soft {
   --b: var(--atr-soft);
-  --ob: var(--atr-ink);
+  --ob: var(--text-1, var(--atr-ink));
   --q: var(--atr-hl);
   border-color: var(--atr-line);
   --sq-stroke: var(--atr-line);

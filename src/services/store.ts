@@ -5,6 +5,7 @@ import {
   Appointment,
   AppointmentStatus,
   AppTheme,
+  AppDensity,
   Business,
   BusinessCategory,
   Branch,
@@ -348,6 +349,7 @@ interface AppState {
   currentBranchId: string;
   activeScreen: ActiveScreen;
   theme: AppTheme;
+  density: AppDensity;
   language: SupportedLanguage;
   isLanguageAuto: boolean;
   members: Member[];
@@ -495,6 +497,7 @@ const DEFAULT_STATE: AppState = {
   currentBranchId: 'branch_gym_main',
   activeScreen: 'home',
   theme: 'light',
+  density: (typeof localStorage !== 'undefined' && localStorage.getItem('atrium_density') === 'compact') ? 'compact' : 'default',
   language: initialLangConfig.language,
   isLanguageAuto: initialLangConfig.isAuto,
   members: INITIAL_MEMBERS,
@@ -763,6 +766,7 @@ let globalState: AppState = backfillTraceability((() => {
           ...DEFAULT_STATE,
           ...parsed,
           storageVersion: ATRIUM_STORAGE_VERSION,
+          density: parsed.density === 'compact' ? 'compact' : DEFAULT_STATE.density,
           language: effectiveLanguage,
           isLanguageAuto: effectiveIsAuto,
           businesses,
@@ -1359,6 +1363,19 @@ export function setThemeAction(theme: AppTheme) {
     } else {
       document.documentElement.classList.remove('dark');
     }
+  }
+  notify();
+}
+
+export function setDensityAction(density: AppDensity) {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('atrium_density', density);
+    }
+  } catch {}
+  globalState = { ...globalState, density };
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-density', density);
   }
   notify();
 }
@@ -3853,6 +3870,7 @@ function createAtriumActions() {
   // Actions
   const setScreen = setScreenAction;
   const setTheme = setThemeAction;
+  const setDensity = setDensityAction;
   const setLanguage = setLanguageAction;
   const setSystemDefaultLanguage = setSystemDefaultLanguageAction;
   const switchFacility = switchFacilityAction;
@@ -9924,6 +9942,7 @@ function createAtriumActions() {
       storageVersion: ATRIUM_STORAGE_VERSION,
       language: globalState.language,
       theme: globalState.theme,
+      density: globalState.density,
       currentUser: globalState.currentUser,
     };
     notify();
@@ -10689,6 +10708,7 @@ function createAtriumActions() {
   return {
     setScreen,
     setTheme,
+    setDensity,
     setLanguage,
     setSystemDefaultLanguage,
     switchFacility,
@@ -11023,6 +11043,7 @@ export function useAtriumStore() {
     currentBranch,
     activeScreen: state.activeScreen,
     theme: state.theme,
+    density: state.density || 'default',
     language: state.language,
     isLanguageAuto: state.isLanguageAuto,
     terminology,

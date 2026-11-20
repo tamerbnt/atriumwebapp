@@ -1089,7 +1089,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
           {activeTab === 'attendance' && (
             <div className="space-y-4">
               <div
-                data-sq="panel"
+                data-sq="card"
                 data-sq-border="solid"
                 className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
@@ -1398,7 +1398,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 
           {activeTab === 'expense' && (
             <div
-              data-sq="panel"
+              data-sq="card"
               data-sq-border="solid"
               className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] max-w-xl mx-auto space-y-4"
             >

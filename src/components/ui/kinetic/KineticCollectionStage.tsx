@@ -175,15 +175,15 @@ function KineticCollectionStageInner<T>({
             disabled={!isSortable}
             aria-sort={isOn ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
             onClick={() => isSortable && onToggleSort(col.key)}
-            className="text-left rtl:text-right font-['Inter',sans-serif] rtl:font-sans font-semibold text-[13px] tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white flex items-center gap-1.5 cursor-pointer hover:text-[var(--atr-acc,#d4522f)] bg-transparent border-0 p-0 whitespace-nowrap truncate min-w-0 disabled:cursor-default disabled:hover:text-black dark:disabled:hover:text-white"
+            className="text-left rtl:text-right font-medium text-xs text-[var(--text-2)] dark:text-[var(--text-dark-2)] flex items-center gap-2 cursor-pointer hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] bg-transparent border-0 p-0 whitespace-nowrap truncate min-w-0 disabled:cursor-default disabled:hover:text-[var(--text-2)]"
           >
             <span className="truncate">{col.label}</span>
             {isSortable && (
               <i
-                className={`not-italic text-[11px] px-1.5 py-0.5 rounded-full ${
+                className={`not-italic text-xs px-2 py-0.5 rounded-full ${
                   isOn
-                    ? 'bg-[var(--atr-hl,rgba(212,82,47,0.12))] text-[var(--atr-acc,#d4522f)]'
-                    : 'bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-black dark:text-white/75'
+                    ? 'bg-[var(--atr-hl,rgba(212,82,47,0.12))] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)]'
+                    : 'bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-[var(--text-2)] dark:text-[var(--text-dark-2)]'
                 }`}
               >
                 {isOn ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}
@@ -204,7 +204,7 @@ function KineticCollectionStageInner<T>({
         : filterKey;
 
     return (
-      <div className="w-full" data-stage-mode={viewMode === 'grid' ? 'g' : 'l'}>
+      <div className="w-full flex flex-col gap-2" data-stage-mode={viewMode === 'grid' ? 'g' : 'l'}>
         {viewMode === 'list' && (
           <div className="w-full members-x-wrap">
             <div className="min-w-[980px]">{headerBar}</div>
@@ -212,7 +212,7 @@ function KineticCollectionStageInner<T>({
         )}
         <div
           ref={scrollContainerRef}
-          className="scr relative mt-2.5 w-full min-w-0 min-h-[350px] flex flex-col"
+          className="scr relative w-full min-w-0 min-h-[350px] flex flex-col"
         >
           <KineticEmptyStateMotion motionKey={emptyKey}>
             {React.isValidElement(emptyState) ? (
@@ -237,7 +237,7 @@ function KineticCollectionStageInner<T>({
     <div className="w-full">
       <div className="w-full members-x-wrap">
         <div
-          className="w-full flex flex-col min-w-[980px] h-[560px] sm:h-[702px] relative"
+          className="w-full flex flex-col gap-2 min-w-[980px] h-[560px] sm:h-[702px] relative"
           data-stage-mode={viewMode === 'grid' ? 'g' : 'l'}
         >
           {headerBar}
@@ -245,7 +245,7 @@ function KineticCollectionStageInner<T>({
           {/* Windowed Virtual Kinetic Stage */}
           <div
             ref={scrollContainerRef}
-            className="scr relative mt-2.5 overflow-y-auto overflow-x-hidden flex-1 min-h-0 pb-[70px]"
+            className="scr relative overflow-y-auto overflow-x-hidden flex-1 min-h-0 pb-[70px]"
           >
             <div
               ref={rowsElRef}

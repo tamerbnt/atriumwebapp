@@ -130,7 +130,7 @@ export const BulletChart: React.FC<BulletChartProps> = React.memo(
                 onPointerEnter={() => setHoveredIdx(idx)}
                 onFocus={() => setHoveredIdx(idx)}
                 onBlur={() => setHoveredIdx(null)}
-                className={`ax-plot-focus ax-row-stack grid grid-cols-[minmax(76px,104px)_minmax(0,1fr)_auto] items-center gap-2.5 px-1.5 py-1 rounded-[10px] cursor-pointer transition-[background-color,opacity] duration-150 ${
+                className={`ax-plot-focus ax-row-stack grid grid-cols-[minmax(76px,104px)_minmax(0,1fr)_auto] items-center gap-2.5 px-1.5 py-1 rounded-[var(--r-ctl-sm,10px)] cursor-pointer transition-[background-color,opacity] duration-150 ${
                   isHovered ? 'bg-[var(--ax-soft)]' : ''
                 }`}
                 style={{ opacity: isDim ? 0.4 : 1 }}
@@ -143,9 +143,9 @@ export const BulletChart: React.FC<BulletChartProps> = React.memo(
                 </span>
 
                 {/* 24px track with 80% neutral zone + centered 10px coral fill + overhanging 3px target tick */}
-                <div className="relative h-6 rounded-[6px] bg-[var(--ax-soft)] flex items-center">
+                <div className="relative h-6 rounded-[var(--r-check,6px)] bg-[var(--ax-soft)] flex items-center">
                   <div
-                    className="h-full rounded-s-[6px] bg-[var(--ax-on)]/[0.06] pointer-events-none"
+                    className="h-full rounded-s-[var(--r-check,6px)] bg-[var(--ax-on)]/[0.06] pointer-events-none"
                     style={{ width: '80%' }}
                     aria-hidden="true"
                   />

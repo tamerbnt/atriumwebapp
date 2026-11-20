@@ -142,46 +142,46 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
         className="rounded-[var(--r-panel,28px)] bg-white dark:bg-[#1C1C20] [--sq-stroke:rgba(0,0,0,0.08)] dark:[--sq-stroke:rgba(255,255,255,0.12)] overflow-hidden flex flex-col"
       >
       {/* Unified Panel Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#1C1C20] text-[11px] text-black/70 dark:text-white/75">
-        <div className="flex items-center gap-2 font-bold text-black dark:text-white text-[13px]">
-          <Bell size={14} className="text-[#d4522f] shrink-0" />
+      <div className="flex items-center justify-between px-4 py-3 border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#1C1C20] text-xs text-[var(--text-2)]">
+        <div className="flex items-center gap-2 font-semibold text-[var(--text-1)] text-[var(--t-sub)]">
+          <Bell size={16} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
           <span>{language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}</span>
           {unreadNotificationCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-[#d4522f] text-white leading-none">
+            <span className="px-2 h-[var(--badge-h,22px)] inline-flex items-center rounded-full text-xs font-semibold tabular-nums bg-[var(--brand-fill)] text-white leading-none">
               {unreadNotificationCount}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2 text-[11px]">
+        <div className="flex items-center gap-2 text-xs">
           {notifications.length > 0 && (
             <>
               <button
                 type="button"
                 data-no-liquid=""
                 onClick={() => markAllNotificationsAsRead()}
-                className="hover:text-[#d4522f] font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                className="hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] font-semibold transition-colors cursor-pointer flex items-center gap-1"
                 title={language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
               >
-                <CheckCheck size={12} className="text-[#d4522f]" />
+                <CheckCheck size={14} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
                 <span className="hidden sm:inline">
                   {language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
                 </span>
               </button>
-              <span className="text-black/30 dark:text-white/30">•</span>
+              <span className="text-[var(--text-3)]">•</span>
               <button
                 type="button"
                 data-no-liquid=""
                 onClick={() => clearAllNotifications()}
-                className="hover:text-rose-500 font-medium transition-colors cursor-pointer flex items-center gap-1"
+                className="hover:text-rose-600 font-medium transition-colors cursor-pointer flex items-center gap-1"
                 title={language === 'ar' ? 'مسح الكل' : language === 'fr' ? 'Tout effacer' : 'Clear all'}
               >
-                <Trash2 size={12} />
+                <Trash2 size={14} />
                 <span className="hidden sm:inline">
                   {language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear all'}
                 </span>
               </button>
-              <span className="text-black/30 dark:text-white/30">•</span>
+              <span className="text-[var(--text-3)]">•</span>
             </>
           )}
 
@@ -189,16 +189,16 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
             type="button"
             data-no-liquid=""
             onClick={onClose}
-            className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-black/55 hover:text-black dark:text-white/60 dark:hover:text-white transition-colors cursor-pointer"
+            className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors cursor-pointer"
             aria-label="Close notifications"
           >
-            <X size={13} strokeWidth={2.2} />
+            <X size={16} strokeWidth={2.2} />
           </button>
         </div>
       </div>
 
       {/* Enclosed Notification Rows List */}
-      <div className="flex flex-col gap-2.5 p-3 max-h-[380px] overflow-y-auto no-scrollbar">
+      <div className="flex flex-col gap-2 p-3 max-h-[380px] overflow-y-auto no-scrollbar">
         <AnimatePresence mode="popLayout">
           {notifications.length === 0 ? (
             <motion.div
@@ -249,15 +249,15 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
                   </span>
 
                   {/* Text Content */}
-                  <div className="tst-text flex-1 min-w-0 pr-0.5">
-                    <div className="flex items-center justify-between gap-2 mb-0.5 min-w-0">
-                      <b className="flex items-center gap-1.5 min-w-0 text-[13px] font-semibold text-black dark:text-white">
+                  <div className="tst-text flex-1 min-w-0 flex flex-col gap-1">
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <b className="flex items-center gap-2 min-w-0 text-[var(--t-sub)] font-semibold text-[var(--text-1)]">
                         <em className="not-italic truncate">{notif.title}</em>
                         {isUnread && (
-                          <i className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" aria-hidden="true" />
+                          <i className="w-2 h-2 rounded-full bg-[var(--brand-accent)] shrink-0" aria-hidden="true" />
                         )}
                       </b>
-                      <time className="text-[11px] text-black/50 dark:text-white/55 shrink-0 font-normal tabular-nums whitespace-nowrap">
+                      <time className="text-xs text-[var(--text-3)] shrink-0 font-normal tabular-nums whitespace-nowrap">
                         {formatRelativeTime(notif.createdAt, language)}
                       </time>
                     </div>
@@ -300,7 +300,7 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
                     title="Dismiss"
                     aria-label="Dismiss notification"
                   >
-                    <X size={14} strokeWidth={2.2} />
+                    <X size={16} strokeWidth={2.2} />
                   </button>
                 </motion.div>
               );
@@ -310,9 +310,9 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
       </div>
 
       {/* Unified Panel Footer */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-t border-black/[0.06] dark:border-white/[0.08] bg-neutral-50/70 dark:bg-white/[0.02] text-[11px] text-black/50 dark:text-white/55">
-        <div className="flex items-center gap-1.5 font-medium">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+      <div className="flex items-center justify-between px-4 py-3 border-t border-black/[0.06] dark:border-white/[0.08] bg-neutral-50/70 dark:bg-white/[0.02] text-xs text-[var(--text-2)]">
+        <div className="flex items-center gap-2 font-medium">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
           <span>
             {language === 'ar'
               ? 'مركز أتريوم المباشر'
@@ -321,7 +321,7 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
               : 'Atrium Live Center'}
           </span>
         </div>
-        <span className="text-black/45 dark:text-white/45">
+        <span className="text-[var(--text-3)]">
           {language === 'ar'
             ? 'البث التشغيلي المباشر'
             : language === 'fr'

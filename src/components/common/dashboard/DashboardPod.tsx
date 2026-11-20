@@ -27,28 +27,28 @@ export const DashboardPod: React.FC<DashboardPodProps> = ({
     <section
       data-sq="panel"
       data-sq-border="solid"
-      className={`relative bg-[#F3EDE7] dark:bg-[#141312] p-3 border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3 flex flex-col justify-start min-w-0 ${className}`}
+      className={`relative bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] flex flex-col justify-start min-w-0 ${className}`}
     >
-      <div className="flex items-start justify-between gap-3 flex-wrap">
+      <div className="flex items-start justify-between gap-3 flex-wrap pt-1 px-3 pb-3">
         <div className="flex items-start gap-3 min-w-0 flex-1">
           {icon && (
             <div
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="relative w-8 h-8 bg-[#FBF8F5] dark:bg-white/[0.06] border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex items-center justify-center text-[#d4522f] shrink-0 mt-0.5"
+              className="relative w-8 h-8 bg-[#FBF8F5] dark:bg-white/[0.06] border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex items-center justify-center text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0"
             >
               {icon}
             </div>
           )}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 flex flex-col gap-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-[15.5px] sm:text-[16.5px] font-semibold tracking-[-0.018em] rtl:tracking-normal leading-snug text-black dark:text-white">
+              <h2 className="text-[var(--t-h3)] leading-[var(--pod-head-h,22px)] font-semibold tracking-[-0.015em] rtl:tracking-normal text-[var(--text-1)]">
                 {title}
               </h2>
               {badge}
             </div>
             {subtitle && (
-              <p className="text-xs text-black/60 dark:text-white/60 leading-snug mt-0.5">
+              <p className="text-xs text-[var(--text-2)] leading-[var(--lh-small)]">
                 {subtitle}
               </p>
             )}
@@ -58,7 +58,7 @@ export const DashboardPod: React.FC<DashboardPodProps> = ({
         {rightSlot && <div className="flex items-center gap-2 shrink-0">{rightSlot}</div>}
       </div>
 
-      <div className="space-y-4 flex-1 flex flex-col justify-start min-w-0">
+      <div className="flex-1 flex flex-col gap-[var(--card-gap,12px)] justify-start min-w-0">
         {children}
       </div>
     </section>

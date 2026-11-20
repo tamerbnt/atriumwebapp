@@ -33,7 +33,7 @@ export const DashboardBentoFrame: React.FC<DashboardBentoFrameProps> = ({
       data-atrium-theme={theme === 'dark' ? 'dark' : 'light'}
       dir={isRtl ? 'rtl' : 'ltr'}
       data-testid={testId}
-      className={`ax-scope space-y-5 sm:space-y-6 animate-in fade-in duration-200 ${className}`}
+      className={`ax-scope flex flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200 ${className}`}
     >
       <OfflineRetryBanner
         isOffline={isOffline}
@@ -51,7 +51,7 @@ export const DashboardBentoGrid: React.FC<{
   children: React.ReactNode;
   className?: string;
 }> = ({ children, className = '' }) => (
-  <div className={`grid grid-cols-1 md:grid-cols-6 xl:grid-cols-12 gap-4 sm:gap-5 items-stretch ${className}`}>
+  <div className={`grid grid-cols-1 md:grid-cols-6 xl:grid-cols-12 gap-[var(--card-gap,12px)] items-stretch ${className}`}>
     {children}
   </div>
 );
@@ -93,8 +93,8 @@ export const DashboardPodGrid: React.FC<DashboardPodGridProps> = ({
 }) => {
   const layoutClass =
     layout === 'equal'
-      ? 'grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5'
-      : 'grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5';
+      ? 'grid-cols-1 md:grid-cols-2 gap-[var(--pod-gap,16px)]'
+      : 'grid-cols-1 lg:grid-cols-12 gap-[var(--pod-gap,16px)]';
 
   return <div className={`grid ${layoutClass} items-stretch ${className}`}>{children}</div>;
 };

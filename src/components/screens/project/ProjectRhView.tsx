@@ -885,7 +885,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
       {activeTab === 'dossier' && (
         <ScreenPod>
           <div
-            data-sq="panel"
+            data-sq="card"
             data-sq-border="solid"
             className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-4xl mx-auto space-y-6"
           >
@@ -893,12 +893,19 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E6DED6] dark:border-neutral-800">
                   <div className="flex items-center gap-4">
-                    <img
-                      src={selectedTalent.portraitPhotoUrl}
-                      alt={selectedTalent.fullName}
-                      referrerPolicy="no-referrer"
-                      className="w-16 h-16 rounded-[var(--r-card,16px)] object-cover border-2 border-[#d4522f] bg-neutral-100"
-                    />
+                    <div
+                      data-sq="card"
+                      data-sq-border="solid"
+                      data-sq-stroke-w="2"
+                      className="w-16 h-16 shrink-0 [--sq-stroke:#d4522f] bg-neutral-100"
+                    >
+                      <img
+                        src={selectedTalent.portraitPhotoUrl}
+                        alt={selectedTalent.fullName}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <h2 className="text-xl font-bold text-black dark:text-white">
@@ -1205,7 +1212,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
       {activeTab === 'walkin' && (
         <ScreenPod>
           <div
-            data-sq="panel"
+            data-sq="card"
             data-sq-border="solid"
             className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-2xl mx-auto space-y-6"
           >

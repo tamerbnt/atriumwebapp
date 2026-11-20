@@ -1827,7 +1827,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
       {currentScreen === 'new_project' && (
         <ScreenPod>
           <div
-            data-sq="panel"
+            data-sq="card"
             data-sq-border="solid"
             className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] max-w-4xl mx-auto space-y-6"
           >
@@ -1993,7 +1993,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
       {currentScreen === 'approvals' && (
         <ScreenPod>
           <div
-            data-sq="panel"
+            data-sq="card"
             data-sq-border="solid"
             className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
           >
@@ -2068,7 +2068,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 pendingPayrollBatches.map((batch) => (
                   <div
                     key={batch.id}
-                    data-sq="panel"
+                    data-sq="card"
                     data-sq-border="solid"
                     className="p-5 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
@@ -2142,7 +2142,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 pendingExpenses.map((expense) => (
                   <div
                     key={expense.id}
-                    data-sq="panel"
+                    data-sq="card"
                     data-sq-border="solid"
                     className="p-5 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
@@ -2216,7 +2216,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
       {currentScreen === 'reports' && (
         <ScreenPod>
           <div
-            data-sq="panel"
+            data-sq="card"
             data-sq-border="solid"
             className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
           >
@@ -2308,7 +2308,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div
-              data-sq="panel"
+              data-sq="card"
               data-sq-border="solid"
               className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
             >
@@ -2341,7 +2341,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
             </div>
 
             <div
-              data-sq="panel"
+              data-sq="card"
               data-sq-border="solid"
               className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
             >
@@ -2396,12 +2396,18 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <img
-                src={selectedReceiptUrl}
-                alt="Scan Justificatif"
-                referrerPolicy="no-referrer"
-                className="w-full h-72 object-cover rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800"
-              />
+              <div
+                data-sq="ctl"
+                data-sq-border="solid"
+                className="w-full h-72 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-neutral-100 dark:bg-neutral-800"
+              >
+                <img
+                  src={selectedReceiptUrl}
+                  alt="Scan Justificatif"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <div className="flex justify-end">
                 <button
                   type="button"

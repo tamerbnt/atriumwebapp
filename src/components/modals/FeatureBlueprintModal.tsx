@@ -756,7 +756,11 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
                 className="p-4 bg-neutral-900/80 space-y-1.5 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-[var(--r-check,6px)] bg-[#d4522f]/20 flex items-center justify-center text-[#E09070] font-bold text-xs shrink-0">
+                  <div
+                    data-sq="check"
+                    data-sq-border="none"
+                    className="w-6 h-6 bg-[#d4522f]/20 flex items-center justify-center text-[#E09070] font-bold text-xs shrink-0"
+                  >
                     {idx + 1}
                   </div>
                   <h4 className="text-sm font-bold text-white">

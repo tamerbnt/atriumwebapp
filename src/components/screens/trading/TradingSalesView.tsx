@@ -449,7 +449,9 @@ export const TradingSalesView: React.FC = () => {
                   handleConvert(doc);
                 }}
                 title={t('trading_sales_convert_to_bl', 'Convertir en Bon de Livraison')}
-                className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 transition-colors cursor-pointer"
+                data-sq="check"
+                data-sq-border="none"
+                className="px-2 py-0.5 text-[10px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 transition-colors cursor-pointer"
               >
                 BL →
               </button>
@@ -462,7 +464,9 @@ export const TradingSalesView: React.FC = () => {
                   handleConvert(doc);
                 }}
                 title={t('trading_sales_convert_to_invoice', 'Facturer ce bon de livraison')}
-                className="px-2 py-0.5 rounded-[var(--r-check,6px)] text-[10px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 transition-colors cursor-pointer"
+                data-sq="check"
+                data-sq-border="none"
+                className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 transition-colors cursor-pointer"
               >
                 {isAr ? 'فوترة ←' : 'Facturer →'}
               </button>

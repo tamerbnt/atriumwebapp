@@ -696,7 +696,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
           {/* Persistent Live POS Checkout Cart Dock */}
           <div className="sq-elev-card w-full xl:w-[340px] shrink-0">
             <div
-              data-sq="panel"
+              data-sq="card"
               data-sq-border="solid"
               className="w-full bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex flex-col max-h-[640px] overflow-hidden"
             >
@@ -730,7 +730,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
                 cart.map((item) => (
                   <div
                     key={item.product.id}
-                    data-sq="card"
+                    data-sq="ctl"
                     data-sq-border="solid"
                     className="p-2.5 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex items-center justify-between gap-2"
                   >
@@ -746,7 +746,9 @@ export const MembershipShopView: React.FC = React.memo(() => {
                       <button
                         type="button"
                         onClick={() => handleUpdateQty(item.product.id, -1)}
-                        className="w-6 h-6 rounded-[var(--r-check,6px)] bg-white dark:bg-[#1C1B1A] border border-[#D4C8BC] dark:border-[#3A3734] flex items-center justify-center cursor-pointer"
+                        data-sq="check"
+                        data-sq-border="solid"
+                        className="w-6 h-6 bg-white dark:bg-[#1C1B1A] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] flex items-center justify-center cursor-pointer"
                       >
                         <Minus size={10} />
                       </button>
@@ -756,7 +758,9 @@ export const MembershipShopView: React.FC = React.memo(() => {
                       <button
                         type="button"
                         onClick={() => handleUpdateQty(item.product.id, 1)}
-                        className="w-6 h-6 rounded-[var(--r-check,6px)] bg-white dark:bg-[#1C1B1A] border border-[#D4C8BC] dark:border-[#3A3734] flex items-center justify-center cursor-pointer"
+                        data-sq="check"
+                        data-sq-border="solid"
+                        className="w-6 h-6 bg-white dark:bg-[#1C1B1A] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] flex items-center justify-center cursor-pointer"
                       >
                         <Plus size={10} />
                       </button>

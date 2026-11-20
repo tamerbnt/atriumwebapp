@@ -725,7 +725,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 .map((order) => (
                   <div
                     key={order.id}
-                    data-sq="panel"
+                    data-sq="card"
                     data-sq-border="solid"
                     className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2.5"
                   >
@@ -776,7 +776,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   <div
                     key={bat.id}
                     onClick={(e) => handleSelectBat(bat, e.currentTarget)}
-                    data-sq="panel"
+                    data-sq="card"
                     data-sq-border="solid"
                     className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2.5 cursor-pointer hover:[--sq-stroke:rgba(212,82,47,0.6)] transition-colors"
                   >
@@ -784,7 +784,9 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       src={bat.previewUrl}
                       alt={bat.title}
                       referrerPolicy="no-referrer"
-                      className="w-full h-28 rounded-[var(--r-ctl,12px)] object-cover bg-neutral-100"
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="w-full h-28 object-cover bg-neutral-100"
                     />
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="font-bold text-black dark:text-white truncate">
@@ -816,7 +818,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   <div
                     key={bat.id}
                     onClick={(e) => handleSelectBat(bat, e.currentTarget)}
-                    data-sq="panel"
+                    data-sq="card"
                     data-sq-border="solid"
                     className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:rgba(6,78,59,0.4)] space-y-2.5 cursor-pointer hover:[--sq-stroke:#34d399] transition-colors"
                   >
@@ -824,7 +826,9 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       src={bat.previewUrl}
                       alt={bat.title}
                       referrerPolicy="no-referrer"
-                      className="w-full h-28 rounded-[var(--r-ctl,12px)] object-cover bg-neutral-100"
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="w-full h-28 object-cover bg-neutral-100"
                     />
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="font-bold text-emerald-700 dark:text-emerald-400 truncate">
@@ -933,12 +937,18 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               renderCard={(bat) => (
                 <div className="flex flex-col justify-between h-full space-y-3">
                   <div className="space-y-2">
-                    <img
-                      src={bat.previewUrl}
-                      alt={bat.title}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-36 rounded-[var(--r-ctl,12px)] object-cover border border-[#E6DED6]/60 dark:border-neutral-800 bg-neutral-100"
-                    />
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="solid"
+                      className="w-full h-36 [--sq-stroke:rgba(230,222,214,0.6)] dark:[--sq-stroke:#262626] bg-neutral-100"
+                    >
+                      <img
+                        src={bat.previewUrl}
+                        alt={bat.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="font-bold text-[#d4522f]">{bat.versionCode}</span>
                       <span className="font-mono text-black/55 dark:text-white/55">
@@ -989,7 +999,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
       {activeTab === 'upload' && (
         <ScreenPod>
           <div
-            data-sq="panel"
+            data-sq="card"
             data-sq-border="solid"
             className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-3xl mx-auto space-y-6"
           >
@@ -1113,7 +1123,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
             {pmProjects.map((p) => (
               <div
                 key={p.id}
-                data-sq="panel"
+                data-sq="card"
                 data-sq-border="solid"
                 className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-3"
               >

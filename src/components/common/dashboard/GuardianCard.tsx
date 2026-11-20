@@ -52,7 +52,7 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="bg-[#1F1D1B] rounded-[var(--r-card,16px)] p-5 sm:p-6 [--sq-stroke:rgba(255,255,255,0.08)] text-white relative overflow-hidden flex flex-col justify-between h-full"
+        className="bg-[#1F1D1B] rounded-[var(--r-card,16px)] p-[var(--card-pad,20px)] card-opt [--sq-stroke:rgba(255,255,255,0.08)] text-white relative overflow-hidden flex flex-col justify-between gap-4 h-full"
       >
         {/* Top row: Title and Toggle */}
         <div className="flex items-center justify-between gap-4">
@@ -60,87 +60,87 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 rounded-[var(--r-tile,12px)] bg-white/[0.08] [--sq-stroke:rgba(255,255,255,0.08)] text-[#FB923C] flex items-center justify-center shrink-0"
+              className="w-8 h-8 rounded-[var(--r-tile,12px)] bg-white/[0.08] [--sq-stroke:rgba(255,255,255,0.08)] text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0"
             >
               <Shield size={16} />
             </div>
-            <h4 className="text-[15px] font-semibold text-white tracking-[-0.015em] leading-snug">
+            <h4 className="text-[var(--t-h3)] leading-[var(--lh-h3)] font-semibold text-white">
               {title}
             </h4>
           </div>
 
-        {/* Toggle pill */}
-        <button
-          type="button"
-          onClick={handleToggle}
-          className={`w-12 h-6 rounded-full transition-colors p-0.5 relative cursor-pointer ${
-            isEnabled ? 'bg-white/20' : 'bg-neutral-800'
-          }`}
-          title={isEnabled ? 'Active' : 'Disabled'}
-        >
-          <div
-            className={`w-5 h-5 rounded-full bg-white shadow-xs transition-transform flex items-center justify-center ${
-              isEnabled ? 'translate-x-6 rtl:-translate-x-6' : 'translate-x-0'
+          {/* Toggle pill */}
+          <button
+            type="button"
+            onClick={handleToggle}
+            className={`w-12 h-6 rounded-full transition-colors p-1 relative cursor-pointer flex items-center ${
+              isEnabled ? 'bg-white/20' : 'bg-neutral-800'
             }`}
+            title={isEnabled ? 'Active' : 'Disabled'}
           >
             <div
-              className={`w-1.5 h-1.5 rounded-full ${
-                isEnabled ? 'bg-[#10B981]' : 'bg-black/40'
+              className={`w-4 h-4 rounded-full bg-white shadow-xs transition-transform flex items-center justify-center ${
+                isEnabled ? 'translate-x-6 rtl:-translate-x-6' : 'translate-x-0'
               }`}
-            />
-          </div>
-        </button>
-      </div>
+            >
+              <div
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isEnabled ? 'bg-[#10B981]' : 'bg-black/40'
+                }`}
+              />
+            </div>
+          </button>
+        </div>
 
-      {/* Center: Large Glowing Circular Progress Ring */}
-      <div className="flex items-center justify-center my-4 relative">
-        <div className="relative w-28 h-28 flex items-center justify-center">
-          <svg className="w-full h-full transform -rotate-90">
-            {/* Background Track */}
-            <circle
-              cx="56"
-              cy="56"
-              r={radius}
-              fill="transparent"
-              stroke="#2A2825"
-              strokeWidth="7"
-            />
-            {/* Active Gauge */}
-            <circle
-              cx="56"
-              cy="56"
-              r={radius}
-              fill="transparent"
-              stroke={activeColor}
-              strokeWidth="7"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              className="transition-all duration-700 ease-out"
-            />
-          </svg>
+        {/* Center: Large Glowing Circular Progress Ring */}
+        <div className="flex items-center justify-center relative">
+          <div className="relative w-28 h-28 flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-90">
+              {/* Background Track */}
+              <circle
+                cx="56"
+                cy="56"
+                r={radius}
+                fill="transparent"
+                stroke="#2A2825"
+                strokeWidth="7"
+              />
+              {/* Active Gauge */}
+              <circle
+                cx="56"
+                cy="56"
+                r={radius}
+                fill="transparent"
+                stroke={activeColor}
+                strokeWidth="7"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                className="transition-all duration-700 ease-out"
+              />
+            </svg>
 
-          {/* Center Score */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-[30px] leading-none font-bold tracking-[-0.01em] text-white tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:text-2xl">
-              {metricValue || `${score}%`}
-            </span>
-            <span className="text-[10.5px] uppercase tracking-[0.06em] text-white/68 font-semibold mt-1">
-              {metricLabel || scoreLabel}
-            </span>
+            {/* Center Score */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+              <span className="text-[var(--t-unit)] leading-[var(--lh-unit)] font-semibold text-white tabular-nums">
+                {metricValue || `${score}%`}
+              </span>
+              <span className="text-xs text-[var(--text-dark-2,#A99E92)] font-medium">
+                {metricLabel || scoreLabel}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom status indicator */}
-      <div className="flex items-center justify-between text-[11.5px] pt-2.5 border-t border-white/10 text-white/72">
-        <span className="text-emerald-400 font-medium">
-          {statusText || 'Active'}
-        </span>
-        <span className="text-[11px] text-white/60 font-mono tabular-nums">
-          {trendText || 'Live'}
-        </span>
-      </div>
+        {/* Bottom status indicator */}
+        <div className="flex items-center justify-between text-xs pt-3 border-t border-white/10 text-[var(--text-dark-2,#A99E92)]">
+          <span className="text-emerald-400 font-medium">
+            {statusText || 'Active'}
+          </span>
+          <span className="text-xs text-[var(--text-dark-2,#A99E92)] tabular-nums">
+            {trendText || 'Live'}
+          </span>
+        </div>
       </div>
     </div>
   );

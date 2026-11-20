@@ -87,7 +87,7 @@ export const ScreenPod: React.FC<ScreenPodProps> = React.memo(({ children, class
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className={`relative bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] ${className}`}
+          className={`relative bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] ${className}`}
         >
           {children}
         </div>

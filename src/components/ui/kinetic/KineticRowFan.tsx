@@ -41,7 +41,7 @@ export const KineticRowFan: React.FC<KineticRowFanProps> = React.memo(({
       defaultActions.push({
         id: 'edit',
         label: recordTitle ? `Modifier ${recordTitle}` : 'Modifier',
-        icon: <Pencil className="w-[15px] h-[15px]" />,
+        icon: <Pencil className="w-4 h-4" />,
         isDanger: false,
         onClick: onEdit,
       });
@@ -50,7 +50,7 @@ export const KineticRowFan: React.FC<KineticRowFanProps> = React.memo(({
       defaultActions.push({
         id: 'secondary',
         label: secondaryLabel || (recordTitle ? `Action pour ${recordTitle}` : 'Action'),
-        icon: secondaryIcon || <Mail className="w-[15px] h-[15px]" />,
+        icon: secondaryIcon || <Mail className="w-4 h-4" />,
         isDanger: false,
         onClick: onSecondaryAction,
       });
@@ -59,7 +59,7 @@ export const KineticRowFan: React.FC<KineticRowFanProps> = React.memo(({
       defaultActions.push({
         id: 'del',
         label: recordTitle ? `Supprimer ${recordTitle}` : 'Supprimer',
-        icon: <Trash2 className="w-[15px] h-[15px]" />,
+        icon: <Trash2 className="w-4 h-4" />,
         isDanger: true,
         onClick: onDelete,
       });

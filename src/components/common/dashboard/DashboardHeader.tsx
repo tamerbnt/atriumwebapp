@@ -61,13 +61,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   };
 
   return (
-    <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 sm:gap-4 pb-1 min-w-0 max-w-full">
+    <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 min-w-0 max-w-full">
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+        <div className="flex items-center gap-4 min-w-0">
           <div
             data-sq="tile-lg"
             data-sq-border="solid"
-            className="w-12 h-12 rounded-[var(--r-tile-lg,15px)] bg-[#F3EDE7] dark:bg-white/[0.07] [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.7)] flex items-center justify-center text-black dark:text-white shrink-0"
+            className="w-12 h-12 rounded-[var(--r-tile-lg,15px)] bg-[#F3EDE7] dark:bg-white/[0.07] [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.7)] flex items-center justify-center text-[var(--text-1)] shrink-0"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" aria-hidden="true">
               <rect x="3" y="3" width="7" height="7" rx="1.5" />
@@ -77,7 +77,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </svg>
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-[30px] sm:text-[40px] font-extrabold uppercase leading-[0.98] tracking-[0.012em] text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans rtl:normal-case rtl:text-[26px] rtl:sm:text-[32px] rtl:leading-tight rtl:tracking-normal">
+            <h1 className="text-[var(--t-page)] leading-[var(--lh-page)] font-normal uppercase tracking-[var(--tr-display)] text-[var(--text-1)] [font-family:var(--font-display)] rtl:[font-family:var(--font-ui)] rtl:normal-case rtl:font-semibold rtl:text-[32px] rtl:leading-[40px] rtl:tracking-normal truncate">
               {displayTitle}
             </h1>
           </div>

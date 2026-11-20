@@ -116,7 +116,9 @@ export const ChartInfoPopover: React.FC<ChartInfoPopoverProps> = React.memo(
           }
           aria-hidden={!open}
         >
-          {text}
+          <div className="ax-pop-box" data-sq="ctl" data-sq-border="solid">
+            {text}
+          </div>
         </div>
       </div>
     );

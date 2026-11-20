@@ -3,10 +3,10 @@
  * Zero DOM / React dependencies — directly unit-testable in Node (`node:test` / Vitest).
  */
 
-export const ROW_H = 62;
+export const ROW_H = 64;
 export const ROW_G = 8;
 export const ROW_DH = 150;
-export const ROW_B = 38;
+export const ROW_B = 40;
 export const CARD_H = 172;
 
 export const TUNES = {

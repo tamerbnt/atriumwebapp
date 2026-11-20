@@ -178,11 +178,11 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
     (language === 'ar' ? 'بحث...' : language === 'fr' ? 'Rechercher...' : 'Search...');
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3 w-full">
-        {/* Left: Inter SemiBold 15.5/16px Pod Title + Polite aria-live count */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <h2 className="text-[15.5px] sm:text-[16px] font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 w-full pt-1 px-3 pb-1">
+        {/* Left: Inter SemiBold 16px/22px Pod Title + Polite aria-live count */}
+        <div className="flex items-center gap-2 shrink-0">
+          <h2 className="text-[var(--t-h3)] leading-[var(--pod-head-h,22px)] font-semibold text-[var(--text-1)] dark:text-white">
             {title}
           </h2>
           {liveRegionText && (
@@ -193,7 +193,7 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
         </div>
 
         {/* Right: Exact Member Screen Control Order & 40px Height */}
-        <div className="flex flex-wrap items-center justify-end gap-2.5 min-w-0 ms-auto">
+        <div className="flex flex-wrap items-center justify-end gap-2 min-w-0 ms-auto">
           {/* 1. Seek Expanding Search */}
           <Seek
             value={searchQuery}
@@ -228,10 +228,10 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
                 data-sq="ctl"
                 data-sq-border="solid"
                 onClick={onToggleFilterModal}
-                className={`relative h-10 px-3.5 border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-colors select-none ${
+                className={`relative h-10 px-4 border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-colors select-none ${
                   hasActiveAdvancedFilters || isFilterModalOpen
-                    ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/15 text-[#d4522f] [--sq-stroke:rgba(212,82,47,0.5)]'
-                    : 'bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] text-black/75 dark:text-white/80 hover:bg-[#FBF8F5] dark:hover:bg-neutral-700/50'
+                    ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/15 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] [--sq-stroke:rgba(201,70,31,0.5)]'
+                    : 'bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] text-[var(--text-1)] dark:text-white hover:bg-[#FBF8F5] dark:hover:bg-neutral-700/50'
                 }`}
                 title={
                   language === 'ar'
@@ -243,24 +243,24 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
                 aria-expanded={isFilterModalOpen}
               >
                 <SlidersHorizontal
-                  size={15}
+                  size={16}
                   className={
                     hasActiveAdvancedFilters
-                      ? 'text-[#d4522f]'
-                      : 'text-black/70 dark:text-white/75'
+                      ? 'text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]'
+                      : 'text-[var(--text-2)] dark:text-[var(--text-dark-2)]'
                   }
                 />
                 <span>
                   {language === 'ar' ? 'مرشحات' : language === 'fr' ? 'Filtres' : 'Filters'}
                 </span>
                 {activeFiltersCount > 0 && (
-                  <span className="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center bg-[#d4522f] text-white tabular-nums">
+                  <span className="w-5 h-5 rounded-full text-xs font-semibold flex items-center justify-center bg-[var(--brand-fill)] text-white tabular-nums">
                     {activeFiltersCount}
                   </span>
                 )}
                 <ChevronDown
-                  size={13}
-                  className={`transition-transform duration-200 text-black/62 dark:text-white/65 ${
+                  size={16}
+                  className={`transition-transform duration-200 text-[var(--text-2)] dark:text-[var(--text-dark-2)] ${
                     isFilterModalOpen ? 'rotate-180' : ''
                   }`}
                 />
@@ -299,26 +299,26 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
 
       {/* Removable Active Filter Chips Row */}
       {activeChips.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap pt-0.5 text-xs">
-          <span className="text-black/62 dark:text-white/65 font-medium text-[11px]">
+        <div className="flex items-center gap-2 flex-wrap px-3 text-xs">
+          <span className="text-[var(--text-2)] dark:text-[var(--text-dark-2)] font-medium text-xs">
             {language === 'ar'
               ? 'المرشحات النشطة:'
               : language === 'fr'
-              ? 'Filtres actifs:'
+              ? 'Filtres actifs :'
               : 'Active filters:'}
           </span>
           {activeChips.map((chip) => (
             <span
               key={chip.key}
               title={chip.title || chip.label}
-              className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] border border-[#d4522f]/30 text-xs font-semibold"
+              className="inline-flex items-center gap-2 h-7 px-3 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] border border-[#d4522f]/30 text-xs font-medium"
             >
               <span>{chip.label}</span>
               <button
                 type="button"
                 data-no-liquid="true"
                 onClick={chip.onRemove}
-                className="hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+                className="hover:text-[var(--text-1)] dark:hover:text-white transition-colors cursor-pointer"
                 title={
                   language === 'ar'
                     ? 'إزالة المرشح'
@@ -344,7 +344,7 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
                   ? 'Réinitialiser tous les filtres'
                   : 'Reset all filters'
               }
-              className="text-[11px] font-semibold text-black/72 dark:text-white/75 hover:text-black dark:hover:text-white underline cursor-pointer ml-1"
+              className="text-xs font-semibold text-[var(--text-2)] dark:text-[var(--text-dark-2)] hover:text-[var(--text-1)] dark:hover:text-white underline cursor-pointer px-1"
             >
               {language === 'ar' ? 'إعادة' : language === 'fr' ? 'Effacer' : 'Reset'}
             </button>

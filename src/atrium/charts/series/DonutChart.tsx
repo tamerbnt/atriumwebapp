@@ -204,7 +204,9 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(
                   onBlur={() => setActiveIdx(null)}
                   onClick={() => setActiveIdx((prev) => (prev === idx ? null : idx))}
                   aria-pressed={isActive}
-                  className={`w-full flex items-center justify-between gap-2 px-2 py-1 rounded-[9px] text-left rtl:text-right cursor-pointer transition-[background-color,opacity] duration-150 ${
+                  data-sq="thumb"
+                  data-sq-border="none"
+                  className={`w-full flex items-center justify-between gap-2 px-2 py-1 text-left rtl:text-right cursor-pointer transition-[background-color,opacity] duration-150 ${
                     isActive
                       ? 'bg-[var(--ax-soft)]'
                       : 'hover:bg-[var(--ax-soft)]'

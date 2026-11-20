@@ -907,7 +907,9 @@ export const MedicalAgendaView: React.FC<any> = () => {
                               <button
                                 type="button"
                                 onClick={() => handleOpenBooking(doc.id, time)}
-                                className="h-full w-full min-h-[42px] rounded-[var(--r-ctl-sm,10px)] border border-dashed border-transparent group-hover:border-[#0D9488]/40 hover:bg-[#0D9488]/5 flex items-center justify-center text-[10px] text-black/55 dark:text-white/55 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
+                                data-sq="ctl-sm"
+                                data-sq-border="dashed"
+                                className="h-full w-full min-h-[42px] [--sq-stroke:transparent] group-hover:[--sq-stroke:rgba(13,148,136,0.4)] hover:bg-[#0D9488]/5 flex items-center justify-center text-[10px] text-black/55 dark:text-white/55 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
                               >
                                 + {isAr ? 'حجز' : 'Réserver'}
                               </button>

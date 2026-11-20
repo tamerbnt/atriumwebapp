@@ -52,14 +52,14 @@ export const AtriumButton = forwardRef<HTMLButtonElement, AtriumButtonProps>(fun
       break;
   }
 
-  // Map size to Atrium scale (sm = 36px, md = 40px, lg = 48px, xs = 30px)
+  // Map size to 4pt scale (xs = 32px, sm = 36px, md = 40px, lg = 48px)
   let atrSize: AtriumSize = 40;
   if (typeof size === 'number') {
     atrSize = size;
   } else {
     switch (size) {
       case 'xs':
-        atrSize = 30;
+        atrSize = 32;
         break;
       case 'sm':
         atrSize = 36;
@@ -78,14 +78,10 @@ export const AtriumButton = forwardRef<HTMLButtonElement, AtriumButtonProps>(fun
 
   const loaderSize =
     typeof size === 'number'
-      ? Math.round(size * 0.42)
-      : size === 'xs'
-      ? 14
-      : size === 'sm'
-      ? 16
+      ? (size >= 48 ? 20 : 16)
       : size === 'lg'
       ? 20
-      : 18;
+      : 16;
 
   const leading = loading ? (
     <Loader2 size={loaderSize} className="animate-spin" />

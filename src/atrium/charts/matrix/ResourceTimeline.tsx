@@ -209,7 +209,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
               })}
               {showNow && (
                 <span
-                  className="absolute -top-0.5 -translate-x-1/2 rtl:translate-x-1/2 px-1.5 py-[1px] rounded bg-[var(--ax-acc)] text-[var(--ax-tc1)] text-[9px] font-semibold whitespace-nowrap z-20"
+                  className="absolute -top-0.5 -translate-x-1/2 rtl:translate-x-1/2 px-1.5 py-[1px] rounded-[var(--r-check,6px)] bg-[var(--ax-acc)] text-[var(--ax-tc1)] text-[9px] font-semibold whitespace-nowrap z-20"
                   style={{ insetInlineStart: `${nowPct}%` }}
                 >
                   {formatHour(nowHour!)}
@@ -238,7 +238,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
                     )}
                   </div>
 
-                  <div className="relative h-10 rounded-[10px] bg-[var(--ax-soft)] overflow-hidden">
+                  <div className="relative h-10 rounded-[var(--r-ctl-sm,10px)] bg-[var(--ax-soft)] overflow-hidden">
                     {/* Vertical Hour Gridlines */}
                     {hourTicks.map((h) => {
                       const pct = ((h - startHour) / spanHours) * 100;
@@ -279,7 +279,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
                           aria-label={`${res.label} — ${b.label}, ${formatHour(
                             b.startHour
                           )} à ${formatHour(b.endHour)}`}
-                          className="ax-abs ax-bar-x ax-plot-focus top-[3px] bottom-[3px] rounded-[8px] px-2.5 flex items-center text-[11px] font-semibold truncate cursor-pointer"
+                          className="ax-abs ax-bar-x ax-plot-focus top-[3px] bottom-[3px] rounded-[calc(var(--r-ctl-sm,10px)-3px)] px-2.5 flex items-center text-[11px] font-semibold truncate cursor-pointer"
                           style={{
                             insetInlineStart: `${b.leftPct}%`,
                             width: `${b.widthPct}%`,

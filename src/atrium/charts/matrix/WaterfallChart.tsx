@@ -286,7 +286,7 @@ export const WaterfallChart: React.FC<WaterfallChartProps> = React.memo(
                             unit,
                             signed: bar.kind === 'delta',
                           })}`}
-                          className="ax-plot-focus ax-bar-y w-full h-full rounded-[6px] cursor-pointer"
+                          className="ax-plot-focus ax-bar-y w-full h-full rounded-[var(--r-check,6px)] cursor-pointer"
                           style={{
                             background: fill,
                             transform: isActive ? 'scale3d(1.06, 1.03, 1)' : 'scale3d(1, 1, 1)',

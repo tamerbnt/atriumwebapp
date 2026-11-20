@@ -258,18 +258,18 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
           data-sq="panel"
           data-sq-border="solid"
           style={{ contain: 'layout paint' }}
-          className="relative w-full max-h-[85vh] bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-5 sm:p-6 space-y-4 text-black dark:text-white overflow-hidden flex flex-col select-text"
+          className="relative w-full max-h-[85vh] bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-[var(--modal-pad,24px)] flex flex-col gap-4 text-[var(--text-1)] overflow-hidden select-text"
         >
-        <div className="flex items-center justify-between pb-3.5 border-b border-[#E6DED6] dark:border-[#3A3734] shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 flex items-center justify-center text-[#d4522f] shadow-2xs">
+        <div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#3A3734] shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 flex items-center justify-center text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-2xs shrink-0">
               <SlidersHorizontal size={16} />
             </div>
-            <div>
-              <span className="text-sm font-semibold text-black dark:text-white tracking-tight block">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-[var(--text-1)] block">
                 {dialogTitle}
               </span>
-              <span className="text-xs text-black/62 dark:text-white/68 tabular-nums">
+              <span className="text-xs text-[var(--text-2)] tabular-nums">
                 {displayCount} {entityPluralLabel}
               </span>
             </div>
@@ -282,7 +282,7 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                 data-sq="ctl-sm"
                 data-sq-border="none"
                 onClick={onResetFilters}
-                className="text-xs font-semibold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 py-1"
+                className="text-xs font-semibold text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 h-8"
               >
                 <RotateCcw size={12} />
                 <span>
@@ -294,7 +294,7 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
               type="button"
               data-no-liquid="true"
               onClick={onClose}
-              className="w-8 h-8 rounded-full hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/62 dark:text-white/68 hover:text-black dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+              className="w-8 h-8 rounded-full hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-[var(--text-2)] hover:text-[var(--text-1)] flex items-center justify-center cursor-pointer transition-colors"
               aria-label="Close filters"
             >
               <X size={16} />
@@ -302,16 +302,16 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
           </div>
         </div>
 
-        <div className="space-y-4 overflow-y-auto pr-1 max-h-[58vh] -mr-1">
+        <div className="flex flex-col gap-4 overflow-y-auto pr-1 max-h-[58vh]">
           {sections.map((section) => {
             const resetVal = section.resetValue ?? 'All';
             const resetText =
               section.resetLabel ||
               (language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All');
             return (
-              <div key={section.id} className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11.5px] font-semibold uppercase tracking-[0.06em] rtl:normal-case rtl:tracking-normal text-black/72 dark:text-white/75">
+              <div key={section.id} className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-xs font-semibold text-[var(--text-2)]">
                     {section.label}
                   </label>
                   {section.value !== resetVal && (
@@ -319,7 +319,7 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                       type="button"
                       data-no-liquid="true"
                       onClick={() => section.onChange(resetVal)}
-                      className="text-[11px] text-[#d4522f] font-semibold hover:underline cursor-pointer"
+                      className="text-xs text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] font-semibold hover:underline cursor-pointer"
                     >
                       {resetText}
                     </button>
@@ -327,7 +327,7 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                 </div>
 
                 {section.kind === 'segmented' ? (
-                  <div className="w-full overflow-x-auto pb-0.5">
+                  <div className="w-full overflow-x-auto pb-1">
                     <LiveSegmentedControl
                       size="sm"
                       fullWidth
@@ -340,7 +340,7 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                   </div>
                 ) : (
                   <div
-                    className={`grid gap-1.5 max-h-40 overflow-y-auto pr-1 ${
+                    className={`grid gap-2 max-h-40 overflow-y-auto pr-1 ${
                       section.columns === 3
                         ? 'grid-cols-2 sm:grid-cols-3'
                         : 'grid-cols-1 sm:grid-cols-2'
@@ -357,22 +357,22 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                           data-sq-border="solid"
                           onClick={() => section.onChange(opt.value)}
                           title={opt.tooltip || opt.label}
-                          className={`relative px-3 py-2 text-xs flex items-center justify-between font-medium cursor-pointer transition-colors ${
+                          className={`relative px-3 py-2 text-xs flex items-center justify-between gap-2 font-medium cursor-pointer transition-colors ${
                             isSelected
-                              ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[#d4522f] [--sq-stroke:rgba(212,82,47,0.4)] font-semibold'
-                              : 'bg-[#FBF8F5] dark:bg-neutral-800/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] text-black/75 dark:text-white/80 hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50'
+                              ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] [--sq-stroke:rgba(212,82,47,0.4)] font-semibold'
+                              : 'bg-[#FBF8F5] dark:bg-neutral-800/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50'
                           }`}
                         >
-                          <div className="min-w-0 text-left rtl:text-right">
+                          <div className="min-w-0 text-left rtl:text-right flex flex-col gap-1">
                             <div className="truncate font-semibold">{opt.label}</div>
                             {opt.sublabel && (
-                              <div className="text-[11px] text-black/62 dark:text-white/65 font-mono tabular-nums truncate">
+                              <div className="text-xs text-[var(--text-2)] tabular-nums truncate">
                                 {opt.sublabel}
                               </div>
                             )}
                           </div>
                           {opt.count !== undefined && (
-                            <span className="text-[11px] font-mono opacity-75 tabular-nums ml-2 shrink-0">
+                            <span className="text-xs text-[var(--text-2)] tabular-nums shrink-0">
                               {opt.count}
                             </span>
                           )}
