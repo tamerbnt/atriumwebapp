@@ -278,11 +278,8 @@
 /* Typography */
 .es-title {
   margin: 0;
-  font-family: var(--es-font-sans);
-  font-size: var(--t-h2, 20px);
-  line-height: var(--lh-h2, 28px);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font: var(--t-dialog);
+  letter-spacing: var(--tr-20);
   color: var(--ink);
 }
 
@@ -292,20 +289,16 @@
 
 .es-desc {
   margin: 0;
-  font-family: var(--es-font-sans);
-  font-size: var(--t-body, 14px);
-  line-height: var(--lh-body, 20px);
+  font: var(--t-body);
+  letter-spacing: var(--tr-13);
   color: var(--muted);
 }
 
 .es-hint {
   margin: 0;
-  font-family: var(--es-font-sans);
-  font-size: var(--t-small, 12px);
-  line-height: var(--lh-small, 16px);
-  letter-spacing: var(--tr-12, 0.01em);
+  font: var(--t-cap);
+  letter-spacing: var(--tr-12);
   font-variant-numeric: tabular-nums;
-  font-weight: 500;
   color: var(--muted);
 }
 
@@ -326,10 +319,8 @@
   height: var(--btn-h, 40px);
   padding: 0 var(--btn-px, 16px);
   border-radius: var(--r-ctl, 12px);
-  font-family: var(--es-font-sans);
-  font-size: var(--t-body, 14px);
-  font-weight: 600;
-  line-height: 1;
+  font: var(--t-btn);
+  letter-spacing: var(--tr-13);
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
@@ -356,8 +347,8 @@
   padding: 0 var(--btn-sm-px, 12px);
   gap: var(--btn-sm-gap, 6px);
   border-radius: var(--r-ctl-sm, 10px);
-  font-size: var(--t-small, 12px);
-  letter-spacing: var(--tr-12, 0.01em);
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
 }
 
 .es-btn:focus-visible {
@@ -391,20 +382,19 @@
   border: 1.5px dashed var(--ghost-border);
   border-radius: var(--r-empty, 12px);
   --sq-stroke: var(--ghost-border);
-  padding: var(--card-pad, 20px) var(--s4, 16px);
+  padding: var(--empty-pad-y, 14px) var(--empty-pad-x, 16px);
   background: var(--panel);
   text-align: center;
 }
 
 .es-compact .es-title {
-  font-size: var(--t-h3, 16px);
-  line-height: var(--lh-h3, 22px);
-  font-weight: 600;
+  font: var(--t-card);
+  letter-spacing: var(--tr-15);
 }
 
 .es-compact .es-desc {
-  font-size: var(--t-sub, 13px);
-  line-height: var(--lh-sub, 18px);
+  font: var(--t-body);
+  letter-spacing: var(--tr-13);
 }
 
 /* Windows High Contrast / forced-colors */

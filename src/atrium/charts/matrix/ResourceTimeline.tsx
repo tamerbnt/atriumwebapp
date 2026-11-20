@@ -158,10 +158,10 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
         }
         footer={
           (activeTones.length > 0 || showNow) ? (
-            <div className="flex flex-wrap items-center justify-between gap-2 ax-tk pt-1">
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-[var(--s2,8px)] ax-tk">
+              <div className="flex flex-wrap items-center gap-[var(--chart-leg-row-gap,16px)]">
                 {activeTones.map((tone) => (
-                  <span key={tone} className="inline-flex items-center gap-1.5">
+                  <span key={tone} className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                     <span
                       className="w-2.5 h-2.5 rounded-[3px] shrink-0"
                       style={{ background: TONE_STYLE[tone].bg }}
@@ -171,11 +171,11 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
                 ))}
               </div>
               {showNow && (
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                   <span className="w-[2px] h-3 rounded-full bg-[var(--ax-acc)]" />
                   <span>
                     {resolvedNowLabel}:{' '}
-                    <strong className="text-[var(--ax-on)]" dir="ltr">
+                    <strong className="font-semibold text-[var(--ax-on)]" dir="ltr">
                       {formatHour(nowHour!)}
                     </strong>
                   </span>
@@ -186,15 +186,15 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
         }
       >
         <div
-          className="relative flex flex-col gap-2.5 select-none"
+          className="relative flex flex-col gap-[var(--s3,12px)] select-none"
           role="region"
           aria-label={ariaSummary}
           onPointerLeave={() => setActiveBlockId(null)}
         >
           {/* Hour Ticks Header */}
-          <div className="grid grid-cols-[108px_minmax(0,1fr)] gap-2.5 items-center">
+          <div className="grid grid-cols-[108px_minmax(0,1fr)] gap-[var(--s3,12px)] items-center">
             <span />
-            <div className="relative h-4 ax-tk">
+            <div className="relative h-6 ax-tk flex items-center">
               {hourTicks.map((h) => {
                 const pct = ((h - startHour) / spanHours) * 100;
                 return (
@@ -209,7 +209,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
               })}
               {showNow && (
                 <span
-                  className="absolute -top-0.5 -translate-x-1/2 rtl:translate-x-1/2 px-1.5 py-[1px] rounded-[var(--r-check,6px)] bg-[var(--ax-acc)] text-[var(--ax-tc1)] text-[9px] font-semibold whitespace-nowrap z-20"
+                  className="absolute top-0 -translate-x-1/2 rtl:translate-x-1/2 inline-flex items-center h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] rounded-[var(--r-check,6px)] bg-[var(--ax-acc)] text-[var(--ax-tc1)] t-small font-semibold whitespace-nowrap z-20"
                   style={{ insetInlineStart: `${nowPct}%` }}
                 >
                   {formatHour(nowHour!)}
@@ -219,20 +219,20 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
           </div>
 
           {/* Resource Lanes */}
-          <div className="relative flex flex-col gap-2">
+          <div className="relative flex flex-col gap-[var(--s2,8px)]">
             {visibleResources.map((res) => {
               const rowBlocks = blocksByResource.get(res.id) || [];
               return (
                 <div
                   key={res.id}
-                  className="grid grid-cols-[108px_minmax(0,1fr)] gap-2.5 items-center"
+                  className="grid grid-cols-[108px_minmax(0,1fr)] gap-[var(--s3,12px)] items-center"
                 >
                   <div className="min-w-0">
-                    <div className="text-[12px] font-medium text-[var(--ax-on)] truncate">
+                    <div className="t-small text-[var(--ax-on)] truncate">
                       {res.label}
                     </div>
                     {res.meta && (
-                      <div className="text-[10.5px] text-[var(--ax-mut)] truncate">
+                      <div className="t-cap text-[var(--ax-mut)] truncate">
                         {res.meta}
                       </div>
                     )}
@@ -260,7 +260,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
                       />
                     )}
 
-                    {/* Blocks (34px pill height inside 40px lane) */}
+                    {/* Blocks */}
                     {rowBlocks.map((b, bIdx) => {
                       const tone = TONE_STYLE[b.tone || 'primary'];
                       const isActive = activeBlockId === b.id;
@@ -279,7 +279,7 @@ export const ResourceTimeline: React.FC<ResourceTimelineProps> = React.memo(
                           aria-label={`${res.label} — ${b.label}, ${formatHour(
                             b.startHour
                           )} à ${formatHour(b.endHour)}`}
-                          className="ax-abs ax-bar-x ax-plot-focus top-[3px] bottom-[3px] rounded-[calc(var(--r-ctl-sm,10px)-3px)] px-2.5 flex items-center text-[11px] font-semibold truncate cursor-pointer"
+                          className="ax-abs ax-bar-x ax-plot-focus top-[3px] bottom-[3px] rounded-[calc(var(--r-ctl-sm,10px)-3px)] px-[var(--s2,8px)] flex items-center t-small font-semibold truncate cursor-pointer"
                           style={{
                             insetInlineStart: `${b.leftPct}%`,
                             width: `${b.widthPct}%`,

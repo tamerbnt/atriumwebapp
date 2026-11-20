@@ -147,16 +147,16 @@ export const WaterfallChart: React.FC<WaterfallChartProps> = React.memo(
         }
         footer={
           processed.bars.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-3 ax-tk pt-1">
-              <span className="inline-flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-[var(--chart-leg-row-gap,16px)] ax-tk">
+              <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                 <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--ax-on)]" />
                 <span>{legendLabels?.total || strings.totalStepLabel}</span>
               </span>
-              <span className="inline-flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                 <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--ax-ok)]" />
                 <span>{legendLabels?.positive || strings.positiveLabel}</span>
               </span>
-              <span className="inline-flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                 <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--ax-c1)]" />
                 <span>{legendLabels?.negative || strings.negativeLabel}</span>
               </span>
@@ -165,13 +165,12 @@ export const WaterfallChart: React.FC<WaterfallChartProps> = React.memo(
         }
       >
         <div
-          className="relative flex gap-2.5 pt-4"
+          className="relative flex gap-[var(--s3,12px)] pt-[var(--s4,16px)]"
           onPointerLeave={() => setActiveIdx(null)}
         >
           {/* Y-axis */}
           <div
-            className="flex flex-col justify-between items-end shrink-0 ax-tk select-none"
-            style={{ height: 156 }}
+            className="flex flex-col justify-between items-end shrink-0 ax-tk select-none h-[var(--chart-h,160px)]"
             aria-hidden="true"
           >
             {[...processed.scale.ticks].reverse().map((tick, idx) => (
@@ -183,7 +182,7 @@ export const WaterfallChart: React.FC<WaterfallChartProps> = React.memo(
 
           {/* Plot Area */}
           <div className="relative flex-1 min-w-0">
-            <div className="relative h-[156px] w-full">
+            <div className="relative h-[var(--chart-h,160px)] w-full">
               {processed.scale.ticks.map((tick, idx) => (
                 <div
                   key={idx}
@@ -249,11 +248,11 @@ export const WaterfallChart: React.FC<WaterfallChartProps> = React.memo(
                       {/* Floating bar value label */}
                       <span
                         dir="ltr"
-                        className="ax-tk absolute inset-x-0 text-center text-[9.5px] leading-none pointer-events-none whitespace-nowrap"
+                        className="ax-tk absolute inset-x-0 text-center pointer-events-none whitespace-nowrap"
                         style={
                           bar.polarity === 'neg'
-                            ? { top: `calc(${100 - bottomPct}% + 3px)` }
-                            : { bottom: `calc(${Math.max(0, bottomPct) + heightPct}% + 3px)` }
+                            ? { top: `calc(${100 - bottomPct}% + 4px)` }
+                            : { bottom: `calc(${Math.max(0, bottomPct) + heightPct}% + 4px)` }
                         }
                         aria-hidden="true"
                       >

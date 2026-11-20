@@ -42,26 +42,27 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen w-screen flex items-center justify-center bg-[#121110] text-white p-6 font-sans">
+        <div className="min-h-screen w-screen flex items-center justify-center bg-[#121110] text-white p-[var(--s6,24px)] font-sans">
           <div className="max-w-md w-full sq-elev-pop">
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="w-full bg-[#1C1A18] [--sq-stroke:#262626] rounded-[var(--r-panel,28px)] p-8 text-center space-y-6"
+              data-surface="dark"
+              className="w-full bg-[#1C1A18] [--sq-stroke:#262626] rounded-[var(--r-panel,28px)] p-[var(--s7,32px)] text-center flex flex-col items-center gap-[var(--s6,24px)]"
             >
               <div
                 data-sq="tile-lg"
                 data-sq-border="solid"
-                className="w-16 h-16 rounded-[var(--r-tile-lg,15px)] bg-amber-500/10 [--sq-stroke:rgba(245,158,11,0.3)] text-amber-500 flex items-center justify-center mx-auto"
+                className="w-[var(--tile-lg,48px)] h-[var(--tile-lg,48px)] rounded-[var(--r-tile-lg,15px)] bg-amber-500/10 [--sq-stroke:rgba(245,158,11,0.3)] text-amber-500 flex items-center justify-center"
               >
-                <AlertTriangle className="w-8 h-8" />
+                <AlertTriangle className="w-6 h-6" strokeWidth={2} />
               </div>
 
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight rtl:tracking-normal text-white mb-2">
+              <div className="flex flex-col gap-[var(--s2,8px)]">
+                <h2 className="t-dialog text-white">
                   Atrium Recovery Console
-                </h1>
-                <p className="text-sm text-white/75">
+                </h2>
+                <p className="t-body text-white/75">
                   A rendering issue was intercepted. You can reload the application or reset local cache to clean state.
                 </p>
               </div>
@@ -70,19 +71,19 @@ export class ErrorBoundary extends Component<Props, State> {
                 <div
                   data-sq="card"
                   data-sq-border="solid"
-                  className="p-3 bg-neutral-900/80 rounded-[var(--r-card,16px)] text-left [--sq-stroke:#262626] text-xs font-mono text-white/90 max-h-32 overflow-y-auto"
+                  className="w-full p-[var(--s3,12px)] bg-neutral-900/80 rounded-[var(--r-card,16px)] text-left [--sq-stroke:#262626] t-cap tabular-nums text-white/90 max-h-32 overflow-y-auto"
                 >
                   {this.state.error.message}
                 </div>
               )}
 
-            <div className="flex flex-col gap-3 pt-2">
+            <div className="w-full flex flex-col gap-[var(--s3,12px)]">
               <AtriumButton
                 type="button"
                 variant="primary"
                 size="md"
                 className="w-full"
-                icon={<RefreshCw className="w-4 h-4" />}
+                icon={<RefreshCw className="w-4 h-4" strokeWidth={1.5} />}
                 onClick={this.handleReload}
               >
                 Reload Application
@@ -93,7 +94,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 variant="secondary"
                 size="sm"
                 className="w-full"
-                icon={<Trash2 className="w-3.5 h-3.5" />}
+                icon={<Trash2 className="w-4 h-4" strokeWidth={1.5} />}
                 onClick={this.handleResetState}
               >
                 Clear Local Cache & Reset

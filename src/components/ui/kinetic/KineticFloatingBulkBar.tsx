@@ -100,14 +100,14 @@ export const KineticFloatingBulkBar: React.FC<KineticFloatingBulkBarProps> = ({
       role="toolbar"
       aria-label={language === 'ar' ? 'إجراءات جماعية' : language === 'fr' ? 'Actions groupées' : 'Bulk actions'}
       aria-hidden={selectedCount === 0}
-      className={`bar fixed left-1/2 top-3 flex items-center gap-2 h-14 max-w-[calc(100vw-24px)] overflow-x-auto pl-5 pr-2 rounded-full bg-[#1F1D1B] text-[#F4EDE6] z-[45] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-white/[0.1] ${className}`}
+      className={`bar fixed left-1/2 top-[var(--inset,12px)] flex items-center gap-[var(--s2,8px)] h-14 max-w-[calc(100vw-24px)] overflow-x-auto pl-[var(--s5,20px)] pr-[var(--s2,8px)] rounded-full bg-[#1F1D1B] text-[#F4EDE6] z-[45] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-white/[0.1] ${className}`}
       style={{
         visibility: selectedCount > 0 ? 'visible' : 'hidden',
         pointerEvents: selectedCount > 0 ? 'auto' : 'none',
         opacity: selectedCount > 0 ? 1 : 0,
       }}
     >
-      <b className="text-[var(--t-sub)] font-semibold tabular-nums pr-2 whitespace-nowrap text-white">
+      <b className="t-label font-semibold tabular-nums pr-[var(--s2,8px)] whitespace-nowrap text-white">
         {selectedLabel}
       </b>
 
@@ -118,7 +118,7 @@ export const KineticFloatingBulkBar: React.FC<KineticFloatingBulkBarProps> = ({
           data-no-liquid="true"
           tabIndex={selectedCount > 0 ? 0 : -1}
           onClick={act.onClick}
-          className={`h-10 px-4 border-0 rounded-full text-[#F4EDE6] flex items-center gap-2 font-medium text-[var(--t-sub)] transition-colors cursor-pointer whitespace-nowrap ${
+          className={`h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] border-0 rounded-full text-[#F4EDE6] flex items-center gap-[var(--btn-icon-gap,8px)] t-btn transition-colors cursor-pointer whitespace-nowrap ${
             act.tone === 'danger'
               ? 'bg-[#F4EDE6]/12 hover:bg-[var(--brand-fill)] hover:text-white'
               : act.tone === 'accent'
@@ -137,9 +137,9 @@ export const KineticFloatingBulkBar: React.FC<KineticFloatingBulkBarProps> = ({
           data-no-liquid="true"
           tabIndex={selectedCount > 0 ? 0 : -1}
           onClick={onExport}
-          className="h-10 px-4 border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] flex items-center gap-2 font-medium text-[var(--t-sub)] transition-colors cursor-pointer whitespace-nowrap"
+          className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] flex items-center gap-[var(--btn-icon-gap,8px)] t-btn transition-colors cursor-pointer whitespace-nowrap"
         >
-          <Download className="w-4 h-4" />
+          <Download className="w-4 h-4" strokeWidth={1.5} />
           <span>{language === 'ar' ? 'تصدير' : language === 'fr' ? 'Exporter' : 'Export'}</span>
         </button>
       )}
@@ -150,9 +150,9 @@ export const KineticFloatingBulkBar: React.FC<KineticFloatingBulkBarProps> = ({
           data-no-liquid="true"
           tabIndex={selectedCount > 0 ? 0 : -1}
           onClick={onDelete}
-          className="h-10 px-4 border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[var(--brand-fill)] text-[#F4EDE6] hover:text-white flex items-center gap-2 font-medium text-[var(--t-sub)] transition-colors cursor-pointer whitespace-nowrap"
+          className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[var(--brand-fill)] text-[#F4EDE6] hover:text-white flex items-center gap-[var(--btn-icon-gap,8px)] t-btn transition-colors cursor-pointer whitespace-nowrap"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4 h-4" strokeWidth={1.5} />
           <span>{language === 'ar' ? 'حذف' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
         </button>
       )}
@@ -163,9 +163,9 @@ export const KineticFloatingBulkBar: React.FC<KineticFloatingBulkBarProps> = ({
         tabIndex={selectedCount > 0 ? 0 : -1}
         onClick={onClear}
         aria-label={language === 'ar' ? 'مسح التحديد' : language === 'fr' ? 'Effacer la sélection' : 'Clear selection'}
-        className="w-10 h-10 p-0 border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] grid place-items-center transition-colors cursor-pointer shrink-0"
+        className="w-[var(--btn-h,40px)] h-[var(--btn-h,40px)] p-0 border-0 rounded-full bg-[#F4EDE6]/12 hover:bg-[#F4EDE6]/25 text-[#F4EDE6] grid place-items-center transition-colors cursor-pointer shrink-0"
       >
-        <X className="w-4 h-4" />
+        <X className="w-4 h-4" strokeWidth={1.5} />
       </button>
     </div>
   );

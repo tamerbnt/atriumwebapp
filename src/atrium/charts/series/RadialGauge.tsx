@@ -68,12 +68,12 @@ export const RadialGauge: React.FC<RadialGaugeProps> = React.memo(
       for (let i = 0; i < TOTAL_TICKS; i++) {
         const deg = START_ANGLE + (i / (TOTAL_TICKS - 1)) * SWEEP_DEG;
         const rad = (deg * Math.PI) / 180;
-        const r1 = 42.5;
-        const r2 = i % 6 === 0 ? 48 : 46;
-        const x1 = 50 + r1 * Math.cos(rad);
-        const y1 = 50 + r1 * Math.sin(rad);
-        const x2 = 50 + r2 * Math.cos(rad);
-        const y2 = 50 + r2 * Math.sin(rad);
+        const r1 = 85;
+        const r2 = i % 6 === 0 ? 96 : 92;
+        const x1 = 100 + r1 * Math.cos(rad);
+        const y1 = 100 + r1 * Math.sin(rad);
+        const x2 = 100 + r2 * Math.cos(rad);
+        const y2 = 100 + r2 * Math.sin(rad);
         const isOn = i < activeCount;
         const mixWeight = Math.round((1 - i / (TOTAL_TICKS - 1)) * 100);
         const color = !isOn
@@ -129,11 +129,11 @@ export const RadialGauge: React.FC<RadialGaugeProps> = React.memo(
         footer={
           activeMetric &&
           (typeof activeMetric.target === 'number' || typeof activeMetric.delta === 'number') ? (
-            <div className="flex items-center justify-between gap-2 ax-tk pt-1">
+            <div className="flex items-center justify-between gap-[var(--s2,8px)] ax-tk">
               {typeof activeMetric.target === 'number' ? (
                 <span>
                   {activeMetric.targetLabel || strings.targetLabel}:{' '}
-                  <strong className="text-[var(--ax-on)]">
+                  <strong className="font-semibold text-[var(--ax-on)]">
                     {Math.round(activeMetric.target)}
                     {unitStr}
                   </strong>
@@ -162,10 +162,10 @@ export const RadialGauge: React.FC<RadialGaugeProps> = React.memo(
           ) : undefined
         }
       >
-        <div className="relative flex items-center justify-center py-1">
+        <div className="relative flex items-center justify-center py-[var(--s1,4px)]">
           <svg
-            viewBox="0 0 100 100"
-            className="w-[206px] h-[196px] overflow-visible"
+            viewBox="0 0 200 200"
+            className="w-[200px] h-[200px] overflow-visible"
             role="img"
             aria-label={ariaSummary}
           >
@@ -178,11 +178,11 @@ export const RadialGauge: React.FC<RadialGaugeProps> = React.memo(
                 x2={tk.x2}
                 y2={tk.y2}
                 stroke={tk.color}
-                strokeWidth="1.45"
+                strokeWidth="2.9"
                 strokeLinecap="round"
                 className="ax-pop-item"
                 style={{
-                  transformOrigin: '50px 50px',
+                  transformOrigin: '100px 100px',
                   '--ax-delay': `${Math.min(idx * 10, 320)}ms`,
                   transition: 'stroke 0.25s ease',
                 } as React.CSSProperties}
@@ -191,30 +191,30 @@ export const RadialGauge: React.FC<RadialGaugeProps> = React.memo(
 
             {/* Track Arc (270°) */}
             <circle
-              cx="50"
-              cy="50"
-              r="33.5"
+              cx="100"
+              cy="100"
+              r="67"
               fill="none"
               pathLength={100}
               stroke="var(--ax-tick-off)"
-              strokeWidth="6.5"
+              strokeWidth="13"
               strokeLinecap="round"
               strokeDasharray={`${arcMax} ${100 - arcMax}`}
-              transform="rotate(135 50 50)"
+              transform="rotate(135 100 100)"
             />
 
-            {/* Active Arc (Main.dc.html emerald health stroke) */}
+            {/* Active Arc */}
             <circle
-              cx="50"
-              cy="50"
-              r="33.5"
+              cx="100"
+              cy="100"
+              r="67"
               fill="none"
               pathLength={100}
               stroke="var(--ax-ok)"
-              strokeWidth="6.5"
+              strokeWidth="13"
               strokeLinecap="round"
               strokeDasharray={`${arcActive} ${100 - arcActive}`}
-              transform="rotate(135 50 50)"
+              transform="rotate(135 100 100)"
               className="ax-donut-arc"
               style={{
                 transition: 'stroke-dasharray 0.72s var(--ax-sp2)',
@@ -224,70 +224,78 @@ export const RadialGauge: React.FC<RadialGaugeProps> = React.memo(
             {/* Optional Target Radial Tick */}
             {targetAngle !== null && (
               <line
-                x1="80"
-                y1="50"
-                x2="87"
-                y2="50"
+                x1="160"
+                y1="100"
+                x2="174"
+                y2="100"
                 stroke="var(--ax-on)"
-                strokeWidth="1.8"
+                strokeWidth="3.6"
                 strokeLinecap="round"
-                transform={`rotate(${targetAngle} 50 50)`}
+                transform={`rotate(${targetAngle} 100 100)`}
               />
             )}
 
             {/* Rotating Orbiting Marker Dot (#F4EDE6 cream dot with #151413 border) */}
             <g
               style={{
-                transformOrigin: '50px 50px',
+                transformOrigin: '100px 100px',
                 transform: `rotate(${dotAngle}deg)`,
                 transition: 'transform 0.9s var(--ax-sp)',
               }}
             >
               <circle
-                cx="83.5"
-                cy="50"
-                r="5.6"
+                cx="167"
+                cy="100"
+                r="11.2"
                 fill="var(--ax-ok)"
                 opacity="0.24"
               />
               <circle
-                cx="83.5"
-                cy="50"
-                r="3.8"
+                cx="167"
+                cy="100"
+                r="7.6"
                 fill="#F4EDE6"
                 stroke="#151413"
-                strokeWidth="1.8"
+                strokeWidth="3.6"
               />
             </g>
 
             {/* 0% and 100% horseshoe base labels */}
             <text
-              x="21"
-              y="88"
+              x="42"
+              y="176"
               textAnchor="middle"
               className="fill-[var(--ax-mut)]"
-              style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '5.5px' }}
+              style={{
+                fontFamily: "var(--font-ui, 'Inter', sans-serif)",
+                fontSize: '12px',
+                fontVariantNumeric: 'tabular-nums',
+              }}
             >
               0%
             </text>
             <text
-              x="79"
-              y="88"
+              x="158"
+              y="176"
               textAnchor="middle"
               className="fill-[var(--ax-mut)]"
-              style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '5.5px' }}
+              style={{
+                fontFamily: "var(--font-ui, 'Inter', sans-serif)",
+                fontSize: '12px',
+                fontVariantNumeric: 'tabular-nums',
+              }}
             >
               100%
             </text>
           </svg>
 
-          {/* Centered 52px Rolling Readout + Uppercase Mono Subtitle */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1">
+          {/* Centered Rolling Readout + Subtitle */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-[var(--s1,4px)] pointer-events-none">
             <span className="ax-disp ax-big-gauge text-[var(--ax-on)]">
               <RollingDigits value={`${Math.round(pct)}${unitStr}`} />
             </span>
             {activeMetric && (
-              <span className="ax-tk uppercase tracking-[0.09em] text-[var(--ax-sub)] mt-1">
+              <span className="t-small text-[var(--ax-sub)]">
                 {activeMetric.label}
               </span>
             )}

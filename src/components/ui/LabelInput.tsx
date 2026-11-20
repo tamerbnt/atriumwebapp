@@ -275,7 +275,7 @@ export function LabelInput({
   return (
     <div
       ref={boxRef}
-      className={`lbi flex flex-col gap-1 ${className}`}
+      className={`lbi flex flex-col gap-[var(--s1,4px)] ${className}`}
       data-up={Boolean(up)}
       data-focus={focus}
       data-filled={Boolean(value !== undefined && value !== null && String(value).length > 0)}
@@ -381,9 +381,9 @@ export function LabelInput({
         <p
           id={resolvedErrorId}
           role="alert"
-          className="text-xs font-medium text-[#B8321C] flex items-center gap-1"
+          className="t-small text-[#B8321C] flex items-center gap-[var(--s1,4px)]"
         >
-          <AlertCircle className="w-4 h-4 shrink-0" />
+          <AlertCircle size={16} strokeWidth={1.5} className="shrink-0" />
           <span>{error}</span>
         </p>
       )}

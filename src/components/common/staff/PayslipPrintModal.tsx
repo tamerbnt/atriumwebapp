@@ -31,196 +31,196 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
   const amountInWords = numberToAlgerianWordsFR(slip.netAPayer);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
-      <div className="sq-elev-pop max-w-3xl w-full my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--s4,16px)] bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
+      <div className="sq-elev-pop max-w-3xl w-full">
         <div
           data-sq="panel"
           style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-          className="bg-white dark:bg-[#18181B] w-full p-6 md:p-8 relative"
+          className="bg-white dark:bg-[#18181B] w-full p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] relative"
         >
           {/* Header Toolbar (hidden on print) */}
-          <div className="flex items-center justify-between pb-4 mb-6 border-b border-neutral-200 dark:border-neutral-800 print:hidden">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold text-[#d4522f] bg-[#d4522f]/10 px-2.5 py-1 rounded-full">
+          <div className="flex items-center justify-between pb-[var(--s4,16px)] border-b border-neutral-200 dark:border-neutral-800 print:hidden">
+            <div className="flex items-center gap-[var(--s2,8px)]">
+              <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-[#d4522f]/10 tabular-nums">
                 {slip.receiptNumber}
               </span>
-              <span className="text-xs text-black/70 dark:text-white/75 font-medium">
+              <span className="t-label text-[var(--text-2)] dark:text-white/75">
                 {slip.periodLabel}
               </span>
             </div>
-            <div className="flex items-center gap-3">
-              <AtriumButton onClick={handlePrint} className="h-9 px-4 text-xs flex items-center gap-1.5">
-                <Printer className="w-4 h-4" />
+            <div className="flex items-center gap-[var(--s3,12px)]">
+              <AtriumButton onClick={handlePrint} icon={<Printer className="w-4 h-4" strokeWidth={1.5} />}>
                 <span>{isAr ? 'طباعة القسيمة' : isEn ? 'Print Payslip' : 'Imprimer le Bulletin'}</span>
               </AtriumButton>
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 rounded-full text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] flex items-center justify-center rounded-full text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" strokeWidth={1.5} />
               </button>
             </div>
           </div>
 
           {/* Printable Official Algerian Bulletin de Paie */}
-          <div id="payslip-document" className="bg-white text-black p-6 md:p-8 rounded-[var(--r-card,16px)] border border-neutral-300 font-sans text-xs">
+          <div id="payslip-document" className="bg-white text-[var(--text-1)] p-[var(--s6,24px)] rounded-[var(--r-card,16px)] border border-neutral-300 flex flex-col gap-[var(--s4,16px)] t-body">
           {/* Header Block */}
-          <div className="text-center pb-4 border-b-2 border-black/80 mb-4">
-            <p className="text-[10px] uppercase font-bold tracking-widest text-black/70">
+          <div className="text-center pb-[var(--s4,16px)] border-b-2 border-black/80 flex flex-col items-center gap-[var(--s1,4px)]">
+            <p className="t-small text-[var(--text-2)]">
               République Algérienne Démocratique et Populaire
             </p>
-            <h2 className="text-xl font-black tracking-tight text-black uppercase mt-1 font-['Barlow_Condensed',sans-serif]">
+            <h2 className="t-dialog text-[var(--text-1)]">
               {businessName}
             </h2>
-            <p className="text-[11px] text-black/70 mt-0.5">
-              Complexe Sportif & Salle de Musculation · Alger Centre · NIF: 002416098124589 · RC: 16/00-88124
+            <p className="t-cap text-[var(--text-2)]">
+              Complexe Sportif & Salle de Musculation · Alger Centre · NIF : 002416098124589 · RC : 16/00-88124
             </p>
-            <div className="inline-block mt-2 px-4 py-1 bg-black text-white font-bold text-xs uppercase tracking-wider rounded-[var(--r-check,6px)]">
+            <div className="inline-block px-[var(--s4,16px)] py-[var(--s1,4px)] bg-black text-white t-btn rounded-[var(--r-check,6px)]">
               Bulletin de Paie · {slip.periodLabel}
             </div>
           </div>
 
           {/* Employee & Administrative Information */}
-          <div data-sq="card" data-sq-border="solid" className="grid grid-cols-2 gap-4 p-3 bg-neutral-50 border border-neutral-200 [--sq-stroke:#e5e5e5] mb-4">
-            <div className="space-y-1">
-              <p><span className="font-bold text-black/70">Collaborateur :</span> <strong className="text-black text-sm">{slip.staffFullName}</strong></p>
-              <p><span className="font-bold text-black/70">Matricule :</span> <span className="font-mono font-bold tabular-nums">{slip.matricule}</span></p>
-              <p><span className="font-bold text-black/70">Poste / Fonction :</span> {slip.role}</p>
-              <p><span className="font-bold text-black/70">N° Sécurité Sociale (NSS) :</span> <span className="font-mono tabular-nums">{slip.nss || '89 04 16 0000 00'}</span></p>
+          <div data-sq="card" data-sq-border="solid" className="grid grid-cols-2 gap-[var(--s4,16px)] p-[var(--s3,12px)] bg-neutral-50 border border-neutral-200 [--sq-stroke:#e5e5e5]">
+            <div className="flex flex-col gap-[var(--s1,4px)]">
+              <p><span className="font-semibold text-[var(--text-2)]">Collaborateur :</span> <strong className="font-semibold text-[var(--text-1)] t-card">{slip.staffFullName}</strong></p>
+              <p><span className="font-semibold text-[var(--text-2)]">Matricule :</span> <span className="font-semibold tabular-nums">{slip.matricule}</span></p>
+              <p><span className="font-semibold text-[var(--text-2)]">Poste / Fonction :</span> {slip.role}</p>
+              <p><span className="font-semibold text-[var(--text-2)]">N° Sécurité Sociale (NSS) :</span> <span className="tabular-nums">{slip.nss || '89 04 16 0000 00'}</span></p>
             </div>
-            <div className="space-y-1 text-right">
-              <p><span className="font-bold text-black/70">Mode de Règlement :</span> <strong className="uppercase">{slip.paymentMethod === 'ccp' ? 'Virement CCP Poste' : slip.paymentMethod === 'bank_transfer' ? 'Virement Bancaire' : 'Espèces (Caisse)'}</strong></p>
+            <div className="flex flex-col gap-[var(--s1,4px)] text-right">
+              <p><span className="font-semibold text-[var(--text-2)]">Mode de Règlement :</span> <strong className="font-semibold">{slip.paymentMethod === 'ccp' ? 'Virement CCP Poste' : slip.paymentMethod === 'bank_transfer' ? 'Virement Bancaire' : 'Espèces (Caisse)'}</strong></p>
               {slip.ccpNumber && (
-                <p><span className="font-bold text-black/70">Compte CCP :</span> <span className="font-mono font-bold tabular-nums">{slip.ccpNumber} / {slip.ccpKey}</span></p>
+                <p><span className="font-semibold text-[var(--text-2)]">Compte CCP :</span> <span className="font-semibold tabular-nums">{slip.ccpNumber} / {slip.ccpKey}</span></p>
               )}
               {slip.bankRib && (
-                <p><span className="font-bold text-black/70">RIB Bancaire :</span> <span className="font-mono text-[10px] tabular-nums">{slip.bankRib}</span></p>
+                <p><span className="font-semibold text-[var(--text-2)]">RIB Bancaire :</span> <span className="t-cap tabular-nums">{slip.bankRib}</span></p>
               )}
-              <p><span className="font-bold text-black/70">Jours travaillés :</span> <span className="font-mono font-bold tabular-nums">{slip.workedDays} / {slip.standardDays} j</span></p>
-              <p><span className="font-bold text-black/70">Date d'édition :</span> <span className="tabular-nums">{slip.paidDate || new Date().toISOString().slice(0, 10)}</span></p>
+              <p><span className="font-semibold text-[var(--text-2)]">Jours travaillés :</span> <span className="font-semibold tabular-nums">{slip.workedDays} / {slip.standardDays} j</span></p>
+              <p><span className="font-semibold text-[var(--text-2)]">Date d'édition :</span> <span className="tabular-nums">{slip.paidDate || new Date().toISOString().slice(0, 10)}</span></p>
             </div>
           </div>
 
           {/* Breakdown Table */}
-          <table className="w-full border-collapse border border-neutral-300 text-[11px] mb-4 tabular-nums">
+          <table className="w-full border-collapse border border-neutral-300 t-cap tabular-nums">
             <thead>
-              <tr className="bg-neutral-100 text-black text-left">
-                <th className="border border-neutral-300 p-2 font-bold">Rubriques de Paie</th>
-                <th className="border border-neutral-300 p-2 text-right font-bold w-24">Base (DZD)</th>
-                <th className="border border-neutral-300 p-2 text-center font-bold w-16">Taux</th>
-                <th className="border border-neutral-300 p-2 text-right font-bold w-28">Gains (DZD)</th>
-                <th className="border border-neutral-300 p-2 text-right font-bold w-28">Retenues (DZD)</th>
+              <tr className="bg-neutral-100 text-[var(--text-1)] text-left">
+                <th className="border border-neutral-300 p-[var(--s2,8px)] font-semibold">Rubriques de Paie</th>
+                <th className="border border-neutral-300 p-[var(--s2,8px)] text-right font-semibold w-24">Base (DZD)</th>
+                <th className="border border-neutral-300 p-[var(--s2,8px)] text-center font-semibold w-16">Taux</th>
+                <th className="border border-neutral-300 p-[var(--s2,8px)] text-right font-semibold w-28">Gains (DZD)</th>
+                <th className="border border-neutral-300 p-[var(--s2,8px)] text-right font-semibold w-28">Retenues (DZD)</th>
               </tr>
             </thead>
             <tbody>
               {/* Base wage */}
               <tr>
-                <td className="border border-neutral-300 p-1.5 font-medium">Salaire de Base</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono">{slip.baseSalary.toLocaleString()}</td>
-                <td className="border border-neutral-300 p-1.5 text-center font-mono">100%</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold">{slip.actualBaseSalary.toLocaleString()}</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] font-medium">Salaire de Base</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right">{slip.baseSalary.toLocaleString()}</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-center">100 %</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right font-semibold">{slip.actualBaseSalary.toLocaleString()}</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right text-[var(--text-3)]">-</td>
               </tr>
 
               {/* Primes cotisables */}
               {slip.primesCotisables?.map((prime, idx) => (
                 <tr key={`prime_${idx}`}>
-                  <td className="border border-neutral-300 p-1.5">{prime.label}</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono">{prime.amount.toLocaleString()}</td>
-                  <td className="border border-neutral-300 p-1.5 text-center font-mono">-</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold">{prime.amount.toLocaleString()}</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)]">{prime.label}</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-right">{prime.amount.toLocaleString()}</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-center">-</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-right font-semibold">{prime.amount.toLocaleString()}</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-right text-[var(--text-3)]">-</td>
                 </tr>
               ))}
 
               {/* Total Brut Cotisable Row */}
-              <tr className="bg-neutral-50 font-bold">
-                <td colSpan={3} className="border border-neutral-300 p-1.5 uppercase text-black/85">Total Salaire Brut Cotisable</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black">{slip.salaireBrutCotisable.toLocaleString()}</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
+              <tr className="bg-neutral-50 font-semibold">
+                <td colSpan={3} className="border border-neutral-300 p-[var(--s2,8px)] text-[var(--text-1)]">Total Salaire Brut Cotisable</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right text-[var(--text-1)]">{slip.salaireBrutCotisable.toLocaleString()}</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right text-[var(--text-3)]">-</td>
               </tr>
 
               {/* CNAS Salarial 9% */}
               <tr>
-                <td className="border border-neutral-300 p-1.5">Cotisation Sécurité Sociale (CNAS Salariale)</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono">{slip.salaireBrutCotisable.toLocaleString()}</td>
-                <td className="border border-neutral-300 p-1.5 text-center font-mono font-bold text-red-600">9.0%</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold text-red-600">{slip.cnasSalarial.toLocaleString()}</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)]">Cotisation Sécurité Sociale (CNAS Salariale)</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right">{slip.salaireBrutCotisable.toLocaleString()}</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-center font-semibold text-red-600">9.0 %</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right text-[var(--text-3)]">-</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right font-semibold text-red-600">{slip.cnasSalarial.toLocaleString()}</td>
               </tr>
 
               {/* Total Brut Imposable Row */}
-              <tr className="bg-neutral-50 font-bold">
-                <td colSpan={3} className="border border-neutral-300 p-1.5 uppercase text-black/85">Salaire Brut Imposable</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black">{slip.salaireBrutImposable.toLocaleString()}</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
+              <tr className="bg-neutral-50 font-semibold">
+                <td colSpan={3} className="border border-neutral-300 p-[var(--s2,8px)] text-[var(--text-1)]">Salaire Brut Imposable</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right text-[var(--text-1)]">{slip.salaireBrutImposable.toLocaleString()}</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right text-[var(--text-3)]">-</td>
               </tr>
 
               {/* IRG 2022 */}
               <tr>
-                <td className="border border-neutral-300 p-1.5">Impôt sur le Revenu Global (IRG - Barème 2022)</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono">{slip.salaireBrutImposable.toLocaleString()}</td>
-                <td className="border border-neutral-300 p-1.5 text-center font-mono">Barème</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
-                <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold text-red-600">{slip.irgTax.toLocaleString()}</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)]">Impôt sur le Revenu Global (IRG - Barème 2022)</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right">{slip.salaireBrutImposable.toLocaleString()}</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-center">Barème</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right text-[var(--text-3)]">-</td>
+                <td className="border border-neutral-300 p-[var(--s2,8px)] text-right font-semibold text-red-600">{slip.irgTax.toLocaleString()}</td>
               </tr>
 
               {/* Primes Non Imposables (Panier, Transport) */}
               {slip.primesNonImposables?.map((allowance, idx) => (
                 <tr key={`allowance_${idx}`}>
-                  <td className="border border-neutral-300 p-1.5">{allowance.label} (Non Cotisable / Non Imposable)</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono">{allowance.amount.toLocaleString()}</td>
-                  <td className="border border-neutral-300 p-1.5 text-center font-mono">-</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold text-emerald-700">{allowance.amount.toLocaleString()}</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)]">{allowance.label} (Non Cotisable / Non Imposable)</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-right">{allowance.amount.toLocaleString()}</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-center">-</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-right font-semibold text-emerald-700">{allowance.amount.toLocaleString()}</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-right text-[var(--text-3)]">-</td>
                 </tr>
               ))}
 
               {/* Acomptes déduits */}
               {slip.acomptesDeduits > 0 && (
                 <tr className="bg-amber-50">
-                  <td className="border border-neutral-300 p-1.5 font-bold text-amber-900">Acomptes sur Salaire Déduits</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono">{slip.acomptesDeduits.toLocaleString()}</td>
-                  <td className="border border-neutral-300 p-1.5 text-center font-mono">-</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono text-black/50">-</td>
-                  <td className="border border-neutral-300 p-1.5 text-right font-mono font-bold text-amber-900">{slip.acomptesDeduits.toLocaleString()}</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] font-semibold text-amber-900">Acomptes sur Salaire Déduits</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-right">{slip.acomptesDeduits.toLocaleString()}</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-center">-</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-right text-[var(--text-3)]">-</td>
+                  <td className="border border-neutral-300 p-[var(--s2,8px)] text-right font-semibold text-amber-900">{slip.acomptesDeduits.toLocaleString()}</td>
                 </tr>
               )}
             </tbody>
           </table>
 
           {/* Employer Contributions (Quote-part patronale) */}
-          <div data-sq="card" data-sq-border="solid" className="p-2.5 bg-neutral-50 border border-neutral-200 [--sq-stroke:#e5e5e5] mb-4 text-[10px] text-black/70 flex justify-between items-center tabular-nums">
-            <span><strong>Quote-part patronale Sécurité Sociale (26%) :</strong> <span className="font-mono">{slip.cnasPatronal.toLocaleString()} DZD</span></span>
-            <span><strong>Coût global du poste pour l'employeur :</strong> <span className="font-mono font-bold text-black">{(slip.salaireBrutCotisable + slip.cnasPatronal + (slip.primesNonImposables?.reduce((s, p) => s + p.amount, 0) || 0)).toLocaleString()} DZD</span></span>
+          <div data-sq="card" data-sq-border="solid" className="p-[var(--s3,12px)] bg-neutral-50 border border-neutral-200 [--sq-stroke:#e5e5e5] t-cap text-[var(--text-2)] flex justify-between items-center tabular-nums">
+            <span><strong className="font-semibold text-[var(--text-1)]">Quote-part patronale Sécurité Sociale (26 %) :</strong> {slip.cnasPatronal.toLocaleString()} DZD</span>
+            <span><strong className="font-semibold text-[var(--text-1)]">Coût global du poste pour l'employeur :</strong> <span className="font-semibold text-[var(--text-1)]">{(slip.salaireBrutCotisable + slip.cnasPatronal + (slip.primesNonImposables?.reduce((s, p) => s + p.amount, 0) || 0)).toLocaleString()} DZD</span></span>
           </div>
 
           {/* Net to Pay Box */}
-          <div data-sq="card" data-sq-border="none" className="flex items-center justify-between p-4 bg-black text-white mb-4 tabular-nums">
-            <div>
-              <p className="text-[10px] uppercase font-bold tracking-widest text-white/70">Net à Payer (DZD)</p>
-              <p className="text-xl font-black font-mono tracking-tight mt-0.5 text-white">
-                {slip.netAPayer.toLocaleString()} <span className="text-xs font-normal text-white/75">Dinars Algériens</span>
+          <div data-sq="card" data-sq-border="none" data-surface="dark" className="flex items-center justify-between p-[var(--s4,16px)] bg-black text-white tabular-nums">
+            <div className="flex flex-col gap-[var(--title-cap-gap,2px)]">
+              <p className="t-small text-[var(--text-dark-2,#A99E92)]">Net à Payer (DZD)</p>
+              <p className="t-dialog text-white flex items-baseline gap-[var(--num-unit-gap,6px)]">
+                <span>{slip.netAPayer.toLocaleString()}</span>
+                <span className="t-small font-normal text-white/75">Dinars Algériens</span>
               </p>
             </div>
-            <div className="text-right max-w-sm">
-              <p className="text-[10px] uppercase font-bold tracking-widest text-white/70">Arrêté en toutes lettres :</p>
-              <p className="text-xs italic font-serif leading-snug mt-0.5 text-white/90">
-                "{amountInWords}"
+            <div className="text-right max-w-sm flex flex-col gap-[var(--title-cap-gap,2px)]">
+              <p className="t-small text-[var(--text-dark-2,#A99E92)]">Arrêté en toutes lettres :</p>
+              <p className="t-body italic text-white/90">
+                « {amountInWords} »
               </p>
             </div>
           </div>
 
           {/* Signatures */}
-          <div className="grid grid-cols-2 gap-8 pt-4 border-t border-neutral-300 text-[10px]">
+          <div className="grid grid-cols-2 gap-[var(--s7,32px)] pt-[var(--s4,16px)] border-t border-neutral-300 t-cap">
             <div className="h-20 flex flex-col justify-between">
-              <span className="font-bold text-black/75">Cachet & Signature de l'Employeur :</span>
-              <span className="italic text-black/55 text-[10px]">[Document validé électroniquement par la Direction]</span>
+              <span className="font-semibold text-[var(--text-1)]">Cachet & Signature de l'Employeur :</span>
+              <span className="italic text-[var(--text-2)]">[Document validé électroniquement par la Direction]</span>
             </div>
             <div className="h-20 flex flex-col justify-between text-right">
-              <span className="font-bold text-black/75">Signature du Salarié :</span>
-              <span className="italic text-black/55 text-[10px]">Pour acquit et acceptation</span>
+              <span className="font-semibold text-[var(--text-1)]">Signature du Salarié :</span>
+              <span className="italic text-[var(--text-2)]">Pour acquit et acceptation</span>
             </div>
           </div>
         </div>

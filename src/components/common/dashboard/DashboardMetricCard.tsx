@@ -50,16 +50,16 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
       title={tooltip}
       data-sq="card"
       data-sq-border="solid"
-      className={`relative bg-white dark:bg-neutral-800/90 p-[var(--card-pad,20px)] card-opt border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-4 ${className}`}
+      className={`relative bg-white dark:bg-neutral-800/90 p-[var(--card-pad,20px)] card-opt border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] min-h-[var(--kpi-min-h,168px)] flex flex-col gap-[var(--s3,12px)] ${className}`}
     >
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-medium text-[var(--text-2)] block truncate">
+      <div className="flex flex-col gap-[var(--s2,8px)]">
+        <div className="flex items-center justify-between gap-[var(--s2,8px)]">
+          <span className="t-small text-[var(--text-2)] block truncate">
             {label}
           </span>
           {trend && (
             <span
-              className={`text-xs font-semibold tabular-nums ${
+              className={`t-small font-semibold tabular-nums ${
                 trendDirection === 'down'
                   ? 'text-red-700 dark:text-red-400'
                   : trendDirection === 'neutral'
@@ -74,7 +74,7 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
         {displayBadge && (
           <div>
             <span
-              className={`text-xs font-semibold px-2 h-[var(--badge-h,22px)] rounded-full inline-flex items-center ${currentBadgeColor}`}
+              className={`t-small px-[var(--badge-px,6px)] h-[var(--badge-h,22px)] rounded-full inline-flex items-center ${currentBadgeColor}`}
             >
               {displayBadge}
             </span>
@@ -82,18 +82,16 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
         )}
       </div>
 
-      <div className="flex flex-col gap-2 mt-auto">
-        <div className="flex items-baseline gap-1">
-          <span className="text-[var(--t-kpi-m)] leading-[var(--lh-kpi-m)] font-normal tracking-[var(--tr-display)] text-[var(--text-1)] tabular-nums [font-family:var(--font-display)] rtl:[font-family:var(--font-ui)] rtl:font-semibold rtl:text-2xl">
-            {value}
-          </span>
-        </div>
-        {displaySubtext && (
-          <span className="text-xs text-[var(--text-2)] font-medium tabular-nums block">
-            {displaySubtext}
-          </span>
-        )}
+      <div className="flex items-baseline gap-[var(--num-unit-gap,6px)] mt-auto">
+        <span className="t-kpi-m text-[var(--text-1)] rtl:[font-family:var(--font-ui)] rtl:font-semibold rtl:text-2xl">
+          {value}
+        </span>
       </div>
+      {displaySubtext && (
+        <span className="t-cap text-[var(--text-2)] tabular-nums block">
+          {displaySubtext}
+        </span>
+      )}
     </div>
   );
 };

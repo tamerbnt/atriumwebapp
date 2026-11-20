@@ -1,5 +1,5 @@
 .root {
-  --h: var(--atr-h, 40px);
+  --h: var(--atr-h, var(--btn-h, 40px));
   --r: var(--r-ctl, 12px);
 
   position: relative;
@@ -14,10 +14,8 @@
   border-radius: var(--r);
   background: var(--b);
   color: var(--ob);
-  font-family: var(--font-ui, inherit);
-  font-size: var(--t-body, 14px);
-  font-weight: 500;
-  line-height: 1;
+  font: var(--t-btn);
+  letter-spacing: var(--tr-13);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -35,8 +33,8 @@
   --h: var(--btn-sm-h, 32px);
   padding: 0 var(--btn-sm-px, 12px);
   gap: var(--btn-sm-gap, 6px);
-  font-size: var(--t-small, 12px);
-  letter-spacing: var(--tr-12, 0.01em);
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
 }
 
 /* the liquid: a circle that grows from the pointer, driven by the engine */
@@ -64,7 +62,7 @@
   flex: none;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.2;
+  stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }

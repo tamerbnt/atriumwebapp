@@ -228,12 +228,12 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
         headerPills={
           staff ? (
             <>
-              <span className="pill inline-flex items-center px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate max-w-full">
+              <span className="pill inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] border border-[#d4522f]/25 dark:border-[#52291F] truncate max-w-full">
                 {staff.role || 'Staff'}
               </span>
               {staff.status === 'active' && (
-                <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-full text-[12px] font-medium bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3] border border-[#B5E8CE] dark:border-[#1E4D36]">
-                  <ShieldCheck className="w-3 h-3" />
+                <span className="pill inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3] border border-[#B5E8CE] dark:border-[#1E4D36]">
+                  <ShieldCheck className="w-4 h-4" strokeWidth={1.5} />
                   {isAr ? 'في الخدمة' : isEn ? 'In Service' : 'En Poste'}
                 </span>
               )}
@@ -270,57 +270,58 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
                   index={0}
                   title={isAr ? 'البصمة والبادج' : isEn ? 'Badge & Check-In' : 'Badge & Pointage'}
                 >
-                  <InspectorCard>
-                    <InspectorKeyValue
-                      label={isAr ? 'رقم البادج' : isEn ? 'RFID Badge' : 'Badge'}
-                      value={activeStaff.badgeToken || activeStaff.cardId || `RFID-${activeStaff.id.slice(0, 8).toUpperCase()}`}
-                      copyText={activeStaff.badgeToken || activeStaff.cardId}
-                      onCopied={handleCopyToast}
-                    />
-                    <InspectorKeyValue
-                      label={isAr ? 'حالة الحضور' : isEn ? 'Attendance Today' : 'Statut du jour'}
-                      value={
+                  <div className="flex flex-col gap-[var(--s3,12px)]">
+                    <InspectorCard>
+                      <InspectorKeyValue
+                        label={isAr ? 'رقم البادج' : isEn ? 'RFID Badge' : 'Badge'}
+                        value={activeStaff.badgeToken || activeStaff.cardId || `RFID-${activeStaff.id.slice(0, 8).toUpperCase()}`}
+                        copyText={activeStaff.badgeToken || activeStaff.cardId}
+                        onCopied={handleCopyToast}
+                      />
+                      <InspectorKeyValue
+                        label={isAr ? 'حالة الحضور' : isEn ? 'Attendance Today' : 'Statut du jour'}
+                        value={
+                          activeStaff.isClockedInToday
+                            ? `${isAr ? 'حاضر' : isEn ? 'Clocked In' : 'Présent'} · ${activeStaff.lastClockInTime || '08:00'}`
+                            : isAr
+                            ? 'غير مسجل'
+                            : isEn
+                            ? 'Not Clocked In'
+                            : 'Non pointé'
+                        }
+                        tone={activeStaff.isClockedInToday ? 'ok' : 'default'}
+                      />
+                      <InspectorKeyValue
+                        label={perfLabel}
+                        value={`${activeStaff.performance?.kpiValue ?? `${perfScore}%`}`}
+                        tone="ok"
+                        isLast
+                      />
+                      <InspectorProgressBar
+                        percent={perfScore}
+                        tone="ok"
+                        animateKey={`${activeStaff.id}-${entranceEpoch}`}
+                      />
+                    </InspectorCard>
+                    <InspectorWideButton
+                      label={
                         activeStaff.isClockedInToday
-                          ? `${isAr ? 'حاضر' : isEn ? 'Clocked In' : 'Présent'} · ${activeStaff.lastClockInTime || '08:00'}`
+                          ? isAr
+                            ? 'تسجيل الخروج الآن'
+                            : isEn
+                            ? 'Clock Out Now'
+                            : 'Pointer la sortie'
                           : isAr
-                          ? 'غير مسجل'
+                          ? 'تسجيل الحضور الآن'
                           : isEn
-                          ? 'Not Clocked In'
-                          : 'Non pointé'
+                          ? 'Clock In Now'
+                          : "Pointer l'entrée"
                       }
-                      tone={activeStaff.isClockedInToday ? 'ok' : 'default'}
+                      icon={<Clock className="w-4 h-4" strokeWidth={1.5} />}
+                      tone={activeStaff.isClockedInToday ? 'dark' : 'accent'}
+                      onClick={() => punchStaffAttendance(activeStaff.id)}
                     />
-                    <InspectorKeyValue
-                      label={perfLabel}
-                      value={`${activeStaff.performance?.kpiValue ?? `${perfScore}%`}`}
-                      tone="ok"
-                      isLast
-                    />
-                    <InspectorProgressBar
-                      percent={perfScore}
-                      tone="ok"
-                      animateKey={`${activeStaff.id}-${entranceEpoch}`}
-                    />
-                  </InspectorCard>
-                  <div className="h-2.5" />
-                  <InspectorWideButton
-                    label={
-                      activeStaff.isClockedInToday
-                        ? isAr
-                          ? 'تسجيل الخروج الآن'
-                          : isEn
-                          ? 'Clock Out Now'
-                          : 'Pointer la sortie'
-                        : isAr
-                        ? 'تسجيل الحضور الآن'
-                        : isEn
-                        ? 'Clock In Now'
-                        : "Pointer l'entrée"
-                    }
-                    icon={<Clock className="w-4 h-4" />}
-                    tone={activeStaff.isClockedInToday ? 'dark' : 'accent'}
-                    onClick={() => punchStaffAttendance(activeStaff.id)}
-                  />
+                  </div>
                 </InspectorSection>
 
                 <InspectorSection
@@ -386,9 +387,9 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
                     />
                   ) : (
                     <InspectorCard>
-                      <div className="py-5 text-center">
-                        <Lock className="w-5 h-5 text-black/62 dark:text-white/65 mx-auto mb-1.5" />
-                        <p className="text-xs font-semibold text-black/85 dark:text-white/85 m-0">
+                      <div className="py-[var(--s5,20px)] text-center flex flex-col items-center gap-[var(--s2,8px)]">
+                        <Lock className="w-5 h-5 text-[var(--text-2)]" strokeWidth={1.75} />
+                        <p className="t-small font-semibold text-[var(--text-1)]">
                           {isAr ? 'بيانات مقيدة للإدارة' : isEn ? 'Restricted Compensation Data' : 'Données salariales restreintes'}
                         </p>
                       </div>
@@ -438,21 +439,21 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
                         {
                           id: 'freeze',
                           label: isAr ? 'تجميد' : isEn ? 'Pause' : 'Suspendre accès',
-                          icon: <PauseCircle className="w-[18px] h-[18px] text-amber-500" />,
+                          icon: <PauseCircle className="w-4 h-4 text-amber-500" strokeWidth={1.5} />,
                           disabled: activeStaff.status === 'frozen',
                           onClick: () => setConfirmAction('freeze'),
                         },
                         {
                           id: 'leave',
                           label: isAr ? 'عطلة' : isEn ? 'Leave' : 'Mettre en congé',
-                          icon: <Plane className="w-[18px] h-[18px] text-blue-500" />,
+                          icon: <Plane className="w-4 h-4 text-blue-500" strokeWidth={1.5} />,
                           disabled: activeStaff.status === 'vacation' || activeStaff.status === 'on_leave',
                           onClick: () => setConfirmAction('vacation'),
                         },
                         {
                           id: 'end',
                           label: isAr ? 'إنهاء العقد' : isEn ? 'Terminate' : 'Fin de contrat',
-                          icon: <AlertTriangle className="w-[18px] h-[18px] text-[#c0283d]" />,
+                          icon: <AlertTriangle className="w-4 h-4 text-[#c0283d]" strokeWidth={1.5} />,
                           disabled: activeStaff.status === 'terminated',
                           onClick: () => setConfirmAction('terminate'),
                         },
@@ -468,7 +469,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
             {
               id: 'punch',
               label: isAr ? 'تسجيل الحضور' : isEn ? 'Clock In' : 'Pointer présence',
-              icon: <Clock className="w-[18px] h-[18px]" />,
+              icon: <Clock className="w-4 h-4" strokeWidth={1.5} />,
               primary: true,
               onClick: () => punchStaffAttendance(activeStaff.id),
             },
@@ -477,20 +478,20 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
                   {
                     id: 'edit',
                     label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
-                    icon: <Edit className="w-[18px] h-[18px]" />,
+                    icon: <Edit className="w-4 h-4" strokeWidth={1.5} />,
                     onClick: () => onEdit(activeStaff),
                   },
                   {
                     id: 'leave',
                     label: isAr ? 'عطلة' : isEn ? 'Set Leave' : 'Congé',
-                    icon: <Plane className="w-[18px] h-[18px] text-blue-500" />,
+                    icon: <Plane className="w-4 h-4 text-blue-500" strokeWidth={1.5} />,
                     disabled: activeStaff.status === 'vacation' || activeStaff.status === 'on_leave',
                     onClick: () => setConfirmAction('vacation'),
                   },
                   {
                     id: 'freeze',
                     label: isAr ? 'تجميد' : isEn ? 'Pause' : 'Suspendre',
-                    icon: <PauseCircle className="w-[18px] h-[18px] text-amber-500" />,
+                    icon: <PauseCircle className="w-4 h-4 text-amber-500" strokeWidth={1.5} />,
                     disabled: activeStaff.status === 'frozen',
                     onClick: () => setConfirmAction('freeze'),
                   },
@@ -499,7 +500,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
                   {
                     id: 'badge',
                     label: isAr ? 'البادج' : isEn ? 'Verified' : 'Badge actif',
-                    icon: <BadgeCheck className="w-[18px] h-[18px] text-[#096b40]" />,
+                    icon: <BadgeCheck className="w-4 h-4 text-[#096b40]" strokeWidth={1.5} />,
                     onClick: () =>
                       handleCopyToast(
                         activeStaff.badgeToken || activeStaff.cardId || activeStaff.id.slice(0, 8)
@@ -521,7 +522,7 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
                 <InspectorCard>
                   <InspectorKeyValue
                     label={isAr ? 'الوظيفة' : isEn ? 'Role' : 'Poste / Fonction'}
-                    icon={<Briefcase className="w-[15px] h-[15px]" />}
+                    icon={<Briefcase className="w-4 h-4" strokeWidth={1.5} />}
                     value={activeStaff.role || 'Staff'}
                   />
                   <InspectorKeyValue
@@ -563,21 +564,21 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
                 <InspectorCard>
                   <InspectorKeyValue
                     label={isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}
-                    icon={<Phone className="w-[15px] h-[15px]" />}
+                    icon={<Phone className="w-4 h-4" strokeWidth={1.5} />}
                     value={activeStaff.phoneNumber || '—'}
                     copyText={activeStaff.phoneNumber}
                     onCopied={handleCopyToast}
                   />
                   <InspectorKeyValue
                     label={isAr ? 'البريد' : isEn ? 'Email' : 'E-mail'}
-                    icon={<Mail className="w-[15px] h-[15px]" />}
+                    icon={<Mail className="w-4 h-4" strokeWidth={1.5} />}
                     value={activeStaff.email || '—'}
                     copyText={activeStaff.email}
                     onCopied={handleCopyToast}
                   />
                   <InspectorKeyValue
                     label={isAr ? 'العنوان' : isEn ? 'Address' : 'Adresse'}
-                    icon={<MapPin className="w-[15px] h-[15px]" />}
+                    icon={<MapPin className="w-4 h-4" strokeWidth={1.5} />}
                     value={activeStaff.address || staffBranch?.name || '—'}
                     mono={false}
                     isLast={!activeStaff.emergencyContactName}

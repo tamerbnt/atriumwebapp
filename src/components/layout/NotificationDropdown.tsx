@@ -142,28 +142,28 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
         className="rounded-[var(--r-panel,28px)] bg-white dark:bg-[#1C1C20] [--sq-stroke:rgba(0,0,0,0.08)] dark:[--sq-stroke:rgba(255,255,255,0.12)] overflow-hidden flex flex-col"
       >
       {/* Unified Panel Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#1C1C20] text-xs text-[var(--text-2)]">
-        <div className="flex items-center gap-2 font-semibold text-[var(--text-1)] text-[var(--t-sub)]">
-          <Bell size={16} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
+      <div className="flex items-center justify-between px-[var(--s4,16px)] py-[var(--s3,12px)] border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#1C1C20] t-cap text-[var(--text-2)]">
+        <div className="flex items-center gap-[var(--s2,8px)] t-card text-[var(--text-1)]">
+          <Bell size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
           <span>{language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}</span>
           {unreadNotificationCount > 0 && (
-            <span className="px-2 h-[var(--badge-h,22px)] inline-flex items-center rounded-full text-xs font-semibold tabular-nums bg-[var(--brand-fill)] text-white leading-none">
+            <span className="min-w-[var(--badge-h,22px)] px-[var(--badge-px,6px)] h-[var(--badge-h,22px)] inline-flex items-center justify-center rounded-full t-small tabular-nums bg-[var(--brand-fill)] text-white leading-none">
               {unreadNotificationCount}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-[var(--s2,8px)] t-small">
           {notifications.length > 0 && (
             <>
               <button
                 type="button"
                 data-no-liquid=""
                 onClick={() => markAllNotificationsAsRead()}
-                className="hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                className="hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] t-small transition-colors cursor-pointer flex items-center gap-[var(--s1,4px)]"
                 title={language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
               >
-                <CheckCheck size={14} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
+                <CheckCheck size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
                 <span className="hidden sm:inline">
                   {language === 'ar' ? 'قراءة الكل' : language === 'fr' ? 'Tout lire' : 'Mark all read'}
                 </span>
@@ -173,10 +173,10 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
                 type="button"
                 data-no-liquid=""
                 onClick={() => clearAllNotifications()}
-                className="hover:text-rose-600 font-medium transition-colors cursor-pointer flex items-center gap-1"
+                className="hover:text-rose-600 t-small transition-colors cursor-pointer flex items-center gap-[var(--s1,4px)]"
                 title={language === 'ar' ? 'مسح الكل' : language === 'fr' ? 'Tout effacer' : 'Clear all'}
               >
-                <Trash2 size={14} />
+                <Trash2 size={16} strokeWidth={1.5} />
                 <span className="hidden sm:inline">
                   {language === 'ar' ? 'مسح' : language === 'fr' ? 'Effacer' : 'Clear all'}
                 </span>
@@ -189,16 +189,16 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
             type="button"
             data-no-liquid=""
             onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors cursor-pointer"
+            className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors cursor-pointer"
             aria-label="Close notifications"
           >
-            <X size={16} strokeWidth={2.2} />
+            <X size={16} strokeWidth={1.5} />
           </button>
         </div>
       </div>
 
       {/* Enclosed Notification Rows List */}
-      <div className="flex flex-col gap-2 p-3 max-h-[380px] overflow-y-auto no-scrollbar">
+      <div className="flex flex-col gap-[var(--s2,8px)] p-[var(--s3,12px)] max-h-[380px] overflow-y-auto no-scrollbar">
         <AnimatePresence mode="popLayout">
           {notifications.length === 0 ? (
             <motion.div
@@ -206,13 +206,13 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.97 }}
               transition={{ duration: 0.15 }}
-              className="tst-toast-item h-[60px] text-xs font-semibold text-black/80 dark:text-white/85"
+              className="tst-toast-item h-[var(--list-row-min-h,60px)] t-label text-black/80 dark:text-white/85"
               data-kind="success"
               data-sq="card"
               data-sq-border="solid"
             >
               <span className="tst-icon shrink-0">
-                <CheckCircle2 size={18} strokeWidth={2.2} />
+                <CheckCircle2 size={16} strokeWidth={1.75} />
               </span>
               <span>
                 {language === 'ar'
@@ -235,7 +235,7 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, x: 24, scale: 0.94, transition: { duration: 0.15 } }}
                   transition={{ type: 'spring', stiffness: 480, damping: 30 }}
-                  className="tst-toast-item group h-[64px] cursor-pointer hover:-translate-y-0.5 select-none shrink-0"
+                  className="tst-toast-item group h-[var(--row-h,64px)] cursor-pointer hover:-translate-y-0.5 select-none shrink-0"
                   data-kind={notif.type}
                   data-sq="card"
                   data-sq-border="solid"
@@ -245,23 +245,23 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
                 >
                   {/* Status Icon */}
                   <span className="tst-icon shrink-0">
-                    <Icon size={18} strokeWidth={2.2} />
+                    <Icon size={16} strokeWidth={1.75} />
                   </span>
 
                   {/* Text Content */}
-                  <div className="tst-text flex-1 min-w-0 flex flex-col gap-1">
-                    <div className="flex items-center justify-between gap-2 min-w-0">
-                      <b className="flex items-center gap-2 min-w-0 text-[var(--t-sub)] font-semibold text-[var(--text-1)]">
+                  <div className="tst-text flex-1 min-w-0 flex flex-col gap-[var(--s1,4px)]">
+                    <div className="flex items-center justify-between gap-[var(--s2,8px)] min-w-0">
+                      <b className="flex items-center gap-[var(--s2,8px)] min-w-0 t-label font-semibold text-[var(--text-1)]">
                         <em className="not-italic truncate">{notif.title}</em>
                         {isUnread && (
-                          <i className="w-2 h-2 rounded-full bg-[var(--brand-accent)] shrink-0" aria-hidden="true" />
+                          <i className="w-[var(--pill-dot,6px)] h-[var(--pill-dot,6px)] rounded-full bg-[var(--brand-accent)] shrink-0" aria-hidden="true" />
                         )}
                       </b>
-                      <time className="text-xs text-[var(--text-3)] shrink-0 font-normal tabular-nums whitespace-nowrap">
+                      <time className="t-cap text-[var(--text-3)] shrink-0 tabular-nums whitespace-nowrap">
                         {formatRelativeTime(notif.createdAt, language)}
                       </time>
                     </div>
-                    <span className="block truncate">
+                    <span className="block t-cap truncate">
                       {notif.message}
                     </span>
                   </div>
@@ -310,9 +310,9 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
       </div>
 
       {/* Unified Panel Footer */}
-      <div className="flex items-center justify-between px-4 py-3 border-t border-black/[0.06] dark:border-white/[0.08] bg-neutral-50/70 dark:bg-white/[0.02] text-xs text-[var(--text-2)]">
-        <div className="flex items-center gap-2 font-medium">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+      <div className="flex items-center justify-between px-[var(--s4,16px)] py-[var(--s3,12px)] border-t border-black/[0.06] dark:border-white/[0.08] bg-neutral-50/70 dark:bg-white/[0.02] t-cap text-[var(--text-2)]">
+        <div className="flex items-center gap-[var(--s2,8px)] t-small">
+          <span className="w-[var(--s2,8px)] h-[var(--s2,8px)] rounded-full bg-emerald-500 shrink-0" />
           <span>
             {language === 'ar'
               ? 'مركز أتريوم المباشر'

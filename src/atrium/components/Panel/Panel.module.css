@@ -22,9 +22,8 @@
   border: 1px solid var(--atr-line);
   border-radius: var(--r-table, 20px);
   box-shadow: var(--atr-shadow-pop);
-  font-family: var(--font-ui, inherit);
-  font-size: var(--t-sub, 13px);
-  line-height: var(--lh-sub, 18px);
+  font: var(--t-body);
+  letter-spacing: var(--tr-13);
   outline: none;
   visibility: hidden;
   clip-path: inset(0 0 100% 0);
@@ -41,7 +40,7 @@
   flex: none;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.2;
+  stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -72,9 +71,8 @@
 .header small {
   display: block;
   color: var(--text-2, var(--atr-mut));
-  font-size: var(--t-small, 12px);
-  line-height: var(--lh-small, 16px);
-  letter-spacing: var(--tr-12, 0.01em);
+  font: var(--t-cap);
+  letter-spacing: var(--tr-12);
 }
 
 .hr {
@@ -118,9 +116,8 @@
 .item small {
   display: block;
   color: var(--text-2, var(--atr-mut));
-  font-size: var(--t-small, 12px);
-  line-height: var(--lh-small, 16px);
-  letter-spacing: var(--tr-12, 0.01em);
+  font: var(--t-cap);
+  letter-spacing: var(--tr-12);
 }
 .text {
   flex: 1;

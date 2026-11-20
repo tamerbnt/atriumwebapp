@@ -25,7 +25,8 @@ export const HomeKioskCard: React.FC<HomeKioskCardProps> = ({
     <div
       data-sq="card"
       data-sq-border="solid"
-      className={`flex-1 bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] p-4 sm:p-5 border border-[#4D382B]/85 [--sq-stroke:rgba(77,56,43,0.85)] text-white relative overflow-hidden flex flex-col justify-between group/kiosk ${className}`}
+      data-surface="dark"
+      className={`flex-1 bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] p-[var(--card-pad,20px)] card-opt border border-[#4D382B]/85 [--sq-stroke:rgba(77,56,43,0.85)] text-white relative overflow-hidden flex flex-col justify-between group/kiosk ${className}`}
       data-testid={`home-kiosk-${config.id}`}
     >
       {/* Subtle architectural sparkline backdrop in Lavender + Terracotta */}
@@ -52,34 +53,34 @@ export const HomeKioskCard: React.FC<HomeKioskCardProps> = ({
         </svg>
       </div>
 
-      <div className="relative z-10 space-y-3.5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 min-w-0 flex-1">
+      <div className="relative z-10 flex flex-col gap-[var(--card-body-gap,20px)]">
+        <div className="flex items-start justify-between gap-[var(--s3,12px)]">
+          <div className="flex items-start gap-[var(--card-head-gap,12px)] min-w-0 flex-1">
             <span
               data-sq="tile"
               data-sq-border="solid"
-              className="relative w-10 h-10 bg-gradient-to-br from-[#FB923C]/20 to-[#A78BFA]/20 border border-white/[0.14] [--sq-stroke:rgba(255,255,255,0.14)] text-[#FB923C] flex items-center justify-center shrink-0"
+              className="relative w-[var(--tile-md,40px)] h-[var(--tile-md,40px)] bg-gradient-to-br from-[#FB923C]/20 to-[#A78BFA]/20 border border-white/[0.14] [--sq-stroke:rgba(255,255,255,0.14)] text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0"
             >
               {config.icon}
             </span>
-            <div className="min-w-0 flex-1">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#C4B5FD] block truncate rtl:tracking-normal">
+            <div className="min-w-0 flex-1 flex flex-col gap-[var(--title-cap-gap,2px)]">
+              <span className="t-small text-[#C4B5FD] block truncate">
                 {config.eyebrow}
               </span>
-              <h3 className="text-[17px] font-bold text-white leading-tight mt-0.5 truncate">
+              <h3 className="t-pod text-white truncate">
                 {config.title}
               </h3>
-              <p className="text-[12px] text-[#E6D9CE]/72 mt-0.5 line-clamp-2">
+              <p className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">
                 {config.subtitle}
               </p>
             </div>
           </div>
 
-          <div className="text-end shrink-0">
-            <span className="text-[28px] font-bold leading-none text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans block">
+          <div className="text-end shrink-0 flex flex-col gap-[var(--title-cap-gap,2px)]">
+            <span className="t-kpi-m text-[var(--brand-on-dark,#FF8F63)] tabular-nums block">
               {config.metricValue}
             </span>
-            <span className="text-[11px] text-[#DECFC3]/70 block mt-0.5 whitespace-nowrap">
+            <span className="t-cap text-[var(--text-dark-2,#A99E92)] block whitespace-nowrap">
               {config.metricLabel}
             </span>
           </div>
@@ -90,20 +91,20 @@ export const HomeKioskCard: React.FC<HomeKioskCardProps> = ({
             {config.items.slice(0, 3).map((item) => (
               <li
                 key={item.id}
-                className="py-2 flex items-center justify-between gap-3 text-[12.5px]"
+                className="py-[var(--s2,8px)] flex items-center justify-between gap-[var(--s3,12px)]"
               >
-                <div className="min-w-0 flex-1">
-                  <span className="font-medium text-white truncate block">
+                <div className="min-w-0 flex-1 flex flex-col gap-[var(--title-cap-gap,2px)]">
+                  <span className="t-label text-white truncate block">
                     {item.primary}
                   </span>
                   {item.secondary && (
-                    <span className="text-[11px] text-[#DDD0C6]/62 truncate block tabular-nums">
+                    <span className="t-cap text-[var(--text-dark-2,#A99E92)] truncate block tabular-nums">
                       {item.secondary}
                     </span>
                   )}
                 </div>
                 {item.trailing && (
-                  <span className="font-semibold text-[#FB923C] tabular-nums whitespace-nowrap shrink-0">
+                  <span className="t-label font-semibold text-[var(--brand-on-dark,#FF8F63)] tabular-nums whitespace-nowrap shrink-0">
                     {item.trailing}
                   </span>
                 )}
@@ -113,7 +114,7 @@ export const HomeKioskCard: React.FC<HomeKioskCardProps> = ({
         )}
       </div>
 
-      <div className="relative z-10 pt-3.5 flex items-center justify-end">
+      <div className="relative z-10 pt-[var(--footer-gap,16px)] flex items-center justify-end">
         <AtriumButton
           variant="primary"
           size="md"
@@ -121,7 +122,7 @@ export const HomeKioskCard: React.FC<HomeKioskCardProps> = ({
           icon={
             <ArrowUpRight
               size={16}
-              strokeWidth={2.2}
+              strokeWidth={1.5}
               className="rtl:-scale-x-100"
             />
           }

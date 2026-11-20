@@ -656,18 +656,19 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           {/* Luxury Edge Lighting Vignette */}
           <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.55)] rounded-[var(--r-card,16px)]" />
 
-          {/* Sleek Minimal Progress Indicators (Floating Glass Dots, Zero Text) */}
-          <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-1.5 z-20 pointer-events-none">
-            {PREVIEW_SLIDES.map((_, idx) => (
-              <div
-                key={idx}
-                className={`h-1 rounded-full transition-all duration-500 ${
-                  activeSlideIndex === idx
-                    ? 'w-6 bg-[#FF8A4C] shadow-[0_0_8px_rgba(255,138,76,0.8)]'
-                    : 'w-1.5 bg-white/30'
-                }`}
-              />
-            ))}
+          <div className="flex flex-col justify-between gap-[var(--s2,8px)] z-20 pointer-events-none">
+            <div className="absolute bottom-[var(--s3,12px)] inset-x-0 flex items-center justify-center gap-[var(--s2,8px)] z-20 pointer-events-none">
+              {PREVIEW_SLIDES.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-[var(--s1,4px)] rounded-full transition-all duration-500 ${
+                    activeSlideIndex === idx
+                      ? 'w-[var(--s6,24px)] bg-[var(--brand-on-dark,#FF8F63)] shadow-[0_0_8px_rgba(255,138,76,0.8)]'
+                      : 'w-[var(--s2,8px)] bg-white/30'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -677,7 +678,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
   // Helper Renderer: Standalone SaaS Plan Tier Cards
   const renderPlanCards = (isWide: boolean) => (
-    <div className={`grid ${isWide ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3' : 'grid-cols-2 gap-2 sm:gap-2.5'} w-full`}>
+    <div className={`grid ${isWide ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[var(--s3,12px)]' : 'grid-cols-2 gap-[var(--s2,8px)]'} w-full`}>
       {SUBSCRIPTION_PLANS.map((plan) => {
         const isSelected = selectedPlanTier === plan.tier;
         const badge = isAr ? plan.badgeAr : isFr ? plan.badgeFr : plan.badgeEn;
@@ -694,7 +695,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             data-sq="card"
             data-sq-border="solid"
             data-sq-stroke-w={isSelected ? '1.5' : '1'}
-            className={`flex flex-col justify-between ${isWide ? 'p-3 sm:p-3.5' : 'p-2 sm:p-2.5'} rounded-[var(--r-card,16px)] transition-all duration-200 cursor-pointer relative group text-left ${
+            className={`flex flex-col justify-between gap-[var(--s2,8px)] ${isWide ? 'p-[var(--s3,12px)] sm:p-[var(--s4,16px)]' : 'p-[var(--s2,8px)] sm:p-[var(--s3,12px)]'} rounded-[var(--r-card,16px)] transition-all duration-200 cursor-pointer relative group text-start ${
               isSelected
                 ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:#F4511E]'
                 : 'bg-white/[0.035] [--sq-stroke:rgba(255,255,255,0.1)] hover:[--sq-stroke:rgba(255,255,255,0.22)] hover:bg-white/[0.06]'
@@ -702,67 +703,69 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           >
             {/* Recommended Ribbon */}
             {plan.isRecommended && (
-              <div className="absolute -top-2 inset-x-0 flex justify-center pointer-events-none">
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-gradient-to-r from-[#C4552A] to-[#E8622C] text-white shadow-md tracking-wider">
+              <div className="absolute -top-[var(--s2,8px)] inset-x-0 flex justify-center pointer-events-none">
+                <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small font-semibold rounded-full bg-[var(--brand-fill,#C9461F)] text-white shadow-md">
                   {badge}
                 </span>
               </div>
             )}
 
-            <div>
+            <div className="flex flex-col gap-[var(--s2,8px)]">
               {/* Header row */}
-              <div className="flex items-center justify-between mb-1">
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                  isSelected ? 'text-[#FF8A4C]' : 'text-[#D9BEB0]'
+              <div className="flex items-center justify-between gap-[var(--s2,8px)]">
+                <span className={`t-small font-semibold ${
+                  isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[var(--text-dark-2,#A99E92)]'
                 }`}>
-                  {plan.isRecommended ? (isAr ? 'الأكثر اختياراً' : isFr ? 'Plus Populaire' : 'Most Popular') : badge}
+                  {plan.isRecommended ? (isAr ? 'الأكثر اختياراً' : isFr ? 'Plus populaire' : 'Most popular') : badge}
                 </span>
                 <div
-                  className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors shrink-0 ${
-                    isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/25'
+                  className={`w-[var(--s4,16px)] h-[var(--s4,16px)] rounded-full border flex items-center justify-center transition-colors shrink-0 ${
+                    isSelected ? 'border-[var(--brand-fill,#C9461F)] bg-[var(--brand-fill,#C9461F)]' : 'border-white/25'
                   }`}
                 >
-                  {isSelected && <Check className="w-2 h-2 text-white" />}
+                  {isSelected && <Check className="w-[var(--s3,12px)] h-[var(--s3,12px)] text-white" strokeWidth={2} />}
                 </div>
               </div>
 
               {/* Plan Name & Pricing */}
-              <h3 className={`font-extrabold ${isWide ? 'text-sm sm:text-base' : 'text-xs sm:text-sm'} text-[#FFF5EE] tracking-tight`}>
-                {plan.name}
-              </h3>
-              <div className="flex items-baseline gap-1 mt-0.5 mb-0.5">
-                <span className={`font-mono ${isWide ? 'text-base sm:text-lg' : 'text-sm sm:text-base'} font-black text-[#FF8A4C] tracking-tight tabular-nums`}>
-                  {price}
-                </span>
-                <span className="text-[10px] text-[#D9BEB0]/85 font-medium">
-                  {isAr ? '• مدى الحياة' : isFr ? '• à vie' : '• lifetime'}
-                </span>
+              <div className="flex flex-col gap-[var(--s1,4px)]">
+                <h3 className="t-card font-medium text-[#FFF5EE]">
+                  {plan.name}
+                </h3>
+                <div className="flex items-baseline gap-[var(--num-unit-gap,6px)]">
+                  <span className="t-unit font-semibold text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
+                    {price}
+                  </span>
+                  <span className="t-cap text-[var(--text-dark-2,#A99E92)]">
+                    {isAr ? '• مدى الحياة' : isFr ? '• à vie' : '• lifetime'}
+                  </span>
+                </div>
+                <p className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-1">
+                  {isAr ? plan.descAr : isFr ? plan.descFr : plan.descEn}
+                </p>
               </div>
-              <p className="text-[10px] text-[#D9BEB0]/85 font-medium mb-1.5 line-clamp-1">
-                {isAr ? plan.descAr : isFr ? plan.descFr : plan.descEn}
-              </p>
 
               {/* Feature Checklist */}
-              <div className="space-y-0.5 pt-1 border-t border-white/10">
+              <div className="flex flex-col gap-[var(--s1,4px)] pt-[var(--s2,8px)] border-t border-white/10">
                 {features.slice(0, isWide ? 4 : 3).map((feat, fIdx) => (
-                  <div key={fIdx} className="flex items-start gap-1 text-[10px] text-[#F0DACF]">
-                    <CheckCircle2 className={`w-2.5 h-2.5 shrink-0 mt-0.5 ${
-                      isSelected ? 'text-[#FF8A4C]' : 'text-emerald-400'
-                    }`} />
-                    <span className="leading-tight truncate">{feat}</span>
+                  <div key={fIdx} className="flex items-center gap-[var(--s2,8px)] t-cap text-[#F0DACF]">
+                    <CheckCircle2 className={`w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] shrink-0 ${
+                      isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-emerald-400'
+                    }`} strokeWidth={1.5} />
+                    <span className="truncate">{feat}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Plan Activation Status */}
-            <div className="mt-1.5 pt-1">
+            <div className="pt-[var(--s1,4px)]">
               <span
                 data-sq="ctl-sm"
                 data-sq-border="none"
-                className={`w-full py-0.5 rounded-[var(--r-ctl-sm,10px)] text-[10px] font-bold flex items-center justify-center transition-colors ${
+                className={`w-full h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-[var(--r-ctl-sm,10px)] t-btn flex items-center justify-center transition-colors ${
                   isSelected
-                    ? 'bg-gradient-to-r from-[#C4552A] to-[#E64A19] text-white'
+                    ? 'bg-[var(--brand-fill,#C9461F)] text-white font-semibold'
                     : 'bg-white/5 group-hover:bg-white/10 text-[#F0DACF]'
                 }`}
               >
@@ -779,16 +782,16 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
   // Helper Renderer: Voucher & Free Trial Bar
   const renderVoucherBar = () => (
-    <div className="w-full mt-2">
+    <div className="w-full">
       {selectedPlanTier === 'free' ? (
         <div
           data-sq="ctl"
           data-sq-border="solid"
-          className="p-1.5 px-2.5 rounded-[var(--r-ctl,12px)] bg-emerald-500/10 [--sq-stroke:rgba(16,185,129,0.25)] flex items-center justify-between text-xs"
+          className="px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-emerald-500/10 [--sq-stroke:rgba(16,185,129,0.25)] flex items-center justify-between t-small"
         >
-          <div className="flex items-center gap-1.5 text-emerald-300">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span className="text-[10.5px]">
+          <div className="flex items-center gap-[var(--s2,8px)] text-emerald-300">
+            <CheckCircle2 className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-emerald-400 shrink-0" strokeWidth={1.5} />
+            <span className="t-small">
               {isAr
                 ? 'خطة Free Web مفعّلة فورياً • لا تتطلب أي رمز قسيمة أو دفع مالي لبدء التشغيل.'
                 : isFr
@@ -801,11 +804,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         <div
           data-sq="ctl"
           data-sq-border="solid"
-          className="p-1.5 px-2.5 rounded-[var(--r-ctl,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5"
+          className="px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s2,8px)]"
         >
-          <div className="flex items-center gap-1.5 text-[#FFF5EE] text-xs">
-            <Sparkles className="w-3 h-3 text-[#FF8A4C] shrink-0" />
-            <span className="text-[10.5px]">
+          <div className="flex items-center gap-[var(--s2,8px)] text-[#FFF5EE] t-small">
+            <Sparkles className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)] shrink-0" strokeWidth={1.5} />
+            <span>
               {isAr
                 ? `نمط تجريبي مجاني 14 يوماً مفعل تلقائياً (${selectedPlanTier.toUpperCase()}) • دخول مباشر دون دفع.`
                 : isFr
@@ -814,7 +817,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
             <div className="w-40 sm:w-48">
               <LabelInput
                 field="voucherCode"
@@ -830,8 +833,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   setVoucherCode(String(val).toUpperCase());
                   setPaidVoucherError(null);
                 }}
-                prefix={<KeyRound className="w-3 h-3 text-[#FF8A4C]" />}
-                height={28}
+                prefix={<KeyRound className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
+                height={32}
                 corner={10}
               />
             </div>
@@ -841,9 +844,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               data-sq="ctl-sm"
               data-sq-border="solid"
               onClick={() => setShowLicenseModal(true)}
-              className="px-2 py-0.5 rounded-[var(--r-ctl-sm,10px)] bg-white/10 hover:bg-white/15 text-[#F0DACF] hover:text-white text-[10px] font-semibold [--sq-stroke:rgba(255,255,255,0.12)] flex items-center justify-center gap-1 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+              className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-[var(--r-ctl-sm,10px)] bg-white/10 hover:bg-white/15 text-[#F0DACF] hover:text-white t-btn [--sq-stroke:rgba(255,255,255,0.12)] flex items-center justify-center gap-[var(--btn-sm-gap,6px)] transition-all cursor-pointer whitespace-nowrap active:scale-95"
             >
-              <Sparkles className="w-2.5 h-2.5 text-[#FF8A4C]" />
+              <Sparkles className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
               <span>
                 {isAr ? 'طلب ترخيص' : isFr ? 'Demander licence' : 'Request License'}
               </span>
@@ -856,16 +859,16 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
   // Helper Renderer: Bottom Navigation Bar
   const renderBottomNavigation = (withMtAuto = false) => (
-    <div className={`${withMtAuto ? 'mt-auto' : 'mt-4 sm:mt-5'} pt-3 border-t border-white/10 flex items-center justify-between shrink-0 w-full`}>
+    <div className={`${withMtAuto ? 'mt-auto' : ''} pt-[var(--s3,12px)] border-t border-white/10 flex items-center justify-between gap-[var(--s3,12px)] shrink-0 w-full`}>
         {currentStep > 0 ? (
           <button
             type="button"
             data-sq="ctl-sm"
             data-sq-border="none"
             onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--r-ctl-sm,10px)] text-xs font-semibold text-[#D9BEB0] hover:text-[#FFF5EE] hover:bg-white/5 transition-all cursor-pointer active:scale-95"
+            className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] flex items-center gap-[var(--btn-sm-gap,6px)] rounded-[var(--r-ctl-sm,10px)] t-btn text-[var(--text-dark-2,#A99E92)] hover:text-[#FFF5EE] hover:bg-white/5 transition-all cursor-pointer active:scale-95"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />
             <span>{isAr ? 'السابق' : isFr ? 'Précédent' : 'Back'}</span>
           </button>
         ) : (
@@ -874,7 +877,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
         {/* Step 0: Continue button */}
         {currentStep === 0 && (
-          <div className="ml-auto">
+          <div className="ms-auto">
             <LiquidContinueButton
               size="md"
               onClick={() => setCurrentStep(1)}
@@ -885,7 +888,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
         {/* Step 2: Continue button */}
         {currentStep === 2 && (
-          <div className="ml-auto">
+          <div className="ms-auto">
             <LiquidContinueButton
               size="md"
               onClick={() => setCurrentStep(3)}
@@ -896,7 +899,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
         {/* Step 6: Continue button */}
         {currentStep === 6 && (
-          <div className="ml-auto">
+          <div className="ms-auto">
             <LiquidContinueButton
               size="md"
               onClick={() => setCurrentStep(7)}
@@ -907,11 +910,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
         {/* Step 8: Workspace Identity Configured -> Advance to Dedicated Step 9 (Subscription Plans) */}
         {currentStep === 8 && (
-          <div className="ml-auto">
+          <div className="ms-auto">
             <LiquidContinueButton
               size="md"
               onClick={() => setCurrentStep(9)}
-              label={isAr ? 'متابعة لاختيار الخطة' : isFr ? 'CONTINUER (FORFAITS)' : 'CONTINUE TO PLANS'}
+              label={isAr ? 'متابعة لاختيار الخطة' : isFr ? 'Continuer (forfaits)' : 'Continue to plans'}
               id="onb-step-8-continue"
             />
           </div>
@@ -919,11 +922,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
         {/* Step 9: Final Launch Workspace Button */}
         {currentStep === 9 && (
-          <div className="ml-auto">
+          <div className="ms-auto">
             <LiquidContinueButton
               size="md"
               onClick={handleLaunchWorkspace}
-              label={isAr ? 'إطلاق مساحة العمل' : isFr ? 'LANCER MON ESPACE' : 'LAUNCH WORKSPACE'}
+              label={isAr ? 'إطلاق مساحة العمل' : isFr ? 'Lancer mon espace' : 'Launch workspace'}
               id="onb-step-9-launch"
             />
           </div>
@@ -942,23 +945,23 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     >
 
       {/* Main Responsive Workstation Canvas */}
-      <main className="relative z-10 w-full max-w-[1600px] 2xl:max-w-[1780px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-24 py-2 sm:py-2.5 flex-1 min-h-0 flex flex-col justify-between items-center h-[min(94vh,880px)] min-h-[620px] max-h-[880px] overflow-hidden">
+      <main className="relative z-10 w-full max-w-[1600px] 2xl:max-w-[1780px] mx-auto px-[var(--s4,16px)] sm:px-[var(--s8,48px)] py-[var(--s2,8px)] flex-1 min-h-0 flex flex-col justify-between items-center h-[min(94vh,880px)] min-h-[620px] max-h-[880px] overflow-hidden">
         
         {/* Workstation Body */}
         {currentStep === 9 && step9WideView ? (
           /* Step 9 Wide View: Full-Width 4-Column Layout */
-          <div className="w-full flex-1 min-h-0 flex flex-col justify-between overflow-hidden max-w-6xl xl:max-w-7xl mx-auto">
+          <div className="w-full flex-1 min-h-0 flex flex-col justify-between gap-[var(--s3,12px)] overflow-hidden max-w-6xl xl:max-w-7xl mx-auto">
             {/* Authenticated Operator Quick Return & Switch Account Banner */}
             {isAuthenticated && (
               <div
                 data-sq="ctl"
                 data-sq-border="solid"
-                className="flex items-center justify-between gap-3 p-2.5 mb-2 rounded-[var(--r-ctl,12px)] bg-white/5 [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-md shrink-0"
+                className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-white/5 [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-md shrink-0"
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-[11px] font-medium text-white/85 truncate">
+                <div className="flex items-center gap-[var(--s2,8px)] min-w-0">
+                  <span className="t-small text-white/85 truncate">
                     {isAr ? 'أنت متصل حالياً:' : isFr ? 'Connecté en tant que :' : 'Signed in as:'}{' '}
-                    <strong className="text-white font-semibold">{currentUser?.fullName}</strong>
+                    <span className="text-white font-semibold">{currentUser?.fullName}</span>
                   </span>
                   <span className="text-white/50">·</span>
                   <button
@@ -966,7 +969,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     onClick={() => {
                       logout();
                     }}
-                    className="text-[11px] text-[#FF8A4C] hover:text-[#FFA675] hover:underline cursor-pointer"
+                    className="t-small text-[var(--brand-on-dark,#FF8F63)] hover:underline cursor-pointer"
                   >
                     {isAr ? 'تسجيل الدخول بحساب آخر' : isFr ? 'Se connecter avec un autre compte' : 'Login with another account'}
                   </button>
@@ -978,7 +981,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     if (onSkipToDashboard) onSkipToDashboard();
                     else onComplete();
                   }}
-                  icon={<ArrowRight size={13} className={isAr ? 'rotate-180' : ''} />}
+                  icon={<ArrowRight size={16} strokeWidth={1.5} className={isAr ? 'rotate-180' : ''} />}
                   iconPosition="right"
                   className="shrink-0"
                 >
@@ -988,7 +991,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             )}
 
             {/* Step Tab / Swipe Indicators (10 Steps: 0 to 9) */}
-            <div className="flex items-center gap-1.5 mb-2.5 shrink-0">
+            <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((idx) => {
                 const isActive = currentStep === idx;
                 const isCompleted = currentStep > idx;
@@ -998,28 +1001,28 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     type="button"
                     onClick={() => setCurrentStep(idx)}
                     title={`Étape ${idx + 1}`}
-                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    className={`h-[var(--s1,4px)] rounded-full transition-all duration-300 cursor-pointer ${
                       isActive
-                        ? 'w-10 bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
+                        ? 'w-[var(--tile-m,40px)] bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
                         : isCompleted
-                        ? 'w-4 bg-[#F0DACF]/50 hover:bg-[#F0DACF]/80'
-                        : 'w-4 bg-white/20 hover:bg-white/40'
+                        ? 'w-[var(--s4,16px)] bg-[#F0DACF]/50 hover:bg-[#F0DACF]/80'
+                        : 'w-[var(--s4,16px)] bg-white/20 hover:bg-white/40'
                     }`}
                   />
                 );
               })}
             </div>
 
-            <div className="flex items-center justify-between mb-3 shrink-0">
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#FF7A30]">
+            <div className="flex items-center justify-between gap-[var(--s3,12px)] shrink-0">
+              <div className="flex flex-col gap-[var(--s1,4px)]">
+                <span className="t-small font-semibold text-[var(--brand-on-dark,#FF8F63)]">
                   {isAr ? 'المرحلة 10 من 10' : isFr ? 'Étape 10 sur 10' : 'Step 10 of 10'}
                 </span>
-                <h1 className="text-2xl sm:text-[26px] font-bold tracking-tight rtl:tracking-normal text-white leading-snug">
+                <h1 className="t-page text-white">
                   {questionsMeta[9]?.title}
                 </h1>
                 {questionsMeta[9]?.subtext && (
-                  <p className="mt-1 text-xs sm:text-[13px] text-[#D9BEB0]/80 font-normal leading-relaxed">
+                  <p className="t-body text-[var(--text-dark-2,#A99E92)]">
                     {questionsMeta[9]?.subtext}
                   </p>
                 )}
@@ -1029,14 +1032,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 onClick={() => setStep9WideView(false)}
                 data-sq="ctl-sm"
                 data-sq-border="solid"
-                className="text-[11px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 border border-white/10 [--sq-stroke:rgba(255,255,255,0.1)] flex items-center gap-1.5 transition-all cursor-pointer"
+                className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-btn text-[var(--text-dark-2,#A99E92)] hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 [--sq-stroke:rgba(255,255,255,0.1)] flex items-center gap-[var(--btn-sm-gap,6px)] transition-all cursor-pointer"
               >
-                <ImageIcon className="w-3.5 h-3.5 text-[#FF8A4C]" />
+                <ImageIcon className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
                 <span>{isFr ? 'Vue avec carte visuelle' : isAr ? 'عرض مع البطاقة المرئية' : 'View with visual card'}</span>
               </button>
             </div>
 
-            <div className="w-full flex-1 min-h-0 overflow-hidden flex flex-col justify-center py-1">
+            <div className="w-full flex-1 min-h-0 overflow-hidden flex flex-col justify-center gap-[var(--s3,12px)] py-[var(--s1,4px)]">
               {renderPlanCards(true)}
               {renderVoucherBar()}
             </div>
@@ -1058,25 +1061,25 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
-              <div className="w-full my-auto flex flex-col max-h-full overflow-hidden py-3 sm:py-5 pr-1">
+              <div className="w-full my-auto flex flex-col gap-[var(--s3,12px)] max-h-full overflow-hidden py-[var(--s4,16px)] pe-[var(--s1,4px)]">
                 {/* Authenticated Operator Quick Return & Switch Account Banner */}
                 {isAuthenticated && (
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="flex items-center justify-between gap-3 p-2.5 mb-3 rounded-[var(--r-ctl,12px)] bg-white/5 [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-md shrink-0"
+                    className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-white/5 [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-md shrink-0"
                   >
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[11px] font-medium text-white/85 truncate">
+                    <div className="flex flex-col gap-[var(--name-sub-gap,2px)] min-w-0">
+                      <span className="t-small text-white/85 truncate">
                         {isAr ? 'أنت متصل حالياً:' : isFr ? 'Connecté en tant que :' : 'Signed in as:'}{' '}
-                        <strong className="text-white font-semibold">{currentUser?.fullName}</strong>
+                        <span className="text-white font-semibold">{currentUser?.fullName}</span>
                       </span>
                       <button
                         type="button"
                         onClick={() => {
                           logout();
                         }}
-                        className="text-[11px] text-[#FF8A4C] hover:text-[#FFA675] hover:underline text-left rtl:text-right cursor-pointer mt-0.5"
+                        className="t-small text-[var(--brand-on-dark,#FF8F63)] hover:underline text-start cursor-pointer"
                       >
                         {isAr ? 'تسجيل الدخول بحساب آخر' : isFr ? 'Se connecter avec un autre compte' : 'Login with another account'}
                       </button>
@@ -1088,7 +1091,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         if (onSkipToDashboard) onSkipToDashboard();
                         else onComplete();
                       }}
-                      icon={<ArrowRight size={13} className={isAr ? 'rotate-180' : ''} />}
+                      icon={<ArrowRight size={16} strokeWidth={1.5} className={isAr ? 'rotate-180' : ''} />}
                       iconPosition="right"
                       className="shrink-0"
                     >
@@ -1098,7 +1101,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 )}
 
                 {/* Step Tab / Swipe Indicators (10 Steps: 0 to 9) - Aligned with Right Area Text Boxes */}
-                <div className="flex items-center gap-1.5 mb-3 shrink-0">
+                <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((idx) => {
                     const isActive = currentStep === idx;
                     const isCompleted = currentStep > idx;
@@ -1108,12 +1111,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         type="button"
                         onClick={() => setCurrentStep(idx)}
                         title={`Étape ${idx + 1}`}
-                        className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                        className={`h-[var(--s1,4px)] rounded-full transition-all duration-300 cursor-pointer ${
                           isActive
-                            ? 'w-10 bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
+                            ? 'w-[var(--tile-m,40px)] bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
                             : isCompleted
-                            ? 'w-4 bg-[#F0DACF]/50 hover:bg-[#F0DACF]/80'
-                            : 'w-4 bg-white/20 hover:bg-white/40'
+                            ? 'w-[var(--s4,16px)] bg-[#F0DACF]/50 hover:bg-[#F0DACF]/80'
+                            : 'w-[var(--s4,16px)] bg-white/20 hover:bg-white/40'
                         }`}
                       />
                     );
@@ -1121,9 +1124,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 </div>
 
                 {/* Right Column Header: Title and Step Badge */}
-                <div className="mb-3.5 shrink-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#FF7A30]">
+                <div className="flex flex-col gap-[var(--ph-sub-gap,4px)] shrink-0">
+                  <div className="flex items-center justify-between gap-[var(--s2,8px)]">
+                    <span className="t-small font-semibold text-[var(--brand-on-dark,#FF8F63)]">
                       {isAr ? `المرحلة ${currentStep + 1} من 10` : isFr ? `Étape ${currentStep + 1} sur 10` : `Step ${currentStep + 1} of 10`}
                     </span>
                     {currentStep === 9 && (
@@ -1132,31 +1135,31 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         onClick={() => setStep9WideView(true)}
                         data-sq="check"
                         data-sq-border="solid"
-                        className="text-[11px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 [--sq-stroke:rgba(255,255,255,0.1)] flex items-center gap-1 transition-all cursor-pointer"
+                        className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-btn text-[var(--text-dark-2,#A99E92)] hover:text-white bg-white/5 hover:bg-white/10 [--sq-stroke:rgba(255,255,255,0.1)] flex items-center gap-[var(--btn-sm-gap,6px)] transition-all cursor-pointer"
                       >
-                        <Maximize2 className="w-3 h-3 text-[#FF8A4C]" />
+                        <Maximize2 className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
                         <span>{isFr ? 'Plein écran (4 colonnes)' : isAr ? 'شاشة كاملة (4 أعمدة)' : 'Full screen (4 columns)'}</span>
                       </button>
                     )}
                   </div>
-                  <h1 className="text-2xl sm:text-[26px] font-bold text-white tracking-tight rtl:tracking-normal leading-snug">
+                  <h1 className="t-page text-white">
                     {questionsMeta[currentStep]?.title}
                   </h1>
                   {questionsMeta[currentStep]?.subtext && (
-                    <p className="mt-1 text-xs sm:text-[13px] text-[#D9BEB0]/80 font-normal leading-relaxed">
+                    <p className="t-body text-[var(--text-dark-2,#A99E92)]">
                       {questionsMeta[currentStep]?.subtext}
                     </p>
                   )}
                 </div>
 
                 {/* Right Column Active Question Content Canvas */}
-                <div className="w-full py-1">
+                <div className="w-full py-[var(--s1,4px)]">
               
               {/* ------------------------------------------------------------- */}
               {/* STEP 0: GOOGLE SSO OR WORK EMAIL VIA PROPRIETARY LABELINPUT   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 0 && (
-                <div className="space-y-3 w-full mt-1 sm:mt-2">
+                <div className="flex flex-col gap-[var(--s3,12px)] w-full">
                   {/* Primary Google SSO One-Click Experience */}
                   <button
                     type="button"
@@ -1164,12 +1167,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     data-sq-border="none"
                     onClick={handleGoogleLogin}
                     disabled={isGoogleLoading}
-                    className="w-full h-10 rounded-[var(--r-ctl,12px)] bg-white hover:bg-neutral-100 text-black text-xs font-bold transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-75 active:scale-[0.99]"
+                    className="w-full h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] rounded-[var(--r-ctl,12px)] bg-white hover:bg-neutral-100 text-black t-btn font-semibold transition-all flex items-center justify-center gap-[var(--btn-icon-gap,8px)] cursor-pointer disabled:opacity-75 active:scale-[0.99]"
                   >
                     {isGoogleLoading ? (
-                      <div className="w-4 h-4 border-2 border-neutral-700 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] border-2 border-neutral-700 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                      <svg className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] shrink-0" viewBox="0 0 24 24">
                         <path
                           fill="#4285F4"
                           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -1196,24 +1199,24 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   </button>
 
                   {/* Elegant Glass-Matching Divider */}
-                  <div className="relative flex items-center justify-center my-0.5">
+                  <div className="relative flex items-center justify-center">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-white/10" />
                     </div>
-                    <span className="relative px-3 py-0.5 text-[10px] uppercase font-bold tracking-wider text-[#F0DACF] bg-[rgba(20,17,15,0.7)] border border-white/10 rounded-full backdrop-blur-md shadow-xs">
-                      {isAr ? 'أو باستخدام بريدك المهني' : isFr ? 'OU AVEC UN E-MAIL PROFESSIONNEL' : 'OR WITH WORK EMAIL'}
+                    <span className="relative h-[var(--badge-h,22px)] px-[var(--s3,12px)] inline-flex items-center t-small text-[#F0DACF] bg-[rgba(20,17,15,0.7)] border border-white/10 rounded-full backdrop-blur-md shadow-xs">
+                      {isAr ? 'أو باستخدام بريدك المهني' : isFr ? 'Ou avec un e-mail professionnel' : 'Or with work email'}
                     </span>
                   </div>
 
                   {/* Proprietary LabelInput Text Boxes */}
-                  <div className="space-y-2.5 pt-0.5">
+                  <div className="flex flex-col gap-[var(--s3,12px)]">
                     <LabelInput
                       field="fullName"
                       label={isAr ? 'الاسم واللقب للمسؤول' : isFr ? 'Nom & prénom du responsable' : 'Full Name'}
                       value={fullName}
                       onChange={(val) => setFullName(String(val))}
-                      prefix={<User className="w-3.5 h-3.5 text-[#FF8A4C]" />}
-                      height={38}
+                      prefix={<User className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
+                      height={40}
                       corner={12}
                     />
 
@@ -1223,8 +1226,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       label={isAr ? 'البريد الإلكتروني المهني' : isFr ? 'E-mail professionnel' : 'Work Email'}
                       value={email}
                       onChange={(val) => setEmail(String(val))}
-                      prefix={<Mail className="w-3.5 h-3.5 text-[#FF8A4C]" />}
-                      height={38}
+                      prefix={<Mail className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
+                      height={40}
                       corner={12}
                     />
 
@@ -1234,22 +1237,22 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       label={isAr ? 'كلمة المرور' : isFr ? 'Mot de passe sécurisé' : 'Secure Password'}
                       value={password}
                       onChange={(val) => setPassword(String(val))}
-                      prefix={<Lock className="w-3.5 h-3.5 text-[#FF8A4C]" />}
-                      height={38}
+                      prefix={<Lock className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
+                      height={40}
                       corner={12}
                     />
                   </div>
 
                   {/* Terms Checkbox with High-Contrast Warm Text */}
-                  <div className="pt-0.5 flex items-center gap-2">
+                  <div className="flex items-center gap-[var(--s2,8px)]">
                     <input
                       type="checkbox"
                       id="terms"
                       checked={termsAccepted}
                       onChange={(e) => setTermsAccepted(e.target.checked)}
-                      className="rounded-[var(--r-check,6px)] border-white/20 bg-[rgba(20,17,15,0.6)] text-[#E8622C] focus:ring-[#E8622C] cursor-pointer"
+                      className="rounded-[var(--r-check,6px)] border-white/20 bg-[rgba(20,17,15,0.6)] text-[var(--brand-fill,#C9461F)] focus:ring-[var(--brand-fill,#C9461F)] cursor-pointer"
                     />
-                    <label htmlFor="terms" className="text-[11px] text-[#D9BEB0] cursor-pointer select-none">
+                    <label htmlFor="terms" className="t-small text-[var(--text-dark-2,#A99E92)] cursor-pointer select-none">
                       {isAr
                         ? 'أوافق على شروط الاستخدام وسياسة الخصوصية لمنصة أتريوم'
                         : isFr
@@ -1264,7 +1267,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 1: OPERATIONAL FRUSTRATION / CHALLENGE                   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 1 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full mt-1.5 sm:mt-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--card-gap,12px)] w-full">
                   {[
                     {
                       id: 'scheduling' as const,
@@ -1312,36 +1315,38 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         data-sq="card"
                         data-sq-border="solid"
                         onClick={() => handleSelectFrustration(item.id)}
-                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] min-h-[88px] sm:min-h-[94px] justify-between ${
+                        className={`flex flex-col text-start p-[var(--s3,12px)] sm:p-[var(--s4,16px)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] min-h-[88px] justify-between gap-[var(--s2,8px)] ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
                             : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full mb-1.5">
+                        <div className="flex items-center justify-between w-full">
                           <div
                             data-sq="ctl-sm"
                             data-sq-border="none"
-                            className={`w-6 h-6 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
+                            className={`w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
+                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[var(--brand-on-dark,#FF8F63)]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
-                            <Icon className="w-3.5 h-3.5" />
+                            <Icon className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />
                           </div>
                           <div
-                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
-                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
+                            className={`w-[var(--s4,16px)] h-[var(--s4,16px)] rounded-full border flex items-center justify-center transition-colors ${
+                              isSelected ? 'border-[var(--brand-fill,#C9461F)] bg-[var(--brand-fill,#C9461F)]' : 'border-white/20 group-hover:border-white/40'
                             }`}
                           >
-                            {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                            {isSelected && <Check className="w-[var(--s3,12px)] h-[var(--s3,12px)] text-white" strokeWidth={2} />}
                           </div>
                         </div>
-                        <span className={`font-semibold text-xs sm:text-[13px] mb-0.5 transition-colors ${
-                          isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
-                        }`}>
-                          {item.title}
-                        </span>
-                        <span className="text-[10.5px] text-[#D9BEB0] leading-tight line-clamp-2">{item.desc}</span>
+                        <div className="flex flex-col gap-[var(--s1,4px)]">
+                          <span className={`t-label font-semibold transition-colors ${
+                            isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[#FFF5EE]'
+                          }`}>
+                            {item.title}
+                          </span>
+                          <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                        </div>
                       </button>
                     );
                   })}
@@ -1352,8 +1357,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 2: WHAT DO YOU WANT TO ACHIEVE (FEATURE BLUEPRINT MODAL) */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 2 && (
-                <div className="space-y-2 w-full mt-1 sm:mt-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+                <div className="flex flex-col gap-[var(--s2,8px)] w-full">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--card-gap,12px)]">
                     {[
                       {
                         id: 'goal_structure_processes' as const,
@@ -1408,36 +1413,36 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           data-sq="card"
                           data-sq-border="solid"
                           onClick={() => handleConfirmGoalAndContinue(goal.id)}
-                          className={`p-2 sm:p-2.5 rounded-[var(--r-card,16px)] transition-all duration-200 ease-out flex flex-col justify-between cursor-pointer group hover:scale-[1.015] active:scale-[0.99] ${
+                          className={`p-[var(--s3,12px)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out flex flex-col justify-between gap-[var(--s2,8px)] cursor-pointer group hover:scale-[1.015] active:scale-[0.99] ${
                             isSelected
                               ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
                               : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
                           }`}
                         >
-                          <div>
-                            <div className="flex items-center justify-between mb-1">
+                          <div className="flex flex-col gap-[var(--s2,8px)]">
+                            <div className="flex items-center justify-between gap-[var(--s2,8px)]">
                               <div
                                 data-sq="ctl-sm"
                                 data-sq-border="none"
-                                className={`w-6 h-6 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
-                                  isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
+                                className={`w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
+                                  isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[var(--brand-on-dark,#FF8F63)]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                                 }`}
                               >
-                                <Icon className="w-3.5 h-3.5" />
+                                <Icon className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />
                               </div>
-                              <span className="text-[10px] font-semibold text-[#D9BEB0] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10">
+                              <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small text-[var(--text-dark-2,#A99E92)] rounded-full bg-white/5 border border-white/10">
                                 {goal.badge}
                               </span>
                             </div>
-                            <h3 className={`font-bold text-xs sm:text-[13px] mb-0.5 transition-colors ${
-                              isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
+                            <h3 className={`t-label font-semibold transition-colors ${
+                              isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[#FFF5EE]'
                             }`}>
                               {goal.title}
                             </h3>
-                            <p className="text-[10.5px] text-[#D9BEB0] leading-tight line-clamp-2 mb-1.5">{goal.summary}</p>
+                            <p className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{goal.summary}</p>
                           </div>
 
-                          <div className="flex items-center gap-1.5 pt-0.5">
+                          <div className="flex items-center gap-[var(--s2,8px)]">
                             <button
                               type="button"
                               data-sq="ctl-sm"
@@ -1446,29 +1451,29 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                                 e.stopPropagation();
                                 handleOpenGoalModal(goal.id);
                               }}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-1 px-2 rounded-[var(--r-ctl-sm,10px)] bg-white/5 hover:bg-white/10 text-[#F0DACF] hover:text-white text-[11px] font-semibold [--sq-stroke:rgba(255,255,255,0.12)] hover:[--sq-stroke:rgba(255,255,255,0.25)] transition-all cursor-pointer group/btn"
+                              className="flex-1 h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] flex items-center justify-center gap-[var(--btn-sm-gap,6px)] rounded-[var(--r-ctl-sm,10px)] bg-white/5 hover:bg-white/10 text-[#F0DACF] hover:text-white t-btn [--sq-stroke:rgba(255,255,255,0.12)] hover:[--sq-stroke:rgba(255,255,255,0.25)] transition-all cursor-pointer group/btn"
                             >
-                              <Eye className="w-3 h-3 text-[#FF8A4C] group-hover/btn:text-white" />
+                              <Eye className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)] group-hover/btn:text-white" strokeWidth={1.5} />
                               <span>{isAr ? 'عرض المخطط التنفيذي' : isFr ? 'Voir le schéma directeur' : 'Inspect Blueprint'}</span>
                             </button>
                             <div
-                              className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
-                                isSelected ? 'border-[#E8622C] bg-[#E8622C] text-white' : 'border-white/15 bg-white/5 text-[#D9BEB0] group-hover:border-white/30'
+                              className={`w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                                isSelected ? 'border-[var(--brand-fill,#C9461F)] bg-[var(--brand-fill,#C9461F)] text-white' : 'border-white/15 bg-white/5 text-[var(--text-dark-2,#A99E92)] group-hover:border-white/30'
                               }`}
                               title={isAr ? 'اختيار ومتابعة' : isFr ? 'Sélectionner & continuer' : 'Select & continue'}
                             >
-                              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                              <ArrowRight className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] group-hover:translate-x-0.5 transition-transform" strokeWidth={1.5} />
                             </div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
-                  <p className="text-center text-[10px] text-[#D9BEB0] pt-0.5">
+                  <p className="text-center t-cap text-[var(--text-dark-2,#A99E92)]">
                     {isAr
                       ? '💡 انقر على البطاقة للمتابعة الفورية، أو اضغط "عرض المخطط التنفيذي" لمعاينة الآليات والأدوات المدمجة'
                       : isFr
-                      ? '💡 Cliquez sur une carte pour continuer, ou sur "Voir le schéma directeur" pour inspecter les outils réels'
+                      ? '💡 Cliquez sur une carte pour continuer, ou sur « Voir le schéma directeur » pour inspecter les outils réels'
                       : '💡 Click any card to proceed, or click "Inspect Blueprint" to examine real platform tools and mechanisms'}
                   </p>
                 </div>
@@ -1478,7 +1483,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 3: DAILY CUSTOMER & OPERATIONAL INTERACTION              */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 3 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1 sm:mt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--card-gap,12px)] w-full">
                   {[
                     {
                       id: 'walkin_pos' as const,
@@ -1526,36 +1531,38 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         data-sq="card"
                         data-sq-border="solid"
                         onClick={() => handleSelectWorkflow(item.id)}
-                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
+                        className={`flex flex-col text-start p-[var(--s3,12px)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] gap-[var(--s2,8px)] ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
                             : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full mb-1.5">
+                        <div className="flex items-center justify-between w-full">
                           <div
                             data-sq="ctl-sm"
                             data-sq-border="none"
-                            className={`w-6 h-6 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
+                            className={`w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
+                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[var(--brand-on-dark,#FF8F63)]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
-                            <Icon className="w-3.5 h-3.5" />
+                            <Icon className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />
                           </div>
                           <div
-                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
-                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
+                            className={`w-[var(--s4,16px)] h-[var(--s4,16px)] rounded-full border flex items-center justify-center transition-colors ${
+                              isSelected ? 'border-[var(--brand-fill,#C9461F)] bg-[var(--brand-fill,#C9461F)]' : 'border-white/20 group-hover:border-white/40'
                             }`}
                           >
-                            {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                            {isSelected && <Check className="w-[var(--s3,12px)] h-[var(--s3,12px)] text-white" strokeWidth={2} />}
                           </div>
                         </div>
-                        <span className={`font-semibold text-xs sm:text-[13px] mb-0.5 transition-colors ${
-                          isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
-                        }`}>
-                          {item.title}
-                        </span>
-                        <span className="text-[10.5px] text-[#D9BEB0] leading-tight line-clamp-2">{item.desc}</span>
+                        <div className="flex flex-col gap-[var(--s1,4px)]">
+                          <span className={`t-label font-semibold transition-colors ${
+                            isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[#FFF5EE]'
+                          }`}>
+                            {item.title}
+                          </span>
+                          <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                        </div>
                       </button>
                     );
                   })}
@@ -1566,7 +1573,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 4: TEAM SCALE & WORKING HIERARCHY                        */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 4 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1 sm:mt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--card-gap,12px)] w-full">
                   {[
                     {
                       id: 'solo' as const,
@@ -1606,38 +1613,40 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         data-sq="card"
                         data-sq-border="solid"
                         onClick={() => handleSelectTeamScale(item.id)}
-                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
+                        className={`flex flex-col text-start p-[var(--s3,12px)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] gap-[var(--s2,8px)] ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
                             : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full mb-1.5">
+                        <div className="flex items-center justify-between w-full">
                           <div
                             data-sq="ctl-sm"
                             data-sq-border="none"
-                            className={`w-6 h-6 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
+                            className={`w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
+                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[var(--brand-on-dark,#FF8F63)]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
-                            <Icon className="w-3.5 h-3.5" />
+                            <Icon className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />
                           </div>
                           <span
-                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-colors ${
+                            className={`inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small rounded-full border transition-colors ${
                               isSelected
-                                ? 'bg-[rgba(232,98,44,0.18)] border-transparent text-[#E8622C]'
-                                : 'bg-white/5 border-white/10 text-[#D9BEB0]'
+                                ? 'bg-[rgba(232,98,44,0.18)] border-transparent text-[var(--brand-on-dark,#FF8F63)]'
+                                : 'bg-white/5 border-white/10 text-[var(--text-dark-2,#A99E92)]'
                             }`}
                           >
                             {item.badge}
                           </span>
                         </div>
-                        <span className={`font-semibold text-xs sm:text-[13px] mb-0.5 transition-colors ${
-                          isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
-                        }`}>
-                          {item.title}
-                        </span>
-                        <span className="text-[10.5px] text-[#D9BEB0] leading-tight line-clamp-2">{item.desc}</span>
+                        <div className="flex flex-col gap-[var(--s1,4px)]">
+                          <span className={`t-label font-semibold transition-colors ${
+                            isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[#FFF5EE]'
+                          }`}>
+                            {item.title}
+                          </span>
+                          <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                        </div>
                       </button>
                     );
                   })}
@@ -1648,7 +1657,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 5: PRIMARY PAYMENT & SETTLEMENT FLOW                     */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 5 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1 sm:mt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--card-gap,12px)] w-full">
                   {[
                     {
                       id: 'pos_cash' as const,
@@ -1684,36 +1693,38 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         data-sq="card"
                         data-sq-border="solid"
                         onClick={() => handleSelectSettlement(item.id)}
-                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
+                        className={`flex flex-col text-start p-[var(--s3,12px)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] gap-[var(--s2,8px)] ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
                             : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full mb-1.5">
+                        <div className="flex items-center justify-between w-full">
                           <div
                             data-sq="ctl-sm"
                             data-sq-border="none"
-                            className={`w-6 h-6 rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
+                            className={`w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
+                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[var(--brand-on-dark,#FF8F63)]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
-                            <Icon className="w-3.5 h-3.5" />
+                            <Icon className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />
                           </div>
                           <div
-                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
-                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
+                            className={`w-[var(--s4,16px)] h-[var(--s4,16px)] rounded-full border flex items-center justify-center transition-colors ${
+                              isSelected ? 'border-[var(--brand-fill,#C9461F)] bg-[var(--brand-fill,#C9461F)]' : 'border-white/20 group-hover:border-white/40'
                             }`}
                           >
-                            {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                            {isSelected && <Check className="w-[var(--s3,12px)] h-[var(--s3,12px)] text-white" strokeWidth={2} />}
                           </div>
                         </div>
-                        <span className={`font-semibold text-xs sm:text-[13px] mb-0.5 transition-colors ${
-                          isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
-                        }`}>
-                          {item.title}
-                        </span>
-                        <span className="text-[10.5px] text-[#D9BEB0] leading-tight line-clamp-2">{item.desc}</span>
+                        <div className="flex flex-col gap-[var(--s1,4px)]">
+                          <span className={`t-label font-semibold transition-colors ${
+                            isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[#FFF5EE]'
+                          }`}>
+                            {item.title}
+                          </span>
+                          <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                        </div>
                       </button>
                     );
                   })}
@@ -1724,14 +1735,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 6: SPECIFIC BUSINESS DOMAIN & 160+ CATALOG SEARCH        */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 6 && (
-                <div className="space-y-2.5 w-full mt-1 sm:mt-2 flex flex-col">
+                <div className="flex flex-col gap-[var(--s3,12px)] w-full">
                   {/* Search Input Box & Live Match Counter */}
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="relative rounded-[var(--r-ctl,12px)] bg-white/[0.05] [--sq-stroke:rgba(255,255,255,0.15)] focus-within:[--sq-stroke:#E8622C]"
+                    className="relative h-[var(--btn-h,40px)] rounded-[var(--r-ctl,12px)] bg-white/[0.05] [--sq-stroke:rgba(255,255,255,0.15)] focus-within:[--sq-stroke:#E8622C] flex items-center px-[var(--s3,12px)] gap-[var(--s2,8px)]"
                   >
-                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#FF8A4C] pointer-events-none" />
+                    <Search className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)] pointer-events-none shrink-0" strokeWidth={1.5} />
                     <input
                       type="text"
                       value={catalogSearchQuery}
@@ -1743,26 +1754,26 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           ? 'Recherchez votre métier : cabinet dentaire, imprimerie, agence, salle de sport...'
                           : 'Search trade: dental clinic, bakery, gym, agency, farm, auto repair...'
                       }
-                      className="w-full bg-transparent border-0 rounded-[var(--r-ctl,12px)] py-2 pl-9 pr-28 text-xs text-[#FFF5EE] placeholder-[#D9BEB0]/60 outline-none"
+                      className="flex-1 bg-transparent border-0 t-body text-[#FFF5EE] placeholder-[var(--text-dark-2,#A99E92)]/60 outline-none"
                     />
-                    <div className="absolute right-2 top-1.5 flex items-center gap-1.5">
+                    <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
                       {catalogSearchQuery && (
                         <button
                           type="button"
                           onClick={() => setCatalogSearchQuery('')}
-                          className="text-[#D9BEB0] hover:text-white p-1 text-[10px] cursor-pointer"
+                          className="text-[var(--text-dark-2,#A99E92)] hover:text-white p-[var(--s1,4px)] t-small cursor-pointer"
                         >
                           ✕
                         </button>
                       )}
-                      <span className="text-[10px] font-semibold text-[#FF8A4C] px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/10 pointer-events-none">
+                      <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small text-[var(--brand-on-dark,#FF8F63)] rounded-full bg-white/[0.04] border border-white/10 pointer-events-none tabular-nums">
                         {filteredCatalogTrades.length} {isAr ? 'نشاط' : isFr ? 'métiers' : 'trades'}
                       </span>
                     </div>
                   </div>
 
                   {/* Curated Sector Filter Chips (All 16 Verticals, Fluid Scrollable Bar) */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[10px] scrollbar-none shrink-0">
+                  <div className="flex items-center gap-[var(--s2,8px)] overflow-x-auto pb-[var(--s1,4px)] t-small scrollbar-none shrink-0">
                     {CATALOG_SECTORS.map((cat) => {
                       const isFilterActive = selectedCatalogCategoryFilter === cat.id;
                       return (
@@ -1770,10 +1781,10 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           key={cat.id}
                           type="button"
                           onClick={() => setSelectedCatalogCategoryFilter(cat.id)}
-                          className={`px-2.5 py-1 rounded-full whitespace-nowrap transition-all duration-150 cursor-pointer font-medium shrink-0 ${
+                          className={`h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full whitespace-nowrap transition-all duration-150 cursor-pointer t-small shrink-0 ${
                             isFilterActive
-                              ? 'bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white shadow-xs scale-[1.02]'
-                              : 'bg-white/5 border border-white/5 text-[#D9BEB0] hover:text-white hover:border-white/20 hover:bg-white/10'
+                              ? 'bg-[var(--brand-fill,#C9461F)] text-white shadow-xs'
+                              : 'bg-white/5 border border-white/5 text-[var(--text-dark-2,#A99E92)] hover:text-white hover:border-white/20 hover:bg-white/10'
                           }`}
                         >
                           {isAr ? cat.labelAr : isFr ? cat.labelFr : cat.labelEn}
@@ -1783,9 +1794,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   </div>
 
                   {/* Trades Grid Container (Scrollable Multi-column, Custom Scrollbar) */}
-                  <div data-sq="card" data-sq-border="none" className="overflow-y-auto pr-1 h-[210px] max-h-[210px] space-y-1.5 focus:outline-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
+                  <div data-sq="card" data-sq-border="none" className="overflow-y-auto pe-[var(--s1,4px)] h-[210px] max-h-[210px] focus:outline-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
                     {filteredCatalogTrades.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[var(--s2,8px)]">
                         {filteredCatalogTrades.map((trade) => {
                           const isSelected = selectedTradeId === trade.id;
                           const title = isAr ? trade.name.ar : isFr ? trade.name.fr : trade.name.en;
@@ -1797,26 +1808,26 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               data-sq="ctl"
                               data-sq-border="solid"
                               onClick={() => handleSelectTrade(trade)}
-                              className={`flex items-center justify-between p-2 rounded-[var(--r-ctl,12px)] text-left transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.98] min-h-[46px] ${
+                              className={`flex items-center justify-between gap-[var(--s2,8px)] p-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] text-start transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.98] min-h-[48px] ${
                                 isSelected
                                   ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:#E8622C]'
                                   : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.22)] hover:bg-white/[0.07]'
                               }`}
                             >
-                              <div className="flex flex-col min-w-0 pr-1.5">
-                                <span className={`text-xs font-semibold truncate transition-colors ${
-                                  isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
+                              <div className="flex flex-col gap-[var(--name-sub-gap,2px)] min-w-0">
+                                <span className={`t-small font-semibold truncate transition-colors ${
+                                  isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[#FFF5EE]'
                                 }`}>
                                   {title}
                                 </span>
-                                <span className="text-[10px] text-[#D9BEB0] truncate">{badgeText}</span>
+                                <span className="t-cap text-[var(--text-dark-2,#A99E92)] truncate">{badgeText}</span>
                               </div>
                               <div
-                                className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
-                                  isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
+                                className={`w-[var(--s4,16px)] h-[var(--s4,16px)] rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                                  isSelected ? 'border-[var(--brand-fill,#C9461F)] bg-[var(--brand-fill,#C9461F)]' : 'border-white/20 group-hover:border-white/40'
                                 }`}
                               >
-                                {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                                {isSelected && <Check className="w-[var(--s3,12px)] h-[var(--s3,12px)] text-white" strokeWidth={2} />}
                               </div>
                             </button>
                           );
@@ -1827,13 +1838,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <div
                         data-sq="empty"
                         data-sq-border="dashed"
-                        className="p-6 text-center bg-white/[0.02] [--sq-stroke:rgba(255,255,255,0.16)] flex flex-col items-center justify-center gap-3"
+                        className="px-[var(--empty-pad-x,16px)] py-[var(--empty-pad-y,14px)] text-center bg-white/[0.02] [--sq-stroke:rgba(255,255,255,0.16)] flex flex-col items-center justify-center gap-[var(--s3,12px)]"
                       >
-                        <p className="text-xs text-[#D9BEB0]">
+                        <p className="t-body text-[var(--text-dark-2,#A99E92)]">
                           {isAr
-                            ? `لم يتم العثور على أي نشاط مطابق لـ "${catalogSearchQuery}"`
+                            ? `لم يتم العثور على أي نشاط مطابق لـ « ${catalogSearchQuery} »`
                             : isFr
-                            ? `Aucun métier standard trouvé pour "${catalogSearchQuery}"`
+                            ? `Aucun métier standard trouvé pour « ${catalogSearchQuery} »`
                             : `No standard trade found matching "${catalogSearchQuery}"`}
                         </p>
                         <button
@@ -1850,12 +1861,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             };
                             handleSelectTrade(customTrade);
                           }}
-                          className="px-4 py-2 bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer"
+                          className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] bg-[var(--brand-fill,#C9461F)] text-white t-btn hover:opacity-95 transition-opacity cursor-pointer"
                         >
                           {isAr
                             ? `متابعة باستخدام "${catalogSearchQuery}" كنشاط رئيسي`
                             : isFr
-                            ? `Continuer avec "${catalogSearchQuery}" comme activité`
+                            ? `Continuer avec « ${catalogSearchQuery} » comme activité`
                             : `Continue with "${catalogSearchQuery}" as custom trade`}
                         </button>
                       </div>
@@ -1868,8 +1879,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 7: HOW DID YOU HEAR ABOUT ATRIUM? (ZERO SCROLL 3x2 GRID) */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 7 && (
-                <div className="w-full mt-1 sm:mt-2">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
+                <div className="w-full">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-[var(--card-gap,12px)]">
                     {REFERRAL_SOURCES.map((src) => {
                       const isSelected = referralSource === src.id;
                       const label = isAr ? src.labelAr : isFr ? src.labelFr : src.labelEn;
@@ -1880,15 +1891,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           data-sq="ctl"
                           data-sq-border="solid"
                           onClick={() => handleSelectReferral(src.id)}
-                          className={`flex items-center gap-2 p-2.5 sm:p-3 rounded-[var(--r-ctl,12px)] text-xs font-medium transition-all duration-200 ease-out cursor-pointer hover:scale-[1.015] active:scale-[0.99] ${
+                          className={`flex items-center gap-[var(--s2,8px)] p-[var(--s3,12px)] rounded-[var(--r-ctl,12px)] t-label transition-all duration-200 ease-out cursor-pointer hover:scale-[1.015] active:scale-[0.99] ${
                             isSelected
-                              ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:rgba(255,255,255,0.2)] text-[#E8622C]'
+                              ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:rgba(255,255,255,0.2)] text-[var(--brand-on-dark,#FF8F63)]'
                               : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] text-[#F0DACF] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:text-white'
                           }`}
                         >
-                          <Compass className={`w-3.5 h-3.5 shrink-0 transition-colors ${isSelected ? 'text-[#E8622C]' : 'text-[#FF8A4C] opacity-80'}`} />
+                          <Compass className={`w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] shrink-0 transition-colors ${isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[var(--brand-on-dark,#FF8F63)] opacity-80'}`} strokeWidth={1.5} />
                           <span className="truncate">{label}</span>
-                          {isSelected && <Check className="w-3 h-3 ml-auto shrink-0" />}
+                          {isSelected && <Check className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] ms-auto shrink-0" strokeWidth={1.5} />}
                         </button>
                       );
                     })}
@@ -1900,41 +1911,41 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 8: WORKSPACE IDENTITY & SUBSCRIPTION PLAN SWITCHER       */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 8 && (
-                <div className="space-y-2 w-full mt-1 sm:mt-2">
+                <div className="flex flex-col gap-[var(--s2,8px)] w-full">
                   {/* Synthesis Vertical Match Pill */}
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="p-2 sm:p-2.5 bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-sm flex items-center justify-between"
+                    className="p-[var(--s3,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-sm flex items-center justify-between gap-[var(--s3,12px)]"
                   >
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-[var(--s2,8px)] min-w-0">
                       <div
                         data-sq="ctl-sm"
                         data-sq-border="solid"
-                        className="w-7 h-7 bg-[rgba(232,98,44,0.12)] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-center shrink-0"
+                        className="w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] bg-[rgba(232,98,44,0.12)] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-center shrink-0"
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-[#FF8A4C]" />
+                        <Sparkles className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
                       </div>
-                      <div className="min-w-0">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#FF8A4C] truncate">
-                          {isAr ? 'النظام المقترح وفق نشاطك' : isFr ? 'Système Métier Calibré' : 'Calibrated Vertical Engine'}
+                      <div className="min-w-0 flex flex-col gap-[var(--name-sub-gap,2px)]">
+                        <div className="t-small font-semibold text-[var(--brand-on-dark,#FF8F63)] truncate">
+                          {isAr ? 'النظام المقترح وفق نشاطك' : isFr ? 'Système métier calibré' : 'Calibrated vertical engine'}
                         </div>
-                        <div className="text-xs sm:text-sm font-extrabold text-[#FFF5EE] truncate">
+                        <div className="t-label font-semibold text-[#FFF5EE] truncate">
                           {selectedTrade ? (isAr ? selectedTrade.name.ar : isFr ? selectedTrade.name.fr : selectedTrade.name.en) : activeCategoryMeta.title}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
-                        {matchConfidence}% Match
+                    <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
+                      <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small font-semibold rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 tabular-nums">
+                        {matchConfidence} % Match
                       </span>
                       <button
                         type="button"
                         onClick={() => setIsOverrideSelectorOpen(!isOverrideSelectorOpen)}
-                        className="p-1 text-[#D9BEB0] hover:text-white transition-colors cursor-pointer"
+                        className="p-[var(--s1,4px)] text-[var(--text-dark-2,#A99E92)] hover:text-white transition-colors cursor-pointer"
                         title={isAr ? 'تغيير يدوي' : isFr ? 'Changer' : 'Change'}
                       >
-                        {isOverrideSelectorOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                        {isOverrideSelectorOpen ? <ChevronUp className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} /> : <ChevronDown className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />}
                       </button>
                     </div>
                   </div>
@@ -1944,7 +1955,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     <div
                       data-sq="ctl"
                       data-sq-border="solid"
-                      className="p-2 bg-black/80 [--sq-stroke:rgba(255,255,255,0.1)] grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px] backdrop-blur-md"
+                      className="p-[var(--s2,8px)] bg-black/80 [--sq-stroke:rgba(255,255,255,0.1)] grid grid-cols-2 sm:grid-cols-4 gap-[var(--s1,4px)] t-small backdrop-blur-md"
                     >
                       {(Object.keys(CATEGORY_METADATA) as BusinessCategory[]).map((catKey) => {
                         const meta = CATEGORY_METADATA[catKey];
@@ -1959,14 +1970,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             }}
                             data-sq="ctl-sm"
                             data-sq-border="none"
-                            className={`w-full flex items-center justify-between px-2 py-1 text-left transition-colors cursor-pointer ${
+                            className={`w-full h-[var(--btn-sm-h,32px)] px-[var(--s2,8px)] flex items-center justify-between gap-[var(--s1,4px)] text-start transition-colors cursor-pointer ${
                               isPicked
-                                ? 'bg-gradient-to-r from-[#d4522f] to-[#E8622C] text-white font-semibold'
+                                ? 'bg-[var(--brand-fill,#C9461F)] text-white font-semibold'
                                 : 'hover:bg-white/10 text-[#F0DACF]'
                             }`}
                           >
                             <span className="truncate">{meta.title}</span>
-                            {isPicked && <Check className="w-3 h-3 text-white shrink-0 ml-1" />}
+                            {isPicked && <Check className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-white shrink-0" strokeWidth={1.5} />}
                           </button>
                         );
                       })}
@@ -1974,14 +1985,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   )}
 
                   {/* Section 1: Final Workspace Identity Fields using LabelInput */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--s2,8px)]">
                     <LabelInput
                       field="workspaceName"
                       label={isAr ? 'اسم المؤسسة / مساحة العمل' : isFr ? "Nom de l'entreprise ou marque" : 'Workspace / Business Name'}
                       value={workspaceName}
                       onChange={(val) => setWorkspaceName(String(val))}
-                      prefix={<Building2 className="w-3.5 h-3.5 text-[#FF8A4C]" />}
-                      height={38}
+                      prefix={<Building2 className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
+                      height={40}
                       corner={12}
                     />
 
@@ -1991,8 +2002,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       label={isAr ? 'رقم هاتف الاتصال' : isFr ? 'Téléphone de contact' : 'Contact Phone'}
                       value={phone}
                       onChange={(val) => setPhone(String(val))}
-                      prefix={<Phone className="w-3.5 h-3.5 text-[#FF8A4C]" />}
-                      height={38}
+                      prefix={<Phone className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
+                      height={40}
                       corner={12}
                     />
                   </div>
@@ -2001,16 +2012,16 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="p-2 bg-white/[0.03] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-between text-xs"
+                    className="px-[var(--s3,12px)] py-[var(--s2,8px)] bg-white/[0.03] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-between gap-[var(--s2,8px)] t-small"
                   >
-                    <div className="flex items-center gap-2 text-[#D9BEB0]">
-                      <MapPin className="w-3.5 h-3.5 text-[#FF8A4C] shrink-0" />
-                      <span className="text-[11px] truncate">
+                    <div className="flex items-center gap-[var(--s2,8px)] text-[var(--text-dark-2,#A99E92)] min-w-0">
+                      <MapPin className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)] shrink-0" strokeWidth={1.5} />
+                      <span className="truncate">
                         {isAr ? 'الفرع التشغيلي الرئيسي :' : isFr ? 'Siège & Établissement principal :' : 'Headquarters & Branch :'}{' '}
-                        <strong className="text-[#FFF5EE] font-medium">{branchAddress}</strong>
+                        <span className="text-[#FFF5EE] font-medium">{branchAddress}</span>
                       </span>
                     </div>
-                    <span className="text-[10px] text-emerald-400 font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
+                    <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small text-emerald-400 rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
                       {isAr ? 'معتمد' : isFr ? 'Siège Actif' : 'Active Site'}
                     </span>
                   </div>
@@ -2021,7 +2032,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 9: STANDALONE SAAS SUBSCRIPTION PLANS MATRIX (2x2 GRID)   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 9 && (
-                <div className="space-y-1.5 w-full mt-1 sm:mt-2">
+                <div className="flex flex-col gap-[var(--s2,8px)] w-full">
                   {renderPlanCards(false)}
                   {renderVoucherBar()}
                 </div>
@@ -2037,8 +2048,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     </main>
 
       {/* Full-Bleed Plain Low-Opacity Text Footer with Replay Intro Trigger */}
-      <footer className="relative z-10 w-full text-center py-1.5 shrink-0 flex items-center justify-center gap-4">
-        <p className="text-[10px] text-[#BFA395]/75 font-medium tracking-wide pointer-events-none">
+      <footer className="relative z-10 w-full text-center py-[var(--s2,8px)] shrink-0 flex items-center justify-center gap-[var(--s4,16px)]">
+        <p className="t-cap text-[var(--text-dark-2,#A99E92)] pointer-events-none">
           {isAr
             ? 'أتريوم • منصة إدارة الأعمال • 2026'
             : isFr
@@ -2050,7 +2061,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           onClick={handleReplayIntro}
           data-sq="check"
           data-sq-border="solid"
-          className="text-[10px] text-[#E8622C]/85 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2 py-0.5 [--sq-stroke:rgba(212,82,47,0.25)] hover:[--sq-stroke:rgba(212,82,47,0.5)] bg-black/30 hover:bg-black/50"
+          className="h-[var(--badge-h,22px)] px-[var(--s2,8px)] t-small text-[var(--brand-on-dark,#FF8F63)] hover:text-white transition-colors cursor-pointer flex items-center gap-[var(--s1,4px)] [--sq-stroke:rgba(212,82,47,0.25)] hover:[--sq-stroke:rgba(212,82,47,0.5)] bg-black/30 hover:bg-black/50"
         >
           <span>↺ Replay</span>
         </button>
@@ -2071,28 +2082,28 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
       {/* Commercial License & Voucher Request Modal */}
       {showLicenseModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-[var(--s4,16px)]">
           <div className="relative w-full max-w-lg sq-elev-pop animate-in fade-in zoom-in-95 duration-200">
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="w-full rounded-[var(--r-panel,28px)] bg-[#18181B] [--sq-stroke:rgba(212,82,47,0.4)] p-5 text-white"
+              className="w-full rounded-[var(--r-panel,28px)] bg-[#18181B] [--sq-stroke:rgba(212,82,47,0.4)] p-[var(--modal-pad,24px)] text-white flex flex-col gap-[var(--modal-gap,20px)]"
             >
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
-              <div className="flex items-center gap-2.5">
+            <div className="flex items-center justify-between pb-[var(--s3,12px)] border-b border-white/10">
+              <div className="flex items-center gap-[var(--s3,12px)]">
                 <div
                   data-sq="tile"
                   data-sq-border="solid"
-                  className="w-8 h-8 rounded-[var(--r-tile,12px)] bg-[#d4522f]/20 [--sq-stroke:rgba(212,82,47,0.3)] flex items-center justify-center"
+                  className="w-[var(--tile,40px)] h-[var(--tile,40px)] rounded-[var(--r-tile,12px)] bg-[#d4522f]/20 [--sq-stroke:rgba(212,82,47,0.3)] flex items-center justify-center shrink-0"
                 >
-                  <Sparkles className="w-4 h-4 text-[#d4522f]" />
+                  <Sparkles className="w-[var(--icon-m,20px)] h-[var(--icon-m,20px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.75} />
                 </div>
-                <div>
-                  <h3 className="font-extrabold text-sm sm:text-base text-white">
+                <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
+                  <h3 className="t-dialog font-medium text-white">
                     {isAr ? 'الحصول على ترخيص Atrium OS' : isFr ? 'Obtenir une licence Atrium OS' : 'Get an Atrium OS License'}
                   </h3>
-                  <p className="text-[11px] text-white/70">
+                  <p className="t-cap text-[var(--text-dark-2,#A99E92)]">
                     {isAr ? 'ترخيص دائم مدى الحياة بدون رسوم دورية' : isFr ? 'Licence perpétuelle à vie • Facture proforma & convention' : 'Perpetual lifetime license • Official invoice'}
                   </p>
                 </div>
@@ -2101,9 +2112,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               <button
                 type="button"
                 onClick={() => setShowLicenseModal(false)}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full bg-white/5 hover:bg-white/10 text-[var(--text-dark-2,#A99E92)] hover:text-white flex items-center justify-center transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />
               </button>
             </div>
 
@@ -2111,38 +2122,38 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-3 rounded-[var(--r-card,16px)] bg-gradient-to-r from-[#221F1C] to-[#171618] [--sq-stroke:rgba(212,82,47,0.3)] mb-3.5 flex items-center justify-between"
+              className="p-[var(--s4,16px)] rounded-[var(--r-card,16px)] bg-gradient-to-r from-[#221F1C] to-[#171618] [--sq-stroke:rgba(212,82,47,0.3)] flex items-center justify-between gap-[var(--s3,12px)]"
             >
-              <div>
-                <span className="text-[10px] uppercase font-bold text-[#d4522f] tracking-wider">
-                  {isAr ? 'الخطة المطلوبة' : isFr ? 'Formule sélectionnée' : 'Selected Tier'}
+              <div className="flex flex-col gap-[var(--s1,4px)]">
+                <span className="t-small text-[var(--brand-on-dark,#FF8F63)]">
+                  {isAr ? 'الخطة المطلوبة' : isFr ? 'Formule sélectionnée' : 'Selected tier'}
                 </span>
-                <div className="text-base font-black text-white">
+                <div className="t-card font-medium text-white">
                   {SUBSCRIPTION_PLANS.find((p) => p.tier === selectedPlanTier)?.name}
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-sm font-extrabold font-mono text-[#E09070]">
+              <div className="text-end flex flex-col gap-[var(--s1,4px)]">
+                <div className="t-unit text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
                   {SUBSCRIPTION_PLANS.find((p) => p.tier === selectedPlanTier)?.[isAr ? 'priceAr' : isFr ? 'priceFr' : 'priceEn']}
                 </div>
-                <div className="text-[10px] text-white/70">
+                <div className="t-cap text-[var(--text-dark-2,#A99E92)]">
                   {isAr ? 'دفعة واحدة لمدى الحياة' : isFr ? 'Paiement unique à vie' : 'One-time payment'}
                 </div>
               </div>
             </div>
 
             {/* Contact & Settlement Channels */}
-            <div className="space-y-2 mb-3.5 text-xs">
+            <div className="flex flex-col gap-[var(--s3,12px)] t-body">
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-2.5 rounded-[var(--r-card,16px)] bg-neutral-900 [--sq-stroke:rgba(255,255,255,0.06)] space-y-1.5"
+                className="p-[var(--s4,16px)] rounded-[var(--r-card,16px)] bg-neutral-900 [--sq-stroke:rgba(255,255,255,0.06)] flex flex-col gap-[var(--s2,8px)]"
               >
-                <div className="text-[10px] font-bold uppercase tracking-wider text-white/70 flex items-center gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5 text-[#d4522f]" />
-                  <span>{isAr ? 'قنوات الدفع المعتمدة بالدينار' : isFr ? 'Canaux de règlement en Algérie' : 'Algerian Payment Options'}</span>
+                <div className="t-small text-[var(--text-dark-2,#A99E92)] flex items-center gap-[var(--s2,8px)]">
+                  <CreditCard className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
+                  <span>{isAr ? 'قنوات الدفع المعتمدة بالدينار' : isFr ? 'Canaux de règlement en Algérie' : 'Algerian payment options'}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-[11px] text-white/85">
+                <div className="grid grid-cols-2 gap-[var(--s2,8px)] t-small text-white/85">
                   <div>• Virement Postal CCP / SFP 01</div>
                   <div>• Virement Bancaire (BNA, BEA, CPA)</div>
                   <div>• Application BaridiMob</div>
@@ -2151,7 +2162,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               </div>
 
               {/* Commercial hotline & WhatsApp */}
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col sm:flex-row gap-[var(--s2,8px)]">
                 <a
                   href={`https://wa.me/213550123456?text=${encodeURIComponent(
                     `Bonjour, je souhaite acquérir la licence Atrium OS ${selectedPlanTier.toUpperCase()} pour mon établissement "${workspaceName}".`
@@ -2160,20 +2171,20 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   rel="noreferrer"
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="flex-1 px-3 py-2.5 rounded-[var(--r-ctl,12px)] bg-emerald-600/20 hover:bg-emerald-600/30 [--sq-stroke:rgba(16,185,129,0.3)] text-emerald-300 font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer text-xs"
+                  className="flex-1 h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] rounded-[var(--r-ctl,12px)] bg-emerald-600/20 hover:bg-emerald-600/30 [--sq-stroke:rgba(16,185,129,0.3)] text-emerald-300 t-btn flex items-center justify-center gap-[var(--btn-icon-gap,8px)] transition-all cursor-pointer"
                 >
-                  <MessageCircle className="w-4 h-4 text-emerald-400" />
+                  <MessageCircle className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-emerald-400" strokeWidth={1.5} />
                   <span>{isAr ? 'مراسلة عبر واتساب' : isFr ? 'Commander via WhatsApp' : 'Order via WhatsApp'}</span>
-                  <ExternalLink className="w-3 h-3 opacity-60" />
+                  <ExternalLink className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] opacity-60" strokeWidth={1.5} />
                 </a>
 
                 <a
                   href="tel:+213550123456"
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="px-3 py-2.5 rounded-[var(--r-ctl,12px)] bg-white/5 hover:bg-white/10 [--sq-stroke:rgba(255,255,255,0.1)] text-white/90 font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-xs"
+                  className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] rounded-[var(--r-ctl,12px)] bg-white/5 hover:bg-white/10 [--sq-stroke:rgba(255,255,255,0.1)] text-white/90 t-btn flex items-center justify-center gap-[var(--btn-icon-gap,8px)] transition-all cursor-pointer tabular-nums"
                 >
-                  <Phone className="w-3.5 h-3.5 text-[#d4522f]" />
+                  <Phone className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
                   <span>+213 (0) 550 12 34 56</span>
                 </a>
               </div>

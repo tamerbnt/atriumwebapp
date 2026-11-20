@@ -453,7 +453,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[var(--s8,48px)] sm:pt-[calc(var(--s8,48px)*2)] p-[var(--s4,16px)] bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
       <div className="sq-elev-pop w-full max-w-xl animate-in zoom-in-95 duration-150">
         <div
           data-sq="panel"
@@ -463,18 +463,18 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         >
         {/* Kinetic Search Input Bar */}
         <div
-          className={`p-3.5 sm:p-4 border-b transition-colors flex items-center gap-3 ${
+          className={`p-[var(--s4,16px)] border-b transition-colors flex items-center gap-[var(--s3,12px)] ${
             isFocused
               ? 'border-[#d4522f]/40 bg-[#FDF4F0]/40 dark:bg-neutral-800/40'
               : 'border-neutral-100 dark:border-neutral-800 bg-transparent'
           }`}
         >
           <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform ${
-              isBusy ? 'scale-110 text-black dark:text-white' : 'text-[#d4522f]'
+            className={`w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-full flex items-center justify-center shrink-0 transition-transform ${
+              isBusy ? 'scale-110 text-[var(--text-1,#17130F)] dark:text-white' : 'text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
             }`}
           >
-            <Search size={18} strokeWidth={isBusy ? 2.4 : 2} />
+            <Search size={16} strokeWidth={isBusy ? 2 : 1.5} />
           </div>
           <input
             ref={inputRef}
@@ -491,7 +491,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
               busyTimerRef.current = setTimeout(() => setIsBusy(false), 240);
             }}
             placeholder={t('cmd_palette_placeholder', language)}
-            className="w-full bg-transparent text-sm text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none"
+            className="w-full bg-transparent t-body text-[var(--text-1,#17130F)] dark:text-white placeholder:text-[var(--text-3,#766C62)] dark:placeholder:text-[var(--text-dark-2,#A99E92)] focus:outline-none"
           />
           {query.length > 0 && (
             <button
@@ -500,26 +500,26 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                 setQuery('');
                 inputRef.current?.focus();
               }}
-              className="p-1 rounded-full text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white transition-colors"
+              className="p-[var(--s1,4px)] rounded-full text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] hover:text-[var(--text-1,#17130F)] dark:hover:text-white transition-colors"
               title={language === 'ar' ? 'مسح البحث' : language === 'fr' ? 'Effacer la recherche' : 'Clear query'}
             >
-              <X size={15} />
+              <X size={16} strokeWidth={1.5} />
             </button>
           )}
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-full text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white transition-colors ml-1 cursor-pointer"
+            className="p-[var(--s1,4px)] rounded-full text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] hover:text-[var(--text-1,#17130F)] dark:hover:text-white transition-colors cursor-pointer"
             title={language === 'ar' ? 'إغلاق (Esc)' : language === 'fr' ? 'Fermer (Esc)' : 'Close (Esc)'}
           >
-            <span className="text-[11px] font-mono px-1.5 py-0.5 rounded-[var(--r-check,6px)] border border-neutral-200 dark:border-neutral-700">ESC</span>
+            <span className="t-small h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center rounded-[var(--r-check,6px)] border border-neutral-200 dark:border-neutral-700 tabular-nums">Esc</span>
           </button>
         </div>
 
         {/* Results List */}
-        <div className="overflow-y-auto p-2 divide-y divide-neutral-50 dark:divide-neutral-800/40">
+        <div className="overflow-y-auto p-[var(--s2,8px)] flex flex-col gap-[var(--s1,4px)]">
           {filteredItems.length === 0 ? (
-            <div className="py-12 text-center text-xs text-black/55 dark:text-white/55">
+            <div className="py-[var(--s8,48px)] text-center t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">
               {t('cmd_palette_no_results', language)} {query && `"${query}"`}.
             </div>
           ) : (
@@ -532,35 +532,35 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                   onClick={item.onSelect}
                   onMouseEnter={() => setSelectedIndex(index)}
                   data-sq="row"
-                  className={`w-full flex items-center justify-between p-3 text-left rtl:text-right transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between p-[var(--row-inset,12px)] text-left rtl:text-right transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-[#FDF4F0] dark:bg-neutral-800 text-black dark:text-white scale-[1.01]'
-                      : 'text-black/80 dark:text-white/80 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                      ? 'bg-[#FDF4F0] dark:bg-neutral-800 text-[var(--text-1,#17130F)] dark:text-white scale-[1.01]'
+                      : 'text-[var(--text-2,#5A5047)] dark:text-white/80 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-[var(--av-to-text,12px)] min-w-0">
                     <div
                       data-sq="tile"
-                      className={`w-8 h-8 flex items-center justify-center shrink-0 ${
+                      className={`w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] flex items-center justify-center shrink-0 ${
                         isSelected
-                          ? 'bg-[#d4522f] text-white'
-                          : 'bg-neutral-100 dark:bg-neutral-800 text-black/65 dark:text-white/65'
+                          ? 'bg-[var(--brand-fill,#C9461F)] text-white'
+                          : 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]'
                       }`}
                     >
                       {item.icon}
                     </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-bold truncate">{item.title}</div>
+                    <div className="min-w-0 flex flex-col gap-[var(--name-sub-gap,2px)]">
+                      <div className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white truncate">{item.title}</div>
                       {item.subtitle && (
-                        <div className="text-[11px] text-black/55 dark:text-white/55 truncate -mt-0.5">
+                        <div className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] truncate">
                           {item.subtitle}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/65 dark:text-white/65 uppercase rtl:normal-case">
+                  <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
+                    <span className="t-small h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] inline-flex items-center rounded-full bg-neutral-100 dark:bg-neutral-800 text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">
                       {item.category === 'Navigation'
                         ? (language === 'ar' ? 'تنقل' : language === 'fr' ? 'Navigation' : 'Navigation')
                         : item.category === 'Action'
@@ -572,7 +572,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                         : item.category}
                     </span>
                     {isSelected && (
-                      <ArrowRight size={13} className="text-[#d4522f] hidden sm:block" />
+                      <ArrowRight size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hidden sm:block" />
                     )}
                   </div>
                 </button>
@@ -582,30 +582,30 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         </div>
 
         {/* Footer Shortcut Hints */}
-        <div className="p-3 bg-neutral-50 dark:bg-neutral-950/60 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] text-black/55 dark:text-white/55">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] font-mono text-[10px] text-black dark:text-white shadow-2xs">
+        <div className="p-[var(--s3,12px)] bg-neutral-50 dark:bg-neutral-950/60 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">
+          <div className="flex items-center gap-[var(--s3,12px)]">
+            <span className="flex items-center gap-[var(--s1,4px)]">
+              <kbd className="h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] t-small tabular-nums text-[var(--text-1,#17130F)] dark:text-white shadow-2xs">
                 ↑↓
               </kbd>
               {language === 'ar' ? 'تنقل' : language === 'fr' ? 'Naviguer' : 'Navigate'}
             </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] font-mono text-[10px] text-black dark:text-white shadow-2xs">
+            <span className="flex items-center gap-[var(--s1,4px)]">
+              <kbd className="h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] t-small tabular-nums text-[var(--text-1,#17130F)] dark:text-white shadow-2xs">
                 ↵
               </kbd>
               {language === 'ar' ? 'اختيار' : language === 'fr' ? 'Sélectionner' : 'Select'}
             </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] font-mono text-[10px] text-black dark:text-white shadow-2xs">
-                ESC
+            <span className="flex items-center gap-[var(--s1,4px)]">
+              <kbd className="h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] t-small tabular-nums text-[var(--text-1,#17130F)] dark:text-white shadow-2xs">
+                Esc
               </kbd>
               {language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}
             </span>
           </div>
 
-          <div className="flex items-center gap-1 font-semibold text-[#d4522f]">
-            <Command size={11} />
+          <div className="flex items-center gap-[var(--s1,4px)] t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+            <Command size={16} strokeWidth={1.5} />
             <span>Atrium</span>
           </div>
         </div>

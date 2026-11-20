@@ -60,7 +60,8 @@ export const HomeAnchorCard: React.FC<HomeAnchorCardProps> = ({
     <div
       data-sq="card"
       data-sq-border="solid"
-      className={`bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] p-4 border border-[#4D382B]/85 [--sq-stroke:rgba(77,56,43,0.85)] text-white min-h-[108px] flex flex-col justify-between relative overflow-hidden transition-colors duration-150 ${
+      data-surface="dark"
+      className={`bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] p-[var(--card-pad,20px)] card-opt border border-[#4D382B]/85 [--sq-stroke:rgba(77,56,43,0.85)] text-white min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] relative overflow-hidden transition-colors duration-150 ${
         isInteractive ? 'group-hover/anchor:[--sq-stroke:rgba(251,146,60,0.55)]' : ''
       }`}
     >
@@ -96,14 +97,14 @@ export const HomeAnchorCard: React.FC<HomeAnchorCardProps> = ({
       </div>
 
       {/* Header Row with room for Top-Right NE Arrow */}
-      <div className="flex items-start justify-between gap-2 relative z-10 pe-10">
-        <div className="flex items-center gap-2 flex-wrap min-w-0">
-          <span className="text-[12.5px] font-medium text-[#EBDCD0]/85 tracking-[-0.005em]">
+      <div className="flex items-start justify-between gap-[var(--s2,8px)] relative z-10 pe-[var(--s8,48px)]">
+        <div className="flex items-center gap-[var(--s2,8px)] flex-wrap min-w-0">
+          <span className="t-label text-[#EBDCD0]/85">
             {title}
           </span>
           {badgeText && (
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold tracking-[-0.005em] whitespace-nowrap ${BADGE_CLASSES[badgeVariant]}`}
+              className={`inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small whitespace-nowrap ${BADGE_CLASSES[badgeVariant]}`}
             >
               {badgeText}
             </span>
@@ -112,17 +113,17 @@ export const HomeAnchorCard: React.FC<HomeAnchorCardProps> = ({
       </div>
 
       {/* KPI Value + Sublabel */}
-      <div className="flex items-end justify-between gap-3 relative z-10 mt-2">
-        <div className="flex items-baseline gap-1.5 min-w-0">
-          <span className="text-[32px] sm:text-[36px] font-bold tracking-[-0.015em] rtl:tracking-normal leading-none text-[#FB923C] tabular-nums font-['Barlow_Condensed',sans-serif] rtl:font-sans">
+      <div className="flex items-end justify-between gap-[var(--s3,12px)] relative z-10 mt-auto">
+        <div className="flex items-baseline gap-[var(--num-unit-gap,6px)] min-w-0">
+          <span className="t-kpi-m text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
             {value}
           </span>
           {unit && (
-            <span className="text-xs font-medium text-[#DECFC3]/75">{unit}</span>
+            <span className="t-small text-[var(--text-dark-2,#A99E92)]">{unit}</span>
           )}
         </div>
         {sublabel && (
-          <span className="text-[11px] font-medium text-[#DDD0C6]/72 text-end leading-tight max-w-[54%] line-clamp-2">
+          <span className="t-cap text-[var(--text-dark-2,#A99E92)] text-end max-w-[54%] line-clamp-2">
             {sublabel}
           </span>
         )}
@@ -144,11 +145,11 @@ export const HomeAnchorCard: React.FC<HomeAnchorCardProps> = ({
       {cardBody}
       <span
         aria-hidden="true"
-        className="w-8 h-8 rounded-full bg-white/[0.1] border border-white/[0.16] text-white/85 group-hover/anchor:bg-[#FB923C] group-hover/anchor:text-[#151413] group-hover/anchor:border-[#FB923C] flex items-center justify-center absolute top-3.5 end-3.5 transition-colors duration-150"
+        className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full bg-white/[0.1] border border-white/[0.16] text-white/85 group-hover/anchor:bg-[#FB923C] group-hover/anchor:text-[#151413] group-hover/anchor:border-[#FB923C] flex items-center justify-center absolute top-[var(--card-pad,20px)] end-[var(--card-pad,20px)] transition-colors duration-150"
       >
         <ArrowUpRight
-          size={15}
-          strokeWidth={2.2}
+          size={16}
+          strokeWidth={1.5}
           className="rtl:-scale-x-100 transition-transform duration-200 ltr:group-hover/anchor:translate-x-0.5 rtl:group-hover/anchor:-translate-x-0.5 group-hover/anchor:-translate-y-0.5 motion-reduce:transform-none"
         />
       </span>

@@ -96,54 +96,54 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
       title={isAr ? 'إغلاق الصندوق' : isEn ? 'Cash Close' : 'Clôture Caisse'}
       maxWidth="lg"
     >
-      <form onSubmit={handleSave} className="space-y-4">
+      <form onSubmit={handleSave} className="flex flex-col gap-[var(--s4,16px)]">
         {/* Top Summary Card */}
         <div
           data-sq="panel"
           style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-          className="p-3 bg-[#F3EDE7] dark:bg-neutral-800/60 space-y-2.5"
+          className="p-[var(--pod-pad,12px)] bg-[#F3EDE7] dark:bg-neutral-800/60 flex flex-col gap-[var(--card-gap,12px)]"
         >
-          <div className="flex items-center justify-between px-1 pt-0.5">
-            <span className="text-xs font-semibold text-black/70 dark:text-white/70">
+          <div className="flex items-center justify-between px-[var(--s1,4px)] pt-[var(--s1,4px)]">
+            <span className="t-small text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">
               {isAr ? 'تاريخ العملية' : isEn ? 'Close Date' : 'Date Clôture'}
             </span>
-            <span className="text-xs font-mono font-bold text-black dark:text-white tabular-nums">
+            <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white tabular-nums">
               {closure.closureDate}
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--s2,8px)]">
             <div
               data-sq="card"
               style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-              className="p-2.5 bg-white dark:bg-neutral-800"
+              className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
             >
-              <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'الافتتاح' : isEn ? 'Opening' : 'Fond Initial'}</span>
-              <span className="font-bold text-black dark:text-white font-mono tabular-nums">{formatMoney(closure.openingFloatDzd || 0, language)}</span>
+              <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'الافتتاح' : isEn ? 'Opening' : 'Fond Initial'}</span>
+              <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white tabular-nums">{formatMoney(closure.openingFloatDzd || 0, language)}</span>
             </div>
             <div
               data-sq="card"
               style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-              className="p-2.5 bg-white dark:bg-neutral-800"
+              className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
             >
-              <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'المقبوضات' : isEn ? 'Cash In' : 'Encaissements'}</span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">+{formatMoney(closure.totalCashReceivedDzd || 0, language)}</span>
+              <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'المقبوضات' : isEn ? 'Cash In' : 'Encaissements'}</span>
+              <span className="t-label font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">+{formatMoney(closure.totalCashReceivedDzd || 0, language)}</span>
             </div>
             <div
               data-sq="card"
               style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-              className="p-2.5 bg-white dark:bg-neutral-800"
+              className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
             >
-              <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'رسوم الطابع' : isEn ? 'Stamp Tax' : 'Timbre Fiscal'}</span>
-              <span className="font-bold text-amber-600 dark:text-amber-400 font-mono tabular-nums">{formatMoney(closure.totalTimbreAccruedDzd || 0, language)}</span>
+              <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'رسوم الطابع' : isEn ? 'Stamp Tax' : 'Timbre Fiscal'}</span>
+              <span className="t-label font-semibold text-amber-600 dark:text-amber-400 tabular-nums">{formatMoney(closure.totalTimbreAccruedDzd || 0, language)}</span>
             </div>
             <div
               data-sq="card"
               style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-              className="p-2.5 bg-white dark:bg-neutral-800"
+              className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
             >
-              <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'المتوقع' : isEn ? 'Expected' : 'Théorique'}</span>
-              <span className="font-bold text-[#d4522f] font-mono tabular-nums">{formatMoney(closure.theoreticalCashDzd || 0, language)}</span>
+              <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'المتوقع' : isEn ? 'Expected' : 'Théorique'}</span>
+              <span className="t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">{formatMoney(closure.theoreticalCashDzd || 0, language)}</span>
             </div>
           </div>
         </div>
@@ -153,89 +153,89 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
           <div
             data-sq="card"
             style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-            className="p-4 bg-white dark:bg-neutral-800 space-y-3"
+            className="card-opt p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s4,16px)]"
           >
-          <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-700">
-            <span className="text-xs font-bold text-black dark:text-white flex items-center gap-2">
-              <Coins size={16} className="text-[#d4522f]" />
-              {isAr ? 'عد الأوراق' : isEn ? 'Cash Count' : 'Comptage Billets'}
-            </span>
-            <span className={`text-xs font-mono font-bold tabular-nums ${isBalanced ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-              {isBalanced
-                ? (isAr ? 'متطابق' : isEn ? 'Balanced' : 'Conforme')
-                : `${isAr ? 'الفارق' : isEn ? 'Diff' : 'Écart'}: ${discrepancy > 0 ? '+' : ''}${formatMoney(discrepancy, language)}`}
-            </span>
-          </div>
+            <div className="flex items-center justify-between pb-[var(--s2,8px)] border-b border-neutral-100 dark:border-neutral-700">
+              <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white flex items-center gap-[var(--icon-text-gap,8px)]">
+                <Coins size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                {isAr ? 'عد الأوراق' : isEn ? 'Cash Count' : 'Comptage Billets'}
+              </span>
+              <span className={`t-small font-semibold tabular-nums ${isBalanced ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                {isBalanced
+                  ? (isAr ? 'متطابق' : isEn ? 'Balanced' : 'Conforme')
+                  : `${isAr ? 'الفارق' : isEn ? 'Diff' : 'Écart'}: ${discrepancy > 0 ? '+' : ''}${formatMoney(discrepancy, language)}`}
+              </span>
+            </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 text-xs">
-            <div>
-              <LabelInput
-                type="number"
-                label="2 000 DA"
-                value={String(b2000)}
-                onChange={(e) => setB2000(Math.max(0, parseInt(e.target.value) || 0))}
-              />
-              <span className="text-[10px] text-black/55 dark:text-white/55 font-mono text-center block mt-1 tabular-nums">
-                = {formatMoney(b2000 * 2000, language)}
-              </span>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-[var(--s3,12px)]">
+              <div className="flex flex-col gap-[var(--s1,4px)]">
+                <LabelInput
+                  type="number"
+                  label="2 000 DA"
+                  value={String(b2000)}
+                  onChange={(e) => setB2000(Math.max(0, parseInt(e.target.value) || 0))}
+                />
+                <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] text-center tabular-nums">
+                  = {formatMoney(b2000 * 2000, language)}
+                </span>
+              </div>
+              <div className="flex flex-col gap-[var(--s1,4px)]">
+                <LabelInput
+                  type="number"
+                  label="1 000 DA"
+                  value={String(b1000)}
+                  onChange={(e) => setB1000(Math.max(0, parseInt(e.target.value) || 0))}
+                />
+                <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] text-center tabular-nums">
+                  = {formatMoney(b1000 * 1000, language)}
+                </span>
+              </div>
+              <div className="flex flex-col gap-[var(--s1,4px)]">
+                <LabelInput
+                  type="number"
+                  label="500 DA"
+                  value={String(b500)}
+                  onChange={(e) => setB500(Math.max(0, parseInt(e.target.value) || 0))}
+                />
+                <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] text-center tabular-nums">
+                  = {formatMoney(b500 * 500, language)}
+                </span>
+              </div>
+              <div className="flex flex-col gap-[var(--s1,4px)]">
+                <LabelInput
+                  type="number"
+                  label="200 DA"
+                  value={String(b200)}
+                  onChange={(e) => setB200(Math.max(0, parseInt(e.target.value) || 0))}
+                />
+                <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] text-center tabular-nums">
+                  = {formatMoney(b200 * 200, language)}
+                </span>
+              </div>
+              <div className="flex flex-col gap-[var(--s1,4px)]">
+                <LabelInput
+                  type="number"
+                  label="100 DA"
+                  value={String(b100)}
+                  onChange={(e) => setB100(Math.max(0, parseInt(e.target.value) || 0))}
+                />
+                <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] text-center tabular-nums">
+                  = {formatMoney(b100 * 100, language)}
+                </span>
+              </div>
             </div>
-            <div>
-              <LabelInput
-                type="number"
-                label="1 000 DA"
-                value={String(b1000)}
-                onChange={(e) => setB1000(Math.max(0, parseInt(e.target.value) || 0))}
-              />
-              <span className="text-[10px] text-black/55 dark:text-white/55 font-mono text-center block mt-1 tabular-nums">
-                = {formatMoney(b1000 * 1000, language)}
-              </span>
-            </div>
-            <div>
-              <LabelInput
-                type="number"
-                label="500 DA"
-                value={String(b500)}
-                onChange={(e) => setB500(Math.max(0, parseInt(e.target.value) || 0))}
-              />
-              <span className="text-[10px] text-black/55 dark:text-white/55 font-mono text-center block mt-1 tabular-nums">
-                = {formatMoney(b500 * 500, language)}
-              </span>
-            </div>
-            <div>
-              <LabelInput
-                type="number"
-                label="200 DA"
-                value={String(b200)}
-                onChange={(e) => setB200(Math.max(0, parseInt(e.target.value) || 0))}
-              />
-              <span className="text-[10px] text-black/55 dark:text-white/55 font-mono text-center block mt-1 tabular-nums">
-                = {formatMoney(b200 * 200, language)}
-              </span>
-            </div>
-            <div>
-              <LabelInput
-                type="number"
-                label="100 DA"
-                value={String(b100)}
-                onChange={(e) => setB100(Math.max(0, parseInt(e.target.value) || 0))}
-              />
-              <span className="text-[10px] text-black/55 dark:text-white/55 font-mono text-center block mt-1 tabular-nums">
-                = {formatMoney(b100 * 100, language)}
-              </span>
-            </div>
-          </div>
 
-          <div
-            data-sq="ctl"
-            className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-900/50 text-xs"
-          >
-            <span className="font-medium text-black/70 dark:text-white/70">
-              {isAr ? 'العد الفعلي' : isEn ? 'Counted Total' : 'Total Compté'}
-            </span>
-            <span className="text-lg font-extrabold font-['Barlow_Condensed',sans-serif] rtl:font-sans tabular-nums text-black dark:text-white">
-              {formatMoney(countedTotal, language)}
-            </span>
-          </div>
+            <div
+              data-sq="ctl"
+              className="flex items-center justify-between p-[var(--s3,12px)] bg-neutral-50 dark:bg-neutral-900/50"
+            >
+              <span className="t-label text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">
+                {isAr ? 'العد الفعلي' : isEn ? 'Counted Total' : 'Total Compté'}
+              </span>
+              <span className="t-unit font-semibold tabular-nums text-[var(--text-1,#17130F)] dark:text-white">
+                {formatMoney(countedTotal, language)}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -246,7 +246,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
           placeholder={isAr ? 'أضف ملاحظة...' : isEn ? 'Add note...' : 'Notes...'}
         />
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
+        <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--s2,8px)] border-t border-neutral-200 dark:border-neutral-800">
           <Button tone="soft" onClick={onClose} type="button">
             {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
           </Button>

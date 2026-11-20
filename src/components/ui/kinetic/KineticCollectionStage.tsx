@@ -148,14 +148,16 @@ function KineticCollectionStageInner<T>({
             : 'Select all'
         }
         onClick={onToggleSelectAll}
-        className={`cb relative w-5 h-5 grid place-items-center p-0 cursor-pointer ${
+        className={`cb relative w-[var(--check,20px)] h-[var(--check,20px)] grid place-items-center p-0 cursor-pointer ${
           selectedCount === totalCount && totalCount > 0
-            ? 'bg-[var(--atr-acc,#d4522f)] [--sq-stroke:var(--atr-acc,#d4522f)] text-white'
-            : 'bg-white dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#5A5550] hover:[--sq-stroke:var(--atr-acc,#d4522f)] text-transparent'
+            ? 'bg-[var(--brand-fill)] [--sq-stroke:var(--brand-fill)] text-white'
+            : 'bg-white dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#5A5550] hover:[--sq-stroke:var(--brand-text)] text-transparent'
         }`}
       >
         <Check
-          className={`w-3.5 h-3.5 stroke-[3] transition-opacity duration-120 ${
+          size={12}
+          strokeWidth={2}
+          className={`transition-opacity duration-120 ${
             selectedCount > 0 ? 'opacity-100 text-white' : 'opacity-0'
           }`}
         />
@@ -175,14 +177,14 @@ function KineticCollectionStageInner<T>({
             disabled={!isSortable}
             aria-sort={isOn ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
             onClick={() => isSortable && onToggleSort(col.key)}
-            className="text-left rtl:text-right font-medium text-xs text-[var(--text-2)] dark:text-[var(--text-dark-2)] flex items-center gap-2 cursor-pointer hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] bg-transparent border-0 p-0 whitespace-nowrap truncate min-w-0 disabled:cursor-default disabled:hover:text-[var(--text-2)]"
+            className="text-start t-small text-[var(--text-2)] dark:text-[var(--text-dark-2)] flex items-center gap-[var(--s2,8px)] cursor-pointer hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] bg-transparent border-0 p-0 whitespace-nowrap truncate min-w-0 disabled:cursor-default disabled:hover:text-[var(--text-2)]"
           >
             <span className="truncate">{col.label}</span>
             {isSortable && (
               <i
-                className={`not-italic text-xs px-2 py-0.5 rounded-full ${
+                className={`not-italic t-small px-[var(--s2,8px)] h-[var(--badge-h,22px)] inline-flex items-center rounded-full ${
                   isOn
-                    ? 'bg-[var(--atr-hl,rgba(212,82,47,0.12))] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)]'
+                    ? 'bg-[var(--atr-hl,rgba(212,82,47,0.12))] text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]'
                     : 'bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-[var(--text-2)] dark:text-[var(--text-dark-2)]'
                 }`}
               >
@@ -204,7 +206,7 @@ function KineticCollectionStageInner<T>({
         : filterKey;
 
     return (
-      <div className="w-full flex flex-col gap-2" data-stage-mode={viewMode === 'grid' ? 'g' : 'l'}>
+      <div className="w-full flex flex-col gap-[var(--row-gap,8px)]" data-stage-mode={viewMode === 'grid' ? 'g' : 'l'}>
         {viewMode === 'list' && (
           <div className="w-full members-x-wrap">
             <div className="min-w-[980px]">{headerBar}</div>
@@ -237,7 +239,7 @@ function KineticCollectionStageInner<T>({
     <div className="w-full">
       <div className="w-full members-x-wrap">
         <div
-          className="w-full flex flex-col gap-2 min-w-[980px] h-[560px] sm:h-[702px] relative"
+          className="w-full flex flex-col gap-[var(--row-gap,8px)] min-w-[980px] h-[560px] sm:h-[702px] relative"
           data-stage-mode={viewMode === 'grid' ? 'g' : 'l'}
         >
           {headerBar}

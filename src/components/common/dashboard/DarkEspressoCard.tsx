@@ -49,9 +49,10 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
 
   return (
     <div
+      data-surface="dark"
       data-sq="card"
       data-sq-border="solid"
-      className={`bg-[#1F1D1B] p-[var(--card-pad,20px)] card-opt border border-white/[0.08] [--sq-stroke:rgba(255,255,255,0.08)] text-white relative overflow-hidden min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-4 group select-none ${className}`}
+      className={`bg-[#1F1D1B] p-[var(--card-pad,20px)] card-opt border border-white/[0.08] [--sq-stroke:rgba(255,255,255,0.08)] text-white relative overflow-hidden min-h-[var(--kpi-min-h,168px)] flex flex-col gap-[var(--s3,12px)] group select-none ${className}`}
     >
       {showSparkline && (
         <div className="absolute -right-3 -bottom-4 opacity-25 group-hover:opacity-40 transition-opacity pointer-events-none">
@@ -67,34 +68,34 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
-        <span className="text-xs font-medium text-[var(--text-dark-2,#A99E92)] block truncate">
+      <div className="flex flex-col gap-[var(--s2,8px)]">
+        <span className="t-small text-[var(--text-dark-2,#A99E92)] block truncate">
           {displayTitle}
         </span>
         {displayBadge && (
-          <div className="text-xs font-semibold">
-            <span className={`${currentBadgeColor} px-2 h-[var(--badge-h,22px)] rounded-full inline-flex items-center`}>
+          <div>
+            <span className={`${currentBadgeColor} t-small px-[var(--badge-px,6px)] h-[var(--badge-h,22px)] rounded-full inline-flex items-center`}>
               {displayBadge}
             </span>
           </div>
         )}
       </div>
 
-      <div className="flex items-baseline gap-2 z-10 mt-auto">
-        <span className="text-[var(--t-kpi-m)] leading-[var(--lh-kpi-m)] font-normal tracking-[var(--tr-display)] text-[var(--brand-on-dark,#FF8F63)] tabular-nums [font-family:var(--font-display)] rtl:[font-family:var(--font-ui)] rtl:font-semibold rtl:text-2xl">
+      <div className="flex items-baseline gap-[var(--num-unit-gap,6px)] z-10 mt-auto">
+        <span className="t-kpi-m text-[var(--brand-on-dark,#FF8F63)] rtl:[font-family:var(--font-ui)] rtl:font-medium rtl:text-2xl">
           {value}
         </span>
         {unit && (
-          <span className="text-xs text-[var(--text-dark-2,#A99E92)] font-normal">
+          <span className="t-cap text-[var(--text-dark-2,#A99E92)]">
             {unit}
           </span>
         )}
-        {displaySubtitle && (
-          <span className="text-xs text-[var(--text-dark-2,#A99E92)] ms-auto tabular-nums">
-            {displaySubtitle}
-          </span>
-        )}
       </div>
+      {displaySubtitle && (
+        <span className="t-cap text-[var(--text-dark-2,#A99E92)] tabular-nums block z-10">
+          {displaySubtitle}
+        </span>
+      )}
     </div>
   );
 };

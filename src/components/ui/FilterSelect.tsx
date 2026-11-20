@@ -50,7 +50,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
       value: String(opt.value),
       tooltip: compact.tooltip,
       label: (
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-[var(--s2,8px)]">
           <span>{compact.label}</span>
           {typeof opt.count === 'number' && (
             <LiveBadge value={opt.count} floating={false} max={999} showZero />
@@ -74,10 +74,10 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
   };
 
   return (
-    <div className={`inline-flex items-center gap-1.5 ${className}`} title={label || ariaLabel}>
-      {icon && <span className="text-black/65 dark:text-white/70 shrink-0">{icon}</span>}
+    <div className={`inline-flex items-center gap-[var(--icon-text-gap,8px)] ${className}`} title={label || ariaLabel}>
+      {icon && <span className="text-[var(--text-2)] dark:text-[var(--text-dark-2)] shrink-0">{icon}</span>}
       {label && (
-        <span className="text-black/70 dark:text-white/75 text-xs font-medium" title={label}>
+        <span className="t-label text-[var(--text-2)] dark:text-[var(--text-dark-2)]" title={label}>
           {compactFilterLabel(label).label}:
         </span>
       )}

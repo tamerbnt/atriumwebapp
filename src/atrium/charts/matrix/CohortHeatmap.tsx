@@ -145,11 +145,11 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
           </div>
         }
         footer={
-          <div className="flex items-center justify-between gap-2 pt-1 ax-tk">
+          <div className="flex items-center justify-between gap-[var(--s2,8px)] ax-tk">
             <span dir="ltr">
               {columnPrefix}0 = 100{unit}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-[var(--s2,8px)]">
               <span>{strings.lowLabel}</span>
               <span
                 className="h-2.5 w-20 rounded-full border border-[var(--ax-bdr)]"
@@ -170,11 +170,11 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
           onPointerMove={handlePointerMove}
           onPointerLeave={() => setActive(null)}
           onKeyDown={handleKeyDown}
-          className="ax-plot-focus flex flex-col gap-1 select-none"
+          className="ax-plot-focus flex flex-col gap-[var(--s1,4px)] select-none"
         >
           {/* Header Row */}
           <div
-            className="grid gap-1 items-center"
+            className="grid gap-[var(--s1,4px)] items-center"
             style={{
               gridTemplateColumns: `56px repeat(${maxCols}, minmax(0, 1fr))`,
             }}
@@ -197,13 +197,13 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
           {cohorts.map((row, r) => (
             <div
               key={row.label}
-              className="grid gap-1 items-center"
+              className="grid gap-[var(--s1,4px)] items-center"
               style={{
                 gridTemplateColumns: `56px repeat(${maxCols}, minmax(0, 1fr))`,
               }}
             >
               <span
-                className={`ax-tk truncate pr-1 ${
+                className={`ax-tk truncate pe-[var(--s1,4px)] ${
                   active?.r === r ? 'text-[var(--ax-on)] font-semibold' : ''
                 }`}
               >
@@ -226,7 +226,7 @@ export const CohortHeatmap: React.FC<CohortHeatmapProps> = React.memo(
                     data-c={c}
                     role="gridcell"
                     aria-selected={isSelected}
-                    className={`ax-pop-item h-[26px] rounded-[var(--r-check,6px)] flex items-center justify-center ax-mono text-[10.5px] font-medium cursor-pointer ${
+                    className={`ax-pop-item h-[26px] rounded-[var(--r-check,6px)] flex items-center justify-center t-small tabular-nums cursor-pointer ${
                       isSelected ? 'relative z-10' : ''
                     }`}
                     style={{

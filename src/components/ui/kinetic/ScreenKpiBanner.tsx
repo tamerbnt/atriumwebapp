@@ -79,14 +79,14 @@ const WhiteKpiCard: React.FC<{
           card.isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
         }`}
       />
-      <div className="relative z-10 w-full flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-medium text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
+      <div className="relative z-10 w-full flex flex-col gap-[var(--s2,8px)]">
+        <div className="flex items-center justify-between gap-[var(--s2,8px)]">
+          <span className="t-small text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
             {card.label}
           </span>
           {card.isActive && (
             <span
-              className={`h-[var(--badge-h,22px)] inline-flex items-center text-xs font-medium px-2 rounded-full shrink-0 ${filteredPillClass}`}
+              className={`h-[var(--badge-h,22px)] inline-flex items-center t-small px-[var(--badge-px,6px)] rounded-full shrink-0 ${filteredPillClass}`}
             >
               {filteredText}
             </span>
@@ -94,7 +94,7 @@ const WhiteKpiCard: React.FC<{
         </div>
         <div>
           <span
-            className={`inline-flex items-center h-[var(--badge-h,22px)] text-xs font-medium px-2 rounded-full transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 ${chipClass}`}
+            className={`inline-flex items-center h-[var(--badge-h,22px)] t-small px-[var(--s2,8px)] rounded-full transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 ${chipClass}`}
           >
             {isEmerald ? (
               card.badgeText
@@ -111,14 +111,14 @@ const WhiteKpiCard: React.FC<{
       </div>
       <div
         ref={countRef}
-        className="relative z-10 text-[var(--t-kpi-m)] leading-[var(--t-kpi-m-lh)] font-normal uppercase tracking-[0.01em] rtl:normal-case rtl:tracking-normal text-[var(--text-1)] dark:text-white tabular-nums font-[var(--font-display)] rtl:font-sans transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03] mt-auto"
+        className="relative z-10 t-kpi-m text-[var(--text-1)] dark:text-white transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03] mt-auto"
       >
         {card.formatValue ? card.formatValue(card.count) : card.count}
       </div>
     </>
   );
 
-  const sharedClass = `relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-white dark:bg-neutral-800/90 text-left rtl:text-right flex flex-col justify-between gap-3 min-h-[var(--kpi-min-h,168px)] h-full w-full select-none focus:outline-none ${
+  const sharedClass = `relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-white dark:bg-neutral-800/90 text-left rtl:text-right flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full w-full select-none focus:outline-none ${
     card.onToggle ? 'cursor-pointer' : ''
   } ${card.isActive ? activeStrokeVars : inactiveStrokeVars}`;
 
@@ -187,8 +187,8 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
       data-sq-border="solid"
       className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[var(--r-panel,28px)] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] ${className}`}
     >
-      <div className="pt-1 px-3 pb-3">
-        <h2 className="text-[var(--t-h3)] leading-[var(--pod-head-h,22px)] font-semibold text-[var(--text-1)] dark:text-white">
+      <div className="pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
+        <h2 className="t-pod text-[var(--text-1)] dark:text-white">
           {heading}
         </h2>
       </div>
@@ -199,16 +199,17 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
         {/* 3rd Dark #1F1D1B Card with #FF8F63 orange figure */}
         <div className="group sq-elev-card-hover h-full transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] motion-reduce:transition-none motion-reduce:hover:transform-none">
           <div
+            data-surface="dark"
             data-sq="card"
             data-sq-border="solid"
-            className="relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-[#1F1D1B] [--sq-stroke:rgba(255,255,255,0.08)] group-hover:[--sq-stroke:rgba(255,143,99,0.4)] text-white flex flex-col justify-between gap-3 min-h-[var(--kpi-min-h,168px)] h-full"
+            className="relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-[#1F1D1B] [--sq-stroke:rgba(255,255,255,0.08)] group-hover:[--sq-stroke:rgba(255,143,99,0.4)] text-white flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full"
           >
             <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(260px_circle_at_88%_12%,rgba(255,143,99,0.14),transparent_70%)]" />
-            <div className="relative z-10 flex items-center justify-between gap-2">
-              <span className="text-xs font-medium text-[var(--text-dark-2)] truncate">
+            <div className="relative z-10 flex items-center justify-between gap-[var(--s2,8px)]">
+              <span className="t-small text-[var(--text-dark-2)] truncate">
                 {darkCard.label}
               </span>
-              <span className="inline-flex items-center gap-1 h-[var(--badge-h,22px)] px-2 rounded-full text-xs font-medium bg-[#3D2817] text-[var(--brand-on-dark)] border border-[#FF8F63]/25 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5 shrink-0">
+              <span className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--badge-h,22px)] px-[var(--s2,8px)] rounded-full t-small bg-[#3D2817] text-[var(--brand-on-dark)] border border-[#FF8F63]/25 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5 shrink-0">
                 <span ref={darkChipCountRef}>
                   {darkCard.formatBadgeValue
                     ? darkCard.formatBadgeValue(darkCard.badgeCount)
@@ -217,17 +218,15 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
                 {darkCard.badgeSuffix ? <span>{darkCard.badgeSuffix.trim()}</span> : null}
               </span>
             </div>
-            <div className="relative z-10 flex flex-col gap-1 mt-auto">
-              <div
-                ref={darkBigCountRef}
-                className="text-[var(--t-kpi-m)] leading-[var(--t-kpi-m-lh)] font-normal uppercase tracking-[0.01em] rtl:normal-case rtl:tracking-normal text-[var(--brand-on-dark)] tabular-nums font-[var(--font-display)] rtl:font-sans transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03]"
-              >
-                {darkCard.formatValue
-                  ? darkCard.formatValue(darkCard.valueCount)
-                  : `${darkCard.valuePrefix ?? '+'}${darkCard.valueCount}${darkCard.valueSuffix ?? ''}`}
-              </div>
-              <p className="text-xs text-[var(--text-dark-2)] truncate">{darkCard.caption}</p>
+            <div
+              ref={darkBigCountRef}
+              className="relative z-10 t-kpi-m text-[var(--brand-on-dark)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03] mt-auto"
+            >
+              {darkCard.formatValue
+                ? darkCard.formatValue(darkCard.valueCount)
+                : `${darkCard.valuePrefix ?? '+'}${darkCard.valueCount}${darkCard.valueSuffix ?? ''}`}
             </div>
+            <p className="relative z-10 t-cap text-[var(--text-dark-2)] truncate">{darkCard.caption}</p>
           </div>
         </div>
       </div>

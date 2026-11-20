@@ -141,14 +141,14 @@ export const RadarBalanceChart: React.FC<RadarBalanceChartProps> = React.memo(
           </div>
         }
         footer={
-          <div className="flex flex-wrap items-center justify-between gap-2 ax-tk pt-1">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center justify-between gap-[var(--s2,8px)] ax-tk">
+            <div className="flex items-center gap-[var(--chart-leg-row-gap,16px)]">
+              <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                 <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--ax-c1)]" />
                 <span>{primaryLabel || strings.currentLabel}</span>
               </span>
               {hasBenchmark && (
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                   <span className="w-3 border-t-[1.5px] border-dashed border-[var(--ax-c4)]" />
                   <span>{benchmarkLabel || strings.benchmarkLabel}</span>
                 </span>
@@ -157,7 +157,7 @@ export const RadarBalanceChart: React.FC<RadarBalanceChartProps> = React.memo(
             {activeAxis && typeof activeAxis.benchmark === 'number' && (
               <span>
                 {benchmarkLabel || strings.benchmarkLabel}:{' '}
-                <strong className="text-[var(--ax-on)]" dir="ltr">
+                <strong className="font-semibold text-[var(--ax-on)]" dir="ltr">
                   {Math.round(activeAxis.benchmark)}
                   {unit}
                 </strong>
@@ -203,14 +203,14 @@ export const RadarBalanceChart: React.FC<RadarBalanceChartProps> = React.memo(
                   />
                   <text
                     x={s.outer.lx}
-                    y={s.outer.ly + 3}
+                    y={s.outer.ly + 4}
                     textAnchor={anchor}
                     className={
                       isActive ? 'fill-[var(--ax-acc)] font-semibold' : 'fill-[var(--ax-sub)]'
                     }
                     style={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontSize: '10.5px',
+                      fontFamily: "var(--font-ui, 'Inter', sans-serif)",
+                      fontSize: '12px',
                       fontWeight: isActive ? 600 : 500,
                     }}
                   >

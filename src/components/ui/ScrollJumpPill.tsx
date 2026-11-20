@@ -197,21 +197,21 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
         onClick={handleScrollJump}
         aria-label={label}
         title={label}
-        className="group relative flex items-center justify-center h-10 min-w-10 px-2 group-hover:ps-2.5 group-hover:pe-4 group-focus-visible:ps-2.5 group-focus-visible:pe-4 rounded-full bg-white dark:bg-neutral-900 text-black dark:text-white border border-neutral-200/90 dark:border-neutral-700/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12),0_4px_8px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] hover:border-[#d4522f]/80 hover:shadow-[0_10px_28px_-4px_rgba(212,82,47,0.25)] hover:scale-[1.04] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f] overflow-hidden"
+        className="group relative flex items-center justify-center h-[var(--btn-h,40px)] min-w-[var(--btn-h,40px)] px-[var(--s2,8px)] group-hover:ps-[var(--s3,12px)] group-hover:pe-[var(--s4,16px)] group-focus-visible:ps-[var(--s3,12px)] group-focus-visible:pe-[var(--s4,16px)] rounded-full bg-white dark:bg-neutral-900 text-[var(--text-1)] dark:text-white border border-neutral-200/90 dark:border-neutral-700/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12),0_4px_8px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] hover:border-[var(--brand-text)]/80 hover:shadow-[0_10px_28px_-4px_rgba(212,82,47,0.25)] hover:scale-[1.04] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f] overflow-hidden"
       >
         {/* Animated Direction Arrow Icon */}
         <span
-          className="w-6 h-6 rounded-full bg-[#d4522f]/15 dark:bg-[#d4522f]/25 text-[#d4522f] dark:text-[#E09070] flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-[#d4522f] group-hover:text-white shrink-0"
+          className="w-[var(--s6,24px)] h-[var(--s6,24px)] rounded-full bg-[#d4522f]/15 dark:bg-[#d4522f]/25 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-[var(--brand-fill)] group-hover:text-white shrink-0"
           style={{
             transform: direction === 'up' ? 'rotate(180deg)' : 'rotate(0deg)',
           }}
         >
-          <ArrowDown className="w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]" />
+          <ArrowDown size={16} strokeWidth={1.5} className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]" />
         </span>
 
         {/* Microcopy Label - icon only at rest, fluidly reveals on hover / focus */}
         {!compact && (
-          <span className="max-w-0 opacity-0 overflow-hidden whitespace-nowrap text-xs font-medium text-black/85 dark:text-white group-hover:max-w-48 group-hover:opacity-100 group-hover:ms-2 group-focus-visible:max-w-48 group-focus-visible:opacity-100 group-focus-visible:ms-2 group-hover:text-[#d4522f] dark:group-hover:text-[#E09070] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none pointer-events-none">
+          <span className="max-w-0 opacity-0 overflow-hidden whitespace-nowrap t-small text-[var(--text-1)] dark:text-white group-hover:max-w-48 group-hover:opacity-100 group-hover:ms-[var(--s2,8px)] group-focus-visible:max-w-48 group-focus-visible:opacity-100 group-focus-visible:ms-[var(--s2,8px)] group-hover:text-[var(--brand-text)] dark:group-hover:text-[var(--brand-on-dark)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none pointer-events-none">
             {label}
           </span>
         )}

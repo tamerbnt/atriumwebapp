@@ -90,11 +90,8 @@
   border-radius: 999px;
   background: var(--brand-fill, #C9461F);
   color: #ffffff;
-  font: inherit;
-  font-size: var(--t-small, 12px);
-  line-height: var(--lh-small, 16px);
-  letter-spacing: var(--tr-12, 0.01em);
-  font-weight: 600;
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
   cursor: pointer;
 }
 .reveal:focus-visible { transform: translate(-50%, 0); outline: 2px solid var(--atr-ink); outline-offset: 2px; }

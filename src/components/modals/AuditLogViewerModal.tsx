@@ -95,13 +95,13 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} subtitle={subtitle} maxWidth="xl">
-      <div className="space-y-4">
+      <div className="flex flex-col gap-[var(--s4,16px)]">
         {/* Filter controls */}
-        <div className="flex flex-wrap items-center gap-3 pb-3 border-b border-[var(--atr-line)]">
+        <div className="flex flex-wrap items-center gap-[var(--s3,12px)] pb-[var(--s3,12px)] border-b border-[var(--atr-line)]">
           <div
             data-sq="ctl"
             style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
-            className="flex-1 min-w-[200px] h-9 bg-[var(--atr-soft)] flex items-center"
+            className="flex-1 min-w-[var(--field-min,200px)] h-[var(--btn-h,40px)] bg-[var(--atr-soft)] flex items-center"
           >
             <input
               type="text"
@@ -110,14 +110,14 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
               placeholder={
                 isAr ? 'تصفية باسم الجدول...' : isFr ? 'Filtrer par table (ex: gym_members)...' : 'Filter by table (e.g. gym_members)...'
               }
-              className="w-full h-full px-3 bg-transparent text-xs text-[var(--atr-ink)] placeholder:text-[var(--atr-ink-4)] focus:outline-none"
+              className="w-full h-full px-[var(--s3,12px)] bg-transparent t-body text-[var(--atr-ink)] placeholder:text-[var(--atr-ink-4)] focus:outline-none"
             />
           </div>
 
           <div
             data-sq="ctl"
             style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
-            className="flex items-center gap-1 p-[3px] bg-[var(--atr-soft)]"
+            className="flex items-center gap-[var(--s1,4px)] h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[var(--atr-soft)]"
           >
             {ACTION_OPTIONS.map((act) => (
               <button
@@ -125,7 +125,7 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
                 type="button"
                 onClick={() => setActionFilter(act)}
                 data-sq={actionFilter === act ? 'thumb' : 'none'}
-                className={`px-2.5 py-1 text-[11px] font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                className={`h-full px-[var(--seg-px,12px)] t-small transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
                   actionFilter === act
                     ? 'bg-[var(--atr-card)] text-[var(--atr-ink)]'
                     : 'rounded-[var(--r-thumb,9px)] text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
@@ -140,7 +140,7 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
             type="button"
             variant="secondary"
             size="sm"
-            icon={<RefreshCw size={13} />}
+            icon={<RefreshCw size={16} strokeWidth={1.5} />}
             onClick={() => loadPage(false)}
             disabled={isLoading}
           >
@@ -149,8 +149,8 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
         </div>
 
         {/* Summary counter */}
-        <div className="flex items-center justify-between text-xs text-[var(--atr-ink-3)]">
-          <span className="font-mono tabular-nums">
+        <div className="flex items-center justify-between t-cap text-[var(--atr-ink-3)]">
+          <span className="tabular-nums">
             {isAr
               ? `عرض ${logs.length} من ${totalCount || logs.length} سجل`
               : isFr
@@ -158,7 +158,7 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
               : `Showing ${logs.length} of ${totalCount || logs.length} entries`}
           </span>
           {!isSupabaseConfigured() && (
-            <span className="text-[11px] text-[var(--atr-ink-4)]">
+            <span className="t-cap text-[var(--atr-ink-4)]">
               {isAr ? 'وضع التخزين المحلي نشط' : isFr ? 'Mode local hors-ligne' : 'Local-only mode'}
             </span>
           )}
@@ -169,13 +169,13 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
           <div
             data-sq="card"
             style={{ '--sq-stroke': '#FDA4AF' } as React.CSSProperties}
-            className="p-3 bg-rose-50 dark:bg-rose-950/30 flex items-center justify-between gap-3 text-xs text-rose-700 dark:text-rose-300"
+            className="p-[var(--s3,12px)] bg-rose-50 dark:bg-rose-950/30 flex items-center justify-between gap-[var(--s3,12px)] t-cap text-rose-700 dark:text-rose-300"
           >
             <span>{error}</span>
             <AtriumButton
               type="button"
               variant="secondary"
-              size="xs"
+              size="sm"
               onClick={() => loadPage(logs.length > 0)}
             >
               {isAr ? 'إعادة المحاولة' : isFr ? 'Réessayer' : 'Retry'}
@@ -185,14 +185,14 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
 
         {/* Log rows */}
         {isLoading && logs.length === 0 ? (
-          <div className="space-y-2">
+          <div className="flex flex-col gap-[var(--s2,8px)]">
             {Array.from({ length: 6 }).map((_, idx) => (
               <div
                 key={idx}
                 data-sq="ctl"
                 data-sq-border="solid"
                 style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
-                className="h-[44px] bg-[var(--atr-soft)] animate-pulse"
+                className="h-[var(--sb-item,44px)] bg-[var(--atr-soft)] animate-pulse"
               />
             ))}
           </div>
@@ -201,7 +201,7 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
             <EmptyState
               variant="compact"
               tone={isSupabaseConfigured() ? 'neutral' : 'warning'}
-              icon={<Shield size={20} />}
+              icon={<Shield size={20} strokeWidth={1.75} />}
               title={
                 isSupabaseConfigured()
                   ? isAr
@@ -233,61 +233,61 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
             {logs.map((entry) => {
               const isExpanded = expandedId === entry.id;
               return (
-                <div key={entry.id} className="text-xs">
+                <div key={entry.id}>
                   <button
                     type="button"
                     onClick={() => setExpandedId(isExpanded ? null : entry.id)}
-                    className="w-full px-4 py-2.5 flex items-center justify-between gap-3 text-left rtl:text-right hover:bg-[var(--atr-soft)] transition-colors cursor-pointer"
+                    className="w-full px-[var(--s4,16px)] py-[var(--s3,12px)] flex items-center justify-between gap-[var(--s3,12px)] text-left rtl:text-right hover:bg-[var(--atr-soft)] transition-colors cursor-pointer"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-[var(--s2,8px)] min-w-0">
                       {isExpanded ? (
-                        <ChevronDown size={14} className="text-[var(--atr-ink-4)] shrink-0" />
+                        <ChevronDown size={16} strokeWidth={1.5} className="text-[var(--atr-ink-4)] shrink-0" />
                       ) : (
-                        <ChevronRight size={14} className="text-[var(--atr-ink-4)] shrink-0" />
+                        <ChevronRight size={16} strokeWidth={1.5} className="text-[var(--atr-ink-4)] shrink-0" />
                       )}
-                      <span className="font-mono font-semibold text-[var(--atr-ink)] truncate">
+                      <span className="t-label font-semibold text-[var(--atr-ink)] truncate">
                         {entry.tableName}
                       </span>
                       <span aria-hidden="true" className="text-[var(--atr-ink-4)]">·</span>
-                      <span className="font-semibold text-[var(--atr-acc-text)] shrink-0">
+                      <span className="t-small font-semibold text-[var(--atr-acc-text)] shrink-0">
                         {entry.action}
                       </span>
                       {entry.recordId && (
                         <>
                           <span aria-hidden="true" className="text-[var(--atr-ink-4)]">·</span>
-                          <span className="font-mono text-[11px] text-[var(--atr-ink-3)] truncate max-w-[140px]">
+                          <span className="t-cap tabular-nums text-[var(--atr-ink-3)] truncate max-w-[140px]">
                             {entry.recordId}
                           </span>
                         </>
                       )}
                     </div>
-                    <span className="font-mono tabular-nums text-[11px] text-[var(--atr-ink-3)] shrink-0">
+                    <span className="t-cap tabular-nums text-[var(--atr-ink-3)] shrink-0">
                       {new Date(entry.occurredAt).toLocaleString()}
                     </span>
                   </button>
 
                   {isExpanded && (
-                    <div className="px-4 pb-3 pt-1 bg-[var(--atr-soft)] border-t border-[var(--atr-line)] grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <div className="text-[11px] font-semibold text-[var(--atr-ink-3)] mb-1">
+                    <div className="px-[var(--s4,16px)] py-[var(--s3,12px)] bg-[var(--atr-soft)] border-t border-[var(--atr-line)] grid grid-cols-1 md:grid-cols-2 gap-[var(--s3,12px)]">
+                      <div className="flex flex-col gap-[var(--s1,4px)]">
+                        <div className="t-small text-[var(--atr-ink-3)]">
                           {isAr ? 'البيانات السابقة' : isFr ? 'Avant (old_data)' : 'Before (old_data)'}
                         </div>
                         <pre
                           data-sq="ctl"
                           style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
-                          className="p-2.5 bg-[var(--atr-card)] text-[11px] font-mono overflow-x-auto max-h-[160px] text-[var(--atr-ink-2)]"
+                          className="p-[var(--s3,12px)] bg-[var(--atr-card)] t-cap font-sans tabular-nums overflow-x-auto max-h-[160px] text-[var(--atr-ink-2)]"
                         >
                           {entry.oldData ? JSON.stringify(entry.oldData, null, 2) : '—'}
                         </pre>
                       </div>
-                      <div>
-                        <div className="text-[11px] font-semibold text-[var(--atr-ink-3)] mb-1">
+                      <div className="flex flex-col gap-[var(--s1,4px)]">
+                        <div className="t-small text-[var(--atr-ink-3)]">
                           {isAr ? 'البيانات الجديدة' : isFr ? 'Après (new_data)' : 'After (new_data)'}
                         </div>
                         <pre
                           data-sq="ctl"
                           style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
-                          className="p-2.5 bg-[var(--atr-card)] text-[11px] font-mono overflow-x-auto max-h-[160px] text-[var(--atr-ink-2)]"
+                          className="p-[var(--s3,12px)] bg-[var(--atr-card)] t-cap font-sans tabular-nums overflow-x-auto max-h-[160px] text-[var(--atr-ink-2)]"
                         >
                           {entry.newData ? JSON.stringify(entry.newData, null, 2) : '—'}
                         </pre>
@@ -299,9 +299,9 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
             })}
 
             {isLoadingMore && (
-              <div className="p-2 space-y-2">
-                <div data-sq="row" data-sq-border="none" className="h-[44px] bg-[var(--atr-soft)] animate-pulse" />
-                <div data-sq="row" data-sq-border="none" className="h-[44px] bg-[var(--atr-soft)] animate-pulse" />
+              <div className="p-[var(--s2,8px)] flex flex-col gap-[var(--s2,8px)]">
+                <div data-sq="row" data-sq-border="none" className="h-[var(--sb-item,44px)] bg-[var(--atr-soft)] animate-pulse" />
+                <div data-sq="row" data-sq-border="none" className="h-[var(--sb-item,44px)] bg-[var(--atr-soft)] animate-pulse" />
               </div>
             )}
           </div>
@@ -309,7 +309,7 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({ isOpen
 
         {/* Keyset Load More footer */}
         {hasMore && (
-          <div className="flex justify-center pt-1">
+          <div className="flex justify-center pt-[var(--s1,4px)]">
             <AtriumButton
               type="button"
               variant="secondary"

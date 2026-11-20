@@ -86,9 +86,9 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
         header: isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur',
         sortable: true,
         renderCell: (log) => (
-          <div>
-            <div className="font-bold text-xs text-black dark:text-white">{log.staffName}</div>
-            <div className="text-[11px] text-black/62 dark:text-white/65">{log.staffRole}</div>
+          <div className="flex flex-col gap-[var(--title-cap-gap,2px)]">
+            <div className="t-label font-semibold text-[var(--text-1)] dark:text-white">{log.staffName}</div>
+            <div className="t-cap text-[var(--text-2)] dark:text-white/65">{log.staffRole}</div>
           </div>
         ),
       },
@@ -97,7 +97,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
         header: isAr ? 'الطريقة' : isEn ? 'Method' : 'Méthode',
         sortable: true,
         renderCell: (log) => (
-          <span className="font-mono text-[11px] px-2.5 py-0.5 rounded-full bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85 font-bold uppercase">
+          <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-[#F3EDE7] dark:bg-[#262422] text-[var(--text-1)] dark:text-white/85 t-small font-semibold">
             {log.method}
           </span>
         ),
@@ -108,7 +108,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
         sortable: true,
         renderCell: (log) => (
           <span
-            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase ${
+            className={`inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold ${
               log.type === 'in'
                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                 : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
@@ -123,7 +123,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
         header: isAr ? 'التوقيت' : isEn ? 'Time' : 'Date & Heure',
         sortable: true,
         renderCell: (log) => (
-          <span className="font-mono text-[11px] text-black/75 dark:text-white/80 tabular-nums">
+          <span className="t-cap text-[var(--text-2)] dark:text-white/80 tabular-nums">
             {log.timestamp ? new Date(log.timestamp).toLocaleString('fr-FR') : log.date}
           </span>
         ),
@@ -172,7 +172,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
       {
         id: 'inspect',
         label: isAr ? 'عرض التفاصيل' : isEn ? 'Inspect' : 'Détails',
-        icon: <Eye className="w-[15px] h-[15px]" />,
+        icon: <Eye className="w-4 h-4" strokeWidth={1.5} />,
         onClick: (e) => {
           setDrawerOpenerEl(e.currentTarget);
           setSelectedLog(log);
@@ -181,7 +181,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
       {
         id: 'pin',
         label: pinnedLogIds.has(log.id) ? (isAr ? 'إلغاء التثبيت' : isEn ? 'Unpin' : 'Détacher') : isAr ? 'تثبيت' : isEn ? 'Pin' : 'Épingler',
-        icon: <Pin className="w-[15px] h-[15px]" />,
+        icon: <Pin className="w-4 h-4" strokeWidth={1.5} />,
         onClick: () =>
           setPinnedLogIds((prev) => {
             const next = new Set(prev);
@@ -199,13 +199,13 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
       {
         id: 'inspect',
         label: isAr ? 'عرض السجل' : isEn ? 'Inspect Log' : 'Fiche Pointage',
-        icon: <Eye className="w-3.5 h-3.5" />,
+        icon: <Eye className="w-4 h-4" strokeWidth={1.5} />,
         onClick: () => setSelectedLog(log),
       },
       {
         id: 'pin',
         label: pinnedLogIds.has(log.id) ? (isAr ? 'إلغاء التثبيت' : isEn ? 'Unpin' : 'Détacher') : isAr ? 'تثبيت' : isEn ? 'Pin' : 'Épingler',
-        icon: <Pin className="w-3.5 h-3.5" />,
+        icon: <Pin className="w-4 h-4" strokeWidth={1.5} />,
         onClick: () =>
           setPinnedLogIds((prev) => {
             const next = new Set(prev);
@@ -224,12 +224,12 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
   }, [selectedLog, filteredPunchLogs]);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-[var(--s4,16px)]">
       <div className="sq-elev-card">
         <div
           data-sq="card"
           style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A]"
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s3,12px)] p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#1C1B1A]"
         >
         <LiveSegmentedControl
           size="md"
@@ -240,21 +240,21 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
               value: 'salaires',
               label: isAr ? 'الرواتب' : isEn ? 'Payroll' : 'Salaires',
               tooltip: isAr ? 'سجل دفعات الرواتب' : isEn ? 'Payroll runs & slips' : 'Historique des salaires',
-              icon: <FileText className="w-4 h-4 mr-1.5" />,
+              icon: <FileText className="w-4 h-4" strokeWidth={1.5} />,
               count: payrollRuns.length,
             },
             {
               value: 'pointages',
               label: isAr ? 'الحضور' : isEn ? 'Logs' : 'Pointages',
               tooltip: isAr ? 'سجل الحضور والانصراف' : isEn ? 'Attendance punch logs' : 'Journal des pointages',
-              icon: <Clock className="w-4 h-4 mr-1.5" />,
+              icon: <Clock className="w-4 h-4" strokeWidth={1.5} />,
               count: attendanceLogs.length,
             },
           ]}
           aria-label="Staff History Mode"
         />
 
-        <div className="text-xs text-black/70 dark:text-white/75 font-medium px-2">
+        <div className="t-label text-[var(--text-2)] dark:text-white/75 px-[var(--s2,8px)]">
           {historyMode === 'salaires'
             ? isAr ? 'أرشيف الرواتب' : isEn ? 'Payroll archive' : 'Archives paie'
             : isAr ? 'سجل الحضور' : isEn ? 'Attendance logs' : 'Journal pointages'}
@@ -263,13 +263,13 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
       </div>
 
       {historyMode === 'salaires' && (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-[var(--pod-gap,16px)]">
           {payrollRuns.length === 0 ? (
             <KineticEmptyStateMotion motionKey={`staff-hist-empty-${language}`}>
               <EmptyState
                 variant="compact"
                 tone="neutral"
-                icon={<FileText className="w-5 h-5" />}
+                icon={<FileText className="w-4 h-4" strokeWidth={1.5} />}
                 title={isAr ? 'لا يوجد أرشيف' : isEn ? 'No payroll history' : 'Aucun historique de paie'}
                 description={
                   isAr
@@ -288,66 +288,69 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                   <div
                     data-sq="panel"
                     style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-                    className="bg-white dark:bg-[#1C1B1A] p-3 space-y-3"
+                    className="bg-white dark:bg-[#1C1B1A] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-2 pt-1.5 pb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
-                      <div className="flex items-center gap-3">
+                    <div
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)] border-b border-[#E6DED6] dark:border-[#3A3734]"
+                      style={{ padding: 'var(--pod-head-pad, 4px 12px 12px)' }}
+                    >
+                      <div className="flex items-center gap-[var(--card-head-gap,12px)]">
                         <div
                           data-sq="tile"
-                          className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold"
+                          className="w-[var(--tile-md,40px)] h-[var(--tile-md,40px)] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"
                         >
-                          <CheckCircle2 className="w-5 h-5" />
+                          <CheckCircle2 className="w-5 h-5" strokeWidth={1.75} />
                         </div>
-                        <div>
-                          <h4 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                        <div className="flex flex-col gap-[var(--title-cap-gap,2px)]">
+                          <h4 className="t-card text-[var(--text-1)] dark:text-white flex items-center gap-[var(--s2,8px)]">
                             <span>{run.title}</span>
-                            <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 uppercase font-bold">
+                            <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 t-small font-semibold">
                               {run.status === 'paid' ? (isAr ? 'مدفوعة' : isEn ? 'Paid' : 'Payée') : isAr ? 'مسودة' : isEn ? 'Draft' : 'Brouillon'}
                             </span>
                           </h4>
-                          <p className="text-[11px] text-black/62 dark:text-white/65 font-mono tabular-nums">
+                          <p className="t-cap text-[var(--text-2)] dark:text-white/65 tabular-nums">
                             {run.slipsCount} {isAr ? 'موظف' : isEn ? 'staff' : 'agents'} · {run.approvedAt?.slice(0, 10) || run.createdAt.slice(0, 10)}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs font-mono tabular-nums">
-                        <div>
-                          <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الصافي' : isEn ? 'Net' : 'Net'}</span>
-                          <span className="font-bold text-sm text-[#d4522f]">{run.totalNet.toLocaleString()} DZD</span>
+                      <div className="flex items-center gap-[var(--s4,16px)] tabular-nums">
+                        <div className="flex flex-col gap-[var(--title-cap-gap,2px)]">
+                          <span className="text-[var(--text-2)] dark:text-white/65 block t-cap">{isAr ? 'الصافي' : isEn ? 'Net' : 'Net'}</span>
+                          <span className="t-card text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{run.totalNet.toLocaleString()} DZD</span>
                         </div>
-                        <div>
-                          <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الضمان' : isEn ? 'Social' : 'Social'}</span>
-                          <span className="font-bold text-emerald-600 dark:text-emerald-400">{(run.totalCnasSalarial + run.totalCnasPatronal).toLocaleString()} DZD</span>
+                        <div className="flex flex-col gap-[var(--title-cap-gap,2px)]">
+                          <span className="text-[var(--text-2)] dark:text-white/65 block t-cap">{isAr ? 'الضمان' : isEn ? 'Social' : 'Social'}</span>
+                          <span className="t-label font-semibold text-emerald-600 dark:text-emerald-400">{(run.totalCnasSalarial + run.totalCnasPatronal).toLocaleString()} DZD</span>
                         </div>
-                        <div>
-                          <span className="text-black/62 dark:text-white/65 block text-[11px] font-sans">{isAr ? 'الضريبة' : isEn ? 'Tax' : 'Impôt'}</span>
-                          <span className="font-bold text-black dark:text-white">{run.totalIrg.toLocaleString()} DZD</span>
+                        <div className="flex flex-col gap-[var(--title-cap-gap,2px)]">
+                          <span className="text-[var(--text-2)] dark:text-white/65 block t-cap">{isAr ? 'الضريبة' : isEn ? 'Tax' : 'Impôt'}</span>
+                          <span className="t-label font-semibold text-[var(--text-1)] dark:text-white">{run.totalIrg.toLocaleString()} DZD</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--card-gap,12px)]">
                       {runSlips.map((slip) => (
                         <div
                           key={slip.id}
                           data-sq="card"
                           style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-                          className="p-3 bg-[#FBF8F5] dark:bg-[#262422] flex items-center justify-between"
+                          className="p-[var(--card-pad,20px)] card-opt bg-[#FBF8F5] dark:bg-[#262422] flex items-center justify-between gap-[var(--s3,12px)]"
                         >
-                          <div>
-                            <div className="font-bold text-xs text-black dark:text-white">{slip.staffFullName}</div>
-                            <div className="text-[11px] font-mono text-black/62 dark:text-white/65 tabular-nums">{slip.matricule} · {slip.role}</div>
-                            <div className="text-xs font-mono font-bold text-[#d4522f] mt-1 tabular-nums">{slip.netAPayer.toLocaleString()} DZD</div>
+                          <div className="flex flex-col gap-[var(--title-cap-gap,2px)] min-w-0">
+                            <div className="t-label font-semibold text-[var(--text-1)] dark:text-white truncate">{slip.staffFullName}</div>
+                            <div className="t-cap text-[var(--text-2)] dark:text-white/65 tabular-nums truncate">{slip.matricule} · {slip.role}</div>
+                            <div className="t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">{slip.netAPayer.toLocaleString()} DZD</div>
                           </div>
                           <button
                             type="button"
                             onClick={() => setActiveSlipForPrint(slip)}
                             data-sq="ctl-sm"
                             style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
-                            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold bg-white dark:bg-[#1C1B1A] text-black/80 dark:text-white/85 hover:text-[#d4522f] transition-all cursor-pointer"
+                            className="flex items-center h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] gap-[var(--btn-sm-gap,6px)] t-btn bg-white dark:bg-[#1C1B1A] text-[var(--text-1)] dark:text-white/85 hover:text-[var(--brand-text,#BF431F)] transition-all cursor-pointer shrink-0"
                           >
-                            <Printer className="w-3.5 h-3.5" />
+                            <Printer className="w-4 h-4" strokeWidth={1.5} />
                             <span>{isAr ? 'قسيمة' : isEn ? 'Slip' : 'Fiche'}</span>
                           </button>
                         </div>
@@ -377,13 +380,13 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
             <div
               data-sq="ctl"
               style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
-              className="h-9 bg-[#FBF8F5] dark:bg-[#262422] flex items-center"
+              className="h-[var(--btn-h,40px)] bg-[#FBF8F5] dark:bg-[#262422] flex items-center"
             >
               <select
                 value={selectedStaffFilter}
                 onChange={(e) => setSelectedStaffFilter(e.target.value)}
                 title={isAr ? 'تصفية حسب الموظف' : isEn ? 'Filter by staff member' : 'Filtrer par collaborateur'}
-                className="h-full px-3 text-xs font-medium bg-transparent text-black dark:text-white focus:outline-none cursor-pointer"
+                className="h-full px-[var(--s3,12px)] t-btn bg-transparent text-[var(--text-1)] dark:text-white focus:outline-none cursor-pointer"
               >
                 <option value="all">{isAr ? 'الكل' : isEn ? 'All' : 'Tous'}</option>
                 {staffList.map((s) => (

@@ -113,12 +113,12 @@ export const ActionNode: React.FC<ActionNodeProps> = ({
               {icon}
             </div>
           )}
-          <div className="min-w-0 flex-1">
-            <div className="nod-name truncate text-black dark:text-white font-semibold tracking-tight">
+          <div className="min-w-0 flex-1 flex flex-col gap-[var(--name-sub-gap,2px)]">
+            <div className="nod-name truncate text-[var(--text-1)] dark:text-white t-card">
               {title}
             </div>
             {tag && (
-              <span className="inline-block mt-0.5 text-[10.5px] font-bold text-[#d4522f] tracking-wider uppercase">
+              <span className="inline-block t-small text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]">
                 {tag}
               </span>
             )}
@@ -133,7 +133,7 @@ export const ActionNode: React.FC<ActionNodeProps> = ({
         )}
 
         {/* Custom Body / Metadata */}
-        {children && <div className="mt-3">{children}</div>}
+        {children && <div className="pt-[var(--s3,12px)]">{children}</div>}
 
         {/* Avatars Stack & Chain */}
         {avatars.length > 0 && (

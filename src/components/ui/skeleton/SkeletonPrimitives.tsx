@@ -53,13 +53,13 @@ export const SkeletonText: React.FC<SkeletonTextProps> = ({
   shimmer = true,
 }) => {
   const heightMap = {
-    xs: 'h-2.5',
-    sm: 'h-3.5',
+    xs: 'h-3',
+    sm: 'h-4',
     base: 'h-4',
     lg: 'h-5',
     xl: 'h-6',
     '2xl': 'h-8',
-    '3xl': 'h-10',
+    '3xl': 'h-12',
   };
 
   return (
@@ -79,7 +79,7 @@ interface SkeletonCircleProps {
 }
 
 export const SkeletonCircle: React.FC<SkeletonCircleProps> = ({
-  size = 36,
+  size = 32,
   className = '',
   shimmer = true,
 }) => {

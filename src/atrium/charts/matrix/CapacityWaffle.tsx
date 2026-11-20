@@ -113,14 +113,14 @@ export const CapacityWaffle: React.FC<CapacityWaffleProps> = React.memo(
           </div>
         }
         footer={
-          <div className="flex items-center justify-between gap-2 ax-tk pt-1">
-            <span className="inline-flex items-center gap-1.5">
+          <div className="flex items-center justify-between gap-[var(--s2,8px)] ax-tk">
+            <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
               <span className="w-2.5 h-2.5 rounded-full bg-[var(--ax-c1)]" />
               <span>
                 {occupiedLabel || strings.occupiedLabel} ({metrics.filledDots}%)
               </span>
             </span>
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
               <span className="w-2.5 h-2.5 rounded-full bg-[var(--ax-waffle-off)] border border-[var(--ax-bdr)]" />
               <span>
                 {availableLabel || strings.availableLabel} ({100 - metrics.filledDots}%)
@@ -129,7 +129,7 @@ export const CapacityWaffle: React.FC<CapacityWaffleProps> = React.memo(
           </div>
         }
       >
-        <div className="flex justify-center py-1">
+        <div className="flex justify-center py-[var(--s1,4px)]">
           <svg
             viewBox="0 0 216 216"
             className="w-full max-w-[224px] h-auto ax-plot-focus cursor-pointer select-none"

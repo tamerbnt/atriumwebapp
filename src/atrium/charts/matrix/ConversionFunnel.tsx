@@ -126,12 +126,12 @@ export const ConversionFunnel: React.FC<ConversionFunnelProps> = React.memo(
         }
         footer={
           processed.rows.length > 0 ? (
-            <div className="flex flex-wrap items-center justify-between gap-2 ax-tk pt-1">
-              <span className="inline-flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-[var(--s2,8px)] ax-tk">
+              <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                 <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--ax-c1)]" />
                 <span>
                   {conversionLabel || strings.conversionLabel}:{' '}
-                  <strong className="text-[var(--ax-on)]" dir="ltr">
+                  <strong className="font-semibold text-[var(--ax-on)]" dir="ltr">
                     {Math.round(processed.overallRate)}%
                   </strong>
                 </span>
@@ -139,7 +139,7 @@ export const ConversionFunnel: React.FC<ConversionFunnelProps> = React.memo(
               {processed.maxDropRow && processed.maxDropRow.dropOff > 0 && (
                 <span className="truncate">
                   {strings.dropoffLabel}:{' '}
-                  <strong className="text-[var(--ax-on)]">
+                  <strong className="font-semibold text-[var(--ax-on)]">
                     {processed.maxDropRow.label}
                   </strong>{' '}
                   <span dir="ltr">(-{Math.round(processed.maxDropRow.dropOff)}%)</span>
@@ -216,7 +216,7 @@ export const ConversionFunnel: React.FC<ConversionFunnelProps> = React.memo(
                     textAnchor="start"
                     className="fill-[var(--ax-on)]"
                     style={{
-                      fontFamily: 'Inter, sans-serif',
+                      fontFamily: "var(--font-ui, 'Inter', sans-serif)",
                       fontSize: '12px',
                       fontWeight: isActive ? 600 : 500,
                       unicodeBidi: 'plaintext',
@@ -244,9 +244,10 @@ export const ConversionFunnel: React.FC<ConversionFunnelProps> = React.memo(
                     textAnchor="end"
                     className="fill-[var(--ax-on)]"
                     style={{
-                      fontFamily: 'JetBrains Mono, monospace',
-                      fontSize: '11.5px',
+                      fontFamily: "var(--font-ui, 'Inter', sans-serif)",
+                      fontSize: '12px',
                       fontWeight: 600,
+                      fontVariantNumeric: 'tabular-nums',
                     }}
                   >
                     {formatChartValue(row.value, {

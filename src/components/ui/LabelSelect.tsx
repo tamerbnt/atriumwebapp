@@ -398,7 +398,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
               </span>
             )}
             <span
-              className={`text-[var(--t-sub)] leading-[var(--t-sub-lh)] font-medium truncate ${
+              className={`t-label truncate ${
                 selectedOption
                   ? 'text-[var(--text-1)] dark:text-white'
                   : 'text-[var(--text-2)] dark:text-[var(--text-dark-2)]'
@@ -455,7 +455,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                         setHighlightedIndex(0);
                       }}
                       placeholder={defaultSearchPlaceholder}
-                      className="w-full h-8 pl-8 pr-8 text-xs bg-transparent border-0 text-[var(--text-1)] dark:text-white focus:outline-none"
+                      className="w-full h-[var(--btn-sm-h,32px)] pl-8 pr-8 t-body bg-transparent border-0 text-[var(--text-1)] dark:text-white focus:outline-none"
                     />
                     {searchQuery && (
                       <button
@@ -472,7 +472,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
               )}
 
               <ul
-                className="p-2 max-h-48 overflow-y-auto focus:outline-none text-xs flex flex-col gap-1"
+                className="p-[var(--s2,8px)] max-h-48 overflow-y-auto focus:outline-none t-body flex flex-col gap-[var(--s1,4px)]"
                 role="listbox"
               >
                 {filteredOptions.length === 0 ? (
@@ -514,7 +514,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                           <div className="truncate flex flex-col">
                             <div className="truncate font-medium">{opt.label}</div>
                             {opt.sublabel && (
-                              <div className="text-xs text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
+                              <div className="t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
                                 {opt.sublabel}
                               </div>
                             )}

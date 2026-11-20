@@ -120,7 +120,7 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
     <div
       data-sq="card"
       data-sq-border="solid"
-      className={`group/card relative overflow-hidden h-full border p-3.5 sm:p-4 flex flex-col justify-between transition-colors duration-200 min-w-0 ${styles.card} ${className}`}
+      className={`group/card relative overflow-hidden h-full border p-[var(--card-pad,20px)] card-opt flex flex-col justify-between transition-colors duration-200 min-w-0 ${styles.card} ${className}`}
       data-testid={`home-preview-${config.id}`}
     >
       {/* Clean 2.5px Top Accent Hairline */}
@@ -129,39 +129,39 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
         className={`absolute inset-x-0 top-0 h-[2.5px] ${styles.topAccent}`}
       />
 
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col gap-[var(--card-body-gap,20px)] min-h-0">
         {/* Card Header + Top-Right North-East Arrow */}
-        <div className="flex items-start justify-between gap-2.5 mb-2.5 shrink-0">
+        <div className="flex items-start justify-between gap-[var(--card-head-gap,12px)] shrink-0">
           <button
             type="button"
             data-no-liquid="true"
             data-sq="row"
             data-sq-border="none"
             onClick={navigate}
-            className={`relative flex items-center gap-2.5 min-w-0 flex-1 text-start cursor-pointer focus-visible:outline-none focus-visible:ring-2 ${styles.ring}`}
+            className={`relative flex items-center gap-[var(--card-head-gap,12px)] min-w-0 flex-1 text-start cursor-pointer focus-visible:outline-none focus-visible:ring-2 ${styles.ring}`}
           >
             <span
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className={`relative w-8 h-8 border flex items-center justify-center shrink-0 ${styles.iconWell}`}
+              className={`relative w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] border flex items-center justify-center shrink-0 ${styles.iconWell}`}
             >
               {config.icon}
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="flex items-baseline gap-2 min-w-0">
+            <span className="min-w-0 flex-1 flex flex-col gap-[var(--title-cap-gap,2px)]">
+              <span className="flex items-baseline gap-[var(--s2,8px)] min-w-0">
                 <span
-                  className={`text-[14.5px] font-bold text-black dark:text-white tracking-[-0.01em] truncate transition-colors ${styles.titleHover}`}
+                  className={`t-card dark:font-medium text-[var(--text-1)] dark:text-white truncate transition-colors ${styles.titleHover}`}
                 >
                   {config.title}
                 </span>
                 <span
-                  className={`text-[13px] font-bold tabular-nums shrink-0 font-['Barlow_Condensed',sans-serif] rtl:font-sans ${styles.accentText}`}
+                  className={`t-label font-semibold tabular-nums shrink-0 ${styles.accentText}`}
                 >
                   {countDisplay}
                 </span>
               </span>
               {config.subtitle && (
-                <span className="block text-[11.5px] text-black/58 dark:text-white/58 truncate">
+                <span className="block t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
                   {config.subtitle}
                 </span>
               )}
@@ -175,11 +175,11 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
             onClick={navigate}
             aria-label={`${strings.openModule} ${config.title}`}
             title={`${strings.openModule} ${config.title}`}
-            className={`group/nav w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center shrink-0 cursor-pointer transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 ${styles.neButton} ${styles.ring}`}
+            className={`group/nav w-[var(--btn-h,40px)] h-[var(--btn-h,40px)] rounded-full border flex items-center justify-center shrink-0 cursor-pointer transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 ${styles.neButton} ${styles.ring}`}
           >
             <ArrowUpRight
               size={16}
-              strokeWidth={2.2}
+              strokeWidth={1.5}
               className="rtl:-scale-x-100 transition-transform duration-200 ease-out ltr:group-hover/nav:translate-x-0.5 rtl:group-hover/nav:-translate-x-0.5 group-hover/nav:-translate-y-0.5 motion-reduce:transform-none"
             />
           </button>
@@ -202,23 +202,23 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
                       navigate();
                     }
                   }}
-                  className={`relative w-full py-1.5 flex items-center justify-between gap-2.5 text-start px-1.5 -mx-1.5 transition-colors cursor-pointer group/row ${styles.rowHover}`}
+                  className={`relative w-full py-[var(--s2,8px)] flex items-center justify-between gap-[var(--s3,12px)] text-start transition-colors cursor-pointer group/row ${styles.rowHover}`}
                 >
-                  <div className="flex items-start gap-2 min-w-0 flex-1">
+                  <div className="flex items-center gap-[var(--s2,8px)] min-w-0 flex-1">
                     {row.statusTone && (
                       <span
                         aria-hidden="true"
-                        className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${STATUS_DOT_COLOR[row.statusTone]}`}
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT_COLOR[row.statusTone]}`}
                       />
                     )}
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 flex flex-col gap-[var(--title-cap-gap,2px)]">
                       <div
-                        className={`text-[13px] font-semibold text-black dark:text-white truncate leading-snug transition-colors ${styles.titleHover}`}
+                        className={`t-label dark:font-medium text-[var(--text-1)] dark:text-white truncate transition-colors ${styles.titleHover}`}
                       >
                         {row.primary}
                       </div>
                       {row.secondary && (
-                        <div className="text-[11.5px] text-black/58 dark:text-white/58 truncate leading-tight tabular-nums">
+                        <div className="t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate tabular-nums">
                           {row.secondary}
                         </div>
                       )}
@@ -226,7 +226,7 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
                   </div>
 
                   {row.trailing && (
-                    <span className="text-[12px] font-semibold text-black/82 dark:text-white/85 tabular-nums whitespace-nowrap shrink-0">
+                    <span className="t-small font-semibold text-[var(--text-1)] dark:text-white/85 tabular-nums whitespace-nowrap shrink-0">
                       {row.trailing}
                     </span>
                   )}
@@ -235,7 +235,7 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
             ))}
           </ul>
         ) : (
-          <div className="flex-1 flex flex-col justify-center py-1">
+          <div className="flex-1 flex flex-col justify-center">
             <KineticEmptyStateMotion motionKey={`home-${config.id}-${language}`}>
               <EmptyState
                 variant="compact"
@@ -244,7 +244,7 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
                 title={config.emptyTitle}
                 secondaryAction={{
                   label: config.emptyCtaLabel,
-                  icon: <ArrowUpRight size={14} className="rtl:-scale-x-100" />,
+                  icon: <ArrowUpRight size={16} strokeWidth={1.5} className="rtl:-scale-x-100" />,
                   onClick: config.onEmptyAction || navigate,
                 }}
               />
@@ -253,27 +253,29 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
         )}
       </div>
 
-      {/* Card Footer Navigation Link */}
-      <div
-        className={`pt-2 mt-2 border-t flex items-center justify-between gap-2 shrink-0 ${styles.divider}`}
-      >
-        <span className="text-[11px] font-medium text-black/55 dark:text-white/55 truncate tabular-nums">
-          {config.countLabel || `${countDisplay}`}
-        </span>
-        <button
-          type="button"
-          data-no-liquid="true"
-          onClick={navigate}
-          className={`group/foot inline-flex items-center gap-1 text-[12px] font-semibold hover:underline cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 ${styles.ring} rounded-[var(--r-check,6px)] ${styles.footerLink}`}
+      {/* Card Footer Navigation Link (suppressed on empty states per spec) */}
+      {config.items.length > 0 && (
+        <div
+          className={`pt-[var(--footer-gap,16px)] border-t flex items-center justify-between gap-[var(--s2,8px)] shrink-0 ${styles.divider}`}
         >
-          <span>{config.viewAllLabel || strings.viewAll}</span>
-          <ArrowUpRight
-            size={13.5}
-            strokeWidth={2.2}
-            className="rtl:-scale-x-100 transition-transform duration-200 ltr:group-hover/foot:translate-x-0.5 rtl:group-hover/foot:-translate-x-0.5 group-hover/foot:-translate-y-0.5 motion-reduce:transform-none"
-          />
-        </button>
-      </div>
+          <span className="t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate tabular-nums">
+            {config.countLabel || `${countDisplay}`}
+          </span>
+          <button
+            type="button"
+            data-no-liquid="true"
+            onClick={navigate}
+            className={`group/foot inline-flex items-center gap-[var(--s1,4px)] t-btn font-semibold hover:underline cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 ${styles.ring} rounded-[var(--r-check,6px)] ${styles.footerLink}`}
+          >
+            <span>{config.viewAllLabel || strings.viewAll}</span>
+            <ArrowUpRight
+              size={16}
+              strokeWidth={1.5}
+              className="rtl:-scale-x-100 transition-transform duration-200 ltr:group-hover/foot:translate-x-0.5 rtl:group-hover/foot:-translate-x-0.5 group-hover/foot:-translate-y-0.5 motion-reduce:transform-none"
+            />
+          </button>
+        </div>
+      )}
     </div>
   );
 });
@@ -316,53 +318,53 @@ export const HomeCompactStrip: React.FC<HomeCompactStripProps> = ({
       data-sq-border="solid"
       onClick={navigate}
       data-testid={`home-strip-${config.id}`}
-      className={`group/card relative overflow-hidden w-full text-start border px-3.5 py-2.5 flex items-center justify-between gap-3 transition-colors duration-200 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 ${styles.card} ${styles.ring} ${className}`}
+      className={`group/card relative overflow-hidden w-full text-start border px-[var(--card-pad,20px)] py-[var(--s3,12px)] flex items-center justify-between gap-[var(--card-head-gap,12px)] transition-colors duration-200 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 ${styles.card} ${styles.ring} ${className}`}
     >
       <span
         aria-hidden="true"
         className={`absolute inset-x-0 top-0 h-[2px] ${styles.topAccent}`}
       />
-      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+      <div className="flex items-center gap-[var(--card-head-gap,12px)] min-w-0 flex-1">
         <span
           data-sq="ctl-sm"
           data-sq-border="solid"
-          className={`relative w-8 h-8 border flex items-center justify-center shrink-0 ${styles.iconWell}`}
+          className={`relative w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] border flex items-center justify-center shrink-0 ${styles.iconWell}`}
         >
           {config.icon}
         </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2 min-w-0">
+        <div className="min-w-0 flex-1 flex flex-col gap-[var(--title-cap-gap,2px)]">
+          <div className="flex items-baseline gap-[var(--s2,8px)] min-w-0">
             <span
-              className={`text-[13.5px] font-bold text-black dark:text-white tracking-[-0.01em] truncate transition-colors ${styles.titleHover}`}
+              className={`t-card dark:font-medium text-[var(--text-1)] dark:text-white truncate transition-colors ${styles.titleHover}`}
             >
               {config.title}
             </span>
             <span
-              className={`text-[12.5px] font-bold tabular-nums shrink-0 font-['Barlow_Condensed',sans-serif] rtl:font-sans ${styles.accentText}`}
+              className={`t-label font-semibold tabular-nums shrink-0 ${styles.accentText}`}
             >
               {config.count}
             </span>
           </div>
-          <p className="text-[11px] text-black/58 dark:text-white/58 truncate">
+          <p className="t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
             {config.subtitle}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
         {config.statusText && (
-          <span className="hidden sm:inline text-[11.5px] font-semibold text-black/70 dark:text-white/75 tabular-nums whitespace-nowrap">
+          <span className="hidden sm:inline t-small font-semibold text-[var(--text-2)] dark:text-white/75 tabular-nums whitespace-nowrap">
             {config.statusText}
           </span>
         )}
         <span
           aria-hidden="true"
           title={`${strings.openModule} ${config.title}`}
-          className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 transition-colors duration-150 ${styles.neButton}`}
+          className={`w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full border flex items-center justify-center shrink-0 transition-colors duration-150 ${styles.neButton}`}
         >
           <ArrowUpRight
-            size={15}
-            strokeWidth={2.2}
+            size={16}
+            strokeWidth={1.5}
             className="rtl:-scale-x-100 transition-transform duration-200 ltr:group-hover/card:translate-x-0.5 rtl:group-hover/card:-translate-x-0.5 group-hover/card:-translate-y-0.5 motion-reduce:transform-none"
           />
         </span>

@@ -140,9 +140,9 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         header: isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur',
         sortable: true,
         renderCell: (slip) => (
-          <div>
-            <div className="font-bold text-xs text-black dark:text-white">{slip.staffFullName}</div>
-            <div className="text-[11px] font-mono text-black/62 dark:text-white/65">
+          <div className="flex flex-col gap-[var(--title-cap-gap,2px)]">
+            <div className="t-label font-semibold text-[var(--text-1)] dark:text-white">{slip.staffFullName}</div>
+            <div className="t-cap text-[var(--text-2)] dark:text-white/65 tabular-nums">
               {slip.matricule} · {slip.role}
             </div>
           </div>
@@ -153,7 +153,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         header: isAr ? 'طريقة الدفع' : isEn ? 'Method' : 'Mode',
         sortable: true,
         renderCell: (slip) => (
-          <span className="text-[11px] uppercase font-bold px-2.5 py-0.5 rounded-full bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85">
+          <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-[#262422] text-[var(--text-1)] dark:text-white/85">
             {slip.paymentMethod}
           </span>
         ),
@@ -164,7 +164,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         sortable: true,
         renderCell: (slip) => (
           <span
-            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+            className={`inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold ${
               slip.isPaid
                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
                 : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
@@ -179,7 +179,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         header: isAr ? 'الصافي' : isEn ? 'Net Pay' : 'Net à Payer',
         sortable: true,
         renderCell: (slip) => (
-          <span className="font-mono font-black text-xs text-[#d4522f] tabular-nums">
+          <span className="t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
             {slip.netAPayer.toLocaleString()} DZD
           </span>
         ),
@@ -232,7 +232,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         {
           id: 'print',
           label: isAr ? 'طباعة القسيمة' : isEn ? 'Print Slip' : 'Imprimer Bulletin',
-          icon: <Printer className="w-[15px] h-[15px]" />,
+          icon: <Printer className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => setActiveSlipForPrint(slip),
         },
       ];
@@ -240,7 +240,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         acts.push({
           id: 'pay',
           label: isAr ? 'تأكيد الدفع' : isEn ? 'Mark Paid' : 'Payer',
-          icon: <CreditCard className="w-[15px] h-[15px]" />,
+          icon: <CreditCard className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => onMarkSlipPaid(slip.id),
         });
       }
@@ -255,7 +255,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         {
           id: 'print',
           label: isAr ? 'طباعة' : isEn ? 'Print' : 'Imprimer',
-          icon: <FileText className="w-3.5 h-3.5" />,
+          icon: <FileText className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => setActiveSlipForPrint(slip),
         },
       ];
@@ -263,14 +263,14 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         acts.push({
           id: 'pay',
           label: isAr ? 'دفع' : isEn ? 'Pay' : 'Payer',
-          icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#096b40]" />,
+          icon: <CheckCircle2 className="w-4 h-4 text-[#096b40]" strokeWidth={1.5} />,
           onClick: () => onMarkSlipPaid(slip.id),
         });
       }
       acts.push({
         id: 'pin',
         label: pinnedIds.has(slip.id) ? (isAr ? 'إلغاء التثبيت' : isEn ? 'Unpin' : 'Détacher') : isAr ? 'تثبيت' : isEn ? 'Pin' : 'Épingler',
-        icon: <Pin className="w-3.5 h-3.5" />,
+        icon: <Pin className="w-4 h-4" strokeWidth={1.5} />,
         onClick: () =>
           setPinnedIds((prev) => {
             const next = new Set(prev);
@@ -290,24 +290,24 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
   }, [selectedSlip, filteredSlips]);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-[var(--s4,16px)]">
       <div className="sq-elev-card">
         <div
           data-sq="card"
           style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-[#1C1B1A]"
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s3,12px)] p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#1C1B1A]"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-[var(--s3,12px)]">
             <div
               data-sq="ctl"
               style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
-              className="flex items-center gap-2 bg-[#F3EDE7] dark:bg-[#262422] px-3 h-10"
+              className="flex items-center gap-[var(--s2,8px)] bg-[#F3EDE7] dark:bg-[#262422] px-[var(--s3,12px)] h-[var(--btn-h,40px)]"
             >
-              <Calendar className="w-4 h-4 text-[#d4522f]" />
+              <Calendar className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                className="bg-transparent text-xs font-bold text-black dark:text-white focus:outline-hidden cursor-pointer"
+                className="bg-transparent t-btn text-[var(--text-1)] dark:text-white focus:outline-hidden cursor-pointer"
               >
                 {months.map((m) => (
                   <option key={m.value} value={m.value}>
@@ -318,7 +318,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="bg-transparent text-xs font-bold text-black dark:text-white focus:outline-hidden cursor-pointer tabular-nums"
+                className="bg-transparent t-btn text-[var(--text-1)] dark:text-white focus:outline-hidden cursor-pointer tabular-nums"
               >
                 <option value={2026}>2026</option>
                 <option value={2025}>2025</option>
@@ -327,7 +327,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
 
             {activeRun ? (
               <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                className={`inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold ${
                   activeRun.status === 'paid'
                     ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/60'
                     : 'bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/60'
@@ -338,19 +338,18 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                   : isAr ? 'مسودة قيد المراجعة' : isEn ? 'Draft' : 'Brouillon'}
               </span>
             ) : (
-              <span className="text-xs text-black/60 dark:text-white/65 font-medium">
+              <span className="t-label text-[var(--text-2)] dark:text-white/65">
                 {isAr ? 'لم يتم احتساب الرواتب بعد' : isEn ? 'Payroll not calculated yet' : 'Paie non encore générée'}
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-[var(--s2,8px)]">
             <AtriumButton
               variant="secondary"
               size="md"
               onClick={() => setIsAdvanceModalOpen(true)}
-              icon={<Plus className="w-4 h-4 text-[#d4522f]" />}
-              className="h-10 text-xs font-semibold"
+              icon={<Plus className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
             >
               <span>{isAr ? 'سلفة' : isEn ? 'Advance' : 'Acompte'}</span>
             </AtriumButton>
@@ -359,8 +358,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
               variant="secondary"
               size="md"
               onClick={handleGenerate}
-              icon={<RefreshCw className="w-4 h-4 text-black/70 dark:text-white/75" />}
-              className="h-10 text-xs font-semibold"
+              icon={<RefreshCw className="w-4 h-4 text-[var(--text-2)] dark:text-white/75" strokeWidth={1.5} />}
             >
               <span>
                 {activeSlips.length > 0
@@ -374,8 +372,8 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                 variant="primary"
                 size="md"
                 onClick={handleApprove}
-                icon={<CheckCircle2 className="w-4 h-4" />}
-                className="h-10 text-xs font-semibold shadow-xs"
+                icon={<CheckCircle2 className="w-4 h-4" strokeWidth={1.5} />}
+                className="shadow-xs"
               >
                 <span>{isAr ? 'اعتماد' : isEn ? 'Approve' : 'Valider'}</span>
               </AtriumButton>
@@ -384,18 +382,19 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--card-gap,12px)]">
         <div className="sq-elev-card">
           <div
             data-sq="card"
             style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-4 bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
           >
-            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'صافي الأجور' : isEn ? 'Net Pay' : 'Net à Payer'}</p>
-            <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-[#d4522f] mt-1.5 tabular-nums">
-              {totalNet > 0 ? totalNet.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
+            <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'صافي الأجور' : isEn ? 'Net Pay' : 'Net à Payer'}</p>
+            <p className="t-kpi-m mt-auto text-[var(--brand-accent,#D9532B)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums flex items-baseline gap-[var(--num-unit-gap,6px)]">
+              <span>{totalNet > 0 ? totalNet.toLocaleString() : '0'}</span>
+              <span className="t-unit text-[var(--text-2)] dark:text-white/65">DZD</span>
             </p>
-            <p className="text-[11px] text-black/62 dark:text-white/65 mt-1 tabular-nums">{activeSlips.length} {isAr ? 'قسيمة' : isEn ? 'slips' : 'bulletins'}</p>
+            <p className="t-cap text-[var(--text-2)] dark:text-white/65 tabular-nums">{activeSlips.length} {isAr ? 'قسيمة' : isEn ? 'slips' : 'bulletins'}</p>
           </div>
         </div>
 
@@ -403,13 +402,14 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
           <div
             data-sq="card"
             style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-4 bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
           >
-            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'الضمان الاجتماعي' : isEn ? 'Social Security' : 'Cotisations'}</p>
-            <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-emerald-600 dark:text-emerald-400 mt-1.5 tabular-nums">
-              {totalCnas > 0 ? totalCnas.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
+            <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'الضمان الاجتماعي' : isEn ? 'Social Security' : 'Cotisations'}</p>
+            <p className="t-kpi-m mt-auto text-emerald-600 dark:text-emerald-400 tabular-nums flex items-baseline gap-[var(--num-unit-gap,6px)]">
+              <span>{totalCnas > 0 ? totalCnas.toLocaleString() : '0'}</span>
+              <span className="t-unit text-[var(--text-2)] dark:text-white/65">DZD</span>
             </p>
-            <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'الموظف وصاحب العمل' : isEn ? 'Staff + Employer' : 'Salarial + Patronal'}</p>
+            <p className="t-cap text-[var(--text-2)] dark:text-white/65">{isAr ? 'الموظف وصاحب العمل' : isEn ? 'Staff + Employer' : 'Salarial + Patronal'}</p>
           </div>
         </div>
 
@@ -417,13 +417,14 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
           <div
             data-sq="card"
             style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-4 bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
           >
-            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'ضريبة الدخل' : isEn ? 'Income Tax' : 'Impôt'}</p>
-            <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-black dark:text-white mt-1.5 tabular-nums">
-              {totalIrg > 0 ? totalIrg.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
+            <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'ضريبة الدخل' : isEn ? 'Income Tax' : 'Impôt'}</p>
+            <p className="t-kpi-m mt-auto text-[var(--text-1)] dark:text-white tabular-nums flex items-baseline gap-[var(--num-unit-gap,6px)]">
+              <span>{totalIrg > 0 ? totalIrg.toLocaleString() : '0'}</span>
+              <span className="t-unit text-[var(--text-2)] dark:text-white/65">DZD</span>
             </p>
-            <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'مقتطع' : isEn ? 'Withheld' : 'Retenue'}</p>
+            <p className="t-cap text-[var(--text-2)] dark:text-white/65">{isAr ? 'مقتطع' : isEn ? 'Withheld' : 'Retenue'}</p>
           </div>
         </div>
 
@@ -431,13 +432,14 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
           <div
             data-sq="card"
             style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-4 bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
           >
-            <p className="text-[11px] font-semibold text-black/70 dark:text-white/75 uppercase">{isAr ? 'السلفيات' : isEn ? 'Advances' : 'Acomptes'}</p>
-            <p className="text-[26px] leading-none font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans text-amber-600 dark:text-amber-400 mt-1.5 tabular-nums">
-              {totalAdvances > 0 ? totalAdvances.toLocaleString() : '0'} <span className="text-xs font-sans font-normal text-black/62 dark:text-white/65">DZD</span>
+            <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'السلفيات' : isEn ? 'Advances' : 'Acomptes'}</p>
+            <p className="t-kpi-m mt-auto text-amber-600 dark:text-amber-400 tabular-nums flex items-baseline gap-[var(--num-unit-gap,6px)]">
+              <span>{totalAdvances > 0 ? totalAdvances.toLocaleString() : '0'}</span>
+              <span className="t-unit text-[var(--text-2)] dark:text-white/65">DZD</span>
             </p>
-            <p className="text-[11px] text-black/62 dark:text-white/65 mt-1">{isAr ? 'مخصوم' : isEn ? 'Deducted' : 'Déduits'}</p>
+            <p className="t-cap text-[var(--text-2)] dark:text-white/65">{isAr ? 'مخصوم' : isEn ? 'Deducted' : 'Déduits'}</p>
           </div>
         </div>
       </div>
@@ -492,19 +494,22 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         <div
           data-sq="panel"
           style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-          className="bg-white dark:bg-[#1C1B1A] p-3"
+          className="bg-white dark:bg-[#1C1B1A] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]"
         >
-          <div className="flex items-center justify-between px-1.5 pt-1 pb-3 mb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
-            <h4 className="text-xs font-bold text-black dark:text-white uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
+          <div
+            className="flex items-center justify-between border-b border-[#E6DED6] dark:border-[#3A3734]"
+            style={{ padding: 'var(--pod-head-pad, 4px 12px 12px)' }}
+          >
+            <h4 className="t-pod text-[var(--text-1)] dark:text-white">
               {isAr ? 'السلفيات' : isEn ? 'Salary Advances' : 'Acomptes'}
             </h4>
             <button
               type="button"
               onClick={() => setIsAdvanceModalOpen(true)}
               data-sq="ctl-sm"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#d4522f] bg-[#d4522f]/10 hover:bg-[#d4522f]/20 transition-colors cursor-pointer"
+              className="flex items-center h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] gap-[var(--btn-sm-gap,6px)] t-btn text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-[#d4522f]/10 hover:bg-[#d4522f]/20 transition-colors cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" strokeWidth={1.5} />
               <span>{isAr ? 'سلفة' : isEn ? 'New Advance' : 'Acompte'}</span>
             </button>
           </div>
@@ -514,7 +519,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
               <EmptyState
                 variant="compact"
                 tone="neutral"
-                icon={<CreditCard className="w-5 h-5" />}
+                icon={<CreditCard className="w-4 h-4" strokeWidth={1.5} />}
                 title={isAr ? 'لا توجد سلفيات' : isEn ? 'No salary advances' : 'Aucun acompte'}
                 description={
                   isAr
@@ -525,33 +530,33 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                 }
                 secondaryAction={{
                   label: isAr ? 'سلفة جديدة' : isEn ? 'New Advance' : 'Nouvel acompte',
-                  icon: <Plus className="w-4 h-4" />,
+                  icon: <Plus className="w-4 h-4" strokeWidth={1.5} />,
                   onClick: () => setIsAdvanceModalOpen(true),
                 }}
               />
             </KineticEmptyStateMotion>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[var(--card-gap,12px)]">
               {salaryAdvances.map((adv) => (
                 <div
                   key={adv.id}
                   data-sq="card"
                   style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-                  className="p-3 bg-[#FBF8F5] dark:bg-[#262422] flex items-center justify-between"
+                  className="p-[var(--card-pad,20px)] card-opt bg-[#FBF8F5] dark:bg-[#262422] flex items-center justify-between gap-[var(--s3,12px)]"
                 >
-                  <div>
-                    <div className="font-bold text-xs text-black dark:text-white">{adv.staffName}</div>
-                    <div className="text-[11px] font-mono text-black/62 dark:text-white/65 tabular-nums">
+                  <div className="flex flex-col gap-[var(--title-cap-gap,2px)] min-w-0">
+                    <div className="t-label font-semibold text-[var(--text-1)] dark:text-white truncate">{adv.staffName}</div>
+                    <div className="t-cap text-[var(--text-2)] dark:text-white/65 tabular-nums truncate">
                       {adv.voucherNumber} · {adv.dateIssued}
                     </div>
-                    {adv.reason && <div className="text-[11px] text-black/70 dark:text-white/75 italic mt-0.5">&quot;{adv.reason}&quot;</div>}
+                    {adv.reason && <div className="t-cap text-[var(--text-2)] dark:text-white/75 italic truncate">&quot;{adv.reason}&quot;</div>}
                   </div>
-                  <div className="text-right">
-                    <div className="font-mono font-bold text-xs text-[#d4522f] tabular-nums">{adv.amountDzd.toLocaleString()} DZD</div>
+                  <div className="text-right flex flex-col items-end gap-[var(--s1,4px)] shrink-0">
+                    <div className="t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">{adv.amountDzd.toLocaleString()} DZD</div>
                     <span
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                      className={`inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold ${
                         adv.status === 'deducted'
-                          ? 'bg-[#E6DED6] text-black/75 dark:bg-[#3A3734] dark:text-white/80'
+                          ? 'bg-[#E6DED6] text-[var(--text-1)] dark:bg-[#3A3734] dark:text-white/80'
                           : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                       }`}
                     >
@@ -582,13 +587,13 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         renderBody={(slip) => {
           const primesNonImpTotal = slip.primesNonImposables?.reduce((s, p) => s + p.amount, 0) || 0;
           return (
-            <div className="space-y-4">
+            <div className="flex flex-col gap-[var(--s4,16px)]">
               <InspectorQuickActions
                 actions={[
                   {
                     id: 'print',
                     label: isAr ? 'طباعة كشف الراتب' : isEn ? 'Print Slip' : 'Imprimer Bulletin',
-                    icon: <Printer size={14} />,
+                    icon: <Printer size={16} strokeWidth={1.5} />,
                     primary: true,
                     onClick: () => setActiveSlipForPrint(slip),
                   },
@@ -597,7 +602,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                         {
                           id: 'pay',
                           label: isAr ? 'تأكيد الدفع' : isEn ? 'Mark Paid' : 'Marquer Payé',
-                          icon: <CheckCircle2 size={14} />,
+                          icon: <CheckCircle2 size={16} strokeWidth={1.5} />,
                           onClick: () => onMarkSlipPaid(slip.id),
                         },
                       ]

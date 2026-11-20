@@ -284,35 +284,35 @@ export const StaffModal: React.FC<StaffModalProps> = ({
       }
       maxWidth="lg"
     >
-      <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto max-h-[75vh]" dir={isAr ? 'rtl' : 'ltr'}>
+      <form onSubmit={handleSubmit} className="p-[var(--s6)] flex flex-col gap-[var(--s6)] overflow-y-auto max-h-[75vh]" dir={isAr ? 'rtl' : 'ltr'}>
         {errors.form && (
           <div
             data-sq="card"
             style={{ '--sq-stroke': 'rgba(239,68,68,0.25)' } as React.CSSProperties}
-            className="p-3 text-xs bg-red-500/10 text-red-500 flex items-center gap-2"
+            className="p-[var(--s3)] t-cap bg-red-500/10 text-red-500 flex items-center gap-[var(--s2)]"
           >
-            <AlertCircle className="w-4 h-4 shrink-0" />
+            <AlertCircle size={16} strokeWidth={1.5} className="shrink-0" />
             <span>{errors.form}</span>
           </div>
         )}
 
         {/* Section 1: Identity */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-[#d4522f]">
-            <User className="w-4 h-4" />
+        <div className="flex flex-col gap-[var(--s4)]">
+          <div className="flex items-center gap-[var(--s2)] t-small font-semibold text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]">
+            <User size={16} strokeWidth={1.5} />
             <span>{isAr ? 'الهوية والدور' : isEn ? 'Identity & Role' : 'Identité & Poste'}</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--s4)]">
+            <div className="flex flex-col gap-[var(--s1)]">
               <LabelInput
                 field={isAr ? 'الاسم الكامل' : isEn ? 'Full Name' : 'Nom Complet'}
                 value={fullName}
                 onChange={(val) => setFullName(val)}
                 required
-                prefix={<User className="w-4 h-4 text-black/50 dark:text-white/50" />}
+                prefix={<User size={16} strokeWidth={1.5} className="text-[var(--text-3)]" />}
               />
-              {errors.fullName && <p className="text-[11px] text-red-500 mt-1">{errors.fullName}</p>}
+              {errors.fullName && <p className="t-cap text-red-500">{errors.fullName}</p>}
             </div>
 
             <div>
@@ -321,35 +321,35 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 value={role}
                 options={categoryRoles}
                 onChange={(val) => setRole(val as StaffRole)}
-                prefix={<Shield className="w-4 h-4 text-black/50 dark:text-white/50" />}
+                prefix={<Shield size={16} strokeWidth={1.5} className="text-[var(--text-3)]" />}
               />
             </div>
 
-            <div>
+            <div className="flex flex-col gap-[var(--s1)]">
               <LabelInput
                 field={isAr ? 'البريد' : isEn ? 'Email' : 'Email'}
                 type="email"
                 value={email}
                 onChange={(val) => setEmail(val)}
                 required
-                prefix={<Mail className="w-4 h-4 text-black/50 dark:text-white/50" />}
+                prefix={<Mail size={16} strokeWidth={1.5} className="text-[var(--text-3)]" />}
               />
-              {errors.email && <p className="text-[11px] text-red-500 mt-1">{errors.email}</p>}
+              {errors.email && <p className="t-cap text-red-500">{errors.email}</p>}
             </div>
 
-            <div>
+            <div className="flex flex-col gap-[var(--s1)]">
               <LabelInput
                 field={isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}
                 value={phoneNumber}
                 onChange={(val) => setPhoneNumber(val)}
                 required
                 placeholder="0550 12 34 56"
-                prefix={<Phone className="w-4 h-4 text-black/50 dark:text-white/50" />}
+                prefix={<Phone size={16} strokeWidth={1.5} className="text-[var(--text-3)]" />}
               />
-              {errors.phoneNumber && <p className="text-[11px] text-red-500 mt-1">{errors.phoneNumber}</p>}
+              {errors.phoneNumber && <p className="t-cap text-red-500">{errors.phoneNumber}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-[var(--s2)]">
               <LabelInput
                 field={isAr ? 'العمر' : isEn ? 'Age' : 'Âge'}
                 type="number"
@@ -358,8 +358,8 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 value={age}
                 onChange={(val) => setAge(val)}
               />
-              <div>
-                <label className="block text-[11px] font-bold text-black/70 dark:text-white/70 uppercase tracking-wider rtl:normal-case rtl:tracking-normal mb-1">
+              <div className="flex flex-col gap-[var(--s1)]">
+                <label className="t-small font-medium text-[var(--text-2)]">
                   {isAr ? 'الجنس' : isEn ? 'Gender' : 'Genre'}
                 </label>
                 <LiveSegmentedControl
@@ -387,30 +387,30 @@ export const StaffModal: React.FC<StaffModalProps> = ({
           </div>
 
           {/* Access Badge */}
-          <div data-sq="card" className="p-3.5 bg-neutral-50 dark:bg-neutral-800/50">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
-                  <QrCode className="w-5 h-5" />
+          <div data-sq="card" className="p-[var(--s4)] bg-neutral-50 dark:bg-neutral-800/50 flex flex-col gap-[var(--s1)]">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-[var(--s3)]">
+              <div className="flex items-center gap-[var(--s3)]">
+                <div data-sq="tile" data-sq-border="none" className="w-[var(--tile,40px)] h-[var(--tile,40px)] bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center shrink-0">
+                  <QrCode size={20} strokeWidth={1.75} />
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-black dark:text-white">
+                <div className="flex flex-col gap-[var(--s1)]">
+                  <p className="t-small font-semibold text-[var(--text-1)]">
                     {isAr ? 'شارة الدخول' : isEn ? 'Access Badge' : 'Badge Accès'}
                   </p>
-                  <p className="text-[11px] text-black/60 dark:text-white/60">
+                  <p className="t-cap text-[var(--text-2)]">
                     {isAr ? 'لتسجيل الحضور السريع' : isEn ? 'For quick check-in' : 'Pour pointage rapide'}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <div data-sq="ctl" className="w-full sm:w-36 bg-white dark:bg-neutral-900 focus-within:[--sq-stroke:#d4522f]">
+              <div className="flex items-center gap-[var(--s2)] w-full sm:w-auto">
+                <div data-sq="ctl" className="w-full sm:w-36 bg-white dark:bg-neutral-900 focus-within:[--sq-stroke:var(--brand-fill)]">
                   <input
                     type="text"
                     value={cardId}
                     onChange={(e) => setCardId(e.target.value.toUpperCase())}
                     placeholder="RFID-000000"
-                    className="font-mono text-xs px-3 py-1.5 w-full bg-transparent border-0 text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-hidden"
+                    className="t-cap tabular-nums px-[var(--s3)] h-[var(--btn-sm-h,32px)] w-full bg-transparent border-0 text-[var(--text-1)] placeholder:text-[var(--text-3)] focus:outline-hidden"
                   />
                 </div>
                 <button
@@ -418,48 +418,48 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                   data-sq="ctl-sm"
                   data-sq-border="none"
                   onClick={handleGenerateBadge}
-                  className="shrink-0 text-xs px-3 py-1.5 bg-[#d4522f] text-white hover:bg-[#b0674b] transition-colors cursor-pointer"
+                  className="shrink-0 t-small h-[var(--btn-sm-h,32px)] px-[var(--s3)] bg-[var(--brand-fill)] text-white hover:bg-[#b0674b] transition-colors cursor-pointer"
                 >
                   {isAr ? 'توليد' : isEn ? 'Gen' : 'Générer'}
                 </button>
               </div>
             </div>
-            {errors.cardId && <p className="text-[11px] text-red-500 mt-1">{errors.cardId}</p>}
+            {errors.cardId && <p className="t-cap text-red-500">{errors.cardId}</p>}
           </div>
         </div>
 
         {/* Collapsible Advanced Settings & Contractual Dossier */}
-        <div className="border-t border-neutral-200 dark:border-neutral-800 pt-4">
+        <div className="border-t border-[var(--color-border)] pt-[var(--s4)] flex flex-col gap-[var(--s4)]">
           <button
             type="button"
             data-sq="ctl"
             data-sq-border="none"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-between p-3 bg-neutral-100/70 dark:bg-neutral-800/40 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-left rtl:text-right transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between p-[var(--s3)] bg-neutral-100/70 dark:bg-neutral-800/40 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-left rtl:text-right transition-colors cursor-pointer"
           >
-            <div className="flex items-center gap-2.5">
-              <FileText className="w-4 h-4 text-[#d4522f]" />
-              <span className="text-xs font-semibold text-black dark:text-white">
+            <div className="flex items-center gap-[var(--s3)]">
+              <FileText size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
+              <span className="t-small font-semibold text-[var(--text-1)]">
                 {isAr ? 'خيارات إضافية' : isEn ? 'More Details' : 'Options Avancées'}
               </span>
             </div>
             {showAdvanced ? (
-              <ChevronUp className="w-4 h-4 text-black/60 dark:text-white/60" />
+              <ChevronUp size={16} strokeWidth={1.5} className="text-[var(--text-2)]" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-black/60 dark:text-white/60" />
+              <ChevronDown size={16} strokeWidth={1.5} className="text-[var(--text-2)]" />
             )}
           </button>
 
           {showAdvanced && (
-            <div className="mt-4 space-y-6 animate-in fade-in duration-200">
+            <div className="flex flex-col gap-[var(--s6)] animate-in fade-in duration-200">
               {/* Contract & Compensation */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-[#d4522f]">
-                  <CreditCard className="w-4 h-4" />
+              <div className="flex flex-col gap-[var(--s4)]">
+                <div className="flex items-center gap-[var(--s2)] t-small font-semibold text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]">
+                  <CreditCard size={16} strokeWidth={1.5} />
                   <span>{isAr ? 'العقد والراتب' : isEn ? 'Pay & Contract' : 'Contrat & Paie'}</span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--s4)]">
                   <LabelSelect
                     field={isAr ? 'نوع العقد' : isEn ? 'Contract Type' : 'Type Contrat'}
                     value={recruitmentType}
@@ -479,11 +479,11 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       type="number"
                       value={salary}
                       onChange={(val) => setSalary(val)}
-                      suffix={<span className="text-[11px] text-black/55 dark:text-white/55">DZD</span>}
+                      suffix={<span className="t-cap text-[var(--text-2)]">DZD</span>}
                     />
                   </div>
 
-                  <div>
+                  <div className="flex flex-col gap-[var(--s1)]">
                     <LabelInput
                       field={isAr ? 'يوم الدفع' : isEn ? 'Pay Day' : 'Jour Paie'}
                       type="number"
@@ -492,11 +492,11 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       value={paymentDay}
                       onChange={(val) => setPaymentDay(val)}
                     />
-                    {errors.paymentDay && <p className="text-[11px] text-red-500 mt-1">{errors.paymentDay}</p>}
+                    {errors.paymentDay && <p className="t-cap text-red-500">{errors.paymentDay}</p>}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--s4)]">
                   <LabelSelect
                     field={isAr ? 'طريقة الدفع' : isEn ? 'Pay Method' : 'Mode Paiement'}
                     value={paymentMethod}
@@ -509,24 +509,24 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                   />
 
                   {paymentMethod === 'ccp' && (
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="col-span-2">
+                    <div className="grid grid-cols-3 gap-[var(--s2)]">
+                      <div className="col-span-2 flex flex-col gap-[var(--s1)]">
                         <LabelInput
                           field={isAr ? 'الحساب البريدي' : isEn ? 'Postal Account' : 'Compte Postal'}
                           value={ccpNumber}
                           onChange={(val) => handleCcpNumberChange(val)}
                           placeholder="0012345678"
                         />
-                        {errors.ccpNumber && <p className="text-[11px] text-red-500 mt-1">{errors.ccpNumber}</p>}
+                        {errors.ccpNumber && <p className="t-cap text-red-500">{errors.ccpNumber}</p>}
                       </div>
-                      <div>
+                      <div className="flex flex-col gap-[var(--s1)]">
                         <LabelInput
                           field={isAr ? 'المفتاح' : isEn ? 'Key' : 'Clé'}
                           value={ccpKey}
                           onChange={(val) => setCcpKey(val)}
                           placeholder="00"
                         />
-                        {errors.ccpKey && <p className="text-[11px] text-red-500 mt-1">{errors.ccpKey}</p>}
+                        {errors.ccpKey && <p className="t-cap text-red-500">{errors.ccpKey}</p>}
                       </div>
                     </div>
                   )}
@@ -543,12 +543,12 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               </div>
 
               {/* Multi-Credential Authentication Toggles */}
-              <div data-sq="panel" className="space-y-3 p-3 bg-neutral-50 dark:bg-neutral-800/40">
-                <div className="flex items-center gap-2 text-xs font-semibold text-black dark:text-white">
-                  <KeyRound className="w-4 h-4 text-[#d4522f]" />
+              <div data-sq="panel" className="flex flex-col gap-[var(--s3)] p-[var(--s3)] bg-neutral-50 dark:bg-neutral-800/40">
+                <div className="flex items-center gap-[var(--s2)] t-small font-semibold text-[var(--text-1)]">
+                  <KeyRound size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
                   <span>{isAr ? 'بيانات الدخول' : isEn ? 'Login Access' : 'Accès Connexion'}</span>
                 </div>
-                <p className="text-[11px] text-black/60 dark:text-white/60">
+                <p className="t-cap text-[var(--text-2)]">
                   {isAr
                     ? 'طرق تسجيل الدخول المتاحة'
                     : isEn
@@ -556,40 +556,40 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                     : 'Méthodes de connexion actives'}
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  <label data-sq="card" className="flex items-center gap-2.5 p-2.5 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3)] pt-[var(--s2)]">
+                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-neutral-900 cursor-pointer t-cap text-[var(--text-1)]">
                     <input
                       type="checkbox"
                       checked={canLoginEmail}
                       onChange={(e) => setCanLoginEmail(e.target.checked)}
-                      className="accent-[#d4522f] rounded-[var(--r-check,6px)]"
+                      className="accent-[var(--brand-fill)] rounded-[var(--r-check,6px)]"
                     />
                     <span>{isAr ? 'البريد' : isEn ? 'Email' : 'Email'}</span>
                   </label>
 
-                  <label data-sq="card" className="flex items-center gap-2.5 p-2.5 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
+                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-neutral-900 cursor-pointer t-cap text-[var(--text-1)]">
                     <input
                       type="checkbox"
                       checked={canLoginPhone}
                       onChange={(e) => setCanLoginPhone(e.target.checked)}
-                      className="accent-[#d4522f] rounded-[var(--r-check,6px)]"
+                      className="accent-[var(--brand-fill)] rounded-[var(--r-check,6px)]"
                     />
                     <span>{isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}</span>
                   </label>
 
-                  <label data-sq="card" className="flex items-center gap-2.5 p-2.5 bg-white dark:bg-neutral-900 cursor-pointer text-xs text-black dark:text-white">
+                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-neutral-900 cursor-pointer t-cap text-[var(--text-1)]">
                     <input
                       type="checkbox"
                       checked={canLoginPin}
                       onChange={(e) => setCanLoginPin(e.target.checked)}
-                      className="accent-[#d4522f] rounded-[var(--r-check,6px)]"
+                      className="accent-[var(--brand-fill)] rounded-[var(--r-check,6px)]"
                     />
                     <span>{isAr ? 'رمز سريع' : isEn ? 'Quick PIN' : 'Code PIN'}</span>
                   </label>
                 </div>
 
                 {canLoginPin && (
-                  <div className="flex items-center gap-3 pt-2">
+                  <div className="flex items-center gap-[var(--s3)] pt-[var(--s2)]">
                     <div className="w-36">
                       <LabelInput
                         field={isAr ? 'رمز PIN' : isEn ? 'PIN Code' : 'Code PIN'}
@@ -604,24 +604,24 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       data-sq="ctl"
                       data-sq-border="none"
                       onClick={handleGeneratePin}
-                      className="text-xs px-3 py-2 bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors text-black dark:text-white flex items-center gap-1.5 cursor-pointer"
+                      className="t-small h-[var(--btn-h,40px)] px-[var(--s3)] bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors text-[var(--text-1)] flex items-center gap-[var(--s2)] cursor-pointer"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-[#d4522f]" />
+                      <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
                       <span>{isAr ? 'توليد' : isEn ? 'Generate' : 'Générer'}</span>
                     </button>
-                    {errors.pinCode && <p className="text-[11px] text-red-500">{errors.pinCode}</p>}
+                    {errors.pinCode && <p className="t-cap text-red-500">{errors.pinCode}</p>}
                   </div>
                 )}
               </div>
 
               {/* Medical & Emergency Contact */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-[#d4522f]">
-                  <HeartPulse className="w-4 h-4" />
+              <div className="flex flex-col gap-[var(--s4)]">
+                <div className="flex items-center gap-[var(--s2)] t-small font-semibold text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]">
+                  <HeartPulse size={16} strokeWidth={1.5} />
                   <span>{isAr ? 'الطوارئ والصحة' : isEn ? 'Emergency Info' : 'Urgences'}</span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--s4)]">
                   <LabelSelect
                     field={isAr ? 'فصيلة الدم' : isEn ? 'Blood Type' : 'Groupe Sanguin'}
                     value={bloodGroup}
@@ -653,13 +653,13 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               </div>
 
               {/* Category-Specific Operational Details */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-[#d4522f]">
-                  <Building className="w-4 h-4" />
+              <div className="flex flex-col gap-[var(--s4)]">
+                <div className="flex items-center gap-[var(--s2)] t-small font-semibold text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]">
+                  <Building size={16} strokeWidth={1.5} />
                   <span>{getCategoryPropertiesTitle(currentCategory, isAr, isEn)}</span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--s4)]">
                   <LabelInput
                     field={getCategoryRegulatoryLabel(currentCategory, isAr, isEn)}
                     value={regulatoryNumber}
@@ -680,7 +680,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
         </div>
 
         {/* Modal Actions */}
-        <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-end gap-3">
+        <div className="pt-[var(--s4)] border-t border-[var(--color-border)] flex items-center justify-end gap-[var(--s3)]">
           <Button
             type="button"
             tone="soft"

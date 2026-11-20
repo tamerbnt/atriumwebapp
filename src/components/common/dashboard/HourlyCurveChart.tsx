@@ -18,7 +18,7 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
   data: propData = [12, 18, 45, 60, 85, 92, 70, 48, 30, 20],
   labels: propLabels = ['00:00', '05:00', '10:00', '15:00', '20:00'],
   color = '#10B981',
-  height = 95,
+  height = 160,
   className = '',
   title,
   unit,
@@ -125,9 +125,9 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
     <div className={`w-full flex flex-col justify-end ${className}`}>
       {/* Optional Card Header & Context-Adaptive Date Filter */}
       {(title || showPeriodFilter) && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s2,8px)] pb-[var(--s3,12px)]">
           {title && (
-            <span className="text-[var(--t-sub)] font-semibold text-[var(--text-1)]">
+            <span className="t-card text-[var(--text-1)]">
               {title}
             </span>
           )}
@@ -136,7 +136,7 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
             <div
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="inline-flex items-center gap-1 p-1 bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700/60 [--sq-stroke:#E8DFD8] dark:[--sq-stroke:rgba(64,64,64,0.6)] self-start sm:self-auto"
+              className="inline-flex items-center h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700/60 [--sq-stroke:#E8DFD8] dark:[--sq-stroke:rgba(64,64,64,0.6)] self-start sm:self-auto"
               role="group"
               aria-label="Hourly Filter"
             >
@@ -147,7 +147,7 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
                     key={opt.id}
                     type="button"
                     onClick={() => handlePeriodChange(opt.id)}
-                    className={`px-2 h-6 rounded-[calc(var(--r-ctl-sm,10px)-2px)] text-xs font-semibold transition-all duration-150 cursor-pointer select-none ${
+                    className={`px-[var(--seg-px,12px)] h-[calc(var(--seg-m-h,32px)-4px)] rounded-[var(--r-thumb,9px)] t-small transition-all duration-150 cursor-pointer select-none ${
                       isSelected
                         ? 'bg-white dark:bg-neutral-700 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-xs'
                         : 'text-[var(--text-2)] hover:text-[var(--text-1)]'
@@ -252,19 +252,19 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
               data-sq-border="solid"
               className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md px-3 py-2 border border-neutral-700/60 [--sq-stroke:rgba(64,64,64,0.6)] flex items-center gap-2 whitespace-nowrap text-left rtl:text-right"
             >
-              <div className="flex flex-col gap-0.5">
-                <div className="text-xs text-[var(--text-dark-2,#A99E92)] font-medium">
+              <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
+                <div className="t-small text-[var(--text-dark-2,#A99E92)]">
                   {activeLabel}
                 </div>
-                <div className="text-xs font-semibold tabular-nums text-white flex items-center gap-1">
+                <div className="t-small font-semibold tabular-nums text-white flex items-center gap-[var(--s1,4px)]">
                   <span>{activePoint.val.toLocaleString()}</span>
-                  <span className="text-xs text-[var(--text-dark-2,#A99E92)] font-normal">{unitLabel}</span>
+                  <span className="t-cap text-[var(--text-dark-2,#A99E92)]">{unitLabel}</span>
                 </div>
               </div>
 
               {deltaPct !== null && (
                 <span
-                  className={`text-xs font-semibold px-2 py-0.5 rounded-[var(--r-check,6px)] tabular-nums ${
+                  className={`t-small font-semibold px-[var(--s2,8px)] py-[var(--s1,4px)] rounded-[var(--r-check,6px)] tabular-nums ${
                     deltaPct >= 0
                       ? 'bg-emerald-950/80 text-emerald-400'
                       : 'bg-rose-950/80 text-rose-400'
@@ -279,7 +279,7 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
       </div>
 
       {/* Axis timestamps */}
-      <div className="flex justify-between text-xs tabular-nums font-medium text-[var(--text-2)] pt-2 px-1">
+      <div className="flex justify-between t-small tabular-nums text-[var(--text-2)] pt-[var(--s2,8px)] px-[var(--s1,4px)]">
         {propLabels.map((lbl, idx) => (
           <span key={idx}>{lbl}</span>
         ))}

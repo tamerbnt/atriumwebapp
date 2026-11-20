@@ -61,18 +61,18 @@ export const CollectionKebabMenu: React.FC<CollectionKebabMenuProps> = ({
     <div
       ref={menuRef}
       onClick={(e) => e.stopPropagation()}
-      className="absolute right-0 top-full mt-1.5 z-50 min-w-[190px] sq-elev-pop animate-in fade-in zoom-in-95 duration-150"
+      className="absolute right-0 top-full mt-[var(--pop-offset,8px)] z-50 min-w-[190px] sq-elev-pop animate-in fade-in zoom-in-95 duration-150"
     >
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="relative p-1.5 bg-white dark:bg-[#18181B] [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#26262A] text-black dark:text-white text-[13px] font-medium"
+        className="relative p-[var(--s2,8px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#26262A] text-[var(--text-1)] t-label"
       >
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-[var(--s1,4px)]">
           {items.map((item, idx) => (
             <React.Fragment key={item.id || idx}>
               {item.isSeparatorBefore && (
-                <div className="h-[1px] my-1 mx-2 bg-neutral-200 dark:bg-neutral-800" />
+                <div className="h-[1px] bg-neutral-200 dark:bg-neutral-800" />
               )}
               <button
                 type="button"
@@ -84,14 +84,14 @@ export const CollectionKebabMenu: React.FC<CollectionKebabMenuProps> = ({
                   item.onClick();
                   onClose();
                 }}
-                className={`relative w-full flex items-center gap-2.5 px-2.5 py-2 text-left transition-colors cursor-pointer ${
+                className={`relative w-full h-[var(--btn-sm-h,32px)] flex items-center gap-[var(--s2,8px)] px-[var(--s3,12px)] text-left transition-colors cursor-pointer ${
                   item.isSpecialDelete
                     ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10'
-                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/70 text-black/85 dark:text-white/90'
+                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/70 text-[var(--text-1)]'
                 }`}
               >
                 <span
-                  className="w-5 h-5 flex items-center justify-center shrink-0"
+                  className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] flex items-center justify-center shrink-0"
                   style={{ color: item.iconColor }}
                 >
                   {item.icon}

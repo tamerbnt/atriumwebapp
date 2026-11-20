@@ -6,17 +6,15 @@
 .badge {
   --h: var(--atr-h, 40px);
   box-sizing: border-box;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 var(--s1, 4px);
+  min-width: var(--badge-h, 22px);
+  height: var(--badge-h, 22px);
+  padding: 0 var(--badge-px, 6px);
   border-radius: 9999px;
   background: var(--brand-fill, #C9461F);
   color: #ffffff;
-  font-family: var(--font-ui, inherit);
-  font-size: var(--t-cap, 12px);
-  letter-spacing: var(--tr-12, 0.01em);
-  font-weight: 600;
-  line-height: 18px;
+  font: var(--t-small);
+  line-height: var(--badge-h, 22px);
+  letter-spacing: var(--tr-12);
   text-align: center;
   font-variant-numeric: tabular-nums;
   pointer-events: none;

@@ -80,26 +80,26 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto select-none animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--s4,16px)] bg-black/75 backdrop-blur-md overflow-y-auto select-none animate-in fade-in duration-150">
       <div className="w-full max-w-md sq-elev-pop">
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="relative w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19] [--sq-stroke:#3E3832] text-white p-6 sm:p-7 space-y-5"
+          className="relative w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19] [--sq-stroke:#3E3832] text-white p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)]"
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
-            <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-between pb-[var(--s3,12px)] border-b border-neutral-800">
+            <div className="flex items-center gap-[var(--s3,12px)]">
               <div
                 data-sq="tile"
                 data-sq-border="solid"
-                className="w-9 h-9 rounded-[var(--r-tile,12px)] bg-[#2A2420] [--sq-stroke:#483B33] flex items-center justify-center text-[#d4522f]"
+                className="w-[var(--tile,40px)] h-[var(--tile,40px)] rounded-[var(--r-tile,12px)] bg-[#2A2420] [--sq-stroke:#483B33] flex items-center justify-center text-[var(--brand-on-dark,#FF8F63)] shrink-0"
               >
-                <Lock size={16} />
+                <Lock size={20} strokeWidth={1.75} />
               </div>
-              <div>
-                <h3 className="text-sm font-bold text-white">{t('fast_switch_title_lock', language)}</h3>
-                <p className="text-[11px] text-white/70">
+              <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
+                <h3 className="t-dialog font-medium text-white">{t('fast_switch_title_lock', language)}</h3>
+                <p className="t-cap text-[var(--text-dark-2,#A99E92)]">
                   {t('fast_switch_operator_security', language)}
                 </p>
               </div>
@@ -107,9 +107,9 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 text-white/65 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+              className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full bg-neutral-900 border border-neutral-800 text-[var(--text-dark-2,#A99E92)] hover:text-white flex items-center justify-center cursor-pointer transition-colors"
             >
-              <X size={14} />
+              <X size={16} strokeWidth={1.5} />
             </button>
           </div>
 
@@ -117,138 +117,138 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-3.5 rounded-[var(--r-card,16px)] bg-neutral-900/90 [--sq-stroke:#262626] flex items-center justify-between"
+            className="p-[var(--s4,16px)] rounded-[var(--r-card,16px)] bg-neutral-900/90 [--sq-stroke:#262626] flex items-center justify-between gap-[var(--s3,12px)]"
           >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#d4522f] text-white flex items-center justify-center font-bold text-sm shadow-xs">
-              {currentUser.fullName.charAt(0)}
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-white">{currentUser.fullName}</span>
-                <span className="text-[10px] font-bold text-[#d4522f] bg-[#d4522f]/15 px-2 py-0.5 rounded-full uppercase">
-                  {currentUser.role}
-                </span>
+            <div className="flex items-center gap-[var(--av-to-text,12px)]">
+              <div className="w-[var(--av-table,40px)] h-[var(--av-table,40px)] rounded-full bg-[var(--brand-fill,#C9461F)] text-white flex items-center justify-center t-label font-semibold shadow-xs shrink-0">
+                {currentUser.fullName.charAt(0)}
               </div>
-              <span className="text-[11px] text-white/70">{currentUser.email}</span>
+              <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
+                <div className="flex items-center gap-[var(--s2,8px)]">
+                  <span className="t-label text-white">{currentUser.fullName}</span>
+                  <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] t-small text-[var(--brand-on-dark,#FF8F63)] bg-[#d4522f]/15 rounded-full">
+                    {currentUser.role}
+                  </span>
+                </div>
+                <span className="t-cap text-[var(--text-dark-2,#A99E92)]">{currentUser.email}</span>
+              </div>
+            </div>
+            <span className="t-small text-emerald-400 flex items-center gap-[var(--s1,4px)] shrink-0">
+              <UserCheck size={16} strokeWidth={1.5} /> {t('fast_switch_current_op', language)}
+            </span>
+          </div>
+
+          {/* Staff Quick Tap Switch List */}
+          <div className="flex flex-col gap-[var(--s2,8px)]">
+            <div className="t-small text-[var(--text-dark-2,#A99E92)]">
+              {t('fast_switch_switch_to', language)}
+            </div>
+            <div className="flex flex-col gap-[var(--s2,8px)] max-h-40 overflow-y-auto pe-[var(--s1,4px)]">
+              {staff.map((stf) => {
+                const isCurrent = currentUser.id === stf.id;
+                return (
+                  <button
+                    key={stf.id}
+                    type="button"
+                    data-sq="row"
+                    data-sq-border="solid"
+                    onClick={() => handleQuickSelectStaff(stf)}
+                    className={`w-full px-[var(--row-inset,12px)] py-[var(--s2,8px)] rounded-[var(--r-row,12px)] text-start flex items-center justify-between gap-[var(--s3,12px)] transition-colors cursor-pointer ${
+                      isCurrent
+                        ? 'bg-[#2A2420] [--sq-stroke:#d4522f] text-white font-medium'
+                        : 'bg-neutral-900/60 [--sq-stroke:#262626] text-white/85 hover:bg-neutral-800/80 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-[var(--av-to-text,12px)] min-w-0">
+                      <div className="w-[var(--av-list,32px)] h-[var(--av-list,32px)] rounded-full bg-neutral-800 text-white/90 flex items-center justify-center t-small font-semibold shrink-0">
+                        {stf.fullName.charAt(0)}
+                      </div>
+                      <div className="flex flex-col gap-[var(--name-sub-gap,2px)] truncate">
+                        <div className="t-label truncate">{stf.fullName}</div>
+                        <div className="t-cap text-[var(--text-dark-2,#A99E92)]">{stf.role}</div>
+                      </div>
+                    </div>
+                    <div className="t-small text-[var(--brand-on-dark,#FF8F63)] tabular-nums shrink-0">
+                      PIN: {stf.pinCode || '1234'}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
-          <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-            <UserCheck size={13} /> {t('fast_switch_current_op', language)}
-          </span>
-        </div>
 
-        {/* Staff Quick Tap Switch List */}
-        <div>
-          <div className="text-[11px] font-bold uppercase tracking-wider text-white/70 mb-2">
-            {t('fast_switch_switch_to', language)}
-          </div>
-          <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
-            {staff.map((stf) => {
-              const isCurrent = currentUser.id === stf.id;
-              return (
+          {/* 4-Digit Quick PIN Pad */}
+          <div className="pt-[var(--s3,12px)] border-t border-neutral-800 flex flex-col items-center gap-[var(--s3,12px)]">
+            <div className="w-full flex items-center justify-between t-label">
+              <span className="text-[var(--text-dark-2,#A99E92)]">{t('fast_switch_pin_label', language)}</span>
+              <div className="flex items-center gap-[var(--s2,8px)]">
+                {[0, 1, 2, 3].map((idx) => (
+                  <div
+                    key={idx}
+                    className={`w-[var(--s3,12px)] h-[var(--s3,12px)] rounded-full transition-all ${
+                      pinInput.length > idx
+                        ? 'bg-[var(--brand-fill,#C9461F)] scale-110'
+                        : 'bg-neutral-800 border border-neutral-700'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {error && (
+              <div className="text-center text-rose-400 t-small animate-in fade-in">
+                {error}
+              </div>
+            )}
+
+            <div className="w-full max-w-[220px] grid grid-cols-3 gap-[var(--s2,8px)]">
+              {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map((btn) => (
                 <button
-                  key={stf.id}
+                  key={btn}
                   type="button"
-                  data-sq="row"
+                  data-sq="ctl"
                   data-sq-border="solid"
-                  onClick={() => handleQuickSelectStaff(stf)}
-                  className={`w-full p-2.5 rounded-[var(--r-row,12px)] text-left flex items-center justify-between transition-colors cursor-pointer ${
-                    isCurrent
-                      ? 'bg-[#2A2420] [--sq-stroke:#d4522f] text-white font-bold'
-                      : 'bg-neutral-900/60 [--sq-stroke:#262626] text-white/85 hover:bg-neutral-800/80 hover:text-white'
-                  }`}
+                  onClick={() => {
+                    if (btn === 'C') handleClear();
+                    else if (btn === '⌫') handleBack();
+                    else handleDigit(btn);
+                  }}
+                  className="h-[var(--btn-h,40px)] rounded-[var(--r-ctl,12px)] bg-neutral-900 [--sq-stroke:#262626] text-white t-btn font-semibold tabular-nums hover:bg-neutral-800 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-full bg-neutral-800 text-white/90 flex items-center justify-center text-xs font-bold">
-                      {stf.fullName.charAt(0)}
-                    </div>
-                    <div className="truncate">
-                      <div className="text-xs font-medium truncate">{stf.fullName}</div>
-                      <div className="text-[10px] text-white/70">{stf.role}</div>
-                    </div>
-                  </div>
-                  <div className="text-[10px] font-mono text-[#d4522f]">
-                    PIN: {stf.pinCode || '1234'}
-                  </div>
+                  {btn === 'C' ? t('fast_switch_pin_clear', language) : btn}
                 </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 4-Digit Quick PIN Pad */}
-        <div className="pt-2 border-t border-neutral-800 space-y-2.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-white/75 font-medium">{t('fast_switch_pin_label', language)}</span>
-            <div className="flex items-center gap-2">
-              {[0, 1, 2, 3].map((idx) => (
-                <div
-                  key={idx}
-                  className={`w-3.5 h-3.5 rounded-full transition-all ${
-                    pinInput.length > idx
-                      ? 'bg-[#d4522f] scale-110'
-                      : 'bg-neutral-800 border border-neutral-700'
-                  }`}
-                />
               ))}
             </div>
           </div>
 
-          {error && (
-            <div className="text-center text-rose-400 text-[11px] font-medium animate-in fade-in">
-              {error}
-            </div>
-          )}
+          {/* Actions Footer */}
+          <div className="pt-[var(--s3,12px)] border-t border-neutral-800 flex items-center justify-between gap-[var(--s3,12px)]">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenOnboarding();
+              }}
+              className="t-btn text-[var(--brand-on-dark,#FF8F63)] hover:underline flex items-center gap-[var(--s1,4px)] cursor-pointer"
+            >
+              <Sparkles size={16} strokeWidth={1.5} />
+              <span>{t('onboarding_title', language)}</span>
+            </button>
 
-          <div className="grid grid-cols-3 gap-2 max-w-[220px] mx-auto">
-            {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map((btn) => (
-              <button
-                key={btn}
-                type="button"
-                data-sq="ctl"
-                data-sq-border="solid"
-                onClick={() => {
-                  if (btn === 'C') handleClear();
-                  else if (btn === '⌫') handleBack();
-                  else handleDigit(btn);
-                }}
-                className="h-10 rounded-[var(--r-ctl,12px)] bg-neutral-900 [--sq-stroke:#262626] text-white font-bold text-xs hover:bg-neutral-800 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
-              >
-                {btn === 'C' ? t('fast_switch_pin_clear', language) : btn}
-              </button>
-            ))}
+            <button
+              type="button"
+              data-sq="ctl-sm"
+              data-sq-border="solid"
+              onClick={() => {
+                logout();
+                onClose();
+              }}
+              className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-[var(--r-ctl-sm,10px)] bg-neutral-900 [--sq-stroke:#262626] hover:bg-rose-950/40 hover:[--sq-stroke:#7f1d1d] text-white/85 hover:text-rose-400 t-btn flex items-center gap-[var(--btn-sm-gap,6px)] transition-colors cursor-pointer"
+            >
+              <LogOut size={16} strokeWidth={1.5} />
+              <span>{t('topbar_logout', language)}</span>
+            </button>
           </div>
-        </div>
-
-        {/* Actions Footer */}
-        <div className="pt-3 border-t border-neutral-800 flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              onOpenOnboarding();
-            }}
-            className="text-xs text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer"
-          >
-            <Sparkles size={13} />
-            <span>{t('onboarding_title', language)}</span>
-          </button>
-
-          <button
-            type="button"
-            data-sq="ctl-sm"
-            data-sq-border="solid"
-            onClick={() => {
-              logout();
-              onClose();
-            }}
-            className="h-9 px-3.5 rounded-[var(--r-ctl-sm,10px)] bg-neutral-900 [--sq-stroke:#262626] hover:bg-rose-950/40 hover:[--sq-stroke:#7f1d1d] text-white/85 hover:text-rose-400 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <LogOut size={13} />
-            <span>{t('topbar_logout', language)}</span>
-          </button>
-        </div>
         </div>
       </div>
     </div>

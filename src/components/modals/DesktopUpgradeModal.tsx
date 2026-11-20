@@ -123,17 +123,17 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
       subtitle={language === 'ar' ? 'تجاوز حدود الفرع الواحد مع تطبيق سطح المكتب فائق الأداء' : language === 'fr' ? 'Dépassez la limite d\'une seule agence avec l\'application de bureau haute performance' : 'Expand beyond 1 branch with the high-performance desktop application'}
       maxWidth="lg"
     >
-      <div className="space-y-6 select-none">
+      <div className="flex flex-col gap-[var(--s6,24px)] select-none">
         {/* Banner Alert based on trigger reason */}
         {reason === 'branch_limit' && (
           <div
             data-sq="card"
             style={{ '--sq-stroke': '#FDE68A' } as React.CSSProperties}
-            className="p-3.5 bg-amber-50 dark:bg-amber-950/40 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5"
+            className="p-[var(--s4,16px)] bg-amber-50 dark:bg-amber-950/40 t-cap text-amber-900 dark:text-amber-200 flex items-start gap-[var(--s3,12px)]"
           >
-            <Building2 size={16} className="shrink-0 text-amber-600 mt-0.5" />
+            <Building2 size={16} strokeWidth={1.5} className="shrink-0 text-amber-600" />
             <div>
-              <span className="font-bold">
+              <span className="font-semibold">
                 {language === 'ar' ? 'تم الوصول لحد النسخة المجانية:' : language === 'fr' ? 'Limite de la version Web gratuite atteinte :' : 'Web Free Edition Limit Reached:'}
               </span>{' '}
               {language === 'ar'
@@ -149,11 +149,11 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           <div
             data-sq="card"
             style={{ '--sq-stroke': '#FDE68A' } as React.CSSProperties}
-            className="p-3.5 bg-amber-50 dark:bg-amber-950/40 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5"
+            className="p-[var(--s4,16px)] bg-amber-50 dark:bg-amber-950/40 t-cap text-amber-900 dark:text-amber-200 flex items-start gap-[var(--s3,12px)]"
           >
-            <Layers size={16} className="shrink-0 text-amber-600 mt-0.5" />
+            <Layers size={16} strokeWidth={1.5} className="shrink-0 text-amber-600" />
             <div>
-              <span className="font-bold">
+              <span className="font-semibold">
                 {language === 'ar' ? 'إدارة الأنشطة المتعددة:' : language === 'fr' ? 'Gestion multi-activités :' : 'Multi-Business Management:'}
               </span>{' '}
               {language === 'ar'
@@ -170,17 +170,17 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           <div
             data-sq="card"
             style={{ '--sq-stroke': '#3E3832' } as React.CSSProperties}
-            className="relative overflow-hidden bg-gradient-to-br from-[#1E1B19] via-[#2A2420] to-[#1E1B19] p-6 text-white"
+            className="card-opt relative overflow-hidden bg-gradient-to-br from-[#1E1B19] via-[#2A2420] to-[#1E1B19] p-[var(--card-pad,20px)] text-white flex flex-col gap-[var(--s5,20px)]"
           >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1.5 max-w-md">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#d4522f] text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s4,16px)]">
+              <div className="flex flex-col gap-[var(--s2,8px)] max-w-md">
+                <div className="flex items-center gap-[var(--s2,8px)]">
+                  <span className="h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] inline-flex items-center rounded-full t-small bg-[var(--brand-fill,#C9461F)] text-white">
                     {t('topbar_desktop_app', language)}
                   </span>
-                  <span className="text-xs text-white/85">Windows · macOS · Linux</span>
+                  <span className="t-cap text-[var(--text-dark-2,#A99E92)]">Windows · macOS · Linux</span>
                 </div>
-                <h3 className="text-xl font-black text-white tracking-tight">
+                <h3 className="t-dialog font-medium text-white">
                   {t('upgrade_modal_title', language)}
                 </h3>
               </div>
@@ -188,28 +188,28 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
               <div
                 data-sq="tile-lg"
                 style={{ '--sq-stroke': 'rgba(212,82,47,0.4)' } as React.CSSProperties}
-                className="w-16 h-16 bg-[#d4522f]/20 text-[#d4522f] flex items-center justify-center shrink-0 self-center"
+                className="w-[var(--tile-lg,48px)] h-[var(--tile-lg,48px)] bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0 self-center"
               >
-                <Laptop size={32} />
+                <Laptop size={24} strokeWidth={2} />
               </div>
             </div>
 
           {/* Quick Capabilities Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-5 pt-4 border-t border-white/10 text-[11px]">
-            <div className="flex items-center gap-2 text-white/85">
-              <Building2 size={14} className="text-[#d4522f] shrink-0" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--s3,12px)] pt-[var(--s4,16px)] border-t border-white/10 t-small">
+            <div className="flex items-center gap-[var(--icon-text-gap,8px)] text-white/85">
+              <Building2 size={16} strokeWidth={1.5} className="text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span>{t('settings_branches_title', language)}</span>
             </div>
-            <div className="flex items-center gap-2 text-white/85">
-              <Printer size={14} className="text-[#d4522f] shrink-0" />
+            <div className="flex items-center gap-[var(--icon-text-gap,8px)] text-white/85">
+              <Printer size={16} strokeWidth={1.5} className="text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span>{t('shop_print_thermal', language)}</span>
             </div>
-            <div className="flex items-center gap-2 text-white/85">
-              <WifiOff size={14} className="text-[#d4522f] shrink-0" />
+            <div className="flex items-center gap-[var(--icon-text-gap,8px)] text-white/85">
+              <WifiOff size={16} strokeWidth={1.5} className="text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span>{t('topbar_offline', language)}</span>
             </div>
-            <div className="flex items-center gap-2 text-white/85">
-              <ShieldCheck size={14} className="text-[#d4522f] shrink-0" />
+            <div className="flex items-center gap-[var(--icon-text-gap,8px)] text-white/85">
+              <ShieldCheck size={16} strokeWidth={1.5} className="text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
               <span>{t('settings_lifetime_badge', language)}</span>
             </div>
           </div>
@@ -217,22 +217,22 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
         </div>
 
         {/* Free Web vs Desktop Lifetime Side-by-Side Comparison */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--card-gap,12px)]">
           {/* Free Web Tier Card */}
           <div
             data-sq="card"
             style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-            className="p-4 bg-neutral-50 dark:bg-neutral-800/50 space-y-2.5"
+            className="card-opt p-[var(--card-pad,20px)] bg-neutral-50 dark:bg-neutral-800/50 flex flex-col gap-[var(--s3,12px)]"
           >
-            <div className="flex items-center justify-between">
-              <span className="font-extrabold text-black dark:text-white">{t('upgrade_free_badge', language)}</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+            <div className="flex items-center justify-between gap-[var(--s2,8px)]">
+              <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white">{t('upgrade_free_badge', language)}</span>
+              <span className="h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] inline-flex items-center rounded-full t-small bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                 {t('status_active', language)}
               </span>
             </div>
-            <ul className="space-y-1.5 text-black/75 dark:text-white/80 text-[11px]">
-              <li className="flex items-center gap-1.5">
-                <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+            <ul className="flex flex-col gap-[var(--s2,8px)] text-[var(--text-2,#5A5047)] dark:text-white/80 t-cap">
+              <li className="flex items-center gap-[var(--icon-text-gap,8px)]">
+                <CheckCircle2 size={16} strokeWidth={1.5} className="text-emerald-500 shrink-0" />
                 <span>
                   {language === 'ar' ? (
                     <><strong>نشاط تجاري 1</strong> و <strong>فرع 1</strong></>
@@ -243,17 +243,17 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
                   )}
                 </span>
               </li>
-              <li className="flex items-center gap-1.5">
-                <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+              <li className="flex items-center gap-[var(--icon-text-gap,8px)]">
+                <CheckCircle2 size={16} strokeWidth={1.5} className="text-emerald-500 shrink-0" />
                 <span>{t('settings_supabase_title', language)}</span>
               </li>
-              <li className="flex items-center gap-1.5">
-                <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+              <li className="flex items-center gap-[var(--icon-text-gap,8px)]">
+                <CheckCircle2 size={16} strokeWidth={1.5} className="text-emerald-500 shrink-0" />
                 <span>{t('shop_title', language)}</span>
               </li>
-              <li className="flex items-center gap-1.5">
-                <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-                <span>{language === 'ar' ? 'مجاني 100% للأبد' : language === 'fr' ? '100% Gratuit pour toujours' : '100% Free Forever'}</span>
+              <li className="flex items-center gap-[var(--icon-text-gap,8px)]">
+                <CheckCircle2 size={16} strokeWidth={1.5} className="text-emerald-500 shrink-0" />
+                <span>{language === 'ar' ? 'مجاني 100 % للأبد' : language === 'fr' ? '100 % Gratuit pour toujours' : '100% Free Forever'}</span>
               </li>
             </ul>
           </div>
@@ -262,29 +262,29 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           <div
             data-sq="card"
             style={{ '--sq-stroke': '#F5E2D8' } as React.CSSProperties}
-            className="p-4 bg-[#FDF4F0] dark:bg-[#2A2420]/60 space-y-2.5"
+            className="card-opt p-[var(--card-pad,20px)] bg-[#FDF4F0] dark:bg-[#2A2420]/60 flex flex-col gap-[var(--s3,12px)]"
           >
-            <div className="flex items-center justify-between">
-              <span className="font-extrabold text-[#d4522f]">{t('upgrade_desktop_badge', language)}</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#d4522f] text-white">
+            <div className="flex items-center justify-between gap-[var(--s2,8px)]">
+              <span className="t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{t('upgrade_desktop_badge', language)}</span>
+              <span className="h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] inline-flex items-center rounded-full t-small bg-[var(--brand-fill,#C9461F)] text-white">
                 {t('settings_lifetime_badge', language)}
               </span>
             </div>
-            <ul className="space-y-1.5 text-black/80 dark:text-white/85 text-[11px]">
-              <li className="flex items-center gap-1.5">
-                <Sparkles size={13} className="text-[#d4522f] shrink-0" />
+            <ul className="flex flex-col gap-[var(--s2,8px)] text-[var(--text-2,#5A5047)] dark:text-white/85 t-cap">
+              <li className="flex items-center gap-[var(--icon-text-gap,8px)]">
+                <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
                 <span><strong>{language === 'ar' ? 'فروع متعددة' : language === 'fr' ? 'Multi-agences' : 'Multi-Branch'}</strong> {language === 'ar' ? 'وسلاسل تجارية' : language === 'fr' ? 'Réseaux & Marques' : 'Chains & Brands'}</span>
               </li>
-              <li className="flex items-center gap-1.5">
-                <Sparkles size={13} className="text-[#d4522f] shrink-0" />
+              <li className="flex items-center gap-[var(--icon-text-gap,8px)]">
+                <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
                 <span><strong>{language === 'ar' ? 'مستقل عن الإنترنت' : language === 'fr' ? 'Autonome hors-ligne' : 'Offline-First'}</strong> {language === 'ar' ? 'محرك SQLite محلي' : language === 'fr' ? 'moteur local SQLite' : 'local SQLite engine'}</span>
               </li>
-              <li className="flex items-center gap-1.5">
-                <Sparkles size={13} className="text-[#d4522f] shrink-0" />
+              <li className="flex items-center gap-[var(--icon-text-gap,8px)]">
+                <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
                 <span>{language === 'ar' ? 'طابعات حرارية وقارئ باركود' : language === 'fr' ? 'Imprimante thermique & douchette' : 'Thermal receipt printer & barcode guns'}</span>
               </li>
-              <li className="flex items-center gap-1.5">
-                <Sparkles size={13} className="text-[#d4522f] shrink-0" />
+              <li className="flex items-center gap-[var(--icon-text-gap,8px)]">
+                <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
                 <span>{language === 'ar' ? 'قسائم ترخيص مسبقة الدفع مدى الحياة' : language === 'fr' ? 'Bons de licence perpétuelle prépayés' : 'Prepaid Lifetime Cash Vouchers'}</span>
               </li>
             </ul>
@@ -295,10 +295,10 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
         <div
           data-sq="card"
           style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-          className="p-4 bg-neutral-50 dark:bg-neutral-800/60 space-y-3"
+          className="card-opt p-[var(--card-pad,20px)] bg-neutral-50 dark:bg-neutral-800/60 flex flex-col gap-[var(--s3,12px)]"
         >
-          <div className="flex items-center gap-2 text-black dark:text-white font-bold text-xs">
-            <Cloud size={16} className="text-[#d4522f]" />
+          <div className="flex items-center gap-[var(--icon-text-gap,8px)] text-[var(--text-1,#17130F)] dark:text-white t-label font-semibold">
+            <Cloud size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
             <span>
               {language === 'ar'
                 ? 'كيف تنتقل بياناتك بسلاسة إلى تطبيق سطح المكتب'
@@ -308,9 +308,9 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
             </span>
           </div>
 
-          <div className="space-y-2 text-xs text-black/75 dark:text-white/80 leading-relaxed">
-            <div className="flex items-start gap-2">
-              <div className="w-5 h-5 rounded-full bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+          <div className="flex flex-col gap-[var(--s2,8px)] t-body text-[var(--text-2,#5A5047)] dark:text-white/80">
+            <div className="flex items-start gap-[var(--s2,8px)]">
+              <div className="w-[var(--badge-h,22px)] h-[var(--badge-h,22px)] rounded-full bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center t-small shrink-0 tabular-nums">
                 1
               </div>
               <p>
@@ -322,8 +322,8 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
                   : 'All your current business records, clients, products, deliverables, and settings are already safely synced in your Supabase Cloud database.'}
               </p>
             </div>
-            <div className="flex items-start gap-2">
-              <div className="w-5 h-5 rounded-full bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+            <div className="flex items-start gap-[var(--s2,8px)]">
+              <div className="w-[var(--badge-h,22px)] h-[var(--badge-h,22px)] rounded-full bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center t-small shrink-0 tabular-nums">
                 2
               </div>
               <p>
@@ -335,8 +335,8 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
                   : `When you open the Atrium Desktop App, simply sign in with your Google account (${currentUser.email}). The desktop app instantly downloads your entire database.`}
               </p>
             </div>
-            <div className="flex items-start gap-2">
-              <div className="w-5 h-5 rounded-full bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+            <div className="flex items-start gap-[var(--s2,8px)]">
+              <div className="w-[var(--badge-h,22px)] h-[var(--badge-h,22px)] rounded-full bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center t-small shrink-0 tabular-nums">
                 3
               </div>
               <p>
@@ -351,16 +351,16 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           </div>
 
           {/* Backup Button */}
-          <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-neutral-200 dark:border-neutral-700">
-            <span className="text-[11px] text-black/60 dark:text-white/65">
+          <div className="pt-[var(--s2,8px)] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s2,8px)] border-t border-neutral-200 dark:border-neutral-700">
+            <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">
               {language === 'ar' ? 'هل ترغب في حفظ نسخة احتياطية إضافية؟' : language === 'fr' ? 'Souhaitez-vous une copie de sauvegarde hors-ligne ?' : 'Want an extra offline safety copy?'}
             </span>
             <button
               type="button"
               onClick={handleExportDataBackup}
-              className="text-xs font-bold text-[#d4522f] hover:text-[#b03b1b] flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="t-btn font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline flex items-center gap-[var(--btn-sm-gap,6px)] transition-colors cursor-pointer"
             >
-              <FileDown size={14} />
+              <FileDown size={16} strokeWidth={1.5} />
               <span>{language === 'ar' ? 'تحميل نسخة احتياطية JSON' : language === 'fr' ? 'Télécharger une sauvegarde JSON' : 'Download Instant JSON Backup'}</span>
             </button>
           </div>
@@ -368,29 +368,28 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           {exportedStatus && (
             <div
               data-sq="ctl"
-              className="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2"
+              className="p-[var(--s2,8px)] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 t-small flex items-center gap-[var(--icon-text-gap,8px)]"
             >
-              <CheckCircle2 size={14} className="text-emerald-500" />
+              <CheckCircle2 size={16} strokeWidth={1.5} className="text-emerald-500" />
               <span>{exportedStatus}</span>
             </div>
           )}
         </div>
 
         {/* Download Buttons */}
-        <div className="space-y-2.5">
-          <label className="block text-xs font-bold text-black/85 dark:text-white/85">
+        <div className="flex flex-col gap-[var(--s3,12px)]">
+          <label className="t-label text-[var(--text-1,#17130F)] dark:text-white">
             {language === 'ar' ? 'تحميل تطبيق أتريوم المكتبي' : language === 'fr' ? 'Télécharger l\'application de bureau Atrium' : 'Download Atrium Desktop Application'}
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--s3,12px)]">
             <AtriumButton
               type="button"
               variant="primary"
               size="md"
               glow
-              icon={<Download size={16} />}
+              icon={<Download size={16} strokeWidth={1.5} />}
               onClick={() => handleDownload('windows')}
               disabled={downloadingPlatform !== null}
-              className="!py-3"
             >
               {downloadingPlatform === 'windows'
                 ? (language === 'ar' ? 'جاري تجهيز مثبت ويندوز...' : language === 'fr' ? 'Préparation de l\'installateur Windows...' : 'Preparing Windows Installer...')
@@ -401,10 +400,9 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
               type="button"
               variant="secondary"
               size="md"
-              icon={<Download size={16} />}
+              icon={<Download size={16} strokeWidth={1.5} />}
               onClick={() => handleDownload('mac')}
               disabled={downloadingPlatform !== null}
-              className="!py-3"
             >
               {downloadingPlatform === 'mac'
                 ? (language === 'ar' ? 'جاري تجهيز حزمة ماك...' : language === 'fr' ? 'Préparation du paquet macOS...' : 'Preparing macOS Package...')
@@ -414,8 +412,8 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
         </div>
 
         {/* Bottom Voucher Prompt */}
-        <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800 text-xs">
-          <span className="text-black/70 dark:text-white/70">
+        <div className="flex items-center justify-between pt-[var(--s2,8px)] border-t border-neutral-100 dark:border-neutral-800">
+          <span className="t-cap text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">
             {language === 'ar' ? 'هل تمتلك قسيمة ترخيص مسبقاً؟' : language === 'fr' ? 'Vous possédez déjà un bon de licence ?' : 'Already purchased an Atrium License Voucher?'}
           </span>
           {onOpenVoucherModal && (
@@ -425,9 +423,9 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
                 onClose();
                 onOpenVoucherModal();
               }}
-              className="font-bold text-[#d4522f] hover:underline flex items-center gap-1 cursor-pointer"
+              className="t-btn font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] hover:underline flex items-center gap-[var(--btn-sm-gap,6px)] cursor-pointer"
             >
-              <KeyRound size={13} />
+              <KeyRound size={16} strokeWidth={1.5} />
               <span>{language === 'ar' ? 'تفعيل رمز الترخيص' : language === 'fr' ? 'Activer la licence' : 'Redeem License Key'}</span>
             </button>
           )}

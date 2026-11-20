@@ -37,11 +37,11 @@ export const ScreenHeaderBar: React.FC<ScreenHeaderBarProps> = React.memo(({
 }) => {
   const resolvedAction: ScreenHeaderPrimaryAction | undefined =
     primaryAction ||
-    (onAdd && addLabel
+        (onAdd && addLabel
       ? {
           label: addLabel,
           onClick: onAdd,
-          icon: <Plus size={16} strokeWidth={2.2} />,
+          icon: <Plus size={16} strokeWidth={1.5} />,
           dataAction: addButtonDataAction,
         }
       : undefined);
@@ -49,23 +49,23 @@ export const ScreenHeaderBar: React.FC<ScreenHeaderBarProps> = React.memo(({
   const extraNodes = secondaryActions || actions;
 
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${className}`}>
-      <div className="flex items-center gap-4 min-w-0">
+    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--ph-gap,16px)] ${className}`}>
+      <div className="flex items-center gap-[var(--ph-gap,16px)] min-w-0">
         <div className="sq-elev-card shrink-0">
           <div
             data-sq="tile-lg"
             data-sq-border="solid"
-            className="relative w-12 h-12 bg-[#F3EDE7] dark:bg-white/[0.07] [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.7)] flex items-center justify-center text-[var(--text-1)] dark:text-white"
+            className="relative w-[var(--ph-tile,48px)] h-[var(--ph-tile,48px)] bg-[#F3EDE7] dark:bg-white/[0.07] [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.7)] flex items-center justify-center text-[var(--text-1)] dark:text-white"
           >
             {icon}
           </div>
         </div>
-        <div className="min-w-0 flex flex-col gap-1">
-          <h1 className="text-[var(--t-page)] leading-[var(--t-page-lh)] rtl:text-[32px] rtl:leading-[38px] font-normal uppercase rtl:normal-case tracking-[0.01em] rtl:tracking-normal text-[var(--text-1)] dark:text-white font-[var(--font-display)] rtl:font-sans truncate">
+        <div className="min-w-0 flex flex-col gap-[var(--ph-sub-gap,4px)]">
+          <h1 className="t-page text-[var(--text-1)] dark:text-white truncate">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-xs text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
+            <p className="t-body text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
               {subtitle}
             </p>
           )}
@@ -73,7 +73,7 @@ export const ScreenHeaderBar: React.FC<ScreenHeaderBarProps> = React.memo(({
       </div>
 
       {(extraNodes || resolvedAction) && (
-        <div className="flex items-center gap-2 relative flex-wrap shrink-0">
+        <div className="flex items-center gap-[var(--s2,8px)] relative flex-wrap shrink-0">
           {extraNodes}
           {resolvedAction && (
             <AtriumButton
@@ -82,10 +82,10 @@ export const ScreenHeaderBar: React.FC<ScreenHeaderBarProps> = React.memo(({
               disabled={resolvedAction.disabled}
               data-action={resolvedAction.dataAction || addButtonDataAction}
               onClick={(e) => resolvedAction.onClick(e.currentTarget)}
-              icon={resolvedAction.icon ?? <Plus size={16} strokeWidth={2.2} />}
-              className="px-4 font-semibold shadow-xs"
+              icon={resolvedAction.icon ?? <Plus size={16} strokeWidth={1.5} />}
+              className="shadow-xs"
             >
-              <span className="text-xs font-semibold">{resolvedAction.label}</span>
+              {resolvedAction.label}
             </AtriumButton>
           )}
         </div>

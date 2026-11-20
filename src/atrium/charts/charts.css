@@ -241,11 +241,12 @@
     align-items: flex-start;
   }
   .ax-head-actions [role='radiogroup'] {
-    --atr-h: 32px;
+    --atr-h: var(--seg-m-h, 32px);
   }
   .ax-head-actions [role='radio'] {
     padding-inline: var(--s2, 8px);
-    font-size: var(--t-small, 12px);
+    font: var(--t-small);
+    letter-spacing: var(--tr-12);
   }
 }
 
@@ -264,7 +265,7 @@
 .ax-head-meta {
   display: flex;
   flex-direction: column;
-  gap: var(--s1, 4px);
+  gap: var(--name-sub-gap, 2px);
   min-width: 0;
   flex: 1 1 160px;
 }
@@ -278,23 +279,26 @@
 
 .ax-title {
   margin: 0;
-  font-family: var(--font-ui, 'Inter', sans-serif);
-  font-size: var(--t-h3, 16px);
-  line-height: var(--lh-h3, 22px);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font: var(--t-card);
+  letter-spacing: var(--tr-15);
+  text-wrap: balance;
   color: var(--ax-on);
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+[data-atrium-theme='dark'] .ax-card:not([data-surface='light']) .ax-title,
+.dark .ax-card:not([data-surface='light']) .ax-title,
+.ax-card[data-surface='dark'] .ax-title {
+  font-weight: 500;
 }
 
 .ax-sub {
   margin: 0;
-  font-size: var(--t-small, 12px);
-  line-height: var(--lh-small, 16px);
-  letter-spacing: var(--tr-12, 0.01em);
-  font-weight: 400;
+  font: var(--t-cap);
+  letter-spacing: var(--tr-12);
   color: var(--ax-sub);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -318,10 +322,8 @@
   border: 1px solid var(--ax-bdr);
   background: transparent;
   color: var(--ax-sub);
-  font-family: var(--font-ui, 'Inter', sans-serif);
-  font-size: var(--t-small, 12px);
+  font: var(--t-small);
   line-height: 1;
-  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -376,10 +378,8 @@
   background: var(--ax-tip-bg);
   color: var(--ax-tip-on);
   --sq-stroke: color-mix(in srgb, var(--ax-tip-on) 14%, transparent);
-  font-size: var(--t-small, 12px);
-  line-height: var(--lh-small, 16px);
-  letter-spacing: var(--tr-12, 0.01em);
-  font-weight: 400;
+  font: var(--t-cap);
+  letter-spacing: var(--tr-12);
 }
 
 .ax-pop::before {
@@ -416,28 +416,22 @@
 }
 
 .ax-big {
-  font-size: var(--t-kpi, 56px);
-  line-height: var(--lh-kpi, 56px);
+  font: var(--t-kpi);
 }
 .ax-big-gauge {
-  font-size: var(--t-kpi, 56px);
-  line-height: var(--lh-kpi, 56px);
+  font: var(--t-kpi);
 }
 .ax-big-donut {
-  font-size: var(--t-page, 44px);
-  line-height: var(--lh-page, 48px);
+  font: var(--t-page);
 }
 .ax-big-plot {
-  font-size: var(--t-kpi-m, 40px);
-  line-height: var(--lh-kpi-m, 44px);
+  font: var(--t-kpi-m);
 }
 .ax-big-mid {
-  font-size: var(--t-kpi-m, 40px);
-  line-height: var(--lh-kpi-m, 44px);
+  font: var(--t-kpi-m);
 }
 .ax-big-hm {
-  font-size: var(--t-kpi-m, 40px);
-  line-height: var(--lh-kpi-m, 44px);
+  font: var(--t-kpi-m);
 }
 
 .ax-mono {
@@ -446,21 +440,16 @@
 }
 
 .ax-nv {
-  font-family: var(--font-ui, 'Inter', sans-serif);
+  font: var(--t-label);
+  letter-spacing: var(--tr-13);
   font-variant-numeric: tabular-nums;
-  font-size: var(--t-sub, 13px);
-  line-height: var(--lh-sub, 18px);
-  font-weight: 500;
   color: var(--ax-on);
 }
 
 .ax-tk {
-  font-family: var(--font-ui, 'Inter', sans-serif);
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
   font-variant-numeric: tabular-nums;
-  font-size: var(--t-cap, 12px);
-  line-height: var(--lh-cap, 16px);
-  letter-spacing: var(--tr-12, 0.01em);
-  font-weight: 500;
   color: var(--ax-mut);
 }
 
@@ -468,17 +457,15 @@
 .ax-leg-pill {
   display: inline-flex;
   align-items: center;
-  gap: var(--chart-swatch-gap, 6px);
-  height: var(--pill-h, 28px);
-  padding: 0 var(--pill-px, 12px);
+  gap: var(--pill-gap, 6px);
+  height: var(--pill-h, 24px);
+  padding: 0 var(--pill-px, 10px);
   border-radius: 9999px;
   border: 1px solid var(--ax-bdr);
   background: transparent;
   color: var(--ax-on);
-  font-size: var(--t-small, 12px);
-  letter-spacing: var(--tr-12, 0.01em);
-  font-weight: 500;
-  line-height: var(--lh-small, 16px);
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
   cursor: pointer;
   transition:
     opacity 0.16s ease,
@@ -502,14 +489,11 @@
   align-items: center;
   gap: var(--s1, 4px);
   height: var(--badge-h, 22px);
-  padding: 0 var(--badge-px, 8px);
+  padding: 0 var(--badge-px, 6px);
   border-radius: 9999px;
-  font-family: var(--font-ui, 'Inter', sans-serif);
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
   font-variant-numeric: tabular-nums;
-  font-size: var(--t-small, 12px);
-  line-height: var(--lh-small, 16px);
-  letter-spacing: var(--tr-12, 0.01em);
-  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -528,25 +512,27 @@
   background: var(--ax-soft);
 }
 
-/* ---------- Segmented Pill Control ---------- */
+/* ---------- Segmented Pill Control (in-card 32px, inset 2px, thumb 28px) ---------- */
 .ax-seg {
   position: relative;
   display: inline-grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
   align-items: center;
-  padding: var(--seg-pad, 4px);
+  height: var(--seg-m-h, 32px);
+  padding: var(--seg-m-pad, 2px);
   border-radius: var(--r-ctl-sm, 10px);
   background: var(--ax-soft);
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .ax-seg-th {
   position: absolute;
-  top: var(--seg-pad, 4px);
-  bottom: var(--seg-pad, 4px);
-  inset-inline-start: var(--seg-pad, 4px);
-  border-radius: calc(var(--r-ctl-sm, 10px) - 3px);
+  top: var(--seg-m-pad, 2px);
+  bottom: var(--seg-m-pad, 2px);
+  inset-inline-start: var(--seg-m-pad, 2px);
+  border-radius: calc(var(--r-ctl-sm, 10px) - 2px);
   background: var(--ax-th);
   box-shadow: 0 1px 3px rgba(10, 10, 10, 0.12);
   pointer-events: none;
@@ -559,14 +545,11 @@
   border: 0;
   background: transparent;
   color: var(--ax-sub);
-  font-family: var(--font-ui, 'Inter', sans-serif);
-  font-size: var(--t-small, 12px);
-  letter-spacing: var(--tr-12, 0.01em);
-  line-height: 1;
-  font-weight: 600;
-  padding: var(--s1, 4px) var(--s3, 12px);
-  height: var(--seg-s-h, 32px);
-  border-radius: calc(var(--r-ctl-sm, 10px) - 3px);
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
+  padding: 0 var(--seg-px, 12px);
+  height: calc(var(--seg-m-h, 32px) - (var(--seg-m-pad, 2px) * 2));
+  border-radius: calc(var(--r-ctl-sm, 10px) - 2px);
   cursor: pointer;
   white-space: nowrap;
   transition: color 0.18s ease;
@@ -673,9 +656,8 @@
   background: var(--ax-tip-bg);
   color: var(--ax-tip-on);
   --sq-stroke: color-mix(in srgb, var(--ax-tip-on) 14%, transparent);
-  font-family: var(--font-ui, 'Inter', sans-serif);
-  font-size: var(--t-small, 12px);
-  line-height: var(--lh-small, 16px);
+  font: var(--t-cap);
+  letter-spacing: var(--tr-12);
   font-variant-numeric: tabular-nums;
 }
 
@@ -694,8 +676,8 @@
 }
 
 .ax-tip-lbl {
-  font-size: var(--t-small, 12px);
-  font-weight: 500;
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
   color: color-mix(in srgb, var(--ax-tip-on) 76%, transparent);
   white-space: nowrap;
   overflow: hidden;
@@ -703,10 +685,9 @@
 }
 
 .ax-tip-tot {
-  font-family: var(--font-ui, 'Inter', sans-serif);
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
   font-variant-numeric: tabular-nums;
-  font-size: var(--t-small, 12px);
-  font-weight: 600;
   color: var(--ax-tip-on);
   white-space: nowrap;
 }
@@ -740,10 +721,9 @@
 }
 
 .ax-tip-val {
-  font-family: var(--font-ui, 'Inter', sans-serif);
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
   font-variant-numeric: tabular-nums;
-  font-size: var(--t-small, 12px);
-  font-weight: 600;
   color: var(--ax-tip-on);
   white-space: nowrap;
 }
@@ -779,11 +759,11 @@
   min-height: var(--chart-h, 160px);
   border: 1px dashed var(--ax-bdr);
   border-radius: var(--r-empty, 12px);
-  padding: var(--card-pad, 20px);
+  padding: var(--empty-pad-y, 14px) var(--empty-pad-x, 16px);
   text-align: center;
   color: var(--ax-sub);
-  font-size: var(--t-sub, 13px);
-  line-height: var(--lh-sub, 18px);
+  font: var(--t-body);
+  letter-spacing: var(--tr-13);
 }
 
 .ax-err {
@@ -799,8 +779,8 @@
   padding: var(--card-pad, 20px);
   text-align: center;
   color: var(--ax-on);
-  font-size: var(--t-sub, 13px);
-  line-height: var(--lh-sub, 18px);
+  font: var(--t-body);
+  letter-spacing: var(--tr-13);
 }
 
 .ax-retry {
@@ -810,8 +790,8 @@
   border-radius: var(--r-ctl-sm, 10px);
   height: var(--btn-sm-h, 32px);
   padding: 0 var(--btn-sm-px, 12px);
-  font-size: var(--t-small, 12px);
-  font-weight: 600;
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
   cursor: pointer;
 }
 

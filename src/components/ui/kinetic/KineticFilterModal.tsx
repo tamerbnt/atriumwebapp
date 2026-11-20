@@ -258,23 +258,23 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
           data-sq="panel"
           data-sq-border="solid"
           style={{ contain: 'layout paint' }}
-          className="relative w-full max-h-[85vh] bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-[var(--modal-pad,24px)] flex flex-col gap-4 text-[var(--text-1)] overflow-hidden select-text"
+          className="relative w-full max-h-[85vh] bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] text-[var(--text-1)] overflow-hidden select-text"
         >
-        <div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#3A3734] shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 flex items-center justify-center text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-2xs shrink-0">
-              <SlidersHorizontal size={16} />
+        <div className="flex items-center justify-between pb-[var(--s4,16px)] border-b border-[#E6DED6] dark:border-[#3A3734] shrink-0">
+          <div className="flex items-center gap-[var(--s3,12px)]">
+            <div className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 flex items-center justify-center text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-2xs shrink-0">
+              <SlidersHorizontal size={16} strokeWidth={1.5} />
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-semibold text-[var(--text-1)] block">
+            <div className="flex flex-col gap-[var(--s1,4px)]">
+              <span className="t-dialog text-[var(--text-1)] block">
                 {dialogTitle}
               </span>
-              <span className="text-xs text-[var(--text-2)] tabular-nums">
+              <span className="t-cap text-[var(--text-2)] tabular-nums">
                 {displayCount} {entityPluralLabel}
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-[var(--s2,8px)]">
             {hasActiveFilters && (
               <button
                 type="button"
@@ -282,9 +282,9 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                 data-sq="ctl-sm"
                 data-sq-border="none"
                 onClick={onResetFilters}
-                className="text-xs font-semibold text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 h-8"
+                className="t-small font-semibold text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] hover:underline flex items-center gap-[var(--s1,4px)] cursor-pointer transition-colors px-[var(--s2,8px)] h-[var(--btn-sm-h,32px)]"
               >
-                <RotateCcw size={12} />
+                <RotateCcw size={16} strokeWidth={1.5} />
                 <span>
                   {language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}
                 </span>
@@ -294,24 +294,24 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
               type="button"
               data-no-liquid="true"
               onClick={onClose}
-              className="w-8 h-8 rounded-full hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-[var(--text-2)] hover:text-[var(--text-1)] flex items-center justify-center cursor-pointer transition-colors"
+              className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-[var(--text-2)] hover:text-[var(--text-1)] flex items-center justify-center cursor-pointer transition-colors"
               aria-label="Close filters"
             >
-              <X size={16} />
+              <X size={16} strokeWidth={1.5} />
             </button>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 overflow-y-auto pr-1 max-h-[58vh]">
+        <div className="flex flex-col gap-[var(--s4,16px)] overflow-y-auto pe-[var(--s1,4px)] max-h-[58vh]">
           {sections.map((section) => {
             const resetVal = section.resetValue ?? 'All';
             const resetText =
               section.resetLabel ||
               (language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All');
             return (
-              <div key={section.id} className="flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-2">
-                  <label className="text-xs font-semibold text-[var(--text-2)]">
+              <div key={section.id} className="flex flex-col gap-[var(--s2,8px)]">
+                <div className="flex items-center justify-between gap-[var(--s2,8px)]">
+                  <label className="t-small font-semibold text-[var(--text-2)]">
                     {section.label}
                   </label>
                   {section.value !== resetVal && (
@@ -319,7 +319,7 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                       type="button"
                       data-no-liquid="true"
                       onClick={() => section.onChange(resetVal)}
-                      className="text-xs text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] font-semibold hover:underline cursor-pointer"
+                      className="t-small text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] font-semibold hover:underline cursor-pointer"
                     >
                       {resetText}
                     </button>
@@ -327,11 +327,11 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                 </div>
 
                 {section.kind === 'segmented' ? (
-                  <div className="w-full overflow-x-auto pb-1">
+                  <div className="w-full overflow-x-auto pb-[var(--s1,4px)]">
                     <LiveSegmentedControl
                       size="sm"
                       fullWidth
-                      className="min-w-0 [&>button]:min-w-0 [&>button]:px-2"
+                      className="min-w-0 [&>button]:min-w-0 [&>button]:px-[var(--s2,8px)]"
                       options={section.options as SegmentedOption[]}
                       value={section.value}
                       onValueChange={(val) => section.onChange(val)}
@@ -340,7 +340,7 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                   </div>
                 ) : (
                   <div
-                    className={`grid gap-2 max-h-40 overflow-y-auto pr-1 ${
+                    className={`grid gap-[var(--s2,8px)] max-h-40 overflow-y-auto pe-[var(--s1,4px)] ${
                       section.columns === 3
                         ? 'grid-cols-2 sm:grid-cols-3'
                         : 'grid-cols-1 sm:grid-cols-2'
@@ -357,22 +357,22 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                           data-sq-border="solid"
                           onClick={() => section.onChange(opt.value)}
                           title={opt.tooltip || opt.label}
-                          className={`relative px-3 py-2 text-xs flex items-center justify-between gap-2 font-medium cursor-pointer transition-colors ${
+                          className={`relative px-[var(--s3,12px)] py-[var(--s2,8px)] t-small flex items-center justify-between gap-[var(--s2,8px)] cursor-pointer transition-colors ${
                             isSelected
                               ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] [--sq-stroke:rgba(212,82,47,0.4)] font-semibold'
                               : 'bg-[#FBF8F5] dark:bg-neutral-800/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50'
                           }`}
                         >
-                          <div className="min-w-0 text-left rtl:text-right flex flex-col gap-1">
+                          <div className="min-w-0 text-start flex flex-col gap-[var(--s1,4px)]">
                             <div className="truncate font-semibold">{opt.label}</div>
                             {opt.sublabel && (
-                              <div className="text-xs text-[var(--text-2)] tabular-nums truncate">
+                              <div className="t-cap text-[var(--text-2)] tabular-nums truncate">
                                 {opt.sublabel}
                               </div>
                             )}
                           </div>
                           {opt.count !== undefined && (
-                            <span className="text-xs text-[var(--text-2)] tabular-nums shrink-0">
+                            <span className="t-cap text-[var(--text-2)] tabular-nums shrink-0">
                               {opt.count}
                             </span>
                           )}
@@ -386,13 +386,13 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
           })}
         </div>
 
-        <div className="pt-3 border-t border-[#E6DED6] dark:border-[#3A3734] flex items-center gap-2 shrink-0">
+        <div className="pt-[var(--s3,12px)] border-t border-[#E6DED6] dark:border-[#3A3734] flex items-center gap-[var(--s2,8px)] shrink-0">
           {hasActiveFilters && (
             <BrandedAtriumButton
               tone="soft"
               size={40}
               onClick={onResetFilters}
-              className="font-semibold text-xs"
+              className="t-btn"
             >
               <span>
                 {language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}
@@ -403,7 +403,7 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
             tone="accent"
             size={40}
             onClick={onClose}
-            className="flex-1 font-semibold text-xs"
+            className="flex-1 t-btn"
           >
             <span>
               {language === 'ar'

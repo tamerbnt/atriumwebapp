@@ -183,8 +183,8 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
           </div>
         }
         footer={
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-[var(--s2,8px)]">
+            <div className="flex flex-wrap items-center gap-[var(--chart-leg-row-gap,16px)]">
               {(groups || []).map((g, idx) => {
                 const color = g.color || BUBBLE_COLORS[idx % BUBBLE_COLORS.length];
                 const isOff = !!hiddenGroups[g.id];
@@ -197,7 +197,7 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
                       setHiddenGroups((prev) => ({ ...prev, [g.id]: !prev[g.id] }))
                     }
                     aria-pressed={!isOff}
-                    className={`inline-flex items-center gap-1.5 text-[11.5px] font-medium cursor-pointer transition-opacity ${
+                    className={`inline-flex items-center gap-[var(--chart-swatch-gap,6px)] t-small cursor-pointer transition-opacity ${
                       isOff ? 'opacity-40 line-through' : 'opacity-95'
                     }`}
                   >
@@ -210,8 +210,8 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
                 );
               })}
             </div>
-            <div className="flex items-center gap-2.5 ax-tk">
-              <span className="inline-flex items-center gap-1">
+            <div className="flex items-center gap-[var(--s2,8px)] ax-tk">
+              <span className="inline-flex items-center gap-[var(--s1,4px)]">
                 <span className="inline-block w-2.5 h-2.5 rounded-full border border-[var(--ax-mut)]" />
                 <span>{sizeLabel || strings.sizeLegendLabel}</span>
               </span>
@@ -246,10 +246,14 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
                   />
                   <text
                     x={geom.PAD_L - 8}
-                    y={y + 3.5}
+                    y={y + 4}
                     textAnchor="end"
                     className="fill-[var(--ax-mut)]"
-                    style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px' }}
+                    style={{
+                      fontFamily: "var(--font-ui, 'Inter', sans-serif)",
+                      fontSize: '12px',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
                   >
                     {formatCompactTick(tick, locale)}
                   </text>
@@ -271,7 +275,11 @@ export const BubbleScatterChart: React.FC<BubbleScatterChartProps> = React.memo(
                   y={geom.H - 10}
                   textAnchor="middle"
                   className="fill-[var(--ax-mut)]"
-                  style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px' }}
+                  style={{
+                    fontFamily: "var(--font-ui, 'Inter', sans-serif)",
+                    fontSize: '12px',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
                 >
                   {formatCompactTick(tick, locale)}
                 </text>

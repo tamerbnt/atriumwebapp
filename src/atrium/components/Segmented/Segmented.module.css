@@ -1,5 +1,6 @@
 .root {
-  --h: var(--atr-h, 36px);
+  --h: var(--seg-l-h, 40px);
+  --seg-inset: var(--seg-l-pad, 4px);
   --r: var(--r-ctl, 12px);
   --sq-stroke: var(--atr-line, #E6DED6);
 
@@ -7,10 +8,17 @@
   display: inline-flex;
   box-sizing: border-box;
   isolation: isolate;
-  padding: var(--seg-pad, 4px);
+  padding: var(--seg-inset);
   border: 1px solid var(--atr-line);
   border-radius: var(--r);
   background: #FFFFFF;
+}
+
+.root[data-atr-size='sm'],
+:global(.ax-card) .root {
+  --h: var(--seg-m-h, 32px);
+  --seg-inset: var(--seg-m-pad, 2px);
+  --r: var(--r-ctl-sm, 10px);
 }
 
 :global([data-atrium-theme='dark']) .root,
@@ -30,7 +38,7 @@
 
 .bl {
   position: absolute;
-  inset: var(--seg-pad, 4px);
+  inset: var(--seg-inset, 4px);
   z-index: 0;
   border-radius: var(--r-thumb, 9px);
   background: var(--atr-acc);
@@ -47,19 +55,16 @@
   margin: 0;
   background: transparent;
   box-sizing: border-box;
-  height: calc(var(--h) - (var(--seg-pad, 4px) * 2));
-  padding: 0 var(--s3, 12px);
+  height: calc(var(--h) - (var(--seg-inset, 4px) * 2));
+  padding: 0 var(--seg-px, 12px);
   border-radius: var(--r-thumb, 9px);
   color: var(--text-1, var(--atr-ink));
-  font-family: var(--font-ui, inherit);
-  font-size: var(--t-small, 12px);
-  letter-spacing: var(--tr-12, 0.01em);
-  font-weight: 500;
-  line-height: 1;
+  font: var(--t-label);
+  letter-spacing: var(--tr-13);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--s2, 8px);
+  gap: var(--seg-badge-gap, 6px);
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
@@ -68,9 +73,15 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.root[data-atr-size='sm'] .so,
+:global(.ax-card) .so {
+  font: var(--t-small);
+  letter-spacing: var(--tr-12);
+}
+
 .so[aria-checked='true'] {
   color: var(--atr-onacc);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .so svg {
@@ -79,7 +90,7 @@
   flex: none;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.2;
+  stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }

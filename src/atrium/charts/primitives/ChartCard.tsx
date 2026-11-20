@@ -31,9 +31,9 @@ export interface ChartCardProps {
 const ChartSkeleton: React.FC<{ kind: ChartSkeletonKind }> = ({ kind }) => {
   if (kind === 'kpi') {
     return (
-      <div className="flex flex-col gap-3 pt-1" aria-hidden="true">
-        <div className="flex items-baseline justify-between gap-3">
-          <div className="ax-skel-block h-11 w-28" />
+      <div className="flex flex-col gap-[var(--s3,12px)]" aria-hidden="true">
+        <div className="flex items-baseline justify-between gap-[var(--s3,12px)]">
+          <div className="ax-skel-block h-12 w-28" />
           <div className="ax-skel-block h-5 w-16" />
         </div>
         <div className="ax-skel-block h-14 w-full" />
@@ -42,14 +42,14 @@ const ChartSkeleton: React.FC<{ kind: ChartSkeletonKind }> = ({ kind }) => {
   }
   if (kind === 'donut' || kind === 'gauge') {
     return (
-      <div className="flex items-center justify-center py-6" aria-hidden="true">
-        <div className="ax-skel-block h-40 w-40 !rounded-full" />
+      <div className="flex items-center justify-center py-[var(--s4,16px)]" aria-hidden="true">
+        <div className="ax-skel-block h-[var(--chart-h,160px)] w-[var(--chart-h,160px)] !rounded-full" />
       </div>
     );
   }
   if (kind === 'matrix' || kind === 'waffle') {
     return (
-      <div className="grid grid-cols-10 gap-1.5 py-2" aria-hidden="true">
+      <div className="grid grid-cols-10 gap-[var(--s2,8px)] py-[var(--s2,8px)]" aria-hidden="true">
         {Array.from({ length: 40 }).map((_, idx) => (
           <div key={idx} className="ax-skel-block h-5 w-full" />
         ))}
@@ -58,9 +58,9 @@ const ChartSkeleton: React.FC<{ kind: ChartSkeletonKind }> = ({ kind }) => {
   }
   if (kind === 'treemap') {
     return (
-      <div className="grid grid-cols-3 gap-2 h-48" aria-hidden="true">
+      <div className="grid grid-cols-3 gap-[var(--s2,8px)] h-[var(--chart-h,160px)]" aria-hidden="true">
         <div className="ax-skel-block col-span-2 h-full" />
-        <div className="grid grid-rows-2 gap-2 h-full">
+        <div className="grid grid-rows-2 gap-[var(--s2,8px)] h-full">
           <div className="ax-skel-block h-full" />
           <div className="ax-skel-block h-full" />
         </div>
@@ -69,18 +69,18 @@ const ChartSkeleton: React.FC<{ kind: ChartSkeletonKind }> = ({ kind }) => {
   }
   if (kind === 'list' || kind === 'timeline') {
     return (
-      <div className="flex flex-col gap-3 py-2" aria-hidden="true">
+      <div className="flex flex-col gap-[var(--s3,12px)] py-[var(--s2,8px)]" aria-hidden="true">
         {[82, 66, 54, 38].map((pct, idx) => (
-          <div key={idx} className="flex items-center gap-3">
-            <div className="ax-skel-block h-3.5 w-24 shrink-0" />
-            <div className="ax-skel-block h-3.5" style={{ width: `${pct}%` }} />
+          <div key={idx} className="flex items-center gap-[var(--s3,12px)]">
+            <div className="ax-skel-block h-4 w-24 shrink-0" />
+            <div className="ax-skel-block h-4" style={{ width: `${pct}%` }} />
           </div>
         ))}
       </div>
     );
   }
   return (
-    <div className="flex items-end gap-2.5 h-44 pt-4 px-2" aria-hidden="true">
+    <div className="flex items-end gap-[var(--s2,8px)] h-[var(--chart-h,160px)] pt-[var(--s4,16px)] px-[var(--s2,8px)]" aria-hidden="true">
       {[42, 68, 55, 84, 62, 91, 48].map((pct, idx) => (
         <div
           key={idx}
@@ -148,7 +148,7 @@ export const ChartCard: React.FC<ChartCardProps> = React.memo(({
           {subtitle && <p className="ax-sub">{subtitle}</p>}
         </div>
         {(hasFilter || headerRight) && (
-          <div className="ax-head-actions flex flex-col items-end gap-1.5 min-w-0 max-w-full">
+          <div className="ax-head-actions flex flex-col items-end gap-[var(--s2,8px)] min-w-0 max-w-full">
             {hasFilter && filter && (
               <ChartSegmented
                 options={filter.options}
@@ -195,7 +195,7 @@ export const ChartCard: React.FC<ChartCardProps> = React.memo(({
         children
       )}
 
-      {footer && state === 'ready' && <footer className="pt-0.5">{footer}</footer>}
+      {footer && state === 'ready' && <footer>{footer}</footer>}
     </section>
   );
 });

@@ -52,26 +52,24 @@ export const AtriumButton = forwardRef<HTMLButtonElement, AtriumButtonProps>(fun
       break;
   }
 
-  // Map size to 4pt scale (xs = 32px, sm = 36px, md = 40px, lg = 48px)
-  let atrSize: AtriumSize = 40;
+  // Map size to Atrium core token sizes (sm = 32px/28px compact, md = 40px/36px compact, lg = 48px)
+  let atrSize: AtriumSize = 'md';
   if (typeof size === 'number') {
     atrSize = size;
   } else {
     switch (size) {
       case 'xs':
-        atrSize = 32;
-        break;
       case 'sm':
-        atrSize = 36;
+        atrSize = 'sm';
         break;
       case 'md':
-        atrSize = 40;
+        atrSize = 'md';
         break;
       case 'lg':
         atrSize = 48;
         break;
       default:
-        atrSize = 40;
+        atrSize = 'md';
         break;
     }
   }

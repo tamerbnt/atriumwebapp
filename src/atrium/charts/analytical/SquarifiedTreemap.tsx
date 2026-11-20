@@ -150,7 +150,7 @@ export const SquarifiedTreemap: React.FC<SquarifiedTreemapProps> = React.memo(
         }
         footer={
           showLegend && rects.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-1">
+            <div className="flex flex-wrap items-center gap-x-[var(--chart-leg-row-gap,16px)] gap-y-[var(--s2,8px)]">
               {rects.map((rect, idx) => {
                 const palette = TREEMAP_PALETTE[idx % TREEMAP_PALETTE.length];
                 const isActive = activeId === rect.id;
@@ -167,7 +167,7 @@ export const SquarifiedTreemap: React.FC<SquarifiedTreemapProps> = React.memo(
                     onClick={() =>
                       setActiveId((prev) => (prev === rect.id ? null : rect.id))
                     }
-                    className={`inline-flex items-center gap-1.5 text-[11px] font-medium cursor-pointer transition-opacity ${
+                    className={`inline-flex items-center gap-[var(--chart-swatch-gap,6px)] t-small cursor-pointer transition-opacity ${
                       isDim ? 'opacity-40' : 'opacity-95'
                     }`}
                   >
@@ -178,7 +178,7 @@ export const SquarifiedTreemap: React.FC<SquarifiedTreemapProps> = React.memo(
                     <span className="text-[var(--ax-sub)] max-w-[130px] truncate">
                       {rect.label}
                     </span>
-                    <span className="ax-mono text-[10.5px] text-[var(--ax-mut)]" dir="ltr">
+                    <span className="t-small tabular-nums text-[var(--ax-mut)]" dir="ltr">
                       {Math.round(rect.share)}%
                     </span>
                   </button>
@@ -189,7 +189,7 @@ export const SquarifiedTreemap: React.FC<SquarifiedTreemapProps> = React.memo(
         }
       >
         <div
-          className="ax-tmw relative w-full h-[218px] rounded-[var(--r-card,16px)] overflow-hidden select-none"
+          className="ax-tmw relative w-full h-[200px] rounded-[var(--r-card,16px)] overflow-hidden select-none"
           role="list"
           aria-label={ariaSummary}
           onPointerLeave={() => setActiveId(null)}
@@ -223,7 +223,7 @@ export const SquarifiedTreemap: React.FC<SquarifiedTreemapProps> = React.memo(
                   { locale, format, currency, unit }
                 )})`}
                 className={`ax-tm-tile ax-plot-focus ax-pop-item absolute flex flex-col justify-between ${
-                  rect.w < 18 || rect.h < 28 ? 'p-1.5' : 'p-2.5'
+                  rect.w < 18 || rect.h < 28 ? 'p-[var(--s2,8px)]' : 'p-[var(--s3,12px)]'
                 } rounded-[var(--r-ctl,12px)] border-2 border-[var(--ax-slab)] text-left rtl:text-right overflow-hidden cursor-pointer`}
                 style={{
                   insetInlineStart: `${rect.x}%`,
@@ -241,27 +241,25 @@ export const SquarifiedTreemap: React.FC<SquarifiedTreemapProps> = React.memo(
               >
                 {showLabel && (
                   <span
-                    className={`font-semibold leading-tight w-full ${
-                      isNarrow || rect.h < 28
-                        ? 'text-[10.5px] truncate'
-                        : 'text-[11.5px] line-clamp-2'
+                    className={`t-small font-semibold w-full ${
+                      isNarrow || rect.h < 28 ? 'truncate' : 'line-clamp-2'
                     }`}
                   >
                     {rect.label}
                   </span>
                 )}
                 {showShare && (
-                  <span className="flex items-baseline justify-between gap-1.5 mt-auto pt-1 w-full">
+                  <span className="flex items-baseline justify-between gap-[var(--s2,8px)] mt-auto w-full">
                     <span
-                      className={`ax-disp leading-none ${
-                        isLarge ? 'text-[22px]' : 'text-[15px]'
+                      className={`tabular-nums ${
+                        isLarge ? 't-unit font-semibold' : 't-card'
                       }`}
                       dir="ltr"
                     >
                       {Math.round(rect.share)}%
                     </span>
                     {showValue && (
-                      <span className="ax-mono text-[10.5px] opacity-85 truncate" dir="ltr">
+                      <span className="t-cap tabular-nums opacity-85 truncate" dir="ltr">
                         {formatChartValue(rect.value, {
                           locale,
                           format,

@@ -43,8 +43,8 @@ export interface ToastStackProps {
 
 export const ToastStack: React.FC<ToastStackProps> = ({
   className = "",
-  peek = 11,
-  gap = 10,
+  peek = 12,
+  gap = 8,
   corner = 20,
 }) => {
   const { toasts, language } = useAtriumSelector(
@@ -155,7 +155,7 @@ export const ToastStack: React.FC<ToastStackProps> = ({
                 >
                   {/* Status Icon */}
                   <span className="tst-icon shrink-0">
-                    <Icon size={18} strokeWidth={2.2} />
+                    <Icon size={20} strokeWidth={1.75} />
                   </span>
 
                   {/* Text Content */}
@@ -192,7 +192,7 @@ export const ToastStack: React.FC<ToastStackProps> = ({
                     title="Dismiss notification"
                     aria-label="Dismiss notification"
                   >
-                    <X size={14} strokeWidth={2.2} />
+                    <X size={16} strokeWidth={1.5} />
                   </button>
                 </div>
               </motion.div>

@@ -395,7 +395,7 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
               )}
             </svg>
 
-            <div className="flex items-center justify-between gap-2 text-[11px] ax-tk">
+            <div className="flex items-center justify-between gap-[var(--s2,8px)] ax-tk">
               <span>
                 {minLabel || strings.minLabel}:{' '}
                 <strong className="font-semibold text-[var(--ax-sub)]" dir="ltr">
@@ -403,7 +403,7 @@ export const KpiSparkCard: React.FC<KpiSparkCardProps> = React.memo(
                 </strong>
               </span>
               {geom.prevD && (
-                <span className="inline-flex items-center gap-1.5 opacity-85">
+                <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)] opacity-85">
                   <span className="w-3 border-t-[1.5px] border-dashed border-[var(--ax-c4)]" />
                   <span>{strings.previousLabel}</span>
                 </span>

@@ -292,7 +292,7 @@ describe('EmptyState DOM, accessibility, tone, icon slot & palette checks', () =
     expect(cssSource).toContain("'Inter'");
     expect(cssSource).not.toMatch(/@keyframes|animation\s*:|transition\s*:|prefers-reduced-motion/);
     expect(cssSource).toContain('--panel: #FBF8F5');
-    expect(cssSource).toContain('--accent: #C9441F');
+    expect(cssSource).toContain('--accent: var(--brand-fill, #C9461F)');
     expect(cssSource).toContain('--panel: #FAFAFA');
     expect(cssSource).toContain('--pod: #F1F1F1');
     expect(cssSource).toContain('--border: #E2E2E2');

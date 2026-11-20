@@ -82,7 +82,7 @@ export function Select<T extends string = string>({
         leading={selected?.icon}
         trailing={<Chevron />}
       >
-        {prefix ? <span className="opacity-60 text-[11px] font-normal mr-1">{prefix}:</span> : null}
+        {prefix ? <span className="opacity-70 t-cap me-[var(--s1,4px)]">{prefix}:</span> : null}
         {selected ? selected.label : placeholder}
       </Button>
       {name ? <input type="hidden" name={name} value={current ?? ''} /> : null}

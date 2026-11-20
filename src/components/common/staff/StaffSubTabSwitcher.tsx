@@ -25,24 +25,24 @@ export const StaffSubTabSwitcher: React.FC<StaffSubTabSwitcherProps> = ({
     {
       id: 'directory',
       label: isAr ? 'الفريق' : isEn ? 'Directory' : 'Équipe',
-      icon: <Users className="w-4 h-4" />,
+      icon: <Users className="w-4 h-4" strokeWidth={1.5} />,
       badge: String(staffCount),
     },
     {
       id: 'attendance',
       label: isAr ? 'الحضور' : isEn ? 'Attendance' : 'Présence',
-      icon: <Clock className="w-4 h-4" />,
+      icon: <Clock className="w-4 h-4" strokeWidth={1.5} />,
       badge: String(presentCount),
     },
     {
       id: 'payroll',
       label: isAr ? 'الرواتب' : isEn ? 'Payroll' : 'Paie',
-      icon: <Receipt className="w-4 h-4" />,
+      icon: <Receipt className="w-4 h-4" strokeWidth={1.5} />,
     },
     {
       id: 'history',
       label: isAr ? 'السجل' : isEn ? 'History' : 'Historique',
-      icon: <History className="w-4 h-4" />,
+      icon: <History className="w-4 h-4" strokeWidth={1.5} />,
     },
   ];
 
@@ -50,7 +50,7 @@ export const StaffSubTabSwitcher: React.FC<StaffSubTabSwitcherProps> = ({
     <div
       data-sq="ctl"
       style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-      className="flex flex-wrap items-center gap-1.5 p-[3px] bg-[#F3EDE7] dark:bg-[#1C1B1A] w-full sm:w-fit"
+      className="flex flex-wrap items-center gap-[var(--s1,4px)] p-[var(--seg-l-pad,4px)] min-h-[var(--seg-l-h,40px)] bg-[#F3EDE7] dark:bg-[#1C1B1A] w-full sm:w-fit"
     >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
@@ -65,22 +65,22 @@ export const StaffSubTabSwitcher: React.FC<StaffSubTabSwitcherProps> = ({
                 ? ({ '--sq-stroke': 'var(--atr-border, rgba(0,0,0,0.08))' } as React.CSSProperties)
                 : undefined
             }
-            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold tracking-tight transition-all cursor-pointer select-none whitespace-nowrap ${
+            className={`h-[var(--seg-thumb-h,32px)] flex items-center gap-[var(--seg-badge-gap,6px)] px-[var(--seg-px,12px)] t-btn transition-all cursor-pointer select-none whitespace-nowrap ${
               isActive
-                ? 'bg-white dark:bg-[#262422] text-black dark:text-white'
-                : 'rounded-[var(--r-thumb,9px)] text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/3 dark:hover:bg-white/5'
+                ? 'bg-white dark:bg-[#262422] text-[var(--text-1)] dark:text-white'
+                : 'rounded-[var(--r-thumb,9px)] text-[var(--text-2)] dark:text-white/75 hover:text-[var(--text-1)] dark:hover:text-white hover:bg-black/3 dark:hover:bg-white/5'
             }`}
           >
-            <span className={isActive ? 'text-[#d4522f]' : 'text-black/65 dark:text-white/70'}>
+            <span className={isActive ? 'text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]' : 'text-[var(--text-2)] dark:text-white/70'}>
               {tab.icon}
             </span>
             <span>{tab.label}</span>
             {tab.badge && (
               <span
-                className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-bold tabular-nums ${
+                className={`inline-flex items-center justify-center min-w-[var(--badge-min-w,22px)] h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] rounded-full t-small font-semibold tabular-nums ${
                   isActive
-                    ? 'bg-[#d4522f]/10 text-[#d4522f]'
-                    : 'bg-[#E6DED6]/70 dark:bg-[#262422] text-black/72 dark:text-white/75'
+                    ? 'bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
+                    : 'bg-[#E6DED6]/70 dark:bg-[#262422] text-[var(--text-2)] dark:text-white/75'
                 }`}
               >
                 {tab.badge}

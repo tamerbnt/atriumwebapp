@@ -50,21 +50,22 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
   return (
     <div className={`sq-elev-card h-full ${className}`}>
       <div
+        data-surface="dark"
         data-sq="card"
         data-sq-border="solid"
-        className="bg-[#1F1D1B] rounded-[var(--r-card,16px)] p-[var(--card-pad,20px)] card-opt [--sq-stroke:rgba(255,255,255,0.08)] text-white relative overflow-hidden flex flex-col justify-between gap-4 h-full"
+        className="bg-[#1F1D1B] rounded-[var(--r-card,16px)] p-[var(--card-pad,20px)] card-opt [--sq-stroke:rgba(255,255,255,0.08)] text-white relative overflow-hidden flex flex-col justify-between gap-[var(--card-body-gap,20px)] h-full"
       >
         {/* Top row: Title and Toggle */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-[var(--card-head-gap,12px)]">
+          <div className="flex items-center gap-[var(--card-head-gap,12px)]">
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-8 h-8 rounded-[var(--r-tile,12px)] bg-white/[0.08] [--sq-stroke:rgba(255,255,255,0.08)] text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0"
+              className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-white/[0.08] [--sq-stroke:rgba(255,255,255,0.08)] text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0"
             >
-              <Shield size={16} />
+              <Shield size={16} strokeWidth={1.5} />
             </div>
-            <h4 className="text-[var(--t-h3)] leading-[var(--lh-h3)] font-semibold text-white">
+            <h4 className="t-card text-white">
               {title}
             </h4>
           </div>
@@ -121,11 +122,11 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
             </svg>
 
             {/* Center Score */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-              <span className="text-[var(--t-unit)] leading-[var(--lh-unit)] font-semibold text-white tabular-nums">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-[var(--s1,4px)]">
+              <span className="t-unit text-white tabular-nums">
                 {metricValue || `${score}%`}
               </span>
-              <span className="text-xs text-[var(--text-dark-2,#A99E92)] font-medium">
+              <span className="t-small text-[var(--text-dark-2,#A99E92)]">
                 {metricLabel || scoreLabel}
               </span>
             </div>
@@ -133,11 +134,11 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
         </div>
 
         {/* Bottom status indicator */}
-        <div className="flex items-center justify-between text-xs pt-3 border-t border-white/10 text-[var(--text-dark-2,#A99E92)]">
-          <span className="text-emerald-400 font-medium">
+        <div className="flex items-center justify-between pt-[var(--footer-gap,16px)] border-t border-white/10 text-[var(--text-dark-2,#A99E92)]">
+          <span className="t-small text-emerald-400">
             {statusText || 'Active'}
           </span>
-          <span className="text-xs text-[var(--text-dark-2,#A99E92)] tabular-nums">
+          <span className="t-cap text-[var(--text-dark-2,#A99E92)] tabular-nums">
             {trendText || 'Live'}
           </span>
         </div>

@@ -127,7 +127,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     language === 'ar' ? 'لوحة القيادة' : language === 'fr' ? 'Tableau de bord' : 'Dashboard';
   const homeNavItem = {
     id: 'home' as ActiveScreen,
-    icon: <Home size={19} />,
+    icon: <Home size={20} />,
     title: t('nav_home', language),
     label: t('nav_home', language),
   };
@@ -1895,17 +1895,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }}
           footer={
             category === 'project_milestone' ? (
-              <div className="flex flex-col items-center gap-1 px-2">
-                <div className="w-7 h-7 rounded-full bg-[#d4522f] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+              <div className="flex flex-col items-center gap-[var(--s1,4px)] px-[var(--s2,8px)]">
+                <div className="w-[var(--av-list,32px)] h-[var(--av-list,32px)] rounded-full bg-[var(--brand-fill)] text-white flex items-center justify-center font-semibold t-small shrink-0 shadow-xs">
                   {activePmRole === 'direction' ? 'D' : activePmRole === 'chef_projet' ? 'Y' : activePmRole === 'crea' ? 'M' : activePmRole === 'superviseur' ? 'S' : activePmRole === 'rh' ? 'R' : 'N'}
                 </div>
-                <span className="text-[11px] text-white/75 truncate tracking-wider uppercase font-semibold">
-                  ATRIUM
+                <span className="t-cap text-white/75 truncate">
+                  Atrium
                 </span>
               </div>
             ) : (
-              <span className="text-[11px] font-sans text-white/75 tracking-widest uppercase block select-none">
-                ATRIUM
+              <span className="t-cap text-white/75 block select-none">
+                Atrium
               </span>
             )
           }

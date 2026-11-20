@@ -40,7 +40,7 @@ function getSizeProps(size?: LiveButtonSize | 'sm' | 'md' | 'lg' | number, style
       'data-atr-size': 'sm',
       style: {
         ...style,
-        '--atr-h': '36px',
+        '--atr-h': 'var(--seg-m-h, 32px)',
       } as React.CSSProperties,
     };
   }
@@ -49,7 +49,7 @@ function getSizeProps(size?: LiveButtonSize | 'sm' | 'md' | 'lg' | number, style
       'data-atr-size': 'md',
       style: {
         ...style,
-        '--atr-h': '40px',
+        '--atr-h': 'var(--seg-l-h, 40px)',
       } as React.CSSProperties,
     };
   }

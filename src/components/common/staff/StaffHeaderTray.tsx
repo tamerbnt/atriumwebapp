@@ -68,9 +68,9 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = React.memo(({
     (isAr ? 'فريق العمل ومؤشرات الحضور' : isEn ? 'Workforce & Operational Health' : 'Effectif & Santé Opérationnelle');
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-[var(--ph-mb,24px)]">
       <ScreenHeaderBar
-        icon={headerIcon || <Users size={22} />}
+        icon={headerIcon || <Users size={24} strokeWidth={2} />}
         title={resolvedPageTitle}
         primaryAction={
           onOpenCreate && canCreate
@@ -78,7 +78,7 @@ export const StaffHeaderTray: React.FC<StaffHeaderTrayProps> = React.memo(({
                 label:
                   newStaffButtonLabel ||
                   (isAr ? 'إضافة موظف' : isEn ? 'Add Staff' : 'Nouveau Collaborateur'),
-                icon: <Plus size={16} strokeWidth={2.2} />,
+                icon: <Plus size={16} strokeWidth={1.5} />,
                 onClick: onOpenCreate,
               }
             : undefined

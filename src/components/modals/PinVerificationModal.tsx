@@ -90,159 +90,161 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-[var(--s3)]"
     >
       <div className="sq-elev-pop max-w-sm w-full">
         <div
           data-sq="panel"
-          className={`bg-white dark:bg-neutral-900 w-full p-6 text-center transition-all ${
+          className={`bg-white dark:bg-neutral-900 w-full p-[var(--s6)] flex flex-col gap-[var(--s4)] text-center transition-all ${
             shake ? 'animate-shake' : 'animate-in fade-in zoom-in-95 duration-150'
           }`}
           dir={isRtl ? 'rtl' : 'ltr'}
         >
           {/* Header with Close */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-8" />
-            <div data-sq="tile-lg" data-sq-border="none" className="w-12 h-12 bg-[#d4522f]/15 text-[#d4522f] flex items-center justify-center mx-auto">
-              <Lock size={22} />
+          <div className="flex items-center justify-between gap-[var(--s2)]">
+            <div className="w-[var(--seg-m-h,32px)]" />
+            <div data-sq="tile-lg" data-sq-border="none" className="w-[var(--tile-lg,48px)] h-[var(--tile-lg,48px)] bg-[#d4522f]/15 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center">
+              <Lock size={24} strokeWidth={2} />
             </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <h3 className="text-xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans tracking-tight rtl:tracking-normal text-black dark:text-white mb-1">
-          {title || defaultTitle}
-        </h3>
-        <p className="text-xs text-black/65 dark:text-white/65 mb-6 leading-relaxed">
-          {description || defaultDesc}
-        </p>
-
-        {/* Hidden physical keyboard input */}
-        <input
-          ref={inputRef}
-          type="password"
-          maxLength={4}
-          value={pin}
-          onChange={(e) => {
-            const val = e.target.value.replace(/\D/g, '');
-            if (val.length <= 4) {
-              setPin(val);
-              setIsError(false);
-              if (val.length === 4) validatePin(val);
-            }
-          }}
-          className="sr-only"
-          autoFocus
-        />
-
-        {/* 4 PIN Dots / Cells */}
-        <div
-          onClick={() => inputRef.current?.focus()}
-          className="flex justify-center items-center gap-3 mb-6 cursor-pointer"
-        >
-          {[0, 1, 2, 3].map((idx) => {
-            const hasDigit = pin.length > idx;
-            return (
-              <div
-                key={idx}
-                data-sq="tile-lg"
-                style={{
-                  '--sq-stroke': isError
-                    ? '#f43f5e'
-                    : hasDigit
-                    ? '#d4522f'
-                    : 'var(--color-border)',
-                } as React.CSSProperties}
-                className={`w-12 h-12 flex items-center justify-center text-xl font-mono font-bold transition-all ${
-                  isError
-                    ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600'
-                    : hasDigit
-                    ? 'bg-[#d4522f]/10 text-[#d4522f]'
-                    : 'bg-neutral-50 dark:bg-neutral-800/50 text-black/50 dark:text-white/50'
-                }`}
-              >
-                {hasDigit ? '•' : ''}
-              </div>
-            );
-          })}
-        </div>
-
-        {isError && (
-          <p className="text-xs font-semibold text-rose-500 mb-4 animate-in fade-in">
-            {isRtl
-              ? 'رمز PIN غير صحيح. جرب 1234 أو 0000'
-              : language === 'fr'
-              ? 'Code PIN incorrect (Essayer 1234 ou 0000)'
-              : 'Incorrect PIN code (Try 1234 or 0000)'}
-          </p>
-        )}
-
-        {/* On-Screen Numeric Keypad for fast touch on POS/Tablets */}
-        <div className="grid grid-cols-3 gap-2.5 max-w-[260px] mx-auto mb-4" dir="ltr">
-          {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
             <button
-              key={digit}
+              type="button"
+              onClick={onClose}
+              className="w-[var(--seg-m-h,32px)] h-[var(--seg-m-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            >
+              <X size={16} strokeWidth={1.5} />
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-[var(--s1)]">
+            <h3 className="t-dialog text-[var(--text-1)]">
+              {title || defaultTitle}
+            </h3>
+            <p className="t-cap text-[var(--text-2)]">
+              {description || defaultDesc}
+            </p>
+          </div>
+
+          {/* Hidden physical keyboard input */}
+          <input
+            ref={inputRef}
+            type="password"
+            maxLength={4}
+            value={pin}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, '');
+              if (val.length <= 4) {
+                setPin(val);
+                setIsError(false);
+                if (val.length === 4) validatePin(val);
+              }
+            }}
+            className="sr-only"
+            autoFocus
+          />
+
+          {/* 4 PIN Dots / Cells */}
+          <div
+            onClick={() => inputRef.current?.focus()}
+            className="flex justify-center items-center gap-[var(--s3)] cursor-pointer"
+          >
+            {[0, 1, 2, 3].map((idx) => {
+              const hasDigit = pin.length > idx;
+              return (
+                <div
+                  key={idx}
+                  data-sq="tile-lg"
+                  style={{
+                    '--sq-stroke': isError
+                      ? '#f43f5e'
+                      : hasDigit
+                      ? 'var(--brand-fill)'
+                      : 'var(--color-border)',
+                  } as React.CSSProperties}
+                  className={`w-[var(--tile-lg,48px)] h-[var(--tile-lg,48px)] flex items-center justify-center t-dialog tabular-nums transition-all ${
+                    isError
+                      ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600'
+                      : hasDigit
+                      ? 'bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]'
+                      : 'bg-neutral-50 dark:bg-neutral-800/50 text-[var(--text-3)]'
+                  }`}
+                >
+                  {hasDigit ? '•' : ''}
+                </div>
+              );
+            })}
+          </div>
+
+          {isError && (
+            <p className="t-small text-rose-500 animate-in fade-in">
+              {isRtl
+                ? 'رمز PIN غير صحيح. جرب 1234 أو 0000'
+                : language === 'fr'
+                ? 'Code PIN incorrect (Essayer 1234 ou 0000)'
+                : 'Incorrect PIN code (Try 1234 or 0000)'}
+            </p>
+          )}
+
+          {/* On-Screen Numeric Keypad for fast touch on POS/Tablets */}
+          <div className="grid grid-cols-3 gap-[var(--s3)] w-full max-w-[var(--field-w,260px)] self-center" dir="ltr">
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+              <button
+                key={digit}
+                type="button"
+                data-sq="ctl"
+                data-sq-border="none"
+                onClick={() => handleDigit(digit)}
+                className="h-[var(--tile-lg,48px)] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-[var(--text-1)] t-unit font-semibold tabular-nums transition-all flex items-center justify-center cursor-pointer"
+              >
+                {digit}
+              </button>
+            ))}
+            <button
               type="button"
               data-sq="ctl"
               data-sq-border="none"
-              onClick={() => handleDigit(digit)}
-              className="h-12 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black dark:text-white text-lg font-bold font-mono tabular-nums transition-all flex items-center justify-center cursor-pointer"
+              onClick={handleClear}
+              className="h-[var(--tile-lg,48px)] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-[var(--text-2)] t-small font-semibold transition-all flex items-center justify-center cursor-pointer"
             >
-              {digit}
+              {isRtl ? 'مسح' : 'C'}
             </button>
-          ))}
-          <button
-            type="button"
-            data-sq="ctl"
-            data-sq-border="none"
-            onClick={handleClear}
-            className="h-12 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black/70 dark:text-white/70 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer"
-          >
-            {isRtl ? 'مسح' : 'C'}
-          </button>
-          <button
-            type="button"
-            data-sq="ctl"
-            data-sq-border="none"
-            onClick={() => handleDigit('0')}
-            className="h-12 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black dark:text-white text-lg font-bold font-mono tabular-nums transition-all flex items-center justify-center cursor-pointer"
-          >
-            0
-          </button>
-          <button
-            type="button"
-            data-sq="ctl"
-            data-sq-border="none"
-            onClick={handleBackspace}
-            className="h-12 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-black/70 dark:text-white/70 text-sm font-semibold transition-all flex items-center justify-center cursor-pointer"
-          >
-            <Delete size={18} />
-          </button>
-        </div>
+            <button
+              type="button"
+              data-sq="ctl"
+              data-sq-border="none"
+              onClick={() => handleDigit('0')}
+              className="h-[var(--tile-lg,48px)] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-[var(--text-1)] t-unit font-semibold tabular-nums transition-all flex items-center justify-center cursor-pointer"
+            >
+              0
+            </button>
+            <button
+              type="button"
+              data-sq="ctl"
+              data-sq-border="none"
+              onClick={handleBackspace}
+              className="h-[var(--tile-lg,48px)] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-[var(--text-2)] t-btn transition-all flex items-center justify-center cursor-pointer"
+            >
+              <Delete size={16} strokeWidth={1.5} />
+            </button>
+          </div>
 
-        {/* Footer Actions */}
-        <div className="flex gap-2.5 justify-center items-center pt-1">
-          <Button
-            type="button"
-            tone="soft"
-            onClick={onClose}
-          >
-            {isRtl ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
-          </Button>
-          <LiquidButton
-            kind="confirm"
-            disabled={pin.length < 4}
-            onPress={() => validatePin(pin)}
-            labels={{
-              idle: isRtl ? 'تأكيد' : language === 'fr' ? 'Valider' : 'Confirm',
-            }}
-          />
-        </div>
+          {/* Footer Actions */}
+          <div className="flex gap-[var(--s3)] justify-center items-center">
+            <Button
+              type="button"
+              tone="soft"
+              onClick={onClose}
+            >
+              {isRtl ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
+            </Button>
+            <LiquidButton
+              kind="confirm"
+              disabled={pin.length < 4}
+              onPress={() => validatePin(pin)}
+              labels={{
+                idle: isRtl ? 'تأكيد' : language === 'fr' ? 'Valider' : 'Confirm',
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

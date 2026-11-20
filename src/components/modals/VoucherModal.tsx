@@ -67,32 +67,32 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
       subtitle={t('voucher_subtitle', language)}
       maxWidth="md"
     >
-      <div className="space-y-5">
+      <div className="flex flex-col gap-[var(--s5)]">
         {/* Active Entitlement Status */}
         <div className="sq-elev-card">
-          <div data-sq="card" className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 flex items-center justify-between">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/55 dark:text-white/55 block">
+          <div data-sq="card" className="p-[var(--s4)] bg-[#F3EDE7] dark:bg-neutral-800/60 flex items-center justify-between gap-[var(--s3)]">
+            <div className="flex flex-col gap-[var(--s1)]">
+              <span className="t-cap font-medium text-[var(--text-2)]">
                 {t('settings_license_entitlement', language)}
               </span>
-              <div className="text-sm font-bold text-black dark:text-white mt-0.5 tabular-nums">
+              <div className="t-label font-semibold text-[var(--text-1)] tabular-nums">
                 {subscription.plan.name} {language === 'ar' ? `الرتبة #${subscription.plan.tierRank}` : language === 'fr' ? `Niveau #${subscription.plan.tierRank}` : `Tier Rank #${subscription.plan.tierRank}`}
               </div>
-              <span className="text-xs text-[#d4522f] font-semibold">
+              <span className="t-cap font-semibold text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]">
                 {subscription.isLifetime
                   ? t('settings_lifetime_badge', language)
                   : t('settings_trial_badge', language)}
               </span>
             </div>
-            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center shrink-0">
-              <Shield size={20} />
+            <div data-sq="tile" data-sq-border="none" className="w-[var(--tile,40px)] h-[var(--tile,40px)] bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center shrink-0">
+              <Shield size={20} strokeWidth={1.75} />
             </div>
           </div>
         </div>
 
         {/* Form input */}
-        <form onSubmit={handleRedeem} className="space-y-4">
-          <div className="space-y-1.5">
+        <form onSubmit={handleRedeem} className="flex flex-col gap-[var(--s4)]">
+          <div className="flex flex-col gap-[var(--s2)]">
             <LabelInput
               field="Voucher Code"
               label={language === 'ar' ? 'أدخل رمز القسيمة (20 خانة)' : language === 'fr' ? 'Saisissez le code voucher à 20 chiffres' : 'Enter 20-digit Voucher Code'}
@@ -103,7 +103,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
               corner={12}
               required
             />
-            <span className="text-[11px] text-black/55 dark:text-white/55 block px-1">
+            <span className="t-cap text-[var(--text-2)] px-[var(--s1)]">
               Format: ATR-[STARTER|PRO|ENTERPRISE]-LIFE-XXXX-XXXX
             </span>
           </div>
@@ -112,8 +112,8 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
             type="submit"
             variant="primary"
             size="md"
-            icon={<Sparkles size={16} />}
-            className="w-full !py-3"
+            icon={<Sparkles size={16} strokeWidth={1.5} />}
+            className="w-full"
           >
             {t('voucher_redeem_btn', language)}
           </AtriumButton>
@@ -126,44 +126,44 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
             style={{
               '--sq-stroke': resultMessage.success ? 'rgba(16,185,129,0.4)' : 'rgba(244,63,94,0.4)',
             } as React.CSSProperties}
-            className={`p-3.5 text-xs font-semibold flex items-start gap-2.5 ${
+            className={`p-[var(--s4)] t-cap font-semibold flex items-start gap-[var(--s3)] ${
               resultMessage.success
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
                 : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300'
             }`}
           >
             {resultMessage.success ? (
-              <CheckCircle2 size={18} className="shrink-0 text-emerald-500" />
+              <CheckCircle2 size={16} strokeWidth={1.5} className="shrink-0 text-emerald-500" />
             ) : (
-              <AlertCircle size={18} className="shrink-0 text-rose-500" />
+              <AlertCircle size={16} strokeWidth={1.5} className="shrink-0 text-rose-500" />
             )}
             <span>{resultMessage.text}</span>
           </div>
         )}
 
         {/* Preset Sample Vouchers */}
-        <div className="pt-2 border-t border-[#E6DED6] dark:border-neutral-800/80">
-          <span className="text-[11px] font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/55 dark:text-white/55 block mb-2">
+        <div className="pt-[var(--s3)] border-t border-[var(--color-border)] flex flex-col gap-[var(--s2)]">
+          <span className="t-small font-medium text-[var(--text-2)]">
             {t('voucher_preset_title', language)}
           </span>
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-[var(--s2)]">
             {sampleVouchers.map((v) => (
               <div key={v.code} className="sq-elev-card">
                 <button
                   type="button"
                   data-sq="card"
                   onClick={() => handleApplyPreset(v.code)}
-                  className="w-full text-left rtl:text-right p-3 bg-white dark:bg-neutral-800/50 flex items-center justify-between group cursor-pointer transition-colors"
+                  className="w-full text-left rtl:text-right p-[var(--s3)] bg-white dark:bg-neutral-800/50 flex items-center justify-between gap-[var(--s3)] group cursor-pointer transition-colors"
                 >
-                  <div>
-                    <div className="text-xs font-bold text-black dark:text-white">
+                  <div className="flex flex-col gap-[var(--s1)]">
+                    <div className="t-small font-semibold text-[var(--text-1)]">
                       {v.label}
                     </div>
-                    <span className="text-[11px] font-mono text-[#d4522f] font-semibold">
+                    <span className="t-cap tabular-nums text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] font-semibold">
                       {v.code}
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-black/55 dark:text-white/55 group-hover:text-[#d4522f] uppercase tracking-wider rtl:normal-case rtl:tracking-normal">
+                  <span className="t-cap font-semibold text-[var(--text-2)] group-hover:text-[var(--brand-text)] dark:group-hover:text-[var(--brand-on-dark)] shrink-0">
                     {t('voucher_fill_code', language)}
                   </span>
                 </button>

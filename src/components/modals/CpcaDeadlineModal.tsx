@@ -108,19 +108,19 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
       title={isAr ? 'أجل قانوني جديد' : isEn ? 'New Legal Deadline' : 'Nouveau Délai'}
       maxWidth="lg"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-[var(--s4,16px)]">
         {/* Banner Alert */}
         <div
           data-sq="card"
           style={{ '--sq-stroke': 'rgba(245,158,11,0.28)' } as React.CSSProperties}
-          className="p-3.5 bg-amber-500/10 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5"
+          className="p-[var(--s4,16px)] bg-amber-500/10 text-amber-900 dark:text-amber-200 flex items-start gap-[var(--s3,12px)]"
         >
-          <AlertTriangle size={18} className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
-          <div>
-            <span className="font-semibold block">
+          <AlertTriangle size={16} strokeWidth={1.5} className="shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="flex flex-col gap-[var(--s1,4px)]">
+            <span className="t-label font-semibold">
               {isAr ? 'حساب المواعيد التلقائي' : isEn ? 'Auto Deadline Calculator' : 'Calcul Automatique'}
             </span>
-            <p className="text-[11px] opacity-90 mt-0.5">
+            <p className="t-cap opacity-90">
               {isAr
                 ? 'يبدأ الحساب في اليوم التالي للتبليغ مع التمديد التلقائي عند العطلات.'
                 : isEn
@@ -130,7 +130,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--s4,16px)]">
           <LabelSelect
             label={isAr ? 'القضية المرتبطة' : isEn ? 'Linked Case' : 'Dossier Lié'}
             value={selectedMatterId}
@@ -149,7 +149,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--s3,12px)]">
           <LabelSelect
             label={isAr ? 'نوع الطعن' : isEn ? 'Filing Type' : 'Type Recours'}
             value={recourseType}
@@ -184,7 +184,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--s4,16px)]">
           <LabelInput
             label={isAr ? 'المحضر القضائي' : isEn ? 'Bailiff Name' : 'Huissier'}
             value={bailiffName}
@@ -204,41 +204,41 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
           <div
             data-sq="panel"
             style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-3 bg-[#F3EDE7] dark:bg-neutral-800/60 space-y-2.5"
+            className="p-[var(--pod-pad,12px)] bg-[#F3EDE7] dark:bg-neutral-800/60 flex flex-col gap-[var(--card-gap,12px)]"
           >
-            <div className="flex items-center justify-between px-1 pt-0.5">
-              <span className="text-xs font-semibold text-black/80 dark:text-white/80">
+            <div className="flex items-center justify-between px-[var(--s1,4px)] pt-[var(--s1,4px)]">
+              <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white">
                 {isAr ? 'الأجل المحسوب' : isEn ? 'Calculated Limit' : 'Calcul Automatique'}
               </span>
-              <span className="text-[10px] font-mono tabular-nums px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold">
+              <span className="t-small tabular-nums h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] inline-flex items-center rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold">
                 {preview.baseDays + preview.distanceExtensionDays} {isAr ? 'يوم' : isEn ? 'days' : 'jours'}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--s2,8px)]">
               <div
                 data-sq="card"
                 style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-                className="p-2.5 bg-white dark:bg-neutral-800"
+                className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
               >
-                <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'المدة الأساسية' : isEn ? 'Base Days' : 'Délai Base'}</span>
-                <span className="font-bold text-black dark:text-white font-mono tabular-nums">{preview.baseDays} j</span>
+                <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'المدة الأساسية' : isEn ? 'Base Days' : 'Délai Base'}</span>
+                <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white tabular-nums">{preview.baseDays} j</span>
               </div>
               <div
                 data-sq="card"
                 style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-                className="p-2.5 bg-white dark:bg-neutral-800"
+                className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
               >
-                <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'تمديد المسافة' : isEn ? 'Extra Days' : 'Distance'}</span>
-                <span className="font-bold text-black dark:text-white font-mono tabular-nums">+{preview.distanceExtensionDays} j</span>
+                <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'تمديد المسافة' : isEn ? 'Extra Days' : 'Distance'}</span>
+                <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white tabular-nums">+{preview.distanceExtensionDays} j</span>
               </div>
               <div
                 data-sq="card"
                 style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-                className="p-2.5 bg-white dark:bg-neutral-800 col-span-2"
+                className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 col-span-2 flex flex-col gap-[var(--s1,4px)]"
               >
-                <span className="text-[10px] text-black/55 dark:text-white/55 block">{isAr ? 'تاريخ الانتهاء' : isEn ? 'Final Due' : 'Expiration Finale'}</span>
-                <span className="font-bold text-[#d4522f] font-mono tabular-nums text-xs">
+                <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'تاريخ الانتهاء' : isEn ? 'Final Due' : 'Expiration Finale'}</span>
+                <span className="t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
                   {new Date(preview.terminalExpiryDate).toLocaleDateString('fr-DZ', {
                     weekday: 'short',
                     year: 'numeric',
@@ -251,18 +251,18 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
             </div>
 
             {preview.isRolledOver && (
-              <p className="text-[11px] text-amber-700 dark:text-amber-300 font-medium px-1 pt-0.5">
+              <p className="t-cap text-amber-700 dark:text-amber-300 px-[var(--s1,4px)]">
                 {preview.rolloverReason}
               </p>
             )}
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
+        <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--s2,8px)] border-t border-neutral-200 dark:border-neutral-800">
           <AtriumButton variant="secondary" onClick={onClose} type="button">
             {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
           </AtriumButton>
-          <AtriumButton variant="primary" type="submit" icon={<ShieldCheck size={15} />}>
+          <AtriumButton variant="primary" type="submit" icon={<ShieldCheck size={16} strokeWidth={1.5} />}>
             {isAr ? 'حفظ الأجل' : isEn ? 'Set Deadline' : 'Enregistrer Délai'}
           </AtriumButton>
         </div>

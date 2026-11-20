@@ -178,18 +178,18 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(
               })}
             </svg>
 
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-7 text-center">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-[var(--s1,4px)] pointer-events-none px-[var(--s6,24px)] text-center">
               <span className="ax-disp ax-big-donut text-[var(--ax-on)]">
                 <RollingDigits value={centerMain} />
               </span>
-              <span className="text-[11px] font-medium leading-tight text-[var(--ax-sub)] line-clamp-2 max-w-[118px] mt-0.5">
+              <span className="t-small text-[var(--ax-sub)] line-clamp-2 max-w-[118px]">
                 {centerCaption}
               </span>
             </div>
           </div>
 
           {/* Interactive Legend */}
-          <div className="w-full flex flex-col gap-1">
+          <div className="w-full flex flex-col gap-[var(--s1,4px)]">
             {processed.slices.map((slice, idx) => {
               const isActive = activeIdx === idx;
               const isDim = activeIdx !== null && !isActive;
@@ -206,23 +206,23 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(
                   aria-pressed={isActive}
                   data-sq="thumb"
                   data-sq-border="none"
-                  className={`w-full flex items-center justify-between gap-2 px-2 py-1 text-left rtl:text-right cursor-pointer transition-[background-color,opacity] duration-150 ${
+                  className={`w-full flex items-center justify-between gap-[var(--s2,8px)] px-[var(--s2,8px)] py-[var(--s1,4px)] text-left rtl:text-right cursor-pointer transition-[background-color,opacity] duration-150 ${
                     isActive
                       ? 'bg-[var(--ax-soft)]'
                       : 'hover:bg-[var(--ax-soft)]'
                   }`}
                   style={{ opacity: isDim ? 0.55 : 1 }}
                 >
-                  <span className="flex items-center gap-2 min-w-0">
+                  <span className="flex items-center gap-[var(--s2,8px)] min-w-0">
                     <span
                       className="w-2.5 h-2.5 rounded-[3px] shrink-0"
                       style={{ background: slice.color }}
                     />
-                    <span className="text-[12px] font-medium text-[var(--ax-on)] truncate">
+                    <span className="t-small text-[var(--ax-on)] truncate">
                       {slice.label}
                     </span>
                   </span>
-                  <span className="flex items-center gap-2 shrink-0 ax-nv">
+                  <span className="flex items-center gap-[var(--s2,8px)] shrink-0 ax-nv">
                     <span className="text-[var(--ax-sub)]">
                       {formatChartValue(slice.value, {
                         locale,
@@ -231,7 +231,7 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(
                         unit,
                       })}
                     </span>
-                    <span className="w-9 text-right rtl:text-left font-semibold text-[var(--ax-on)]">
+                    <span className="w-10 text-right rtl:text-left font-semibold text-[var(--ax-on)]">
                       {Math.round(slice.pct)}%
                     </span>
                   </span>

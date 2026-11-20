@@ -891,14 +891,14 @@ export function UniversalDataCollection<T>({
         acts.push({
           id: 'edit',
           label: `${storeLanguage === 'ar' ? 'تعديل' : storeLanguage === 'fr' ? 'Modifier' : 'Edit'} ${titleLabel}`,
-          icon: <Pencil className="w-[15px] h-[15px]" />,
+          icon: <Pencil className="w-4 h-4" strokeWidth={1.5} />,
           onClick: (e) => onEdit(item, e.currentTarget),
         });
       } else if (onViewDetails) {
         acts.push({
           id: 'view',
           label: `${storeLanguage === 'ar' ? 'عرض' : storeLanguage === 'fr' ? 'Détails' : 'View'} ${titleLabel}`,
-          icon: <Eye className="w-[15px] h-[15px]" />,
+          icon: <Eye className="w-4 h-4" strokeWidth={1.5} />,
           onClick: (e) => onViewDetails(item, e.currentTarget),
         });
       }
@@ -907,7 +907,7 @@ export function UniversalDataCollection<T>({
         acts.push({
           id: 'pay',
           label: storeLanguage === 'ar' ? 'دفع' : storeLanguage === 'fr' ? 'Encaisser' : 'Pay',
-          icon: <CreditCard className="w-[15px] h-[15px]" />,
+          icon: <CreditCard className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => onPay(item),
         });
       } else if (onToggleStatus) {
@@ -915,7 +915,7 @@ export function UniversalDataCollection<T>({
           id: 'toggle',
           label:
             storeLanguage === 'ar' ? 'تبديل الحالة' : storeLanguage === 'fr' ? 'Changer statut' : 'Toggle status',
-          icon: <Power className="w-[15px] h-[15px]" />,
+          icon: <Power className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => onToggleStatus(item),
         });
       } else if (custom && custom[0]) {
@@ -932,7 +932,7 @@ export function UniversalDataCollection<T>({
         acts.push({
           id: 'del',
           label: `${storeLanguage === 'ar' ? 'حذف' : storeLanguage === 'fr' ? 'Supprimer' : 'Delete'} ${titleLabel}`,
-          icon: <Trash2 className="w-[15px] h-[15px]" />,
+          icon: <Trash2 className="w-4 h-4" strokeWidth={1.5} />,
           isDanger: true,
           onClick: () => onDelete(item),
         });
@@ -956,7 +956,7 @@ export function UniversalDataCollection<T>({
               label: pinned
                 ? storeLanguage === 'ar' ? 'إلغاء التثبيت' : storeLanguage === 'fr' ? 'Détacher' : 'Unpin'
                 : storeLanguage === 'ar' ? 'تثبيت' : storeLanguage === 'fr' ? 'Épingler' : 'Pin',
-              icon: <Pin className="w-3.5 h-3.5" />,
+              icon: <Pin className="w-4 h-4" strokeWidth={1.5} />,
               onClick: () => handleTogglePin(item),
             },
           ];
@@ -969,7 +969,7 @@ export function UniversalDataCollection<T>({
           id: 'details',
           label:
             storeLanguage === 'ar' ? 'التفاصيل' : storeLanguage === 'fr' ? 'Fiche complète' : 'Details',
-          icon: <Eye className="w-3.5 h-3.5" />,
+          icon: <Eye className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => (onViewDetails || onItemClick)?.(item),
         });
       }
@@ -977,7 +977,7 @@ export function UniversalDataCollection<T>({
         actionsList.push({
           id: 'edit',
           label: storeLanguage === 'ar' ? 'تعديل' : storeLanguage === 'fr' ? 'Modifier' : 'Edit',
-          icon: <Pencil className="w-3.5 h-3.5" />,
+          icon: <Pencil className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => onEdit(item),
         });
       }
@@ -985,7 +985,7 @@ export function UniversalDataCollection<T>({
         actionsList.push({
           id: 'pay',
           label: storeLanguage === 'ar' ? 'دفع' : storeLanguage === 'fr' ? 'Encaisser' : 'Pay',
-          icon: <CreditCard className="w-3.5 h-3.5" />,
+          icon: <CreditCard className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => onPay(item),
         });
       }
@@ -993,7 +993,7 @@ export function UniversalDataCollection<T>({
         actionsList.push({
           id: 'status',
           label: storeLanguage === 'ar' ? 'الحالة' : storeLanguage === 'fr' ? 'Statut' : 'Status',
-          icon: <Power className="w-3.5 h-3.5" />,
+          icon: <Power className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => onToggleStatus(item),
         });
       }
@@ -1004,7 +1004,7 @@ export function UniversalDataCollection<T>({
           label: pinned
             ? storeLanguage === 'ar' ? 'إلغاء التثبيت' : storeLanguage === 'fr' ? 'Détacher' : 'Unpin'
             : storeLanguage === 'ar' ? 'تثبيت' : storeLanguage === 'fr' ? 'Épingler' : 'Pin',
-          icon: <Pin className="w-3.5 h-3.5" />,
+          icon: <Pin className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => handleTogglePin(item),
         });
       }
@@ -1023,7 +1023,7 @@ export function UniversalDataCollection<T>({
         actionsList.push({
           id: 'delete',
           label: storeLanguage === 'ar' ? 'حذف' : storeLanguage === 'fr' ? 'Supprimer' : 'Delete',
-          icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+          icon: <Trash2 className="w-4 h-4 text-[#c0283d]" strokeWidth={1.5} />,
           onClick: () => onDelete(item),
         });
       }
@@ -1094,7 +1094,7 @@ export function UniversalDataCollection<T>({
 
   if (shouldRenderSkeleton) {
     return (
-      <div className="w-full flex flex-col">
+      <div className="w-full flex flex-col gap-[var(--s3,12px)]">
         <OfflineRetryBanner
           isOffline={effectiveIsOffline}
           isTimedOut={effectiveIsTimedOut}
@@ -1103,8 +1103,8 @@ export function UniversalDataCollection<T>({
         />
 
         {title && (
-          <div className="flex items-center justify-between pb-3">
-            <div className="space-y-1">
+          <div className="flex items-center justify-between gap-[var(--s3,12px)]">
+            <div className="flex flex-col gap-[var(--s1,4px)]">
               <SkeletonText size="sm" width="160px" />
               {subtitle && <SkeletonText size="xs" width="220px" />}
             </div>
@@ -1186,7 +1186,7 @@ export function UniversalDataCollection<T>({
     storeLanguage === 'ar' ? 'ar' : storeLanguage === 'en' ? 'en' : 'fr';
 
   return (
-    <div className="w-full flex flex-col relative space-y-4">
+    <div className="w-full flex flex-col relative gap-[var(--s4,16px)]">
       <OfflineRetryBanner
         isOffline={effectiveIsOffline}
         isTimedOut={effectiveIsTimedOut}
@@ -1325,9 +1325,9 @@ export function UniversalDataCollection<T>({
       )}
 
       {isLoadingMore && (
-        <div className="w-full space-y-2 pt-1" aria-busy="true">
-          <div data-sq="row" data-sq-border="solid" className="h-[54px] w-full bg-[var(--atr-soft)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] animate-pulse" />
-          <div data-sq="row" data-sq-border="solid" className="h-[54px] w-full bg-[var(--atr-soft)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] animate-pulse" />
+        <div className="w-full flex flex-col gap-[var(--row-gap,8px)]" aria-busy="true">
+          <div data-sq="row" data-sq-border="solid" className="h-[var(--row-h,64px)] w-full bg-[var(--atr-soft)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] animate-pulse" />
+          <div data-sq="row" data-sq-border="solid" className="h-[var(--row-h,64px)] w-full bg-[var(--atr-soft)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] animate-pulse" />
         </div>
       )}
 
@@ -1335,7 +1335,7 @@ export function UniversalDataCollection<T>({
         <div
           data-sq="ctl"
           data-sq-border="solid"
-          className="w-full px-4 py-2.5 border border-rose-300 dark:border-rose-800 [--sq-stroke:#fda4af] dark:[--sq-stroke:#9f1239] bg-rose-50 dark:bg-rose-950/30 flex items-center justify-between gap-3 text-xs text-rose-700 dark:text-rose-300"
+          className="w-full px-[var(--empty-pad-x,16px)] py-[var(--empty-pad-y,14px)] border border-rose-300 dark:border-rose-800 [--sq-stroke:#fda4af] dark:[--sq-stroke:#9f1239] bg-rose-50 dark:bg-rose-950/30 flex items-center justify-between gap-[var(--s3,12px)] t-cap text-rose-700 dark:text-rose-300"
         >
           <span>{loadMoreError}</span>
           {(onRetryLoadMore || onLoadMore) && (
@@ -1344,7 +1344,7 @@ export function UniversalDataCollection<T>({
               data-sq="ctl-sm"
               data-sq-border="solid"
               onClick={() => void (onRetryLoadMore || onLoadMore)?.()}
-              className="px-3 py-1 border border-rose-300 dark:border-rose-700 [--sq-stroke:#fda4af] dark:[--sq-stroke:#be123c] font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+              className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] border border-rose-300 dark:border-rose-700 [--sq-stroke:#fda4af] dark:[--sq-stroke:#be123c] t-btn hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors cursor-pointer whitespace-nowrap shrink-0"
             >
               {storeLanguage === 'ar' ? 'إعادة المحاولة' : storeLanguage === 'fr' ? 'Réessayer' : 'Retry'}
             </button>
@@ -1353,8 +1353,8 @@ export function UniversalDataCollection<T>({
       )}
 
       {(canLoadMore || actualItems.length > pageSize || displayTotalCount > pagedItems.length) && (
-        <div className="w-full pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--atr-line)] text-xs text-[var(--atr-ink-3)]">
-          <span className="font-mono tabular-nums">
+        <div className="w-full pt-[var(--s3,12px)] flex flex-wrap items-center justify-between gap-[var(--s3,12px)] border-t border-[var(--atr-line)] t-cap text-[var(--text-2)]">
+          <span className="tabular-nums">
             {storeLanguage === 'ar'
               ? `عرض ${pagedItems.length} من أصل ${displayTotalCount} سجل`
               : storeLanguage === 'fr'
@@ -1369,7 +1369,7 @@ export function UniversalDataCollection<T>({
               data-sq-border="solid"
               disabled={isLoadingMore}
               onClick={() => void handleLoadMore()}
-              className="h-9 px-4 bg-[var(--atr-card)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] hover:[--sq-stroke:var(--atr-acc)] text-xs font-semibold text-[var(--atr-ink)] transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
+              className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] bg-[var(--atr-card)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] hover:[--sq-stroke:var(--atr-acc)] t-btn text-[var(--text-1)] transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
             >
               {isLoadingMore
                 ? storeLanguage === 'ar'

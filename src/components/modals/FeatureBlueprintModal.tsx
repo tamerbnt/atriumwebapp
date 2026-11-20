@@ -721,53 +721,53 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
         />
 
         {/* Modal Header */}
-        <div className="relative z-10 px-6 pt-6 pb-4 border-b border-white/10 flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#d4522f] flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#d4522f]/15 border border-[#d4522f]/30">
-                <Sparkles className="w-3 h-3 text-[#d4522f]" />
+        <div className="relative z-10 px-[var(--modal-pad,24px)] pt-[var(--modal-pad,24px)] pb-[var(--s4,16px)] border-b border-white/10 flex items-start justify-between gap-[var(--s4,16px)]">
+          <div className="flex flex-col gap-[var(--s2,8px)]">
+            <div className="flex flex-wrap items-center gap-[var(--s2,8px)]">
+              <span className="t-small text-[var(--brand-on-dark,#FF8F63)] flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-[#d4522f]/15 border border-[#d4522f]/30">
+                <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
                 {isAr ? 'ميزات حقيقية مثبتة' : isFr ? 'Fonctionnalités réelles & certifiées' : 'Verifiable Built-in Capabilities'}
               </span>
-              <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/85">
+              <span className="t-small h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] inline-flex items-center rounded-full bg-white/5 border border-white/10 text-white/85">
                 {data.screenBadge[language] || data.screenBadge.en}
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-white leading-snug tracking-tight">
+            <h2 className="t-dialog font-medium text-white">
               {data.title[language] || data.title.en}
             </h2>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
+            className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] shrink-0 rounded-full grid place-items-center bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X size={16} strokeWidth={1.5} />
           </button>
         </div>
 
         {/* Modal Body: 3 Mechanisms + Measurable Result */}
-        <div className="relative z-10 px-6 py-5 overflow-y-auto space-y-4 flex-1">
-          <div className="space-y-3">
+        <div className="relative z-10 p-[var(--modal-pad,24px)] overflow-y-auto flex flex-col gap-[var(--modal-gap,20px)] flex-1">
+          <div className="flex flex-col gap-[var(--card-gap,12px)]">
             {data.mechanisms.map((mech, idx) => (
               <div
                 key={idx}
                 data-sq="card"
                 style={{ '--sq-stroke': 'rgba(255,255,255,0.08)' } as React.CSSProperties}
-                className="p-4 bg-neutral-900/80 space-y-1.5 transition-colors"
+                className="card-opt p-[var(--card-pad,20px)] bg-neutral-900/80 flex flex-col gap-[var(--s2,8px)] transition-colors"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-[var(--s2,8px)]">
                   <div
                     data-sq="check"
                     data-sq-border="none"
-                    className="w-6 h-6 bg-[#d4522f]/20 flex items-center justify-center text-[#E09070] font-bold text-xs shrink-0"
+                    className="w-[var(--s6,24px)] h-[var(--s6,24px)] bg-[#d4522f]/20 flex items-center justify-center text-[var(--brand-on-dark,#FF8F63)] t-small shrink-0 tabular-nums"
                   >
                     {idx + 1}
                   </div>
-                  <h4 className="text-sm font-bold text-white">
+                  <h4 className="t-card font-medium text-white">
                     {mech.title[language] || mech.title.en}
                   </h4>
                 </div>
-                <p className="text-xs text-white/75 leading-relaxed pl-8 rtl:pl-0 rtl:pr-8">
+                <p className="t-body text-[var(--text-dark-2,#A99E92)] ps-[var(--s7,32px)]">
                   {mech.desc[language] || mech.desc.en}
                 </p>
               </div>
@@ -778,23 +778,23 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
           <div
             data-sq="card"
             style={{ '--sq-stroke': 'rgba(212,82,47,0.3)' } as React.CSSProperties}
-            className="p-4 bg-gradient-to-r from-[#1C1A18] to-neutral-900 flex items-center gap-4"
+            className="card-opt p-[var(--card-pad,20px)] bg-gradient-to-r from-[#1C1A18] to-neutral-900 flex items-center gap-[var(--s4,16px)]"
           >
-            <div className="text-2xl sm:text-3xl font-black text-[#d4522f] font-mono tabular-nums shrink-0">
+            <div className="t-kpi-m text-[var(--brand-accent,#D9532B)] uppercase tabular-nums shrink-0">
               {data.result.stat}
             </div>
-            <div className="text-xs text-white/90 font-medium leading-relaxed">
+            <div className="t-body text-white/90">
               {data.result.label[language] || data.result.label.en}
             </div>
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="relative z-10 px-6 py-4 border-t border-white/10 flex items-center justify-between bg-neutral-950/60">
+        <div className="relative z-10 px-[var(--modal-pad,24px)] py-[var(--s4,16px)] border-t border-white/10 flex items-center justify-between bg-neutral-950/60">
           <button
             type="button"
             onClick={onClose}
-            className="text-xs font-semibold text-white/70 hover:text-white transition-colors cursor-pointer"
+            className="t-btn text-[var(--text-dark-2,#A99E92)] hover:text-white transition-colors cursor-pointer"
           >
             {isAr ? 'إلغاء' : isFr ? 'Fermer' : 'Close'}
           </button>
@@ -803,10 +803,10 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
             variant="primary"
             size="md"
             onClick={onApplyAndContinue}
-            className="flex items-center gap-2"
+            className="flex items-center gap-[var(--btn-icon-gap,8px)]"
           >
             <span>{isAr ? 'اعتماد هذا الهدف والمتابعة' : isFr ? 'Appliquer & Continuer' : 'Apply & Continue'}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight size={16} strokeWidth={1.5} />
           </AtriumButton>
         </div>
 

@@ -113,33 +113,33 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gradient-to-br from-[#121110] via-[#1A1715] to-[#26211C] overflow-y-auto select-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--s4,16px)] bg-gradient-to-br from-[#121110] via-[#1A1715] to-[#26211C] overflow-y-auto select-none">
       {/* Background Subtle Ambient Glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#d4522f]/15 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Floating Language Switcher in Top Right */}
-      <div className="absolute top-5 right-5 z-20">
+      <div className="absolute top-[var(--s4,16px)] right-[var(--s4,16px)] z-20">
         <div className="relative">
           <button
             type="button"
             onClick={() => setLangMenuOpen(!langMenuOpen)}
-            className="h-9 px-3 rounded-full bg-neutral-900/90 border border-neutral-700/80 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-800 transition-colors cursor-pointer shadow-lg backdrop-blur-md"
+            className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-full bg-neutral-900/90 border border-neutral-700/80 text-white t-btn flex items-center gap-[var(--btn-sm-gap,6px)] hover:bg-neutral-800 transition-colors cursor-pointer shadow-lg backdrop-blur-md"
           >
-            <Globe size={14} className="text-[#d4522f]" />
-            <span className="uppercase text-[11px] font-bold">
+            <Globe size={16} strokeWidth={1.5} className="text-[var(--brand-on-dark,#FF8F63)]" />
+            <span>
               {language === 'ar' ? 'العربية' : language === 'fr' ? 'Français' : 'English'}
             </span>
             {isLanguageAuto && (
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title={t('topbar_auto_detected', language)} />
+              <span className="w-[var(--pill-dot,6px)] h-[var(--pill-dot,6px)] rounded-full bg-emerald-500" title={t('topbar_auto_detected', language)} />
             )}
           </button>
 
           {langMenuOpen && (
-            <div className={`absolute top-full mt-2 w-48 sq-elev-pop z-30 ${language === 'ar' ? 'left-0' : 'right-0'}`}>
+            <div className={`absolute top-full mt-[var(--pop-offset,8px)] w-48 sq-elev-pop z-30 ${language === 'ar' ? 'left-0' : 'right-0'}`}>
               <div
                 data-sq="table"
                 data-sq-border="solid"
-                className="w-full rounded-[var(--r-table,20px)] bg-[#1E1B19] [--sq-stroke:#404040] p-2 space-y-1"
+                className="w-full rounded-[var(--r-table,20px)] bg-[#1E1B19] [--sq-stroke:#404040] p-[var(--s2,8px)] flex flex-col gap-[var(--s1,4px)]"
               >
                 <button
                   type="button"
@@ -149,14 +149,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                     setSystemDefaultLanguage();
                     setLangMenuOpen(false);
                   }}
-                  className={`w-full px-2.5 py-1.5 rounded-[var(--r-row,12px)] text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                    isLanguageAuto ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                  className={`w-full px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-row,12px)] t-label flex items-center justify-between cursor-pointer transition-colors ${
+                    isLanguageAuto ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
                   }`}
                 >
                   <span>🌐 {t('settings_system_default', language)}</span>
-                  {isLanguageAuto && <Check size={13} />}
+                  {isLanguageAuto && <Check size={16} strokeWidth={1.5} />}
                 </button>
-                <div className="h-px bg-neutral-800 my-1" />
+                <div className="h-px bg-neutral-800" />
                 <button
                   type="button"
                   data-sq="row"
@@ -165,12 +165,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                     setLanguage('en', false);
                     setLangMenuOpen(false);
                   }}
-                  className={`w-full px-2.5 py-1.5 rounded-[var(--r-row,12px)] text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                    !isLanguageAuto && language === 'en' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                  className={`w-full px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-row,12px)] t-label flex items-center justify-between cursor-pointer transition-colors ${
+                    !isLanguageAuto && language === 'en' ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
                   }`}
                 >
                   <span>🇺🇸 English (US)</span>
-                  {!isLanguageAuto && language === 'en' && <Check size={13} />}
+                  {!isLanguageAuto && language === 'en' && <Check size={16} strokeWidth={1.5} />}
                 </button>
                 <button
                   type="button"
@@ -180,12 +180,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                     setLanguage('fr', false);
                     setLangMenuOpen(false);
                   }}
-                  className={`w-full px-2.5 py-1.5 rounded-[var(--r-row,12px)] text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                    !isLanguageAuto && language === 'fr' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                  className={`w-full px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-row,12px)] t-label flex items-center justify-between cursor-pointer transition-colors ${
+                    !isLanguageAuto && language === 'fr' ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
                   }`}
                 >
                   <span>🇫🇷 Français</span>
-                  {!isLanguageAuto && language === 'fr' && <Check size={13} />}
+                  {!isLanguageAuto && language === 'fr' && <Check size={16} strokeWidth={1.5} />}
                 </button>
                 <button
                   type="button"
@@ -195,12 +195,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                     setLanguage('ar', false);
                     setLangMenuOpen(false);
                   }}
-                  className={`w-full px-2.5 py-1.5 rounded-[var(--r-row,12px)] text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                    !isLanguageAuto && language === 'ar' ? 'bg-[#d4522f]/20 text-[#d4522f] font-bold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                  className={`w-full px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-row,12px)] t-label flex items-center justify-between cursor-pointer transition-colors ${
+                    !isLanguageAuto && language === 'ar' ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
                   }`}
                 >
                   <span>🇩🇿 العربية (RTL)</span>
-                  {!isLanguageAuto && language === 'ar' && <Check size={13} />}
+                  {!isLanguageAuto && language === 'ar' && <Check size={16} strokeWidth={1.5} />}
                 </button>
               </div>
             </div>
@@ -213,294 +213,294 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="relative w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19]/95 [--sq-stroke:rgba(255,255,255,0.08)] p-7 sm:p-10 text-white backdrop-blur-xl"
+          className="relative w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19]/95 [--sq-stroke:rgba(255,255,255,0.08)] p-[var(--modal-pad,24px)] sm:p-[var(--s8,48px)] text-white backdrop-blur-xl flex flex-col gap-[var(--modal-gap,20px)]"
         >
-        {/* Atrium Brand Emblem */}
-        <div className="flex flex-col items-center text-center mb-7">
-          <div
-            data-sq="tile-lg"
-            data-sq-border="solid"
-            className="w-14 h-14 rounded-[var(--r-tile-lg,15px)] bg-[#2A2420] [--sq-stroke:#483B33] flex items-center justify-center p-2.5 mb-4"
-          >
-            <FiveCubesLogo size={28} cubeColor="#d4522f" />
-          </div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-[28px] font-black tracking-[0.14em] rtl:tracking-normal text-white font-['Sigana_Condensed','Barlow_Condensed',sans-serif] rtl:font-sans">ATRIUM</h1>
-          </div>
-          <p className="text-[13px] text-white/72 mt-1.5 leading-relaxed max-w-xs">
-            {t('login_subtitle', language)}
-          </p>
-        </div>
-
-        {/* Primary Google SSO Button */}
-        <button
-          type="button"
-          data-sq="ctl"
-          data-sq-border="none"
-          onClick={handleGoogleLogin}
-          disabled={isGoogleLoading}
-          className="w-full h-11 rounded-[var(--r-ctl,12px)] bg-white hover:bg-neutral-100 text-black text-xs font-bold transition-all flex items-center justify-center gap-2.5 cursor-pointer mb-2 disabled:opacity-75"
-        >
-          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-            <path
-              fill="#4285F4"
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-            />
-          </svg>
-          <span>{isGoogleLoading ? '...' : t('login_with_google', language)}</span>
-        </button>
-
-        {/* 1-Click Fast Owner Sign-in */}
-        <div className="mb-3">
-          <button
-            type="button"
-            data-sq="ctl"
-            data-sq-border="solid"
-            onClick={() => handleFastOwnerLogin('mehdisamih79@gmail.com')}
-            className="w-full h-9 px-3 rounded-[var(--r-ctl,12px)] bg-[#2A2420] hover:bg-[#342D28] [--sq-stroke:#483B33] text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-            title="Instant sign-in without Google OAuth"
-          >
-            <Sparkles size={13} className="text-[#d4522f]" />
-            <span>{t('login_fast_access', language)}</span>
-          </button>
-        </div>
-
-        <div className="relative flex py-2 items-center mb-3">
-          <div className="flex-grow border-t border-neutral-800"></div>
-          <span className="flex-shrink mx-3 text-[10px] text-white/60 font-semibold uppercase tracking-wider">
-            {language === 'ar' ? 'أو الدخول بكلمة المرور / رمز PIN' : language === 'fr' ? 'ou connexion par mot de passe / code PIN' : 'or sign in with password / PIN'}
-          </span>
-          <div className="flex-grow border-t border-neutral-800"></div>
-        </div>
-
-        {/* Auth Mode Toggle Pill */}
-        <div
-          data-sq="ctl"
-          data-sq-border="solid"
-          className="grid grid-cols-2 p-[3px] rounded-[var(--r-ctl,12px)] bg-neutral-900/80 [--sq-stroke:#262626] mb-6 text-xs font-semibold"
-        >
-          <button
-            type="button"
-            data-sq="thumb"
-            data-sq-border="none"
-            onClick={() => {
-              setAuthMode('password');
-              setError(null);
-            }}
-            className={`py-2 rounded-[var(--r-thumb,9px)] transition-all cursor-pointer flex items-center justify-center gap-2 ${
-              authMode === 'password'
-                ? 'bg-[#d4522f] text-white font-bold'
-                : 'text-white/70 hover:text-white'
-            }`}
-          >
-            <Mail size={13} />
-            <span>{t('login_with_email', language)}</span>
-          </button>
-          <button
-            type="button"
-            data-sq="thumb"
-            data-sq-border="none"
-            onClick={() => {
-              setAuthMode('pin');
-              setError(null);
-            }}
-            className={`py-2 rounded-[var(--r-thumb,9px)] transition-all cursor-pointer flex items-center justify-center gap-2 ${
-              authMode === 'pin'
-                ? 'bg-[#d4522f] text-white font-bold'
-                : 'text-white/70 hover:text-white'
-            }`}
-          >
-            <Hash size={13} />
-            <span>{t('login_with_pin', language)}</span>
-          </button>
-        </div>
-
-        {error && (
-          <div
-            data-sq="ctl"
-            data-sq-border="solid"
-            className="mb-4 p-3 rounded-[var(--r-ctl,12px)] bg-rose-950/60 [--sq-stroke:rgba(159,18,57,0.8)] text-rose-200 text-xs flex items-center gap-2 animate-in fade-in"
-          >
-            <ShieldCheck size={14} className="text-rose-400 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* PASSWORD FORM */}
-        {authMode === 'password' ? (
-          <form onSubmit={handlePasswordSubmit} className="space-y-3">
-            <div className="flex justify-center w-full">
-              <LabelInput
-                field="Email"
-                label={language === 'ar' ? 'البريد الإلكتروني للعمل' : language === 'fr' ? 'Email professionnel' : 'Work Email'}
-                value={email}
-                onChange={setEmail}
-                type="email"
-                width={360}
-                height={50}
-                corner={12}
-              />
-            </div>
-
-            <div className="flex flex-col items-center w-full">
-              <div className="flex items-center justify-between w-full max-w-[360px] px-1 mb-1">
-                <span className="text-[11px] text-white/70">
-                  {language === 'ar' ? 'كلمة المرور' : language === 'fr' ? 'Mot de passe' : 'Password'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setForgotPasswordOpen(true)}
-                  className="text-[11px] text-[#d4522f] hover:underline cursor-pointer"
-                >
-                  {language === 'ar' ? 'نسيت كلمة المرور؟' : language === 'fr' ? 'Mot de passe oublié ?' : 'Forgot password?'}
-                </button>
-              </div>
-              <LabelInput
-                field="Password"
-                label={language === 'ar' ? 'كلمة المرور' : language === 'fr' ? 'Mot de passe' : 'Password'}
-                value={password}
-                onChange={setPassword}
-                type="password"
-                width={360}
-                height={50}
-                corner={12}
-              />
-            </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer text-xs text-white/75">
-                <input
-                  type="checkbox"
-                  checked={rememberDevice}
-                  onChange={(e) => setRememberDevice(e.target.checked)}
-                  className="rounded-[var(--r-check,6px)] border-neutral-700 text-[#d4522f] focus:ring-0"
-                />
-                <span>{language === 'ar' ? 'تذكر هذا الجهاز' : language === 'fr' ? 'Mémoriser ce terminal' : 'Remember this terminal'}</span>
-              </label>
-            </div>
-
-            <AtriumButton
-              type="submit"
-              variant="primary"
-              size="md"
-              className="w-full mt-2"
-              icon={<ArrowRight size={14} className={language === 'ar' ? 'rotate-180' : ''} />}
-              iconPosition="right"
+          {/* Atrium Brand Emblem */}
+          <div className="flex flex-col items-center text-center gap-[var(--s2,8px)]">
+            <div
+              data-sq="tile-lg"
+              data-sq-border="solid"
+              className="w-[var(--tile-lg,48px)] h-[var(--tile-lg,48px)] rounded-[var(--r-tile-lg,15px)] bg-[#2A2420] [--sq-stroke:#483B33] flex items-center justify-center p-[var(--s2,8px)]"
             >
-              {language === 'ar' ? 'تسجيل الدخول إلى Atrium' : language === 'fr' ? 'Se connecter à Atrium' : 'Sign In to Atrium'}
-            </AtriumButton>
-          </form>
-        ) : (
-          /* TERMINAL PIN PAD FORM */
-          <div className="space-y-4">
-            <div className="text-center">
-              <p className="text-xs text-white/70">
-                {language === 'ar'
-                  ? 'أدخل رمز PIN المكون من 4 أرقام لفتح هذا الجهاز'
-                  : language === 'fr'
-                  ? 'Entrez votre code PIN à 4 chiffres pour déverrouiller ce terminal'
-                  : 'Enter your 4-digit staff PIN to unlock this terminal'}
+              <FiveCubesLogo size={24} cubeColor="#d4522f" />
+            </div>
+            <div className="flex flex-col items-center gap-[var(--ph-sub-gap,4px)]">
+              <h1 className="t-page text-white">ATRIUM</h1>
+              <p className="t-body text-[var(--text-dark-2,#A99E92)] max-w-xs">
+                {t('login_subtitle', language)}
               </p>
-              {/* PIN Bubbles Display */}
-              <div className="flex items-center justify-center gap-3 my-3">
-                {[0, 1, 2, 3].map((idx) => {
-                  const isFilled = pin.length > idx;
-                  return (
-                    <div
-                      key={idx}
-                      className={`w-4 h-4 rounded-full transition-all ${
-                        isFilled
-                          ? 'bg-[#d4522f] scale-110 shadow-xs'
-                          : 'bg-neutral-800 border border-neutral-700'
-                      }`}
-                    />
-                  );
-                })}
-              </div>
             </div>
-
-            {/* 3x4 Pin Pad */}
-            <div className="grid grid-cols-3 gap-2.5 max-w-[280px] mx-auto pt-1">
-              {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map((btn) => (
-                <button
-                  key={btn}
-                  type="button"
-                  data-sq="ctl"
-                  data-sq-border={btn === 'C' || btn === '⌫' ? 'none' : 'solid'}
-                  onClick={() => {
-                    if (btn === 'C') handlePinClear();
-                    else if (btn === '⌫') handlePinDelete();
-                    else handlePinDigit(btn);
-                  }}
-                  className={`h-12 rounded-[var(--r-ctl,12px)] text-sm font-bold flex items-center justify-center transition-all cursor-pointer ${
-                    btn === 'C'
-                      ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
-                      : btn === '⌫'
-                      ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
-                      : 'bg-neutral-900 [--sq-stroke:#262626] text-white hover:bg-neutral-800 hover:[--sq-stroke:#404040] active:scale-95'
-                  }`}
-                >
-                  {btn}
-                </button>
-              ))}
-            </div>
-
-            <p className="text-center text-[11px] text-white/60 font-mono">
-              {language === 'ar'
-                ? 'أدخل رمز PIN الخاص بحسابك'
-                : language === 'fr'
-                ? 'Entrez votre code PIN personnel à 4 chiffres'
-                : 'Enter your personal 4-digit staff PIN'}
-            </p>
           </div>
-        )}
 
-        {/* Onboarding Link Section (Section 11.2) */}
-        <div className="mt-6 text-center pt-3 border-t border-neutral-800/80">
-          <p className="text-xs text-white/70">
-            {language === 'ar'
-              ? 'هل تؤسس نشاطاً تجارياً أو فرعاً جديداً؟'
-              : language === 'fr'
-              ? 'Vous configurez une nouvelle entreprise ou succursale ?'
-              : 'Setting up a new business or branch?'}
-          </p>
-          <button
-            type="button"
-            onClick={onStartOnboarding}
-            className="mt-2 text-xs font-bold text-[#d4522f] hover:text-[#b03b1b] flex items-center justify-center gap-1.5 mx-auto transition-colors cursor-pointer"
+          <div className="flex flex-col gap-[var(--s2,8px)]">
+            {/* Primary Google SSO Button */}
+            <button
+              type="button"
+              data-sq="ctl"
+              data-sq-border="none"
+              onClick={handleGoogleLogin}
+              disabled={isGoogleLoading}
+              className="w-full h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] rounded-[var(--r-ctl,12px)] bg-white hover:bg-neutral-100 text-black t-btn font-semibold transition-all flex items-center justify-center gap-[var(--btn-icon-gap,8px)] cursor-pointer disabled:opacity-75"
+            >
+              <svg className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] shrink-0" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+              <span>{isGoogleLoading ? '...' : t('login_with_google', language)}</span>
+            </button>
+
+            {/* 1-Click Fast Owner Sign-in */}
+            <button
+              type="button"
+              data-sq="ctl"
+              data-sq-border="solid"
+              onClick={() => handleFastOwnerLogin('mehdisamih79@gmail.com')}
+              className="w-full h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-[var(--r-ctl,12px)] bg-[#2A2420] hover:bg-[#342D28] [--sq-stroke:#483B33] text-white t-btn flex items-center justify-center gap-[var(--btn-sm-gap,6px)] transition-colors cursor-pointer"
+              title="Instant sign-in without Google OAuth"
+            >
+              <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-on-dark,#FF8F63)]" />
+              <span>{t('login_fast_access', language)}</span>
+            </button>
+          </div>
+
+          <div className="relative flex py-[var(--s1,4px)] items-center gap-[var(--s3,12px)]">
+            <div className="flex-grow border-t border-neutral-800"></div>
+            <span className="flex-shrink t-cap text-[var(--text-dark-2,#A99E92)]">
+              {language === 'ar' ? 'أو الدخول بكلمة المرور / رمز PIN' : language === 'fr' ? 'ou connexion par mot de passe / code PIN' : 'or sign in with password / PIN'}
+            </span>
+            <div className="flex-grow border-t border-neutral-800"></div>
+          </div>
+
+          {/* Auth Mode Toggle Pill */}
+          <div
+            data-sq="ctl"
+            data-sq-border="solid"
+            className="grid grid-cols-2 h-[var(--seg-l-h,40px)] p-[var(--seg-l-pad,4px)] rounded-[var(--r-ctl,12px)] bg-neutral-900/80 [--sq-stroke:#262626] t-btn"
           >
-            <Sparkles size={13} />
-            <span>{language === 'ar' ? 'إنشاء نشاط جديد' : language === 'fr' ? 'Créer un espace' : 'Create a Business'}</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              data-sq="thumb"
+              data-sq-border="none"
+              onClick={() => {
+                setAuthMode('password');
+                setError(null);
+              }}
+              className={`h-[var(--btn-sm-h,32px)] px-[var(--seg-px,12px)] rounded-[var(--r-thumb,9px)] transition-all cursor-pointer flex items-center justify-center gap-[var(--btn-sm-gap,6px)] ${
+                authMode === 'password'
+                  ? 'bg-[var(--brand-fill,#C9461F)] text-white font-semibold'
+                  : 'text-white/70 hover:text-white'
+              }`}
+            >
+              <Mail size={16} strokeWidth={1.5} />
+              <span>{t('login_with_email', language)}</span>
+            </button>
+            <button
+              type="button"
+              data-sq="thumb"
+              data-sq-border="none"
+              onClick={() => {
+                setAuthMode('pin');
+                setError(null);
+              }}
+              className={`h-[var(--btn-sm-h,32px)] px-[var(--seg-px,12px)] rounded-[var(--r-thumb,9px)] transition-all cursor-pointer flex items-center justify-center gap-[var(--btn-sm-gap,6px)] ${
+                authMode === 'pin'
+                  ? 'bg-[var(--brand-fill,#C9461F)] text-white font-semibold'
+                  : 'text-white/70 hover:text-white'
+              }`}
+            >
+              <Hash size={16} strokeWidth={1.5} />
+              <span>{t('login_with_pin', language)}</span>
+            </button>
+          </div>
+
+          {error && (
+            <div
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="p-[var(--s3,12px)] rounded-[var(--r-ctl,12px)] bg-rose-950/60 [--sq-stroke:rgba(159,18,57,0.8)] text-rose-200 t-small flex items-center gap-[var(--s2,8px)] animate-in fade-in"
+            >
+              <ShieldCheck size={16} strokeWidth={1.5} className="text-rose-400 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* PASSWORD FORM */}
+          {authMode === 'password' ? (
+            <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-[var(--s3,12px)]">
+              <div className="flex justify-center w-full">
+                <LabelInput
+                  field="Email"
+                  label={language === 'ar' ? 'البريد الإلكتروني للعمل' : language === 'fr' ? 'Email professionnel' : 'Work Email'}
+                  value={email}
+                  onChange={setEmail}
+                  type="email"
+                  width={360}
+                  height={48}
+                  corner={12}
+                />
+              </div>
+
+              <div className="flex flex-col items-center gap-[var(--s1,4px)] w-full">
+                <div className="flex items-center justify-between w-full max-w-[360px] px-[var(--s1,4px)]">
+                  <span className="t-small text-[var(--text-dark-2,#A99E92)]">
+                    {language === 'ar' ? 'كلمة المرور' : language === 'fr' ? 'Mot de passe' : 'Password'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setForgotPasswordOpen(true)}
+                    className="t-small text-[var(--brand-on-dark,#FF8F63)] hover:underline cursor-pointer"
+                  >
+                    {language === 'ar' ? 'نسيت كلمة المرور؟' : language === 'fr' ? 'Mot de passe oublié ?' : 'Forgot password?'}
+                  </button>
+                </div>
+                <LabelInput
+                  field="Password"
+                  label={language === 'ar' ? 'كلمة المرور' : language === 'fr' ? 'Mot de passe' : 'Password'}
+                  value={password}
+                  onChange={setPassword}
+                  type="password"
+                  width={360}
+                  height={48}
+                  corner={12}
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-[var(--s1,4px)]">
+                <label className="flex items-center gap-[var(--s2,8px)] cursor-pointer t-body text-[var(--text-dark-2,#A99E92)]">
+                  <input
+                    type="checkbox"
+                    checked={rememberDevice}
+                    onChange={(e) => setRememberDevice(e.target.checked)}
+                    className="rounded-[var(--r-check,6px)] border-neutral-700 text-[var(--brand-fill,#C9461F)] focus:ring-0"
+                  />
+                  <span>{language === 'ar' ? 'تذكر هذا الجهاز' : language === 'fr' ? 'Mémoriser ce terminal' : 'Remember this terminal'}</span>
+                </label>
+              </div>
+
+              <AtriumButton
+                type="submit"
+                variant="primary"
+                size="md"
+                className="w-full"
+                icon={<ArrowRight size={16} strokeWidth={1.5} className={language === 'ar' ? 'rotate-180' : ''} />}
+                iconPosition="right"
+              >
+                {language === 'ar' ? 'تسجيل الدخول إلى Atrium' : language === 'fr' ? 'Se connecter à Atrium' : 'Sign In to Atrium'}
+              </AtriumButton>
+            </form>
+          ) : (
+            /* TERMINAL PIN PAD FORM */
+            <div className="flex flex-col items-center gap-[var(--s4,16px)]">
+              <div className="text-center flex flex-col items-center gap-[var(--s3,12px)]">
+                <p className="t-body text-[var(--text-dark-2,#A99E92)]">
+                  {language === 'ar'
+                    ? 'أدخل رمز PIN المكون من 4 أرقام لفتح هذا الجهاز'
+                    : language === 'fr'
+                    ? 'Entrez votre code PIN à 4 chiffres pour déverrouiller ce terminal'
+                    : 'Enter your 4-digit staff PIN to unlock this terminal'}
+                </p>
+                {/* PIN Bubbles Display */}
+                <div className="flex items-center justify-center gap-[var(--s3,12px)]">
+                  {[0, 1, 2, 3].map((idx) => {
+                    const isFilled = pin.length > idx;
+                    return (
+                      <div
+                        key={idx}
+                        className={`w-[var(--s4,16px)] h-[var(--s4,16px)] rounded-full transition-all ${
+                          isFilled
+                            ? 'bg-[var(--brand-fill,#C9461F)] scale-110 shadow-xs'
+                            : 'bg-neutral-800 border border-neutral-700'
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 3x4 Pin Pad */}
+              <div className="w-full max-w-[280px] grid grid-cols-3 gap-[var(--s2,8px)]">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map((btn) => (
+                  <button
+                    key={btn}
+                    type="button"
+                    data-sq="ctl"
+                    data-sq-border={btn === 'C' || btn === '⌫' ? 'none' : 'solid'}
+                    onClick={() => {
+                      if (btn === 'C') handlePinClear();
+                      else if (btn === '⌫') handlePinDelete();
+                      else handlePinDigit(btn);
+                    }}
+                    className={`h-[var(--tile-lg,48px)] rounded-[var(--r-ctl,12px)] t-card tabular-nums flex items-center justify-center transition-all cursor-pointer ${
+                      btn === 'C'
+                        ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
+                        : btn === '⌫'
+                        ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
+                        : 'bg-neutral-900 [--sq-stroke:#262626] text-white hover:bg-neutral-800 hover:[--sq-stroke:#404040] active:scale-95'
+                    }`}
+                  >
+                    {btn}
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-center t-cap text-[var(--text-dark-2,#A99E92)] tabular-nums">
+                {language === 'ar'
+                  ? 'أدخل رمز PIN الخاص بحسابك'
+                  : language === 'fr'
+                  ? 'Entrez votre code PIN personnel à 4 chiffres'
+                  : 'Enter your personal 4-digit staff PIN'}
+              </p>
+            </div>
+          )}
+
+          {/* Onboarding Link Section (Section 11.2) */}
+          <div className="text-center pt-[var(--s3,12px)] border-t border-neutral-800/80 flex flex-col items-center gap-[var(--s2,8px)]">
+            <p className="t-body text-[var(--text-dark-2,#A99E92)]">
+              {language === 'ar'
+                ? 'هل تؤسس نشاطاً تجارياً أو فرعاً جديداً؟'
+                : language === 'fr'
+                ? 'Vous configurez une nouvelle entreprise ou succursale ?'
+                : 'Setting up a new business or branch?'}
+            </p>
+            <button
+              type="button"
+              onClick={onStartOnboarding}
+              className="t-btn font-semibold text-[var(--brand-on-dark,#FF8F63)] hover:underline flex items-center justify-center gap-[var(--btn-sm-gap,6px)] transition-colors cursor-pointer"
+            >
+              <Sparkles size={16} strokeWidth={1.5} />
+              <span>{language === 'ar' ? 'إنشاء نشاط جديد' : language === 'fr' ? 'Créer un espace' : 'Create a Business'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Forgot Password Modal */}
       {forgotPasswordOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-[var(--s4,16px)] bg-black/70 backdrop-blur-xs">
           <div className="w-full max-w-sm sq-elev-pop">
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19] [--sq-stroke:#404040] p-6 text-white space-y-4"
+              className="w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19] [--sq-stroke:#404040] p-[var(--modal-pad,24px)] text-white flex flex-col gap-[var(--modal-gap,20px)]"
             >
-              <h3 className="text-base font-bold">
+              <h3 className="t-dialog font-medium">
                 {language === 'ar' ? 'استرجاع كلمة المرور' : language === 'fr' ? 'Récupération du mot de passe' : 'Password Recovery'}
               </h3>
-              <p className="text-xs text-white/80 leading-relaxed">
+              <p className="t-body text-[var(--text-dark-2,#A99E92)]">
                 {language === 'ar'
                   ? 'لأمان المحطات وأجهزة سطح المكتب، يتم إرسال رموز الاسترجاع إلى البريد الإلكتروني المعتمد أو عبر القسيمة الرئيسية.'
                   : language === 'fr'
@@ -510,7 +510,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3 rounded-[var(--r-card,16px)] bg-neutral-900 [--sq-stroke:#262626] text-xs text-white/75"
+                className="p-[var(--s3,12px)] rounded-[var(--r-card,16px)] bg-neutral-900 [--sq-stroke:#262626] t-small text-white/75"
               >
                 {language === 'ar'
                   ? <>تلميح: سجّل الدخول باستخدام عنوان بريدك الإلكتروني المعتمد أو رمز PIN المكون من 4 أرقام.</>
@@ -523,7 +523,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                 data-sq="ctl"
                 data-sq-border="none"
                 onClick={() => setForgotPasswordOpen(false)}
-                className="w-full h-10 rounded-[var(--r-ctl,12px)] bg-[#d4522f] text-white text-xs font-bold cursor-pointer"
+                className="w-full h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] rounded-[var(--r-ctl,12px)] bg-[var(--brand-fill,#C9461F)] text-white t-btn font-semibold cursor-pointer"
               >
                 {language === 'ar' ? 'العودة لتسجيل الدخول' : language === 'fr' ? 'Retour à la connexion' : 'Back to Sign In'}
               </button>

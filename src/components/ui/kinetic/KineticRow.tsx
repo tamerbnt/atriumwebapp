@@ -294,14 +294,14 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
             e.stopPropagation();
             onSelect?.(rowIdStr, e);
           }}
-          className={`cb c-cb relative w-5 h-5 grid place-items-center p-0 cursor-pointer ${
+          className={`cb c-cb relative w-[var(--check,20px)] h-[var(--check,20px)] grid place-items-center p-0 cursor-pointer ${
             isSelected
               ? 'bg-[var(--atr-acc,#d4522f)] [--sq-stroke:var(--atr-acc,#d4522f)] text-white'
               : 'bg-white dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#5A5550] hover:[--sq-stroke:var(--atr-acc,#d4522f)] text-transparent'
           }`}
         >
           <Check
-            className={`w-3.5 h-3.5 stroke-[3] transition-opacity duration-120 ${
+            className={`w-3.5 h-3.5 stroke-[2.5] transition-opacity duration-120 ${
               isSelected ? 'opacity-100 text-white' : 'opacity-0'
             }`}
           />
@@ -311,16 +311,16 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
         {row.identityNode ? (
           <div className="who c-who min-w-0 flex items-center">{row.identityNode}</div>
         ) : (
-          <span className="who c-who flex items-center gap-3 min-w-0 text-left rtl:text-right">
+          <span className="who c-who flex items-center gap-[var(--av-to-text,12px)] min-w-0 text-left rtl:text-right">
             <span
-              className="av w-10 h-10 rounded-full grid place-items-center text-white font-semibold text-sm shrink-0 select-none"
+              className="av w-[var(--av-table,40px)] h-[var(--av-table,40px)] rounded-full grid place-items-center text-white t-label font-semibold shrink-0 select-none"
               style={{ backgroundColor: avatarBg }}
               aria-hidden="true"
             >
               {initials}
             </span>
-            <span className="flex flex-col gap-0.5 min-w-0">
-              <span className="flex items-center gap-2 min-w-0">
+            <span className="flex flex-col gap-[var(--name-sub-gap,2px)] min-w-0">
+              <span className="flex items-center gap-[var(--s2,8px)] min-w-0">
                 <button
                   type="button"
                   data-no-liquid="true"
@@ -328,18 +328,18 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
                     e.stopPropagation();
                     onOpenDetails?.(rowIdStr, e.currentTarget);
                   }}
-                  className="nm border-0 bg-transparent p-0 text-left rtl:text-right font-semibold text-sm text-[var(--text-1)] dark:text-white hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] truncate cursor-pointer"
+                  className="nm border-0 bg-transparent p-0 text-left rtl:text-right t-label font-semibold text-[var(--text-1)] dark:text-white hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] truncate cursor-pointer"
                 >
                   {row.title}
                 </button>
                 {(isPinned || row.isPinned || row.vipBadge) && (
-                  <span className="inline-flex items-center h-[var(--badge-h,22px)] text-xs font-semibold text-amber-800 dark:text-amber-300 bg-amber-500/15 px-2 rounded-full shrink-0">
+                  <span className="inline-flex items-center h-[var(--badge-h,22px)] t-small text-amber-800 dark:text-amber-300 bg-amber-500/15 px-[var(--badge-px,6px)] rounded-full shrink-0">
                     {row.vipBadge || 'VIP'}
                   </span>
                 )}
               </span>
               {row.subline && (
-                <small className="text-xs tabular-nums text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
+                <small className="t-cap tabular-nums text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
                   {row.subline}
                 </small>
               )}
@@ -356,7 +356,7 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
           ) : (
             <span
               title={row.categoryLabel}
-              className="pill inline-flex items-center h-7 max-w-full px-3 rounded-full text-xs font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] border border-[#d4522f]/25 dark:border-[#52291F] truncate"
+              className="pill inline-flex items-center h-[var(--pill-h,24px)] max-w-full px-[var(--pill-px,10px)] rounded-full t-small bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] border border-[#d4522f]/25 dark:border-[#52291F] truncate"
             >
               {row.categoryLabel}
             </span>
@@ -369,9 +369,9 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
             row.statusNode
           ) : (
             <span
-              className={`pill inline-flex items-center gap-1 h-[var(--badge-h,22px)] px-2 rounded-full text-xs font-medium whitespace-nowrap ${statusPillClass}`}
+              className={`pill inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small whitespace-nowrap ${statusPillClass}`}
             >
-              <i className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
+              <i className="w-[var(--pill-dot,6px)] h-[var(--pill-dot,6px)] rounded-full bg-current shrink-0" />
               {row.statusLabel}
             </span>
           )}
@@ -381,12 +381,12 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
         {row.metricNode ? (
           <div className="dt c-dt min-w-0">{row.metricNode}</div>
         ) : (
-          <span className="dt c-dt flex flex-col gap-0.5 min-w-0">
-            <b className="text-xs font-semibold tabular-nums text-[var(--text-1)] dark:text-white truncate">
+          <span className="dt c-dt flex flex-col gap-[var(--name-sub-gap,2px)] min-w-0">
+            <b className="t-label font-semibold tabular-nums text-[var(--text-1)] dark:text-white truncate">
               {row.metricPrimary}
             </b>
             {row.metricSecondary && (
-              <small className="text-xs tabular-nums text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
+              <small className="t-cap tabular-nums text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
                 {row.metricSecondary}
               </small>
             )}
@@ -399,9 +399,9 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
         ) : (
           <span
             title={row.branchName || '—'}
-            className="br c-sd inline-flex items-center gap-2 min-w-0 max-w-full text-[var(--t-sub)] font-medium text-[var(--text-1)] dark:text-white truncate"
+            className="br c-sd inline-flex items-center gap-[var(--s2,8px)] min-w-0 max-w-full t-label text-[var(--text-1)] dark:text-white truncate"
           >
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--brand-fill)] shrink-0" />
+            <span className="inline-block w-[var(--pill-dot,6px)] h-[var(--pill-dot,6px)] rounded-full bg-[var(--brand-fill)] shrink-0" />
             <span className="truncate">{row.branchName || '—'}</span>
           </span>
         )}

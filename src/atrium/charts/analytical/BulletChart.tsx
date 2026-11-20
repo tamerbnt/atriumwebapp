@@ -98,13 +98,13 @@ export const BulletChart: React.FC<BulletChartProps> = React.memo(
         className={className}
         data-testid={testId}
         footer={
-          <div className="flex flex-wrap items-center gap-4 ax-tk pt-1">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="w-4 h-[9px] rounded-full bg-[var(--ax-c1)]" />
+          <div className="flex flex-wrap items-center gap-[var(--chart-leg-row-gap,16px)] ax-tk">
+            <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
+              <span className="w-4 h-2 rounded-full bg-[var(--ax-c1)]" />
               <span>{actualLegendLabel || strings.actualLabel}</span>
             </span>
             {processed.hasAnyTarget && (
-              <span className="inline-flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                 <span className="w-[3px] h-4 rounded-full bg-[var(--ax-on)]" />
                 <span>{targetLegendLabel || strings.targetLabel}</span>
               </span>
@@ -113,7 +113,7 @@ export const BulletChart: React.FC<BulletChartProps> = React.memo(
         }
       >
         <div
-          className="flex flex-col gap-3.5"
+          className="flex flex-col gap-[var(--s3,12px)]"
           role="list"
           aria-label={ariaSummary}
           onPointerLeave={() => setHoveredIdx(null)}
@@ -130,13 +130,13 @@ export const BulletChart: React.FC<BulletChartProps> = React.memo(
                 onPointerEnter={() => setHoveredIdx(idx)}
                 onFocus={() => setHoveredIdx(idx)}
                 onBlur={() => setHoveredIdx(null)}
-                className={`ax-plot-focus ax-row-stack grid grid-cols-[minmax(76px,104px)_minmax(0,1fr)_auto] items-center gap-2.5 px-1.5 py-1 rounded-[var(--r-ctl-sm,10px)] cursor-pointer transition-[background-color,opacity] duration-150 ${
+                className={`ax-plot-focus ax-row-stack grid grid-cols-[minmax(76px,104px)_minmax(0,1fr)_auto] items-center gap-[var(--s3,12px)] px-[var(--s2,8px)] py-[var(--s1,4px)] rounded-[var(--r-ctl-sm,10px)] cursor-pointer transition-[background-color,opacity] duration-150 ${
                   isHovered ? 'bg-[var(--ax-soft)]' : ''
                 }`}
                 style={{ opacity: isDim ? 0.4 : 1 }}
               >
                 <span
-                  className="text-[12px] font-medium text-[var(--ax-on)] truncate"
+                  className="t-small text-[var(--ax-on)] truncate"
                   title={row.label}
                 >
                   {row.label}
@@ -170,8 +170,8 @@ export const BulletChart: React.FC<BulletChartProps> = React.memo(
                 </div>
 
                 {/* Readout & Semantic Achievement Chip (green on target reached, neutral otherwise) */}
-                <div className="ax-row-meta-sm flex items-center justify-end gap-1.5 shrink-0">
-                  <span className="ax-nv text-[12px]" dir="ltr">
+                <div className="ax-row-meta-sm flex items-center justify-end gap-[var(--s2,8px)] shrink-0">
+                  <span className="ax-nv" dir="ltr">
                     {formatChartValue(row.val, { locale, format, currency, unit })}
                   </span>
                   {row.deltaPct !== undefined && (

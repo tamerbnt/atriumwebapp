@@ -28,7 +28,7 @@ export interface PillBarHistogramProps {
 export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
   bars: propBars,
   data: propData,
-  height = 120,
+  height = 160,
   maxScale,
   activeColor = '#d4522f',
   barColor,
@@ -94,9 +94,9 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
     <div className={`w-full flex flex-col justify-end gap-2 ${className}`}>
       {/* Optional Card Title & Cadence Filter */}
       {(title || showFilter) && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s2,8px)] pb-[var(--s1,4px)]">
           {title && (
-            <span className="text-[var(--t-sub)] font-semibold text-[var(--text-1)]">
+            <span className="t-card text-[var(--text-1)]">
               {title}
             </span>
           )}
@@ -105,7 +105,7 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
             <div
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="inline-flex items-center gap-1 p-1 bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] self-start sm:self-auto"
+              className="inline-flex items-center h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] self-start sm:self-auto"
               role="group"
             >
               {filterOptions.map((opt) => {
@@ -115,7 +115,7 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
                     key={opt.id}
                     type="button"
                     onClick={() => handlePeriodChange(opt.id)}
-                    className={`px-2 h-6 rounded-[calc(var(--r-ctl-sm,10px)-2px)] text-xs font-semibold transition-all duration-150 cursor-pointer select-none ${
+                    className={`px-[var(--seg-px,12px)] h-[calc(var(--seg-m-h,32px)-4px)] rounded-[var(--r-thumb,9px)] t-small transition-all duration-150 cursor-pointer select-none ${
                       isSelected
                         ? 'bg-white dark:bg-neutral-700 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-xs'
                         : 'text-[var(--text-2)] hover:text-[var(--text-1)]'
@@ -163,7 +163,7 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
               return (
                 <div
                   key={idx}
-                  className="flex-1 max-w-[48px] flex flex-col items-center gap-1.5 h-full justify-end z-10 cursor-pointer"
+                  className="flex-1 max-w-[var(--s8,48px)] flex flex-col items-center gap-[var(--chart-bar-gap,4px)] h-full justify-end z-10 cursor-pointer"
                   onMouseEnter={() => setHoveredIdx(idx)}
                 >
                   <div
@@ -197,16 +197,16 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
                   data-sq-border="solid"
                   className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md px-3 py-2 border border-neutral-700/60 [--sq-stroke:rgba(64,64,64,0.6)] flex items-center gap-2 whitespace-nowrap text-left rtl:text-right"
                 >
-                  <div className="flex flex-col gap-0.5">
-                    <div className="text-xs text-[var(--text-dark-2,#A99E92)] font-medium">
+                  <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
+                    <div className="t-small text-[var(--text-dark-2,#A99E92)]">
                       {hoveredBar.label}
                     </div>
-                    <div className="text-xs font-semibold tabular-nums text-white flex items-center gap-1">
+                    <div className="t-small font-semibold tabular-nums text-white flex items-center gap-[var(--s1,4px)]">
                       <span>{hoveredBar.value.toLocaleString()}</span>
-                      {unit && <span className="text-xs text-[var(--text-dark-2,#A99E92)] font-normal">{unit}</span>}
+                      {unit && <span className="t-cap text-[var(--text-dark-2,#A99E92)]">{unit}</span>}
                     </div>
                   </div>
-                  <span className="text-xs tabular-nums font-semibold px-2 py-0.5 rounded-[var(--r-check,6px)] bg-white/10 text-white/90">
+                  <span className="t-small tabular-nums font-semibold px-[var(--s2,8px)] py-[var(--s1,4px)] rounded-[var(--r-check,6px)] bg-white/10 text-white/90">
                     {Math.round((hoveredBar.value / totalValue) * 100)}%
                   </span>
                 </div>
@@ -215,7 +215,7 @@ export const PillBarHistogram: React.FC<PillBarHistogramProps> = ({
           </div>
 
           {/* Labels below bars */}
-          <div className="flex justify-around text-xs font-medium text-[var(--text-2)] pt-2 px-1">
+          <div className="flex justify-around t-small text-[var(--text-2)] pt-[var(--s2,8px)] px-[var(--s1,4px)]">
             {normalizedBars.map((bar, idx) => (
               <span
                 key={idx}

@@ -53,7 +53,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
       subtitle={language === 'ar' ? `تسجيل طلب استفسار جديد لـ ${currentBranch.name}` : language === 'fr' ? `Enregistrer un prospect pour ${currentBranch.name}` : `Log applicant lead for ${currentBranch.name}`}
       maxWidth="md"
     >
-      <form onSubmit={handleSubmit} className="space-y-3.5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-[var(--s4)]">
         <LabelInput
           field="Prospect Name"
           label={`${t('modal_name', language)} *`}
@@ -65,7 +65,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
           required
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--s3)]">
           <LabelInput
             field="Email"
             label={t('modal_email', language)}
@@ -90,7 +90,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--s3)]">
           <LabelSelect
             field="InterestedPlan"
             label={`${terminology.plan}`}
@@ -127,14 +127,14 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
           />
         </div>
 
-        <div className="space-y-1">
-          <label className="text-xs font-bold text-black/80 dark:text-white/80">
+        <div className="flex flex-col gap-[var(--s1)]">
+          <label className="t-small font-semibold text-[var(--text-1)]">
             {t('modal_notes', language)}
           </label>
           <div
             data-sq="card"
             style={{ backgroundColor: 'var(--color-surface-bg)' }}
-            className="w-full focus-within:[--sq-stroke:#d4522f]"
+            className="w-full focus-within:[--sq-stroke:var(--brand-text)]"
           >
             <textarea
               rows={2}
@@ -147,12 +147,12 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
                   ? 'Objectifs du prospect, créneaux souhaités, demande de séance d\'essai...'
                   : 'Class preferences, goals, free trial session requested...'
               }
-              className="w-full p-2.5 text-sm bg-transparent border-0 focus:outline-none text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 resize-none"
+              className="w-full p-[var(--s3)] t-body bg-transparent border-0 focus:outline-none text-[var(--text-1)] placeholder:text-[var(--text-3)] resize-none block"
             />
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-3">
+        <div className="flex justify-end gap-[var(--s3)] pt-[var(--s3)]">
           <Button
             type="button"
             tone="soft"

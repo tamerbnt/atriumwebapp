@@ -154,7 +154,7 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
         {
           id: 'punch',
           label: isAr ? 'تسجيل الحضور' : isEn ? 'Clock In / Out' : 'Pointer entrée/sortie',
-          icon: <Clock className="w-[15px] h-[15px]" />,
+          icon: <Clock className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => foundation.handlePunchPointage(s.id),
         },
       ];
@@ -162,13 +162,13 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
         acts.push({
           id: 'edit',
           label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
-          icon: <Edit className="w-[15px] h-[15px]" />,
+          icon: <Edit className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => foundation.handleOpenEdit(s),
         });
         acts.push({
           id: 'del',
           label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
-          icon: <Trash2 className="w-[15px] h-[15px]" />,
+          icon: <Trash2 className="w-4 h-4" strokeWidth={1.5} />,
           isDanger: true,
           onClick: () => foundation.handleDeleteStaff(s),
         });
@@ -184,7 +184,7 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
         {
           id: 'view',
           label: isAr ? 'عرض الملف' : isEn ? 'Full Profile' : 'Fiche complète',
-          icon: <Eye className="w-3.5 h-3.5" />,
+          icon: <Eye className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => foundation.handleOpenDrawer(s),
         },
         {
@@ -200,7 +200,7 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
             : isEn
             ? 'Clock In'
             : 'Pointer',
-          icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+          icon: <CheckCircle2 className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => foundation.handlePunchPointage(s.id),
         },
         {
@@ -208,7 +208,7 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
           label: foundation.pinnedStaffIds.has(s.id)
             ? isAr ? 'إلغاء التثبيت' : isEn ? 'Unpin' : 'Détacher'
             : isAr ? 'تثبيت' : isEn ? 'Pin' : 'Épingler',
-          icon: <Pin className="w-3.5 h-3.5" />,
+          icon: <Pin className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => {
             const next = new Set(foundation.pinnedStaffIds);
             if (next.has(s.id)) next.delete(s.id);
@@ -221,13 +221,13 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
         acts.push({
           id: 'edit',
           label: isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier',
-          icon: <Edit className="w-3.5 h-3.5" />,
+          icon: <Edit className="w-4 h-4" strokeWidth={1.5} />,
           onClick: () => foundation.handleOpenEdit(s),
         });
         acts.push({
           id: 'del',
           label: isAr ? 'حذف' : isEn ? 'Delete' : 'Supprimer',
-          icon: <Trash2 className="w-3.5 h-3.5 text-[#c0283d]" />,
+          icon: <Trash2 className="w-4 h-4 text-[#c0283d]" strokeWidth={1.5} />,
           onClick: () => foundation.handleDeleteStaff(s),
         });
       }
@@ -261,7 +261,7 @@ export const StandardStaffScreen: React.FC<StandardStaffScreenProps> = React.mem
   }
 
   return (
-    <div className="w-full space-y-6 animate-in fade-in duration-200 relative">
+    <div className="w-full flex flex-col gap-[var(--ph-mb,24px)] animate-in fade-in duration-200 relative">
       <StaffHeaderTray
         totalStaffCount={foundation.facilityStaff.length}
         activeCount={foundation.activeCount}

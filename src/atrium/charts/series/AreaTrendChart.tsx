@@ -270,20 +270,20 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
           ) : undefined
         }
         footer={
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 ax-tk">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center justify-between gap-[var(--s2,8px)] ax-tk">
+            <div className="flex flex-wrap items-center gap-[var(--chart-leg-row-gap,16px)]">
+              <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                 <span className="w-3 h-[2px] bg-[var(--ax-c1)] rounded-full" />
                 <span>{currentLabel || strings.currentLabel}</span>
               </span>
               {geom.hasPrev && (
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                   <span className="w-3 border-t-[1.5px] border-dashed border-[var(--ax-c4)]" />
                   <span>{previousLabel || strings.previousLabel}</span>
                 </span>
               )}
               {showAverage && (
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                   <span className="w-3 border-t border-dashed border-[var(--ax-acc)]" />
                   <span>
                     {averageLabel || strings.avgLabel}:{' '}
@@ -295,7 +295,7 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
             {peakPt && (
               <span>
                 {peakLabel || strings.peakLabel}:{' '}
-                <strong className="text-[var(--ax-on)]">
+                <strong className="font-semibold text-[var(--ax-on)]">
                   {peakPt.raw.label} ·{' '}
                   {formatChartValue(peakPt.raw.value, {
                     locale,
@@ -453,12 +453,13 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
                   />
                   <text
                     x={geom.PAD_L - 8}
-                    y={y + 3.5}
+                    y={y + 4}
                     textAnchor="end"
                     className="fill-[var(--ax-mut)]"
                     style={{
-                      fontFamily: 'JetBrains Mono, monospace',
-                      fontSize: '10.5px',
+                      fontFamily: "var(--font-ui, 'Inter', sans-serif)",
+                      fontSize: '12px',
+                      fontVariantNumeric: 'tabular-nums',
                     }}
                   >
                     {formatCompactTick(tick, locale)}
@@ -467,7 +468,7 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
               );
             })}
 
-            {/* Average dashed reference (label on right edge matching Main.dc.html) */}
+            {/* Average dashed reference */}
             {showAverage && geom.pts.length >= 2 && (
               <g>
                 <line
@@ -482,13 +483,14 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
                 />
                 <text
                   x={geom.W - geom.PAD_R - 2}
-                  y={geom.avgY - 4}
+                  y={geom.avgY - 5}
                   textAnchor="end"
                   className="fill-[var(--ax-acc)]"
                   style={{
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: '9.5px',
+                    fontFamily: "var(--font-ui, 'Inter', sans-serif)",
+                    fontSize: '12px',
                     fontWeight: 600,
+                    fontVariantNumeric: 'tabular-nums',
                   }}
                 >
                   {averageLabel || strings.avgLabel}
@@ -556,28 +558,29 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
                     peakPt.raw.value,
                     locale
                   )}`;
-                  const tagW = Math.max(58, tagTxt.length * 6.4 + 14);
+                  const tagW = Math.max(68, tagTxt.length * 7.2 + 16);
                   const tx = Math.min(geom.W - geom.PAD_R - tagW, Math.max(geom.PAD_L, peakPt.x - tagW / 2));
-                  const ty = Math.max(2, peakPt.y - 25);
+                  const ty = Math.max(2, peakPt.y - 26);
                   return (
                     <g>
                       <rect
                         x={tx}
                         y={ty}
                         width={tagW}
-                        height={17}
-                        rx={5}
+                        height={20}
+                        rx={6}
                         fill="var(--ax-tip-bg)"
                       />
                       <text
                         x={tx + tagW / 2}
-                        y={ty + 11.5}
+                        y={ty + 14}
                         textAnchor="middle"
                         fill="var(--ax-tip-on)"
                         style={{
-                          fontFamily: 'JetBrains Mono, monospace',
-                          fontSize: '9.5px',
+                          fontFamily: "var(--font-ui, 'Inter', sans-serif)",
+                          fontSize: '12px',
                           fontWeight: 600,
+                          fontVariantNumeric: 'tabular-nums',
                         }}
                       >
                         {tagTxt}
@@ -601,8 +604,9 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = React.memo(
                     activeIdx === idx ? 'fill-[var(--ax-on)] font-semibold' : 'fill-[var(--ax-mut)]'
                   }
                   style={{
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: '10.5px',
+                    fontFamily: "var(--font-ui, 'Inter', sans-serif)",
+                    fontSize: '12px',
+                    fontVariantNumeric: 'tabular-nums',
                   }}
                 >
                   {pt.raw.label}

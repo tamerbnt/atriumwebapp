@@ -49,7 +49,7 @@ export interface LiquidButtonProps
   /** Texts per state. Percent is appended to import / export while busy unless showPercent is false. */
   labels?: LiquidLabels;
   showPercent?: boolean;
-  /** upper-case the labels (default true, matches the brand sheets) */
+  /** upper-case the labels (default false, sentence case per typography spec) */
   uppercase?: boolean;
   /** accent: brand orange body, cream liquid · ink: dark body (cream in dark theme) */
   tone?: 'accent' | 'ink';
@@ -73,7 +73,7 @@ const isPromise = (v: unknown): v is Promise<unknown> => !!v && typeof (v as Pro
  */
 export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(function LiquidButton(
   {
-    kind, status, progress, onPress, onCancel, labels, showPercent = true, uppercase = true, tone = 'accent',
+    kind, status, progress, onPress, onCancel, labels, showPercent = true, uppercase = false, tone = 'accent',
     size, alive, holdMs, className, style, disabled, type = 'button', 'aria-label': ariaLabel, ...rest
   },
   ref,

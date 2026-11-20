@@ -24,10 +24,10 @@ export const StatTile: React.FC<StatTileProps> = ({
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="relative p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col justify-between h-[130px] transition-colors duration-200 hover:[--sq-stroke:#D5DFE3] dark:hover:[--sq-stroke:#525252]"
+        className="relative p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] transition-colors duration-200 hover:[--sq-stroke:#D5DFE3] dark:hover:[--sq-stroke:#525252]"
       >
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold tracking-wide text-black/70 dark:text-white/75">
+        <div className="flex items-center justify-between gap-[var(--s3,12px)]">
+          <span className="t-small text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
             {label}
           </span>
           <div
@@ -35,37 +35,39 @@ export const StatTile: React.FC<StatTileProps> = ({
             data-sq-border="none"
             style={{
               backgroundColor: 'var(--color-accent-dim)',
-              color: 'var(--color-accent)',
+              color: 'var(--brand-text)',
             }}
-            className="relative w-10 h-10 flex items-center justify-center shrink-0"
+            className="relative w-[var(--tile,40px)] h-[var(--tile,40px)] flex items-center justify-center shrink-0"
           >
             {icon}
           </div>
         </div>
 
-      <div>
-        <div className="text-[28px] leading-none font-bold tracking-tight tabular-nums text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-          {value}
-        </div>
-        <div className="flex items-center gap-2 mt-1.5">
-          {trend && trendValue && (
-            <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                trend === 'up'
-                  ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40'
-                  : 'text-rose-600 bg-rose-50 dark:bg-rose-950/40'
-              }`}
-            >
-              {trend === 'up' ? '↗' : '↘'} {trendValue}
-            </span>
+        <div className="mt-auto flex flex-col gap-[var(--s3,12px)]">
+          <div className="t-kpi-m text-[var(--text-1)] dark:text-white">
+            {value}
+          </div>
+          {(trendValue || subtitle) && (
+            <div className="flex items-center gap-[var(--s2,8px)]">
+              {trend && trendValue && (
+                <span
+                  className={`t-small px-[var(--pill-px,10px)] h-[var(--pill-h,24px)] inline-flex items-center rounded-full ${
+                    trend === 'up'
+                      ? 'text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/40'
+                      : 'text-rose-700 bg-rose-50 dark:text-rose-300 dark:bg-rose-950/40'
+                  }`}
+                >
+                  {trend === 'up' ? '↗' : '↘'} {trendValue}
+                </span>
+              )}
+              {subtitle && (
+                <span className="t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)] truncate">
+                  {subtitle}
+                </span>
+              )}
+            </div>
           )}
-          {subtitle && (
-            <span className="text-xs font-medium text-black/65 dark:text-white/70 truncate">
-              {subtitle}
-            </span>
-          )}
         </div>
-      </div>
       </div>
     </div>
   );

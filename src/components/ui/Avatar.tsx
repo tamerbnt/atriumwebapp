@@ -18,7 +18,7 @@ const AVATAR_COLORS = [
   '#EC4899', // Pink
 ];
 
-export const Avatar: React.FC<AvatarProps> = ({ name, size = 38, imageUrl, className = '' }) => {
+export const Avatar: React.FC<AvatarProps> = ({ name, size = 40, imageUrl, className = '' }) => {
   const initial = name ? name.trim().charAt(0).toUpperCase() : '?';
   const colorIndex = (name || '').charCodeAt(0) % AVATAR_COLORS.length;
   const bgColor = AVATAR_COLORS[colorIndex];
@@ -44,7 +44,7 @@ export const Avatar: React.FC<AvatarProps> = ({ name, size = 38, imageUrl, class
         backgroundColor: bgColor,
         fontSize: Math.max(12, Math.round(size * 0.38)),
       }}
-      className={`flex items-center justify-center font-bold text-white shrink-0 select-none shadow-sm ${className}`}
+      className={`flex items-center justify-center font-semibold text-white shrink-0 select-none shadow-sm ${className}`}
       title={name}
     >
       {initial}

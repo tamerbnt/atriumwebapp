@@ -112,48 +112,48 @@ const TopBarTimerWidget: React.FC<{ isFreelance: boolean; language: string }> = 
     if (!activeTimer.isRunning && !isFreelance) return null;
 
     return (
-      <div className="flex items-center h-10 gap-2 px-3 rounded-full bg-[#F3EDE7]/90 dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/70 text-xs shadow-2xs">
+      <div className="flex items-center h-[var(--top-ctl-h,40px)] gap-[var(--s2,8px)] px-[var(--s3,12px)] rounded-full bg-[#F3EDE7]/90 dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/70 t-small shadow-2xs">
         {activeTimer.isRunning ? (
           <>
-            <span className={`w-2 h-2 rounded-full ${activeTimer.isPaused ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
+            <span className={`w-[var(--s2,8px)] h-[var(--s2,8px)] rounded-full ${activeTimer.isPaused ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
             <button
               type="button"
               onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
-              className="font-semibold text-[var(--text-1)] dark:text-white tabular-nums hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] transition-colors cursor-pointer"
+              className="t-small text-[var(--text-1)] dark:text-white tabular-nums hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] transition-colors cursor-pointer"
               title={t('topbar_tt_view_timer', language)}
             >
               {formatDuration(activeTimer.elapsedSeconds)}
             </button>
-            <span className="text-xs text-[var(--text-2)] dark:text-[var(--text-dark-2)] max-w-[120px] truncate hidden sm:inline">
+            <span className="t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)] max-w-[120px] truncate hidden sm:inline">
               {activeTimer.clientName}
             </span>
-            <div className="flex items-center gap-1 pl-2 border-l border-neutral-300 dark:border-neutral-700">
+            <div className="flex items-center gap-[var(--s1,4px)] ps-[var(--s2,8px)] border-s border-neutral-300 dark:border-neutral-700">
               {activeTimer.isPaused ? (
                 <button
                   type="button"
                   onClick={resumeTimer}
-                  className="p-1 rounded-full text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950 cursor-pointer"
+                  className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] flex items-center justify-center rounded-full text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950 cursor-pointer"
                   title={t('topbar_tt_resume_timer', language)}
                 >
-                  <Play size={12} className="fill-current" />
+                  <Play size={16} strokeWidth={1.5} className="fill-current" />
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={pauseTimer}
-                  className="p-1 rounded-full text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950 cursor-pointer"
+                  className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] flex items-center justify-center rounded-full text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950 cursor-pointer"
                   title={t('topbar_tt_pause_timer', language)}
                 >
-                  <Pause size={12} />
+                  <Pause size={16} strokeWidth={1.5} />
                 </button>
               )}
               <button
                 type="button"
                 onClick={stopTimer}
-                className="p-1 rounded-full text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950 cursor-pointer"
+                className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] flex items-center justify-center rounded-full text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950 cursor-pointer"
                 title={t('topbar_tt_stop_timer', language)}
               >
-                <Square size={12} className="fill-current" />
+                <Square size={16} strokeWidth={1.5} className="fill-current" />
               </button>
             </div>
           </>
@@ -161,10 +161,10 @@ const TopBarTimerWidget: React.FC<{ isFreelance: boolean; language: string }> = 
           <button
             type="button"
             onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
-            className="flex items-center gap-2 text-xs font-semibold text-[var(--text-1)] dark:text-white hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] transition-colors cursor-pointer"
+            className="flex items-center gap-[var(--s2,8px)] t-small text-[var(--text-1)] dark:text-white hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] transition-colors cursor-pointer"
             title={t('topbar_tt_open_timer', language)}
           >
-            <Clock size={16} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
+            <Clock size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
             <span>{t('topbar_btn_start_timer', language)}</span>
           </button>
         )}
@@ -360,7 +360,7 @@ export const TopBar: React.FC<TopBarProps> = ({
     return (
       <nav
         aria-label="Breadcrumb"
-        className="inline-flex items-center gap-1 h-10 px-2 rounded-full bg-[#F3EDE7]/85 dark:bg-neutral-800/80 border border-[#E6DED6]/90 dark:border-neutral-700/65 shadow-2xs max-w-full min-w-0"
+        className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--top-ctl-h,40px)] px-[var(--s2,8px)] rounded-full bg-[#F3EDE7]/85 dark:bg-neutral-800/80 border border-[#E6DED6]/90 dark:border-neutral-700/65 shadow-2xs max-w-full min-w-0"
       >
         {nodes.map((node, idx) => {
           const isLast = idx === nodes.length - 1;
@@ -369,8 +369,8 @@ export const TopBar: React.FC<TopBarProps> = ({
             <React.Fragment key={node.id}>
               {idx > 0 && (
                 <ChevronRight
-                  size={14}
-                  strokeWidth={2}
+                  size={16}
+                  strokeWidth={1.5}
                   aria-hidden="true"
                   className="text-[var(--text-3)] dark:text-[var(--text-dark-2)] shrink-0 rtl:rotate-180"
                 />
@@ -378,13 +378,13 @@ export const TopBar: React.FC<TopBarProps> = ({
               {isLast ? (
                 <span
                   aria-current="page"
-                  className="inline-flex items-center gap-2 h-8 text-xs font-semibold text-[var(--text-1)] dark:text-white min-w-0 px-2"
+                  className="inline-flex items-center gap-[var(--s2,8px)] h-[var(--btn-sm-h,32px)] t-small font-semibold text-[var(--text-1)] dark:text-white min-w-0 px-[var(--s2,8px)]"
                 >
                   <span
                     aria-hidden="true"
-                    className="w-5 h-5 rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center shrink-0"
+                    className="w-[var(--s6,24px)] h-[var(--s6,24px)] rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center shrink-0"
                   >
-                    <CurrentIcon size={12} strokeWidth={2.2} />
+                    <CurrentIcon size={16} strokeWidth={1.5} />
                   </span>
                   <span className="truncate max-w-[160px] sm:max-w-[240px]">{node.label}</span>
                 </span>
@@ -393,9 +393,9 @@ export const TopBar: React.FC<TopBarProps> = ({
                   type="button"
                   data-no-liquid="true"
                   onClick={node.onClick}
-                  className="inline-flex items-center gap-2 h-8 px-2 rounded-full text-xs font-medium text-[var(--text-2)] dark:text-[var(--text-dark-2)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] hover:bg-white/85 dark:hover:bg-neutral-700/75 active:scale-[0.98] transition-all duration-150 cursor-pointer min-w-0 shrink-0"
+                  className="inline-flex items-center gap-[var(--s2,8px)] h-[var(--btn-sm-h,32px)] px-[var(--s2,8px)] rounded-full t-small text-[var(--text-2)] dark:text-[var(--text-dark-2)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] hover:bg-white/85 dark:hover:bg-neutral-700/75 active:scale-[0.98] transition-all duration-150 cursor-pointer min-w-0 shrink-0"
                 >
-                  {node.isHome && <Home size={14} strokeWidth={2} className="shrink-0" />}
+                  {node.isHome && <Home size={16} strokeWidth={1.5} className="shrink-0" />}
                   <span className="truncate max-w-[120px] sm:max-w-[160px]">{node.label}</span>
                 </button>
               )}
@@ -903,18 +903,18 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <header
-      className="w-full h-full flex items-center justify-between gap-2 shrink-0 select-none"
+      className="w-full h-full flex items-center justify-between gap-[var(--top-gap,8px)] shrink-0 select-none"
     >
       {/* Left: Mobile Toggle & Working Interactive Breadcrumbs */}
-      <div className="flex items-center gap-2 min-w-0 flex-1">
+      <div className="flex items-center gap-[var(--top-gap,8px)] min-w-0 flex-1">
         <button
           type="button"
           data-no-liquid="true"
           onClick={onToggleMobileMenu}
-          className="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-1)] dark:text-white hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer shrink-0"
+          className="lg:hidden w-[var(--top-ctl-h,40px)] h-[var(--top-ctl-h,40px)] rounded-full flex items-center justify-center text-[var(--text-1)] dark:text-white hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer shrink-0"
           aria-label="Toggle mobile navigation menu"
         >
-          <MenuIcon size={20} />
+          <MenuIcon size={20} strokeWidth={1.5} />
         </button>
 
         <div className="min-w-0 flex items-center">
@@ -926,14 +926,14 @@ export const TopBar: React.FC<TopBarProps> = ({
       {!isProjectMilestone && <TopBarTimerWidget isFreelance={isFreelance} language={language} />}
 
       {/* Right Controls */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-[var(--top-gap,8px)] shrink-0">
         {/* Expanding Search Lens / Command Palette Trigger */}
         {onOpenCommandPalette && (
           <Seek
             value={topBarSearch}
             onChange={setTopBarSearch}
             placeholder={language === 'ar' ? 'بحث...' : language === 'fr' ? 'Rechercher...' : 'Search...'}
-            openWidth={240}
+            openWidth={260}
             shutSize={40}
             onSearch={() => {
               onOpenCommandPalette();
@@ -951,32 +951,32 @@ export const TopBar: React.FC<TopBarProps> = ({
                 activeScreen === 'chart_catalog' ? 'dashboard' : 'chart_catalog'
               )
             }
-            className="!rounded-full !px-3 !h-10 border border-[#E6DED6] dark:border-neutral-700/70 text-xs font-semibold cursor-pointer hidden sm:inline-flex items-center gap-2"
+            className="!rounded-full !px-[var(--btn-px,16px)] !h-[var(--top-ctl-h,40px)] border border-[#E6DED6] dark:border-neutral-700/70 t-btn cursor-pointer hidden sm:inline-flex items-center gap-[var(--btn-icon-gap,8px)]"
             title="Phase 1 Dashboard Component Catalog (Dev only)"
             aria-label="Toggle dashboard component catalog"
           >
-            <BarChart2 size={16} />
+            <BarChart2 size={16} strokeWidth={1.5} />
             <span>Catalog 19</span>
           </LiveButton>
         )}
 
         {/* Focus Mode / Collapse Header Button */}
         <LiveIconButton
-          icon={<ChevronUp size={20} />}
+          icon={<ChevronUp size={20} strokeWidth={1.5} />}
           tone="soft"
           onClick={toggleTopBarCollapsed}
-          className="hidden sm:inline-flex !w-10 !h-10 !rounded-full text-[var(--text-2)] dark:text-[var(--text-dark-2)]"
+          className="hidden sm:inline-flex !w-[var(--top-ctl-h,40px)] !h-[var(--top-ctl-h,40px)] !rounded-full text-[var(--text-2)] dark:text-[var(--text-dark-2)]"
           title={language === 'ar' ? 'طي الشريط' : language === 'fr' ? 'Réduire' : 'Collapse'}
           aria-label="Collapse header"
         />
 
         {/* Sync / Refresh Button */}
         <LiveIconButton
-          icon={<RotateCw size={16} className={isSyncing ? 'animate-spin' : ''} />}
+          icon={<RotateCw size={16} strokeWidth={1.5} className={isSyncing ? 'animate-spin' : ''} />}
           kick="spin"
           tone="soft"
           onClick={() => syncWithSupabase()}
-          className="!w-10 !h-10 !rounded-full"
+          className="!w-[var(--top-ctl-h,40px)] !h-[var(--top-ctl-h,40px)] !rounded-full"
           title={
             isSupabaseConfigured
               ? language === 'ar'
@@ -996,13 +996,13 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* TopBar Notification Bell & Center Trigger */}
         <div ref={notificationMenuRef} className="relative">
           <LiveIconButton
-            icon={<Bell size={20} />}
+            icon={<Bell size={20} strokeWidth={1.5} />}
             badge={unreadNotificationCount > 0 ? (unreadNotificationCount > 9 ? '9+' : unreadNotificationCount) : null}
             tone={notificationsOpen ? 'accent' : 'soft'}
             onClick={toggleNotifications}
             title={language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}
             aria-label="Open notifications menu"
-            className="!w-10 !h-10 !rounded-full"
+            className="!w-[var(--top-ctl-h,40px)] !h-[var(--top-ctl-h,40px)] !rounded-full"
           />
 
           <NotificationDropdown
@@ -1017,14 +1017,14 @@ export const TopBar: React.FC<TopBarProps> = ({
             placement="bottom-end"
             aria-label="Account menu"
             header={
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[var(--brand-fill)] text-white flex items-center justify-center font-semibold text-xs shrink-0 shadow-2xs">
+              <div className="flex items-center gap-[var(--av-to-text,12px)]">
+                <div className="w-[var(--av-list,32px)] h-[var(--av-list,32px)] rounded-full bg-[var(--brand-fill)] text-white flex items-center justify-center t-small font-semibold shrink-0 shadow-2xs">
                   {currentUser.fullName.charAt(0).toUpperCase()}
                 </div>
-                <div className="min-w-0 flex-1 flex flex-col gap-1">
-                  <b className="truncate block leading-tight text-sm font-semibold">{currentUser.fullName}</b>
-                  <small className="truncate block text-xs text-[var(--text-2)] dark:text-[var(--text-dark-2)]">{currentUser.email}</small>
-                  <span className="inline-block text-xs font-semibold text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] capitalize">
+                <div className="min-w-0 flex-1 flex flex-col gap-[var(--s1,4px)]">
+                  <b className="truncate block t-label font-semibold">{currentUser.fullName}</b>
+                  <small className="truncate block t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)]">{currentUser.email}</small>
+                  <span className="inline-block t-small font-semibold text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] capitalize">
                     {currentUser.role}
                   </span>
                 </div>
@@ -1035,21 +1035,21 @@ export const TopBar: React.FC<TopBarProps> = ({
                 id: 'lock',
                 label: language === 'ar' ? 'تبديل المستخدم' : language === 'fr' ? 'Changer Agent' : 'Switch Staff',
                 description: language === 'ar' ? 'دخول سريع بالرمز' : language === 'fr' ? 'Accès rapide PIN' : 'Quick PIN switch',
-                icon: <Lock size={15} />,
+                icon: <Lock size={16} strokeWidth={1.5} />,
                 onSelect: () => openFastSwitch(),
               },
               {
                 id: 'wizard',
                 label: language === 'ar' ? 'إعداد النشاط' : language === 'fr' ? 'Assistant Début' : 'Setup Wizard',
                 description: language === 'ar' ? 'تخصيص النشاط' : language === 'fr' ? 'Configuration' : 'Setup guide',
-                icon: <Sparkles size={15} />,
+                icon: <Sparkles size={16} strokeWidth={1.5} />,
                 onSelect: () => openOnboarding(),
               },
               {
                 id: 'voucher',
                 label: language === 'ar' ? 'تفعيل قسيمة' : language === 'fr' ? 'Code Licence' : 'Redeem Key',
                 description: language === 'ar' ? 'ترخيص دائم' : language === 'fr' ? 'Licence à vie' : 'Lifetime key',
-                icon: <Rocket size={15} />,
+                icon: <Rocket size={16} strokeWidth={1.5} />,
                 onSelect: () => onOpenVoucherModal?.(),
               },
               {
@@ -1060,7 +1060,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 description: isTopBarAutoHide
                   ? (language === 'ar' ? 'شريط عائم' : language === 'fr' ? 'Barre flottante' : 'Floating bar')
                   : (language === 'ar' ? 'شريط ثابت' : language === 'fr' ? 'Toujours visible' : 'Always visible'),
-                icon: <ChevronUp size={15} />,
+                icon: <ChevronUp size={16} strokeWidth={1.5} />,
                 onSelect: () => toggleTopBarAutoHide(),
               },
               {
@@ -1071,14 +1071,14 @@ export const TopBar: React.FC<TopBarProps> = ({
                 description: isFullscreen
                   ? (language === 'ar' ? 'نافذة عادية' : language === 'fr' ? 'Fenêtre normale' : 'Standard view')
                   : (language === 'ar' ? 'توسيع العرض' : language === 'fr' ? 'Affichage complet' : 'Full display'),
-                icon: isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />,
+                icon: isFullscreen ? <Minimize2 size={16} strokeWidth={1.5} /> : <Maximize2 size={16} strokeWidth={1.5} />,
                 onSelect: () => toggleFullscreen(),
               },
               {
                 id: 'settings',
                 label: t('settings_title', language),
                 description: language === 'ar' ? 'التفضيلات والمظهر' : language === 'fr' ? 'Préférences' : 'Preferences',
-                icon: <Settings size={15} />,
+                icon: <Settings size={16} strokeWidth={1.5} />,
                 onSelect: () => setScreen('settings'),
               },
               { type: 'separator' },
@@ -1086,7 +1086,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 id: 'logout',
                 label: language === 'ar' ? 'خروج' : language === 'fr' ? 'Déconnexion' : 'Sign Out',
                 description: currentUser.email,
-                icon: <LogOut size={15} />,
+                icon: <LogOut size={16} strokeWidth={1.5} />,
                 danger: true,
                 onSelect: () => logout(),
               },
@@ -1096,23 +1096,24 @@ export const TopBar: React.FC<TopBarProps> = ({
                 {...props}
                 shape="capsule"
                 tone="soft"
-                className={`!rounded-full !pl-1 !pr-3 !py-1 !h-10 !max-h-10 gap-2 border cursor-pointer select-none ${
+                className={`!rounded-full !ps-[var(--s1,4px)] !pe-[var(--s3,12px)] !py-[var(--s1,4px)] !h-[var(--top-ctl-h,40px)] !max-h-[var(--top-ctl-h,40px)] gap-[var(--top-gap,8px)] border cursor-pointer select-none ${
                   open
                     ? '!border-[#D4C8BC] dark:!border-neutral-500 shadow-xs'
                     : 'border-[#E6DED6] dark:border-neutral-700/70'
                 }`}
                 aria-label={`Operator: ${currentUser.fullName} (${currentUser.role})`}
               >
-                <div className="w-8 h-8 rounded-full bg-[var(--brand-fill)] text-white flex items-center justify-center font-semibold text-xs shadow-2xs shrink-0">
+                <div className="w-[var(--av-list,32px)] h-[var(--av-list,32px)] rounded-full bg-[var(--brand-fill)] text-white flex items-center justify-center t-small font-semibold shadow-2xs shrink-0">
                   {currentUser.fullName.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex flex-col text-left rtl:text-right min-w-0">
-                  <span className="font-semibold text-xs text-[var(--text-1)] dark:text-white leading-tight truncate max-w-[120px]">
+                  <span className="t-small font-semibold text-[var(--text-1)] dark:text-white truncate max-w-[120px]">
                     {currentUser.fullName.split(' ')[0]}
                   </span>
                 </div>
                 <ChevronDown
                   size={16}
+                  strokeWidth={1.5}
                   className={`text-[var(--text-2)] dark:text-[var(--text-dark-2)] transition-transform ${open ? 'rotate-180' : ''}`}
                 />
               </LiveButton>

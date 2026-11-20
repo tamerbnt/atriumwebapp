@@ -128,7 +128,7 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
                 onPointerEnter={() => setHoveredId(item.id)}
                 onFocus={() => setHoveredId(item.id)}
                 onBlur={() => setHoveredId(null)}
-                className={`ax-plot-focus absolute inset-x-0 top-0 flex flex-col justify-center gap-1.5 px-1.5 rounded-[var(--r-ctl-sm,10px)] cursor-pointer ${
+                className={`ax-plot-focus absolute inset-x-0 top-0 flex flex-col justify-center gap-[var(--s2,8px)] px-[var(--s2,8px)] rounded-[var(--r-ctl-sm,10px)] cursor-pointer ${
                   isHovered ? 'bg-[var(--ax-soft)]' : ''
                 }`}
                 style={{
@@ -139,12 +139,12 @@ export const RankedBarList: React.FC<RankedBarListProps> = React.memo(
                     'transform 0.6s var(--ax-sp), opacity 0.18s ease, background-color 0.16s ease',
                 }}
               >
-                <div className="flex items-center justify-between gap-2 text-[12px]">
-                  <span className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center justify-between gap-[var(--s2,8px)] t-small">
+                  <span className="flex items-center gap-[var(--s2,8px)] min-w-0">
                     <span className="ax-tk w-4 text-[var(--ax-mut)] font-semibold shrink-0">
                       #{rank + 1}
                     </span>
-                    <span className="font-medium text-[var(--ax-on)] truncate">
+                    <span className="t-small text-[var(--ax-on)] truncate">
                       {item.label}
                     </span>
                   </span>

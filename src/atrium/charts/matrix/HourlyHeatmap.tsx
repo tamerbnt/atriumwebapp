@@ -164,14 +164,14 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
           </div>
         }
         footer={
-          <div className="flex items-center justify-between gap-2 pt-1 ax-tk">
+          <div className="flex items-center justify-between gap-[var(--s2,8px)] ax-tk">
             <span>
               {peakLabel || strings.peakLabel}:{' '}
-              <strong className="text-[var(--ax-on)]">
+              <strong className="font-semibold text-[var(--ax-on)]">
                 {rows[metrics.peak.r]} {cols[metrics.peak.c]}
               </strong>
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-[var(--s2,8px)]">
               <span>{lowLabel || strings.calmLabel}</span>
               <span
                 className="h-2.5 w-20 rounded-full border border-[var(--ax-bdr)]"
@@ -194,11 +194,11 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
           onPointerMove={handlePointerMove}
           onPointerLeave={() => setActive(null)}
           onKeyDown={handleKeyDown}
-          className="ax-plot-focus flex flex-col gap-1 select-none"
+          className="ax-plot-focus flex flex-col gap-[var(--s1,4px)] select-none"
         >
           {/* Column headers */}
           <div
-            className="grid gap-1 items-center"
+            className="grid gap-[var(--s1,4px)] items-center"
             style={{
               gridTemplateColumns: `40px repeat(${cols.length}, minmax(0, 1fr))`,
             }}
@@ -220,13 +220,13 @@ export const HourlyHeatmap: React.FC<HourlyHeatmapProps> = React.memo(
           {rows.map((row, r) => (
             <div
               key={row}
-              className="grid gap-1 items-center"
+              className="grid gap-[var(--s1,4px)] items-center"
               style={{
                 gridTemplateColumns: `40px repeat(${cols.length}, minmax(0, 1fr))`,
               }}
             >
               <span
-                className={`ax-tk truncate pr-1 ${
+                className={`ax-tk truncate pe-[var(--s1,4px)] ${
                   active?.r === r ? 'text-[var(--ax-on)] font-semibold' : ''
                 }`}
               >

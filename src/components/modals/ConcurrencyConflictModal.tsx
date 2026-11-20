@@ -138,29 +138,29 @@ export const ConcurrencyConflictModal: React.FC = () => {
       subtitle={subtitleText}
       maxWidth="xl"
     >
-      <div className="space-y-4">
+      <div className="flex flex-col gap-[var(--s4,16px)]">
         {/* Unboxed inline conflict metadata */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--atr-line)] text-xs text-[var(--atr-ink-3)]">
-          <div className="flex flex-wrap items-center gap-2">
-            <AlertTriangle size={15} className="text-[var(--atr-acc)] shrink-0" />
-            <span className="font-semibold text-[var(--atr-ink)]">
+        <div className="flex flex-wrap items-center justify-between gap-[var(--s2,8px)] pb-[var(--s3,12px)] border-b border-[var(--atr-line)] t-cap text-[var(--atr-ink-3)]">
+          <div className="flex flex-wrap items-center gap-[var(--s2,8px)]">
+            <AlertTriangle size={16} strokeWidth={1.5} className="text-[var(--atr-acc)] shrink-0" />
+            <span className="t-small font-semibold text-[var(--atr-ink)]">
               {activeConflict.entityType || activeConflict.table}
             </span>
             <span aria-hidden="true">·</span>
-            <span className="font-mono tabular-nums">
+            <span className="tabular-nums">
               {isAr ? 'نسختك' : isFr ? 'Votre base' : 'Your Base'} v{activeConflict.expectedVersion}
             </span>
             <span aria-hidden="true">·</span>
-            <span className="font-mono tabular-nums text-[var(--atr-acc-text)] font-semibold">
+            <span className="tabular-nums text-[var(--atr-acc-text)] font-semibold">
               {isAr ? 'نسخة الخادم' : isFr ? 'Serveur' : 'Server'} v{activeConflict.serverVersion}
             </span>
             <span aria-hidden="true">·</span>
-            <span className="font-mono tabular-nums">
+            <span className="tabular-nums">
               {new Date(activeConflict.detectedAt).toLocaleTimeString()}
             </span>
           </div>
           {conflicts.length > 1 && (
-            <span className="font-mono tabular-nums text-[11px] text-[var(--atr-ink-4)]">
+            <span className="tabular-nums t-cap text-[var(--atr-ink-4)]">
               1 / {conflicts.length} {isAr ? 'تعارضات معلقة' : isFr ? 'en attente' : 'pending'}
             </span>
           )}
@@ -171,7 +171,7 @@ export const ConcurrencyConflictModal: React.FC = () => {
           <div
             data-sq="card"
             style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
-            className="p-4 bg-[var(--atr-soft)] text-xs text-[var(--atr-ink-3)]"
+            className="p-[var(--s4,16px)] bg-[var(--atr-soft)] t-body text-[var(--atr-ink-3)]"
           >
             {isAr
               ? 'تم تحديث رقم النسخة على الخادم دون اختلاف في الحقول المرئية. يمكنك إعادة الحفظ أو اعتماد نسخة الخادم.'
@@ -185,7 +185,7 @@ export const ConcurrencyConflictModal: React.FC = () => {
             style={{ '--sq-stroke': 'var(--atr-line)' } as React.CSSProperties}
             className="overflow-hidden bg-[var(--atr-card)]"
           >
-            <div className="grid grid-cols-12 gap-3 px-4 py-2.5 bg-[var(--atr-soft)] border-b border-[var(--atr-line)] text-[11px] font-semibold text-[var(--atr-ink-3)]">
+            <div className="grid grid-cols-12 gap-[var(--col-gap,16px)] px-[var(--s4,16px)] py-[var(--s2,8px)] h-[var(--head-h,36px)] items-center bg-[var(--atr-soft)] border-b border-[var(--atr-line)] t-small text-[var(--atr-ink-3)]">
               <div className="col-span-4">
                 {isAr ? 'الحقل' : isFr ? 'Champ' : 'Field'}
               </div>
@@ -203,9 +203,9 @@ export const ConcurrencyConflictModal: React.FC = () => {
                 return (
                   <div
                     key={row.key}
-                    className="grid grid-cols-12 gap-3 px-4 py-2.5 items-center text-xs"
+                    className="grid grid-cols-12 gap-[var(--col-gap,16px)] px-[var(--s4,16px)] py-[var(--s3,12px)] items-center"
                   >
-                    <div className="col-span-4 font-medium text-[var(--atr-ink)] truncate" title={row.label}>
+                    <div className="col-span-4 t-label text-[var(--atr-ink)] truncate" title={row.label}>
                       {row.label}
                     </div>
 
@@ -221,16 +221,16 @@ export const ConcurrencyConflictModal: React.FC = () => {
                             '--sq-stroke': picked === 'local' ? 'var(--atr-acc)' : 'var(--atr-line)',
                           } as React.CSSProperties
                         }
-                        className={`w-full text-left rtl:text-right px-2.5 py-1.5 transition-colors cursor-pointer flex items-center justify-between gap-2 ${
+                        className={`w-full text-left rtl:text-right h-[var(--btn-sm-h,32px)] px-[var(--s3,12px)] transition-colors cursor-pointer flex items-center justify-between gap-[var(--s2,8px)] ${
                           picked === 'local'
                             ? 'bg-[var(--atr-hl)] text-[var(--atr-ink)] font-semibold'
                             : 'bg-transparent text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
                         }`}
                       >
-                        <span className="truncate font-mono text-[11px] tabular-nums" title={row.localStr}>
+                        <span className="truncate t-small tabular-nums" title={row.localStr}>
                           {row.localStr}
                         </span>
-                        {picked === 'local' && <Check size={13} className="text-[var(--atr-acc)] shrink-0" />}
+                        {picked === 'local' && <Check size={16} strokeWidth={1.5} className="text-[var(--atr-acc)] shrink-0" />}
                       </button>
                     </div>
 
@@ -246,16 +246,16 @@ export const ConcurrencyConflictModal: React.FC = () => {
                             '--sq-stroke': picked === 'server' ? 'var(--atr-acc)' : 'var(--atr-line)',
                           } as React.CSSProperties
                         }
-                        className={`w-full text-left rtl:text-right px-2.5 py-1.5 transition-colors cursor-pointer flex items-center justify-between gap-2 ${
+                        className={`w-full text-left rtl:text-right h-[var(--btn-sm-h,32px)] px-[var(--s3,12px)] transition-colors cursor-pointer flex items-center justify-between gap-[var(--s2,8px)] ${
                           picked === 'server'
                             ? 'bg-[var(--atr-hl)] text-[var(--atr-ink)] font-semibold'
                             : 'bg-transparent text-[var(--atr-ink-3)] hover:text-[var(--atr-ink)]'
                         }`}
                       >
-                        <span className="truncate font-mono text-[11px] tabular-nums" title={row.serverStr}>
+                        <span className="truncate t-small tabular-nums" title={row.serverStr}>
                           {row.serverStr}
                         </span>
-                        {picked === 'server' && <Check size={13} className="text-[var(--atr-acc)] shrink-0" />}
+                        {picked === 'server' && <Check size={16} strokeWidth={1.5} className="text-[var(--atr-acc)] shrink-0" />}
                       </button>
                     </div>
                   </div>
@@ -266,26 +266,26 @@ export const ConcurrencyConflictModal: React.FC = () => {
         )}
 
         {/* Resolution actions */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--atr-line)]">
+        <div className="flex flex-wrap items-center justify-between gap-[var(--s3,12px)] pt-[var(--s2,8px)] border-t border-[var(--atr-line)]">
           <AtriumButton
             type="button"
             variant="secondary"
             size="md"
             disabled={isSubmitting}
-            icon={<RotateCcw size={14} />}
+            icon={<RotateCcw size={16} strokeWidth={1.5} />}
             onClick={handleKeepServer}
           >
             {isAr ? 'اعتماد نسخة الخادم' : isFr ? 'Garder la version serveur' : 'Keep Server Version'}
           </AtriumButton>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-[var(--s3,12px)]">
             {diffRows.length > 0 && (
               <AtriumButton
                 type="button"
                 variant="secondary"
                 size="md"
                 disabled={isSubmitting}
-                icon={<GitMerge size={14} />}
+                icon={<GitMerge size={16} strokeWidth={1.5} />}
                 onClick={handleApplyMerged}
               >
                 {isAr ? 'دمج الحقول المختارة' : isFr ? 'Appliquer la sélection' : 'Apply Selected Fields'}
@@ -297,7 +297,7 @@ export const ConcurrencyConflictModal: React.FC = () => {
               variant="primary"
               size="md"
               disabled={isSubmitting}
-              icon={<Upload size={14} />}
+              icon={<Upload size={16} strokeWidth={1.5} />}
               onClick={handleOverwriteMine}
             >
               {isAr ? 'حفظ تعديلاتي' : isFr ? 'Écraser avec mes modifications' : 'Overwrite with Mine'}

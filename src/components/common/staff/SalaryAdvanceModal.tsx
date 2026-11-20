@@ -56,41 +56,43 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
   const selectedStaff = staffList.find((s) => s.id === selectedStaffId);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-[var(--s4,16px)] bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="sq-elev-pop max-w-lg w-full">
         <div
           data-sq="panel"
           style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-          className="bg-white dark:bg-[#18181B] w-full p-6 relative"
+          className="bg-white dark:bg-[#18181B] w-full p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] relative"
         >
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-5 right-5 p-2 rounded-full text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center justify-between gap-[var(--s3,12px)]">
+            <div className="flex items-center gap-[var(--card-head-gap,12px)] min-w-0">
+              <div
+                data-sq="tile"
+                className="w-[var(--tile-md,40px)] h-[var(--tile-md,40px)] bg-[#d4522f]/10 flex items-center justify-center text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0"
+              >
+                <DollarSign className="w-5 h-5" strokeWidth={1.75} />
+              </div>
+              <div className="flex flex-col gap-[var(--title-cap-gap,2px)] min-w-0">
+                <h3 className="t-dialog text-[var(--text-1)] dark:text-white truncate">
+                  {isAr ? 'سلفة راتب' : isEn ? 'Salary Advance' : 'Acompte Salaire'}
+                </h3>
+                <p className="t-cap text-[var(--text-2)] dark:text-white/75">
+                  {isAr ? 'تخصم من الراتب' : isEn ? 'Deducted next payroll' : 'Déduit sur paie'}
+                </p>
+              </div>
+            </div>
 
-          <div className="flex items-center gap-3 mb-5">
-            <div
-              data-sq="tile"
-              className="w-10 h-10 bg-[#d4522f]/10 flex items-center justify-center text-[#d4522f]"
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] flex items-center justify-center rounded-full text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
             >
-              <DollarSign className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-black dark:text-white font-['Barlow_Condensed',sans-serif] rtl:font-sans">
-                {isAr ? 'سلفة راتب' : isEn ? 'Salary Advance' : 'Acompte Salaire'}
-              </h3>
-              <p className="text-xs text-black/70 dark:text-white/75">
-                {isAr ? 'تخصم من الراتب' : isEn ? 'Deducted next payroll' : 'Déduit sur paie'}
-              </p>
-            </div>
+              <X className="w-4 h-4" strokeWidth={1.5} />
+            </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-black/85 dark:text-white/85 mb-1.5">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-[var(--s4,16px)]">
+            <div className="flex flex-col gap-[var(--s2,8px)]">
+              <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
                 {isAr ? 'الموظف' : isEn ? 'Staff' : 'Collaborateur'}
               </label>
               <LabelSelect
@@ -103,14 +105,14 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-black/85 dark:text-white/85 mb-1.5">
+            <div className="flex flex-col gap-[var(--s2,8px)]">
+              <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
                 {isAr ? 'المبلغ' : isEn ? 'Amount' : 'Montant'}
               </label>
               <div
                 data-sq="ctl"
                 style={{ '--sq-stroke': 'var(--atr-border-strong, #D4D4D4)' } as React.CSSProperties}
-                className="relative bg-white dark:bg-[#202024]"
+                className="relative h-[var(--btn-h,40px)] flex items-center bg-white dark:bg-[#202024]"
               >
                 <input
                   type="number"
@@ -120,22 +122,22 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
                   required
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-transparent text-black dark:text-white font-mono font-bold text-base tabular-nums focus:outline-hidden"
+                  className="w-full h-full px-[var(--s4,16px)] pe-[var(--s8,48px)] bg-transparent text-[var(--text-1)] dark:text-white t-card tabular-nums focus:outline-hidden"
                 />
-                <span className="absolute right-4 top-2.5 text-xs font-bold text-black/60 dark:text-white/65">DZD</span>
+                <span className="absolute end-[var(--s4,16px)] t-small text-[var(--text-2)] dark:text-white/65">DZD</span>
               </div>
               {selectedStaff?.salary && (
-                <p className="text-[11px] text-black/60 dark:text-white/65 mt-1 tabular-nums">
+                <p className="t-cap text-[var(--text-2)] dark:text-white/65 tabular-nums">
                   {isAr ? `الحد: ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} دج` : isEn ? `Max: ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} DZD` : `Max : ${Math.round(selectedStaff.salary * 0.8).toLocaleString()} DZD`}
                 </p>
               )}
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-black/85 dark:text-white/85 mb-1.5">
+            <div className="flex flex-col gap-[var(--s2,8px)]">
+              <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
                 {isAr ? 'الدفع' : isEn ? 'Method' : 'Paiement'}
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-[var(--s2,8px)]">
                 {[
                   { id: 'cash', label: isAr ? 'نقداً' : isEn ? 'Cash' : 'Espèces' },
                   { id: 'ccp', label: isAr ? 'بريدي' : isEn ? 'Postal' : 'Poste' },
@@ -148,13 +150,13 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
                     data-sq="ctl"
                     style={
                       {
-                        '--sq-stroke': paymentMethod === m.id ? '#d4522f' : 'var(--atr-border, #E5E5E5)',
+                        '--sq-stroke': paymentMethod === m.id ? '#BF431F' : 'var(--atr-border, #E5E5E5)',
                       } as React.CSSProperties
                     }
-                    className={`px-3 py-2 text-xs font-semibold transition-all cursor-pointer ${
+                    className={`h-[var(--btn-h,40px)] px-[var(--s3,12px)] t-btn transition-all cursor-pointer ${
                       paymentMethod === m.id
-                        ? 'bg-[#d4522f]/10 text-[#d4522f]'
-                        : 'text-black/75 dark:text-white/75 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                        ? 'bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
+                        : 'text-[var(--text-2)] dark:text-white/75 hover:bg-neutral-50 dark:hover:bg-neutral-800'
                     }`}
                   >
                     {m.label}
@@ -163,31 +165,31 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-black/85 dark:text-white/85 mb-1.5">
+            <div className="flex flex-col gap-[var(--s2,8px)]">
+              <label className="block t-label font-semibold text-[var(--text-1)] dark:text-white/85">
                 {isAr ? 'ملاحظة' : isEn ? 'Note' : 'Motif'}
               </label>
               <div
                 data-sq="ctl"
                 style={{ '--sq-stroke': 'var(--atr-border-strong, #D4D4D4)' } as React.CSSProperties}
-                className="bg-white dark:bg-[#202024]"
+                className="h-[var(--btn-h,40px)] flex items-center bg-white dark:bg-[#202024]"
               >
                 <input
                   type="text"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder={isAr ? 'ملاحظة...' : isEn ? 'Reason...' : 'Motif...'}
-                  className="w-full px-4 py-2.5 bg-transparent text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/55 text-xs focus:outline-hidden"
+                  className="w-full h-full px-[var(--s4,16px)] bg-transparent text-[var(--text-1)] dark:text-white placeholder:text-black/50 dark:placeholder:text-white/55 t-body focus:outline-hidden"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-200 dark:border-neutral-800">
+            <div className="flex items-center justify-end gap-[var(--s3,12px)] pt-[var(--footer-gap,16px)] border-t border-neutral-200 dark:border-neutral-800">
               <button
                 type="button"
                 onClick={onClose}
                 data-sq="ctl-sm"
-                className="px-4 py-2 text-xs font-semibold text-black/75 hover:text-black dark:text-white/75 dark:hover:text-white cursor-pointer"
+                className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] t-btn text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/75 dark:hover:text-white cursor-pointer"
               >
                 {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
               </button>

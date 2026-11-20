@@ -64,8 +64,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       Icon: AlertCircle,
     },
     info: {
-      iconBg: 'bg-[#d4522f]/10 text-[#d4522f] [--sq-stroke:rgba(212,82,47,0.25)]',
-      btnBg: 'bg-[#d4522f] hover:bg-[#b03b1b] text-white shadow-xs focus:ring-[#d4522f]/30',
+      iconBg: 'bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] [--sq-stroke:rgba(212,82,47,0.25)]',
+      btnBg: 'bg-[var(--brand-fill)] hover:bg-[var(--brand-accent)] text-white shadow-xs focus:ring-[#d4522f]/30',
       Icon: Info,
     },
   }[variant];
@@ -73,7 +73,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const IconComponent = variantStyles.Icon;
 
   const dialogContent = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-[var(--s4,16px)]">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transform-gpu transition-opacity duration-200"
@@ -88,21 +88,21 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           data-sq="panel"
           data-sq-border="solid"
           style={{ contain: 'layout paint' }}
-          className="relative w-full overflow-hidden bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#26262A] transform-gpu animate-in fade-in zoom-in-95 duration-150 p-6"
+          className="relative w-full overflow-hidden bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#26262A] transform-gpu animate-in fade-in zoom-in-95 duration-150 p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)]"
         >
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-[var(--s4,16px)]">
             <div
               data-sq="tile-lg"
               data-sq-border="solid"
-              className={`relative w-12 h-12 shrink-0 flex items-center justify-center ${variantStyles.iconBg}`}
+              className={`relative w-[var(--tile-lg,48px)] h-[var(--tile-lg,48px)] shrink-0 flex items-center justify-center ${variantStyles.iconBg}`}
             >
-              <IconComponent size={22} />
+              <IconComponent size={24} strokeWidth={1.5} />
             </div>
-            <div className="flex-1 min-w-0 pr-6">
-              <h3 className="text-base font-bold tracking-tight text-black dark:text-white">
+            <div className="flex-1 min-w-0 pe-[var(--s8,48px)] flex flex-col gap-[var(--s1,4px)]">
+              <h3 className="t-dialog text-[var(--text-1)] dark:text-white">
                 {title}
               </h3>
-              <p className="mt-1.5 text-xs text-black/75 dark:text-white/75 leading-relaxed">
+              <p className="t-body text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
                 {description}
               </p>
             </div>
@@ -111,13 +111,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               data-no-liquid="true"
               onClick={onClose}
               disabled={isLoading}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center text-black/60 hover:text-black dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              className="absolute top-[var(--s4,16px)] end-[var(--s4,16px)] w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             >
-              <X size={16} />
+              <X size={16} strokeWidth={1.5} />
             </button>
           </div>
 
-          <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
+          <div className="flex items-center justify-end gap-[var(--s3,12px)] pt-[var(--s4,16px)] border-t border-neutral-100 dark:border-neutral-800/80">
             <AtriumButton
               type="button"
               variant="secondary"

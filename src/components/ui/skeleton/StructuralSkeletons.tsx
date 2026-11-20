@@ -18,7 +18,7 @@ export const SkeletonKpiGrid: React.FC<SkeletonKpiGridProps> = ({
     <div
       role="status"
       aria-label="Loading metric summaries"
-      className={`grid ${columns} gap-3 md:gap-4 mb-6`}
+      className={`grid ${columns} gap-[var(--card-gap,12px)]`}
     >
       <span className="sr-only">Loading metrics...</span>
       {Array.from({ length: count }).map((_, i) => (
@@ -26,15 +26,15 @@ export const SkeletonKpiGrid: React.FC<SkeletonKpiGridProps> = ({
           key={`kpi_skel_${i}`}
           data-sq="card"
           data-sq-border="solid"
-          className="p-4 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between h-[104px]"
+          className="p-[var(--card-pad,20px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)]"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-[var(--s2,8px)]">
             <SkeletonText size="xs" width="45%" />
-            <SkeletonCircle size={28} />
+            <SkeletonCircle size={32} />
           </div>
-          <div className="space-y-1.5 mt-2">
-            <SkeletonText size="xl" width="60%" />
-            <SkeletonText size="xs" width="30%" />
+          <div className="flex flex-col gap-[var(--s3,12px)] mt-auto">
+            <SkeletonText size="2xl" width="60%" />
+            <SkeletonText size="xs" width="35%" />
           </div>
         </div>
       ))}
@@ -72,7 +72,7 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
     <div
       role="status"
       aria-label="Loading data records"
-      className="w-full flex flex-col gap-3"
+      className="w-full flex flex-col gap-[var(--card-gap,12px)]"
     >
       <span className="sr-only">Loading records...</span>
 
@@ -81,15 +81,15 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s3,12px)] p-[var(--s3,12px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
         >
-          <div className="flex items-center gap-2 flex-1 max-w-sm">
-            <SkeletonBox height={36} className="w-full" sq="ctl" />
+          <div className="flex items-center gap-[var(--s2,8px)] flex-1 max-w-sm">
+            <SkeletonBox height={40} className="w-full" sq="ctl" />
           </div>
-          <div className="flex items-center gap-2">
-            <SkeletonBox width={100} height={36} sq="ctl" />
-            <SkeletonBox width={80} height={36} sq="ctl" />
-            <SkeletonCircle size={36} />
+          <div className="flex items-center gap-[var(--s2,8px)]">
+            <SkeletonBox width={100} height={40} sq="ctl" />
+            <SkeletonBox width={80} height={40} sq="ctl" />
+            <SkeletonCircle size={40} />
           </div>
         </div>
       )}
@@ -98,11 +98,11 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
       <div
         data-sq="table"
         data-sq-border="solid"
-        className="w-full bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+        className="w-full p-[var(--table-pad,8px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
       >
         {/* Table Header Row */}
-        <div className="flex items-center px-4 py-3 border-b border-[#E6DED6] dark:border-neutral-800 bg-[#F3EDE7]/80 dark:bg-neutral-900/50 gap-3">
-          <SkeletonBox width={18} height={18} rounded="rounded-[var(--r-check,6px)]" className="shrink-0 mr-1" />
+        <div className="h-[var(--head-h,36px)] flex items-center px-[var(--row-inset,12px)] border-b border-[#E6DED6] dark:border-neutral-800 bg-[#F3EDE7]/80 dark:bg-neutral-900/50 gap-[var(--col-gap,16px)]">
+          <SkeletonBox width={20} height={20} rounded="rounded-[var(--r-check,6px)]" className="shrink-0" />
           {columns.map((col, idx) => (
             <div
               key={`th_skel_${idx}`}
@@ -120,13 +120,13 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
         </div>
 
         {/* Table Body Rows */}
-        <div className="divide-y divide-[#E6DED6] dark:divide-neutral-800/80">
+        <div className="flex flex-col gap-[var(--row-gap,8px)] pt-[var(--s2,8px)]">
           {Array.from({ length: rowCount }).map((_, rowIdx) => (
             <div
               key={`tr_skel_${rowIdx}`}
-              className="flex items-center px-4 py-3.5 gap-3"
+              className="min-h-[var(--row-h,64px)] flex items-center px-[var(--row-inset,12px)] gap-[var(--col-gap,16px)]"
             >
-              <SkeletonBox width={18} height={18} rounded="rounded-[var(--r-check,6px)]" className="shrink-0 mr-1" />
+              <SkeletonBox width={20} height={20} rounded="rounded-[var(--r-check,6px)]" className="shrink-0" />
               {columns.map((col, colIdx) => (
                 <div
                   key={`td_skel_${rowIdx}_${colIdx}`}
@@ -135,12 +135,12 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
                     width: !col.width?.includes('*') ? col.width : undefined,
                     minWidth: col.minWidth || '80px',
                   }}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-[var(--av-to-text,12px)]"
                 >
                   {colIdx === 0 ? (
                     <>
-                      <SkeletonCircle size={28} />
-                      <div className="space-y-1 w-full max-w-[140px]">
+                      <SkeletonCircle size={40} />
+                      <div className="flex flex-col gap-[var(--s1,4px)] w-full max-w-[140px]">
                         <SkeletonText size="sm" width="85%" />
                         <SkeletonText size="xs" width="55%" />
                       </div>
@@ -173,7 +173,7 @@ export const SkeletonCardGrid: React.FC<SkeletonCardGridProps> = ({ count = 6 })
     <div
       role="status"
       aria-label="Loading grid items"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[var(--card-gap,12px)] w-full"
     >
       <span className="sr-only">Loading grid items...</span>
       {Array.from({ length: count }).map((_, i) => (
@@ -181,12 +181,12 @@ export const SkeletonCardGrid: React.FC<SkeletonCardGridProps> = ({ count = 6 })
           key={`card_skel_${i}`}
           data-sq="card"
           data-sq-border="solid"
-          className="p-5 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between min-h-[170px]"
+          className="p-[var(--card-pad,20px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between gap-[var(--s4,16px)] min-h-[168px]"
         >
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <SkeletonCircle size={40} />
-              <div className="space-y-1.5 w-32">
+          <div className="flex items-start justify-between gap-[var(--s3,12px)]">
+            <div className="flex items-center gap-[var(--s3,12px)]">
+              <SkeletonCircle size={32} />
+              <div className="flex flex-col gap-[var(--s1,4px)] w-32">
                 <SkeletonText size="base" width="90%" />
                 <SkeletonText size="xs" width="60%" />
               </div>
@@ -194,7 +194,7 @@ export const SkeletonCardGrid: React.FC<SkeletonCardGridProps> = ({ count = 6 })
             <SkeletonCircle size={24} />
           </div>
 
-          <div className="my-3 space-y-2 py-2 border-y border-[#E6DED6] dark:border-neutral-800/80">
+          <div className="flex flex-col gap-[var(--s2,8px)] py-[var(--s2,8px)] border-y border-[#E6DED6] dark:border-neutral-800/80">
             <div className="flex justify-between items-center">
               <SkeletonText size="xs" width="30%" />
               <SkeletonText size="xs" width="40%" />
@@ -205,9 +205,9 @@ export const SkeletonCardGrid: React.FC<SkeletonCardGridProps> = ({ count = 6 })
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-1">
-            <SkeletonButton width={75} height={28} />
-            <SkeletonCircle size={28} />
+          <div className="flex items-center justify-between">
+            <SkeletonButton width={76} height={32} />
+            <SkeletonCircle size={32} />
           </div>
         </div>
       ))}
@@ -227,19 +227,19 @@ export const SkeletonModalForm: React.FC<SkeletonModalFormProps> = ({ fieldsCoun
     <div
       role="status"
       aria-label="Loading form options"
-      className="space-y-4 py-2"
+      className="flex flex-col gap-[var(--modal-gap,20px)] py-[var(--s2,8px)]"
     >
       <span className="sr-only">Loading form data...</span>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--s4,16px)]">
         {Array.from({ length: fieldsCount }).map((_, i) => (
-          <div key={`field_skel_${i}`} className={`space-y-1.5 ${i === 0 ? 'md:col-span-2' : ''}`}>
+          <div key={`field_skel_${i}`} className={`flex flex-col gap-[var(--s2,8px)] ${i === 0 ? 'md:col-span-2' : ''}`}>
             <SkeletonText size="xs" width="35%" />
-            <SkeletonBox height={42} className="w-full" sq="ctl" />
+            <SkeletonBox height={40} className="w-full" sq="ctl" />
           </div>
         ))}
       </div>
 
-      <div className="pt-4 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-end gap-3 mt-6">
+      <div className="pt-[var(--s4,16px)] border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-end gap-[var(--s3,12px)]">
         <SkeletonButton width={80} height={40} />
         <SkeletonButton width={120} height={40} />
       </div>
@@ -255,7 +255,7 @@ export const SkeletonKioskGrid: React.FC<{ count?: number }> = ({ count = 8 }) =
     <div
       role="status"
       aria-label="Loading kiosk terminal"
-      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 p-4"
+      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-[var(--card-gap,12px)] p-[var(--s4,16px)]"
     >
       <span className="sr-only">Loading kiosk options...</span>
       {Array.from({ length: count }).map((_, i) => (
@@ -263,9 +263,9 @@ export const SkeletonKioskGrid: React.FC<{ count?: number }> = ({ count = 8 }) =
           key={`kiosk_skel_${i}`}
           data-sq="card"
           data-sq-border="solid"
-          className="p-4 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col items-center justify-center text-center h-[130px] space-y-2.5"
+          className="p-[var(--s4,16px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col items-center justify-center text-center min-h-[128px] gap-[var(--s2,8px)]"
         >
-          <SkeletonCircle size={44} />
+          <SkeletonCircle size={40} />
           <SkeletonText size="sm" width="70%" />
           <SkeletonText size="xs" width="40%" />
         </div>
@@ -285,25 +285,25 @@ export const SkeletonChart: React.FC<{ height?: number }> = ({ height = 280 }) =
       style={{ height }}
       data-sq="card"
       data-sq-border="solid"
-      className="w-full p-5 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between"
+      className="w-full p-[var(--card-pad,20px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between gap-[var(--card-body-gap,20px)]"
     >
       <span className="sr-only">Loading chart data...</span>
-      <div className="flex items-center justify-between mb-4">
-        <div className="space-y-1.5 w-40">
+      <div className="flex items-center justify-between gap-[var(--s3,12px)]">
+        <div className="flex flex-col gap-[var(--s1,4px)] w-40">
           <SkeletonText size="base" width="80%" />
           <SkeletonText size="xs" width="50%" />
         </div>
-        <div className="flex gap-2">
-          <SkeletonButton width={60} height={28} />
-          <SkeletonButton width={60} height={28} />
+        <div className="flex gap-[var(--s2,8px)]">
+          <SkeletonButton width={60} height={32} />
+          <SkeletonButton width={60} height={32} />
         </div>
       </div>
 
-      <div className="flex items-end justify-between gap-3 h-44 px-4 py-2 border-b border-l border-[#E6DED6] dark:border-neutral-800">
+      <div className="flex items-end justify-between gap-[var(--s3,12px)] h-[var(--chart-h,160px)] px-[var(--s4,16px)] py-[var(--s2,8px)] border-b border-l border-[#E6DED6] dark:border-neutral-800">
         {Array.from({ length: 8 }).map((_, i) => {
           const heights = ['55%', '85%', '40%', '95%', '65%', '75%', '50%', '90%'];
           return (
-            <div key={`chart_bar_${i}`} className="flex-1 flex flex-col items-center gap-2">
+            <div key={`chart_bar_${i}`} className="flex-1 flex flex-col items-center gap-[var(--s2,8px)]">
               <SkeletonBox
                 width="80%"
                 height={heights[i % heights.length]}
@@ -340,19 +340,19 @@ export const SkeletonPageHeader: React.FC<SkeletonPageHeaderProps> = ({
     <div
       role="status"
       aria-label="Loading page navigation"
-      className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1"
+      className="flex flex-col md:flex-row md:items-center justify-between gap-[var(--s4,16px)]"
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-[var(--ph-gap,16px)]">
         {hasIcon && (
           <SkeletonBox width={48} height={48} sq="tile-lg" className="shrink-0" />
         )}
-        <div className="space-y-1.5">
+        <div className="flex flex-col gap-[var(--ph-sub-gap,4px)]">
           <SkeletonText size="xl" width="180px" />
           <SkeletonText size="xs" width="280px" />
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 flex-wrap">
+      <div className="flex items-center gap-[var(--s2,8px)] flex-wrap">
         {hasViewToggle && (
           <SkeletonBox width={190} height={40} sq="ctl" />
         )}
@@ -393,7 +393,7 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
   actionBtnWidth = 175,
 }) => {
   return (
-    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading schedule roster">
+    <div className="flex flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200" role="status" aria-label="Loading schedule roster">
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
@@ -402,33 +402,33 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
       />
 
       {/* Header */}
-      <SkeletonPageHeader hasViewToggle hasFacility={hasFacility} hasActionBtn={hasActionBtn} actionBtnWidth={actionBtnWidth} />
+      <div className="pb-[var(--s2,8px)]">
+        <SkeletonPageHeader hasViewToggle hasFacility={hasFacility} hasActionBtn={hasActionBtn} actionBtnWidth={actionBtnWidth} />
+      </div>
 
       {/* KPI Pod Tray matching Screenshot_69 (Weekly Session Matrix & Attendance Roster) */}
       <div
         data-sq="panel"
         data-sq-border="solid"
-        className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-3 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D]"
+        className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--s3,12px)] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D]"
       >
-        <div className="space-y-1 px-2 pt-1">
+        <div className="flex flex-col gap-[var(--s1,4px)] px-[var(--s3,12px)] pt-[var(--s1,4px)]">
           <SkeletonText size="sm" width="240px" />
           <SkeletonText size="xs" width="340px" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--card-gap,12px)]">
           {/* Card 1: Scheduled Class Roster */}
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col justify-between h-[124px]"
+            className="p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)]"
           >
-            <div>
+            <div className="flex flex-col gap-[var(--s2,8px)]">
               <SkeletonText size="xs" width="130px" />
-              <div className="mt-2">
-                <SkeletonBox width={85} height={18} rounded="rounded-full" />
-              </div>
+              <SkeletonBox width={88} height={24} rounded="rounded-full" />
             </div>
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-[var(--s2,8px)] mt-auto">
               <SkeletonText size="2xl" width="50px" />
               <SkeletonText size="xs" width="60px" />
             </div>
@@ -438,15 +438,13 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col justify-between h-[124px]"
+            className="p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)]"
           >
-            <div>
+            <div className="flex flex-col gap-[var(--s2,8px)]">
               <SkeletonText size="xs" width="140px" />
-              <div className="mt-2">
-                <SkeletonBox width={95} height={18} rounded="rounded-full" />
-              </div>
+              <SkeletonBox width={96} height={24} rounded="rounded-full" />
             </div>
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-[var(--s2,8px)] mt-auto">
               <SkeletonText size="2xl" width="50px" />
               <SkeletonText size="xs" width="65px" />
             </div>
@@ -456,13 +454,13 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col justify-between h-[124px]"
+            className="p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)]"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-[var(--s2,8px)]">
               <SkeletonText size="xs" width="150px" />
-              <SkeletonBox width={75} height={18} rounded="rounded-full" />
+              <SkeletonBox width={76} height={24} rounded="rounded-full" />
             </div>
-            <div className="space-y-1">
+            <div className="flex flex-col gap-[var(--s1,4px)] mt-auto">
               <SkeletonText size="2xl" width="120px" className="!bg-[#d4522f]/30" />
               <SkeletonText size="xs" width="110px" />
             </div>
@@ -521,12 +519,12 @@ type SkeletonCardKind =
 const SkeletonPodHeader: React.FC<{ extraActionsCount?: 0 | 1 | 2 }> = ({
   extraActionsCount = 1,
 }) => (
-  <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 sm:gap-4 pb-1 min-w-0">
-    <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+  <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-[var(--s4,16px)] pb-[var(--s2,8px)] min-w-0">
+    <div className="flex items-center gap-[var(--ph-gap,16px)] min-w-0">
       <SkeletonBox width={48} height={48} sq="tile-lg" className="shrink-0" />
       <SkeletonText size="2xl" width="210px" />
     </div>
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex items-center gap-[var(--s2,8px)] flex-wrap">
       {extraActionsCount >= 2 && <SkeletonBox width={132} height={40} sq="ctl" />}
       {extraActionsCount >= 1 && (
         <SkeletonBox
@@ -548,16 +546,16 @@ const SkeletonPodSection: React.FC<{
 }> = ({ layout = 'equal', titleWidth = '210px', children }) => {
   const gridClass =
     layout === 'equal'
-      ? 'grid-cols-1 md:grid-cols-2 gap-3'
-      : 'grid-cols-1 lg:grid-cols-12 gap-3';
+      ? 'grid-cols-1 md:grid-cols-2 gap-[var(--card-gap,12px)]'
+      : 'grid-cols-1 lg:grid-cols-12 gap-[var(--card-gap,12px)]';
 
   return (
     <section
       data-sq="panel"
       data-sq-border="solid"
-      className="bg-[#F3EDE7] dark:bg-[#141312] p-3 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
+      className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] flex flex-col gap-[var(--s3,12px)]"
     >
-      <div className="flex items-center justify-between gap-3 px-2 pt-1">
+      <div className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] pt-[var(--s1,4px)]">
         <SkeletonText size="base" width={titleWidth} />
       </div>
       <div className={`grid ${gridClass} items-stretch`}>{children}</div>
@@ -582,14 +580,14 @@ const SkeletonPodCard: React.FC<{
     <div
       data-sq="card"
       data-sq-border="solid"
-      className={`${spanClass} ${surfaceClass} p-5 flex flex-col justify-between gap-4 ${
-        isKpi ? 'min-h-[164px]' : 'min-h-[250px]'
+      className={`${spanClass} ${surfaceClass} p-[var(--card-pad,20px)] flex flex-col justify-between gap-[var(--card-body-gap,20px)] ${
+        isKpi ? 'min-h-[var(--kpi-min-h,168px)]' : 'min-h-[248px]'
       }`}
     >
       {/* Card Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1.5 min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+      <div className="flex items-start justify-between gap-[var(--card-head-gap,12px)]">
+        <div className="flex flex-col gap-[var(--s1,4px)] min-w-0 flex-1">
+          <div className="flex items-center gap-[var(--s2,8px)]">
             <SkeletonText size="sm" width="52%" className={mutedBoxClass} />
             <SkeletonCircle size={16} className={mutedBoxClass} />
           </div>
@@ -598,7 +596,7 @@ const SkeletonPodCard: React.FC<{
         {hasFilter && (
           <SkeletonBox
             width={92}
-            height={28}
+            height={32}
             rounded="rounded-full"
             className={`shrink-0 ${mutedBoxClass}`}
           />
@@ -607,17 +605,17 @@ const SkeletonPodCard: React.FC<{
 
       {/* Card Body */}
       {isKpi ? (
-        <div className="flex items-end justify-between gap-4 pt-1">
-          <div className="space-y-2 flex-1">
+        <div className="flex items-end justify-between gap-[var(--s4,16px)] mt-auto">
+          <div className="flex flex-col gap-[var(--s3,12px)] flex-1">
             <SkeletonText size="2xl" width="136px" className={mutedBoxClass} />
             <SkeletonBox
               width={68}
-              height={22}
+              height={24}
               rounded="rounded-full"
               className={kind === 'kpi-inverse' ? accentBoxClass : mutedBoxClass}
             />
           </div>
-          <div className="flex items-end gap-1.5 h-12 shrink-0">
+          <div className="flex items-end gap-[var(--chart-bar-gap,4px)] h-12 shrink-0">
             {[42, 68, 54, 84, 62, 92].map((pct, i) => (
               <SkeletonBox
                 key={`kpi_bar_${i}`}
@@ -630,11 +628,11 @@ const SkeletonPodCard: React.FC<{
           </div>
         </div>
       ) : kind === 'donut' || kind === 'gauge' ? (
-        <div className="flex items-center justify-between gap-4 py-2 flex-1">
-          <SkeletonCircle size={126} className={`mx-auto ${mutedBoxClass}`} />
-          <div className="space-y-2.5 flex-1">
+        <div className="flex items-center justify-between gap-[var(--s4,16px)] flex-1">
+          <SkeletonCircle size={128} className={mutedBoxClass} />
+          <div className="flex flex-col gap-[var(--s3,12px)] flex-1">
             {[75, 58, 66].map((w, i) => (
-              <div key={`leg_${i}`} className="flex items-center justify-between gap-2">
+              <div key={`leg_${i}`} className="flex items-center justify-between gap-[var(--s2,8px)]">
                 <SkeletonText size="xs" width={`${w}%`} className={mutedBoxClass} />
                 <SkeletonText size="xs" width="28px" className={mutedBoxClass} />
               </div>
@@ -642,16 +640,16 @@ const SkeletonPodCard: React.FC<{
           </div>
         </div>
       ) : kind === 'waffle' ? (
-        <div className="space-y-3 flex-1 flex flex-col justify-end">
+        <div className="flex flex-col gap-[var(--s3,12px)] flex-1 justify-end">
           <div className="flex items-baseline justify-between">
             <SkeletonText size="2xl" width="84px" className={mutedBoxClass} />
             <SkeletonText size="xs" width="70px" className={mutedBoxClass} />
           </div>
-          <div className="grid grid-cols-10 gap-1.5">
+          <div className="grid grid-cols-10 gap-[var(--s2,8px)]">
             {Array.from({ length: 30 }).map((_, i) => (
               <SkeletonBox
                 key={`waf_${i}`}
-                height={14}
+                height={16}
                 rounded="rounded-[var(--r-check,6px)]"
                 className={i < 19 ? accentBoxClass : mutedBoxClass}
               />
@@ -659,7 +657,7 @@ const SkeletonPodCard: React.FC<{
           </div>
         </div>
       ) : kind === 'heatmap' ? (
-        <div className="grid grid-cols-8 gap-1.5 py-1 flex-1 items-center">
+        <div className="grid grid-cols-8 gap-[var(--s2,8px)] flex-1 items-center">
           {Array.from({ length: 32 }).map((_, i) => (
             <SkeletonBox
               key={`hm_${i}`}
@@ -670,9 +668,9 @@ const SkeletonPodCard: React.FC<{
           ))}
         </div>
       ) : kind === 'timeline' ? (
-        <div className="space-y-2.5 py-1 flex-1 flex flex-col justify-center">
+        <div className="flex flex-col gap-[var(--s3,12px)] flex-1 justify-center">
           {[68, 52, 78, 44].map((w, i) => (
-            <div key={`tl_${i}`} className="flex items-center gap-3">
+            <div key={`tl_${i}`} className="flex items-center gap-[var(--s3,12px)]">
               <SkeletonText size="xs" width="82px" className={mutedBoxClass} />
               <SkeletonBox
                 width={`${w}%`}
@@ -684,29 +682,29 @@ const SkeletonPodCard: React.FC<{
           ))}
         </div>
       ) : kind === 'treemap' ? (
-        <div className="grid grid-cols-12 gap-2 h-[156px]">
+        <div className="grid grid-cols-12 gap-[var(--s2,8px)] h-[var(--chart-h,160px)]">
           <SkeletonBox height="100%" sq="ctl" className={`col-span-7 ${accentBoxClass}`} />
-          <div className="col-span-5 grid grid-rows-2 gap-2">
+          <div className="col-span-5 grid grid-rows-2 gap-[var(--s2,8px)]">
             <SkeletonBox height="100%" sq="ctl" className={mutedBoxClass} />
             <SkeletonBox height="100%" sq="ctl" className={mutedBoxClass} />
           </div>
         </div>
       ) : kind === 'bubble' ? (
-        <div className="relative h-[160px] border-b border-l border-[#E6DED6] dark:border-neutral-800 flex items-center justify-around px-4">
-          <SkeletonCircle size={26} className={mutedBoxClass} />
-          <SkeletonCircle size={42} className={accentBoxClass} />
-          <SkeletonCircle size={22} className={mutedBoxClass} />
-          <SkeletonCircle size={34} className={mutedBoxClass} />
-          <SkeletonCircle size={30} className={accentBoxClass} />
+        <div className="relative h-[var(--chart-h,160px)] border-b border-l border-[#E6DED6] dark:border-neutral-800 flex items-center justify-around px-[var(--s4,16px)]">
+          <SkeletonCircle size={28} className={mutedBoxClass} />
+          <SkeletonCircle size={40} className={accentBoxClass} />
+          <SkeletonCircle size={24} className={mutedBoxClass} />
+          <SkeletonCircle size={32} className={mutedBoxClass} />
+          <SkeletonCircle size={32} className={accentBoxClass} />
         </div>
       ) : kind === 'radar' ? (
-        <div className="flex items-center justify-center py-2 flex-1">
-          <SkeletonCircle size={142} className={mutedBoxClass} />
+        <div className="flex items-center justify-center flex-1">
+          <SkeletonCircle size={140} className={mutedBoxClass} />
         </div>
       ) : kind === 'bullet' || kind === 'ranked' || kind === 'funnel' || kind === 'dumbbell' ? (
-        <div className="space-y-3 py-1 flex-1 flex flex-col justify-center">
+        <div className="flex flex-col gap-[var(--s3,12px)] flex-1 justify-center">
           {[88, 72, 58, 44].map((w, i) => (
-            <div key={`hb_${i}`} className="space-y-1">
+            <div key={`hb_${i}`} className="flex flex-col gap-[var(--s1,4px)]">
               <div className="flex justify-between">
                 <SkeletonText size="xs" width="96px" className={mutedBoxClass} />
                 <SkeletonText size="xs" width="48px" className={mutedBoxClass} />
@@ -721,7 +719,7 @@ const SkeletonPodCard: React.FC<{
           ))}
         </div>
       ) : (
-        <div className="flex items-end justify-between gap-2.5 h-[156px] pt-2 px-1 border-b border-[#E6DED6] dark:border-neutral-800">
+        <div className="flex items-end justify-between gap-[var(--s3,12px)] h-[var(--chart-h,160px)] pt-[var(--s2,8px)] px-[var(--s1,4px)] border-b border-[#E6DED6] dark:border-neutral-800">
           {[48, 76, 62, 92, 56, 82, 68, 86].map((h, i) => (
             <SkeletonBox
               key={`vb_${i}`}
@@ -753,7 +751,7 @@ const SkeletonDashboardShell: React.FC<SkeletonDashboardShellProps> = ({
   children,
 }) => (
   <div
-    className="space-y-5 sm:space-y-6 animate-in fade-in duration-200"
+    className="flex flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200"
     role="status"
     aria-label={ariaLabel}
   >
@@ -805,7 +803,7 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
   onRetry,
 }) => {
   return (
-    <div className="space-y-4 animate-in fade-in duration-200" role="status" aria-label="Loading POS register">
+    <div className="flex flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200" role="status" aria-label="Loading POS register">
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
@@ -813,50 +811,50 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
       />
 
       {/* Top Header */}
-      <div className="flex items-center justify-between gap-3 pb-1">
-        <div className="flex items-center gap-3">
-          <SkeletonBox width={40} height={40} sq="tile" />
-          <div className="space-y-1">
+      <div className="flex items-center justify-between gap-[var(--s3,12px)] pb-[var(--s2,8px)]">
+        <div className="flex items-center gap-[var(--ph-gap,16px)]">
+          <SkeletonBox width={48} height={48} sq="tile-lg" />
+          <div className="flex flex-col gap-[var(--ph-sub-gap,4px)]">
             <SkeletonText size="lg" width="160px" />
             <SkeletonText size="xs" width="220px" />
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <SkeletonBox width={120} height={38} sq="ctl" />
-          <SkeletonBox width={140} height={38} sq="ctl" className="!bg-[#d4522f]/25" />
+        <div className="flex items-center gap-[var(--s2,8px)]">
+          <SkeletonBox width={120} height={40} sq="ctl" />
+          <SkeletonBox width={140} height={40} sq="ctl" className="!bg-[#d4522f]/25" />
         </div>
       </div>
 
       {/* Split 65 / 35 layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[580px]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[var(--s4,16px)] min-h-[580px]">
         {/* Left Column (65%): Category Pills + Product Catalog Grid */}
-        <div className="lg:col-span-8 flex flex-col space-y-4">
+        <div className="lg:col-span-8 flex flex-col gap-[var(--s4,16px)]">
           {/* Category Capsules */}
-          <div className="flex items-center gap-2 overflow-hidden py-1">
+          <div className="flex items-center gap-[var(--s2,8px)] overflow-hidden py-[var(--s1,4px)]">
             {Array.from({ length: 6 }).map((_, i) => (
-              <SkeletonBox key={`cat_pill_${i}`} width={i === 0 ? 60 : 90} height={34} rounded="rounded-full" />
+              <SkeletonBox key={`cat_pill_${i}`} width={i === 0 ? 60 : 92} height={32} rounded="rounded-full" />
             ))}
           </div>
 
           {/* Product Cards Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5 flex-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-[var(--card-gap,12px)] flex-1">
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={`pos_prod_${i}`}
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3.5 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between h-[155px]"
+                className="p-[var(--card-pad,20px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between gap-[var(--s3,12px)] min-h-[168px]"
               >
-                <div className="flex items-start gap-2.5">
-                  <SkeletonBox width={44} height={44} sq="tile" className="shrink-0" />
-                  <div className="space-y-1.5 flex-1 min-w-0">
+                <div className="flex items-start gap-[var(--s3,12px)]">
+                  <SkeletonBox width={40} height={40} sq="tile" className="shrink-0" />
+                  <div className="flex flex-col gap-[var(--s1,4px)] flex-1 min-w-0">
                     <SkeletonText size="sm" width="90%" />
                     <SkeletonText size="xs" width="60%" />
                   </div>
                 </div>
-                <div className="pt-2 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
+                <div className="pt-[var(--s2,8px)] border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
                   <SkeletonText size="base" width="70px" className="!bg-[#d4522f]/25" />
-                  <SkeletonCircle size={28} />
+                  <SkeletonCircle size={32} />
                 </div>
               </div>
             ))}
@@ -867,31 +865,31 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="lg:col-span-4 p-5 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between"
+          className="lg:col-span-4 p-[var(--card-pad,20px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col justify-between gap-[var(--s4,16px)]"
         >
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
+          <div className="flex flex-col gap-[var(--s4,16px)]">
+            <div className="flex items-center justify-between pb-[var(--s3,12px)] border-b border-[#E6DED6] dark:border-neutral-800">
               <SkeletonText size="sm" width="120px" />
-              <SkeletonBox width={70} height={22} rounded="rounded-full" />
+              <SkeletonBox width={72} height={24} rounded="rounded-full" />
             </div>
 
             {/* Line items */}
-            <div className="space-y-3">
+            <div className="flex flex-col gap-[var(--s3,12px)]">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={`ticket_line_${i}`} className="flex items-center justify-between gap-2">
-                  <div className="space-y-1">
+                <div key={`ticket_line_${i}`} className="flex items-center justify-between gap-[var(--s2,8px)]">
+                  <div className="flex flex-col gap-[var(--s1,4px)]">
                     <SkeletonText size="xs" width="110px" />
                     <SkeletonText size="xs" width="60px" />
                   </div>
-                  <SkeletonText size="sm" width="65px" />
+                  <SkeletonText size="sm" width="64px" />
                 </div>
               ))}
             </div>
           </div>
 
           {/* Subtotals & Payment CTA */}
-          <div className="pt-4 border-t border-[#E6DED6] dark:border-neutral-800 space-y-3">
-            <div className="space-y-1.5 text-xs">
+          <div className="pt-[var(--s4,16px)] border-t border-[#E6DED6] dark:border-neutral-800 flex flex-col gap-[var(--s3,12px)]">
+            <div className="flex flex-col gap-[var(--s2,8px)]">
               <div className="flex justify-between">
                 <SkeletonText size="xs" width="70px" />
                 <SkeletonText size="xs" width="60px" />
@@ -900,19 +898,19 @@ export const SkeletonPosRegister: React.FC<SkeletonPosRegisterProps> = ({
                 <SkeletonText size="xs" width="50px" />
                 <SkeletonText size="xs" width="50px" />
               </div>
-              <div className="flex justify-between pt-1 font-bold">
+              <div className="flex justify-between pt-[var(--s1,4px)]">
                 <SkeletonText size="base" width="80px" />
                 <SkeletonText size="lg" width="90px" className="!bg-[#d4522f]/30" />
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 pt-2">
+            <div className="grid grid-cols-3 gap-[var(--s2,8px)] pt-[var(--s2,8px)]">
               <SkeletonBox height={36} sq="ctl" sqBorder="none" />
               <SkeletonBox height={36} sq="ctl" sqBorder="none" />
               <SkeletonBox height={36} sq="ctl" sqBorder="none" />
             </div>
 
-            <SkeletonButton height={46} className="w-full !bg-[#d4522f]/35" />
+            <SkeletonButton height={48} className="w-full !bg-[#d4522f]/35" />
           </div>
         </div>
       </div>
@@ -935,7 +933,7 @@ export const SkeletonCalendarTimeline: React.FC<SkeletonCalendarTimelineProps> =
   onRetry,
 }) => {
   return (
-    <div className="space-y-5 animate-in fade-in duration-200" role="status" aria-label="Loading calendar timetable">
+    <div className="flex flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200" role="status" aria-label="Loading calendar timetable">
       <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} onRetry={onRetry} />
       <SkeletonPageHeader hasViewToggle hasFacility hasActionBtn />
 
@@ -943,16 +941,16 @@ export const SkeletonCalendarTimeline: React.FC<SkeletonCalendarTimelineProps> =
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="p-3 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex items-center justify-between gap-3"
+        className="p-[var(--pod-pad,12px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex items-center justify-between gap-[var(--s3,12px)]"
       >
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-[var(--s2,8px)]">
           <SkeletonCircle size={32} />
           <SkeletonText size="sm" width="130px" />
           <SkeletonCircle size={32} />
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto">
+        <div className="flex items-center gap-[var(--s2,8px)] overflow-x-auto">
           {Array.from({ length: 7 }).map((_, i) => (
-            <SkeletonBox key={`day_ribbon_${i}`} width={55} height={42} sq="ctl" />
+            <SkeletonBox key={`day_ribbon_${i}`} width={56} height={40} sq="ctl" />
           ))}
         </div>
       </div>
@@ -961,14 +959,14 @@ export const SkeletonCalendarTimeline: React.FC<SkeletonCalendarTimelineProps> =
       <div
         data-sq="panel"
         data-sq-border="solid"
-        className="bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] p-3"
+        className="bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] p-[var(--pod-pad,12px)]"
       >
         {/* Column Headers (Stylists / Rooms) */}
-        <div className="grid grid-cols-4 gap-4 px-2 py-2 pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
+        <div className="grid grid-cols-4 gap-[var(--s4,16px)] px-[var(--s2,8px)] py-[var(--s2,8px)] pb-[var(--s3,12px)] border-b border-[#E6DED6] dark:border-neutral-800">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={`col_hdr_${i}`} className="flex items-center gap-2">
-              <SkeletonCircle size={30} />
-              <div className="space-y-1">
+            <div key={`col_hdr_${i}`} className="flex items-center gap-[var(--s2,8px)]">
+              <SkeletonCircle size={32} />
+              <div className="flex flex-col gap-[var(--s1,4px)]">
                 <SkeletonText size="xs" width="80px" />
                 <SkeletonText size="xs" width="50px" />
               </div>
@@ -977,23 +975,23 @@ export const SkeletonCalendarTimeline: React.FC<SkeletonCalendarTimelineProps> =
         </div>
 
         {/* Time-Slot Rows */}
-        <div className="grid grid-cols-4 gap-3 pt-3 min-h-[380px]">
+        <div className="grid grid-cols-4 gap-[var(--s3,12px)] pt-[var(--s3,12px)] min-h-[380px]">
           {Array.from({ length: 4 }).map((_, colIdx) => (
-            <div key={`slot_col_${colIdx}`} className="space-y-3">
+            <div key={`slot_col_${colIdx}`} className="flex flex-col gap-[var(--s3,12px)]">
               {Array.from({ length: 3 }).map((_, slotIdx) => (
                 <div
                   key={`slot_card_${colIdx}_${slotIdx}`}
                   data-sq="card"
                   data-sq-border="solid"
-                  className="p-3.5 bg-[#F3EDE7] dark:bg-neutral-800/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
+                  className="p-[var(--s4,16px)] bg-[#F3EDE7] dark:bg-neutral-800/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col gap-[var(--s2,8px)]"
                 >
                   <div className="flex items-center justify-between">
                     <SkeletonText size="xs" width="60px" />
-                    <SkeletonBox width={45} height={16} rounded="rounded-full" />
+                    <SkeletonBox width={48} height={16} rounded="rounded-full" />
                   </div>
                   <SkeletonText size="sm" width="95%" />
-                  <div className="flex items-center gap-2 pt-1">
-                    <SkeletonCircle size={18} />
+                  <div className="flex items-center gap-[var(--s2,8px)] pt-[var(--s1,4px)]">
+                    <SkeletonCircle size={20} />
                     <SkeletonText size="xs" width="70px" />
                   </div>
                 </div>
@@ -1025,43 +1023,43 @@ export const SkeletonKanbanPipeline: React.FC<SkeletonKanbanPipelineProps> = ({
   onRetry,
 }) => {
   return (
-    <div className="space-y-5 animate-in fade-in duration-200" role="status" aria-label="Loading kanban pipeline">
+    <div className="flex flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200" role="status" aria-label="Loading kanban pipeline">
       <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
       <SkeletonPageHeader hasActionBtn />
 
       {/* Multi-column Kanban swimlanes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 min-h-[500px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-[var(--s4,16px)] min-h-[500px]">
         {Array.from({ length: columnsCount }).map((_, colIdx) => (
           <div
             key={`kanban_col_${colIdx}`}
             data-sq="panel"
             data-sq-border="solid"
-            className="p-3 bg-[#F3EDE7] dark:bg-[#141312] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] flex flex-col space-y-3"
+            className="p-[var(--pod-pad,12px)] bg-[#F3EDE7] dark:bg-[#141312] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] flex flex-col gap-[var(--s3,12px)]"
           >
             {/* Column Header */}
-            <div className="flex items-center justify-between px-2 pt-1 pb-2 border-b border-[#E6DED6] dark:border-neutral-700/60">
+            <div className="flex items-center justify-between px-[var(--s2,8px)] pt-[var(--s1,4px)] pb-[var(--s2,8px)] border-b border-[#E6DED6] dark:border-neutral-700/60">
               <SkeletonText size="sm" width="110px" />
-              <SkeletonBox width={26} height={20} rounded="rounded-full" />
+              <SkeletonBox width={28} height={20} rounded="rounded-full" />
             </div>
 
             {/* Draggable Task Cards */}
-            <div className="space-y-3 flex-1">
+            <div className="flex flex-col gap-[var(--card-gap,12px)] flex-1">
               {Array.from({ length: 3 }).map((_, cardIdx) => (
                 <div
                   key={`kcard_${colIdx}_${cardIdx}`}
                   data-sq="card"
                   data-sq-border="solid"
-                  className="p-4 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2.5"
+                  className="p-[var(--s4,16px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col gap-[var(--s3,12px)]"
                 >
                   <div className="flex items-center justify-between">
-                    <SkeletonBox width={65} height={16} rounded="rounded-full" />
-                    <SkeletonCircle size={18} />
+                    <SkeletonBox width={64} height={16} rounded="rounded-full" />
+                    <SkeletonCircle size={20} />
                   </div>
                   <SkeletonText size="sm" width="90%" />
                   <SkeletonText size="xs" width="60%" />
-                  <div className="pt-2 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
-                    <SkeletonCircle size={22} />
-                    <SkeletonText size="xs" width="55px" />
+                  <div className="pt-[var(--s2,8px)] border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between">
+                    <SkeletonCircle size={24} />
+                    <SkeletonText size="xs" width="56px" />
                   </div>
                 </div>
               ))}
@@ -1090,7 +1088,7 @@ export const SkeletonFinanceAudit: React.FC<SkeletonFinanceAuditProps> = ({
   onRetry,
 }) => {
   return (
-    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading finance overview">
+    <div className="flex flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200" role="status" aria-label="Loading finance overview">
       <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
       <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={170} />
 
@@ -1098,7 +1096,7 @@ export const SkeletonFinanceAudit: React.FC<SkeletonFinanceAuditProps> = ({
       <SkeletonKpiGrid count={4} columns="grid-cols-1 sm:grid-cols-2 xl:grid-cols-4" />
 
       {/* Split Finance View */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[var(--s4,16px)]">
         <div className="lg:col-span-5">
           <SkeletonChart height={340} />
         </div>
@@ -1163,29 +1161,31 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
   const gridColsClass = kpiLayout || (kpiCount === 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3');
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading collection view">
+    <div className="flex flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200" role="status" aria-label="Loading collection view">
       <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
       
       {/* 1. Member-style Header Bar */}
-      <SkeletonPageHeader
-        hasIcon={hasIcon}
-        hasViewToggle={false}
-        hasFacility={hasFacility}
-        hasActionBtn={hasActionBtn}
-        actionBtnWidth={actionBtnWidth}
-      />
+      <div className="pb-[var(--s2,8px)]">
+        <SkeletonPageHeader
+          hasIcon={hasIcon}
+          hasViewToggle={false}
+          hasFacility={hasFacility}
+          hasActionBtn={hasActionBtn}
+          actionBtnWidth={actionBtnWidth}
+        />
+      </div>
 
       {/* 2. Top Metric Pod Tray (#F3EDE7, CornerRadius 28px) with 2 White + 1 Dark #1F1D1B Cards */}
       {kpiCount > 0 && (
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-3 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D]"
+          className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--s3,12px)] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D]"
         >
-          <div className="px-2 pt-1">
+          <div className="px-[var(--s3,12px)] pt-[var(--s1,4px)]">
             <SkeletonText size="sm" width="220px" />
           </div>
-          <div className={`grid ${gridColsClass} gap-3`}>
+          <div className={`grid ${gridColsClass} gap-[var(--card-gap,12px)]`}>
             {Array.from({ length: kpiCount }).map((_, i) => {
               const isDarkCard = kpiCount >= 3 && i === kpiCount - 1;
               return (
@@ -1193,20 +1193,20 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
                   key={`coll_kpi_${i}`}
                   data-sq="card"
                   data-sq-border="solid"
-                  className={`p-4.5 sm:p-5 flex flex-col justify-between min-h-[132px] ${
+                  className={`p-[var(--card-pad,20px)] flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] ${
                     isDarkCard
                       ? 'bg-[#1F1D1B] [--sq-stroke:rgba(255,255,255,0.08)]'
                       : 'bg-white dark:bg-neutral-800/90 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)]'
                   }`}
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-col gap-[var(--s2,8px)]">
+                    <div className="flex items-center justify-between gap-[var(--s2,8px)]">
                       <SkeletonText size="xs" width="128px" className={isDarkCard ? '!bg-white/15' : ''} />
-                      {isDarkCard && <SkeletonBox width={72} height={20} rounded="rounded-full" className="!bg-[#3D2817]" />}
+                      {isDarkCard && <SkeletonBox width={72} height={24} rounded="rounded-full" className="!bg-[#3D2817]" />}
                     </div>
-                    {!isDarkCard && <SkeletonBox width={88} height={20} rounded="rounded-full" />}
+                    {!isDarkCard && <SkeletonBox width={88} height={24} rounded="rounded-full" />}
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="flex flex-col gap-[var(--s2,8px)] mt-auto">
                     <SkeletonText
                       size="2xl"
                       width="72px"
@@ -1225,11 +1225,11 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
       <div
         data-sq="panel"
         data-sq-border="solid"
-        className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-3 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D]"
+        className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--s3,12px)] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D]"
       >
-        <div className="flex flex-wrap items-center justify-between gap-3 px-2 pt-1">
+        <div className="flex flex-wrap items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] pt-[var(--s1,4px)]">
           <SkeletonText size="sm" width="180px" />
-          <div className="flex flex-wrap items-center gap-2.5 ms-auto">
+          <div className="flex flex-wrap items-center gap-[var(--s2,8px)] ms-auto">
             <SkeletonBox width={40} height={40} sq="ctl" />
             <SkeletonBox width={210} height={40} sq="ctl" />
             <SkeletonBox width={96} height={40} sq="ctl" />
@@ -1569,7 +1569,7 @@ export const SkeletonAnalytics: React.FC<{
   onRetry?: () => Promise<void> | void;
 }> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
   return (
-    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading analytics">
+    <div className="flex flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200" role="status" aria-label="Loading analytics">
       <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
       <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={140} />
 
@@ -1577,20 +1577,20 @@ export const SkeletonAnalytics: React.FC<{
       <SkeletonKpiGrid count={4} columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" />
 
       {/* Multi-series Margin & Revenue Visual Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[var(--s4,16px)]">
         <div className="lg:col-span-8">
           <SkeletonChart height={340} />
         </div>
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="lg:col-span-4 p-6 bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
+          className="lg:col-span-4 p-[var(--card-pad,20px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col gap-[var(--s4,16px)]"
         >
           <SkeletonText size="base" width="160px" />
-          <div className="space-y-3">
+          <div className="flex flex-col gap-[var(--s3,12px)]">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={`cat_${i}`} className="space-y-1">
-                <div className="flex justify-between text-xs">
+              <div key={`cat_${i}`} className="flex flex-col gap-[var(--s1,4px)]">
+                <div className="flex justify-between">
                   <SkeletonText size="xs" width="80px" />
                   <SkeletonText size="xs" width="50px" />
                 </div>
@@ -1631,23 +1631,23 @@ const SkeletonHomePreviewBlock: React.FC<{ rows?: number }> = ({ rows = 3 }) => 
   <div
     data-sq="card"
     data-sq-border="solid"
-    className="bg-white dark:bg-[#161413] [--sq-stroke:#E2D6CC] dark:[--sq-stroke:#2E2724] p-3.5 sm:p-4 space-y-2.5 h-full flex flex-col justify-between"
+    className="bg-white dark:bg-[#161413] [--sq-stroke:#E2D6CC] dark:[--sq-stroke:#2E2724] p-[var(--card-pad,20px)] gap-[var(--card-gap,12px)] h-full flex flex-col justify-between"
   >
-    <div className="space-y-2.5">
-      <div className="flex items-start justify-between gap-2.5">
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <SkeletonBox width={36} height={36} sq="tile" className="shrink-0" />
-          <div className="space-y-1 flex-1">
+    <div className="flex flex-col gap-[var(--card-gap,12px)]">
+      <div className="flex items-start justify-between gap-[var(--card-head-gap,12px)]">
+        <div className="flex items-center gap-[var(--card-head-gap,12px)] min-w-0 flex-1">
+          <SkeletonBox width={40} height={40} sq="tile" className="shrink-0" />
+          <div className="flex flex-col gap-[var(--s1,4px)] flex-1">
             <SkeletonText size="sm" width="56%" />
             <SkeletonText size="xs" width="40%" />
           </div>
         </div>
-        <SkeletonCircle size={36} />
+        <SkeletonCircle size={32} />
       </div>
       <div className="divide-y divide-[#EFE6DF] dark:divide-[#27211E]">
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={`hrow_${i}`} className="py-1.5 flex items-center justify-between gap-2.5">
-            <div className="space-y-1 flex-1">
+          <div key={`hrow_${i}`} className="py-[var(--s2,8px)] flex items-center justify-between gap-[var(--s3,12px)]">
+            <div className="flex flex-col gap-[var(--s1,4px)] flex-1">
               <SkeletonText size="sm" width="68%" />
               <SkeletonText size="xs" width="46%" />
             </div>
@@ -1656,7 +1656,7 @@ const SkeletonHomePreviewBlock: React.FC<{ rows?: number }> = ({ rows = 3 }) => 
         ))}
       </div>
     </div>
-    <div className="pt-2 border-t border-[#EFE6DF] dark:border-[#27211E] flex justify-between">
+    <div className="pt-[var(--s2,8px)] border-t border-[#EFE6DF] dark:border-[#27211E] flex justify-between">
       <SkeletonText size="xs" width="56px" />
       <SkeletonText size="xs" width="64px" />
     </div>
@@ -1676,41 +1676,41 @@ export const SkeletonHomeView: React.FC<{
     <div
       role="status"
       aria-label="Loading reception hall"
-      className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col space-y-3.5 animate-in fade-in duration-200"
+      className="lg:flex-1 lg:min-h-0 lg:flex lg:flex-col gap-[var(--pod-gap,16px)] animate-in fade-in duration-200"
     >
       <span className="sr-only">Loading home screen...</span>
       <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
 
       {/* Welcome Greeting Header Skeleton */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pb-0.5 shrink-0">
-        <div className="flex items-center gap-3.5 flex-1">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-[var(--s4,16px)] shrink-0">
+        <div className="flex items-center gap-[var(--ph-gap,16px)] flex-1">
           <SkeletonBox width={48} height={48} sq="tile-lg" className="shrink-0" />
-          <div className="space-y-1.5 flex-1 max-w-md">
+          <div className="flex flex-col gap-[var(--ph-sub-gap,4px)] flex-1 max-w-md">
             <SkeletonText size="xl" width="76%" />
             <SkeletonText size="xs" width="58%" />
           </div>
         </div>
-        <div className="flex items-center gap-2.5 shrink-0">
-          <SkeletonButton width={140} height={38} />
-          <SkeletonButton width={160} height={38} />
+        <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
+          <SkeletonButton width={140} height={40} />
+          <SkeletonButton width={160} height={40} />
         </div>
       </div>
 
       {/* Fixed-Viewport Asymmetric Two-Column Pods */}
-      <div className={`lg:flex-1 lg:min-h-0 grid grid-cols-1 ${ratioClass} gap-4 items-stretch`}>
+      <div className={`lg:flex-1 lg:min-h-0 grid grid-cols-1 ${ratioClass} gap-[var(--pod-gap,16px)] items-stretch`}>
         {/* Left Pulse Pod (Warm Sandstone/Brown) */}
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-[#F2E6DA] dark:bg-[#191512] [--sq-stroke:#DFCFC0] dark:[--sq-stroke:#382E25] p-3 space-y-3 flex flex-col"
+          className="bg-[#F2E6DA] dark:bg-[#191512] [--sq-stroke:#DFCFC0] dark:[--sq-stroke:#382E25] p-[var(--pod-pad,12px)] gap-[var(--s3,12px)] flex flex-col"
         >
-          <div className="px-2 pt-1">
+          <div className="px-[var(--s3,12px)] pt-[var(--s1,4px)]">
             <SkeletonText size="base" width="150px" />
           </div>
           <div
             data-sq="card"
             data-sq-border="none"
-            className="bg-[#231914] p-4 min-h-[108px] flex flex-col justify-between shrink-0"
+            className="bg-[#231914] p-[var(--card-pad,20px)] min-h-[108px] flex flex-col justify-between shrink-0"
           >
             <SkeletonText size="xs" width="45%" />
             <SkeletonText size="xl" width="60%" />
@@ -1724,12 +1724,12 @@ export const SkeletonHomeView: React.FC<{
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-[#EFEBF7] dark:bg-[#171420] [--sq-stroke:#DDD4EC] dark:[--sq-stroke:#312A44] p-3 space-y-3 flex flex-col"
+          className="bg-[#EFEBF7] dark:bg-[#171420] [--sq-stroke:#DDD4EC] dark:[--sq-stroke:#312A44] p-[var(--pod-pad,12px)] gap-[var(--s3,12px)] flex flex-col"
         >
-          <div className="px-2 pt-1">
+          <div className="px-[var(--s3,12px)] pt-[var(--s1,4px)]">
             <SkeletonText size="base" width="165px" />
           </div>
-          <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-3 auto-rows-fr">
+          <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-[var(--card-gap,12px)] auto-rows-fr">
             <SkeletonHomePreviewBlock rows={3} />
             <SkeletonHomePreviewBlock rows={3} />
             <SkeletonHomePreviewBlock rows={3} />

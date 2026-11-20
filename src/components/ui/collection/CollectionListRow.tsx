@@ -75,7 +75,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
           {
             id: 'view',
             tooltip: 'View',
-            icon: <Eye className="w-3.5 h-3.5" />,
+            icon: <Eye className="w-4 h-4" strokeWidth={1.5} />,
             iconColor: '#64748B',
             onClick: (e: React.MouseEvent) => {
               e.stopPropagation();
@@ -89,7 +89,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
           {
             id: 'edit',
             tooltip: 'Edit',
-            icon: <Pencil className="w-3.5 h-3.5" />,
+            icon: <Pencil className="w-4 h-4" strokeWidth={1.5} />,
             iconColor: '#d4522f',
             onClick: (e: React.MouseEvent) => {
               e.stopPropagation();
@@ -104,9 +104,9 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
             id: 'status',
             tooltip: isActive ? 'Freeze' : 'Activate',
             icon: isActive ? (
-              <Snowflake className="w-3.5 h-3.5 text-[#06B6D4]" />
+              <Snowflake className="w-4 h-4 text-[#06B6D4]" strokeWidth={1.5} />
             ) : (
-              <RefreshCw className="w-3.5 h-3.5 text-emerald-500" />
+              <RefreshCw className="w-4 h-4 text-emerald-500" strokeWidth={1.5} />
             ),
             iconColor: isActive ? '#06B6D4' : '#10B981',
             onClick: (e: React.MouseEvent) => {
@@ -123,8 +123,9 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
             tooltip: isPinned ? 'Unpin' : 'Pin',
             icon: (
               <Pin
-                className={`w-3.5 h-3.5 ${
-                  isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-black/62 dark:text-white/65'
+                strokeWidth={1.5}
+                className={`w-4 h-4 ${
+                  isPinned ? 'fill-[#F59E0B] text-[#F59E0B]' : 'text-[var(--text-2)]'
                 }`}
               />
             ),
@@ -142,7 +143,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
           {
             id: 'delete',
             tooltip: 'Delete',
-            icon: <Trash2 className="w-3.5 h-3.5 text-red-500" />,
+            icon: <Trash2 className="w-4 h-4 text-red-500" strokeWidth={1.5} />,
             iconColor: '#EF4444',
             isSpecialDelete: true,
             onClick: (e: React.MouseEvent) => {
@@ -229,12 +230,12 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
         setIsHovered(false);
         setIsKebabOpen(false);
       }}
-      className="relative flex flex-col w-full mb-1.5 transition-all duration-200 select-none group"
+      className="relative flex flex-col w-full transition-all duration-200 select-none group"
     >
       {/* ================= MAIN ROW CARD ================= */}
       <div
         onClick={onRowClick}
-        className="relative z-10 w-full min-h-[54px] px-4 py-2.5 sq-elev-card flex items-center cursor-pointer"
+        className="relative z-10 w-full min-h-[var(--row-h,64px)] px-[var(--row-inset,12px)] py-[var(--s2,8px)] sq-elev-card flex items-center gap-[var(--s2,8px)] cursor-pointer"
       >
         <div
           aria-hidden="true"
@@ -252,10 +253,10 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
         />
 
         {/* Dynamic Column Children */}
-        <div className="relative z-10 flex-1 flex items-center gap-3 overflow-hidden">{children}</div>
+        <div className="relative z-10 flex-1 flex items-center gap-[var(--col-gap,16px)] overflow-hidden">{children}</div>
 
         {/* Column 5: Kebab Button (⋮) */}
-        <div className="relative z-20 shrink-0 ml-2">
+        <div className="relative z-20 shrink-0">
           <button
             ref={kebabButtonRef}
             type="button"
@@ -264,10 +265,10 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
               e.stopPropagation();
               setIsKebabOpen((prev) => !prev);
             }}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-black/56 hover:text-black dark:text-white/60 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
+            className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
             title="Options"
           >
-            <MoreVertical className="w-4 h-4" />
+            <MoreVertical className="w-4 h-4" strokeWidth={1.5} />
           </button>
 
           {/* Floating Context Menu */}
@@ -283,22 +284,19 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       {/* Real layout height expansion (0 -> 52px) pushing rows below down */}
       <div
         style={{
-          height: isHovered ? '52px' : '0px',
+          height: isHovered ? '48px' : '0px',
           opacity: isHovered ? 1 : 0,
-          marginTop: isHovered ? '6px' : '0px',
-          marginBottom: isHovered ? '4px' : '0px',
-          transitionProperty: 'height, opacity, margin',
-          transitionDuration: isHovered ? '240ms, 180ms, 240ms' : '180ms, 140ms, 180ms',
+          transitionProperty: 'height, opacity',
+          transitionDuration: isHovered ? '240ms, 180ms' : '180ms, 140ms',
           transitionTimingFunction: isHovered
             ? 'cubic-bezier(0.2, 0, 0.2, 1)'
             : 'cubic-bezier(0.4, 0, 1, 1)',
-          transitionDelay: isHovered ? '0ms' : '80ms', // 80ms delay before collapse
+          transitionDelay: isHovered ? '0ms' : '80ms',
         }}
         className="w-full overflow-hidden flex items-center justify-center pointer-events-auto"
       >
-        <div className="flex items-center justify-center gap-3.5 py-1">
+        <div className="flex items-center justify-center gap-[var(--s3,12px)] py-[var(--s1,4px)]">
           {defaultActions.map((action, idx) => {
-            // Stagger calculation: Left-to-right (40ms) on enter, Right-to-left (30ms) on exit
             const enterDelay = idx * 40;
             const exitDelay = (defaultActions.length - 1 - idx) * 30;
 
@@ -315,11 +313,11 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
                   transitionProperty: 'transform, opacity',
                   transitionDuration: isHovered ? '240ms, 140ms' : '140ms, 100ms',
                   transitionTimingFunction: isHovered
-                    ? 'cubic-bezier(0.34, 1.56, 0.64, 1)' // spring bounce (BackEase)
+                    ? 'cubic-bezier(0.34, 1.56, 0.64, 1)'
                     : 'cubic-bezier(0.4, 0, 1, 1)',
                   transitionDelay: `${isHovered ? enterDelay : exitDelay}ms`,
                 }}
-                className={`w-10 h-10 rounded-full bg-white dark:bg-[#1E1E22] border border-[#E6DED6] dark:border-neutral-700/80 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                className={`w-[var(--btn-h,40px)] h-[var(--btn-h,40px)] rounded-full bg-white dark:bg-[#1E1E22] border border-[#E6DED6] dark:border-neutral-700/80 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                   action.isSpecialDelete
                     ? 'hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300'
                     : 'hover:bg-[#FDF4F0] dark:hover:bg-neutral-700/60 hover:border-[#d4522f]/50'

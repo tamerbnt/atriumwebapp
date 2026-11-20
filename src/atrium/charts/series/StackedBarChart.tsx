@@ -237,11 +237,11 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
           ) : undefined
         }
         footer={
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5 ax-tk">
+          <div className="flex flex-wrap items-center justify-between gap-[var(--s2,8px)] ax-tk">
             {showAverage ? (
               <span>
                 {averageLabel || strings.avgLabel}:{' '}
-                <strong className="text-[var(--ax-on)]" dir="ltr">
+                <strong className="font-semibold text-[var(--ax-on)]" dir="ltr">
                   {formatChartValue(metrics.avg, { locale, format, currency, unit })}
                 </strong>
               </span>
@@ -255,7 +255,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
         }
       >
         {/* Filter Pills (.leg2) positioned cleanly above headline figure */}
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-[var(--s2,8px)]">
           {activeSeries.map((s) => (
             <button
               key={s.id}
@@ -273,7 +273,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
             </button>
           ))}
           {hasAnyCancelled && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full border border-[var(--ax-bdr)] text-[11px] font-medium text-[var(--ax-sub)]">
+            <span className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full border border-[var(--ax-bdr)] t-small text-[var(--ax-sub)]">
               <span className="w-2.5 h-2.5 rounded-[3px] ax-es border border-[var(--ax-bdr)] shrink-0" />
               <span>{cancelledLabel || strings.cancelledLabel}</span>
             </span>
@@ -458,7 +458,7 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
                     className="absolute inset-x-0 border-t-[1.5px] border-dashed border-[var(--ax-acc)] pointer-events-none z-20 flex justify-end"
                     style={{ bottom: `${avgRatio * 100}%` }}
                   >
-                    <span className="ax-tk me-1 -translate-y-1/2 px-1.5 py-[1px] rounded-[var(--r-check,6px)] border border-[var(--ax-acc)]/35 bg-[var(--ax-slab)] text-[9.5px] text-[var(--ax-acc)] font-semibold leading-none shadow-xs">
+                    <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] me-[var(--s1,4px)] -translate-y-1/2 rounded-[var(--r-check,6px)] border border-[var(--ax-acc)]/35 bg-[var(--ax-slab)] t-small text-[var(--ax-acc)] font-semibold shadow-xs">
                       {averageLabel || strings.avgLabel}
                     </span>
                   </div>

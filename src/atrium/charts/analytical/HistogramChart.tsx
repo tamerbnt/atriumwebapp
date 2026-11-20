@@ -156,16 +156,16 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
         }
         footer={
           medianBin ? (
-            <div className="flex flex-wrap items-center justify-between gap-2 ax-tk pt-1">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-[var(--s2,8px)] ax-tk">
+              <div className="flex flex-wrap items-center gap-[var(--chart-leg-row-gap,16px)]">
+                <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                   <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--ax-c1)]" />
                   <span>
                     {medianLabel || strings.medianLabel}:{' '}
-                    <strong className="text-[var(--ax-on)]">{medianBin.label}</strong>
+                    <strong className="font-semibold text-[var(--ax-on)]">{medianBin.label}</strong>
                   </span>
                 </span>
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-[var(--chart-swatch-gap,6px)]">
                   <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--ax-c3)]" />
                   <span>{otherBinsLabel || strings.otherBinsLabel}</span>
                 </span>
@@ -183,11 +183,11 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
           ) : undefined
         }
       >
-        <div className="relative flex gap-2 pt-8">
-          {/* Y-Axis (34px gutter matching Histogram.dc.html) */}
+        <div className="relative flex gap-[var(--s2,8px)] pt-[var(--s7,32px)]">
+          {/* Y-Axis */}
           <div
-            className="w-[34px] flex flex-col justify-between items-end shrink-0 pb-9 ax-tk select-none"
-            style={{ height: 226 }}
+            className="w-[36px] flex flex-col justify-between items-end shrink-0 pb-[var(--s8,48px)] ax-tk select-none"
+            style={{ height: 208 }}
             aria-hidden="true"
           >
             {reversedTicks.map((tick, idx) => (
@@ -211,7 +211,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
             onKeyDown={onKeyDown}
             className="relative flex-1 min-w-0 ax-plot-focus select-none cursor-pointer"
           >
-            <div className="relative h-[190px] w-full">
+            <div className="relative h-[var(--chart-h,160px)] w-full">
               {metrics.scale.ticks.map((_, idx) => {
                 const pct =
                   metrics.scale.ticks.length > 1
@@ -231,7 +231,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
               })}
 
               <div
-                className="relative z-10 h-full grid gap-2 items-end"
+                className="relative z-10 h-full grid gap-[var(--s2,8px)] items-end"
                 style={{
                   gridTemplateColumns: `repeat(${safeBins.length}, minmax(0, 1fr))`,
                 }}
@@ -241,8 +241,6 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
                     metrics.scale.max > 0
                       ? Math.min(100, (bin.value / metrics.scale.max) * 100)
                       : 0;
-                  const sharePct =
-                    metrics.total > 0 ? Math.round((bin.value / metrics.total) * 100) : 0;
                   const isMedian = idx === metrics.resolvedHighlight;
                   const isActive = activeIdx === idx;
                   const isDim = activeIdx !== null && !isActive;
@@ -257,12 +255,12 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
                       className="relative h-full flex flex-col justify-end items-center transition-opacity duration-200"
                       style={{ opacity: isDim ? 0.34 : 1 }}
                     >
-                      {/* Bold count value stacked cleanly above bar (+ MEDIANE pill above it) */}
+                      {/* Count value stacked cleanly above bar (+ Median pill above it) */}
                       {isMedian && (
                         <span
-                          className="ax-pop-item absolute px-1.5 py-[1px] rounded-[var(--r-check,6px)] bg-[var(--ax-c1)] text-[var(--ax-tc1)] text-[9px] font-bold uppercase tracking-wider whitespace-nowrap z-20"
+                          className="ax-pop-item absolute inline-flex items-center h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] rounded-[var(--r-check,6px)] bg-[var(--ax-c1)] text-[var(--ax-tc1)] t-small font-semibold whitespace-nowrap z-20"
                           style={{
-                            bottom: `calc(${Math.max(4, heightPct)}% + 22px)`,
+                            bottom: `calc(${Math.max(4, heightPct)}% + 24px)`,
                             '--ax-delay': `${Math.min(idx * 42 + 120, 420)}ms`,
                           } as React.CSSProperties}
                         >
@@ -273,7 +271,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
                       {bin.value > 0 && (
                         <span
                           dir="ltr"
-                          className={`ax-nv absolute text-[12px] font-bold whitespace-nowrap pointer-events-none z-20 ${
+                          className={`ax-nv absolute font-semibold whitespace-nowrap pointer-events-none z-20 ${
                             isMedian || isActive ? 'text-[var(--ax-on)]' : 'text-[var(--ax-sub)]'
                           }`}
                           style={{
@@ -308,9 +306,9 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
               </div>
             </div>
 
-            {/* Bin Labels + % Share Underneath (matching Histogram.dc.html) */}
+            {/* Bin Labels + % Share Underneath */}
             <div
-              className="grid gap-2 pt-1.5 text-center"
+              className="grid gap-[var(--s2,8px)] pt-[var(--s2,8px)] text-center"
               style={{
                 gridTemplateColumns: `repeat(${safeBins.length}, minmax(0, 1fr))`,
               }}
@@ -328,7 +326,7 @@ export const HistogramChart: React.FC<HistogramChartProps> = React.memo(
                     >
                       {bin.label}
                     </span>
-                    <span className="ax-tk text-[9.5px] italic opacity-75" dir="ltr">
+                    <span className="ax-tk opacity-75" dir="ltr">
                       {sharePct}%
                     </span>
                   </div>

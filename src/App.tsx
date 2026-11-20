@@ -1273,11 +1273,11 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setTopBarCollapsed(false)}
-                className="fixed top-[var(--s2)] left-1/2 -translate-x-1/2 z-50 h-8 flex items-center gap-2 px-3 rounded-full bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-700 text-[var(--text-1)] dark:text-white text-xs font-medium shadow-sm hover:shadow-md hover:border-[var(--brand-fill)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] transition-all duration-200 cursor-pointer group select-none backdrop-blur-md"
+                className="fixed top-[var(--s2)] left-1/2 -translate-x-1/2 z-50 h-[var(--btn-sm-h,32px)] flex items-center gap-[var(--btn-sm-gap,6px)] px-[var(--btn-sm-px,12px)] rounded-full bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-700 text-[var(--text-1)] dark:text-white t-btn shadow-sm hover:shadow-md hover:border-[var(--brand-fill)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] transition-all duration-200 cursor-pointer group select-none backdrop-blur-md"
                 title={t('topbar_focus_restore', "Afficher l'en-tête")}
                 aria-label={t('topbar_focus_restore', "Afficher l'en-tête")}
               >
-                <ChevronDown size={16} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] group-hover:translate-y-0.5 transition-transform" />
+                <ChevronDown size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] group-hover:translate-y-0.5 transition-transform" />
                 <span>{t('topbar_focus_restore', "Afficher l'en-tête")}</span>
               </button>
             )}

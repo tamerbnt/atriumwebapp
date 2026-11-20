@@ -163,7 +163,7 @@ export const Seek: React.FC<SeekProps> = React.memo(({
 
   // Dimensions
   const currentWidth = isOpen ? openWidth : shutSize;
-  const lensSize = 18;
+  const lensSize = 16;
   const inset = Math.max(8, Math.round((shutSize - lensSize) / 2));
   const say = isOpen ? 1 : 0;
 
@@ -232,8 +232,8 @@ export const Seek: React.FC<SeekProps> = React.memo(({
           title={isOpen ? "Search" : "Open search"}
         >
           <Search
-            size={Math.max(16, Math.round(shutSize * 0.44))}
-            strokeWidth={2.2}
+            size={16}
+            strokeWidth={1.5}
             className="transition-transform duration-200"
           />
         </button>
@@ -253,8 +253,8 @@ export const Seek: React.FC<SeekProps> = React.memo(({
           tabIndex={isOpen ? 0 : -1}
           style={{
             left: `${shutSize}px`,
-            right: isOpen && value ? '34px' : '14px',
-            width: `calc(100% - ${shutSize + (isOpen && value ? 34 : 14)}px)`,
+            right: isOpen && value ? '32px' : '12px',
+            width: `calc(100% - ${shutSize + (isOpen && value ? 32 : 12)}px)`,
             pointerEvents: isOpen ? 'auto' : 'none',
           }}
         />
@@ -265,11 +265,11 @@ export const Seek: React.FC<SeekProps> = React.memo(({
             type="button"
             data-no-liquid="true"
             onClick={handleClear}
-            className="sek-clear absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-black/55 hover:text-black hover:bg-black/[0.06] dark:text-white/60 dark:hover:text-white dark:hover:bg-white/10 transition-colors cursor-pointer z-20"
+            className="sek-clear absolute right-[var(--s2,8px)] top-1/2 -translate-y-1/2 w-[var(--s5,20px)] h-[var(--s5,20px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-black/[0.06] dark:hover:bg-white/10 transition-colors cursor-pointer z-20"
             title="Clear search"
             aria-label="Clear search"
           >
-            <X size={13} strokeWidth={2.2} />
+            <X size={16} strokeWidth={1.5} />
           </button>
         )}
 

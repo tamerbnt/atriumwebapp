@@ -449,13 +449,13 @@ function KineticSlideOverInspectorInner<T>({
           className="relative w-full h-full bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex flex-col overflow-hidden"
         >
         {/* Header (.ph) */}
-        <div className="ph flex gap-4 items-start p-[var(--drawer-pad,24px)] pb-4">
+        <div className="ph flex gap-[var(--s4,16px)] items-start p-[var(--drawer-pad,24px)] pb-[var(--s4,16px)]">
           {avatarText && (
             <div className="sq-elev-card shrink-0">
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="pav relative w-16 h-16 grid place-items-center text-white font-semibold text-2xl select-none"
+                className="pav relative w-16 h-16 grid place-items-center text-white t-dialog select-none"
                 style={{ backgroundColor: avatarColor }}
                 aria-hidden="true"
               >
@@ -464,40 +464,40 @@ function KineticSlideOverInspectorInner<T>({
             </div>
           )}
 
-          <div className="pmeta flex-1 min-w-0 flex flex-col gap-2">
+          <div className="pmeta flex-1 min-w-0 flex flex-col gap-[var(--s2,8px)]">
             <h2
               id="kinetic-pnl-title"
-              className="m-0 font-semibold text-[var(--t-h2)] leading-[var(--lh-h2)] text-[var(--text-1)] tracking-[-0.015em] truncate"
+              className="m-0 t-dialog text-[var(--text-1)] truncate"
             >
               {title}
             </h2>
-            <div className="ppills flex gap-2 flex-wrap items-center">
+            <div className="ppills flex gap-[var(--s2,8px)] flex-wrap items-center">
               {statusLabel && (
                 <span
-                  className={`pill inline-flex items-center gap-2 h-[var(--badge-h,22px)] px-2 rounded-full text-xs font-medium ${
+                  className={`pill inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small ${
                     statusClassName ||
                     'bg-[#DDF5E8] text-[#0B7A45] border border-[#B5E8CE]'
                   }`}
                 >
-                  <i className="w-2 h-2 rounded-full bg-current" />
+                  <i className="w-[var(--pill-dot,6px)] h-[var(--pill-dot,6px)] rounded-full bg-current" />
                   {statusLabel}
                 </span>
               )}
               {branchName && (
-                <span className="pill inline-flex items-center gap-2 h-7 px-3 rounded-full text-xs font-medium bg-[#F3EDE7] dark:bg-[#262422] text-[var(--text-1)] border border-[#E6DED6] dark:border-[#3A3734]">
-                  <span className="w-2 h-2 rounded-full bg-[var(--brand-accent,#D9532B)]" />
+                <span className="pill inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[#F3EDE7] dark:bg-[#262422] text-[var(--text-1)] border border-[#E6DED6] dark:border-[#3A3734]">
+                  <span className="w-[var(--pill-dot,6px)] h-[var(--pill-dot,6px)] rounded-full bg-[var(--brand-accent,#D9532B)]" />
                   {branchName}
                 </span>
               )}
               {categoryLabel && (
-                <span className="pill inline-flex items-center h-7 px-3 rounded-full text-xs font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] border border-[#d4522f]/25 dark:border-[#52291F]">
+                <span className="pill inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] border border-[#d4522f]/25 dark:border-[#52291F]">
                   {categoryLabel}
                 </span>
               )}
               {headerPills}
             </div>
             {subtitle && (
-              <span className="block tabular-nums text-xs text-[var(--text-2)] truncate">
+              <span className="block tabular-nums t-cap text-[var(--text-2)] truncate">
                 {subtitle}
               </span>
             )}
@@ -548,7 +548,7 @@ function KineticSlideOverInspectorInner<T>({
             role="tablist"
             data-sq="ctl"
             data-sq-border="none"
-            className="ptabs relative flex mx-[var(--drawer-pad,24px)] p-1 bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
+            className="ptabs relative flex mx-[var(--drawer-pad,24px)] p-[var(--seg-l-pad,4px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
           >
             <i
               ref={pindRef}
@@ -569,9 +569,9 @@ function KineticSlideOverInspectorInner<T>({
                   data-no-liquid="true"
                   aria-selected={isSelected}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative z-[1] flex-1 h-9 border-0 bg-transparent font-semibold text-[var(--t-sub)] rounded-[var(--r-thumb,9px)] transition-colors duration-160 cursor-pointer whitespace-nowrap truncate ${
+                  className={`relative z-[1] flex-1 h-[var(--seg-m-h,32px)] border-0 bg-transparent t-btn rounded-[var(--r-thumb,9px)] transition-colors duration-160 cursor-pointer whitespace-nowrap truncate ${
                     isSelected
-                      ? 'text-white'
+                      ? 'text-white font-semibold'
                       : 'text-[var(--text-1)]'
                   }`}
                 >
@@ -586,14 +586,14 @@ function KineticSlideOverInspectorInner<T>({
         <div
           role="tabpanel"
           data-anim={entranceEpoch & 1}
-          className="pb flex-1 overflow-y-auto px-[var(--drawer-pad,24px)] py-4 select-text"
+          className="pb flex-1 overflow-y-auto px-[var(--drawer-pad,24px)] py-[var(--s4,16px)] select-text"
           style={{ scrollbarWidth: 'thin' }}
         >
           {renderBody(activeItem, activeTab, entranceEpoch)}
         </div>
 
         {/* Footer (.pf) */}
-        <div className="pf flex justify-between items-center px-[var(--drawer-pad,24px)] py-4 border-t border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+        <div className="pf flex justify-between items-center px-[var(--drawer-pad,24px)] py-[var(--s4,16px)] border-t border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
           {onDelete ? (
             holdToDelete ? (
               <button
@@ -621,7 +621,7 @@ function KineticSlideOverInspectorInner<T>({
                   holdRef.current?.setTarget(0);
                   wake();
                 }}
-                className="relative overflow-hidden h-10 px-4 [--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] bg-[#FDE4DF]/70 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] font-semibold text-xs flex items-center gap-2 cursor-pointer select-none"
+                className="relative overflow-hidden h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] [--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] bg-[#FDE4DF]/70 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] t-btn font-semibold flex items-center gap-[var(--btn-icon-gap,8px)] cursor-pointer select-none"
               >
                 <span
                   ref={holdFillRef}
@@ -630,9 +630,9 @@ function KineticSlideOverInspectorInner<T>({
                 />
                 <span
                   ref={holdTextWrapRef}
-                  className="relative z-10 flex items-center gap-2 transition-colors duration-75"
+                  className="relative z-10 flex items-center gap-[var(--btn-icon-gap,8px)] transition-colors duration-75"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4" strokeWidth={1.5} />
                   <span ref={holdLabelRef}>{defaultHoldIdle}</span>
                 </span>
               </button>
@@ -644,9 +644,9 @@ function KineticSlideOverInspectorInner<T>({
                   onDelete(activeItem);
                   onClose();
                 }}
-                className="border-0 bg-transparent text-[#c0283d] hover:text-[#91200E] dark:text-[#FF8D7A] font-semibold text-[var(--t-sub)] flex items-center gap-2 py-2 px-1 cursor-pointer transition-colors"
+                className="border-0 bg-transparent text-[#c0283d] hover:text-[#91200E] dark:text-[#FF8D7A] t-btn font-semibold flex items-center gap-[var(--btn-icon-gap,8px)] py-[var(--s2,8px)] px-[var(--s1,4px)] cursor-pointer transition-colors"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4 h-4" strokeWidth={1.5} />
                 <span>
                   {deleteLabel ||
                     (language === 'ar' ? 'حذف' : language === 'fr' ? 'Supprimer' : 'Delete')}
@@ -663,7 +663,7 @@ function KineticSlideOverInspectorInner<T>({
             data-sq="ctl"
             data-sq-border="none"
             onClick={onClose}
-            className="relative h-10 px-6 border-0 bg-[var(--brand-fill)] hover:bg-[var(--brand-accent)] text-white font-semibold text-[var(--t-body)] cursor-pointer transition-colors"
+            className="relative h-[var(--btn-h,40px)] px-[var(--s6,24px)] border-0 bg-[var(--brand-fill)] hover:bg-[var(--brand-accent)] text-white t-btn font-semibold cursor-pointer transition-colors"
           >
             {resolvedCloseLabel}
           </button>

@@ -961,7 +961,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
       ref={scrimRef}
       role="presentation"
       hidden={useKineticSpring ? true : legacyHidden}
-      className={`member-modal-root scrim fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 select-none ${
+      className={`member-modal-root scrim fixed inset-0 z-[100] flex items-center justify-center p-[var(--s3)] bg-black/50 select-none ${
         useKineticSpring ? '' : 'backdrop-blur-xs'
       }`}
       style={useKineticSpring ? undefined : { opacity: legacyMetrics?.opacity ?? 0 }}
@@ -1011,13 +1011,13 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
           data-sq-border="solid"
           className="relative w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-[#1A1A1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#26262A]"
         >
-          <div className="p-6 overflow-y-auto max-h-[90vh]">
+          <div className="p-[var(--s6)] flex flex-col gap-[var(--s4)] overflow-y-auto max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 pb-4 border-b border-[#E6DED6] dark:border-[#3A3734]">
-          <div>
+        <div className="flex items-start justify-between gap-[var(--s4)] pb-[var(--s4)] border-b border-[#E6DED6] dark:border-[#3A3734]">
+          <div className="flex flex-col gap-[var(--s1)]">
             <h3
               id="member-modal-title"
-              className="text-xl font-bold font-['Barlow_Condensed',sans-serif] rtl:font-sans tracking-tight rtl:tracking-normal text-black dark:text-white"
+              className="t-dialog text-[var(--text-1)]"
             >
               {displayedEdit
                 ? language === 'ar'
@@ -1027,7 +1027,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                 ? `تسجيل ${terminology.memberSingle} جديد`
                 : `Nouveau ${terminology.memberSingle.toLowerCase()}`}
             </h3>
-            <p className="text-xs text-black/65 dark:text-white/65 mt-0.5">
+            <p className="t-cap text-[var(--text-2)]">
               {currentBranch.name} · Atrium Health & Roster
             </p>
           </div>
@@ -1035,21 +1035,21 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             type="button"
             onClick={requestClose}
             aria-label="Fermer la boîte de dialogue"
-            className="w-8 h-8 rounded-full grid place-items-center text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#262422] transition-colors cursor-pointer"
+            className="w-[var(--seg-m-h,32px)] h-[var(--seg-m-h,32px)] rounded-full grid place-items-center text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-[#262422] transition-colors cursor-pointer shrink-0"
           >
-            <X className="w-4 h-4" />
+            <X size={16} strokeWidth={1.5} />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-[var(--s4)]">
           {/* Section 1: Identification */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/60 dark:text-white/60">
+          <div className="flex flex-col gap-[var(--s3)]">
+            <h4 className="t-small font-semibold text-[var(--text-2)]">
               {t('member_section_personal', language)}
             </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--s3)]">
               {/* Full Name Field */}
               {useKineticSpring ? (
                 <div>
@@ -1074,10 +1074,10 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                   />
                 </div>
               ) : (
-                <div>
+                <div className="flex flex-col gap-[var(--s1)]">
                   <label
                     htmlFor="member-fullName"
-                    className="block text-[11px] font-bold text-black/75 dark:text-white/75 uppercase tracking-wider rtl:normal-case rtl:tracking-normal mb-1"
+                    className="t-small font-medium text-[var(--text-2)]"
                   >
                     {t('modal_name', language)} *
                   </label>
@@ -1105,7 +1105,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                         setFullName(e.target.value);
                         if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
                       }}
-                      className="w-full h-10 px-3 bg-transparent border-0 text-sm font-medium text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none"
+                      className="w-full h-[var(--btn-h,40px)] px-[var(--s3)] bg-transparent border-0 t-body font-medium text-[var(--text-1)] placeholder:text-[var(--text-3)] focus:outline-none"
                       placeholder="ex: Amira Belkacem"
                     />
                   </div>
@@ -1113,9 +1113,9 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                     <p
                       id="fullName-error"
                       role="alert"
-                      className="mt-1 text-[11.5px] font-medium text-[#B8321C] flex items-center gap-1"
+                      className="t-cap font-medium text-[#B8321C] flex items-center gap-[var(--s1)]"
                     >
-                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <AlertCircle size={16} strokeWidth={1.5} className="shrink-0" />
                       <span>{errors.fullName}</span>
                     </p>
                   )}
@@ -1147,10 +1147,10 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                   />
                 </div>
               ) : (
-                <div>
+                <div className="flex flex-col gap-[var(--s1)]">
                   <label
                     htmlFor="member-email"
-                    className="block text-[11px] font-bold text-black/75 dark:text-white/75 uppercase tracking-wider rtl:normal-case rtl:tracking-normal mb-1"
+                    className="t-small font-medium text-[var(--text-2)]"
                   >
                     {t('modal_email', language)} *
                   </label>
@@ -1178,7 +1178,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                         setEmail(e.target.value);
                         if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
                       }}
-                      className="w-full h-10 px-3 bg-transparent border-0 text-sm font-medium text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none"
+                      className="w-full h-[var(--btn-h,40px)] px-[var(--s3)] bg-transparent border-0 t-body font-medium text-[var(--text-1)] placeholder:text-[var(--text-3)] focus:outline-none"
                       placeholder="contact@domaine.com"
                     />
                   </div>
@@ -1186,9 +1186,9 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                     <p
                       id="email-error"
                       role="alert"
-                      className="mt-1 text-[11.5px] font-medium text-[#B8321C] flex items-center gap-1"
+                      className="t-cap font-medium text-[#B8321C] flex items-center gap-[var(--s1)]"
                     >
-                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <AlertCircle size={16} strokeWidth={1.5} className="shrink-0" />
                       <span>{errors.email}</span>
                     </p>
                   )}
@@ -1213,7 +1213,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
               </div>
 
               {/* Gender and Birth Date */}
-              <div className="grid grid-cols-2 gap-2 items-start">
+              <div className="grid grid-cols-2 gap-[var(--s2)] items-start">
                 {useKineticSpring ? (
                   <LabelSelect
                     field="Gender"
@@ -1229,8 +1229,8 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                     corner={12}
                   />
                 ) : (
-                  <div>
-                    <label className="block text-[11px] font-bold text-black/75 dark:text-white/75 uppercase tracking-wider rtl:normal-case rtl:tracking-normal mb-1">
+                  <div className="flex flex-col gap-[var(--s1)]">
+                    <label className="t-small font-medium text-[var(--text-2)]">
                       {t('member_field_gender', language)}
                     </label>
                     <LiveSegmentedControl
@@ -1265,11 +1265,11 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             </div>
 
             {/* Section 2: Membership Plan */}
-            <div className="space-y-3 pt-3 border-t border-[#E6DED6] dark:border-[#3A3734]">
-              <h4 className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/62 dark:text-white/65">
+            <div className="flex flex-col gap-[var(--s3)] pt-[var(--s3)] border-t border-[#E6DED6] dark:border-[#3A3734]">
+              <h4 className="t-small font-semibold text-[var(--text-2)]">
                 {t('member_section_membership', language)}
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3)]">
                 <LabelSelect
                   field="PlanPackage"
                   label={`${t('member_field_plan_package', language)} *`}
@@ -1315,11 +1315,11 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             </div>
 
             {/* Section 3: Emergency & Notes */}
-            <div className="space-y-3 pt-3 border-t border-[#E6DED6] dark:border-[#3A3734]">
-              <h4 className="text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-black/62 dark:text-white/65">
+            <div className="flex flex-col gap-[var(--s3)] pt-[var(--s3)] border-t border-[#E6DED6] dark:border-[#3A3734]">
+              <h4 className="t-small font-semibold text-[var(--text-2)]">
                 {t('member_section_emergency', language)}
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3)]">
                 <LabelInput
                   field="EmergencyContact"
                   label={t('member_field_emergency_contact', language)}
@@ -1364,8 +1364,8 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-black/80 dark:text-white/80 mb-1">
+              <div className="flex flex-col gap-[var(--s1)]">
+                <label className="t-small font-semibold text-[var(--text-1)]">
                   {t('member_field_private_notes', language)}
                 </label>
                 <div
@@ -1381,14 +1381,14 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                       setNotes(e.target.value);
                     }}
                     placeholder="Notes médicales, objectifs ou restrictions..."
-                    className="w-full p-2.5 text-sm bg-transparent border-0 text-black dark:text-white placeholder:text-black/55 dark:placeholder:text-white/55 focus:outline-none resize-none block"
+                    className="w-full p-[var(--s3)] t-body bg-transparent border-0 text-[var(--text-1)] placeholder:text-[var(--text-3)] focus:outline-none resize-none block"
                   />
                 </div>
               </div>
             </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E6DED6] dark:border-[#3A3734]">
+          <div className="flex items-center justify-end gap-[var(--s3)] pt-[var(--s3)] border-t border-[#E6DED6] dark:border-[#3A3734]">
             <Button
               type="button"
               tone="soft"

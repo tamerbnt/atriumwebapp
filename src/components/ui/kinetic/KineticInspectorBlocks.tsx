@@ -17,11 +17,11 @@ export const InspectorSection: React.FC<InspectorSectionProps> = ({
   children,
   className = '',
 }) => (
-  <section style={{ '--k': index } as React.CSSProperties} className={`flex flex-col gap-3 ${className}`}>
+  <section style={{ '--k': index } as React.CSSProperties} className={`flex flex-col gap-[var(--s3,12px)] ${className}`}>
     {(title || action) && (
-      <div className="flex justify-between items-center gap-2">
+      <div className="flex justify-between items-center gap-[var(--s2,8px)]">
         {title ? (
-          <h3 className="!m-0 text-[var(--t-h3)] leading-[var(--lh-h3)] font-semibold text-[var(--text-1)]">
+          <h3 className="!m-0 t-pod text-[var(--text-1)]">
             {title}
           </h3>
         ) : (
@@ -56,7 +56,7 @@ export const InspectorQuickActions: React.FC<{
       : 'grid-cols-2 sm:grid-cols-4';
 
   return (
-    <div className={`qa grid ${colsClass} gap-3 ${className}`}>
+    <div className={`qa grid ${colsClass} gap-[var(--s3,12px)] ${className}`}>
       {actions.slice(0, 4).map((act) => (
         <button
           key={act.id}
@@ -66,7 +66,7 @@ export const InspectorQuickActions: React.FC<{
           data-sq-border="solid"
           disabled={act.disabled}
           onClick={act.onClick}
-          className={`flex flex-col items-center gap-2 p-3 rounded-[var(--r-card,16px)] text-xs font-medium leading-tight text-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+          className={`flex flex-col items-center gap-[var(--s2,8px)] p-[var(--s3,12px)] rounded-[var(--r-card,16px)] t-small text-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
             act.primary
               ? '[--sq-stroke:rgba(212,82,47,0.25)] dark:[--sq-stroke:#52291F] bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)]'
               : '[--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] text-[var(--text-1)]'
@@ -75,7 +75,7 @@ export const InspectorQuickActions: React.FC<{
           <span
             data-sq="tile"
             data-sq-border="none"
-            className={`ic w-10 h-10 rounded-[var(--r-tile,12px)] grid place-items-center shrink-0 ${
+            className={`ic w-[var(--tile,40px)] h-[var(--tile,40px)] rounded-[var(--r-tile,12px)] grid place-items-center shrink-0 ${
               act.primary
                 ? 'bg-white dark:bg-[#1C1B1A]'
                 : 'bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1B1A]'
@@ -97,7 +97,7 @@ export const InspectorCard: React.FC<{
   <div
     data-sq="card"
     data-sq-border="solid"
-    className={`card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-4 py-2 [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] ${className}`}
+    className={`card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[var(--s4,16px)] py-[var(--s2,8px)] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] ${className}`}
   >
     {children}
   </div>
@@ -150,17 +150,17 @@ export const InspectorKeyValue: React.FC<InspectorKeyValueProps> = ({
 
   return (
     <div
-      className={`kv flex justify-between items-center gap-3 py-3 text-[var(--t-sub)] ${
+      className={`kv flex justify-between items-center gap-[var(--s3,12px)] py-[var(--s3,12px)] t-body ${
         isLast ? '' : 'border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]'
       }`}
     >
-      <span className="text-[var(--text-2)] flex items-center gap-2 shrink-0">
+      <span className="text-[var(--text-2)] flex items-center gap-[var(--s2,8px)] shrink-0">
         {icon}
         <span>{label}</span>
       </span>
-      <span className="flex items-center gap-2 min-w-0 justify-end">
+      <span className="flex items-center gap-[var(--s2,8px)] min-w-0 justify-end">
         <b
-          className={`${mono ? 'tabular-nums' : ''} text-[var(--t-sub)] text-right truncate ${
+          className={`${mono ? 'tabular-nums' : ''} t-label text-right truncate ${
             TONE_COLOR_CLASS[tone]
           }`}
         >
@@ -171,13 +171,13 @@ export const InspectorKeyValue: React.FC<InspectorKeyValueProps> = ({
             type="button"
             data-no-liquid="true"
             onClick={handleCopy}
-            className="w-7 h-7 rounded-full border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--text-2)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] cursor-pointer shrink-0"
+            className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full border-0 bg-transparent hover:bg-[var(--atr-hl,rgba(212,82,47,0.12))] grid place-items-center text-[var(--text-2)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] cursor-pointer shrink-0"
             aria-label={typeof label === 'string' ? `Copy ${label}` : 'Copy'}
           >
             {copied ? (
-              <Check className="w-4 h-4 text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]" />
+              <Check className="w-4 h-4 text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]" strokeWidth={1.5} />
             ) : (
-              <Copy className="w-4 h-4" />
+              <Copy className="w-4 h-4" strokeWidth={1.5} />
             )}
           </button>
         )}
@@ -255,13 +255,13 @@ export const InspectorBigStat: React.FC<{
     <div
       data-sq="card"
       data-sq-border="solid"
-      className="card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] p-[var(--card-pad,20px)] card-opt [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] flex flex-col gap-2"
+      className="card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] p-[var(--card-pad,20px)] card-opt [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] flex flex-col gap-[var(--s3,12px)]"
     >
-      <div className={`big text-[var(--t-kpi-m)] leading-[var(--lh-kpi-m)] font-normal [font-family:var(--font-display)] tracking-[var(--tr-display)] rtl:[font-family:var(--font-ui)] rtl:font-semibold rtl:text-2xl tabular-nums ${colorClass}`}>
+      <div className={`big t-kpi-m rtl:font-sans rtl:text-2xl ${colorClass}`}>
         {value}
       </div>
       {caption && (
-        <p className="text-xs text-[var(--text-2)] m-0">
+        <p className="t-cap text-[var(--text-2)] m-0">
           {caption}
         </p>
       )}
@@ -272,7 +272,7 @@ export const InspectorBigStat: React.FC<{
           data-sq="ctl"
           data-sq-border="none"
           onClick={action.onClick}
-          className={`wide w-full h-10 border-0 rounded-[var(--r-ctl,12px)] font-semibold text-[var(--t-sub)] cursor-pointer transition-opacity hover:opacity-92 ${
+          className={`wide w-full h-[var(--btn-h,40px)] border-0 rounded-[var(--r-ctl,12px)] t-btn font-semibold cursor-pointer transition-opacity hover:opacity-92 ${
             action.tone === 'dark'
               ? 'bg-[#1F1D1B] dark:bg-white text-white dark:text-black'
               : 'bg-[var(--brand-fill)] text-white'
@@ -315,29 +315,29 @@ export const InspectorListItem: React.FC<InspectorListItemProps> = ({
 }) => (
   <div
     onClick={onClick}
-    className={`li flex justify-between items-center py-3 text-[var(--t-sub)] gap-3 ${
+    className={`li flex justify-between items-center py-[var(--s3,12px)] t-body gap-[var(--s3,12px)] ${
       isLast ? '' : 'border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]'
     } ${onClick ? 'cursor-pointer hover:opacity-85 transition-opacity' : ''}`}
   >
-    <span className="min-w-0 flex flex-col gap-0.5">
-      <span className="font-medium block truncate text-[var(--text-1)]">
+    <span className="min-w-0 flex flex-col gap-[var(--name-sub-gap,2px)]">
+      <span className="t-label block truncate text-[var(--text-1)]">
         {title}
       </span>
       {subtitle && (
-        <small className="text-xs tabular-nums text-[var(--text-2)] block truncate">
+        <small className="t-cap tabular-nums text-[var(--text-2)] block truncate">
           {subtitle}
         </small>
       )}
     </span>
-    <span className="flex items-center gap-2 shrink-0">
+    <span className="flex items-center gap-[var(--s2,8px)] shrink-0">
       {metaRight && (
-        <b className="text-xs tabular-nums text-[var(--text-1)]">
+        <b className="t-small tabular-nums text-[var(--text-1)]">
           {metaRight}
         </b>
       )}
       {badge && (
         <span
-          className={`pill px-2 h-[var(--badge-h,22px)] inline-flex items-center rounded-full text-xs font-medium whitespace-nowrap ${
+          className={`pill px-[var(--badge-px,6px)] h-[var(--badge-h,22px)] inline-flex items-center rounded-full t-small whitespace-nowrap ${
             BADGE_CLASSES[badge.tone || 'neutral']
           }`}
         >
@@ -380,7 +380,7 @@ export const InspectorNotesField: React.FC<{
           }
         }}
         placeholder={placeholder}
-        className="w-full box-border min-h-[84px] rounded-[var(--r-card,16px)] border-0 bg-transparent px-4 py-3 text-[var(--t-sub)] text-[var(--text-1)] placeholder:text-[var(--text-3)] resize-y focus:outline-none"
+        className="w-full box-border min-h-[84px] rounded-[var(--r-card,16px)] border-0 bg-transparent px-[var(--s4,16px)] py-[var(--s3,12px)] t-body text-[var(--text-1)] placeholder:text-[var(--text-3)] resize-y focus:outline-none"
       />
     </div>
   );
@@ -400,7 +400,7 @@ export const InspectorWideButton: React.FC<{
     data-sq-border={tone === 'neutral' ? 'solid' : 'none'}
     disabled={disabled}
     onClick={onClick}
-    className={`wide w-full h-10 rounded-[var(--r-ctl,12px)] font-semibold text-[var(--t-sub)] flex items-center justify-center gap-2 cursor-pointer transition-opacity hover:opacity-92 disabled:opacity-40 disabled:cursor-not-allowed ${
+    className={`wide w-full h-[var(--btn-h,40px)] rounded-[var(--r-ctl,12px)] t-btn font-semibold flex items-center justify-center gap-[var(--btn-icon-gap,8px)] cursor-pointer transition-opacity hover:opacity-92 disabled:opacity-40 disabled:cursor-not-allowed ${
       tone === 'dark'
         ? 'border-0 bg-[#1F1D1B] dark:bg-white text-white dark:text-black'
         : tone === 'neutral'

@@ -117,76 +117,76 @@ export const KineticDetailIsland: React.FC<KineticDetailIslandProps> = React.mem
         ) : (
           <>
             {/* Col 1 */}
-            <div className="flex flex-col min-w-0 justify-center gap-1">
-              <h4 className="m-0 text-xs font-semibold text-[var(--text-3)]">
+            <div className="flex flex-col min-w-0 justify-center gap-[var(--s1,4px)]">
+              <h4 className="m-0 t-small font-semibold text-[var(--text-3)]">
                 {column1?.heading || 'Contact / Info'}
               </h4>
-              <div className="m-0 text-[var(--t-sub)] tabular-nums text-[var(--text-1)] font-semibold truncate">
+              <div className="m-0 t-label font-semibold tabular-nums text-[var(--text-1)] truncate">
                 {column1?.primaryText ?? '—'}
               </div>
               {column1?.secondaryText && (
-                <div className="m-0 text-xs text-[var(--text-2)] truncate">
+                <div className="m-0 t-cap text-[var(--text-2)] truncate">
                   {column1.secondaryText}
                 </div>
               )}
               {column1?.tertiaryText && (
-                <div className="m-0 text-xs text-[var(--text-2)] truncate">
+                <div className="m-0 t-cap text-[var(--text-2)] truncate">
                   {column1.tertiaryText}
                 </div>
               )}
             </div>
 
             {/* Col 2 */}
-            <div className="flex flex-col min-w-0 justify-center gap-1">
-              <h4 className="m-0 text-xs font-semibold text-[var(--text-3)]">
+            <div className="flex flex-col min-w-0 justify-center gap-[var(--s1,4px)]">
+              <h4 className="m-0 t-small font-semibold text-[var(--text-3)]">
                 {column2?.heading || 'Détails'}
               </h4>
-              <div className="m-0 text-[var(--t-sub)] font-semibold text-[var(--text-1)] truncate">
+              <div className="m-0 t-label font-semibold text-[var(--text-1)] truncate">
                 {column2?.primaryText ?? '—'}
               </div>
               {column2?.secondaryText && (
-                <div className="m-0 text-xs tabular-nums text-[var(--text-2)] truncate">
+                <div className="m-0 t-cap tabular-nums text-[var(--text-2)] truncate">
                   {column2.secondaryText}
                 </div>
               )}
               {column2?.tertiaryText && (
-                <div className="m-0 text-xs font-semibold tabular-nums text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3] truncate">
+                <div className="m-0 t-small font-semibold tabular-nums text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3] truncate">
                   {column2.tertiaryText}
                 </div>
               )}
             </div>
 
             {/* Col 3: Overflow fields or Notes */}
-            <div className="flex flex-col min-w-0 justify-center gap-1">
-              <h4 className="m-0 text-xs font-semibold text-[var(--text-3)]">
+            <div className="flex flex-col min-w-0 justify-center gap-[var(--s1,4px)]">
+              <h4 className="m-0 t-small font-semibold text-[var(--text-3)]">
                 {column3?.heading || (overflowFields && overflowFields.length > 0 ? 'Attributs' : 'Notes')}
               </h4>
               {column3 ? (
                 <>
-                  <div className="m-0 text-xs font-semibold text-[var(--text-1)] truncate">
+                  <div className="m-0 t-small font-semibold text-[var(--text-1)] truncate">
                     {column3.primaryText}
                   </div>
                   {column3.secondaryText && (
-                    <div className="m-0 text-xs text-[var(--text-2)] line-clamp-2">
+                    <div className="m-0 t-cap text-[var(--text-2)] line-clamp-2">
                       {column3.secondaryText}
                     </div>
                   )}
                 </>
               ) : overflowFields && overflowFields.length > 0 ? (
-                <div className="flex flex-col gap-1 min-w-0">
+                <div className="flex flex-col gap-[var(--s1,4px)] min-w-0">
                   {overflowFields.slice(0, 3).map((ov, i) => (
-                    <div key={`${ov.label}_${i}`} className="flex items-center gap-2 text-xs min-w-0">
+                    <div key={`${ov.label}_${i}`} className="flex items-center gap-[var(--s2,8px)] t-cap min-w-0">
                       <span className="text-[var(--text-3)] shrink-0">
                         {ov.label}:
                       </span>
-                      <span className="font-semibold text-[var(--text-1)] truncate">
+                      <span className="t-small font-semibold text-[var(--text-1)] truncate">
                         {ov.value}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="m-0 text-xs leading-snug text-[var(--text-2)] line-clamp-3">
+                <p className="m-0 t-cap text-[var(--text-2)] line-clamp-3">
                   {notes || '—'}
                 </p>
               )}
@@ -194,7 +194,7 @@ export const KineticDetailIsland: React.FC<KineticDetailIslandProps> = React.mem
 
             {/* Col 4: 2-Column Action Cluster (.db) */}
             {actions.length > 0 && (
-              <div className="db grid grid-cols-2 gap-2 self-center shrink-0">
+              <div className="db grid grid-cols-2 gap-[var(--s2,8px)] self-center shrink-0">
                 {actions.slice(0, 6).map((btn) => (
                   <button
                     key={btn.id}
@@ -207,7 +207,7 @@ export const KineticDetailIsland: React.FC<KineticDetailIslandProps> = React.mem
                       e.stopPropagation();
                       btn.onClick();
                     }}
-                    className={`relative h-8 px-3 font-medium text-xs flex items-center gap-2 transition-colors duration-140 cursor-pointer whitespace-nowrap ${
+                    className={`relative h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-small flex items-center gap-[var(--btn-sm-gap,6px)] transition-colors duration-140 cursor-pointer whitespace-nowrap ${
                       btn.isDanger
                         ? '[--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] bg-[#FDE4DF]/60 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] hover:bg-[#c0283d] hover:text-white hover:[--sq-stroke:#c0283d]'
                         : '[--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white hover:[--sq-stroke:#1F1D1B] dark:hover:bg-[var(--brand-fill)] dark:hover:text-white dark:hover:[--sq-stroke:var(--brand-fill)] text-[var(--text-1)]'
