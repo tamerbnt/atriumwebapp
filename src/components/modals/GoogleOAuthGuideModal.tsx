@@ -127,7 +127,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
                 <button
                   type="button"
                   onClick={() => copyToClipboard(supabaseUrl, 'origin')}
-                  className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] grid place-items-center rounded-full border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-[var(--text-2,#5A5047)] dark:text-white/75 cursor-pointer"
+                  className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] grid place-items-center rounded-full border border-black/[0.08] dark:border-white/[0.12] hover:bg-neutral-200 dark:hover:bg-neutral-700 text-[var(--text-2,#5A5047)] dark:text-white/75 cursor-pointer"
                   title="Copy"
                 >
                   {copiedField === 'origin' ? <Check size={16} strokeWidth={1.5} className="text-emerald-500" /> : <Copy size={16} strokeWidth={1.5} />}
@@ -154,7 +154,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
                 <button
                   type="button"
                   onClick={() => copyToClipboard(redirectUri, 'redirect')}
-                  className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] grid place-items-center rounded-full border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-[var(--text-2,#5A5047)] dark:text-white/75 cursor-pointer"
+                  className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] grid place-items-center rounded-full border border-black/[0.08] dark:border-white/[0.12] hover:bg-neutral-200 dark:hover:bg-neutral-700 text-[var(--text-2,#5A5047)] dark:text-white/75 cursor-pointer"
                   title="Copy"
                 >
                   {copiedField === 'redirect' ? <Check size={16} strokeWidth={1.5} className="text-emerald-500" /> : <Copy size={16} strokeWidth={1.5} />}

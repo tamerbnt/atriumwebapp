@@ -8,6 +8,7 @@ export interface LiveIconButtonProps extends Omit<React.ButtonHTMLAttributes<HTM
   kick?: 'spin' | 'none';
   tone?: LiveButtonTone;
   size?: LiveButtonSize;
+  shape?: 'squircle' | 'capsule';
   'aria-label'?: string;
 }
 
@@ -18,6 +19,7 @@ export const LiveIconButton = forwardRef<HTMLButtonElement, LiveIconButtonProps>
       badge,
       kick,
       size,
+      shape,
       style,
       tone = 'soft',
       onClick,
@@ -38,6 +40,7 @@ export const LiveIconButton = forwardRef<HTMLButtonElement, LiveIconButtonProps>
         kick={kick === 'spin' ? 'spin' : undefined}
         tone={tone}
         size={size}
+        shape={shape}
         style={style}
         onClick={onClick}
         className={className}

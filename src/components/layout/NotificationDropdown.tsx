@@ -139,7 +139,7 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
       <div
         data-sq="panel"
         data-sq-border="solid"
-        className="rounded-[var(--r-panel,28px)] bg-white dark:bg-[#1C1C20] [--sq-stroke:rgba(0,0,0,0.08)] dark:[--sq-stroke:rgba(255,255,255,0.12)] overflow-hidden flex flex-col"
+        className="rounded-[var(--r-panel,28px)] bg-white dark:bg-[#1C1C20] [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden flex flex-col"
       >
       {/* Unified Panel Header */}
       <div className="flex items-center justify-between px-[var(--s4,16px)] py-[var(--s3,12px)] border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#1C1C20] t-cap text-[var(--text-2)]">

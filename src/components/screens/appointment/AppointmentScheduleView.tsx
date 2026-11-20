@@ -630,7 +630,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
               <div
                 data-sq="ctl"
                 data-sq-border="solid"
-                className="flex items-center gap-1 bg-white dark:bg-[#262422] px-2 h-10 border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] t-small font-semibold"
+                className="flex items-center gap-1 bg-white dark:bg-[#262422] px-2 h-10 border-0 t-small font-semibold"
               >
                 <button
                   type="button"
@@ -695,12 +695,12 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
               <div
                 data-sq="table"
                 data-sq-border="solid"
-                className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] overflow-hidden"
+                className="bg-white dark:bg-[#1C1B1A] border-0 overflow-hidden"
               >
               <div className="overflow-x-auto">
                 <div className="min-w-[760px]">
-                  <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-[#E6DED6] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#262422]">
-                    <div className="p-4 text-center t-small font-semibold text-black/62 dark:text-white/65 border-r border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center">
+                  <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-[var(--atr-divider)] bg-[#FBF8F5] dark:bg-[#262422]">
+                    <div className="p-4 text-center t-small font-semibold text-black/62 dark:text-white/65 border-r border-[var(--atr-divider)] flex items-center justify-center">
                       <Clock size={14} className="mr-1" />
                       {t('salon_timeline', language)}
                     </div>
@@ -710,7 +710,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                         <div
                           key={stylist.id}
                           className={`p-4 ${
-                            index < salonStylists.length - 1 ? 'border-r border-[#E6DED6] dark:border-[#3A3734]' : ''
+                            index < salonStylists.length - 1 ? 'border-r border-[var(--atr-divider)]' : ''
                           }`}
                         >
                           <div className="flex items-center justify-between">
@@ -736,13 +736,13 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                       );
                     })}
                   </div>
-                  <div className="divide-y divide-[#E6DED6]/60 dark:divide-[#3A3734]/60">
+                  <div className="divide-y divide-[var(--atr-divider)]">
                     {TIME_SLOTS.map((time) => (
                       <div
                         key={time}
                         className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] min-h-[68px]"
                       >
-                        <div className="p-3 t-small tabular-nums font-semibold text-black/62 dark:text-white/65 text-center border-r border-[#E6DED6] dark:border-[#3A3734] pt-3">
+                        <div className="p-3 t-small tabular-nums font-semibold text-black/62 dark:text-white/65 text-center border-r border-[var(--atr-divider)] pt-3">
                           {time}
                         </div>
                         {salonStylists.map((stylist, index) => {
@@ -752,7 +752,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                               key={stylist.id}
                               className={`p-2 relative group ${
                                 index < salonStylists.length - 1
-                                  ? 'border-r border-[#E6DED6]/70 dark:border-[#3A3734]/70'
+                                  ? 'border-r border-[var(--atr-divider)]'
                                   : ''
                               }`}
                             >
@@ -765,12 +765,12 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                                     setDrawerOpenerEl(e.currentTarget);
                                     setInspectingApt(apt);
                                   }}
-                                  className={`w-full h-full text-left p-3 cursor-pointer transition-all border hover:border-[#d4522f] ${
+                                  className={`w-full h-full text-left p-3 cursor-pointer transition-all border-0 ${
                                     apt.status === 'InChair'
-                                      ? 'bg-amber-50 dark:bg-amber-950/35 border-amber-300 dark:border-amber-700'
+                                      ? 'bg-amber-50 dark:bg-amber-950/35 [--sq-stroke:rgba(245,158,11,0.35)] dark:[--sq-stroke:rgba(245,158,11,0.35)] hover:bg-amber-100/60 dark:hover:bg-amber-950/50'
                                       : apt.status === 'Completed'
-                                      ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'
-                                      : 'bg-[#FBF8F5] dark:bg-[#262422] border-[#E6DED6] dark:border-[#3A3734]'
+                                      ? 'bg-emerald-50/70 dark:bg-emerald-950/30 [--sq-stroke:rgba(16,185,129,0.3)] dark:[--sq-stroke:rgba(16,185,129,0.3)] hover:bg-emerald-100/50 dark:hover:bg-emerald-950/45'
+                                      : 'bg-[#FBF8F5] dark:bg-[#262422] hover:bg-[#FAF6F1] dark:hover:bg-white/[0.05]'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between gap-1 mb-1">
@@ -797,7 +797,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                                   data-sq="ctl"
                                   data-sq-border="dashed"
                                   onClick={() => handleOpenAddModal(time, stylist.id)}
-                                  className="w-full h-full min-h-[50px] border border-dashed border-transparent group-hover:border-[#D4C8BC] flex items-center justify-center text-black/55 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                                  className="w-full h-full min-h-[50px] border-0 [--sq-stroke:var(--sq-stroke-dashed)] flex items-center justify-center text-black/55 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                                 >
                                   <Plus size={14} />
                                 </button>

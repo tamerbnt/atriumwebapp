@@ -269,7 +269,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               data-sq="ctl"
               data-sq-border="solid"
               onClick={() => handleFastOwnerLogin('mehdisamih79@gmail.com')}
-              className="w-full h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-[var(--r-ctl,12px)] bg-[#2A2420] hover:bg-[#342D28] [--sq-stroke:#483B33] text-white t-btn flex items-center justify-center gap-[var(--btn-sm-gap,6px)] transition-colors cursor-pointer"
+              className="w-full h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-[var(--r-ctl,12px)] bg-[#2A2420] hover:bg-[#342D28] [--sq-stroke:url(#sq-spec-dark-ctl)] text-white t-btn flex items-center justify-center gap-[var(--btn-sm-gap,6px)] transition-colors cursor-pointer"
               title="Instant sign-in without Google OAuth"
             >
               <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-on-dark,#FF8F63)]" />
@@ -278,18 +278,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           </div>
 
           <div className="relative flex py-[var(--s1,4px)] items-center gap-[var(--s3,12px)]">
-            <div className="flex-grow border-t border-neutral-800"></div>
+            <div className="flex-grow border-t border-white/[0.08]"></div>
             <span className="flex-shrink t-cap text-[var(--text-dark-2,#A99E92)]">
               {language === 'ar' ? 'أو الدخول بكلمة المرور / رمز PIN' : language === 'fr' ? 'ou connexion par mot de passe / code PIN' : 'or sign in with password / PIN'}
             </span>
-            <div className="flex-grow border-t border-neutral-800"></div>
+            <div className="flex-grow border-t border-white/[0.08]"></div>
           </div>
 
           {/* Auth Mode Toggle Pill */}
           <div
             data-sq="ctl"
             data-sq-border="solid"
-            className="grid grid-cols-2 h-[var(--seg-l-h,40px)] p-[var(--seg-l-pad,4px)] rounded-[var(--r-ctl,12px)] bg-neutral-900/80 [--sq-stroke:#262626] t-btn"
+            className="grid grid-cols-2 h-[var(--seg-l-h,40px)] p-[var(--seg-l-pad,4px)] rounded-[var(--r-ctl,12px)] bg-neutral-900/80 [--sq-stroke:url(#sq-spec-dark-ctl)] t-btn"
           >
             <button
               type="button"
@@ -423,7 +423,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                         className={`w-[var(--s4,16px)] h-[var(--s4,16px)] rounded-full transition-all ${
                           isFilled
                             ? 'bg-[var(--brand-fill,#C9461F)] scale-110 shadow-xs'
-                            : 'bg-neutral-800 border border-neutral-700'
+                            : 'bg-neutral-800 border border-white/[0.12]'
                         }`}
                       />
                     );
@@ -449,7 +449,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                         ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
                         : btn === '⌫'
                         ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
-                        : 'bg-neutral-900 [--sq-stroke:#262626] text-white hover:bg-neutral-800 hover:[--sq-stroke:#404040] active:scale-95'
+                        : 'bg-neutral-900 [--sq-stroke:url(#sq-spec-dark-ctl)] text-white hover:bg-neutral-800 hover:[--sq-stroke:url(#sq-spec-dark-ctl-hover)] active:scale-95'
                     }`}
                   >
                     {btn}
@@ -468,7 +468,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           )}
 
           {/* Onboarding Link Section (Section 11.2) */}
-          <div className="text-center pt-[var(--s3,12px)] border-t border-neutral-800/80 flex flex-col items-center gap-[var(--s2,8px)]">
+          <div className="text-center pt-[var(--s3,12px)] border-t border-white/[0.08] flex flex-col items-center gap-[var(--s2,8px)]">
             <p className="t-body text-[var(--text-dark-2,#A99E92)]">
               {language === 'ar'
                 ? 'هل تؤسس نشاطاً تجارياً أو فرعاً جديداً؟'
@@ -495,7 +495,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19] [--sq-stroke:#404040] p-[var(--modal-pad,24px)] text-white flex flex-col gap-[var(--modal-gap,20px)]"
+              className="w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19] [--sq-stroke:url(#sq-spec-dark-pop)] p-[var(--modal-pad,24px)] text-white flex flex-col gap-[var(--modal-gap,20px)]"
             >
               <h3 className="t-dialog font-medium">
                 {language === 'ar' ? 'استرجاع كلمة المرور' : language === 'fr' ? 'Récupération du mot de passe' : 'Password Recovery'}
@@ -510,7 +510,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-[var(--s3,12px)] rounded-[var(--r-card,16px)] bg-neutral-900 [--sq-stroke:#262626] t-small text-white/75"
+                className="p-[var(--s3,12px)] rounded-[var(--r-card,16px)] bg-neutral-900 [--sq-stroke:var(--sq-stroke-obsidian)] t-small text-white/75"
               >
                 {language === 'ar'
                   ? <>تلميح: سجّل الدخول باستخدام عنوان بريدك الإلكتروني المعتمد أو رمز PIN المكون من 4 أرقام.</>

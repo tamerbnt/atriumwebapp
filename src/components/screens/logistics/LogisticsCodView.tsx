@@ -42,6 +42,7 @@ import {
   KineticRowMeta,
   KineticRowFanAction,
   KineticDetailAction,
+  ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -1236,6 +1237,12 @@ export const LogisticsCodView: React.FC<any> = () => {
 
       {activeTab === 'driver_payroll' && (
         <ScreenPod>
+          <div className="flex items-center justify-between gap-3 px-1">
+            <h2 className="t-pod text-[var(--text-1)] dark:text-white">
+              {isAr ? 'أجور السائقين والمناديب' : 'Paie Chauffeurs & Livreurs'}
+            </h2>
+            <ListAdvancedMenuButton language={language} />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="sq-elev-card">
           <div

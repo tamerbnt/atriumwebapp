@@ -78,6 +78,8 @@ import {
   KineticRowFanAction,
   KineticDetailAction,
   KineticStatusVariant,
+  ScreenFocusProvider,
+  ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -939,7 +941,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
+    <ScreenFocusProvider eligible={currentScreen !== 'dashboard'}>
+      <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
@@ -1820,13 +1823,16 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
             data-sq-border="solid"
             className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] max-w-4xl mx-auto space-y-6"
           >
-            <div>
-              <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
-                {t('pm_dir_screen_new_badge')}
-              </span>
-              <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
-                {t('pm_dir_screen_new_title')}
-              </h2>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
+                  {t('pm_dir_screen_new_badge')}
+                </span>
+                <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
+                  {t('pm_dir_screen_new_title')}
+                </h2>
+              </div>
+              <ListAdvancedMenuButton language={language} />
             </div>
             {projectCreatedSuccess && (
               <div
@@ -2025,6 +2031,14 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   </button>
                 ))}
               </div>
+              <ListAdvancedMenuButton
+                language={language}
+                canResetFilters={approvalSearch.trim().length > 0 || approvalsTab !== 'all'}
+                onResetAllFilters={() => {
+                  setApprovalSearch('');
+                  setApprovalsTab('all');
+                }}
+              />
             </div>
           </div>
 
@@ -2218,18 +2232,21 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   Audit Financier Consolidé — Année 2026
                 </h2>
               </div>
-              <AtriumButton
-                variant="primary"
-                size="md"
-                icon={<Download size={15} />}
-                onClick={handleExportAuditCsv}
-              >
-                {isAr
-                  ? 'تحميل التدقيق المالي'
-                  : isEn
-                  ? 'Download Audit (CSV)'
-                  : 'Télécharger Audit (CSV)'}
-              </AtriumButton>
+              <div className="flex items-center gap-2 shrink-0">
+                <AtriumButton
+                  variant="primary"
+                  size="md"
+                  icon={<Download size={15} />}
+                  onClick={handleExportAuditCsv}
+                >
+                  {isAr
+                    ? 'تحميل التدقيق المالي'
+                    : isEn
+                    ? 'Download Audit (CSV)'
+                    : 'Télécharger Audit (CSV)'}
+                </AtriumButton>
+                <ListAdvancedMenuButton language={language} />
+              </div>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
               <div
@@ -2465,6 +2482,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ScreenFocusProvider>
   );
 };

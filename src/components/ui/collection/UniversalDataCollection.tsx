@@ -1326,8 +1326,8 @@ export function UniversalDataCollection<T>({
 
       {isLoadingMore && (
         <div className="w-full flex flex-col gap-[var(--row-gap,8px)]" aria-busy="true">
-          <div data-sq="row" data-sq-border="solid" className="h-[var(--row-h,64px)] w-full bg-[var(--atr-soft)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] animate-pulse" />
-          <div data-sq="row" data-sq-border="solid" className="h-[var(--row-h,64px)] w-full bg-[var(--atr-soft)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] animate-pulse" />
+          <div data-sq="row" data-sq-border="solid" className="h-[var(--row-h,64px)] w-full bg-[var(--atr-soft)] border border-black/[0.05] dark:border-white/[0.08] animate-pulse" />
+          <div data-sq="row" data-sq-border="solid" className="h-[var(--row-h,64px)] w-full bg-[var(--atr-soft)] border border-black/[0.05] dark:border-white/[0.08] animate-pulse" />
         </div>
       )}
 
@@ -1353,7 +1353,7 @@ export function UniversalDataCollection<T>({
       )}
 
       {(canLoadMore || actualItems.length > pageSize || displayTotalCount > pagedItems.length) && (
-        <div className="w-full pt-[var(--s3,12px)] flex flex-wrap items-center justify-between gap-[var(--s3,12px)] border-t border-[var(--atr-line)] t-cap text-[var(--text-2)]">
+        <div className="w-full pt-[var(--s3,12px)] flex flex-wrap items-center justify-between gap-[var(--s3,12px)] border-t border-[var(--atr-divider)] t-cap text-[var(--text-2)]">
           <span className="tabular-nums">
             {storeLanguage === 'ar'
               ? `عرض ${pagedItems.length} من أصل ${displayTotalCount} سجل`
@@ -1369,7 +1369,7 @@ export function UniversalDataCollection<T>({
               data-sq-border="solid"
               disabled={isLoadingMore}
               onClick={() => void handleLoadMore()}
-              className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] bg-[var(--atr-card)] border border-[var(--atr-line)] [--sq-stroke:var(--atr-line)] hover:[--sq-stroke:var(--atr-acc)] t-btn text-[var(--text-1)] transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
+              className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] bg-[var(--atr-card)] border border-black/[0.07] dark:border-white/[0.1] hover:bg-[#FAF6F1] dark:hover:bg-white/[0.08] t-btn text-[var(--text-1)] transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
             >
               {isLoadingMore
                 ? storeLanguage === 'ar'

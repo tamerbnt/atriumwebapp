@@ -58,9 +58,9 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-[var(--r-panel,28px)] max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden printable-document">
+      <div className="bg-white dark:bg-[#1C1C1E] border border-black/[0.08] dark:border-white/[0.12] rounded-[var(--r-panel,28px)] max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden printable-document">
         {/* Modal Top Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 no-print">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] no-print">
           <div className="flex items-center gap-2">
             <span className="t-label font-semibold text-black dark:text-white">
               {t('free_inv_doc_invoice', language)} #{invoice.invoiceNumber}
@@ -291,7 +291,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-900/30 no-print">
+        <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-900/30 no-print">
           <span className="t-cap text-black/55 dark:text-white/55">
             {t('free_inv_doc_invoice', language)} #{invoice.invoiceNumber}
           </span>

@@ -2,7 +2,7 @@
   --h: var(--seg-l-h, 40px);
   --seg-inset: var(--seg-l-pad, 4px);
   --r: var(--r-ctl, 12px);
-  --sq-stroke: var(--atr-line, #E6DED6);
+  --sq-stroke: var(--sq-stroke-ctl, rgba(23, 19, 15, 0.09));
 
   position: relative;
   display: inline-flex;
@@ -26,14 +26,14 @@
 :global(.dark) .root,
 :global([data-surface='dark']) .root {
   background: #202022;
-  border-color: #3A3734;
-  --sq-stroke: #3A3734;
+  border-color: rgba(255, 255, 255, 0.11);
+  --sq-stroke: var(--sq-stroke-ctl, url(#sq-spec-dark-ctl));
 }
 
 :global([data-surface='light']) .root {
   background: #FFFFFF;
-  border-color: var(--atr-line, #E6DED6);
-  --sq-stroke: var(--atr-line, #E6DED6);
+  border-color: rgba(23, 19, 15, 0.09);
+  --sq-stroke: rgba(23, 19, 15, 0.09);
 }
 
 .bl {

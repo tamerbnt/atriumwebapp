@@ -518,7 +518,7 @@ export const PosOrdersView: React.FC = () => {
               }}
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="h-8 px-2.5 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] hover:bg-neutral-100 dark:hover:bg-neutral-700 t-small font-semibold text-black/70 dark:text-white flex items-center gap-1 cursor-pointer transition-colors"
+              className="h-8 px-2.5 hover:bg-[#FAF6F1] dark:hover:bg-white/[0.06] t-small font-semibold text-black/70 dark:text-white flex items-center gap-1 cursor-pointer transition-colors"
               title="Ticket Thermique 80mm"
             >
               <Printer size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />

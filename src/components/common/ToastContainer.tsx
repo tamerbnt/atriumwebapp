@@ -35,7 +35,7 @@ export const ToastContainer: React.FC = () => {
               aria-live="polite"
               data-sq="card"
               data-sq-border="solid"
-              className="bg-white/95 dark:bg-[#1E1E22]/95 backdrop-blur-md rounded-[var(--r-card,16px)] p-[var(--s4,16px)] [--sq-stroke:rgba(229,229,229,0.9)] dark:[--sq-stroke:rgba(64,64,64,0.8)] flex items-start gap-[var(--s3,12px)] transition-all duration-300 animate-in slide-in-from-bottom-3"
+              className="bg-white/95 dark:bg-[#1E1E22]/95 backdrop-blur-md rounded-[var(--r-card,16px)] p-[var(--s4,16px)] [--sq-stroke:var(--sq-stroke-pop)] flex items-start gap-[var(--s3,12px)] transition-all duration-300 animate-in slide-in-from-bottom-3"
             >
               {/* Status Icon */}
               <div className="shrink-0">
@@ -92,7 +92,7 @@ export const ToastContainer: React.FC = () => {
                     </span>
                   )}
                   {toast.syncStatus === 'local' && (
-                    <span className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-neutral-100 dark:bg-neutral-800 t-small text-[var(--text-2)] border border-neutral-200 dark:border-neutral-700">
+                    <span className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-neutral-100 dark:bg-neutral-800 t-small text-[var(--text-2)] border border-black/[0.06] dark:border-white/[0.10]">
                       <Database size={12} strokeWidth={1.5} />
                       Saved to Local Storage
                     </span>

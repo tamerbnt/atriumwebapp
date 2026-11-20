@@ -140,7 +140,7 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
             <div
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="inline-flex items-center h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700/60 [--sq-stroke:#E8DFD8] dark:[--sq-stroke:rgba(64,64,64,0.6)] self-start sm:self-auto"
+              className="inline-flex items-center h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[#F4EFEA] dark:bg-neutral-800/80 border border-black/[0.06] dark:border-white/[0.09] self-start sm:self-auto"
               role="group"
               aria-label="Monthly Filter"
             >
@@ -254,7 +254,7 @@ export const MonthlyAreaChart: React.FC<MonthlyAreaChartProps> = ({
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md px-3 py-2 border border-neutral-700/60 [--sq-stroke:rgba(64,64,64,0.6)] flex items-center gap-3 whitespace-nowrap text-left rtl:text-right"
+              className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md px-3 py-2 border-0 [--sq-stroke:var(--sq-stroke-obsidian)] flex items-center gap-3 whitespace-nowrap text-left rtl:text-right"
             >
               <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
                 <div className="t-small text-[var(--text-dark-2,#A99E92)]">

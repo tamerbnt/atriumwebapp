@@ -424,7 +424,7 @@ export const FreelanceFinanceView: React.FC = () => {
         renderCell: (exp) => {
           const bInfo = resolveRecordBranch(exp, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09] truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -724,7 +724,7 @@ export const FreelanceFinanceView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="bg-white dark:bg-neutral-800 p-4 lg:p-5 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3"
+            className="bg-white dark:bg-neutral-800 p-4 lg:p-5 space-y-3"
           >
             <div className="flex items-center justify-between t-cap text-black/70 dark:text-white/75">
               <span className="font-medium">
@@ -755,7 +755,7 @@ export const FreelanceFinanceView: React.FC = () => {
               <span>35% ({t('free_fin_tax_high_bracket_label', language)})</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-neutral-100 dark:border-neutral-700 t-cap">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-[var(--atr-divider)] t-cap">
               <div>
                 <span className="text-black/55 dark:text-white/55 block">
                   {t('free_fin_gross_revenue_equiv', language)}
@@ -1123,9 +1123,9 @@ export const FreelanceFinanceView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
                 {t('free_fin_modal_expense_title', language)}
               </h3>
@@ -1219,7 +1219,7 @@ export const FreelanceFinanceView: React.FC = () => {
                   <span>{t('free_fin_tax_deductible_prompt', language)}</span>
                 </label>
               </div>
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton
                   variant="outline"
                   size="sm"

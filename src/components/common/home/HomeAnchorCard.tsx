@@ -61,9 +61,7 @@ export const HomeAnchorCard: React.FC<HomeAnchorCardProps> = ({
       data-sq="card"
       data-sq-border="solid"
       data-surface="dark"
-      className={`bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] p-[var(--card-pad,20px)] card-opt border border-[#4D382B]/85 [--sq-stroke:rgba(77,56,43,0.85)] text-white min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] relative overflow-hidden transition-colors duration-150 ${
-        isInteractive ? 'group-hover/anchor:[--sq-stroke:rgba(251,146,60,0.55)]' : ''
-      }`}
+      className={`sq-elev-card ${isInteractive ? 'sq-elev-card-hover' : ''} bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] p-[var(--card-pad,20px)] card-opt border-0 [--sq-stroke:var(--sq-stroke-obsidian)] text-white min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] relative overflow-hidden transition-colors duration-150`}
     >
       {/* Subtle Espresso + Complementary Lavender & Terracotta Wave Backdrop */}
       <div

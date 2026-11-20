@@ -235,7 +235,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       {/* ================= MAIN ROW CARD ================= */}
       <div
         onClick={onRowClick}
-        className="relative z-10 w-full min-h-[var(--row-h,64px)] px-[var(--row-inset,12px)] py-[var(--s2,8px)] sq-elev-card flex items-center gap-[var(--s2,8px)] cursor-pointer"
+        className="relative z-10 w-full min-h-[var(--row-h,64px)] px-[var(--row-inset,12px)] py-[var(--s2,8px)] flex items-center gap-[var(--s2,8px)] cursor-pointer"
       >
         <div
           aria-hidden="true"
@@ -243,12 +243,12 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
           data-sq-border="solid"
           className={`absolute inset-0 z-0 pointer-events-none transition-colors duration-150 ${
             isSelected
-              ? 'bg-[#FCEEE8]/70 [--sq-stroke:rgba(212,82,47,0.45)] dark:bg-[#d4522f]/15 dark:[--sq-stroke:rgba(212,82,47,0.5)]'
+              ? 'bg-[#FCEEE8]/70 [--sq-stroke:rgba(212,82,47,0.5)] dark:bg-[#d4522f]/15 dark:[--sq-stroke:rgba(232,100,63,0.55)]'
               : isHovered
-              ? 'bg-[#FBF8F5] dark:bg-neutral-800/80 [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#404040]'
+              ? 'bg-[#FBF8F5] dark:bg-[#22201E]'
               : isPinned
-              ? 'bg-white dark:bg-[#18181B] [--sq-stroke:rgba(251,191,36,0.6)] dark:[--sq-stroke:rgba(245,158,11,0.4)]'
-              : 'bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#26262A]'
+              ? 'bg-white dark:bg-[#18181B] [--sq-stroke:rgba(245,158,11,0.45)] dark:[--sq-stroke:rgba(251,191,36,0.38)]'
+              : 'bg-white dark:bg-[#18181B]'
           }`}
         />
 
@@ -317,10 +317,10 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
                     : 'cubic-bezier(0.4, 0, 1, 1)',
                   transitionDelay: `${isHovered ? enterDelay : exitDelay}ms`,
                 }}
-                className={`w-[var(--btn-h,40px)] h-[var(--btn-h,40px)] rounded-full bg-white dark:bg-[#1E1E22] border border-[#E6DED6] dark:border-neutral-700/80 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                className={`w-[var(--btn-h,40px)] h-[var(--btn-h,40px)] rounded-full bg-white dark:bg-[#1E1E22] border border-[var(--atr-line)] shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                   action.isSpecialDelete
                     ? 'hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300'
-                    : 'hover:bg-[#FDF4F0] dark:hover:bg-neutral-700/60 hover:border-[#d4522f]/50'
+                    : 'hover:bg-[#FDF4F0] dark:hover:bg-neutral-700/60 hover:border-[#d4522f]/40'
                 }`}
               >
                 {action.icon}

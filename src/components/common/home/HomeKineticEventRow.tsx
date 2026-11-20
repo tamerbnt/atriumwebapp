@@ -22,7 +22,7 @@ const STATUS_BADGE_CLASSES: Record<HomeHistoriqueTone, string> = {
   info:
     'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]',
   neutral:
-    'bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85 border border-[#E6DED6] dark:border-[#3A3734]',
+    'bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85 border border-black/[0.06] dark:border-white/[0.1]',
 };
 
 export interface HomeKineticEventRowProps {
@@ -145,7 +145,7 @@ export const HomeKineticEventRow: React.FC<HomeKineticEventRowProps> = React.mem
         role="listitem"
         data-testid={`historique-row-${event.id}`}
         data-expanded={isExpanded ? 'true' : undefined}
-        className="group/hrow relative bg-white dark:bg-[#1A1816] border border-[#E6DED6] dark:border-[#312D29] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#312D29] hover:[--sq-stroke:rgba(212,82,47,0.5)] dark:hover:[--sq-stroke:rgba(251,146,60,0.5)] transition-colors duration-150 overflow-hidden"
+        className="group/hrow relative bg-white dark:bg-[#1A1816] border border-black/[0.06] dark:border-white/[0.08] hover:bg-[#FCF9F6] dark:hover:bg-[#221F1D] transition-colors duration-150 overflow-hidden"
         data-sq="row"
         data-sq-border="solid"
       >
@@ -247,7 +247,7 @@ export const HomeKineticEventRow: React.FC<HomeKineticEventRowProps> = React.mem
               }}
               aria-expanded={isExpanded}
               aria-label={event.title}
-              className="w-[32px] h-[32px] rounded-full bg-[#F3EDE7] dark:bg-[#262320] border border-[#E6DED6] dark:border-[#3A3530] flex items-center justify-center text-[var(--text-1)] dark:text-white hover:border-[#d4522f] transition-colors cursor-pointer shrink-0"
+              className="w-[32px] h-[32px] rounded-full bg-[#F3EDE7] dark:bg-[#262320] border border-black/[0.06] dark:border-white/[0.1] flex items-center justify-center text-[var(--text-1)] dark:text-white hover:bg-[#EADFD4] dark:hover:bg-white/[0.14] transition-colors cursor-pointer shrink-0"
             >
               <ChevronDown
                 size={15}
@@ -268,7 +268,7 @@ export const HomeKineticEventRow: React.FC<HomeKineticEventRowProps> = React.mem
                 ? { maxHeight: isExpanded ? '280px' : '0px', opacity: isExpanded ? 1 : 0 }
                 : undefined
             }
-            className="overflow-hidden border-t border-[#EFE7DF] dark:border-[#2C2824] bg-[#FCF9F6] dark:bg-[#141312]"
+            className="overflow-hidden border-t border-black/[0.055] dark:border-white/[0.07] bg-[#FCF9F6] dark:bg-[#141312]"
           >
             <div className="px-[var(--s4,16px)] py-[var(--s3,12px)] flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--s3,12px)]">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3,12px)] flex-1 min-w-0">

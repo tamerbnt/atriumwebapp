@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useId, useLayoutEffect, useRef } from 'react';
 import { useSpringCountRef } from './kineticMotion';
+import { useScreenFocus } from './ScreenFocusContext';
 
 export interface KpiFilterCardConfig {
   label: string;
@@ -58,7 +59,7 @@ const WhiteKpiCard: React.FC<{
     : '[--sq-stroke:rgba(212,82,47,0.78)] dark:[--sq-stroke:rgba(232,100,63,0.78)]';
 
   const inactiveStrokeVars =
-    '[--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.65)] group-hover:[--sq-stroke:#D5C9BE] dark:group-hover:[--sq-stroke:rgba(82,82,82,0.85)]';
+    '[--sq-stroke:var(--sq-stroke-card,rgba(23,19,15,0.06))] group-hover:[--sq-stroke:var(--sq-stroke-card,rgba(23,19,15,0.09))] dark:group-hover:[--sq-stroke:var(--sq-stroke-ctl-hover,url(#sq-spec-dark-ctl-hover))]';
 
   const glowGradient = isEmerald
     ? 'bg-[radial-gradient(240px_circle_at_90%_10%,rgba(16,185,129,0.09),transparent_70%)] dark:bg-[radial-gradient(240px_circle_at_90%_10%,rgba(16,185,129,0.14),transparent_70%)]'
@@ -171,6 +172,19 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
   darkCard,
   className = '',
 }) => {
+  const bannerId = useId();
+  const focusCtx = useScreenFocus();
+  const bannerRef = useRef<HTMLDivElement>(null);
+  const isExpanded = Boolean(focusCtx?.isExpanded);
+
+  useLayoutEffect(() => {
+    if (!focusCtx) return;
+    focusCtx.registerUpperBanner(bannerId, isExpanded ? null : bannerRef.current);
+    return () => {
+      focusCtx.registerUpperBanner(bannerId, null);
+    };
+  }, [focusCtx, bannerId, isExpanded]);
+
   const darkChipCountRef = useSpringCountRef<HTMLSpanElement>(darkCard.badgeCount, {
     prefix: darkCard.badgePrefix ?? '+',
     formatValue: darkCard.formatBadgeValue,
@@ -181,11 +195,16 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
     formatValue: darkCard.formatValue,
   });
 
+  if (isExpanded) {
+    return null;
+  }
+
   return (
     <div
+      ref={bannerRef}
       data-sq="panel"
       data-sq-border="solid"
-      className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[var(--r-panel,28px)] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] ${className}`}
+      className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[var(--r-panel,28px)] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] ${className}`}
     >
       <div className="pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
         <h2 className="t-pod text-[var(--text-1)] dark:text-white">
@@ -202,7 +221,7 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
             data-surface="dark"
             data-sq="card"
             data-sq-border="solid"
-            className="relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-[#1F1D1B] [--sq-stroke:rgba(255,255,255,0.08)] group-hover:[--sq-stroke:rgba(255,143,99,0.4)] text-white flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full"
+            className="relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-[#1F1D1B] [--sq-stroke:var(--sq-stroke-obsidian,url(#sq-spec-dark-card))] group-hover:[--sq-stroke:rgba(255,143,99,0.45)] text-white flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full"
           >
             <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(260px_circle_at_88%_12%,rgba(255,143,99,0.14),transparent_70%)]" />
             <div className="relative z-10 flex items-center justify-between gap-[var(--s2,8px)]">

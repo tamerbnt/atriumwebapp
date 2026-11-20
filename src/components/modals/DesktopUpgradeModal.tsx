@@ -351,7 +351,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           </div>
 
           {/* Backup Button */}
-          <div className="pt-[var(--s2,8px)] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s2,8px)] border-t border-neutral-200 dark:border-neutral-700">
+          <div className="pt-[var(--s2,8px)] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s2,8px)] border-t border-[var(--atr-divider)]">
             <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">
               {language === 'ar' ? 'هل ترغب في حفظ نسخة احتياطية إضافية؟' : language === 'fr' ? 'Souhaitez-vous une copie de sauvegarde hors-ligne ?' : 'Want an extra offline safety copy?'}
             </span>
@@ -412,7 +412,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
         </div>
 
         {/* Bottom Voucher Prompt */}
-        <div className="flex items-center justify-between pt-[var(--s2,8px)] border-t border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-center justify-between pt-[var(--s2,8px)] border-t border-[var(--atr-divider)]">
           <span className="t-cap text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">
             {language === 'ar' ? 'هل تمتلك قسيمة ترخيص مسبقاً؟' : language === 'fr' ? 'Vous possédez déjà un bon de licence ?' : 'Already purchased an Atrium License Voucher?'}
           </span>

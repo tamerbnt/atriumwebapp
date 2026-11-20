@@ -208,16 +208,134 @@ function resolveStrokeWidth(
 }
 
 const VOID_TAGS = new Set(['INPUT', 'IMG', 'TEXTAREA', 'SELECT', 'BR', 'HR']);
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const SHARED_DEFS_ID = 'atrium-sq-defs';
+
+interface SpecularGradientSpec {
+  id: string;
+  stops: ReadonlyArray<{ offset: string; opacity: number }>;
+}
+
+const DARK_SPECULAR_GRADIENTS: ReadonlyArray<SpecularGradientSpec> = [
+  {
+    id: 'sq-spec-dark-pod',
+    stops: [
+      { offset: '0%', opacity: 0.095 },
+      { offset: '48%', opacity: 0.055 },
+      { offset: '100%', opacity: 0.035 },
+    ],
+  },
+  {
+    id: 'sq-spec-dark-card',
+    stops: [
+      { offset: '0%', opacity: 0.145 },
+      { offset: '45%', opacity: 0.08 },
+      { offset: '100%', opacity: 0.04 },
+    ],
+  },
+  {
+    id: 'sq-spec-dark-ctl',
+    stops: [
+      { offset: '0%', opacity: 0.165 },
+      { offset: '45%', opacity: 0.095 },
+      { offset: '100%', opacity: 0.055 },
+    ],
+  },
+  {
+    id: 'sq-spec-dark-ctl-hover',
+    stops: [
+      { offset: '0%', opacity: 0.24 },
+      { offset: '45%', opacity: 0.14 },
+      { offset: '100%', opacity: 0.085 },
+    ],
+  },
+  {
+    id: 'sq-spec-dark-pop',
+    stops: [
+      { offset: '0%', opacity: 0.17 },
+      { offset: '42%', opacity: 0.095 },
+      { offset: '100%', opacity: 0.045 },
+    ],
+  },
+  {
+    id: 'sq-spec-dark-app',
+    stops: [
+      { offset: '0%', opacity: 0.11 },
+      { offset: '45%', opacity: 0.06 },
+      { offset: '100%', opacity: 0.03 },
+    ],
+  },
+];
+
+let defsInjected = false;
+
+/**
+ * Mounts one inert hidden <svg> <defs> sprite containing shared top-lit white
+ * specular gradients so dark cards, pods, controls, and overlays can share
+ * gradient paint servers with zero per-element DOM duplication.
+ * Note: Never uses display:none or visibility:hidden (browsers skip paint servers).
+ */
+export function ensureSharedSquircleDefs(): void {
+  if (defsInjected || typeof document === 'undefined') return;
+  if (typeof document.getElementById !== 'function' || typeof document.createElementNS !== 'function') {
+    return;
+  }
+  const host = document.body || document.documentElement;
+  if (!host || typeof host.appendChild !== 'function') return;
+
+  if (document.getElementById(SHARED_DEFS_ID)) {
+    defsInjected = true;
+    return;
+  }
+
+  const sprite = document.createElementNS(SVG_NS, 'svg');
+  sprite.setAttribute('id', SHARED_DEFS_ID);
+  sprite.setAttribute('aria-hidden', 'true');
+  sprite.setAttribute('width', '0');
+  sprite.setAttribute('height', '0');
+  sprite.style.position = 'fixed';
+  sprite.style.top = '-9999px';
+  sprite.style.left = '-9999px';
+  sprite.style.width = '0';
+  sprite.style.height = '0';
+  sprite.style.overflow = 'hidden';
+  sprite.style.pointerEvents = 'none';
+
+  const defs = document.createElementNS(SVG_NS, 'defs');
+  for (let i = 0; i < DARK_SPECULAR_GRADIENTS.length; i++) {
+    const spec = DARK_SPECULAR_GRADIENTS[i];
+    const grad = document.createElementNS(SVG_NS, 'linearGradient');
+    grad.setAttribute('id', spec.id);
+    grad.setAttribute('x1', '0');
+    grad.setAttribute('y1', '0');
+    grad.setAttribute('x2', '0');
+    grad.setAttribute('y2', '1');
+
+    for (let j = 0; j < spec.stops.length; j++) {
+      const st = spec.stops[j];
+      const stopEl = document.createElementNS(SVG_NS, 'stop');
+      stopEl.setAttribute('offset', st.offset);
+      stopEl.setAttribute('stop-color', '#ffffff');
+      stopEl.setAttribute('stop-opacity', String(st.opacity));
+      grad.appendChild(stopEl);
+    }
+    defs.appendChild(grad);
+  }
+
+  sprite.appendChild(defs);
+  host.appendChild(sprite);
+  defsInjected = true;
+}
 
 function ensureStrokeOverlay(el: HTMLElement): SVGPathElement | null {
   if (VOID_TAGS.has(el.tagName)) return null;
   let svg = el.querySelector<SVGSVGElement>(':scope > svg[data-sq-stroke]');
   if (!svg) {
-    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg = document.createElementNS(SVG_NS, 'svg');
     svg.setAttribute('data-sq-stroke', '');
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('preserveAspectRatio', 'none');
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const path = document.createElementNS(SVG_NS, 'path');
     path.setAttribute('vector-effect', 'non-scaling-stroke');
     path.setAttribute('fill', 'none');
     svg.appendChild(path);
@@ -229,7 +347,7 @@ function ensureStrokeOverlay(el: HTMLElement): SVGPathElement | null {
   }
   let path = svg.querySelector<SVGPathElement>('path');
   if (!path) {
-    path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path = document.createElementNS(SVG_NS, 'path');
     path.setAttribute('vector-effect', 'non-scaling-stroke');
     path.setAttribute('fill', 'none');
     svg.appendChild(path);
@@ -359,7 +477,7 @@ function flushDirtyQueue(): void {
 
     let strokeD = '';
     if (needsStroke) {
-      const inset = Math.max(0.5, strokeWidth / 2);
+      const inset = strokeWidth <= 1 ? 0.65 : strokeWidth / 2 + 0.15;
       const sw = Math.max(1, w - inset * 2);
       const sh = Math.max(1, h - inset * 2);
       const sr = Math.max(0, r - inset);
@@ -470,6 +588,7 @@ export function enqueueSquircleElement(el: HTMLElement): void {
 /** Immediately synchronize a single element synchronously (e.g., inside transition frames). */
 export function syncSquircleNow(el: HTMLElement | null): void {
   if (!el || !el.isConnected) return;
+  ensureSharedSquircleDefs();
   const attr = el.getAttribute('data-sq');
   if (!attr || attr === 'none') {
     el.style.clipPath = '';
@@ -544,7 +663,7 @@ export function syncSquircleNow(el: HTMLElement | null): void {
   (el.style as any).webkitClipPath = clipStr;
 
   if (needsStroke) {
-    const inset = Math.max(0.5, strokeWidth / 2);
+    const inset = strokeWidth <= 1 ? 0.65 : strokeWidth / 2 + 0.15;
     const strokeD = squirclePath(
       inset,
       inset,
@@ -618,6 +737,7 @@ let engineInstalled = false;
 export function initSquircleEngine(): void {
   if (engineInstalled || typeof window === 'undefined' || typeof document === 'undefined') return;
   engineInstalled = true;
+  ensureSharedSquircleDefs();
 
   if (typeof ResizeObserver !== 'undefined') {
     ro = new ResizeObserver((entries) => {

@@ -407,6 +407,7 @@ interface AppState {
   desktopUpgradeReason: 'branch_limit' | 'business_limit' | 'general';
   isTopBarCollapsed: boolean;
   isTopBarAutoHide: boolean;
+  isListPodExpanded: boolean;
   // Supabase Integration & Sync
   supabaseStatus: SupabaseStatus;
   isSyncing: boolean;
@@ -596,6 +597,8 @@ const DEFAULT_STATE: AppState = {
   desktopUpgradeReason: 'general',
   isTopBarCollapsed: false,
   isTopBarAutoHide: false,
+  isListPodExpanded:
+    typeof localStorage !== 'undefined' && localStorage.getItem('atrium_list_pod_expanded') === 'true',
   supabaseStatus: isSupabaseConfigured() ? 'connecting' : 'unconfigured',
   isSyncing: false,
   lastSyncedAt: null,
@@ -1733,6 +1736,23 @@ export function setTopBarCollapsedAction(collapsed: boolean) {
 
 export function toggleTopBarAutoHideAction() {
   globalState = { ...globalState, isTopBarAutoHide: !globalState.isTopBarAutoHide };
+  notify();
+}
+
+export function toggleListPodExpandedAction() {
+  const next = !globalState.isListPodExpanded;
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('atrium_list_pod_expanded', next ? 'true' : 'false');
+  }
+  globalState = { ...globalState, isListPodExpanded: next };
+  notify();
+}
+
+export function setListPodExpandedAction(expanded: boolean) {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('atrium_list_pod_expanded', expanded ? 'true' : 'false');
+  }
+  globalState = { ...globalState, isListPodExpanded: expanded };
   notify();
 }
 
@@ -15518,6 +15538,8 @@ function createAtriumActions() {
     globalState = { ...globalState, isTopBarCollapsed: collapsed };
     notify();
   };
+  const toggleListPodExpanded = toggleListPodExpandedAction;
+  const setListPodExpanded = setListPodExpandedAction;
   const canAccessStaffScreenFn = (cat: BusinessCategory | string, role?: string) =>
     canAccessStaffScreen(cat, role || globalState.currentUser?.role);
   const canViewSensitivePayrollFn = (role?: string) =>
@@ -16386,6 +16408,8 @@ function createAtriumActions() {
     toggleTopBarAutoHide,
     setTopBarAutoHide,
     setTopBarCollapsed,
+    toggleListPodExpanded,
+    setListPodExpanded,
     openSettingsTab: openSettingsTabAction,
     setSettingsTab: setSettingsTabAction,
     clearSettingsFocusSection: clearSettingsFocusSectionAction,
@@ -16551,6 +16575,7 @@ export function useAtriumStore() {
     desktopUpgradeReason: state.desktopUpgradeReason,
     isTopBarCollapsed: state.isTopBarCollapsed || false,
     isTopBarAutoHide: state.isTopBarAutoHide ?? false,
+    isListPodExpanded: state.isListPodExpanded || false,
     // Lists
     members: currentMembers,
     leads: currentLeads,

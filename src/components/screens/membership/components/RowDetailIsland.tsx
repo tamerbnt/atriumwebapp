@@ -261,7 +261,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
                     e.stopPropagation();
                     btn.onClick();
                   }}
-                  className="h-[30px] px-3 border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white dark:hover:bg-[var(--atr-acc,#e8643f)] dark:hover:text-white text-[var(--atr-ink,#000000)] dark:text-white font-medium t-small flex items-center gap-2 transition-colors duration-140 cursor-pointer whitespace-nowrap"
+                  className="h-[30px] px-3 border-0 bg-white dark:bg-[#262422] hover:bg-[#1F1D1B] hover:text-white dark:hover:bg-[var(--atr-acc,#e8643f)] dark:hover:text-white text-[var(--atr-ink,#000000)] dark:text-white font-medium t-small flex items-center gap-2 transition-colors duration-140 cursor-pointer whitespace-nowrap"
                 >
                   {btn.icon}
                   <span className="truncate">{btn.label}</span>

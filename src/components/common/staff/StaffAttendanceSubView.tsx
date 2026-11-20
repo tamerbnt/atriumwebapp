@@ -740,7 +740,6 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                   </label>
                   <div
                     data-sq="ctl"
-                    style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
                     className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#FBF8F5] dark:bg-[#262422]"
                   >
                     <input
@@ -753,7 +752,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--footer-gap,16px)] border-t border-[#E6DED6] dark:border-[#33302D]">
+                <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--footer-gap,16px)] border-t border-[var(--atr-divider)]">
                   <button
                     type="button"
                     onClick={() => setIsManualModalOpen(false)}

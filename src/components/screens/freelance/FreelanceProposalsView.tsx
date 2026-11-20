@@ -468,7 +468,7 @@ export const FreelanceProposalsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0 border border-neutral-200 dark:border-neutral-700"
+              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
             >
               <FileText size={16} />
             </div>
@@ -498,7 +498,7 @@ export const FreelanceProposalsView: React.FC = () => {
         renderCell: (proposal) => {
           const bInfo = resolveRecordBranch(proposal, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09] truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -882,7 +882,7 @@ export const FreelanceProposalsView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040] animate-in fade-in slide-in-from-top-2"
+            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:rgba(191,67,31,0.18)] dark:[--sq-stroke:rgba(255,143,99,0.22)] animate-in fade-in slide-in-from-top-2"
           >
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
@@ -1253,9 +1253,9 @@ export const FreelanceProposalsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
                 {t('free_prop_modal_new_title', language)}
               </h3>
@@ -1310,7 +1310,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                  className="bg-white dark:bg-neutral-900"
                 >
                   <textarea
                     rows={2}
@@ -1321,7 +1321,7 @@ export const FreelanceProposalsView: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className="space-y-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="space-y-2 pt-2 border-t border-[var(--atr-divider)]">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-black dark:text-white">
                     {t('free_prop_scope', language)}
@@ -1404,7 +1404,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 value={formData.validUntil}
                 onChange={(e) => setFormData({ ...formData, validUntil: extractStr(e) })}
               />
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton
                   variant="outline"
                   size="sm"
@@ -1434,9 +1434,9 @@ export const FreelanceProposalsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
                 {isAr
                   ? 'تعديل عرض السعر ونطاق العمل'
@@ -1497,7 +1497,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                  className="bg-white dark:bg-neutral-900"
                 >
                   <textarea
                     rows={2}
@@ -1610,7 +1610,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 value={editFormData.validUntil}
                 onChange={(e) => setEditFormData({ ...editFormData, validUntil: extractStr(e) })}
               />
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton
                   variant="outline"
                   size="sm"
@@ -1640,13 +1640,13 @@ export const FreelanceProposalsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                 <div
                   data-sq="tile"
                   data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60 [--sq-stroke:#fecdd3] dark:[--sq-stroke:rgba(136,19,55,0.6)]"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 [--sq-stroke:rgba(225,29,72,0.20)] dark:[--sq-stroke:rgba(251,113,133,0.28)]"
                 >
                   <AlertTriangle size={20} />
                 </div>
@@ -1666,7 +1666,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 ? `Supprimer le devis "${proposalToDelete.title}" du pipeline ?`
                 : `Delete proposal "${proposalToDelete.title}" from your pipeline?`}
             </p>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
               <AtriumButton
                 variant="outline"
                 size="sm"

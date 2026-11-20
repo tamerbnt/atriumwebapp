@@ -1337,7 +1337,7 @@ export const PosInventoryView: React.FC<any> = () => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-3"
+              className="p-4 bg-white dark:bg-neutral-900 space-y-3"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -1360,7 +1360,7 @@ export const PosInventoryView: React.FC<any> = () => {
                     key={sup.id}
                     data-sq="card"
                     data-sq-border="solid"
-                    className="p-4 [--sq-stroke:#F5F5F5] dark:[--sq-stroke:#262626] bg-neutral-50/50 dark:bg-neutral-850/50 space-y-2"
+                    className="p-4 bg-neutral-50/50 dark:bg-neutral-850/50 space-y-2"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-semibold t-small text-black dark:text-white truncate">{sup.supplierName}</span>
@@ -1372,7 +1372,7 @@ export const PosInventoryView: React.FC<any> = () => {
                       {sup.contactName ? `${sup.contactName} · ` : ''}
                       {sup.phone || 'Sans contact'}
                     </div>
-                    <div className="flex items-center justify-between t-cap text-black/55 dark:text-white/55 tabular-nums pt-1 border-t border-neutral-200/50 dark:border-neutral-800">
+                    <div className="flex items-center justify-between t-cap text-black/55 dark:text-white/55 tabular-nums pt-1 border-t border-[var(--atr-divider)]">
                       <span>{sup.sector || 'Grossiste'}</span>
                       <span>{sup.paymentTermsDays || 30}j paiement</span>
                     </div>
@@ -1410,7 +1410,7 @@ export const PosInventoryView: React.FC<any> = () => {
         branchName={inspectingProduct ? resolveRecordBranch(inspectingProduct, branchesById, currentBranch, language).name : undefined}
         headerPills={
           inspectingProduct?.category ? (
-            <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]">
+            <span className="pill inline-flex items-center gap-1 px-2.5 py-[3px] rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09]">
               {inspectingProduct.category}
             </span>
           ) : undefined
@@ -2038,7 +2038,7 @@ export const PosInventoryView: React.FC<any> = () => {
                   key={idx}
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="p-3 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-neutral-50 dark:bg-neutral-850/50 grid grid-cols-1 sm:grid-cols-12 gap-2 items-center"
+                  className="p-3 bg-neutral-50 dark:bg-neutral-850/50 grid grid-cols-1 sm:grid-cols-12 gap-2 items-center"
                 >
                   <div className="sm:col-span-6">
                     <LabelSelect
@@ -2127,7 +2127,7 @@ export const PosInventoryView: React.FC<any> = () => {
           <div
             data-sq="ctl"
             data-sq-border="solid"
-            className="p-4 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-neutral-100/60 dark:bg-neutral-800/60 flex items-center justify-between t-cap"
+            className="p-4 bg-neutral-100/60 dark:bg-neutral-800/60 flex items-center justify-between t-cap"
           >
             <span className="font-semibold text-black/70 dark:text-white/75">
               {isAr ? 'المجموع المقدر (TTC شامل 19% رسم)' : 'Total Estimé TTC (TVA 19% incluse) :'}

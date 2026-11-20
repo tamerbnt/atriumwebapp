@@ -266,7 +266,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="p-[var(--card-pad,20px)] bg-[#F3EDE7] dark:bg-[#141312] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] flex flex-col gap-[var(--s4,16px)]"
+          className="p-[var(--card-pad,20px)] bg-[#F3EDE7] dark:bg-[#141312] flex flex-col gap-[var(--s4,16px)]"
         >
           <SkeletonText size="sm" width="200px" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--card-gap,12px)]">
@@ -278,7 +278,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="p-[var(--card-pad,20px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col gap-[var(--s4,16px)]"
+          className="p-[var(--card-pad,20px)] bg-white dark:bg-[#18181B] flex flex-col gap-[var(--s4,16px)]"
         >
           <SkeletonText size="sm" width="180px" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--card-gap,12px)]">
@@ -418,7 +418,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           <div
             role="tablist"
             aria-label={language === 'ar' ? 'أقسام الإعدادات' : language === 'fr' ? 'Onglets des paramètres' : 'Settings sections'}
-            className="flex items-center gap-[var(--s2,8px)] overflow-x-auto pb-[2px] border-b border-[#E6DED6] dark:border-neutral-800"
+            className="flex items-center gap-[var(--s2,8px)] overflow-x-auto pb-[2px] border-b border-[var(--atr-divider)]"
           >
             {tabs.map((tab, idx) => {
               const isSelected = settingsTab === tab.id;
@@ -502,7 +502,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
             <div className="flex items-center gap-[var(--s2,8px)] self-start sm:self-auto t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
               <span>{t('settings_system_detected_badge', language)}{language === 'fr' ? '\u00A0:' : ':'}</span>
-              <span className="t-small text-[var(--text-1)] dark:text-white bg-white dark:bg-neutral-800 px-[var(--s3,12px)] h-[var(--pill-h,24px)] inline-flex items-center rounded-full border border-neutral-200 dark:border-neutral-700">
+              <span className="t-small text-[var(--text-1)] dark:text-white bg-white dark:bg-neutral-800 px-[var(--s3,12px)] h-[var(--pill-h,24px)] inline-flex items-center rounded-full border border-black/[0.06] dark:border-white/[0.09]">
                 {getSystemDefaultLanguage() === 'ar' ? 'العربية (ar)' : getSystemDefaultLanguage() === 'fr' ? 'Français (fr)' : 'English (en)'}
               </span>
             </div>
@@ -1493,7 +1493,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <button
               type="button"
               onClick={() => openDesktopUpgradeModal('general')}
-              className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-full border border-neutral-300 dark:border-neutral-600 text-[var(--text-1)] t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
+              className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-full border border-black/[0.10] dark:border-white/[0.14] text-[var(--text-1)] t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
             >
               {language === 'ar' ? 'المزيد' : language === 'fr' ? 'En savoir plus' : 'Learn More'}
             </button>
@@ -1723,7 +1723,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           {pendingBackupMeta && (
             <div className="flex flex-col gap-[var(--card-gap,12px)]">
               <div data-sq="card" className="p-[var(--s4,16px)] bg-neutral-50 dark:bg-neutral-800 flex flex-col gap-[var(--s2,8px)] t-cap">
-                <div className="flex justify-between py-[var(--s1,4px)] border-b border-neutral-200 dark:border-neutral-700">
+                <div className="flex justify-between py-[var(--s1,4px)] border-b border-[var(--atr-divider)]">
                   <span className="text-[var(--text-2)]">
                     {language === 'ar' ? 'تاريخ تصدير النسخة:' : language === 'fr' ? 'Date de la sauvegarde :' : 'Backup Export Date:'}
                   </span>
@@ -1766,7 +1766,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                     {pendingBackupMeta.membersCount} {language === 'ar' ? 'سجل' : language === 'fr' ? 'enregistrements' : 'records'}
                   </span>
                 </div>
-                <div className="pt-[var(--s2,8px)] border-t border-neutral-200 dark:border-neutral-700 flex flex-wrap gap-x-[var(--s3,12px)] gap-y-[var(--s1,4px)] t-cap text-[var(--text-2)] tabular-nums">
+                <div className="pt-[var(--s2,8px)] border-t border-[var(--atr-divider)] flex flex-wrap gap-x-[var(--s3,12px)] gap-y-[var(--s1,4px)] t-cap text-[var(--text-2)] tabular-nums">
                   {Object.entries(pendingBackupMeta.validation.entityCounts)
                     .filter(([, count]) => count > 0)
                     .slice(0, 8)

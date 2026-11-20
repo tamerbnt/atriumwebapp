@@ -513,10 +513,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className={`w-9 h-9 flex items-center justify-center font-semibold t-small shrink-0 border ${
+              className={`w-9 h-9 flex items-center justify-center font-semibold t-small shrink-0 ${
                 item.isCompleted
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border-emerald-200 dark:border-emerald-800 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46]'
-                  : 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040]'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 [--sq-stroke:rgba(16,185,129,0.22)] dark:[--sq-stroke:rgba(52,211,153,0.26)]'
+                  : 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white'
               }`}
             >
               {item.isCompleted ? <CheckCircle2 size={16} /> : <FileCheck size={16} />}
@@ -543,7 +543,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
         renderCell: (item) => {
           const bInfo = resolveRecordBranch(item.project, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09] truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -1012,7 +1012,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040] animate-in fade-in slide-in-from-top-2"
+            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:rgba(191,67,31,0.18)] dark:[--sq-stroke:rgba(255,143,99,0.22)] animate-in fade-in slide-in-from-top-2"
           >
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
@@ -1190,9 +1190,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   key={stage.id}
                   data-sq="card"
                   data-sq-border="solid"
-                  className="bg-white/75 dark:bg-neutral-900/40 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] p-3 min-h-[480px] flex flex-col"
+                  className="bg-white/75 dark:bg-neutral-900/40 [--sq-stroke:var(--sq-stroke-pod)] p-3 min-h-[480px] flex flex-col"
                 >
-                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200/60 dark:border-neutral-800">
+                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-[var(--atr-divider)]">
                     <span className="t-small font-semibold text-black dark:text-white">
                       {t(STAGE_KEYS[stage.id], language)}
                     </span>
@@ -1212,7 +1212,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                           <div
                             data-sq="ctl"
                             data-sq-border="solid"
-                            className="p-4 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] hover:border-[#d4522f]/40 hover:[--sq-stroke:rgba(212,82,47,0.4)] transition-all flex flex-col justify-between gap-2 group"
+                            className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-card)] hover:bg-[#FCF9F6] dark:hover:bg-white/[0.04] transition-colors flex flex-col justify-between gap-2 group"
                           >
                           <div>
                             <div className="flex items-center justify-between t-cap text-black/55 dark:text-white/55 mb-1 gap-1">
@@ -1240,7 +1240,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                             )}
                           </div>
 
-                          <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/80 space-y-2 t-cap">
+                          <div className="pt-2 border-t border-[var(--atr-divider)] space-y-2 t-cap">
                             <div className="flex items-center justify-between">
                               <span className="text-black/55 dark:text-white/55 flex items-center gap-1">
                                 <Clock size={11} />
@@ -1276,7 +1276,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between gap-1 pt-2 border-t border-neutral-100 dark:border-neutral-800/80">
+                          <div className="flex items-center justify-between gap-1 pt-2 border-t border-[var(--atr-divider)]">
                             <div className="flex items-center gap-1">
                               <button
                                 type="button"
@@ -1483,10 +1483,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         data-sq="ctl"
                         data-sq-border="solid"
                         onClick={() => updateDeliverableStage(item.projectId, item.id, st.id)}
-                        className={`px-3 py-2 border t-small font-semibold cursor-pointer transition-colors ${
+                        className={`px-3 py-2 t-small font-semibold cursor-pointer transition-colors ${
                           active
-                            ? 'bg-[var(--brand-fill,#C9461F)] text-white border-[#d4522f]'
-                            : 'bg-[#F3EDE7] dark:bg-neutral-900 border-[#E6DED6] dark:border-neutral-800 text-black/75 dark:text-white/75 hover:border-[#d4522f]/50'
+                            ? 'bg-[var(--brand-fill,#C9461F)] text-white [--sq-stroke:rgba(201,70,31,0.5)]'
+                            : 'bg-[#F3EDE7] dark:bg-neutral-900 text-black/75 dark:text-white/75 hover:bg-[#EAE1D8] dark:hover:bg-white/[0.05]'
                         }`}
                       >
                         {t(STAGE_KEYS[st.id], language)}
@@ -1553,9 +1553,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
                 {t('free_deliv_btn_new', language)}
               </h3>
@@ -1594,7 +1594,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                  className="bg-white dark:bg-neutral-900"
                 >
                   <textarea
                     rows={2}
@@ -1624,14 +1624,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   onChange={(e) => setDueDate(extractStr(e))}
                 />
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsAddDeliverableModalOpen(false)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
@@ -1657,9 +1657,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
                 {t('free_deliv_field_project', language)}
               </h3>
@@ -1717,7 +1717,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                  className="bg-white dark:bg-neutral-900"
                 >
                   <textarea
                     rows={2}
@@ -1775,14 +1775,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 value={newProjectData.deadline}
                 onChange={(e) => setNewProjectData({ ...newProjectData, deadline: extractStr(e) })}
               />
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsAddProjectModalOpen(false)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
@@ -1808,9 +1808,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div>
                 <h3 className="t-card font-semibold text-black dark:text-white">
                   {t('free_deliv_edit', language)}
@@ -1845,7 +1845,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                  className="bg-white dark:bg-neutral-900"
                 >
                   <textarea
                     rows={2}
@@ -1883,14 +1883,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   }
                 />
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setDeliverableToEdit(null)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
                 >
                   {t('common_cancel', language)}
                 </button>
@@ -1916,13 +1916,13 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                 <div
                   data-sq="tile"
                   data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60 [--sq-stroke:#fecdd3] dark:[--sq-stroke:rgba(136,19,55,0.6)]"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 [--sq-stroke:rgba(225,29,72,0.20)] dark:[--sq-stroke:rgba(251,113,133,0.28)]"
                 >
                   <AlertTriangle size={20} />
                 </div>
@@ -1942,14 +1942,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   ? `Supprimer définitivement le livrable "${deliverableToDelete.title}" ?`
                   : `Permanently remove deliverable "${deliverableToDelete.title}"?`}
               </p>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setDeliverableToDelete(null)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
                 >
                   {t('common_cancel', language)}
                 </button>
@@ -1985,13 +1985,13 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                 <div
                   data-sq="tile"
                   data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60 [--sq-stroke:#fecdd3] dark:[--sq-stroke:rgba(136,19,55,0.6)]"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 [--sq-stroke:rgba(225,29,72,0.20)] dark:[--sq-stroke:rgba(251,113,133,0.28)]"
                 >
                   <AlertTriangle size={20} />
                 </div>
@@ -2011,14 +2011,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   ? `Supprimer le projet "${projectToDelete.title}" et tous ses livrables ?`
                   : `Delete project "${projectToDelete.title}" and all associated deliverables?`}
               </p>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setProjectToDelete(null)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
                 >
                   {t('common_cancel', language)}
                 </button>

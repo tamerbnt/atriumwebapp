@@ -446,7 +446,7 @@ function KineticSlideOverInspectorInner<T>({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="relative w-full h-full bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex flex-col overflow-hidden"
+          className="relative w-full h-full bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden"
         >
         {/* Header (.ph) */}
         <div className="ph flex gap-[var(--s4,16px)] items-start p-[var(--drawer-pad,24px)] pb-[var(--s4,16px)]">
@@ -484,7 +484,7 @@ function KineticSlideOverInspectorInner<T>({
                 </span>
               )}
               {branchName && (
-                <span className="pill inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[#F3EDE7] dark:bg-[#262422] text-[var(--text-1)] border border-[#E6DED6] dark:border-[#3A3734]">
+                <span className="pill inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[#F3EDE7] dark:bg-[#262422] text-[var(--text-1)] border border-black/[0.06] dark:border-white/[0.1]">
                   <span className="w-[var(--pill-dot,6px)] h-[var(--pill-dot,6px)] rounded-full bg-[var(--brand-accent,#D9532B)]" />
                   {branchName}
                 </span>
@@ -512,7 +512,7 @@ function KineticSlideOverInspectorInner<T>({
                   disabled={!hasPrev}
                   onClick={() => handleStep(-1)}
                   aria-label="Previous"
-                  className="w-8 h-8 rounded-full border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full border border-black/[0.07] dark:border-white/[0.1] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
                 >
                   <ChevronUp className="w-4 h-4" />
                 </button>
@@ -522,7 +522,7 @@ function KineticSlideOverInspectorInner<T>({
                   disabled={!hasNext}
                   onClick={() => handleStep(1)}
                   aria-label="Next"
-                  className="w-8 h-8 rounded-full border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full border border-black/[0.07] dark:border-white/[0.1] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
                 >
                   <ChevronDown className="w-4 h-4" />
                 </button>
@@ -534,7 +534,7 @@ function KineticSlideOverInspectorInner<T>({
               data-no-liquid="true"
               onClick={onClose}
               aria-label={resolvedCloseLabel}
-              className="w-8 h-8 rounded-full border border-[#E6DED6] dark:border-[#3A3734] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] hover:bg-[#d4522f]/12 transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-full border border-black/[0.07] dark:border-white/[0.1] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] hover:bg-[#d4522f]/12 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -593,7 +593,7 @@ function KineticSlideOverInspectorInner<T>({
         </div>
 
         {/* Footer (.pf) */}
-        <div className="pf flex justify-between items-center px-[var(--drawer-pad,24px)] py-[var(--s4,16px)] border-t border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]">
+        <div className="pf flex justify-between items-center px-[var(--drawer-pad,24px)] py-[var(--s4,16px)] border-t border-[var(--atr-divider)]">
           {onDelete ? (
             holdToDelete ? (
               <button

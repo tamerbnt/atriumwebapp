@@ -1,4 +1,12 @@
-import React, { createContext, useMemo } from 'react';
+import React, {
+  createContext,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { useScreenFocus } from './ScreenFocusContext';
 
 export interface ScreenPodToolbarSnapshot {
   searchQuery: string;
@@ -12,6 +20,7 @@ export interface ScreenPodToolbarSnapshot {
 }
 
 export interface ScreenPodBridgeStore {
+  podId: string;
   getSnapshot: () => ScreenPodToolbarSnapshot | null;
   subscribe: (listener: () => void) => () => void;
   syncToolbar: (
@@ -26,13 +35,17 @@ export interface ScreenPodBridgeStore {
 
 export const ScreenPodBridgeContext = createContext<ScreenPodBridgeStore | null>(null);
 
-function createScreenPodBridgeStore(): ScreenPodBridgeStore {
+function createScreenPodBridgeStore(
+  podId: string,
+  onHasToolbarChange?: (has: boolean) => void
+): ScreenPodBridgeStore {
   let activeOwner: symbol | null = null;
   let current: ScreenPodToolbarSnapshot | null = null;
   let callbacks: { onSearchChange?: (q: string) => void; onResetAllFilters?: () => void } = {};
   const listeners = new Set<() => void>();
 
   return {
+    podId,
     getSnapshot: () => current,
     subscribe: (listener) => {
       listeners.add(listener);
@@ -41,8 +54,12 @@ function createScreenPodBridgeStore(): ScreenPodBridgeStore {
       };
     },
     syncToolbar: (ownerId, next, nextCallbacks) => {
+      const hadOwner = activeOwner !== null;
       activeOwner = ownerId;
       callbacks = nextCallbacks;
+      if (!hadOwner) {
+        onHasToolbarChange?.(true);
+      }
       const changed =
         !current ||
         current.searchQuery !== next.searchQuery ||
@@ -62,6 +79,7 @@ function createScreenPodBridgeStore(): ScreenPodBridgeStore {
         activeOwner = null;
         current = null;
         callbacks = {};
+        onHasToolbarChange?.(false);
       }
     },
     clearSearch: () => {
@@ -76,24 +94,69 @@ function createScreenPodBridgeStore(): ScreenPodBridgeStore {
 export interface ScreenPodProps {
   children: React.ReactNode;
   className?: string;
+  podRole?: 'list' | 'auxiliary';
+  collapsibleWhenExpanded?: boolean;
 }
 
-export const ScreenPod: React.FC<ScreenPodProps> = React.memo(({ children, className = '' }) => {
-  const store = useMemo(() => createScreenPodBridgeStore(), []);
+export const ScreenPod: React.FC<ScreenPodProps> = React.memo(
+  ({ children, className = '', podRole, collapsibleWhenExpanded }) => {
+    const podId = useId();
+    const focusCtx = useScreenFocus();
+    const outerRef = useRef<HTMLDivElement>(null);
+    const [hasToolbar, setHasToolbar] = useState(false);
 
-  return (
-    <ScreenPodBridgeContext.Provider value={store}>
-      <div className="sq-elev-card">
+    const store = useMemo(
+      () => createScreenPodBridgeStore(podId, setHasToolbar),
+      [podId]
+    );
+
+    const isExpanded = Boolean(focusCtx?.isExpanded);
+    const isCollapsed = Boolean(isExpanded && focusCtx?.collapsedPodIds.has(podId));
+    const isExpandedActive = Boolean(isExpanded && !isCollapsed);
+
+    useLayoutEffect(() => {
+      if (!focusCtx) return;
+      focusCtx.registerPod(podId, {
+        el: isCollapsed ? null : outerRef.current,
+        hasToolbar,
+        podRole,
+        collapsibleWhenExpanded,
+      });
+    }, [focusCtx, podId, isCollapsed, hasToolbar, podRole, collapsibleWhenExpanded]);
+
+    useLayoutEffect(() => {
+      if (!focusCtx) return;
+      return () => {
+        focusCtx.unregisterPod(podId);
+      };
+    }, [focusCtx, podId]);
+
+    if (isCollapsed) {
+      return null;
+    }
+
+    return (
+      <ScreenPodBridgeContext.Provider value={store}>
         <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className={`relative bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] ${className}`}
+          ref={outerRef}
+          data-list-pod-id={podId}
+          data-list-pod-active={isExpandedActive ? 'true' : undefined}
+          className={isExpandedActive ? 'flex-1 min-h-0 flex flex-col' : undefined}
         >
-          {children}
+          <div
+            data-sq="panel"
+            data-sq-border="solid"
+            className={`relative bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] ${
+              isExpandedActive ? 'flex-1 min-h-0' : ''
+            } ${className}`}
+          >
+            {children}
+          </div>
         </div>
-      </div>
-    </ScreenPodBridgeContext.Provider>
-  );
-});
+      </ScreenPodBridgeContext.Provider>
+    );
+  }
+);
 
 ScreenPod.displayName = 'ScreenPod';
+

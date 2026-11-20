@@ -480,8 +480,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       <div className="sq-elev-pop w-full max-w-xl animate-in zoom-in-95 duration-150">
         <div
           data-sq="panel"
-          style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-          className="w-full bg-white dark:bg-neutral-900 overflow-hidden flex flex-col max-h-[80vh]"
+          className="w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden flex flex-col max-h-[80vh]"
           onClick={(e) => e.stopPropagation()}
         >
         {/* Kinetic Search Input Bar */}
@@ -489,7 +488,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           className={`p-[var(--s4,16px)] border-b transition-colors flex items-center gap-[var(--s3,12px)] ${
             isFocused
               ? 'border-[#d4522f]/40 bg-[#FDF4F0]/40 dark:bg-neutral-800/40'
-              : 'border-neutral-100 dark:border-neutral-800 bg-transparent'
+              : 'border-[var(--atr-divider)] bg-transparent'
           }`}
         >
           <div
@@ -535,7 +534,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
             className="p-[var(--s1,4px)] rounded-full text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)] hover:text-[var(--text-1,#17130F)] dark:hover:text-white transition-colors cursor-pointer"
             title={language === 'ar' ? 'إغلاق (Esc)' : language === 'fr' ? 'Fermer (Esc)' : 'Close (Esc)'}
           >
-            <span className="t-small h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center rounded-[var(--r-check,6px)] border border-neutral-200 dark:border-neutral-700 tabular-nums">Esc</span>
+            <span className="t-small h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center rounded-[var(--r-check,6px)] border border-black/[0.08] dark:border-white/[0.12] tabular-nums">Esc</span>
           </button>
         </div>
 
@@ -605,22 +604,22 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         </div>
 
         {/* Footer Shortcut Hints */}
-        <div className="p-[var(--s3,12px)] bg-neutral-50 dark:bg-neutral-950/60 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">
+        <div className="p-[var(--s3,12px)] bg-neutral-50 dark:bg-neutral-950/60 border-t border-[var(--atr-divider)] flex items-center justify-between t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">
           <div className="flex items-center gap-[var(--s3,12px)]">
             <span className="flex items-center gap-[var(--s1,4px)]">
-              <kbd className="h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] t-small tabular-nums text-[var(--text-1,#17130F)] dark:text-white shadow-2xs">
+              <kbd className="h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center bg-white dark:bg-neutral-800 border border-black/[0.08] dark:border-white/[0.12] rounded-[var(--r-check,6px)] t-small tabular-nums text-[var(--text-1,#17130F)] dark:text-white shadow-2xs">
                 ↑↓
               </kbd>
               {language === 'ar' ? 'تنقل' : language === 'fr' ? 'Naviguer' : 'Navigate'}
             </span>
             <span className="flex items-center gap-[var(--s1,4px)]">
-              <kbd className="h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] t-small tabular-nums text-[var(--text-1,#17130F)] dark:text-white shadow-2xs">
+              <kbd className="h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center bg-white dark:bg-neutral-800 border border-black/[0.08] dark:border-white/[0.12] rounded-[var(--r-check,6px)] t-small tabular-nums text-[var(--text-1,#17130F)] dark:text-white shadow-2xs">
                 ↵
               </kbd>
               {language === 'ar' ? 'اختيار' : language === 'fr' ? 'Sélectionner' : 'Select'}
             </span>
             <span className="flex items-center gap-[var(--s1,4px)]">
-              <kbd className="h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-[var(--r-check,6px)] t-small tabular-nums text-[var(--text-1,#17130F)] dark:text-white shadow-2xs">
+              <kbd className="h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center bg-white dark:bg-neutral-800 border border-black/[0.08] dark:border-white/[0.12] rounded-[var(--r-check,6px)] t-small tabular-nums text-[var(--text-1,#17130F)] dark:text-white shadow-2xs">
                 Esc
               </kbd>
               {language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}

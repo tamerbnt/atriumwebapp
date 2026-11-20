@@ -48,6 +48,7 @@ import {
   KineticRowData,
   KineticRowFanAction,
   KineticDetailAction,
+  ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -1001,6 +1002,12 @@ export const AutoGarageBillingView: React.FC<any> = () => {
 
       {activeScreenTab === 'fleets' && (
         <ScreenPod>
+          <div className="flex items-center justify-between gap-3 px-1">
+            <h2 className="t-pod text-[var(--text-1)] dark:text-white">
+              {isAr ? 'حسابات الأساطيل المتعاقدة B2B' : isEn ? 'B2B Fleet Accounts' : 'Comptes Flottes B2B'}
+            </h2>
+            <ListAdvancedMenuButton language={language} />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {fleets.map((fleet) => {
               const percentUsed = Math.min(100, Math.round((fleet.currentOutstandingDzd / fleet.creditLimitDzd) * 100));

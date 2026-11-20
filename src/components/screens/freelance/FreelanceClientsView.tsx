@@ -464,7 +464,7 @@ export const FreelanceClientsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0 border border-neutral-200 dark:border-neutral-700"
+              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
             >
               {client.name.charAt(0)}
             </div>
@@ -488,7 +488,7 @@ export const FreelanceClientsView: React.FC = () => {
         renderCell: (client) => {
           const bInfo = resolveRecordBranch(client, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09] truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -800,7 +800,7 @@ export const FreelanceClientsView: React.FC = () => {
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040] animate-in fade-in slide-in-from-top-2"
+          className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:rgba(191,67,31,0.18)] dark:[--sq-stroke:rgba(255,143,99,0.22)] animate-in fade-in slide-in-from-top-2"
         >
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
@@ -1288,9 +1288,9 @@ export const FreelanceClientsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-5"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div>
                 <h3 className="t-card font-semibold text-black dark:text-white">
                   {clientToEdit
@@ -1422,7 +1422,7 @@ export const FreelanceClientsView: React.FC = () => {
                 <div
                   data-sq="card"
                   data-sq-border="solid"
-                  className="grid grid-cols-2 gap-3 p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 [--sq-stroke:rgba(253,230,138,0.6)] dark:[--sq-stroke:rgba(120,53,15,0.4)]"
+                  className="grid grid-cols-2 gap-3 p-3 bg-amber-50/50 dark:bg-amber-950/20 [--sq-stroke:rgba(217,119,6,0.22)] dark:[--sq-stroke:rgba(245,158,11,0.22)]"
                 >
                   <LabelInput
                     field="RetainerHours"
@@ -1463,7 +1463,7 @@ export const FreelanceClientsView: React.FC = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                  className="bg-white dark:bg-neutral-900"
                 >
                   <textarea
                     rows={2}
@@ -1475,14 +1475,14 @@ export const FreelanceClientsView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
@@ -1510,13 +1510,13 @@ export const FreelanceClientsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                 <div
                   data-sq="tile"
                   data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60 [--sq-stroke:#fecdd3] dark:[--sq-stroke:rgba(136,19,55,0.6)]"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 [--sq-stroke:rgba(225,29,72,0.20)] dark:[--sq-stroke:rgba(251,113,133,0.28)]"
                 >
                   <AlertTriangle size={20} />
                 </div>
@@ -1541,7 +1541,7 @@ export const FreelanceClientsView: React.FC = () => {
               <label
                 data-sq="card"
                 data-sq-border="solid"
-                className="flex items-start gap-2 p-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 t-cap text-black/70 dark:text-white/75 cursor-pointer"
+                className="flex items-start gap-2 p-3 bg-neutral-50 dark:bg-neutral-900 t-cap text-black/70 dark:text-white/75 cursor-pointer"
               >
                 <input
                   type="checkbox"
@@ -1559,7 +1559,7 @@ export const FreelanceClientsView: React.FC = () => {
               </div>
             </label>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
               <AtriumButton
                 type="button"
                 variant="ghost"

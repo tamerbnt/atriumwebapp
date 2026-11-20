@@ -38,6 +38,7 @@ import {
   KineticRowMeta,
   KineticRowFanAction,
   KineticDetailAction,
+  ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -1125,17 +1126,20 @@ export const MedicalBillingView: React.FC<any> = () => {
                 <Users size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>Rétrocession des Honoraires Médicaux &amp; Quotes-parts Polyclinique</span>
               </h2>
-              <button
-                type="button"
-                data-no-liquid="true"
-                data-sq="ctl-sm"
-                data-sq-border="solid"
-                onClick={handleExportCSV}
-                className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 t-small font-semibold flex items-center gap-2 cursor-pointer"
-              >
-                <Download size={13} />
-                <span>Bordereau Comptable CSV</span>
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  data-no-liquid="true"
+                  data-sq="ctl-sm"
+                  data-sq-border="solid"
+                  onClick={handleExportCSV}
+                  className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 t-small font-semibold flex items-center gap-2 cursor-pointer"
+                >
+                  <Download size={13} />
+                  <span>Bordereau Comptable CSV</span>
+                </button>
+                <ListAdvancedMenuButton language={language} />
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {practitioners.map((doc) => {
@@ -1217,11 +1221,12 @@ export const MedicalBillingView: React.FC<any> = () => {
       {billingMainTab === 'caisse' && (
         <ScreenPod>
           <div className="space-y-5">
-            <div className="pb-2 border-b border-neutral-200 dark:border-neutral-700">
+            <div className="flex items-center justify-between gap-3 pb-2 border-b border-neutral-200 dark:border-neutral-700">
               <h2 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
                 <Coins size={16} className="text-amber-500" />
                 <span>Feuille de Caisse Journalière &amp; Clôture Secrétariat</span>
               </h2>
+              <ListAdvancedMenuButton language={language} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div className="sq-elev-card">
@@ -1378,9 +1383,12 @@ export const MedicalBillingView: React.FC<any> = () => {
                     : 'Niveaux de stock temps réel, auto-décrémentation par consultation/acte et alertes de réapprovisionnement'}
                 </p>
               </div>
-              <span className="t-small font-semibold px-3 py-1 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75">
-                {consumables.length} {isAr ? 'عنصر مراقب' : 'fournitures tracées'}
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="t-small font-semibold px-3 py-1 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75">
+                  {consumables.length} {isAr ? 'عنصر مراقب' : 'fournitures tracées'}
+                </span>
+                <ListAdvancedMenuButton language={language} />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

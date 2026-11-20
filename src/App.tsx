@@ -18,6 +18,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { ScreenSuspenseFallback } from './components/ui/skeleton/ScreenSuspenseFallback';
+import { ScreenFocusProvider } from './components/ui/kinetic/ScreenFocusContext';
 
 // Lazy-loaded Onboarding & Global Modals (loaded on-demand only when open)
 const PowerOnboardingScreen = React.lazy(() =>
@@ -226,6 +227,7 @@ export default function App() {
   const activeEducationRole = useAtriumSelector((s) => s.activeEducationRole);
   const isTopBarCollapsed = useAtriumSelector((s) => s.isTopBarCollapsed || false);
   const isTopBarAutoHide = useAtriumSelector((s) => s.isTopBarAutoHide ?? false);
+  const isListPodExpanded = useAtriumSelector((s) => s.isListPodExpanded);
   const hasConcurrencyConflicts = useAtriumSelector(
     (s) => (s.concurrencyConflicts?.length || 0) > 0
   );
@@ -399,6 +401,196 @@ export default function App() {
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
   const isProjectMilestone = currentBusiness?.category === 'project_milestone';
+
+  const isFocusEligibleScreen = React.useMemo(() => {
+    if (activeScreen === 'home' || activeScreen === 'chart_catalog') return false;
+    if (activeScreen === 'staff') return true;
+
+    const cat = currentBusiness?.category;
+
+    if (cat === 'project_milestone') {
+      if (activeScreen === 'settings' || activeScreen === 'pm_dir_dashboard' || activeScreen === 'dashboard') {
+        return false;
+      }
+      if (activeScreen === 'history') return activePmRole === 'direction';
+      return [
+        'pm_dir_new_project',
+        'pm_dir_projects',
+        'pm_dir_approvals',
+        'pm_dir_reports',
+        'pm_cp_projects',
+        'pm_cp_catalog',
+        'pm_cp_orders',
+        'pm_cp_files',
+        'pm_cp_deliverables',
+        'pm_cp_expenses',
+        'pm_crea_kanban',
+        'pm_crea_production',
+        'pm_crea_upload',
+        'pm_crea_briefs',
+        'pm_sup_missions',
+        'pm_sup_attendance',
+        'pm_sup_staffing',
+        'pm_sup_expenses',
+        'pm_rh_talents',
+        'pm_rh_dossier',
+        'pm_rh_portal',
+        'pm_rh_walkin',
+        'pm_compta_payroll',
+        'pm_compta_ccp',
+        'pm_compta_expenses',
+        'pm_compta_stock',
+        'scheduler',
+        'registrations',
+        'analytics',
+        'members',
+        'finance',
+        'shop',
+      ].includes(activeScreen);
+    }
+
+    if (cat === 'freelance_solo') {
+      return ['analytics', 'members', 'registrations', 'scheduler', 'shop', 'finance', 'history'].includes(
+        activeScreen
+      );
+    }
+
+    if (cat === 'rental_booking') {
+      return ['scheduler', 'registrations', 'shop', 'members', 'finance', 'history'].includes(activeScreen);
+    }
+
+    if (cat === 'education_cohort') {
+      if (activeEducationRole === 'staff') return true;
+      return ['scheduler', 'members', 'shop', 'registrations', 'analytics', 'finance', 'history'].includes(
+        activeScreen
+      );
+    }
+
+    if (cat === 'trading_commercial') {
+      return [
+        'trading_sales',
+        'registrations',
+        'trading_purchases',
+        'scheduler',
+        'trading_inventory',
+        'shop',
+        'trading_directory',
+        'members',
+        'trading_catalog',
+        'trading_finance',
+        'finance',
+        'history',
+      ].includes(activeScreen);
+    }
+
+    if (cat === 'medical_clinic') {
+      return ['scheduler', 'agenda', 'members', 'shop', 'registrations', 'finance', 'history'].includes(
+        activeScreen
+      );
+    }
+
+    if (cat === 'auto_garage') {
+      if (activeScreen === 'settings') return false;
+      if (activeGarageRole === 'mecanicien' || activeGarageRole === 'magasinier') return true;
+      if (activeScreen === 'history') {
+        return activeGarageRole !== 'reception' && activeGarageRole !== 'caisse';
+      }
+      return ['scheduler', 'registrations', 'members', 'shop', 'finance'].includes(activeScreen);
+    }
+
+    if (cat === 'real_estate') {
+      if (activeScreen === 'settings') return false;
+      if (activeRealEstateRole === 'negociateur' && (activeScreen === 'scheduler' || activeScreen === 'finance')) {
+        return false;
+      }
+      if (
+        activeRealEstateRole === 'gestionnaire_locatif' &&
+        (activeScreen === 'realestate_mandates' || activeScreen === 'shop')
+      ) {
+        return false;
+      }
+      if (activeRealEstateRole === 'notaire_compta' && (activeScreen === 'registrations' || activeScreen === 'members')) {
+        return false;
+      }
+      if (activeScreen === 'history') return activeRealEstateRole === 'direction';
+      return ['realestate_mandates', 'shop', 'members', 'scheduler', 'registrations', 'finance'].includes(
+        activeScreen
+      );
+    }
+
+    if (cat === 'manufacturing_production') {
+      if (activeScreen === 'settings') return false;
+      if (activeManufacturingRole === 'operateur') return true;
+      if (activeManufacturingRole === 'magasinier') {
+        return ['shop', 'members', 'finance'].includes(activeScreen);
+      }
+      if (activeManufacturingRole === 'qualite') {
+        return ['scheduler', 'registrations', 'finance'].includes(activeScreen);
+      }
+      if (activeManufacturingRole === 'chef_atelier') {
+        return ['scheduler', 'registrations', 'shop', 'members', 'finance'].includes(activeScreen);
+      }
+      return ['scheduler', 'registrations', 'shop', 'members', 'finance', 'history'].includes(activeScreen);
+    }
+
+    if (cat === 'legal_accounting') {
+      if (activeScreen === 'settings') return false;
+      if (activeLegalRole === 'secretaire_caisse') return true;
+      return ['members', 'scheduler', 'registrations', 'finance', 'history'].includes(activeScreen);
+    }
+
+    if (cat === 'logistics_delivery') {
+      if (activeScreen === 'settings') return false;
+      if (activeLogisticsRole === 'hub_sorter' || activeLogisticsRole === 'stop_desk_agent') return true;
+      if (activeScreen === 'history') return activeLogisticsRole !== 'dispatcher';
+      return ['members', 'scheduler', 'registrations', 'finance'].includes(activeScreen);
+    }
+
+    if (cat === 'construction_contractor') {
+      if (activeScreen === 'settings') return false;
+      if (activeContractorRole === 'chef_chantier') return true;
+      if (activeScreen === 'history') return activeContractorRole === 'gerant';
+      return ['members', 'registrations', 'shop', 'scheduler', 'finance'].includes(activeScreen);
+    }
+
+    if (cat === 'agriculture_farming') {
+      if (activeScreen === 'settings') return false;
+      if (activeAgriRole !== 'gerant') return true;
+      return ['members', 'scheduler', 'shop', 'registrations', 'finance', 'history'].includes(activeScreen);
+    }
+
+    if (cat === 'membership_session') {
+      if (activeMembershipRole === 'staff') return true;
+      return ['members', 'registrations', 'shop', 'scheduler', 'finance', 'history'].includes(activeScreen);
+    }
+
+    if (cat === 'appointment_service') {
+      if (activeAppointmentRole === 'staff') return true;
+      return ['members', 'scheduler', 'shop', 'finance', 'history', 'registrations'].includes(activeScreen);
+    }
+
+    if (cat === 'pos_inventory') {
+      if (activePosRole === 'staff') return true;
+      return ['shop', 'scheduler', 'registrations', 'finance', 'history', 'members'].includes(activeScreen);
+    }
+
+    return ['members', 'registrations', 'shop', 'scheduler', 'finance', 'history'].includes(activeScreen);
+  }, [
+    activeScreen,
+    currentBusiness?.category,
+    activePmRole,
+    activeEducationRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+  ]);
 
   const renderActiveScreen = () => {
     if (import.meta.env.DEV && activeScreen === 'chart_catalog') {
@@ -1368,22 +1560,28 @@ export default function App() {
             )}
 
             <div
+              data-list-pod-root={isFocusEligibleScreen ? 'true' : undefined}
+              data-list-pod-expanded={
+                isFocusEligibleScreen && isListPodExpanded ? 'true' : 'false'
+              }
               className={
                 activeScreen === 'home'
                   ? 'relative w-full min-h-full lg:h-full flex flex-col p-[var(--container-pad)]'
                   : 'relative w-full min-h-full flex flex-col p-[var(--container-pad)]'
               }
             >
-              <React.Suspense
-                fallback={
-                  <ScreenSuspenseFallback
-                    category={currentBusiness?.category}
-                    screen={activeScreen}
-                  />
-                }
-              >
-                {renderActiveScreen()}
-              </React.Suspense>
+              <ScreenFocusProvider eligible={isFocusEligibleScreen}>
+                <React.Suspense
+                  fallback={
+                    <ScreenSuspenseFallback
+                      category={currentBusiness?.category}
+                      screen={activeScreen}
+                    />
+                  }
+                >
+                  {renderActiveScreen()}
+                </React.Suspense>
+              </ScreenFocusProvider>
             </div>
           </AppShell>
         </div>

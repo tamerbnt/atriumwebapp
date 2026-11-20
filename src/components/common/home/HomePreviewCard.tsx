@@ -37,58 +37,58 @@ interface ToneStyles {
 
 const TONE_STYLES: Record<HomeCardTone, ToneStyles> = {
   terracotta: {
-    card: 'bg-white dark:bg-[#171413] border-[#E4D8CF] dark:border-[#2E2724] [--sq-stroke:#E4D8CF] dark:[--sq-stroke:#2E2724] hover:[--sq-stroke:rgba(212,82,47,0.55)] dark:hover:[--sq-stroke:rgba(251,146,60,0.55)]',
+    card: 'bg-white dark:bg-[#171413] border-black/[0.06] dark:border-white/[0.09] hover:bg-[#FCF9F7] dark:hover:bg-[#1D1918]',
     topAccent: 'bg-[#d4522f]/80 dark:bg-[#FB923C]/75',
     iconWell:
-      'bg-[#FCEEE9] dark:bg-[#2B1B17] border-[#F3D5CA] dark:border-[#492A20] [--sq-stroke:#F3D5CA] dark:[--sq-stroke:#492A20] text-[#B83B1B] dark:text-[#FB923C]',
+      'bg-[#FCEEE9] dark:bg-[#2B1B17] border-[#d4522f]/15 dark:border-[#FB923C]/20 [--sq-stroke:rgba(212,82,47,0.16)] dark:[--sq-stroke:rgba(251,146,60,0.2)] text-[#B83B1B] dark:text-[#FB923C]',
     accentText: 'text-[#B83B1B] dark:text-[#FB923C]',
     titleHover: 'group-hover/card:text-[#B83B1B] dark:group-hover/card:text-[#FB923C]',
-    divider: 'divide-[#EFE6DF] dark:divide-[#27211E] border-[#EFE6DF] dark:border-[#27211E]',
+    divider: 'divide-black/[0.055] dark:divide-white/[0.07] border-black/[0.055] dark:border-white/[0.07]',
     rowHover: 'hover:bg-[#FDF6F3] dark:hover:bg-white/[0.035]',
     neButton:
-      'bg-[#F7EEE8] dark:bg-white/[0.06] border-[#E6D7CC] dark:border-[#362E2A] text-[#3B2A20]/80 dark:text-white/80 hover:bg-[#d4522f] hover:border-[#d4522f] hover:text-white dark:hover:bg-[#FB923C] dark:hover:border-[#FB923C] dark:hover:text-[#151413]',
+      'bg-[#F7EEE8] dark:bg-white/[0.06] border-black/[0.06] dark:border-white/[0.1] text-[#3B2A20]/80 dark:text-white/80 hover:bg-[#d4522f] hover:border-[#d4522f] hover:text-white dark:hover:bg-[#FB923C] dark:hover:border-[#FB923C] dark:hover:text-[#151413]',
     ring: 'focus-visible:ring-[#d4522f]',
     footerLink: 'text-[#B83B1B] dark:text-[#FB923C]',
   },
   brown: {
-    card: 'bg-[#FFFCF8] dark:bg-[#171310] border-[#E0D2C3] dark:border-[#352B22] [--sq-stroke:#E0D2C3] dark:[--sq-stroke:#352B22] hover:[--sq-stroke:rgba(124,78,45,0.6)] dark:hover:[--sq-stroke:rgba(217,169,126,0.55)]',
+    card: 'bg-[#FFFCF8] dark:bg-[#171310] border-[#7C4E2D]/[0.1] dark:border-white/[0.09] [--sq-stroke:rgba(124,78,45,0.1)] dark:[--sq-stroke:var(--sq-stroke-obsidian)] hover:bg-[#FAF5EE] dark:hover:bg-[#1D1814]',
     topAccent: 'bg-[#7C4E2D]/85 dark:bg-[#D9A97E]/75',
     iconWell:
-      'bg-[#F2E5D8] dark:bg-[#291F17] border-[#DFCBB7] dark:border-[#473526] [--sq-stroke:#DFCBB7] dark:[--sq-stroke:#473526] text-[#6B4122] dark:text-[#D9A97E]',
+      'bg-[#F2E5D8] dark:bg-[#291F17] border-[#7C4E2D]/15 dark:border-[#D9A97E]/20 [--sq-stroke:rgba(124,78,45,0.16)] dark:[--sq-stroke:rgba(217,169,126,0.2)] text-[#6B4122] dark:text-[#D9A97E]',
     accentText: 'text-[#6B4122] dark:text-[#D9A97E]',
     titleHover: 'group-hover/card:text-[#6B4122] dark:group-hover/card:text-[#D9A97E]',
-    divider: 'divide-[#EFE4D8] dark:divide-[#2B231C] border-[#EFE4D8] dark:border-[#2B231C]',
+    divider: 'divide-black/[0.055] dark:divide-white/[0.07] border-black/[0.055] dark:border-white/[0.07]',
     rowHover: 'hover:bg-[#F7EFE7] dark:hover:bg-[#241C16]/70',
     neButton:
-      'bg-[#F2E5D8] dark:bg-[#251E18] border-[#DFCBB7] dark:border-[#3D3025] text-[#4A301C]/85 dark:text-[#EAD8C7] hover:bg-[#6B4122] hover:border-[#6B4122] hover:text-white dark:hover:bg-[#D9A97E] dark:hover:border-[#D9A97E] dark:hover:text-[#151413]',
+      'bg-[#F2E5D8] dark:bg-[#251E18] border-[#7C4E2D]/15 dark:border-white/[0.1] text-[#4A301C]/85 dark:text-[#EAD8C7] hover:bg-[#6B4122] hover:border-[#6B4122] hover:text-white dark:hover:bg-[#D9A97E] dark:hover:border-[#D9A97E] dark:hover:text-[#151413]',
     ring: 'focus-visible:ring-[#7C4E2D]',
     footerLink: 'text-[#6B4122] dark:text-[#D9A97E]',
   },
   lavender: {
-    card: 'bg-[#FCFBFF] dark:bg-[#16141D] border-[#DCD3EC] dark:border-[#312A45] [--sq-stroke:#DCD3EC] dark:[--sq-stroke:#312A45] hover:[--sq-stroke:rgba(104,77,168,0.6)] dark:hover:[--sq-stroke:rgba(196,181,253,0.55)]',
+    card: 'bg-[#FCFBFF] dark:bg-[#16141D] border-[#684DA8]/[0.11] dark:border-white/[0.09] [--sq-stroke:rgba(104,77,168,0.11)] dark:[--sq-stroke:var(--sq-stroke-obsidian)] hover:bg-[#F7F4FC] dark:hover:bg-[#1C1926]',
     topAccent: 'bg-[#684DA8]/85 dark:bg-[#A78BFA]/75',
     iconWell:
-      'bg-[#EFEBF9] dark:bg-[#231D36] border-[#D7CCF0] dark:border-[#3D325B] [--sq-stroke:#D7CCF0] dark:[--sq-stroke:#3D325B] text-[#5B41A1] dark:text-[#C4B5FD]',
+      'bg-[#EFEBF9] dark:bg-[#231D36] border-[#684DA8]/15 dark:border-[#C4B5FD]/20 [--sq-stroke:rgba(104,77,168,0.16)] dark:[--sq-stroke:rgba(196,181,253,0.2)] text-[#5B41A1] dark:text-[#C4B5FD]',
     accentText: 'text-[#5B41A1] dark:text-[#C4B5FD]',
     titleHover: 'group-hover/card:text-[#5B41A1] dark:group-hover/card:text-[#C4B5FD]',
-    divider: 'divide-[#ECE6F6] dark:divide-[#262136] border-[#ECE6F6] dark:border-[#262136]',
+    divider: 'divide-black/[0.05] dark:divide-white/[0.07] border-black/[0.05] dark:border-white/[0.07]',
     rowHover: 'hover:bg-[#F4F0FC] dark:hover:bg-[#221D33]/70',
     neButton:
-      'bg-[#EFEBF9] dark:bg-[#221D34] border-[#D7CCF0] dark:border-[#3A3056] text-[#3E2D6E]/85 dark:text-[#DED6FE] hover:bg-[#5B41A1] hover:border-[#5B41A1] hover:text-white dark:hover:bg-[#A78BFA] dark:hover:border-[#A78BFA] dark:hover:text-[#151413]',
+      'bg-[#EFEBF9] dark:bg-[#221D34] border-[#684DA8]/15 dark:border-white/[0.1] text-[#3E2D6E]/85 dark:text-[#DED6FE] hover:bg-[#5B41A1] hover:border-[#5B41A1] hover:text-white dark:hover:bg-[#A78BFA] dark:hover:border-[#A78BFA] dark:hover:text-[#151413]',
     ring: 'focus-visible:ring-[#684DA8]',
     footerLink: 'text-[#5B41A1] dark:text-[#C4B5FD]',
   },
   sage: {
-    card: 'bg-[#FAFDFB] dark:bg-[#121916] border-[#CFE3D6] dark:border-[#24392D] [--sq-stroke:#CFE3D6] dark:[--sq-stroke:#24392D] hover:[--sq-stroke:rgba(21,128,61,0.55)] dark:hover:[--sq-stroke:rgba(74,222,128,0.5)]',
+    card: 'bg-[#FAFDFB] dark:bg-[#121916] border-emerald-700/[0.12] dark:border-white/[0.09] [--sq-stroke:rgba(21,128,61,0.12)] dark:[--sq-stroke:var(--sq-stroke-obsidian)] hover:bg-[#F3FAF5] dark:hover:bg-[#17211C]',
     topAccent: 'bg-[#15803D]/80 dark:bg-[#4ADE80]/75',
     iconWell:
-      'bg-[#EAF6EE] dark:bg-[#192E22] border-[#C6E6D1] dark:border-[#2B4B38] [--sq-stroke:#C6E6D1] dark:[--sq-stroke:#2B4B38] text-[#166534] dark:text-[#4ADE80]',
+      'bg-[#EAF6EE] dark:bg-[#192E22] border-emerald-700/15 dark:border-emerald-400/20 [--sq-stroke:rgba(21,128,61,0.16)] dark:[--sq-stroke:rgba(74,222,128,0.2)] text-[#166534] dark:text-[#4ADE80]',
     accentText: 'text-[#166534] dark:text-[#4ADE80]',
     titleHover: 'group-hover/card:text-[#166534] dark:group-hover/card:text-[#4ADE80]',
-    divider: 'divide-[#E4EFE7] dark:divide-[#213328] border-[#E4EFE7] dark:border-[#213328]',
+    divider: 'divide-black/[0.05] dark:divide-white/[0.07] border-black/[0.05] dark:border-white/[0.07]',
     rowHover: 'hover:bg-[#F2FAF5] dark:hover:bg-[#1A2A20]/70',
     neButton:
-      'bg-[#EAF6EE] dark:bg-[#1A2A20] border-[#C6E6D1] dark:border-[#2B4B38] text-[#14532D]/85 dark:text-[#BBF7D0] hover:bg-[#15803D] hover:border-[#15803D] hover:text-white dark:hover:bg-[#4ADE80] dark:hover:border-[#4ADE80] dark:hover:text-[#151413]',
+      'bg-[#EAF6EE] dark:bg-[#1A2A20] border-emerald-700/15 dark:border-white/[0.1] text-[#14532D]/85 dark:text-[#BBF7D0] hover:bg-[#15803D] hover:border-[#15803D] hover:text-white dark:hover:bg-[#4ADE80] dark:hover:border-[#4ADE80] dark:hover:text-[#151413]',
     ring: 'focus-visible:ring-[#15803D]',
     footerLink: 'text-[#166534] dark:text-[#4ADE80]',
   },
@@ -134,7 +134,7 @@ export const HomePreviewCard: React.FC<HomePreviewCardProps> = React.memo(({
     <div
       data-sq="card"
       data-sq-border="solid"
-      className={`group/card relative overflow-hidden h-full border p-[var(--card-pad,20px)] card-opt flex flex-col justify-between transition-colors duration-200 min-w-0 ${styles.card} ${className}`}
+      className={`group/card sq-elev-card sq-elev-card-hover relative overflow-hidden h-full border p-[var(--card-pad,20px)] card-opt flex flex-col justify-between transition-colors duration-200 min-w-0 ${styles.card} ${className}`}
       data-testid={`home-preview-${config.id}`}
     >
       {/* Clean 2.5px Top Accent Hairline */}
@@ -332,7 +332,7 @@ export const HomeCompactStrip: React.FC<HomeCompactStripProps> = ({
       data-sq-border="solid"
       onClick={navigate}
       data-testid={`home-strip-${config.id}`}
-      className={`group/card relative overflow-hidden w-full text-start border px-[var(--card-pad,20px)] py-[var(--s3,12px)] flex items-center justify-between gap-[var(--card-head-gap,12px)] transition-colors duration-200 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 ${styles.card} ${styles.ring} ${className}`}
+      className={`group/card sq-elev-card sq-elev-card-hover relative overflow-hidden w-full text-start border px-[var(--card-pad,20px)] py-[var(--s3,12px)] flex items-center justify-between gap-[var(--card-head-gap,12px)] transition-colors duration-200 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 ${styles.card} ${styles.ring} ${className}`}
     >
       <span
         aria-hidden="true"

@@ -604,7 +604,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         renderCell: (entry) => {
           const bInfo = resolveRecordBranch(entry, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09] truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -846,7 +846,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-6 sm:p-8 bg-neutral-900 dark:bg-black text-white border border-neutral-800 relative overflow-hidden"
+            className="p-6 sm:p-8 bg-neutral-900 dark:bg-black text-white [--sq-stroke:var(--sq-stroke-obsidian)] relative overflow-hidden"
           >
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#d4522f]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
@@ -957,7 +957,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         </div>
 
         {!activeTimer.isRunning && (
-          <div className="mt-8 pt-6 border-t border-neutral-800/80 grid grid-cols-1 sm:grid-cols-4 gap-3 t-cap">
+          <div className="mt-8 pt-6 border-t border-white/[0.08] grid grid-cols-1 sm:grid-cols-4 gap-3 t-cap">
             <LabelSelect
               field="Client"
               label={t('free_invoice_client', language)}
@@ -1413,9 +1413,9 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
                 {t('free_time_modal_manual_title', language)}
               </h3>
@@ -1538,7 +1538,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   {t('free_time_billable', language)}
                 </label>
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton
                   variant="outline"
                   size="sm"
@@ -1564,9 +1564,9 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div>
                 <h3 className="t-card font-semibold text-black dark:text-white">
                   {t('free_time_edit_modal_title', language)}
@@ -1653,7 +1653,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   {t('free_time_billable', language)}
                 </label>
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton variant="outline" size="sm" type="button" onClick={() => setLogToEdit(null)}>
                   {t('common_cancel', language)}
                 </AtriumButton>
@@ -1674,13 +1674,13 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                 <div
                   data-sq="tile"
                   data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60 [--sq-stroke:#fecdd3] dark:[--sq-stroke:rgba(136,19,55,0.6)]"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 [--sq-stroke:rgba(225,29,72,0.20)] dark:[--sq-stroke:rgba(251,113,133,0.28)]"
                 >
                   <AlertTriangle size={20} />
                 </div>
@@ -1697,7 +1697,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               {t('free_time_delete_modal_confirm', language)} "{logToDelete.taskDescription}" (
               {logToDelete.projectTitle})?
             </p>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
               <AtriumButton variant="outline" size="sm" type="button" onClick={() => setLogToDelete(null)}>
                 {t('common_cancel', language)}
               </AtriumButton>

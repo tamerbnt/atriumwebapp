@@ -729,7 +729,7 @@ export const SettingsFormulesTab: React.FC = () => {
                   value={formCode}
                   onChange={(e) => setFormCode(e.target.value)}
                   placeholder="FRM-01"
-                  className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small uppercase"
+                  className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-black/[0.08] dark:border-white/[0.10] t-small uppercase"
                 />
               </div>
               <div className="flex flex-col gap-[var(--s1,4px)] sm:col-span-2">

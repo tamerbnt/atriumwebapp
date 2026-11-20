@@ -259,7 +259,7 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
             ? '!bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:!bg-[#2A1D18] [--sq-stroke:var(--atr-acc,#d4522f)]'
             : isSelected
             ? 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--atr-acc,#d4522f)]'
-            : 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734]'
+            : 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-row)]'
         }`}
       />
 
@@ -297,7 +297,7 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
           className={`cb c-cb relative w-[var(--check,20px)] h-[var(--check,20px)] grid place-items-center p-0 cursor-pointer ${
             isSelected
               ? 'bg-[var(--atr-acc,#d4522f)] [--sq-stroke:var(--atr-acc,#d4522f)] text-white'
-              : 'bg-white dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#5A5550] hover:[--sq-stroke:var(--atr-acc,#d4522f)] text-transparent'
+              : 'bg-white dark:bg-[#262422] [--sq-stroke:rgba(23,19,15,0.16)] dark:[--sq-stroke:rgba(255,255,255,0.20)] hover:[--sq-stroke:var(--atr-acc,#d4522f)] text-transparent'
           }`}
         >
           <Check

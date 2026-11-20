@@ -124,7 +124,6 @@ export const EmbeddedUndoHistoryPanel: React.FC<EmbeddedUndoHistoryPanelProps> =
       {/* Sub-toolbar: Scope toggle + Op filters + Availability + Clear */}
       <div
         data-sq="card"
-        style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
         className="p-3.5 bg-[#FBF8F5] dark:bg-[#262422] flex flex-col gap-3"
       >
         <div className="flex flex-wrap items-center justify-between gap-2.5">
@@ -157,7 +156,7 @@ export const EmbeddedUndoHistoryPanel: React.FC<EmbeddedUndoHistoryPanelProps> =
             {!lockVerticalScope && (
               <div
                 data-sq="ctl-sm"
-                className="inline-flex items-center p-0.5 bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-neutral-700/80"
+                className="inline-flex items-center p-0.5 bg-white dark:bg-[#1C1B1A]"
               >
                 <button
                   type="button"
@@ -212,7 +211,7 @@ export const EmbeddedUndoHistoryPanel: React.FC<EmbeddedUndoHistoryPanelProps> =
                   onClick={() => setOpFilter(op)}
                   className={`h-7 px-2.5 rounded-[8px] t-small whitespace-nowrap shrink-0 cursor-pointer transition-colors ${
                     active
-                      ? 'bg-white dark:bg-[#1C1B1A] text-[var(--text-1)] dark:text-white font-semibold border border-[var(--atr-line,#E6DED6)] dark:border-neutral-700 shadow-2xs'
+                      ? 'bg-white dark:bg-[#1C1B1A] text-[var(--text-1)] dark:text-white font-semibold border border-[var(--atr-line)] shadow-2xs'
                       : 'text-[var(--text-2)] hover:text-[var(--text-1)] dark:hover:text-white'
                   }`}
                 >
@@ -235,7 +234,7 @@ export const EmbeddedUndoHistoryPanel: React.FC<EmbeddedUndoHistoryPanelProps> =
                   value={effectiveSearch}
                   onChange={(e) => setEffectiveSearch(e.target.value)}
                   placeholder={l3('بحث في الإلغاءات...', 'Filtrer les annulations...', 'Filter undo entries...')}
-                  className="w-full h-7 ps-7 pe-6 rounded-[8px] bg-white dark:bg-[#1C1B1A] border border-[var(--atr-line,#E6DED6)] dark:border-neutral-700 t-small text-[var(--text-1)] dark:text-white placeholder:text-[var(--text-3)] focus:outline-none focus:border-[var(--facility-accent,var(--brand-fill))]"
+                  className="w-full h-7 ps-7 pe-6 rounded-[8px] bg-white dark:bg-[#1C1B1A] border border-black/[0.08] dark:border-white/[0.10] t-small text-[var(--text-1)] dark:text-white placeholder:text-[var(--text-3)] focus:outline-none focus:border-[var(--facility-accent,var(--brand-fill))]"
                 />
                 {effectiveSearch && (
                   <button
@@ -309,8 +308,7 @@ export const EmbeddedUndoHistoryPanel: React.FC<EmbeddedUndoHistoryPanelProps> =
       ) : (
         <div
           data-sq="card"
-          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-          className="bg-white dark:bg-[#1C1B1A] divide-y divide-[var(--atr-line,#E6DED6)] dark:divide-neutral-800 overflow-hidden"
+          className="sq-elev-card bg-white dark:bg-[#1C1B1A] divide-y divide-[var(--atr-divider)] overflow-hidden"
         >
           {filteredEntries.map((entry) => {
             const isUndone = entry.status === 'undone';

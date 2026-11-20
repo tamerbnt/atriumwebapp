@@ -234,7 +234,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
         {/* Fee Breakdown */}
         <div className="sq-elev-card">
           <div data-sq="panel" className="p-[var(--pod-pad,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--card-gap,12px)]">
-            <div className="flex items-center justify-between pb-[var(--s2,8px)] border-b border-neutral-100 dark:border-neutral-700">
+            <div className="flex items-center justify-between pb-[var(--s2,8px)] border-b border-[var(--atr-divider)]">
               <div className="flex items-center gap-[var(--icon-text-gap,8px)]">
                 <Scale size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white">
@@ -267,7 +267,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
           </div>
         </div>
 
-        <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--s2,8px)] border-t border-neutral-200 dark:border-neutral-800">
+        <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--s2,8px)] border-t border-[var(--atr-divider)]">
           <AtriumButton variant="secondary" onClick={onClose} type="button">
             {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
           </AtriumButton>

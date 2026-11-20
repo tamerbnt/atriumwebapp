@@ -49,6 +49,7 @@ import {
   KineticRowFanAction,
   KineticDetailAction,
   KineticStatusVariant,
+  ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -911,34 +912,39 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 ? 'Accounting, CCP Payroll & Equipment Inventory'
                 : 'Comptabilité Agence, Mandats CCP & Stock Mobilier'}
             </h2>
-            <LiveSegmentedControl
-              size="sm"
-              value={activeTab}
-              onValueChange={(val) => setActiveTab(val)}
-              options={[
-                {
-                  value: 'payroll',
-                  label: isAr ? 'كشوف الأجور' : isEn ? 'Payroll' : 'Paies Validées DG',
-                  count: pmPayrollBatches.filter((b) => b.status === 'approved_by_direction').length,
-                },
-                {
-                  value: 'ccp',
-                  label: isAr ? 'صكوك CCP' : isEn ? 'CCP Slips' : 'Bordereaux CCP',
-                  count: pmCcpSlips.length,
-                },
-                {
-                  value: 'expenses',
-                  label: isAr ? 'المصاريف' : isEn ? 'Expenses' : 'Remboursements',
-                  count: approvedExpensesCount,
-                },
-                {
-                  value: 'stock',
-                  label: isAr ? 'العتاد' : isEn ? 'Equipment' : 'Stock & Mobilier',
-                  count: pmEquipmentStock.length,
-                },
-              ]}
-              aria-label="Project Compta Sub-Tabs"
-            />
+            <div className="flex items-center gap-2 shrink-0">
+              <LiveSegmentedControl
+                size="sm"
+                value={activeTab}
+                onValueChange={(val) => setActiveTab(val)}
+                options={[
+                  {
+                    value: 'payroll',
+                    label: isAr ? 'كشوف الأجور' : isEn ? 'Payroll' : 'Paies Validées DG',
+                    count: pmPayrollBatches.filter((b) => b.status === 'approved_by_direction').length,
+                  },
+                  {
+                    value: 'ccp',
+                    label: isAr ? 'صكوك CCP' : isEn ? 'CCP Slips' : 'Bordereaux CCP',
+                    count: pmCcpSlips.length,
+                  },
+                  {
+                    value: 'expenses',
+                    label: isAr ? 'المصاريف' : isEn ? 'Expenses' : 'Remboursements',
+                    count: approvedExpensesCount,
+                  },
+                  {
+                    value: 'stock',
+                    label: isAr ? 'العتاد' : isEn ? 'Equipment' : 'Stock & Mobilier',
+                    count: pmEquipmentStock.length,
+                  },
+                ]}
+                aria-label="Project Compta Sub-Tabs"
+              />
+              {activeTab === 'payroll' && (
+                <ListAdvancedMenuButton language={language} />
+              )}
+            </div>
           </div>
 
           {activeTab === 'payroll' && (

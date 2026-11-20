@@ -51,6 +51,7 @@ import {
   KineticRowFanAction,
   KineticDetailAction,
   KineticStatusVariant,
+  ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -916,33 +917,38 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 ? 'Live Field Operations Console'
                 : 'Console Terrain & Pointage Équipes'}
             </h2>
-            <LiveSegmentedControl
-              size="sm"
-              value={activeTab}
-              onValueChange={(val) => setActiveTab(val)}
-              options={[
-                {
-                  value: 'missions',
-                  label: isAr ? 'المهام' : isEn ? 'Missions' : 'Missions Terrain',
-                  count: pmMissions.length,
-                },
-                {
-                  value: 'attendance',
-                  label: isAr ? 'التنقيط والأجور' : isEn ? 'Roll Call' : 'Pointage & Paie',
-                  count: missionAttendances.length,
-                },
-                {
-                  value: 'staffing',
-                  label: isAr ? 'المنشطون' : isEn ? 'Staffing' : 'Équipes',
-                  count: pmTalents.length,
-                },
-                {
-                  value: 'expense',
-                  label: isAr ? 'نفقات طارئة' : isEn ? 'Expenses' : 'Déclaration Frais',
-                },
-              ]}
-              aria-label="Project Superviseur Sub-Tabs"
-            />
+            <div className="flex items-center gap-2 shrink-0">
+              <LiveSegmentedControl
+                size="sm"
+                value={activeTab}
+                onValueChange={(val) => setActiveTab(val)}
+                options={[
+                  {
+                    value: 'missions',
+                    label: isAr ? 'المهام' : isEn ? 'Missions' : 'Missions Terrain',
+                    count: pmMissions.length,
+                  },
+                  {
+                    value: 'attendance',
+                    label: isAr ? 'التنقيط والأجور' : isEn ? 'Roll Call' : 'Pointage & Paie',
+                    count: missionAttendances.length,
+                  },
+                  {
+                    value: 'staffing',
+                    label: isAr ? 'المنشطون' : isEn ? 'Staffing' : 'Équipes',
+                    count: pmTalents.length,
+                  },
+                  {
+                    value: 'expense',
+                    label: isAr ? 'نفقات طارئة' : isEn ? 'Expenses' : 'Déclaration Frais',
+                  },
+                ]}
+                aria-label="Project Superviseur Sub-Tabs"
+              />
+              {activeTab === 'expense' && (
+                <ListAdvancedMenuButton language={language} />
+              )}
+            </div>
           </div>
 
           {activeTab === 'missions' && (

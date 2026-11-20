@@ -836,9 +836,9 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] w-full p-6 border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-4"
+              className="bg-white dark:bg-[#1C1B1A] w-full p-6 border-0 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-[#3A3734]">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <h3 className="t-card font-semibold text-black dark:text-white">
                   {editingService ? 'Modifier la Prestation' : 'Nouvelle Prestation'}
                 </h3>

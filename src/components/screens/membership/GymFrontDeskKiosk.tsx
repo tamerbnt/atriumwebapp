@@ -39,6 +39,7 @@ import {
   InspectorProgressBar,
   InspectorListItem,
   KineticEmptyStateMotion,
+  ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
 } from '../../ui/kinetic';
@@ -439,17 +440,17 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                   <div
                     data-sq="card"
                     data-sq-border="solid"
-                    className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] overflow-hidden divide-y divide-[#E6DED6]/60 dark:divide-[#3A3734]"
+                    className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden divide-y divide-[var(--atr-divider)]"
                   >
                     {searchResults.map((m) => (
                       <button
                         key={m.id}
                         type="button"
                         onClick={() => handleValidateCheckIn(m)}
-                        className="w-full text-left rtl:text-right p-3 hover:bg-[#F3EDE7]/50 dark:hover:bg-[#262422] flex items-center justify-between cursor-pointer transition-colors"
+                        className="w-full text-left rtl:text-right p-3 hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] flex items-center justify-between cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                          <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-[#262422] border border-black/[0.06] dark:border-white/[0.08] flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                             {m.fullName.charAt(0)}
                           </div>
                           <div>
@@ -532,7 +533,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                     <p className="t-small font-medium text-black/75 dark:text-white/80 mt-1">
                       {lastCheckInResult.message}
                     </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 pt-3 border-t border-[#E6DED6] dark:border-[#3A3734] t-cap">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 pt-3 border-t border-[var(--atr-divider)] t-cap">
                       <div>
                         <span className="text-black/62 dark:text-white/65 block t-cap">
                           {isRtl ? 'الاشتراك' : 'Formule'}
@@ -568,14 +569,24 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
         </div>
 
         <ScreenPod className="flex flex-col h-[520px]">
-          <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6]/80 dark:border-[#3A3734]">
-            <h2 className="t-card font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white flex items-center gap-2">
-              <Clock size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-              <span>{isRtl ? 'سجل الدخول اللحظي' : 'Journal des Passages Direct'}</span>
+          <div className="flex items-center justify-between gap-2 pb-3 border-b border-[var(--atr-divider)]">
+            <h2 className="t-card font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white flex items-center gap-2 min-w-0">
+              <Clock size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
+              <span className="truncate">{isRtl ? 'سجل الدخول اللحظي' : 'Journal des Passages Direct'}</span>
             </h2>
-            <span className="t-cap text-black/62 dark:text-white/65 tabular-nums">
-              {visibleLogs.length} {isRtl ? 'عمليات' : 'entrées'}
-            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="t-cap text-black/62 dark:text-white/65 tabular-nums">
+                {visibleLogs.length} {isRtl ? 'عمليات' : 'entrées'}
+              </span>
+              <ListAdvancedMenuButton
+                language={language}
+                canResetFilters={logFilter !== 'All' || scanInput.trim().length > 0}
+                onResetAllFilters={() => {
+                  setLogFilter('All');
+                  setScanInput('');
+                }}
+              />
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto space-y-2 pr-1">
             {visibleLogs.length === 0 ? (
@@ -601,7 +612,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       setDrawerOpenerEl(e.currentTarget);
                       setInspectedLogId(log.id);
                     }}
-                    className="w-full text-left rtl:text-right p-3 bg-white dark:bg-[#262422] [--sq-stroke:rgba(230,222,214,0.8)] dark:[--sq-stroke:#3A3734] hover:[--sq-stroke:rgba(212,82,47,0.5)] flex items-center justify-between t-cap transition-colors cursor-pointer"
+                    className="w-full text-left rtl:text-right p-3 bg-white dark:bg-[#262422] hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] flex items-center justify-between t-cap transition-colors cursor-pointer"
                   >
                   <div className="flex items-center gap-2 min-w-0">
                     <span
@@ -787,7 +798,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] w-full p-6"
+              className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -823,7 +834,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="h-10 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#d4522f]"
+                    className="h-10 bg-[#FBF8F5] dark:bg-[#262422] focus-within:[--sq-stroke:#d4522f]"
                   >
                     <input
                       type="text"
@@ -870,7 +881,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                         className={`py-2 t-small font-semibold tabular-nums transition-all cursor-pointer ${
                           walkInAmount === amt
                             ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                            : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
+                            : 'hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] text-black/75 dark:text-white/80'
                         }`}
                       >
                         {amt} DA
@@ -977,7 +988,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] w-full p-6 text-center"
+              className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 text-center"
             >
               <div
                 data-sq="tile-lg"
@@ -995,7 +1006,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-4 t-cap space-y-2 text-left mb-5"
+                className="bg-[#FBF8F5] dark:bg-[#262422] p-4 t-cap space-y-2 text-left mb-5"
               >
                 <div className="flex justify-between">
                   <span className="text-black/62 dark:text-white/65">{isRtl ? 'الزبون' : 'Client'}</span>
@@ -1015,7 +1026,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                     <span>+{lastPrintedTicket.timbreFiscalDzd} DA</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 border-t border-[#E6DED6] dark:border-[#3A3734] font-semibold">
+                <div className="flex justify-between pt-2 border-t border-[var(--atr-divider)] font-semibold">
                   <span>{isRtl ? 'الإجمالي المقبوض' : 'Total Reçu'}</span>
                   <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
                     {formatMoney(lastPrintedTicket.amountDzd + lastPrintedTicket.timbreFiscalDzd, 'DZD')}

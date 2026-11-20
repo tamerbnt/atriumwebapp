@@ -96,7 +96,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
             <div
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="inline-flex items-center h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[#F3EDE7] dark:bg-neutral-800/80 border border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] self-start sm:self-auto"
+              className="inline-flex items-center h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[#F3EDE7] dark:bg-neutral-800/80 border border-black/[0.06] dark:border-white/[0.09] self-start sm:self-auto"
               role="group"
             >
               {filterOptions.map((opt) => {

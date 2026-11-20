@@ -144,10 +144,9 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
         <div className="sq-elev-card">
           <div
             data-sq="card"
-            style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
             className="card-opt p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s4,16px)]"
           >
-            <div className="flex items-center justify-between pb-[var(--s2,8px)] border-b border-neutral-100 dark:border-neutral-700">
+            <div className="flex items-center justify-between pb-[var(--s2,8px)] border-b border-[var(--atr-divider)]">
               <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white flex items-center gap-[var(--icon-text-gap,8px)]">
                 <Coins size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 {isAr ? 'عد الأوراق' : isEn ? 'Cash Count' : 'Comptage Billets'}
@@ -238,7 +237,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
           placeholder={isAr ? 'أضف ملاحظة...' : isEn ? 'Add note...' : 'Notes...'}
         />
 
-        <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--s2,8px)] border-t border-neutral-200 dark:border-neutral-800">
+        <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--s2,8px)] border-t border-[var(--atr-divider)]">
           <Button tone="soft" onClick={onClose} type="button">
             {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
           </Button>

@@ -493,11 +493,10 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
       <div className="sq-elev-card">
         <div
           data-sq="panel"
-          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
           className="bg-white dark:bg-[#1C1B1A] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]"
         >
           <div
-            className="flex items-center justify-between border-b border-[#E6DED6] dark:border-[#3A3734]"
+            className="flex items-center justify-between border-b border-[var(--atr-divider)]"
             style={{ padding: 'var(--pod-head-pad, 4px 12px 12px)' }}
           >
             <h4 className="t-pod text-[var(--text-1)] dark:text-white">

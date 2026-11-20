@@ -132,7 +132,7 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
         )}
 
         {/* Quick Click Staff Members list */}
-        <div className="pt-[var(--s3,12px)] border-t border-neutral-100 dark:border-neutral-800 flex flex-col gap-[var(--s2,8px)]">
+        <div className="pt-[var(--s3,12px)] border-t border-[var(--atr-divider)] flex flex-col gap-[var(--s2,8px)]">
           <div className="t-small text-[var(--text-2)] dark:text-white/70">
             {isAr ? 'تسجيل سريع' : isEn ? 'Quick Log' : 'Pointage Rapide'}
           </div>

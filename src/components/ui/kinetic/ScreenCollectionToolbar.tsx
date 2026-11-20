@@ -1,9 +1,10 @@
-import React, { useContext, useLayoutEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useContext, useLayoutEffect, useMemo, useRef } from 'react';
 import { SlidersHorizontal, ChevronDown, List, LayoutGrid, Calendar, X } from 'lucide-react';
 import { Seek } from '../Seek';
 import { LiveSegmentedControl, SegmentedOption } from '../live/LiveSegmentedControl';
 import { LiquidButton } from '@/atrium';
 import { ScreenPodBridgeContext } from './ScreenPod';
+import { ListAdvancedMenuButton } from './ListAdvancedMenuButton';
 
 export interface ActiveFilterChip {
   key: string;
@@ -173,6 +174,31 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
     };
   }, [podBridge]);
 
+  const defaultStatusValue =
+    statusOptions && statusOptions.length > 0 && statusOptions[0].value !== undefined
+      ? String(statusOptions[0].value)
+      : undefined;
+
+  const isStatusFiltered = Boolean(
+    statusValue !== undefined &&
+      defaultStatusValue !== undefined &&
+      statusValue !== defaultStatusValue
+  );
+
+  const canResetFilters =
+    Boolean(searchQuery?.trim()) ||
+    isStatusFiltered ||
+    hasActiveAdvancedFilters ||
+    activeChips.length > 0;
+
+  const handleResetAllFilters = useCallback(() => {
+    onSearchChange?.('');
+    if (defaultStatusValue !== undefined && onStatusChange) {
+      onStatusChange(defaultStatusValue);
+    }
+    onResetAllFilters?.();
+  }, [onSearchChange, defaultStatusValue, onStatusChange, onResetAllFilters]);
+
   const defaultSearchPlaceholder =
     searchPlaceholder ||
     (language === 'ar' ? 'بحث...' : language === 'fr' ? 'Rechercher...' : 'Search...');
@@ -231,7 +257,7 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
                 className={`relative h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] border flex items-center gap-[var(--btn-icon-gap,8px)] t-btn cursor-pointer transition-colors select-none ${
                   hasActiveAdvancedFilters || isFilterModalOpen
                     ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/15 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] [--sq-stroke:rgba(201,70,31,0.5)]'
-                    : 'bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] text-[var(--text-1)] dark:text-white hover:bg-[#FBF8F5] dark:hover:bg-neutral-700/50'
+                    : 'bg-white dark:bg-neutral-800 text-[var(--text-1)] dark:text-white hover:bg-[#FBF8F5] dark:hover:bg-neutral-700/50'
                 }`}
                 title={
                   language === 'ar'
@@ -295,6 +321,12 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
                 style={EXPORT_BTN_STYLE}
               />
             )}
+            <ListAdvancedMenuButton
+              language={language}
+              podId={podBridge?.podId ?? null}
+              canResetFilters={canResetFilters}
+              onResetAllFilters={handleResetAllFilters}
+            />
           </div>
         </div>
       </div>

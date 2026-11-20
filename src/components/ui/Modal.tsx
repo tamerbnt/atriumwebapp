@@ -69,12 +69,12 @@ export const Modal: React.FC<ModalProps> = ({
           data-sq="panel"
           data-sq-border="solid"
           style={{ contain: 'layout paint' }}
-          className="relative w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#26262A] transform-gpu animate-in fade-in zoom-in-95 duration-200"
+          className="relative w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#18181B] [--sq-stroke:var(--sq-stroke-pop)] transform-gpu animate-in fade-in zoom-in-95 duration-200"
           role="dialog"
           aria-modal="true"
         >
           {/* Header */}
-          <div className="flex items-center justify-between gap-[var(--s4,16px)] p-[var(--modal-pad,24px)] pb-[var(--s4,16px)] border-b border-[#E6DED6] dark:border-neutral-800/80">
+          <div className="flex items-center justify-between gap-[var(--s4,16px)] p-[var(--modal-pad,24px)] pb-[var(--s4,16px)] border-b border-[var(--atr-divider)]">
             <div className="flex flex-col gap-[var(--s1,4px)]">
               <h2 className="t-dialog text-[var(--text-1)] dark:text-white">
                 {title}

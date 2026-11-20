@@ -13,9 +13,20 @@
   --atr-bg: #F3EDE7;
   --atr-card: #FBF8F5;
   --atr-soft: #ede6e0;
-  --atr-line: #E6DED6;
+  --atr-line: rgba(23, 19, 15, 0.075);
+  --atr-divider: rgba(23, 19, 15, 0.065);
   --pod: #F3EDE7;
-  --line: #E6DED6;
+  --line: rgba(23, 19, 15, 0.055);
+  /* Apple surface-edge hairline tokens (Light Mode) */
+  --sq-stroke-app: rgba(23, 19, 15, 0.065);
+  --sq-stroke-pod: rgba(23, 19, 15, 0.05);
+  --sq-stroke-card: rgba(23, 19, 15, 0.06);
+  --sq-stroke-row: rgba(23, 19, 15, 0.06);
+  --sq-stroke-ctl: rgba(23, 19, 15, 0.09);
+  --sq-stroke-ctl-hover: rgba(23, 19, 15, 0.15);
+  --sq-stroke-pop: rgba(23, 19, 15, 0.08);
+  --sq-stroke-obsidian: url(#sq-spec-dark-card);
+  --sq-stroke-dashed: rgba(23, 19, 15, 0.16);
   /* text: calibrated warm-ink contrast ramp (>= 4.5:1) */
   --atr-ink: #17130F;
   --atr-ink-2: rgba(23, 19, 15, 0.88);
@@ -238,13 +249,26 @@
   --text-dark-2: #A99E92;
 }
 
-[data-atrium-theme='dark'] {
+[data-atrium-theme='dark'],
+[data-theme='dark'],
+.dark {
   --atr-bg: #1c1b1a;
   --atr-card: #262422;
   --atr-soft: #2d2b29;
-  --atr-line: #3a3734;
+  --atr-line: rgba(255, 255, 255, 0.09);
+  --atr-divider: rgba(255, 255, 255, 0.08);
   --pod: #141312;
-  --line: #33302d;
+  --line: rgba(255, 255, 255, 0.06);
+  /* Apple top-lit white specular edge tokens (Dark Mode) */
+  --sq-stroke-app: url(#sq-spec-dark-app);
+  --sq-stroke-pod: url(#sq-spec-dark-pod);
+  --sq-stroke-card: url(#sq-spec-dark-card);
+  --sq-stroke-row: url(#sq-spec-dark-card);
+  --sq-stroke-ctl: url(#sq-spec-dark-ctl);
+  --sq-stroke-ctl-hover: url(#sq-spec-dark-ctl-hover);
+  --sq-stroke-pop: url(#sq-spec-dark-pop);
+  --sq-stroke-obsidian: url(#sq-spec-dark-card);
+  --sq-stroke-dashed: rgba(255, 255, 255, 0.18);
   --atr-ink: #ffffff;
   --atr-ink-2: rgba(255, 255, 255, 0.88);
   --atr-ink-3: #A99E92;

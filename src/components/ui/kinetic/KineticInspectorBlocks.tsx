@@ -69,7 +69,7 @@ export const InspectorQuickActions: React.FC<{
           className={`flex flex-col items-center gap-[var(--s2,8px)] p-[var(--s3,12px)] rounded-[var(--r-card,16px)] t-small text-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
             act.primary
               ? '[--sq-stroke:rgba(212,82,47,0.25)] dark:[--sq-stroke:#52291F] bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)]'
-              : '[--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] bg-white dark:bg-[#262422] text-[var(--text-1)]'
+              : '[--sq-stroke:var(--sq-stroke-card)] bg-white dark:bg-[#262422] text-[var(--text-1)] hover:bg-[#FAF6F1] dark:hover:bg-[#2D2A27]'
           }`}
         >
           <span
@@ -97,7 +97,7 @@ export const InspectorCard: React.FC<{
   <div
     data-sq="card"
     data-sq-border="solid"
-    className={`card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[var(--s4,16px)] py-[var(--s2,8px)] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] ${className}`}
+    className={`card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[var(--s4,16px)] py-[var(--s2,8px)] ${className}`}
   >
     {children}
   </div>
@@ -151,7 +151,7 @@ export const InspectorKeyValue: React.FC<InspectorKeyValueProps> = ({
   return (
     <div
       className={`kv flex justify-between items-center gap-[var(--s3,12px)] py-[var(--s3,12px)] t-body ${
-        isLast ? '' : 'border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]'
+        isLast ? '' : 'border-b border-[var(--atr-divider)]'
       }`}
     >
       <span className="text-[var(--text-2)] flex items-center gap-[var(--s2,8px)] shrink-0">
@@ -222,7 +222,7 @@ export const InspectorProgressBar: React.FC<{
       : 'bg-[var(--atr-ok,#096b40)] dark:bg-[#5BE3A3]';
 
   return (
-    <div className="bar2 h-2 rounded-full bg-[var(--atr-line,#E6DED6)] dark:bg-[#3A3734] overflow-hidden">
+    <div className="bar2 h-2 rounded-full bg-black/[0.08] dark:bg-white/[0.1] overflow-hidden">
       <i
         ref={fillRef}
         className={`block w-full h-full rounded-full ${barTone} origin-left rtl:origin-right`}
@@ -255,7 +255,7 @@ export const InspectorBigStat: React.FC<{
     <div
       data-sq="card"
       data-sq-border="solid"
-      className="card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] p-[var(--card-pad,20px)] card-opt [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] flex flex-col gap-[var(--s3,12px)]"
+      className="card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] p-[var(--card-pad,20px)] card-opt flex flex-col gap-[var(--s3,12px)]"
     >
       <div className={`big t-kpi-m rtl:font-sans rtl:text-2xl ${colorClass}`}>
         {value}
@@ -302,7 +302,7 @@ const BADGE_CLASSES: Record<'ok' | 'danger' | 'warn' | 'accent' | 'neutral', str
   danger: 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#c0283d] dark:text-[#FF8D7A]',
   warn: 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
   accent: 'bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A]',
-  neutral: 'bg-white dark:bg-[#1C1B1A] text-[var(--text-1)] border border-[#E6DED6] dark:border-[#3A3734]',
+  neutral: 'bg-white dark:bg-[#1C1B1A] text-[var(--text-1)] border border-black/[0.07] dark:border-white/[0.1]',
 };
 
 export const InspectorListItem: React.FC<InspectorListItemProps> = ({
@@ -316,7 +316,7 @@ export const InspectorListItem: React.FC<InspectorListItemProps> = ({
   <div
     onClick={onClick}
     className={`li flex justify-between items-center py-[var(--s3,12px)] t-body gap-[var(--s3,12px)] ${
-      isLast ? '' : 'border-b border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734]'
+      isLast ? '' : 'border-b border-[var(--atr-divider)]'
     } ${onClick ? 'cursor-pointer hover:opacity-85 transition-opacity' : ''}`}
   >
     <span className="min-w-0 flex flex-col gap-[var(--name-sub-gap,2px)]">
@@ -366,7 +366,7 @@ export const InspectorNotesField: React.FC<{
     <div
       data-sq="card"
       data-sq-border="solid"
-      className="relative rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#d4522f]"
+      className="relative rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-ctl)] focus-within:[--sq-stroke:var(--brand-accent)]"
     >
       <textarea
         aria-label={ariaLabel}
@@ -404,7 +404,7 @@ export const InspectorWideButton: React.FC<{
       tone === 'dark'
         ? 'border-0 bg-[#1F1D1B] dark:bg-white text-white dark:text-black'
         : tone === 'neutral'
-        ? 'bg-white dark:bg-[#262422] [--sq-stroke:var(--atr-line,#E6DED6)] dark:[--sq-stroke:#3A3734] text-[var(--text-1)] hover:bg-[#F3EDE7]'
+        ? 'bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-ctl)] text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-[#2D2A27]'
         : 'border-0 bg-[var(--brand-fill)] text-white'
     }`}
   >

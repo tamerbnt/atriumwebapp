@@ -66,13 +66,13 @@ export const CollectionKebabMenu: React.FC<CollectionKebabMenuProps> = ({
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="relative p-[var(--s2,8px)] bg-white dark:bg-[#18181B] [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#26262A] text-[var(--text-1)] t-label"
+        className="relative p-[var(--s2,8px)] bg-white dark:bg-[#18181B] [--sq-stroke:var(--sq-stroke-pop)] text-[var(--text-1)] t-label"
       >
         <div className="flex flex-col gap-[var(--s1,4px)]">
           {items.map((item, idx) => (
             <React.Fragment key={item.id || idx}>
               {item.isSeparatorBefore && (
-                <div className="h-[1px] bg-neutral-200 dark:bg-neutral-800" />
+                <div className="h-[1px] bg-[var(--atr-divider)]" />
               )}
               <button
                 type="button"

@@ -4,7 +4,7 @@
 
 @theme {
   --color-pod: #F3EDE7;
-  --color-pod-border: #E6DED6;
+  --color-pod-border: rgba(23, 19, 15, 0.055);
   --color-main-panel: #FBF8F5;
   --color-page-bg: #F3EDE7;
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -109,13 +109,13 @@
   transition: box-shadow 160ms, border-color 160ms;
 }
 .row:hover .slab {
-  border-color: #D5C9BE;
-  --sq-stroke: #D5C9BE;
+  border-color: rgba(23, 19, 15, 0.11);
+  --sq-stroke: rgba(23, 19, 15, 0.11);
 }
 .dark .row:hover .slab,
 [data-theme="dark"] .row:hover .slab {
-  border-color: #544F4A;
-  --sq-stroke: #544F4A;
+  border-color: rgba(255, 255, 255, 0.16);
+  --sq-stroke: var(--sq-stroke-ctl-hover, rgba(255, 255, 255, 0.16));
 }
 
 .in {
@@ -458,21 +458,21 @@
     --color-window-bg: #0C0C0E;
     --color-surface-bg: #18181B;
     --color-card-bg: #18181B;
-    --color-card-border: #27272A;
+    --color-card-border: rgba(255, 255, 255, 0.09);
     --color-group-bg: #141312;
-    --color-group-border: #33302d;
+    --color-group-border: rgba(255, 255, 255, 0.06);
     --color-pod: #141312;
     --color-pod-bg: #141312;
-    --color-pod-border: #33302d;
-    --color-line: #33302d;
+    --color-pod-border: rgba(255, 255, 255, 0.06);
+    --color-line: rgba(255, 255, 255, 0.08);
     --color-card-dark: #09090B;
 
     --color-text-primary: var(--text-1);
     --color-text-secondary: var(--text-2);
     --color-text-tertiary: var(--text-3);
 
-    --color-border: #27272A;
-    --color-border-subtle: #1F1F23;
+    --color-border: rgba(255, 255, 255, 0.09);
+    --color-border-subtle: rgba(255, 255, 255, 0.06);
 
     --fill-on: #ffffff;
     --fill-slab: #1c1c20;
@@ -1141,6 +1141,24 @@ div[tabindex],
     margin: 10mm;
     size: auto;
   }
+
+  /* Isolate active list pod when triggered from ListAdvancedMenuButton */
+  html[data-printing-active-pod="true"] [data-list-pod-root="true"] > * > *:not([data-printing-pod="true"]):not(:has([data-printing-pod="true"])) {
+    display: none !important;
+  }
+
+  html[data-printing-active-pod="true"] [data-printing-pod="true"],
+  html[data-printing-active-pod="true"] [data-printing-pod="true"] [data-sq="panel"] {
+    box-shadow: none !important;
+    background: #FFFFFF !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  html[data-printing-active-pod="true"] .udc-row-item,
+  html[data-printing-active-pod="true"] .udc-card-item {
+    content-visibility: visible !important;
+  }
 }
 
 /* ══ Label input ═══════════════════════════════════════════
@@ -1561,18 +1579,18 @@ div[tabindex],
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  border: 1px solid var(--color-border, #E6DED6);
+  border: 1px solid var(--atr-line, rgba(23, 19, 15, 0.09));
   pointer-events: none;
   z-index: 2;
 }
 
 .sek-skin[data-sq]:not([data-sq="none"]) {
-  --sq-stroke: var(--color-border, #E6DED6);
+  --sq-stroke: var(--sq-stroke-ctl, rgba(23, 19, 15, 0.09));
 }
 [data-theme="dark"] .sek-skin[data-sq]:not([data-sq="none"]),
 [data-atrium-theme="dark"] .sek-skin[data-sq]:not([data-sq="none"]),
 .dark .sek-skin[data-sq]:not([data-sq="none"]) {
-  --sq-stroke: #3A3734;
+  --sq-stroke: var(--sq-stroke-ctl, url(#sq-spec-dark-ctl));
 }
 .sek-skin[data-sq]:not([data-sq="none"])::before {
   display: none;
@@ -2505,13 +2523,13 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
   --h: var(--seg-l-h, 40px);
   --seg-inset: var(--seg-l-pad, 4px);
   --r: var(--r-ctl, 12px);
-  --sq-stroke: var(--atr-line, #E6DED6);
+  --sq-stroke: var(--sq-stroke-ctl, rgba(23, 19, 15, 0.09));
   position: relative;
   display: inline-flex;
   box-sizing: border-box;
   isolation: isolate;
   padding: var(--seg-inset);
-  border: 1px solid var(--atr-line, #E6DED6);
+  border: 1px solid var(--atr-line, rgba(23, 19, 15, 0.09));
   border-radius: var(--r);
   background: #FFFFFF;
 }
@@ -2519,8 +2537,8 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
 [data-atrium-theme="dark"] .d,
 .dark .d {
   background: #202022;
-  border-color: #3A3734;
-  --sq-stroke: #3A3734;
+  border-color: rgba(255, 255, 255, 0.11);
+  --sq-stroke: var(--sq-stroke-ctl, url(#sq-spec-dark-ctl));
 }
 .d[data-atr-size="sm"] {
   --h: var(--seg-m-h, 32px);
@@ -2817,9 +2835,8 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
 
 /* ============================================================
    Universal Atrium Pod Container Architecture
-   Background: #F3EDE7, Border: 1px #E6DED6 (Light)
-   Background: #141312, Border: 1px #33302D (Dark)
-   Automatic Inheritance Across All Existing & Future Screens
+   Apple-Calibrated Translucent Hairlines (Light) &
+   Top-Lit White Specular Rim Gradients (Dark / Obsidian)
    ============================================================ */
 
 .pod,
@@ -2827,15 +2844,16 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
 [data-pod="true"],
 .dashboard-pod {
   background-color: var(--color-group-bg, #F3EDE7);
-  border: 1px solid var(--color-group-border, #E6DED6);
+  border: 1px solid var(--color-group-border, rgba(23, 19, 15, 0.055));
   border-radius: var(--r-panel, 28px);
-  --sq-stroke: var(--color-group-border, #E6DED6);
+  --sq-stroke: var(--sq-stroke-pod, rgba(23, 19, 15, 0.05));
 }
 
 /* ============================================================
    Continuous 60% Squircle Surface & SVG Border Ring Rules
    Unlayered so Tailwind !border-* / !rounded-* / shadow-*
    never draw 90-degree corners or rectangular shadow boxes.
+   Branded liquid/accent/ink buttons keep their own styling untouched.
    ============================================================ */
 [data-sq]:not([data-sq="none"]) {
   border-radius: 0 !important;
@@ -2860,17 +2878,42 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
 
 [data-sq]:not([data-sq="none"]) > svg[data-sq-stroke] path {
   fill: none !important;
-  stroke: var(--sq-stroke, var(--color-card-border, #E6DED6));
+  stroke: var(--sq-stroke, var(--sq-stroke-card, rgba(23, 19, 15, 0.06)));
   stroke-width: var(--sq-stroke-w, 1px);
   transition: stroke 160ms ease, stroke-width 160ms ease;
 }
 
+[data-sq="app"] > svg[data-sq-stroke] path {
+  stroke: var(--sq-stroke, var(--sq-stroke-app, rgba(23, 19, 15, 0.065)));
+}
+
 [data-sq="panel"] > svg[data-sq-stroke] path {
-  stroke: var(--sq-stroke, var(--color-group-border, #E6DED6));
+  stroke: var(--sq-stroke, var(--sq-stroke-pod, rgba(23, 19, 15, 0.05)));
+}
+
+[data-sq="table"] > svg[data-sq-stroke] path {
+  stroke: var(--sq-stroke, var(--sq-stroke-card, rgba(23, 19, 15, 0.06)));
+}
+
+[data-sq="row"] > svg[data-sq-stroke] path {
+  stroke: var(--sq-stroke, var(--sq-stroke-row, rgba(23, 19, 15, 0.06)));
+}
+
+[data-sq="ctl"]:not([data-atr-liquid]):not([data-atr-tone="accent"]):not([data-atr-tone="ink"]) > svg[data-sq-stroke] path,
+[data-sq="ctl-sm"]:not([data-atr-liquid]):not([data-atr-tone="accent"]):not([data-atr-tone="ink"]) > svg[data-sq-stroke] path,
+[data-sq="tile"] > svg[data-sq-stroke] path,
+[data-sq="tile-lg"] > svg[data-sq-stroke] path,
+[data-sq="check"] > svg[data-sq-stroke] path {
+  stroke: var(--sq-stroke, var(--sq-stroke-ctl, rgba(23, 19, 15, 0.09)));
+}
+
+[data-sq][data-surface="dark"]:not([data-atr-liquid]) > svg[data-sq-stroke] path {
+  stroke: var(--sq-stroke, var(--sq-stroke-obsidian, url(#sq-spec-dark-card)));
 }
 
 [data-sq][data-sq-border="dashed"] > svg[data-sq-stroke] path,
 [data-sq][data-sq-dash] > svg[data-sq-stroke] path {
+  stroke: var(--sq-stroke, var(--sq-stroke-dashed, rgba(23, 19, 15, 0.16)));
   stroke-dasharray: var(--sq-dash, 5 4);
 }
 
@@ -2884,36 +2927,56 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
   --sq-stroke-w: 2px;
 }
 
-/* Selective elevation wrappers (unclipped parents carrying squircle-accurate drop-shadow) */
+/* Selective elevation wrappers (stationary cards & overlays only; fast filter-free rows & trays) */
 .sq-elev-card {
-  filter: drop-shadow(0 1px 2px rgba(20, 16, 12, 0.04));
+  filter: drop-shadow(0 1px 1.5px rgba(23, 19, 15, 0.04)) drop-shadow(0 3px 8px rgba(23, 19, 15, 0.025));
 }
+.dark .sq-elev-card,
+[data-theme="dark"] .sq-elev-card,
+[data-atrium-theme="dark"] .sq-elev-card {
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.28));
+}
+
+/* Keep virtualized/scrolling rows and outer pod trays offscreen-filter free for 60/120fps scroll */
+.udc-row-item .sq-elev-card,
+[data-list-pod-id].sq-elev-card {
+  filter: none;
+}
+
 .sq-elev-card-hover {
   transition: filter 180ms ease;
-  filter: drop-shadow(0 1px 2px rgba(20, 16, 12, 0.04));
+  filter: drop-shadow(0 1px 1.5px rgba(23, 19, 15, 0.04)) drop-shadow(0 3px 8px rgba(23, 19, 15, 0.025));
 }
 .sq-elev-card-hover:hover {
-  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.08));
+  filter: drop-shadow(0 6px 14px rgba(23, 19, 15, 0.065)) drop-shadow(0 14px 26px rgba(23, 19, 15, 0.04));
 }
+.dark .sq-elev-card-hover,
+[data-theme="dark"] .sq-elev-card-hover,
+[data-atrium-theme="dark"] .sq-elev-card-hover {
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.28));
+}
+.dark .sq-elev-card-hover:hover,
+[data-theme="dark"] .sq-elev-card-hover:hover,
+[data-atrium-theme="dark"] .sq-elev-card-hover:hover {
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.44));
+}
+
 .sq-elev-pop {
+  --sq-stroke: var(--sq-stroke-pop, rgba(23, 19, 15, 0.08));
   filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.16));
 }
 .dark .sq-elev-pop,
 [data-theme="dark"] .sq-elev-pop,
 [data-atrium-theme="dark"] .sq-elev-pop {
+  --sq-stroke: var(--sq-stroke-pop, url(#sq-spec-dark-pop));
   filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.5));
 }
 
 /* End Atrium Pod Container Architecture */
 
-/* Specific Role Hex Enforcements:
-   - White: #FFFFFF (metric cards, row islands, tabs, inputs, slide-in panel)
-   - Page background: #F3EDE7
-   - Pods: #F3EDE7, with a 1px #E6DED6 border
-   - Main panel and top bar: #FBF8F5 */
 :root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.lbi-field):not(.sek-field) {
   background-color: #FFFFFF;
-  border-color: #E6DED6;
+  border-color: rgba(23, 19, 15, 0.09);
 }
 
 /* Browser-native offscreen layout & paint skipping for long UniversalDataCollection lists/grids */
@@ -2972,4 +3035,85 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
   --accent: var(--ax-c1);
   --on-accent: var(--ax-tc1);
 }
+
+/* ============================================================
+   Expanded List Pod Focus Layout & Inert Squircle Ghost Clones
+   ============================================================ */
+[data-sq-ghost="true"] > svg[data-sq-stroke] {
+  position: absolute !important;
+  top: calc(var(--sq-bt, 0px) * -1) !important;
+  left: calc(var(--sq-bl, 0px) * -1) !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: calc(100% + var(--sq-bl, 0px) + var(--sq-br, 0px)) !important;
+  height: calc(100% + var(--sq-bt, 0px) + var(--sq-bb, 0px)) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+  overflow: visible !important;
+}
+
+[data-sq-ghost="true"] > svg[data-sq-stroke] path {
+  fill: none !important;
+  stroke: var(--sq-stroke, var(--sq-stroke-pod, rgba(23, 19, 15, 0.05)));
+  stroke-width: var(--sq-stroke-w, 1px);
+}
+
+[data-list-pod-expanded="true"] > * {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+[data-list-pod-expanded="true"] > * > *:not(.grid):has([data-list-pod-active="true"]) {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Preserve multi-column horizontal grid layouts (e.g., FrontDesk / POS split pods) while stretching rows vertically */
+[data-list-pod-expanded="true"] > * > .grid:has([data-list-pod-active="true"]) {
+  display: grid;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+[data-list-pod-expanded="true"] .grid:has([data-list-pod-active="true"]) > *:has([data-list-pod-active="true"]) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+[data-list-pod-expanded="true"] [data-list-pod-active="true"] {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+[data-list-pod-expanded="true"] [data-list-pod-active="true"] > [data-sq="panel"] {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: auto !important;
+}
+
+[data-list-pod-expanded="true"] [data-list-pod-active="true"] > [data-sq="panel"] > *:not(.grid):last-child:not(:first-child),
+[data-list-pod-expanded="true"] [data-list-pod-active="true"] > [data-sq="panel"] > *:not(.grid):only-child {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+[data-list-pod-expanded="true"] [data-list-pod-active="true"] > [data-sq="panel"] > .grid {
+  flex: 1 1 auto;
+  align-content: start;
+}
+
 

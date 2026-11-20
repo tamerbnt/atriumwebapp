@@ -160,7 +160,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
   const licenseLabel = getDefaultFiscalLicenseLabel(category, language);
 
   const inputClass =
-    'w-full h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 text-[var(--text-1)] dark:text-white t-small focus:outline-none focus:ring-2 focus:ring-[var(--brand-text)]/30 disabled:opacity-60 disabled:cursor-not-allowed';
+    'w-full h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-black/[0.08] dark:border-white/[0.10] text-[var(--text-1)] dark:text-white t-small focus:outline-none focus:ring-2 focus:ring-[var(--brand-text)]/30 disabled:opacity-60 disabled:cursor-not-allowed';
 
   return (
     <div className="flex flex-col gap-[var(--pod-gap,16px)]">
@@ -395,7 +395,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F7F3EE] dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700" data-sq="ctl">
+                <div className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F7F3EE] dark:bg-neutral-900 border-0" data-sq="ctl">
                   <div className="flex flex-col">
                     <span className="t-small font-medium text-[var(--text-1)]">
                       {L('Timbre Fiscal (Cash)', 'Timbre Fiscal (Espèces)', 'الطابع الجبائي (نقداً)')}

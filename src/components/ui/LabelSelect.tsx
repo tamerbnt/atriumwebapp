@@ -430,17 +430,17 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
               ref={popoverRef}
               data-sq="card"
               data-sq-border="solid"
-              className="relative bg-white dark:bg-neutral-900 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+              className="relative bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
               style={{
                 maxHeight: '230px',
               }}
             >
               {(searchable || normalizedOptions.length >= 6) && (
-                <div className="p-2 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
+                <div className="p-2 border-b border-[var(--atr-divider)] bg-neutral-50/50 dark:bg-neutral-900/50">
                   <div
                     data-sq="ctl-sm"
                     data-sq-border="solid"
-                    className="relative flex items-center bg-white dark:bg-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040]"
+                    className="relative flex items-center bg-white dark:bg-neutral-800"
                   >
                     <Search
                       size={16}

@@ -258,9 +258,9 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
           data-sq="panel"
           data-sq-border="solid"
           style={{ contain: 'layout paint' }}
-          className="relative w-full max-h-[85vh] bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] text-[var(--text-1)] overflow-hidden select-text"
+          className="relative w-full max-h-[85vh] bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-pop)] p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] text-[var(--text-1)] overflow-hidden select-text"
         >
-        <div className="flex items-center justify-between pb-[var(--s4,16px)] border-b border-[#E6DED6] dark:border-[#3A3734] shrink-0">
+        <div className="flex items-center justify-between pb-[var(--s4,16px)] border-b border-[var(--atr-divider)] shrink-0">
           <div className="flex items-center gap-[var(--s3,12px)]">
             <div className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 flex items-center justify-center text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-2xs shrink-0">
               <SlidersHorizontal size={16} strokeWidth={1.5} />
@@ -359,8 +359,8 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
                           title={opt.tooltip || opt.label}
                           className={`relative px-[var(--s3,12px)] py-[var(--s2,8px)] t-small flex items-center justify-between gap-[var(--s2,8px)] cursor-pointer transition-colors ${
                             isSelected
-                              ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] [--sq-stroke:rgba(212,82,47,0.4)] font-semibold'
-                              : 'bg-[#FBF8F5] dark:bg-neutral-800/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50'
+                              ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] [--sq-stroke:rgba(212,82,47,0.45)] font-semibold'
+                              : 'bg-[#FBF8F5] dark:bg-neutral-800/60 text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/50'
                           }`}
                         >
                           <div className="min-w-0 text-start flex flex-col gap-[var(--s1,4px)]">
@@ -386,7 +386,7 @@ export const KineticFilterModal: React.FC<KineticFilterModalProps> = React.memo(
           })}
         </div>
 
-        <div className="pt-[var(--s3,12px)] border-t border-[#E6DED6] dark:border-[#3A3734] flex items-center gap-[var(--s2,8px)] shrink-0">
+        <div className="pt-[var(--s3,12px)] border-t border-[var(--atr-divider)] flex items-center gap-[var(--s2,8px)] shrink-0">
           {hasActiveFilters && (
             <BrandedAtriumButton
               tone="soft"

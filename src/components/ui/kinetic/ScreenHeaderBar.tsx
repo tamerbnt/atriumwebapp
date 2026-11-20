@@ -55,7 +55,7 @@ export const ScreenHeaderBar: React.FC<ScreenHeaderBarProps> = React.memo(({
           <div
             data-sq="tile-lg"
             data-sq-border="solid"
-            className="relative w-[var(--ph-tile,48px)] h-[var(--ph-tile,48px)] bg-[#F3EDE7] dark:bg-white/[0.07] [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.7)] flex items-center justify-center text-[var(--text-1)] dark:text-white"
+            className="relative w-[var(--ph-tile,48px)] h-[var(--ph-tile,48px)] bg-[#F3EDE7] dark:bg-white/[0.07] flex items-center justify-center text-[var(--text-1)] dark:text-white"
           >
             {icon}
           </div>

@@ -24,6 +24,7 @@ import {
   ScreenHeaderBar,
   ScreenKpiBanner,
   ScreenPod,
+  ListAdvancedMenuButton,
 } from '../../ui/kinetic';
 
 type QuickStatus = 'present' | 'absent' | 'late' | 'excused';
@@ -436,21 +437,28 @@ export const AcademyRollCallKiosk: React.FC = () => {
               : 'Puis basculez les 1 ou 2 absents individuellement.'}
           </span>
         </div>
-        <div className="w-full sm:w-72">
-          <div
-            data-sq="ctl"
-            data-sq-border="solid"
-            className="relative h-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"
-          >
-            <Search size={15} className="absolute left-3 top-3 text-black/55 dark:text-white/55 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isRtl ? 'بحث باسم الطالب أو الهاتف...' : 'Filtrer par nom ou tél...'}
-              className="lbi-field w-full h-full pl-9 pr-3 bg-transparent border-0 t-small font-medium focus:outline-none"
-            />
+        <div className="w-full sm:w-auto flex items-center gap-2">
+          <div className="w-full sm:w-72">
+            <div
+              data-sq="ctl"
+              data-sq-border="solid"
+              className="relative h-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"
+            >
+              <Search size={15} className="absolute left-3 top-3 text-black/55 dark:text-white/55 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={isRtl ? 'بحث باسم الطالب أو الهاتف...' : 'Filtrer par nom ou tél...'}
+                className="lbi-field w-full h-full pl-9 pr-3 bg-transparent border-0 t-small font-medium focus:outline-none"
+              />
+            </div>
           </div>
+          <ListAdvancedMenuButton
+            language={language}
+            canResetFilters={searchQuery.trim().length > 0}
+            onResetAllFilters={() => setSearchQuery('')}
+          />
         </div>
       </div>
 

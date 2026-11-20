@@ -250,7 +250,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
           </div>
         )}
 
-        <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--s2,8px)] border-t border-neutral-200 dark:border-neutral-800">
+        <div className="flex justify-end gap-[var(--s2,8px)] pt-[var(--s2,8px)] border-t border-[var(--atr-divider)]">
           <AtriumButton variant="secondary" onClick={onClose} type="button">
             {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
           </AtriumButton>

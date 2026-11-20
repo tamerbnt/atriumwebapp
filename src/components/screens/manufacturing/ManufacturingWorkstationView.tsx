@@ -36,6 +36,7 @@ import {
   InspectorKeyValue,
   InspectorBigStat,
   InspectorWideButton,
+  ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
 } from '../../ui/kinetic';
@@ -436,6 +437,12 @@ export const ManufacturingWorkstationView: React.FC = () => {
       />
 
       <ScreenPod>
+        <div className="flex items-center justify-between gap-3 px-1">
+          <h2 className="t-pod text-[var(--text-1)] dark:text-white">
+            {isAr ? 'محطة الإنتاج المباشرة' : isEn ? 'Workstation Console' : 'Poste de Production'}
+          </h2>
+          <ListAdvancedMenuButton language={language} />
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-5 space-y-5">
             <div className="sq-elev-card">

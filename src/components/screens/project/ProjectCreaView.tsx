@@ -49,6 +49,7 @@ import {
   KineticRowFanAction,
   KineticDetailAction,
   KineticStatusVariant,
+  ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -726,6 +727,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
       {activeTab === 'kanban' && (
         <ScreenPod>
+          <div className="flex items-center justify-between gap-3 px-1">
+            <h2 className="t-pod text-[var(--text-1)] dark:text-white">
+              {isAr ? 'لوحة تنفيذ التصميم' : isEn ? 'Studio Kanban Pipeline' : 'Kanban Studio Créa'}
+            </h2>
+            <ListAdvancedMenuButton language={language} />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
@@ -1017,13 +1024,16 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
             data-sq-border="solid"
             className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-3xl mx-auto space-y-6"
           >
-            <div>
-              <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
-                Dépôt & Conformité Pré-Presse
-              </span>
-              <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
-                Validation Technique des Fichiers Imprimeur
-              </h2>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
+                  Dépôt & Conformité Pré-Presse
+                </span>
+                <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
+                  Validation Technique des Fichiers Imprimeur
+                </h2>
+              </div>
+              <ListAdvancedMenuButton language={language} />
             </div>
             {uploadSuccess && (
               <div
@@ -1133,6 +1143,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
       {activeTab === 'briefs' && (
         <ScreenPod>
+          <div className="flex items-center justify-between gap-3 px-1">
+            <h2 className="t-pod text-[var(--text-1)] dark:text-white">
+              {isAr ? 'موجزات المشاريع الإبداعية' : isEn ? 'Creative Project Briefs' : 'Briefs Créatifs & KV'}
+            </h2>
+            <ListAdvancedMenuButton language={language} />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pmProjects.map((p) => (
               <div

@@ -38,6 +38,7 @@ import {
   InspectorKeyValue,
   InspectorBigStat,
   InspectorWideButton,
+  ListAdvancedMenuButton,
   resolveRecordBranch,
   buildBranchesByIdMap,
 } from '../../ui/kinetic';
@@ -313,14 +314,21 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
       />
 
       <ScreenPod>
-        <div className="flex items-center justify-between pb-1">
+        <div className="flex items-center justify-between gap-2 pb-1">
           <h2 className="t-card font-semibold tracking-[-0.018em] rtl:tracking-normal text-black dark:text-white">
             {isRtl ? 'محطات العمل والخدمة السريعة' : 'Postes de Coiffage & Cabines'}
           </h2>
-          <span className="t-small font-medium text-black/62 dark:text-white/65 flex items-center gap-2">
-            <Building2 size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-            {resolveRecordBranch({}, branchesById, currentBranch, language).name}
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="t-small font-medium text-black/62 dark:text-white/65 flex items-center gap-2">
+              <Building2 size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+              {resolveRecordBranch({}, branchesById, currentBranch, language).name}
+            </span>
+            <ListAdvancedMenuButton
+              language={language}
+              canResetFilters={stationFilter !== 'all'}
+              onResetAllFilters={() => setStationFilter('all')}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -339,18 +347,16 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                     ? ({ '--sq-stroke': '#d4522f' } as React.CSSProperties)
                     : isOccupied && active.stage === 'completed'
                     ? ({ '--sq-stroke': 'rgba(52, 211, 153, 0.8)' } as React.CSSProperties)
-                    : !isOccupied
-                    ? ({ '--sq-stroke': '#D4C8BC' } as React.CSSProperties)
                     : undefined
                 }
-                className={`border transition-all p-5 flex flex-col justify-between min-h-[290px] ${
+                className={`border-0 transition-all p-5 flex flex-col justify-between min-h-[290px] ${
                   !isOccupied
-                    ? 'bg-[#FBF8F5] dark:bg-[#1C1B1A] border-[#D4C8BC] dark:border-[#3A3734]'
+                    ? 'bg-[#FBF8F5] dark:bg-[#1C1B1A]'
                     : active.stage === 'in_progress'
-                    ? 'bg-white dark:bg-[#1C1B1A] border-[#d4522f]'
+                    ? 'bg-white dark:bg-[#1C1B1A]'
                     : active.stage === 'completed'
-                    ? 'bg-emerald-50/40 dark:bg-emerald-950/15 border-emerald-400 dark:border-emerald-700'
-                    : 'bg-white dark:bg-[#1C1B1A] border-[#E6DED6] dark:border-[#3A3734]'
+                    ? 'bg-emerald-50/40 dark:bg-emerald-950/15'
+                    : 'bg-white dark:bg-[#1C1B1A]'
                 }`}
               >
                 <div>
@@ -430,7 +436,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   </button>
                 </div>
 
-                <div className="pt-4 border-t border-[#E6DED6]/60 dark:border-[#3A3734]">
+                <div className="pt-4 border-t border-[var(--atr-divider)]">
                   {isOccupied ? (
                     <button
                       type="button"
@@ -471,7 +477,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                       }}
                       data-sq="ctl"
                       data-sq-border="solid"
-                      className="w-full py-2 px-3 border border-[#D4C8BC] dark:border-[#3A3734] hover:[--sq-stroke:#d4522f] hover:bg-[#d4522f]/5 t-small font-semibold text-black/75 dark:text-white/80 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      className="w-full py-2 px-3 border-0 hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] t-small font-semibold text-black/75 dark:text-white/80 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <Plus size={14} />
                       <span>{isRtl ? 'إسناد زبون' : 'Assigner'}</span>
@@ -514,7 +520,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             ? activeStations[inspectedStation.id].stage === 'completed'
               ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
               : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-[#E6DED6] dark:border-[#3A3734]'
+            : 'bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09]'
         }
         tabs={[
           { id: 'overview', label: isRtl ? 'المحطة' : 'Poste & Statut' },
@@ -623,7 +629,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] w-full p-6"
+              className="bg-white dark:bg-[#1C1B1A] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
             >
               <h3 className="t-card font-semibold text-black dark:text-white mb-1">
                 {isRtl ? 'تحصيل فاتورة الصالون' : 'Encaissement Express Salon'}
@@ -634,7 +640,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-4 t-cap space-y-2 mb-4"
+                className="bg-[#FBF8F5] dark:bg-[#262422] border-0 p-4 t-cap space-y-2 mb-4"
               >
               <div className="flex justify-between">
                 <span>{isRtl ? 'سعر الخدمة' : 'Prestation'}</span>
@@ -648,7 +654,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   <span>+{calculateArt317Timbre(activeStations[checkoutModalStationKey].servicePriceDzd)} DA</span>
                 </div>
               )}
-              <div className="flex justify-between pt-2 border-t border-[#E6DED6] dark:border-[#3A3734] font-semibold t-label">
+              <div className="flex justify-between pt-2 border-t border-[var(--atr-divider)] font-semibold t-label">
                 <span>{isRtl ? 'الإجمالي' : 'Total Net'}</span>
                 <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
                   {formatMoney(
@@ -670,10 +676,10 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   style={paymentMethod === pm ? ({ '--sq-stroke': '#d4522f' } as React.CSSProperties) : undefined}
-                  className={`py-2 px-2 t-small font-semibold border transition-all flex flex-col items-center gap-1 cursor-pointer ${
+                  className={`py-2 px-2 t-small font-semibold border-0 transition-all flex flex-col items-center gap-1 cursor-pointer ${
                     paymentMethod === pm
-                      ? 'border-[#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                      : 'border-[#E6DED6] dark:border-[#3A3734] text-black/75 dark:text-white/80'
+                      ? 'bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
+                      : 'hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] text-black/75 dark:text-white/80'
                   }`}
                 >
                   {pm === 'cash' ? <Banknote size={15} /> : <CreditCard size={15} />}
@@ -712,7 +718,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] w-full p-6"
+              className="bg-white dark:bg-[#1C1B1A] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="t-card font-semibold text-black dark:text-white">
@@ -732,7 +738,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                    className="w-full h-10 border-0 bg-[#FBF8F5] dark:bg-[#262422] focus-within:[--sq-stroke:#d4522f]"
                   >
                     <select
                       value={targetStationId}
@@ -836,7 +842,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] w-full p-6 text-center"
+              className="bg-white dark:bg-[#1C1B1A] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 text-center"
             >
               <div
                 data-sq="tile-lg"
@@ -852,7 +858,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="bg-[#FBF8F5] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] p-4 t-cap space-y-2 text-left mb-5"
+                className="bg-[#FBF8F5] dark:bg-[#262422] border-0 p-4 t-cap space-y-2 text-left mb-5"
               >
                 <div className="flex justify-between">
                   <span>Client :</span>
@@ -862,7 +868,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   <span>Service :</span>
                   <span className="font-semibold">{lastReceipt.serviceName}</span>
                 </div>
-                <div className="flex justify-between font-semibold pt-2 border-t border-[#E6DED6] dark:border-[#3A3734]">
+                <div className="flex justify-between font-semibold pt-2 border-t border-[var(--atr-divider)]">
                   <span>Total :</span>
                   <span className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
                     {formatMoney(lastReceipt.amountDzd + lastReceipt.timbreFiscalDzd, 'DZD')}

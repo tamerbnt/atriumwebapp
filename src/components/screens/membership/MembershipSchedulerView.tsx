@@ -564,7 +564,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
           <div
             data-sq="ctl"
             data-sq-border="solid"
-            className="flex items-center p-[3px] bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] gap-0.5 t-small font-semibold overflow-x-auto max-w-full"
+            className="flex items-center p-[3px] bg-white dark:bg-[#1C1B1A] gap-0.5 t-small font-semibold overflow-x-auto max-w-full"
           >
             {days.map((d) => {
               const isActive = selectedDay === d.id;
@@ -636,7 +636,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                     setDrawerOpenerEl(e.currentTarget);
                     setSelectedEvent(event);
                   }}
-                  className="w-full text-left rtl:text-right p-5 bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] hover:[--sq-stroke:#d4522f] transition-all cursor-pointer flex flex-col justify-between group"
+                  className="w-full text-left rtl:text-right p-5 bg-white dark:bg-[#1C1B1A] hover:bg-[#FCF9F6] dark:hover:bg-white/[0.04] transition-all cursor-pointer flex flex-col justify-between group"
                 >
                   <div className="w-full">
                     <div className="flex items-center justify-between mb-3 gap-2">
@@ -664,7 +664,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 pt-3 border-t border-[#E6DED6]/60 dark:border-[#3A3734] w-full">
+                  <div className="mt-4 pt-3 border-t border-[var(--atr-divider)] w-full">
                     <div className="flex items-center justify-between t-cap mb-2">
                       <span className="text-black/62 dark:text-white/65">
                         {isFull ? (isAr ? 'مكتمل' : 'Complet') : isAr ? 'الأماكن' : 'Capacité'}
@@ -763,7 +763,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="w-10 h-10 rounded-full bg-white dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-center text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white cursor-pointer transition-colors shadow-2xs"
+              className="w-10 h-10 rounded-full bg-white dark:bg-[#262422] border border-black/[0.07] dark:border-white/[0.11] flex items-center justify-center text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white cursor-pointer transition-colors shadow-2xs"
               title="Toggle Fullscreen"
             >
               <Maximize2 size={15} />

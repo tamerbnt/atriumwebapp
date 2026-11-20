@@ -873,7 +873,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] w-full p-6 space-y-5 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734]"
+              className="bg-white dark:bg-[#1C1B1A] w-full p-6 space-y-5 [--sq-stroke:var(--sq-stroke-pop)]"
             >
               <div className="flex items-center gap-3">
                 <div

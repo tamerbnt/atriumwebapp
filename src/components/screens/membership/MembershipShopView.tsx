@@ -693,9 +693,9 @@ export const MembershipShopView: React.FC = React.memo(() => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="w-full bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex flex-col max-h-[640px] overflow-hidden"
+              className="w-full bg-white dark:bg-[#1C1B1A] flex flex-col max-h-[640px] overflow-hidden"
             >
-            <div className="px-4 py-3 border-b border-[#E6DED6] dark:border-[#3A3734] flex items-center justify-between bg-[#FBF8F5] dark:bg-[#151413]">
+            <div className="px-4 py-3 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#FBF8F5] dark:bg-[#151413]">
               <span className="t-small font-semibold text-black dark:text-white flex items-center gap-2">
                 <ShoppingBag size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>{isAr ? `السلة (${cart.length})` : `Panier (${cart.length})`}</span>
@@ -727,7 +727,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
                     key={item.product.id}
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="p-3 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] flex items-center justify-between gap-2"
+                    className="p-3 bg-[#FBF8F5] dark:bg-[#262422] flex items-center justify-between gap-2"
                   >
                     <div className="min-w-0 flex-1">
                       <span className="font-semibold t-small text-black dark:text-white truncate block">
@@ -743,7 +743,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
                         onClick={() => handleUpdateQty(item.product.id, -1)}
                         data-sq="check"
                         data-sq-border="solid"
-                        className="w-6 h-6 bg-white dark:bg-[#1C1B1A] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] flex items-center justify-center cursor-pointer"
+                        className="w-6 h-6 bg-white dark:bg-[#1C1B1A] flex items-center justify-center cursor-pointer"
                       >
                         <Minus size={10} />
                       </button>
@@ -755,7 +755,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
                         onClick={() => handleUpdateQty(item.product.id, 1)}
                         data-sq="check"
                         data-sq-border="solid"
-                        className="w-6 h-6 bg-white dark:bg-[#1C1B1A] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] flex items-center justify-center cursor-pointer"
+                        className="w-6 h-6 bg-white dark:bg-[#1C1B1A] flex items-center justify-center cursor-pointer"
                       >
                         <Plus size={10} />
                       </button>
@@ -772,7 +772,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
               )}
             </div>
 
-            <div className="p-4 border-t border-[#E6DED6] dark:border-[#3A3734] bg-[#FBF8F5] dark:bg-[#151413] space-y-3">
+            <div className="p-4 border-t border-[var(--atr-divider)] bg-[#FBF8F5] dark:bg-[#151413] space-y-3">
               <div className="flex justify-between t-cap items-baseline">
                 <span className="text-black/62 dark:text-white/65">{isAr ? 'الإجمالي:' : 'Total à Payer:'}</span>
                 <span className="tabular-nums font-semibold t-card text-black dark:text-white">
@@ -789,7 +789,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
                   className={`p-2 t-small font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors ${
                     paymentMethod === 'Cash'
                       ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                      : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/72 dark:text-white/75'
+                      : 'hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] text-black/72 dark:text-white/75'
                   }`}
                 >
                   <Banknote size={13} />
@@ -804,7 +804,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
                   className={`p-2 t-small font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors ${
                     paymentMethod === 'Card'
                       ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                      : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/72 dark:text-white/75'
+                      : 'hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] text-black/72 dark:text-white/75'
                   }`}
                 >
                   <CreditCard size={13} />

@@ -184,7 +184,7 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-[var(--s3,12px)] pt-[var(--footer-gap,16px)] border-t border-neutral-200 dark:border-neutral-800">
+            <div className="flex items-center justify-end gap-[var(--s3,12px)] pt-[var(--footer-gap,16px)] border-t border-[var(--atr-divider)]">
               <button
                 type="button"
                 onClick={onClose}

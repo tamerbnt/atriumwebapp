@@ -981,11 +981,11 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="relative w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-[#1A1A1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#26262A]"
+          className="relative w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-[#1A1A1A] [--sq-stroke:var(--sq-stroke-pop)]"
         >
           <div className="p-[var(--s6)] flex flex-col gap-[var(--s4)] overflow-y-auto max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-start justify-between gap-[var(--s4)] pb-[var(--s4)] border-b border-[#E6DED6] dark:border-[#3A3734]">
+        <div className="flex items-start justify-between gap-[var(--s4)] pb-[var(--s4)] border-b border-[var(--atr-divider)]">
           <div className="flex flex-col gap-[var(--s1)]">
             <h3
               id="member-modal-title"
@@ -1060,7 +1060,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                     className={`relative bg-white dark:bg-[#262422] transition-colors ${
                       errors.fullName
                         ? '[--sq-stroke:#B8321C]'
-                        : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#C9441F]'
+                        : '[--sq-stroke:var(--sq-stroke-ctl)] focus-within:[--sq-stroke:#C9441F]'
                     }`}
                   >
                     <input
@@ -1133,7 +1133,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                     className={`relative bg-white dark:bg-[#262422] transition-colors ${
                       errors.email
                         ? '[--sq-stroke:#B8321C]'
-                        : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#C9441F]'
+                        : '[--sq-stroke:var(--sq-stroke-ctl)] focus-within:[--sq-stroke:#C9441F]'
                     }`}
                   >
                     <input
@@ -1237,7 +1237,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             </div>
 
             {/* Section 2: Membership Plan */}
-            <div className="flex flex-col gap-[var(--s3)] pt-[var(--s3)] border-t border-[#E6DED6] dark:border-[#3A3734]">
+            <div className="flex flex-col gap-[var(--s3)] pt-[var(--s3)] border-t border-[var(--atr-divider)]">
               <h4 className="t-small font-semibold text-[var(--text-2)]">
                 {t('member_section_membership', language)}
               </h4>
@@ -1287,7 +1287,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             </div>
 
             {/* Section 3: Emergency & Notes */}
-            <div className="flex flex-col gap-[var(--s3)] pt-[var(--s3)] border-t border-[#E6DED6] dark:border-[#3A3734]">
+            <div className="flex flex-col gap-[var(--s3)] pt-[var(--s3)] border-t border-[var(--atr-divider)]">
               <h4 className="t-small font-semibold text-[var(--text-2)]">
                 {t('member_section_emergency', language)}
               </h4>
@@ -1343,7 +1343,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="relative bg-white dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#C9441F]"
+                  className="relative bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-ctl)] focus-within:[--sq-stroke:#C9441F]"
                 >
                   <textarea
                     rows={2}
@@ -1360,7 +1360,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
             </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-[var(--s3)] pt-[var(--s3)] border-t border-[#E6DED6] dark:border-[#3A3734]">
+          <div className="flex items-center justify-end gap-[var(--s3)] pt-[var(--s3)] border-t border-[var(--atr-divider)]">
             <Button
               type="button"
               tone="soft"

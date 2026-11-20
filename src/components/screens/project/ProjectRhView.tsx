@@ -55,6 +55,7 @@ import {
   KineticRowFanAction,
   KineticDetailAction,
   KineticStatusVariant,
+  ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -880,6 +881,9 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 
       {activeTab === 'dossier' && (
         <ScreenPod>
+          <div className="flex items-center justify-end px-1">
+            <ListAdvancedMenuButton language={language} />
+          </div>
           <div
             data-sq="card"
             data-sq-border="solid"
@@ -1063,6 +1067,12 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 
       {activeTab === 'portal' && (
         <ScreenPod>
+          <div className="flex items-center justify-between gap-3 px-1">
+            <h2 className="t-pod text-[var(--text-1)] dark:text-white">
+              {t('pm_rh_title_portal')}
+            </h2>
+            <ListAdvancedMenuButton language={language} />
+          </div>
           <MobilePhoneSimulator
             title={t('pm_rh_title_portal')}
             subtitle={t('pm_rh_portal_sub')}
@@ -1212,13 +1222,16 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             data-sq-border="solid"
             className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-2xl mx-auto space-y-6"
           >
-            <div>
-              <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
-                Saisie Express Agence
-              </span>
-              <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
-                Enregistrement Direct d'un Candidat Présent en Agence
-              </h2>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
+                  Saisie Express Agence
+                </span>
+                <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
+                  Enregistrement Direct d&apos;un Candidat Présent en Agence
+                </h2>
+              </div>
+              <ListAdvancedMenuButton language={language} />
             </div>
             <form onSubmit={(e) => handleCreateTalent(e, 'walkin')} className="space-y-4">
               <div className="space-y-3">

@@ -616,7 +616,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-[var(--s2,8px)] flex items-center justify-end gap-[var(--s3,12px)] border-t border-neutral-200 dark:border-neutral-800">
+        <div className="pt-[var(--s2,8px)] flex items-center justify-end gap-[var(--s3,12px)] border-t border-[var(--atr-divider)]">
           <Button
             type="button"
             tone="soft"

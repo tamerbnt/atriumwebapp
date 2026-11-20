@@ -63,7 +63,7 @@
   position: relative;
   margin-top: var(--top-to-container, 16px);
   background: var(--atr-card);
-  --sq-stroke: var(--atr-line);
+  --sq-stroke: var(--sq-stroke-app, var(--atr-line));
   will-change: transform;
 }
 .mainInner {

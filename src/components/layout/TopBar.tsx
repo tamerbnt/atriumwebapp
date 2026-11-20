@@ -112,7 +112,7 @@ const TopBarTimerWidget: React.FC<{ isFreelance: boolean; language: string }> = 
     if (!activeTimer.isRunning && !isFreelance) return null;
 
     return (
-      <div className="flex items-center h-[var(--top-ctl-h,40px)] gap-[var(--s2,8px)] px-[var(--s3,12px)] rounded-full bg-[#F3EDE7]/90 dark:bg-neutral-800/90 border border-[#E6DED6] dark:border-neutral-700/70 t-small shadow-2xs">
+      <div className="flex items-center h-[var(--top-ctl-h,40px)] gap-[var(--s2,8px)] px-[var(--s3,12px)] rounded-full bg-[#F3EDE7]/90 dark:bg-neutral-800/90 border border-black/[0.07] dark:border-white/[0.11] t-small shadow-2xs">
         {activeTimer.isRunning ? (
           <>
             <span className={`w-[var(--s2,8px)] h-[var(--s2,8px)] rounded-full ${activeTimer.isPaused ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
@@ -127,7 +127,7 @@ const TopBarTimerWidget: React.FC<{ isFreelance: boolean; language: string }> = 
             <span className="t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)] max-w-[120px] truncate hidden sm:inline">
               {activeTimer.clientName}
             </span>
-            <div className="flex items-center gap-[var(--s1,4px)] ps-[var(--s2,8px)] border-s border-neutral-300 dark:border-neutral-700">
+            <div className="flex items-center gap-[var(--s1,4px)] ps-[var(--s2,8px)] border-s border-[var(--atr-divider)]">
               {activeTimer.isPaused ? (
                 <button
                   type="button"
@@ -364,7 +364,7 @@ export const TopBar: React.FC<TopBarProps> = ({
     return (
       <nav
         aria-label="Breadcrumb"
-        className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--top-ctl-h,40px)] px-[var(--s2,8px)] rounded-full bg-[#F3EDE7]/85 dark:bg-neutral-800/80 border border-[#E6DED6]/90 dark:border-neutral-700/65 shadow-2xs max-w-full min-w-0"
+        className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--top-ctl-h,40px)] px-[var(--s2,8px)] rounded-full bg-[#F3EDE7]/85 dark:bg-neutral-800/80 border border-black/[0.07] dark:border-white/[0.10] shadow-2xs max-w-full min-w-0"
       >
         {nodes.map((node, idx) => {
           const isLast = idx === nodes.length - 1;
@@ -965,7 +965,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 activeScreen === 'chart_catalog' ? 'dashboard' : 'chart_catalog'
               )
             }
-            className="!rounded-full !px-[var(--btn-px,16px)] !h-[var(--top-ctl-h,40px)] border border-[#E6DED6] dark:border-neutral-700/70 t-btn cursor-pointer hidden sm:inline-flex items-center gap-[var(--btn-icon-gap,8px)]"
+            className="!rounded-full !px-[var(--btn-px,16px)] !h-[var(--top-ctl-h,40px)] border border-black/[0.07] dark:border-white/[0.11] t-btn cursor-pointer hidden sm:inline-flex items-center gap-[var(--btn-icon-gap,8px)]"
             title="Phase 1 Dashboard Component Catalog (Dev only)"
             aria-label="Toggle dashboard component catalog"
           >
@@ -1112,8 +1112,8 @@ export const TopBar: React.FC<TopBarProps> = ({
                 tone="soft"
                 className={`!rounded-full !ps-[var(--s1,4px)] !pe-[var(--s3,12px)] !py-[var(--s1,4px)] !h-[var(--top-ctl-h,40px)] !max-h-[var(--top-ctl-h,40px)] gap-[var(--top-gap,8px)] border cursor-pointer select-none ${
                   open
-                    ? '!border-[#D4C8BC] dark:!border-neutral-500 shadow-xs'
-                    : 'border-[#E6DED6] dark:border-neutral-700/70'
+                    ? '!border-black/[0.14] dark:!border-white/[0.22] shadow-xs'
+                    : 'border-black/[0.07] dark:border-white/[0.11]'
                 }`}
                 aria-label={`Operator: ${currentUser.fullName} (${currentUser.role})`}
               >

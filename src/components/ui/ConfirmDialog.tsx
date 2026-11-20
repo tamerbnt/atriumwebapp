@@ -88,7 +88,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           data-sq="panel"
           data-sq-border="solid"
           style={{ contain: 'layout paint' }}
-          className="relative w-full overflow-hidden bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#26262A] transform-gpu animate-in fade-in zoom-in-95 duration-150 p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)]"
+          className="relative w-full overflow-hidden bg-white dark:bg-[#18181B] [--sq-stroke:var(--sq-stroke-pop)] transform-gpu animate-in fade-in zoom-in-95 duration-150 p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)]"
         >
           <div className="flex items-start gap-[var(--s4,16px)]">
             <div
@@ -117,7 +117,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             </button>
           </div>
 
-          <div className="flex items-center justify-end gap-[var(--s3,12px)] pt-[var(--s4,16px)] border-t border-neutral-100 dark:border-neutral-800/80">
+          <div className="flex items-center justify-end gap-[var(--s3,12px)] pt-[var(--s4,16px)] border-t border-[var(--atr-divider)]">
             <AtriumButton
               type="button"
               variant="secondary"

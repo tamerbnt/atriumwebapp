@@ -32,6 +32,7 @@ import {
   KineticRowData,
   KineticRowFanAction,
   KineticDetailAction,
+  ListAdvancedMenuButton,
   extractInitials,
   computeInitialsColor,
 } from '../../ui/kinetic';
@@ -279,12 +280,17 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
           aria-label="Staff History Mode"
         />
 
-        <div className="t-label text-[var(--text-2)] dark:text-white/75 px-[var(--s2,8px)]">
-          {historyMode === 'salaires'
-            ? isAr ? 'أرشيف الرواتب' : isEn ? 'Payroll archive' : 'Archives paie'
-            : historyMode === 'pointages'
-            ? isAr ? 'سجل الحضور' : isEn ? 'Attendance logs' : 'Journal pointages'
-            : isAr ? 'سجل الإلغاءات' : isEn ? 'Staff undo log' : 'Annulations RH'}
+        <div className="flex items-center gap-2 px-[var(--s2,8px)]">
+          <div className="t-label text-[var(--text-2)] dark:text-white/75">
+            {historyMode === 'salaires'
+              ? isAr ? 'أرشيف الرواتب' : isEn ? 'Payroll archive' : 'Archives paie'
+              : historyMode === 'pointages'
+              ? isAr ? 'سجل الحضور' : isEn ? 'Attendance logs' : 'Journal pointages'
+              : isAr ? 'سجل الإلغاءات' : isEn ? 'Staff undo log' : 'Annulations RH'}
+          </div>
+          {historyMode !== 'pointages' && (
+            <ListAdvancedMenuButton language={language} />
+          )}
         </div>
         </div>
       </div>
@@ -324,11 +330,10 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                 <div key={run.id} className="sq-elev-card">
                   <div
                     data-sq="panel"
-                    style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
                     className="bg-white dark:bg-[#1C1B1A] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]"
                   >
                     <div
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)] border-b border-[#E6DED6] dark:border-[#3A3734]"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)] border-b border-[var(--atr-divider)]"
                       style={{ padding: 'var(--pod-head-pad, 4px 12px 12px)' }}
                     >
                       <div className="flex items-center gap-[var(--card-head-gap,12px)]">

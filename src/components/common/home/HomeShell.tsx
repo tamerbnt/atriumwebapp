@@ -29,15 +29,15 @@ export function useHomeRole(): string {
 
 /** Warm Walnut/Sandstone Pod surface for Hero Pulse column */
 export const HOME_POD_PULSE_CLASS =
-  '!bg-[#F2E6DA] dark:!bg-[#191512] [--sq-stroke:#DFCFC0] dark:[--sq-stroke:#382E25] [&>div:first-child>div:first-child>h2]:!text-[#2C1E15] dark:[&>div:first-child>div:first-child>h2]:!text-white';
+  '!bg-[#F2E6DA] dark:!bg-[#191512] [--sq-stroke:rgba(107,65,34,0.09)] dark:[--sq-stroke:var(--sq-stroke-pod)] [&>div:first-child>div:first-child>h2]:!text-[#2C1E15] dark:[&>div:first-child>div:first-child>h2]:!text-white';
 
 /** Soft Complementary Lavender-Linen Pod surface for Priority & Modules Pods */
 export const HOME_POD_DIRECTORY_CLASS =
-  '!bg-[#EFEBF7] dark:!bg-[#171420] [--sq-stroke:#DDD4EC] dark:[--sq-stroke:#312A44] [&>div:first-child>div:first-child>h2]:!text-[#241B38] dark:[&>div:first-child>div:first-child>h2]:!text-white';
+  '!bg-[#EFEBF7] dark:!bg-[#171420] [--sq-stroke:rgba(91,65,161,0.10)] dark:[--sq-stroke:var(--sq-stroke-pod)] [&>div:first-child>div:first-child>h2]:!text-[#241B38] dark:[&>div:first-child>div:first-child>h2]:!text-white';
 
 /** Neutral Sandstone-Linen Pod surface for Live Daily Historique */
 export const HOME_POD_HISTORIQUE_CLASS =
-  '!bg-[#FAF6F1] dark:!bg-[#141312] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#2E2B28] [&>div:first-child>div:first-child>h2]:!text-[#241913] dark:[&>div:first-child>div:first-child>h2]:!text-white';
+  '!bg-[#FAF6F1] dark:!bg-[#141312] [--sq-stroke:var(--sq-stroke-pod)] [&>div:first-child>div:first-child>h2]:!text-[#241913] dark:[&>div:first-child>div:first-child>h2]:!text-white';
 
 export interface HomeShellProps {
   roleKey?: string;
@@ -137,7 +137,7 @@ export const HomeShell: React.FC<HomeShellProps> = ({
               aria-hidden="true"
               data-sq="tile-lg"
               data-sq-border="solid"
-              className="relative w-[var(--tile-lg,48px)] h-[var(--tile-lg,48px)] bg-gradient-to-br from-[#F2E3D5] to-[#EAE3F7] dark:from-[#2B2019] dark:to-[#221C34] border border-[#DDD0C4] dark:border-[#3D3350] [--sq-stroke:#DDD0C4] dark:[--sq-stroke:#3D3350] flex items-center justify-center text-[#5B41A1] dark:text-[#C4B5FD] shrink-0"
+              className="relative w-[var(--tile-lg,48px)] h-[var(--tile-lg,48px)] bg-gradient-to-br from-[#F2E3D5] to-[#EAE3F7] dark:from-[#2B2019] dark:to-[#221C34] border border-black/[0.06] dark:border-white/[0.1] flex items-center justify-center text-[#5B41A1] dark:text-[#C4B5FD] shrink-0"
             >
               <Compass size={24} strokeWidth={2} />
             </div>
@@ -186,7 +186,7 @@ export const HomeShell: React.FC<HomeShellProps> = ({
                     variant="outline"
                     size="md"
                     icon={<Plus size={16} strokeWidth={1.5} />}
-                    className="whitespace-nowrap shrink-0 [--sq-stroke:#D8C9BC] dark:[--sq-stroke:#3A312C] hover:[--sq-stroke:#6B4122] dark:hover:[--sq-stroke:#D9A97E]"
+                    className="whitespace-nowrap shrink-0"
                   >
                     <span className="inline-flex items-center gap-[var(--btn-icon-gap,8px)] whitespace-nowrap">
                       {strings.quickActions}

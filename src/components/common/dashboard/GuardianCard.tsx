@@ -53,7 +53,7 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
         data-surface="dark"
         data-sq="card"
         data-sq-border="solid"
-        className="bg-[#1F1D1B] rounded-[var(--r-card,16px)] p-[var(--card-pad,20px)] card-opt [--sq-stroke:rgba(255,255,255,0.08)] text-white relative overflow-hidden flex flex-col justify-between gap-[var(--card-body-gap,20px)] h-full"
+        className="bg-[#1F1D1B] rounded-[var(--r-card,16px)] p-[var(--card-pad,20px)] card-opt [--sq-stroke:var(--sq-stroke-obsidian)] text-white relative overflow-hidden flex flex-col justify-between gap-[var(--card-body-gap,20px)] h-full"
       >
         {/* Top row: Title and Toggle */}
         <div className="flex items-center justify-between gap-[var(--card-head-gap,12px)]">
@@ -61,7 +61,7 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-white/[0.08] [--sq-stroke:rgba(255,255,255,0.08)] text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0"
+              className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-white/[0.08] [--sq-stroke:var(--sq-stroke-ctl)] text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0"
             >
               <Shield size={16} strokeWidth={1.5} />
             </div>

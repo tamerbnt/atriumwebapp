@@ -978,7 +978,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-4 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] t-cap space-y-1"
+              className="p-4 bg-[#FBF8F5] dark:bg-[#262422] t-cap space-y-1"
             >
               <div>
                 <strong className="text-black dark:text-white">

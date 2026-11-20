@@ -20,11 +20,11 @@ export const StatTile: React.FC<StatTileProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`sq-elev-card ${className}`}>
+    <div className={`sq-elev-card-hover ${className}`}>
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="relative p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] flex flex-col gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] transition-colors duration-200 hover:[--sq-stroke:#D5DFE3] dark:hover:[--sq-stroke:#525252]"
+        className="relative p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 hover:bg-[#FCF9F6] dark:hover:bg-neutral-800/95 flex flex-col gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] transition-colors duration-200"
       >
         <div className="flex items-center justify-between gap-[var(--s3,12px)]">
           <span className="t-small text-[var(--text-2)] dark:text-[var(--text-dark-2)]">

@@ -62,6 +62,7 @@ import {
   KineticRowFanAction,
   KineticDetailAction,
   KineticStatusVariant,
+  ListAdvancedMenuButton,
   buildBranchesByIdMap,
   resolveRecordBranch,
   downloadCsvSafe,
@@ -1113,44 +1114,49 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   : 'Matrice de Déploiement & Pipeline Opérationnel'}
               </h2>
             </div>
-            <LiveSegmentedControl
-              size="sm"
-              value={activeTab}
-              onValueChange={(val) => setActiveTab(val)}
-              options={[
-                {
-                  value: 'portfolio',
-                  label: isAr ? 'المشاريع' : isEn ? 'Projects' : 'Pilotage',
-                  tooltip: isAr ? 'متابعة المشاريع والتنفيذ' : isEn ? 'Portfolio oversight' : 'Pilotage du portefeuille',
-                  count: pmProjects.length,
-                },
-                {
-                  value: 'catalog',
-                  label: isAr ? 'الكتالوج' : isEn ? 'Catalog' : 'Catalogue',
-                  tooltip: isAr ? 'كتالوج POSM والدعائم' : isEn ? 'POSM & print catalog' : 'Catalogue POSM & PLV',
-                  count: pmCollateralCatalog.length,
-                },
-                {
-                  value: 'orders',
-                  label: isAr ? 'الطباعة' : isEn ? 'Orders' : 'Commandes',
-                  tooltip: isAr ? 'طلبات الطباعة' : isEn ? 'Print orders' : 'Commandes Print',
-                  count: pmPrintOrders.length,
-                },
-                {
-                  value: 'bat',
-                  label: isAr ? 'الاعتماد' : isEn ? 'Proofs' : 'BAT',
-                  tooltip: isAr ? 'مراجعة BAT' : isEn ? 'Artwork proofs review' : 'Revue BAT',
-                  count: pmBatDeliverables.length,
-                },
-                {
-                  value: 'expenses',
-                  label: isAr ? 'المصاريف' : isEn ? 'Expenses' : 'Dépenses',
-                  tooltip: isAr ? 'مصاريف المشروع' : isEn ? 'Project expenses' : 'Dépenses terrain',
-                  count: pmExpenses.length,
-                },
-              ]}
-              aria-label="Project Chef de Projet Stages Filter"
-            />
+            <div className="flex items-center gap-2 shrink-0">
+              <LiveSegmentedControl
+                size="sm"
+                value={activeTab}
+                onValueChange={(val) => setActiveTab(val)}
+                options={[
+                  {
+                    value: 'portfolio',
+                    label: isAr ? 'المشاريع' : isEn ? 'Projects' : 'Pilotage',
+                    tooltip: isAr ? 'متابعة المشاريع والتنفيذ' : isEn ? 'Portfolio oversight' : 'Pilotage du portefeuille',
+                    count: pmProjects.length,
+                  },
+                  {
+                    value: 'catalog',
+                    label: isAr ? 'الكتالوج' : isEn ? 'Catalog' : 'Catalogue',
+                    tooltip: isAr ? 'كتالوج POSM والدعائم' : isEn ? 'POSM & print catalog' : 'Catalogue POSM & PLV',
+                    count: pmCollateralCatalog.length,
+                  },
+                  {
+                    value: 'orders',
+                    label: isAr ? 'الطباعة' : isEn ? 'Orders' : 'Commandes',
+                    tooltip: isAr ? 'طلبات الطباعة' : isEn ? 'Print orders' : 'Commandes Print',
+                    count: pmPrintOrders.length,
+                  },
+                  {
+                    value: 'bat',
+                    label: isAr ? 'الاعتماد' : isEn ? 'Proofs' : 'BAT',
+                    tooltip: isAr ? 'مراجعة BAT' : isEn ? 'Artwork proofs review' : 'Revue BAT',
+                    count: pmBatDeliverables.length,
+                  },
+                  {
+                    value: 'expenses',
+                    label: isAr ? 'المصاريف' : isEn ? 'Expenses' : 'Dépenses',
+                    tooltip: isAr ? 'مصاريف المشروع' : isEn ? 'Project expenses' : 'Dépenses terrain',
+                    count: pmExpenses.length,
+                  },
+                ]}
+                aria-label="Project Chef de Projet Stages Filter"
+              />
+              {activeTab === 'portfolio' && (
+                <ListAdvancedMenuButton language={language} />
+              )}
+            </div>
           </div>
 
           {activeTab === 'portfolio' && (

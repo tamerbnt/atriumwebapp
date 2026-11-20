@@ -26,7 +26,7 @@ export const HomeKioskCard: React.FC<HomeKioskCardProps> = ({
       data-sq="card"
       data-sq-border="solid"
       data-surface="dark"
-      className={`flex-1 bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] p-[var(--card-pad,20px)] card-opt border border-[#4D382B]/85 [--sq-stroke:rgba(77,56,43,0.85)] text-white relative overflow-hidden flex flex-col justify-between group/kiosk ${className}`}
+      className={`flex-1 sq-elev-card bg-gradient-to-br from-[#2B1F19] via-[#1F1713] to-[#161210] p-[var(--card-pad,20px)] card-opt border-0 [--sq-stroke:var(--sq-stroke-obsidian)] text-white relative overflow-hidden flex flex-col justify-between group/kiosk ${className}`}
       data-testid={`home-kiosk-${config.id}`}
     >
       {/* Subtle architectural sparkline backdrop in Lavender + Terracotta */}
@@ -59,7 +59,7 @@ export const HomeKioskCard: React.FC<HomeKioskCardProps> = ({
             <span
               data-sq="tile"
               data-sq-border="solid"
-              className="relative w-[var(--tile-md,40px)] h-[var(--tile-md,40px)] bg-gradient-to-br from-[#FB923C]/20 to-[#A78BFA]/20 border border-white/[0.14] [--sq-stroke:rgba(255,255,255,0.14)] text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0"
+              className="relative w-[var(--tile-md,40px)] h-[var(--tile-md,40px)] bg-gradient-to-br from-[#FB923C]/20 to-[#A78BFA]/20 border-0 [--sq-stroke:var(--sq-stroke-ctl)] text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0"
             >
               {config.icon}
             </span>
