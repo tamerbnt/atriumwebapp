@@ -1013,11 +1013,39 @@ export interface ToastNotification {
   syncStatus?: ToastSyncStatus;
   table?: string;
   category?: BusinessCategory;
+  hasUndo?: boolean;
+  undoLabel?: string;
+  onUndo?: () => Promise<void> | void;
+  isExiting?: boolean;
+  isPaused?: boolean;
+  facilityAccent?: string;
   action?: {
     label: string;
-    onClick: () => void;
+    onClick: () => Promise<void> | void;
   };
   createdAt: number;
+}
+
+export type UndoOperationType = 'create' | 'edit' | 'status' | 'delete' | 'bulk';
+export type UndoVerticalKey = BusinessCategory | 'staff' | 'settings';
+export type UndoEntryStatus = 'available' | 'undone' | 'error';
+
+export interface UndoHistoryEntry {
+  id: string;
+  vertical: UndoVerticalKey;
+  businessId: string;
+  branchId: string;
+  operationType: UndoOperationType;
+  summary: string;
+  entityLabel?: string;
+  affectedCount?: number;
+  status: UndoEntryStatus;
+  createdAt: number;
+  undoneAt?: number;
+  canRedo: boolean;
+  lastError?: string;
+  undo: () => Promise<void> | void;
+  redo?: () => Promise<void> | void;
 }
 
 export type NotificationCategory = 'alert' | 'activity' | 'system';

@@ -13,6 +13,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { Sale, ParkedOrder } from '../../../types/index';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -650,12 +651,6 @@ export const PosOrdersView: React.FC = () => {
   const handleConfirmRefund = () => {
     if (!selectedSaleForRefund) return;
     refundSale(selectedSaleForRefund.id, refundReason);
-    showToast({
-      type: 'warning',
-      title: isAr ? 'تم استرجاع الوصل بنجاح' : 'Vente Remboursée (Avoir)',
-      message: `Vente #${selectedSaleForRefund.id.slice(-6).toUpperCase()} remboursée. Motif: ${refundReason}`,
-      category: 'pos_inventory',
-    });
     setSelectedSaleForRefund(null);
   };
 
@@ -955,11 +950,6 @@ export const PosOrdersView: React.FC = () => {
             onBulkDelete={(ids) => {
               batchDeleteSales(Array.from(ids));
               setSelectedSaleIds(new Set<string>());
-              showToast({
-                type: 'info',
-                title: 'Tickets archivés',
-                message: `${ids.size} tickets retirés.`,
-              });
             }}
             pinnedIds={pinnedSaleIds}
             onPinToggle={(idOrItem) => {
@@ -1076,7 +1066,22 @@ export const PosOrdersView: React.FC = () => {
               variant: 'primary',
             }}
             onBulkDelete={(ids) => {
-              ids.forEach((id) => deleteParkedOrder(id));
+              if (ids.size === 0) return;
+              runUndoBatch(
+                {
+                  category: 'pos_inventory',
+                  operationType: 'bulk',
+                  label: isAr
+                    ? `حذف تذاكر معلقة (${ids.size})`
+                    : isEn
+                    ? `Delete parked orders (${ids.size})`
+                    : `Suppression tickets en attente (${ids.size})`,
+                  entityType: 'parkedOrder',
+                },
+                () => {
+                  ids.forEach((id) => deleteParkedOrder(id));
+                }
+              );
               setSelectedParkedIds(new Set<string>());
             }}
             pinnedIds={pinnedParkedIds}

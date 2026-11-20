@@ -9,7 +9,8 @@ import {
   Trash2,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumStore } from '../../../services/store';
+import { registerUndoEntry, cloneSnapshot } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -236,23 +237,61 @@ export const PosFinanceView: React.FC = () => {
       createdAt: new Date().toISOString(),
     };
 
-    setExpenses([newExp, ...expenses]);
+    const prevExpenses = cloneSnapshot(expenses);
+    const nextExpenses = [newExp, ...prevExpenses];
+    setExpenses(nextExpenses);
+    registerUndoEntry({
+      category: 'pos_inventory',
+      operationType: 'create',
+      label: isAr
+        ? `صرف صندوق: ${newExp.payee}`
+        : isEn
+        ? `Petty cash payout: ${newExp.payee}`
+        : `Sortie de caisse : ${newExp.payee}`,
+      entityType: 'posExpense',
+      entityId: newExp.id,
+      branchId: currentBranch.id,
+      undo: () => {
+        setExpenses(cloneSnapshot(prevExpenses));
+        setInspectingExpense((curr) => (curr?.id === newExp.id ? null : curr));
+      },
+      redo: () => {
+        setExpenses(cloneSnapshot(nextExpenses));
+      },
+    });
+
     setExpPayee('');
     setExpAmount(1500);
     setExpNotes('');
     setIsExpenseModalOpen(false);
-
-    showToast({
-      type: 'info',
-      title: isAr ? 'تم تسجيل خروج نقدي من الصندوق' : 'Sortie de Caisse Enregistrée',
-      message: `${newExp.payee} · ${formatMoney(newExp.amount)} (${newExp.category})`,
-      category: 'pos_inventory',
-    });
   };
 
   const handleDeleteExpense = (id: string) => {
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
+    const target = expenses.find((e) => e.id === id);
+    if (!target) return;
+    const prevExpenses = cloneSnapshot(expenses);
+    const nextExpenses = prevExpenses.filter((e) => e.id !== id);
+    setExpenses(nextExpenses);
     if (inspectingExpense?.id === id) setInspectingExpense(null);
+    registerUndoEntry({
+      category: 'pos_inventory',
+      operationType: 'delete',
+      label: isAr
+        ? `حذف صرف: ${target.payee}`
+        : isEn
+        ? `Delete payout: ${target.payee}`
+        : `Suppression sortie : ${target.payee}`,
+      entityType: 'posExpense',
+      entityId: id,
+      branchId: currentBranch.id,
+      undo: () => {
+        setExpenses(cloneSnapshot(prevExpenses));
+      },
+      redo: () => {
+        setExpenses(cloneSnapshot(nextExpenses));
+        setInspectingExpense((curr) => (curr?.id === id ? null : curr));
+      },
+    });
   };
 
   const handleResetFilters = useCallback(() => {

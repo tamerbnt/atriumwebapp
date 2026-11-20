@@ -4,6 +4,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { registerUndoEntry } from '../../../services/undoEngine';
 import { PMTalent } from '../../../types/index';
 import { ALGERIAN_WILAYAS, validateCcpAccount } from '../../../utils/algerianPtt';
 import { MobilePhoneSimulator } from './MobilePhoneSimulator';
@@ -392,7 +393,6 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
           : 'Pré-inscription portail en ligne.',
     });
     setFormSubmittedSuccess(true);
-    showToast('Profil enrôlé et validé CCP', 'success');
     setTimeout(() => {
       setFormSubmittedSuccess(false);
       setFullName('');
@@ -577,7 +577,6 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         onClick: () => {
           const next = talent.status === 'active' ? 'paused' : 'active';
           updatePmTalentStatus(talent.id, next);
-          showToast(`${talent.fullName} : ${next === 'active' ? 'Actif' : 'Suspendu'}`, 'info');
         },
       },
       {
@@ -609,7 +608,6 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         onClick: () => {
           const next = talent.status === 'active' ? 'paused' : 'active';
           updatePmTalentStatus(talent.id, next);
-          showToast(`${talent.fullName} : ${next === 'active' ? 'Actif' : 'Suspendu'}`, 'info');
         },
       },
     ],
@@ -805,7 +803,6 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 onClick: (ids) => {
                   batchUpdatePmTalentStatus(Array.from(ids), 'active');
                   setSelectedTalentIds(new Set<string>());
-                  showToast('Profils activés', 'success');
                 },
               }}
               onBulkDelete={(ids) => {
@@ -814,7 +811,6 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 if (activeInspectedTalent && ids.has(activeInspectedTalent.id)) {
                   setInspectedTalent(null);
                 }
-                showToast('Profils supprimés', 'success');
               }}
               getRowMeta={getRowMeta}
               getFanActions={getFanActions}
@@ -1407,7 +1403,6 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                       onClick: () => {
                         const next = talent.status === 'active' ? 'paused' : 'active';
                         updatePmTalentStatus(talent.id, next);
-                        showToast(`${talent.fullName} : ${next === 'active' ? 'Actif' : 'Suspendu'}`, 'info');
                       },
                     },
                     {
@@ -1452,8 +1447,30 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 <InspectorNotesField
                   value={notesByTalent[talent.id] ?? talent.hrNotes ?? ''}
                   onSave={(next) => {
+                    const hasPrev = Object.prototype.hasOwnProperty.call(notesByTalent, talent.id);
+                    const prevVal = notesByTalent[talent.id];
                     setNotesByTalent((prev) => ({ ...prev, [talent.id]: next }));
-                    showToast('Notes RH enregistrées', 'success');
+                    registerUndoEntry({
+                      category: 'project_management',
+                      operationType: 'edit',
+                      label: `Note RH : ${talent.fullName}`,
+                      entityType: 'pmTalent',
+                      entityId: talent.id,
+                      branchId: talent.facilityId || currentBranch?.id,
+                      undo: () => {
+                        setNotesByTalent((prev) => {
+                          if (!hasPrev) {
+                            const copy = { ...prev };
+                            delete copy[talent.id];
+                            return copy;
+                          }
+                          return { ...prev, [talent.id]: prevVal };
+                        });
+                      },
+                      redo: () => {
+                        setNotesByTalent((prev) => ({ ...prev, [talent.id]: next }));
+                      },
+                    });
                   }}
                 />
               </InspectorSection>

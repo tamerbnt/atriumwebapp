@@ -13,8 +13,8 @@ import {
   shallowEqualObjects,
   selectCurrentAppointmentsFromState,
   selectCurrentBranchFromState,
-  showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { StylistPayout } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
@@ -490,10 +490,23 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
           label: isAr ? 'اعتماد العمولات' : isEn ? 'Approve Pending' : 'Valider les Commissions',
           icon: <CheckCircle2 size={15} />,
           onClick: () => {
-            stylistPayouts
-              .filter((p) => p.status === 'Pending')
-              .forEach((p) => updateStylistPayoutStatus(p.id, 'Approved'));
-            showToast?.({ type: 'success', title: 'Commissions approuvées', message: `${metrics.pendingCount} bordereaux` });
+            const pending = stylistPayouts.filter((p) => p.status === 'Pending');
+            if (pending.length === 0) return;
+            runUndoBatch(
+              {
+                category: 'appointment_service',
+                operationType: 'bulk',
+                label: isAr
+                  ? `اعتماد العمولات (${pending.length})`
+                  : isEn
+                  ? `Approve commissions (${pending.length})`
+                  : `Validation commissions (${pending.length})`,
+                entityType: 'stylistPayout',
+              },
+              () => {
+                pending.forEach((p) => updateStylistPayoutStatus(p.id, 'Approved'));
+              }
+            );
           },
         }}
       />
@@ -568,9 +581,23 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
             label: isAr ? 'دفع الكل' : isEn ? 'Mark Paid' : 'Régler Sélection',
             icon: <CheckCircle2 size={13} />,
             onClick: (ids) => {
-              ids.forEach((id) => updateStylistPayoutStatus(id, 'Paid', 'BaridiMob'));
+              if (ids.size === 0) return;
+              runUndoBatch(
+                {
+                  category: 'appointment_service',
+                  operationType: 'bulk',
+                  label: isAr
+                    ? `دفع الكشوفات (${ids.size})`
+                    : isEn
+                    ? `Mark payouts paid (${ids.size})`
+                    : `Règlement bordereaux (${ids.size})`,
+                  entityType: 'stylistPayout',
+                },
+                () => {
+                  ids.forEach((id) => updateStylistPayoutStatus(id, 'Paid', 'BaridiMob'));
+                }
+              );
               setSelectedPayoutIds(new Set());
-              showToast?.({ type: 'success', title: 'Bordereaux réglés', message: `${ids.size} paiements` });
             },
             variant: 'primary',
           }}

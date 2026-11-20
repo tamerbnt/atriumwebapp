@@ -12,7 +12,7 @@ import {
   Lock,
   CheckCircle2,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumStore } from '../../../services/store';
 import {
   CategoryFormule,
   CurrencyCode,
@@ -206,13 +206,6 @@ export const SettingsFormulesTab: React.FC = () => {
       } else {
         addMembershipPlan(payload);
       }
-      showToast({
-        type: 'success',
-        title: editingId
-          ? L('Membership Plan Updated', 'Formule mise à jour', 'تم تحديث الباقة')
-          : L('Membership Plan Created', 'Formule créée', 'تم إنشاء الباقة'),
-        message: payload.name,
-      });
     } else if (descriptor.mode === 'salon_services') {
       const payload = {
         name: formName.trim(),
@@ -249,13 +242,6 @@ export const SettingsFormulesTab: React.FC = () => {
       } else {
         addCategoryFormule(payload);
       }
-      showToast({
-        type: 'success',
-        title: editingId
-          ? L('Formule Updated', 'Formule mise à jour', 'تم تحديث الصيغة')
-          : L('Formule Created', 'Formule ajoutée', 'تمت إضافة الصيغة'),
-        message: payload.name,
-      });
     }
 
     setIsModalOpen(false);
@@ -273,13 +259,6 @@ export const SettingsFormulesTab: React.FC = () => {
       });
       return;
     }
-    if (res.success) {
-      showToast({
-        type: 'info',
-        title: L('Formule Deleted', 'Formule supprimée', 'تم حذف الباقة'),
-        message: plan.name,
-      });
-    }
   };
 
   const handleDeleteFormule = (frm: CategoryFormule) => {
@@ -293,13 +272,6 @@ export const SettingsFormulesTab: React.FC = () => {
       });
       return;
     }
-    if (res.success) {
-      showToast({
-        type: 'info',
-        title: L('Formule Deleted', 'Formule supprimée', 'تم حذف الصيغة'),
-        message: frm.name,
-      });
-    }
   };
 
   const handleConfirmArchiveBlocked = () => {
@@ -309,15 +281,6 @@ export const SettingsFormulesTab: React.FC = () => {
     } else {
       updateCategoryFormule(blockedArchiveTarget.id, { isActive: false });
     }
-    showToast({
-      type: 'success',
-      title: L('Formule Archived', 'Formule archivée', 'تمت أرشفة الصيغة'),
-      message: L(
-        `"${blockedArchiveTarget.name}" deactivated safely while keeping historical records intact.`,
-        `"${blockedArchiveTarget.name}" a été désactivée sans altérer l’historique.`,
-        `تم تعطيل "${blockedArchiveTarget.name}" مع الحفاظ على السجلات السابقة.`
-      ),
-    });
     setBlockedArchiveTarget(null);
   };
 

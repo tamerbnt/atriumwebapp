@@ -126,10 +126,6 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
       createdAt: matterToEdit?.createdAt || new Date().toISOString(),
     });
 
-    showToast(
-      isAr ? 'تم فتح وتوثيق ملف القضية بنجاح' : 'Dossier juridique ouvert avec succès',
-      'success'
-    );
     onClose();
   };
 

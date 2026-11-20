@@ -373,11 +373,6 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
     addPrescription(newRx);
     setInspectedRx(newRx);
     setIsComposerOpen(false);
-    showToast({
-      type: 'success',
-      title: 'Ordonnance Chifa',
-      message: 'Nouvelle ordonnance certifiée Chifa générée',
-    });
   };
 
   const handleExportCSV = useCallback(() => {
@@ -869,11 +864,6 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   icon: <CheckCircle2 size={13} />,
                   onClick: () => {
                     depleteForAct(act.code);
-                    showToast({
-                      type: 'success',
-                      title: 'Consommables NGAP',
-                      message: `Consommables déduits avec succès pour acte [${act.code}]`,
-                    });
                   },
                 },
                 {
@@ -890,11 +880,6 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   icon: <CheckCircle2 size={14} />,
                   onClick: () => {
                     depleteForAct(act.code);
-                    showToast({
-                      type: 'success',
-                      title: 'Consommables NGAP',
-                      message: `Consommables déduits avec succès pour acte [${act.code}]`,
-                    });
                   },
                 },
                 {
@@ -1379,11 +1364,6 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
           onSaveConfig={(docId, updated) => {
             updateDoctorConfig(docId, updated);
             setIsPersonalizerOpen(false);
-            showToast({
-              type: 'success',
-              title: 'Studio Ordonnance',
-              message: "Paramètres de l'ordonnance enregistrés",
-            });
           }}
           onClose={() => setIsPersonalizerOpen(false)}
         />

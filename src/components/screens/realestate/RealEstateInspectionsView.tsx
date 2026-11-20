@@ -1052,10 +1052,6 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
           properties={properties}
           onSave={(visit) => {
             addVisit(visit);
-            showToast(
-              isAr ? 'تم توثيق وصل المعاينة بنجاح' : 'Bon de visite certifié avec géolocalisation',
-              'success'
-            );
             setIsBonDeVisiteModalOpen(false);
           }}
         />

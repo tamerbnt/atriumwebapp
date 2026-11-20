@@ -31,6 +31,7 @@ import {
   openFastSwitchAction,
   showToast as showToastAction,
 } from '../../../services/store';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { resolveEmptyState } from '../../../atrium/components/EmptyState';
 import { Member } from '../../../types/index';
 import { calculateDaysRemaining, formatMoney, localizeStatus } from '../../../utils/rules';
@@ -721,13 +722,8 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
       const m = membersByIdRef.current.get(String(id));
       if (!m) return;
       deleteMember(m.id);
-      showToast({
-        type: 'info',
-        title: 'Adhérent supprimé',
-        message: `${m.fullName} a été retiré.`,
-      });
     },
-    [deleteMember, showToast]
+    [deleteMember]
   );
 
   const handleRenewRow = useCallback(
@@ -737,13 +733,8 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
       const currentExp = new Date(m.expirationDate || new Date().toISOString());
       const newExp = new Date(currentExp.getTime() + 2592e6).toISOString().split('T')[0];
       updateMember(m.id, { expirationDate: newExp, status: 'Active' });
-      showToast({
-        type: 'success',
-        title: 'Abonnement renouvelé',
-        message: `${m.fullName} prolongé jusqu'au ${newExp}`,
-      });
     },
-    [updateMember, showToast]
+    [updateMember]
   );
 
   const handleToggleStatusRow = useCallback(
@@ -753,15 +744,8 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
       const isBlocked =
         m.status === 'Suspended' || m.status === 'Banned' || Boolean((m as any).isBlocked);
       updateMember(m.id, { status: isBlocked ? 'Active' : 'Suspended' });
-      showToast({
-        type: isBlocked ? 'success' : 'info',
-        title: isBlocked ? 'Badge réactivé' : 'Badge gelé',
-        message: `${m.fullName}: ${
-          isBlocked ? 'Accès rétabli' : 'Accès temporairement suspendu'
-        }`,
-      });
     },
-    [updateMember, showToast]
+    [updateMember]
   );
 
   const handleTogglePinRow = useCallback(
@@ -816,24 +800,14 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
     (m: Member) => {
       deleteMember(m.id);
       closeDetail();
-      showToast({
-        type: 'info',
-        title: 'Adhérent supprimé',
-        message: `${m.fullName} a été supprimé.`,
-      });
     },
-    [deleteMember, closeDetail, showToast]
+    [deleteMember, closeDetail]
   );
   const handleInspectorCheckIn = useCallback(
     (m: Member) => {
       checkInMember(m.id);
-      showToast({
-        type: 'success',
-        title: 'Passage enregistré',
-        message: `Accès autorisé pour ${m.fullName}`,
-      });
     },
-    [checkInMember, showToast]
+    [checkInMember]
   );
   const handleInspectorRenew = useCallback(
     (m: Member) => {
@@ -847,13 +821,8 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
         .toISOString()
         .split('T')[0];
       updateMember(m.id, { expirationDate: newExp, status: 'Active' });
-      showToast({
-        type: 'success',
-        title: 'Abonnement renouvelé',
-        message: `${m.fullName} prolongé jusqu'au ${newExp}`,
-      });
     },
-    [updateMember, showToast]
+    [updateMember]
   );
   const handleInspectorToggleBlock = useCallback(
     (m: Member) => {
@@ -863,13 +832,8 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
         status: isCurrentlyBlocked ? 'Active' : 'Suspended',
         isBlocked: !isCurrentlyBlocked,
       } as any);
-      showToast({
-        type: 'info',
-        title: !isCurrentlyBlocked ? 'Badge bloqué' : 'Badge débloqué',
-        message: `Badge de ${m.fullName} ${!isCurrentlyBlocked ? 'bloqué' : 'débloqué'}.`,
-      });
     },
-    [updateMember, showToast]
+    [updateMember]
   );
   const handleInspectorUpdateNotes = useCallback(
     (id: string, notes: string) => updateMember(id, { notes }),
@@ -883,35 +847,73 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
   const handleBulkClear = useCallback(() => setSelectedMemberIds(new Set()), []);
   const handleBulkRenew = useCallback(() => {
     const ids = selectedMemberIdsRef.current;
-    ids.forEach((id) => {
-      const m = membersByIdRef.current.get(id);
-      if (m) {
-        const currentExp = new Date(m.expirationDate || new Date().toISOString());
-        const newExp = new Date(currentExp.getTime() + 2592e6).toISOString().split('T')[0];
-        updateMember(m.id, { expirationDate: newExp, status: 'Active' });
+    if (ids.size === 0) return;
+    runUndoBatch(
+      {
+        vertical: 'membership_session',
+        operationType: 'bulk',
+        affectedCount: ids.size,
+        toastType: 'success',
+        summary: pickLocalizedText(language, {
+          en: `Renewed ${ids.size} membership(s) (+30d)`,
+          fr: `${ids.size} adhésion(s) renouvelée(s) (+30j)`,
+          ar: `تم تجديد ${ids.size} اشتراكات (+30 يوماً)`,
+        }),
+      },
+      () => {
+        ids.forEach((id) => {
+          const m = membersByIdRef.current.get(id);
+          if (m) {
+            const currentExp = new Date(m.expirationDate || new Date().toISOString());
+            const newExp = new Date(currentExp.getTime() + 2592e6).toISOString().split('T')[0];
+            updateMember(m.id, { expirationDate: newExp, status: 'Active' });
+          }
+        });
       }
-    });
-    showToast({
-      type: 'success',
-      title: 'Renouvellement groupé',
-      message: `${ids.size} adhérents renouvelés.`,
-    });
-  }, [updateMember, showToast]);
+    );
+  }, [updateMember, language]);
   const handleBulkArchive = useCallback(() => {
     const ids = selectedMemberIdsRef.current;
-    ids.forEach((id) => updateMember(id, { status: 'Suspended' }));
+    if (ids.size === 0) return;
+    runUndoBatch(
+      {
+        vertical: 'membership_session',
+        operationType: 'bulk',
+        affectedCount: ids.size,
+        toastType: 'info',
+        summary: pickLocalizedText(language, {
+          en: `Suspended ${ids.size} member(s)`,
+          fr: `${ids.size} adhérent(s) suspendu(s)`,
+          ar: `تم تعليق ${ids.size} مشتركين`,
+        }),
+      },
+      () => {
+        ids.forEach((id) => updateMember(id, { status: 'Suspended' }));
+      }
+    );
     setSelectedMemberIds(new Set());
-    showToast({
-      type: 'info',
-      title: 'Archivage groupé',
-      message: `${ids.size} adhérents archivés.`,
-    });
-  }, [updateMember, showToast]);
+  }, [updateMember, language]);
   const handleBulkDelete = useCallback(() => {
-    selectedMemberIdsRef.current.forEach((id) => deleteMember(id));
+    const ids = selectedMemberIdsRef.current;
+    if (ids.size === 0) return;
+    runUndoBatch(
+      {
+        vertical: 'membership_session',
+        operationType: 'bulk',
+        affectedCount: ids.size,
+        toastType: 'info',
+        summary: pickLocalizedText(language, {
+          en: `Deleted ${ids.size} member(s)`,
+          fr: `${ids.size} adhérent(s) supprimé(s)`,
+          ar: `تم حذف ${ids.size} مشتركين`,
+        }),
+      },
+      () => {
+        ids.forEach((id) => deleteMember(id));
+      }
+    );
     setSelectedMemberIds(new Set());
-    showToast({ type: 'info', title: 'Suppression groupée', message: 'Adhérents supprimés.' });
-  }, [deleteMember, showToast]);
+  }, [deleteMember, language]);
 
   const handleExportCSV = useCallback(() => {
     const list = displayMembersRef.current;
@@ -1305,18 +1307,10 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
           });
           imported++;
         });
-
-        if (imported > 0) {
-          showToast({
-            type: 'success',
-            title: language === 'ar' ? 'تم الاستيراد' : language === 'fr' ? 'Import réussi' : 'Import complete',
-            message: `${imported} ${terminology.members.toLowerCase()}`,
-          });
-        }
       };
       reader.readAsText(file);
     },
-    [plans, addMember, showToast, language, terminology.members]
+    [plans, addMember]
   );
 
   const formattedLastSync = useMemo(() => {

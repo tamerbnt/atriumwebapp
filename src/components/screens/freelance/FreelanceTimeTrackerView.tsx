@@ -14,6 +14,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatDuration, formatCurrencyAmount } from '../../../utils/rules';
 import { TimeLogEntry } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
@@ -252,28 +253,33 @@ export const FreelanceTimeTrackerView: React.FC = () => {
   }, [selectedLog, timeLogs]);
 
   const handleBatchDeleteLogs = () => {
-    const targetIds = Array.from(selectedLogIds);
-    let count = 0;
-    targetIds.forEach((id) => {
+    const deletableIds = Array.from(selectedLogIds).filter((id) => {
       const log = timeLogs.find((l) => l.id === id);
-      if (log && !log.isInvoiced) {
-        deleteTimeLog(id);
-        if (selectedLog?.id === id) setSelectedLog(null);
-        count++;
-      }
+      return Boolean(log && !log.isInvoiced);
     });
-    setSelectedLogIds(new Set());
-    showToast({
-      type: 'warning',
-      title: isAr ? 'حذف الجلسات' : isFr ? 'Sessions supprimées' : 'Sessions Removed',
-      message: `${count} ${
-        isAr
-          ? 'جلسة تم حذفها من السجل'
+    if (deletableIds.length === 0) {
+      setSelectedLogIds(new Set());
+      return;
+    }
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `حذف جلسات (${deletableIds.length})`
           : isFr
-          ? 'sessions supprimées du journal'
-          : 'time logs removed'
-      }.`,
-    });
+          ? `Suppression sessions (${deletableIds.length})`
+          : `Delete time logs (${deletableIds.length})`,
+        entityType: 'timeLogEntry',
+      },
+      () => {
+        deletableIds.forEach((id) => {
+          deleteTimeLog(id);
+          if (selectedLog?.id === id) setSelectedLog(null);
+        });
+      }
+    );
+    setSelectedLogIds(new Set());
   };
 
   const handleBatchBillSelected = () => {
@@ -281,26 +287,23 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       (l) => selectedLogIds.has(l.id) && l.isBillable && !l.isInvoiced
     );
     if (unbilledSelected.length === 0) return;
-    Array.from(new Set(unbilledSelected.map((l) => l.clientId))).forEach((cId) =>
-      billUnbilledHours(cId, 0)
+    const clientIds = Array.from(new Set(unbilledSelected.map((l) => l.clientId)));
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `فوترة جلسات (${unbilledSelected.length})`
+          : isFr
+          ? `Facturation sessions (${unbilledSelected.length})`
+          : `Bill selected hours (${unbilledSelected.length})`,
+        entityType: 'freelanceInvoice',
+      },
+      () => {
+        clientIds.forEach((cId) => billUnbilledHours(cId, 0));
+      }
     );
     setSelectedLogIds(new Set());
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم إنشاء الفواتير' : isFr ? 'Factures générées' : 'Invoices Created',
-      message: `${unbilledSelected.length} ${
-        isAr
-          ? 'جلسة تم فوترتها بنجاح'
-          : isFr
-          ? 'heures facturées avec succès'
-          : 'sessions billed to client invoices'
-      }.`,
-      category: 'freelance_solo',
-      action: {
-        label: t('toast_invoice_preview_btn', language),
-        onClick: () => setScreen('shop'),
-      },
-    });
   };
 
   const handleExportCSV = useCallback(() => {
@@ -417,34 +420,12 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       isBillable: true,
     });
     setIsManualModalOpen(false);
-    showToast({
-      type: 'success',
-      title: t('toast_time_logged_title', language),
-      message: `${manualForm.hours}h ${manualForm.minutes}m ${t('toast_time_logged_msg', language)} "${
-        project?.title || t('nav_scheduler', language)
-      }".`,
-      category: 'freelance_solo',
-      action: {
-        label: t('nav_shop', language),
-        onClick: () => setScreen('shop'),
-      },
-    });
   };
 
   const handleBillClientUnbilled = useCallback(
     (clientId: string) => {
       try {
-        const inv = billUnbilledHours(clientId, 0);
-        showToast({
-          type: 'success',
-          title: t('toast_invoice_gen_title', language),
-          message: `${t('toast_invoice_gen_msg', language)} ${inv?.clientName || ''}.`,
-          category: 'freelance_solo',
-          action: {
-            label: t('toast_invoice_preview_btn', language),
-            onClick: () => setScreen('shop'),
-          },
-        });
+        billUnbilledHours(clientId, 0);
         setScreen('shop');
       } catch (err: any) {
         showToast({

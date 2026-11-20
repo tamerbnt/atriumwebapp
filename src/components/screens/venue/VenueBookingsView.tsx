@@ -12,6 +12,7 @@ import {
   Edit2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { RentalBooking, BookingStatus } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -725,11 +726,6 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
           }}
           onDelete={(b) => {
             deleteRentalBooking(b.id);
-            showToast({
-              type: 'info',
-              title: isAr ? 'تم حذف الحجز' : isFr ? 'Réservation supprimée' : 'Booking Deleted',
-              message: b.purpose,
-            });
           }}
           selectedIds={selectedBookingIds}
           onSelectionChange={setSelectedBookingIds}
@@ -737,23 +733,43 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
             label: isAr ? 'تأكيد المحدد' : isFr ? 'Confirmer sélection' : 'Confirm Selected',
             icon: <CheckCircle2 size={13} />,
             onClick: (ids: Set<string>) => {
-              ids.forEach((id) => updateRentalBooking(id, { status: 'Confirmed' as BookingStatus }));
+              if (ids.size === 0) return;
+              runUndoBatch(
+                {
+                  category: 'rental_booking',
+                  operationType: 'bulk',
+                  label: isAr
+                    ? `تأكيد حجوزات (${ids.size})`
+                    : isFr
+                    ? `Confirmation réservations (${ids.size})`
+                    : `Confirm bookings (${ids.size})`,
+                  entityType: 'rentalBooking',
+                },
+                () => {
+                  ids.forEach((id) => updateRentalBooking(id, { status: 'Confirmed' as BookingStatus }));
+                }
+              );
               setSelectedBookingIds(new Set<string>());
-              showToast({
-                type: 'success',
-                title: isAr ? 'تم تأكيد الحجوزات' : isFr ? 'Réservations validées' : 'Bookings Confirmed',
-                message: `${ids.size} ${isFr ? 'réservations validées.' : 'bookings confirmed.'}`,
-              });
             },
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteRentalBooking(id));
+            if (ids.size === 0) return;
+            runUndoBatch(
+              {
+                category: 'rental_booking',
+                operationType: 'bulk',
+                label: isAr
+                  ? `حذف حجوزات (${ids.size})`
+                  : isFr
+                  ? `Suppression réservations (${ids.size})`
+                  : `Delete bookings (${ids.size})`,
+                entityType: 'rentalBooking',
+              },
+              () => {
+                ids.forEach((id) => deleteRentalBooking(id));
+              }
+            );
             setSelectedBookingIds(new Set<string>());
-            showToast({
-              type: 'info',
-              title: isAr ? 'تم الحذف' : isFr ? 'Supprimées' : 'Deleted',
-              message: `${ids.size} ${isFr ? 'réservations supprimées.' : 'bookings deleted.'}`,
-            });
           }}
           getRowMeta={(b) => {
             const bInfo = resolveRecordBranch(b, branchesById, currentBranch, language);

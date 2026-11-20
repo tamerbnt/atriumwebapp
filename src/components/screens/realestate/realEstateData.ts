@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   RealEstateProperty,
   RealEstateLease,
@@ -11,6 +11,11 @@ import {
 import { computeRentalTimbreFiscal, calculateMandateCommission } from '../../../utils/realEstateRules';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import {
+  cloneSnapshot,
+  pickLocalizedText,
+  registerUndoEntry,
+} from '../../../services/undoEngine';
 import {
   isSupabaseConfigured,
   realEstateService,
@@ -720,7 +725,9 @@ export const useRealEstateData = () => {
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
   const currentAccountId = useAtriumSelector((s) => s.account.id);
   const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
+  const language = useAtriumSelector((s) => s.language);
   const activeBranchId = currentBranchId || 'branch_realestate_main';
+  const activeBusinessId = currentBusinessId || 'biz_realestate';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
       (item.branchId || item.facilityId || 'branch_realestate_main') === activeBranchId,
@@ -1029,84 +1036,469 @@ export const useRealEstateData = () => {
     };
   }, [activeBranchId]);
 
+  const latestRef = useRef({
+    properties,
+    mandates,
+    leases,
+    quittances,
+    visits,
+    inspections,
+    buyers,
+  });
+  latestRef.current = {
+    properties,
+    mandates,
+    leases,
+    quittances,
+    visits,
+    inspections,
+    buyers,
+  };
+
+  const restoreAt = <T extends { id: string }>(
+    setter: React.Dispatch<React.SetStateAction<T[]>>,
+    snapshot: T,
+    index: number
+  ) => {
+    const item = cloneSnapshot(snapshot);
+    setter((prev) => {
+      if (prev.some((x) => x.id === item.id)) return prev;
+      const next = [...prev];
+      const safeIndex = Math.max(0, Math.min(index, next.length));
+      next.splice(safeIndex, 0, item);
+      return next;
+    });
+  };
+
   // Operations
   const addProperty = (prop: RealEstateProperty) => {
     const scoped = withBranch(prop);
+    const snap = cloneSnapshot(scoped);
     setProperties((prev) => [scoped, ...prev]);
     void realEstateService.upsertProperty(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'real_estate',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.title,
+      summary: pickLocalizedText(language, {
+        fr: `Bien "${scoped.title}" ajouté`,
+        en: `Property "${scoped.title}" added`,
+        ar: `تمت إضافة العقار "${scoped.title}"`,
+      }),
+      undo: () => {
+        setProperties((prev) => prev.filter((p) => p.id !== snap.id));
+        void realEstateService.deleteProperty(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setProperties((prev) => (prev.some((p) => p.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('re_properties', re.id, currentStaffId)
+          .then(() => realEstateService.upsertProperty(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateProperty = (prop: RealEstateProperty) => {
     const scoped = withBranch(prop);
+    const existing = latestRef.current.properties.find((p) => p.id === prop.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setProperties((prev) => prev.map((p) => (p.id === prop.id ? scoped : p)));
     void realEstateService.upsertProperty(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'real_estate',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.title,
+        summary: pickLocalizedText(language, {
+          fr: `Bien "${nextSnap.title}" modifié`,
+          en: `Property "${nextSnap.title}" updated`,
+          ar: `تم تعديل العقار "${nextSnap.title}"`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setProperties((prev) => prev.map((p) => (p.id === prevCopy.id ? prevCopy : p)));
+          void realEstateService.upsertProperty(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setProperties((prev) => prev.map((p) => (p.id === nextCopy.id ? nextCopy : p)));
+          void realEstateService.upsertProperty(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteProperty = (id: string) => {
+    const idx = latestRef.current.properties.findIndex((p) => p.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.properties[idx]) : null;
     setProperties((prev) => prev.filter((p) => p.id !== id));
     void realEstateService.deleteProperty(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'real_estate',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.title,
+        summary: pickLocalizedText(language, {
+          fr: `Bien "${existing.title}" supprimé`,
+          en: `Property "${existing.title}" deleted`,
+          ar: `تم حذف العقار "${existing.title}"`,
+        }),
+        undo: () => {
+          restoreAt(setProperties, existing, idx);
+          void syncCoordinator
+            .restoreRow('re_properties', existing.id, currentStaffId)
+            .then(() => realEstateService.upsertProperty(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setProperties((prev) => prev.filter((p) => p.id !== existing.id));
+          void realEstateService.deleteProperty(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const addMandate = (mandate: RealEstateMandate) => {
     const scoped = withBranch(mandate);
+    const snap = cloneSnapshot(scoped);
     setMandates((prev) => [scoped, ...prev]);
     void realEstateService.upsertMandate(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'real_estate',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.mandateNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Mandat ${scoped.mandateNumber} créé`,
+        en: `Mandate ${scoped.mandateNumber} created`,
+        ar: `تم إنشاء التفويض ${scoped.mandateNumber}`,
+      }),
+      undo: () => {
+        setMandates((prev) => prev.filter((m) => m.id !== snap.id));
+        void realEstateService.deleteMandate(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setMandates((prev) => (prev.some((m) => m.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('re_mandates', re.id, currentStaffId)
+          .then(() => realEstateService.upsertMandate(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateMandate = (mandate: RealEstateMandate) => {
     const scoped = withBranch(mandate);
+    const existing = latestRef.current.mandates.find((m) => m.id === mandate.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setMandates((prev) => prev.map((m) => (m.id === mandate.id ? scoped : m)));
     void realEstateService.upsertMandate(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'real_estate',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.mandateNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Mandat ${nextSnap.mandateNumber} modifié`,
+          en: `Mandate ${nextSnap.mandateNumber} updated`,
+          ar: `تم تعديل التفويض ${nextSnap.mandateNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setMandates((prev) => prev.map((m) => (m.id === prevCopy.id ? prevCopy : m)));
+          void realEstateService.upsertMandate(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setMandates((prev) => prev.map((m) => (m.id === nextCopy.id ? nextCopy : m)));
+          void realEstateService.upsertMandate(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteMandate = (id: string) => {
+    const idx = latestRef.current.mandates.findIndex((m) => m.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.mandates[idx]) : null;
     setMandates((prev) => prev.filter((m) => m.id !== id));
     void realEstateService.deleteMandate(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'real_estate',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.mandateNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Mandat ${existing.mandateNumber} supprimé`,
+          en: `Mandate ${existing.mandateNumber} deleted`,
+          ar: `تم حذف التفويض ${existing.mandateNumber}`,
+        }),
+        undo: () => {
+          restoreAt(setMandates, existing, idx);
+          void syncCoordinator
+            .restoreRow('re_mandates', existing.id, currentStaffId)
+            .then(() => realEstateService.upsertMandate(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setMandates((prev) => prev.filter((m) => m.id !== existing.id));
+          void realEstateService.deleteMandate(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const addLease = (lease: RealEstateLease) => {
     const scoped = withBranch(lease);
+    const snap = cloneSnapshot(scoped);
     setLeases((prev) => [scoped, ...prev]);
     void realEstateService.upsertLease(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'real_estate',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.leaseNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Bail ${scoped.leaseNumber} créé`,
+        en: `Lease ${scoped.leaseNumber} created`,
+        ar: `تم إنشاء عقد الإيجار ${scoped.leaseNumber}`,
+      }),
+      undo: () => {
+        setLeases((prev) => prev.filter((l) => l.id !== snap.id));
+        void realEstateService.deleteLease(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setLeases((prev) => (prev.some((l) => l.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('re_leases', re.id, currentStaffId)
+          .then(() => realEstateService.upsertLease(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateLease = (lease: RealEstateLease) => {
     const scoped = withBranch(lease);
+    const existing = latestRef.current.leases.find((l) => l.id === lease.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setLeases((prev) => prev.map((l) => (l.id === lease.id ? scoped : l)));
     void realEstateService.upsertLease(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'real_estate',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.leaseNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Bail ${nextSnap.leaseNumber} modifié`,
+          en: `Lease ${nextSnap.leaseNumber} updated`,
+          ar: `تم تعديل عقد الإيجار ${nextSnap.leaseNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setLeases((prev) => prev.map((l) => (l.id === prevCopy.id ? prevCopy : l)));
+          void realEstateService.upsertLease(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setLeases((prev) => prev.map((l) => (l.id === nextCopy.id ? nextCopy : l)));
+          void realEstateService.upsertLease(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteLease = (id: string) => {
+    const idx = latestRef.current.leases.findIndex((l) => l.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.leases[idx]) : null;
     setLeases((prev) => prev.filter((l) => l.id !== id));
     void realEstateService.deleteLease(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'real_estate',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.leaseNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Bail ${existing.leaseNumber} supprimé`,
+          en: `Lease ${existing.leaseNumber} deleted`,
+          ar: `تم حذف عقد الإيجار ${existing.leaseNumber}`,
+        }),
+        undo: () => {
+          restoreAt(setLeases, existing, idx);
+          void syncCoordinator
+            .restoreRow('re_leases', existing.id, currentStaffId)
+            .then(() => realEstateService.upsertLease(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setLeases((prev) => prev.filter((l) => l.id !== existing.id));
+          void realEstateService.deleteLease(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const addQuittance = (quittance: RentalQuittanceRecord) => {
     const scoped = withBranch(quittance);
+    const snap = cloneSnapshot(scoped);
     setQuittances((prev) => [scoped, ...prev]);
     void realEstateService.upsertQuittance(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'real_estate',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.quittanceNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Quittance ${scoped.quittanceNumber} émise`,
+        en: `Rent receipt ${scoped.quittanceNumber} issued`,
+        ar: `تم إصدار وصل الإيجار ${scoped.quittanceNumber}`,
+      }),
+      undo: () => {
+        setQuittances((prev) => prev.filter((q) => q.id !== snap.id));
+        void realEstateService.deleteQuittance(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setQuittances((prev) => (prev.some((q) => q.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('re_rent_schedules', re.id, currentStaffId)
+          .then(() => realEstateService.upsertQuittance(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const addVisit = (visit: BonDeVisiteRecord) => {
     const scoped = withBranch(visit);
+    const snap = cloneSnapshot(scoped);
     setVisits((prev) => [scoped, ...prev]);
     void realEstateService.upsertBonDeVisite(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'real_estate',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.clientFullName,
+      summary: pickLocalizedText(language, {
+        fr: `Bon de visite ${scoped.clientFullName} enregistré`,
+        en: `Visit slip ${scoped.clientFullName} recorded`,
+        ar: `تم تسجيل وصل الزيارة ${scoped.clientFullName}`,
+      }),
+      undo: () => {
+        setVisits((prev) => prev.filter((v) => v.id !== snap.id));
+        void realEstateService.deleteBonDeVisite(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setVisits((prev) => (prev.some((v) => v.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('re_visits', re.id, currentStaffId)
+          .then(() => realEstateService.upsertBonDeVisite(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const addInspection = (insp: RealEstateInspection) => {
     const scoped = withBranch(insp);
+    const snap = cloneSnapshot(scoped);
     setInspections((prev) => [scoped, ...prev]);
     void realEstateService.upsertInspection(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'real_estate',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.propertyTitle,
+      summary: pickLocalizedText(language, {
+        fr: `État des lieux (${scoped.tenantName}) enregistré`,
+        en: `Inspection (${scoped.tenantName}) recorded`,
+        ar: `تم تسجيل معاينة العقار (${scoped.tenantName})`,
+      }),
+      undo: () => {
+        setInspections((prev) => prev.filter((i) => i.id !== snap.id));
+        void realEstateService.deleteInspection(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setInspections((prev) => (prev.some((i) => i.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('re_inspections', re.id, currentStaffId)
+          .then(() => realEstateService.upsertInspection(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const addBuyer = (buyer: BuyerDemandProfile) => {
     const scoped = withBranch(buyer);
+    const snap = cloneSnapshot(scoped);
     setBuyers((prev) => [scoped, ...prev]);
     void realEstateService.upsertBuyerDemand(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'real_estate',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.clientFullName,
+      summary: pickLocalizedText(language, {
+        fr: `Acquéreur ${scoped.clientFullName} ajouté`,
+        en: `Buyer demand ${scoped.clientFullName} added`,
+        ar: `تمت إضافة طلب المشتري ${scoped.clientFullName}`,
+      }),
+      undo: () => {
+        setBuyers((prev) => prev.filter((b) => b.id !== snap.id));
+        void realEstateService.deleteBuyerDemand(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setBuyers((prev) => (prev.some((b) => b.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('re_leads', re.id, currentStaffId)
+          .then(() => realEstateService.upsertBuyerDemand(re))
+          .catch(() => {});
+      },
+    });
   };
 
   // Reset active branch to empty state
   const resetToDemoSeeds = () => {
+    const snap = cloneSnapshot(latestRef.current);
     setProperties((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
     setMandates((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
     setLeases((prev) => prev.filter((l) => !belongsToActiveBranch(l)));
@@ -1114,6 +1506,28 @@ export const useRealEstateData = () => {
     setVisits((prev) => prev.filter((v) => !belongsToActiveBranch(v)));
     setInspections((prev) => prev.filter((i) => !belongsToActiveBranch(i)));
     setBuyers((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
+
+    registerUndoEntry({
+      vertical: 'real_estate',
+      operationType: 'bulk',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      summary: pickLocalizedText(language, {
+        fr: 'Données immobilières réinitialisées',
+        en: 'Real estate data reset',
+        ar: 'تمت إعادة ضبط بيانات العقارات',
+      }),
+      undo: () => {
+        const s = cloneSnapshot(snap);
+        setProperties(s.properties);
+        setMandates(s.mandates);
+        setLeases(s.leases);
+        setQuittances(s.quittances);
+        setVisits(s.visits);
+        setInspections(s.inspections);
+        setBuyers(s.buyers);
+      },
+    });
   };
 
   const scopedProperties = useMemo(() => properties.filter(belongsToActiveBranch), [properties, belongsToActiveBranch]);

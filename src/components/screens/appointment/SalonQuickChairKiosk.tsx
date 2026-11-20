@@ -19,8 +19,8 @@ import {
   selectCurrentServicesFromState,
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
-  showToast,
 } from '../../../services/store';
+import { cloneSnapshot, pickLocalizedText, registerUndoEntry } from '../../../services/undoEngine';
 import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
@@ -133,69 +133,91 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
     (stationKey: string) => {
       const current = activeStations[stationKey];
       if (!current) return;
-      if (current.stage === 'waiting') {
-        setActiveStations((prev) => ({
-          ...prev,
-          [stationKey]: { ...current, stage: 'in_progress', startTime: Date.now() },
-        }));
-        showToast?.({
-          type: 'info',
-          title: isRtl ? 'بدء تقديم الخدمة' : 'Prestation Démarrée',
-          message: `${current.clientName} — ${current.serviceName}`,
-        });
-      } else if (current.stage === 'in_progress') {
-        setActiveStations((prev) => ({
-          ...prev,
-          [stationKey]: { ...current, stage: 'completed' },
-        }));
-        showToast?.({
-          type: 'success',
-          title: isRtl ? 'اكتملت الخدمة' : 'Prestation Terminée',
-          message: isRtl ? 'جاهز للتحصيل السريع' : "Prêt pour l'encaissement rapide",
+      if (current.stage === 'waiting' || current.stage === 'in_progress') {
+        const prevStations = cloneSnapshot(activeStations);
+        const nextStage = current.stage === 'waiting' ? 'in_progress' : 'completed';
+        const nextStations = {
+          ...prevStations,
+          [stationKey]: {
+            ...current,
+            stage: nextStage,
+            ...(nextStage === 'in_progress' ? { startTime: Date.now() } : {}),
+          },
+        };
+        setActiveStations(nextStations);
+        registerUndoEntry({
+          vertical: 'appointment_service',
+          operationType: 'status',
+          summary: pickLocalizedText(language, {
+            en: nextStage === 'in_progress' ? `Started: ${current.clientName}` : `Completed: ${current.clientName}`,
+            fr: nextStage === 'in_progress' ? `Prestation démarrée : ${current.clientName}` : `Prestation terminée : ${current.clientName}`,
+            ar: nextStage === 'in_progress' ? `بدء الخدمة: ${current.clientName}` : `اكتملت الخدمة: ${current.clientName}`,
+          }),
+          entityLabel: current.clientName,
+          toastType: nextStage === 'in_progress' ? 'info' : 'success',
+          undo: () => setActiveStations(cloneSnapshot(prevStations)),
+          redo: () => setActiveStations(cloneSnapshot(nextStations)),
         });
       } else if (current.stage === 'completed') {
         setCheckoutModalStationKey(stationKey);
       }
     },
-    [activeStations, showToast, isRtl]
+    [activeStations, language]
   );
 
   const handleConfirmCheckout = useCallback(() => {
     if (!checkoutModalStationKey) return;
     const current = activeStations[checkoutModalStationKey];
     if (!current) return;
+    const prevStations = cloneSnapshot(activeStations);
+    const prevReceipt = cloneSnapshot(lastReceipt);
     const timbre = paymentMethod === 'cash' ? calculateArt317Timbre(current.servicePriceDzd) : 0;
     const receiptNum = `REC-SAL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    setActiveStations((prev) => {
-      const copy = { ...prev };
-      delete copy[checkoutModalStationKey];
-      return copy;
-    });
-    setLastReceipt({
+    const nextStations = { ...prevStations };
+    delete nextStations[checkoutModalStationKey];
+    const nextReceipt = {
       clientName: current.clientName,
       serviceName: current.serviceName,
       amountDzd: current.servicePriceDzd,
       timbreFiscalDzd: timbre,
       paymentMethod,
       receiptNumber: receiptNum,
-    });
+    };
+    setActiveStations(nextStations);
+    setLastReceipt(nextReceipt);
     setCheckoutModalStationKey(null);
-    showToast?.({
-      type: 'success',
-      title: isRtl ? 'تم التحصيل بنجاح' : 'Encaissement Réussi',
-      message: `${current.clientName} — ${formatMoney(current.servicePriceDzd + timbre, 'DZD')}`,
+    registerUndoEntry({
+      vertical: 'appointment_service',
+      operationType: 'create',
+      summary: pickLocalizedText(language, {
+        en: `Chair checkout: ${current.clientName}`,
+        fr: `Encaissement réussi : ${current.clientName}`,
+        ar: `تم تحصيل الزبون: ${current.clientName}`,
+      }),
+      entityLabel: current.clientName,
+      toastType: 'success',
+      undo: () => {
+        setActiveStations(cloneSnapshot(prevStations));
+        setLastReceipt(cloneSnapshot(prevReceipt));
+      },
+      redo: () => {
+        setActiveStations(cloneSnapshot(nextStations));
+        setLastReceipt(cloneSnapshot(nextReceipt));
+      },
     });
-  }, [checkoutModalStationKey, activeStations, paymentMethod, showToast, isRtl]);
+  }, [checkoutModalStationKey, activeStations, lastReceipt, paymentMethod, language]);
 
   const handleAddNewClientToStation = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
       const service = servicesCatalog.find((s) => s.id === selectedServiceId) || servicesCatalog[0];
       const stylist = staff.find((st) => st.id === selectedStylistId) || staff[0];
-      setActiveStations((prev) => ({
-        ...prev,
+      const prevStations = cloneSnapshot(activeStations);
+      const clientLabel = newClientName.trim() || (isRtl ? 'زبون صالون' : 'Client Salon');
+      const nextStations = {
+        ...prevStations,
         [targetStationId]: {
-          clientName: newClientName.trim() || (isRtl ? 'زبون صالون' : 'Client Salon'),
+          clientName: clientLabel,
           serviceName: service?.name || 'Prestation Salon',
           servicePriceDzd: service?.price || 1500,
           stylistName: stylist?.fullName || 'Styliste',
@@ -203,16 +225,25 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
           stage: 'waiting',
           startTime: Date.now(),
         },
-      }));
+      };
+      setActiveStations(nextStations);
       setIsAddClientModalOpen(false);
       setNewClientName('');
-      showToast?.({
-        type: 'success',
-        title: isRtl ? 'تم تثبيت الزبون' : 'Client Installé au Poste',
-        message: `${targetStationId.toUpperCase()} — ${service?.name || 'Prestation'}`,
+      registerUndoEntry({
+        vertical: 'appointment_service',
+        operationType: 'create',
+        summary: pickLocalizedText(language, {
+          en: `Assigned ${clientLabel} to ${targetStationId.toUpperCase()}`,
+          fr: `Client installé : ${clientLabel} (${targetStationId.toUpperCase()})`,
+          ar: `تم تثبيت الزبون ${clientLabel}`,
+        }),
+        entityLabel: clientLabel,
+        toastType: 'success',
+        undo: () => setActiveStations(cloneSnapshot(prevStations)),
+        redo: () => setActiveStations(cloneSnapshot(nextStations)),
       });
     },
-    [servicesCatalog, selectedServiceId, staff, selectedStylistId, targetStationId, newClientName, isRtl, showToast]
+    [servicesCatalog, selectedServiceId, staff, selectedStylistId, activeStations, targetStationId, newClientName, isRtl, language]
   );
 
   if (showSkeleton && (appointments.length === 0 || networkMode === 'force_skeleton')) {

@@ -167,10 +167,6 @@ export const LogisticsScannerView: React.FC = () => {
           ...prev.slice(0, 11),
         ]);
         setSelectedShipment(found);
-        showToast(
-          isAr ? `تم فرز وتوجيه الطرد: ${clean}` : `Scan validé: ${clean} aiguillé`,
-          'success'
-        );
       } else {
         playSound('error');
         setScanHistory((prev) => [
@@ -208,12 +204,6 @@ export const LogisticsScannerView: React.FC = () => {
     }
 
     sealBag(activeBag.id, securitySealInput.trim());
-    showToast(
-      isAr
-        ? `تم إحكام وغلق الكيس بالختم الأمني ${securitySealInput}`
-        : `Sac ${activeBag.bagCode} scellé avec succès (${securitySealInput})`,
-      'success'
-    );
     setIsSealModalOpen(false);
     setSecuritySealInput('');
   };

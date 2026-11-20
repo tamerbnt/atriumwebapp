@@ -17,6 +17,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useContractorData } from './contractorData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -211,14 +212,9 @@ export const ContractorBoqView: React.FC<any> = () => {
     if (itemToEdit) {
       updateBoqItem(payload);
       if (selectedItem?.id === payload.id) setSelectedItem(payload);
-      showToast(isAr ? 'تم تحديث بند المقايسة' : 'Poste BOQ mis à jour', 'success');
     } else {
       addBoqItem(payload);
       setSelectedItem(payload);
-      showToast(
-        isAr ? 'تمت إضافة البند إلى الكشف التقديري' : 'Poste ajouté au bordereau BOQ',
-        'success'
-      );
     }
     setIsModalOpen(false);
   };
@@ -327,9 +323,8 @@ export const ContractorBoqView: React.FC<any> = () => {
     (item: ContractorBoqItem) => {
       deleteBoqItem(item.id);
       if (selectedItem?.id === item.id) setSelectedItem(null);
-      showToast(isAr ? 'تم حذف بند المقايسة' : 'Poste BOQ supprimé', 'success');
     },
-    [deleteBoqItem, selectedItem, isAr]
+    [deleteBoqItem, selectedItem]
   );
 
   const handleAdvanceExecution = useCallback(
@@ -343,14 +338,8 @@ export const ContractorBoqView: React.FC<any> = () => {
       };
       updateBoqItem(updated);
       if (selectedItem?.id === item.id) setSelectedItem(updated);
-      showToast(
-        isAr
-          ? `تم قيد كمية منفذة جديدة: ${nextExecuted} ${item.unit}`
-          : `Métré exécuté actualisé : ${nextExecuted} ${item.unit}`,
-        'success'
-      );
     },
-    [updateBoqItem, selectedItem, isAr]
+    [updateBoqItem, selectedItem]
   );
 
   const handleExportCsv = useCallback(() => {
@@ -832,10 +821,28 @@ export const ContractorBoqView: React.FC<any> = () => {
             onClick: () => handleExportCsv(),
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteBoqItem(id));
+            const count = ids.size;
+            runUndoBatch(
+              {
+                operationType: 'bulk',
+                vertical: 'contractor',
+                label: {
+                  fr: `${count} postes BOQ supprimés`,
+                  en: `${count} BOQ items deleted`,
+                  ar: `تم حذف ${count} بنود مقايسة`,
+                },
+                moduleLabel: {
+                  fr: 'Bordereau BOQ',
+                  en: 'BOQ Schedule',
+                  ar: 'المقايسة BOQ',
+                },
+              },
+              () => {
+                ids.forEach((id) => deleteBoqItem(id));
+              }
+            );
             setSelectedIds(new Set<string>());
             if (selectedItem && ids.has(selectedItem.id)) setSelectedItem(null);
-            showToast(isAr ? 'تم حذف البنود المحددة' : 'Postes BOQ supprimés', 'success');
           }}
           isPinned={(item) => pinnedIds.has(item.id)}
           onTogglePin={handleTogglePin}

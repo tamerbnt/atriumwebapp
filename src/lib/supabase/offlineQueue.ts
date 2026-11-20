@@ -1,6 +1,6 @@
 import { getSupabaseClient, isSupabaseConfigured } from './client';
 
-export type OfflineMutationKind = 'upsert' | 'update' | 'soft_delete' | 'rpc';
+export type OfflineMutationKind = 'upsert' | 'update' | 'soft_delete' | 'restore' | 'rpc';
 
 export interface OfflineMutationItem {
   id: string;
@@ -97,6 +97,25 @@ export function getOfflineQueueCount(): number {
 export function clearOfflineQueue(): void {
   memoryFallbackQueue = [];
   writeQueue([]);
+}
+
+export function cancelQueuedMutations(
+  table: string,
+  recordId: string,
+  kinds?: OfflineMutationKind[]
+): number {
+  const queue = readQueue();
+  const next = queue.filter((q) => {
+    const matchesTable = q.table === table;
+    const matchesRecord = q.recordId === recordId || q.payload?.id === recordId;
+    const matchesKind = !kinds || kinds.includes(q.kind);
+    return !(matchesTable && matchesRecord && matchesKind);
+  });
+  const removed = queue.length - next.length;
+  if (removed > 0) {
+    writeQueue(next);
+  }
+  return removed;
 }
 
 export function enqueueMutation(
@@ -229,6 +248,16 @@ export async function flushOfflineQueue(): Promise<{
             .from(item.table)
             .update({
               deleted_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              ...(item.deletedByStaffId ? { updated_by_staff_id: item.deletedByStaffId } : {}),
+            })
+            .eq('id', item.recordId);
+          if (error) errorObj = error;
+        } else if (item.kind === 'restore' && item.table && item.recordId) {
+          const { error } = await (client as any)
+            .from(item.table)
+            .update({
+              deleted_at: null,
               updated_at: new Date().toISOString(),
               ...(item.deletedByStaffId ? { updated_by_staff_id: item.deletedByStaffId } : {}),
             })

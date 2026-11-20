@@ -77,14 +77,6 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
     };
 
     onSaveClosure(updated);
-    showToast(
-      isAr
-        ? `تم الإغلاق (${formatMoney(countedTotal, language)})`
-        : isEn
-        ? `Cash closed (${formatMoney(countedTotal, language)})`
-        : `Caisse clôturée (${formatMoney(countedTotal, language)})`,
-      isBalanced ? 'success' : 'info'
-    );
     onClose();
   };
 

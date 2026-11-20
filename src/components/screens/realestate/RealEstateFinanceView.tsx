@@ -11,6 +11,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { registerUndoEntry } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useRealEstateData } from './realEstateData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -168,17 +169,29 @@ export const RealEstateFinanceView: React.FC<any> = () => {
   const handleDisburseToOwner = useCallback(
     (lease: RealEstateLease) => {
       if (!settledBailleurIds.includes(lease.id)) {
-        setSettledBailleurIds((prev) => [...prev, lease.id]);
         const net = lease.monthlyRentDzd * 0.9;
-        showToast(
-          isAr
-            ? `تم تحويل صافي الإيجار (${formatMoney(net, language)}) للمالك بنجاح`
-            : `Reversement du net bailleur (${formatMoney(net, language)}) confirmé`,
-          'success'
-        );
+        setSettledBailleurIds((prev) => (prev.includes(lease.id) ? prev : [...prev, lease.id]));
+        registerUndoEntry({
+          vertical: 'real_estate',
+          operationType: 'status',
+          branchId: currentBranch?.id || 'branch_realestate_main',
+          summary: isAr
+            ? `تحويل صافي الإيجار للمالك — ${lease.propertyTitle} (${formatMoney(net, language)})`
+            : isEn
+            ? `Owner disbursement — ${lease.propertyTitle} (${formatMoney(net, language)})`
+            : `Reversement bailleur — ${lease.propertyTitle} (${formatMoney(net, language)})`,
+          entityLabel: lease.propertyTitle,
+          toastType: 'success',
+          undo: () => {
+            setSettledBailleurIds((prev) => prev.filter((id) => id !== lease.id));
+          },
+          redo: () => {
+            setSettledBailleurIds((prev) => (prev.includes(lease.id) ? prev : [...prev, lease.id]));
+          },
+        });
       }
     },
-    [settledBailleurIds, isAr, language]
+    [settledBailleurIds, currentBranch?.id, isAr, isEn, language]
   );
 
   const handleTogglePin = useCallback((l: RealEstateLease) => {

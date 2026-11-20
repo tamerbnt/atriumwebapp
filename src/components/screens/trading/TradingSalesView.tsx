@@ -10,13 +10,13 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { CommercialDocument, CommercialDocType } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
 import { CommercialDocPrintModal } from './CommercialDocPrintModal';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -85,7 +85,6 @@ export const TradingSalesView: React.FC = () => {
   const [composerType, setComposerType] = useState<CommercialDocType>('devis');
   const [editingDoc, setEditingDoc] = useState<CommercialDocument | null>(null);
   const [printDoc, setPrintDoc] = useState<CommercialDocument | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<CommercialDocument | null>(null);
 
   const [inspectingDoc, setInspectingDoc] = useState<CommercialDocument | null>(null);
   const [drawerTab, setDrawerTab] = useState<DrawerTab>('overview');
@@ -475,7 +474,8 @@ export const TradingSalesView: React.FC = () => {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setDeleteTarget(doc);
+                deleteCommercialDoc(doc.id);
+                if (inspectingDoc?.id === doc.id) setInspectingDoc(null);
               }}
               aria-label={t('action_delete', 'Supprimer')}
               title={t('action_delete', 'Supprimer')}
@@ -489,7 +489,7 @@ export const TradingSalesView: React.FC = () => {
         ),
       },
     ],
-    [t, isAr, isEn, branchesById, currentBranch, language, handleEdit, handleConvert]
+    [t, isAr, isEn, branchesById, currentBranch, language, handleEdit, handleConvert, deleteCommercialDoc, inspectingDoc?.id]
   );
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
@@ -662,7 +662,10 @@ export const TradingSalesView: React.FC = () => {
             setInspectingDoc(doc);
           }}
           onEdit={(doc) => handleEdit(doc)}
-          onDelete={(doc) => setDeleteTarget(doc)}
+          onDelete={(doc) => {
+            deleteCommercialDoc(doc.id);
+            if (inspectingDoc?.id === doc.id) setInspectingDoc(null);
+          }}
           bulkSecondaryAction={{
             label: isAr ? 'تصدير المستندات' : 'Exporter Sélection',
             icon: <Download size={13} />,
@@ -675,13 +678,24 @@ export const TradingSalesView: React.FC = () => {
             },
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteCommercialDoc(id));
+            if (ids.size === 0) return;
+            runUndoBatch(
+              {
+                category: 'b2b_commercial',
+                operationType: 'bulk',
+                label: isAr
+                  ? `حذف مستندات (${ids.size})`
+                  : isEn
+                  ? `Delete documents (${ids.size})`
+                  : `Suppression documents (${ids.size})`,
+                entityType: 'commercialDoc',
+              },
+              () => {
+                ids.forEach((id) => deleteCommercialDoc(id));
+              }
+            );
             setSelectedDocIds(new Set<string>());
-            showToast({
-              type: 'info',
-              title: 'Pièces commerciales supprimées',
-              message: `${ids.size} documents retirés.`,
-            });
+            if (inspectingDoc && ids.has(inspectingDoc.id)) setInspectingDoc(null);
           }}
           getRowMeta={(doc) => {
             const branchInfo = resolveRecordBranch(doc, branchesById, currentBranch, language);
@@ -737,7 +751,10 @@ export const TradingSalesView: React.FC = () => {
               label: t('action_delete', 'Supprimer'),
               icon: <Trash2 size={14} />,
               isDanger: true,
-              onClick: () => setDeleteTarget(doc),
+              onClick: () => {
+                deleteCommercialDoc(doc.id);
+                if (inspectingDoc?.id === doc.id) setInspectingDoc(null);
+              },
             });
             return actions;
           }}
@@ -814,7 +831,10 @@ export const TradingSalesView: React.FC = () => {
         }
         onClose={() => setInspectingDoc(null)}
         onSelectItem={(doc) => setInspectingDoc(doc)}
-        onDelete={(doc) => setDeleteTarget(doc)}
+        onDelete={(doc) => {
+          deleteCommercialDoc(doc.id);
+          if (inspectingDoc?.id === doc.id) setInspectingDoc(null);
+        }}
         holdToDelete
         tabs={[
           { id: 'overview', label: isAr ? 'الملخص' : isEn ? 'Overview' : 'Résumé' },
@@ -921,25 +941,6 @@ export const TradingSalesView: React.FC = () => {
         editingDoc={editingDoc}
       />
       <CommercialDocPrintModal isOpen={!!printDoc} onClose={() => setPrintDoc(null)} document={printDoc} />
-      <ConfirmDialog
-        isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={() => {
-          if (deleteTarget) {
-            deleteCommercialDoc(deleteTarget.id);
-            setDeleteTarget(null);
-            if (inspectingDoc?.id === deleteTarget.id) setInspectingDoc(null);
-          }
-        }}
-        title={t('trading_sales_delete_title', 'Supprimer la pièce commerciale ?')}
-        description={
-          isAr
-            ? `هل أنت متأكد من حذف المستند ${deleteTarget?.docNumber}؟`
-            : `Supprimer définitivement le document ${deleteTarget?.docNumber} (${deleteTarget?.clientName}) ?`
-        }
-        confirmLabel={t('action_delete', 'Supprimer définitivement')}
-        variant="danger"
-      />
     </div>
   );
 };

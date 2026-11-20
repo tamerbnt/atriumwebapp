@@ -9,6 +9,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { RealEstateLease } from '../../../types';
 import { useRealEstateData } from './realEstateData';
@@ -211,19 +212,32 @@ export const RealEstateLeasesView: React.FC<any> = () => {
     (l: RealEstateLease) => {
       deleteLease(l.id);
       if (selectedLease?.id === l.id) setSelectedLease(null);
-      showToast(isAr ? 'تم حذف عقد الإيجار' : 'Bail de location supprimé', 'success');
     },
-    [deleteLease, selectedLease?.id, isAr]
+    [deleteLease, selectedLease?.id]
   );
 
   const handleBulkDelete = useCallback(
     (ids: Set<string>) => {
-      ids.forEach((id) => deleteLease(id));
+      runUndoBatch(
+        {
+          vertical: 'real_estate',
+          operationType: 'bulk',
+          branchId: currentBranch?.id || 'branch_realestate_main',
+          summary: isAr
+            ? `حذف ${ids.size} عقود إيجار`
+            : isEn
+            ? `Deleted ${ids.size} leases`
+            : `Suppression de ${ids.size} baux locatifs`,
+          affectedCount: ids.size,
+        },
+        () => {
+          ids.forEach((id) => deleteLease(id));
+        }
+      );
       if (selectedLease && ids.has(selectedLease.id)) setSelectedLease(null);
       setSelectedIds(new Set());
-      showToast(isAr ? 'تم حذف العقود المحددة' : 'Baux sélectionnés supprimés', 'success');
     },
-    [deleteLease, selectedLease, isAr]
+    [deleteLease, selectedLease, currentBranch?.id, isAr, isEn]
   );
 
   const handleEmitReceipt = useCallback((l: RealEstateLease) => {
@@ -237,14 +251,8 @@ export const RealEstateLeasesView: React.FC<any> = () => {
       const updated: RealEstateLease = { ...l, status: nextStatus };
       updateLease(updated);
       if (selectedLease?.id === l.id) setSelectedLease(updated);
-      showToast(
-        nextStatus === 'Active'
-          ? isAr ? 'تم تجديد عقد الكراء' : 'Bail renouvelé avec succès'
-          : isAr ? 'تم إنهاء عقد الكراء' : 'Bail clôturé / résilié',
-        'info'
-      );
     },
-    [updateLease, selectedLease?.id, isAr]
+    [updateLease, selectedLease?.id]
   );
 
   const handleSelectLease = useCallback((l: RealEstateLease, openerEl?: HTMLElement | null) => {
@@ -821,10 +829,6 @@ export const RealEstateLeasesView: React.FC<any> = () => {
           selectedLease={leaseForQuittance || selectedLease}
           onSave={(newQ) => {
             addQuittance(newQ);
-            showToast(
-              isAr ? 'تم إدراج مخالصة الإيجار بنجاح' : 'Quittance de loyer avec timbre fiscal enregistrée',
-              'success'
-            );
             setIsQuittanceModalOpen(false);
             setLeaseForQuittance(null);
           }}

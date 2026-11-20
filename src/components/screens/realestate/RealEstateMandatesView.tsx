@@ -16,6 +16,7 @@ import { useRealEstateData } from './realEstateData';
 import { RealEstateMandate } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -183,33 +184,40 @@ export const RealEstateMandatesView: React.FC<any> = () => {
       };
       updateMandate(updated);
       if (selectedMandate?.id === mandate.id) setSelectedMandate(updated);
-      showToast(
-        isAr
-          ? `تم تمديد الوكالة ${mandate.mandateNumber} لـ 3 أشهر إضافية`
-          : `Avenant validé: Mandat ${mandate.mandateNumber} prorogé de 3 mois jusqu'au ${newEnd}`,
-        'success'
-      );
     },
-    [updateMandate, selectedMandate?.id, isAr]
+    [updateMandate, selectedMandate?.id]
   );
 
   const handleDelete = useCallback(
     (m: RealEstateMandate) => {
       deleteMandate(m.id);
       if (selectedMandate?.id === m.id) setSelectedMandate(null);
-      showToast(isAr ? 'تم سحب الوكالة' : 'Mandat archivé / supprimé', 'success');
     },
-    [deleteMandate, selectedMandate?.id, isAr]
+    [deleteMandate, selectedMandate?.id]
   );
 
   const handleBulkDelete = useCallback(
     (ids: Set<string>) => {
-      ids.forEach((id) => deleteMandate(id));
+      runUndoBatch(
+        {
+          vertical: 'real_estate',
+          operationType: 'bulk',
+          branchId: currentBranch?.id || 'branch_realestate_main',
+          summary: isAr
+            ? `حذف ${ids.size} وكالات`
+            : isEn
+            ? `Deleted ${ids.size} mandates`
+            : `Suppression de ${ids.size} mandats`,
+          affectedCount: ids.size,
+        },
+        () => {
+          ids.forEach((id) => deleteMandate(id));
+        }
+      );
       if (selectedMandate && ids.has(selectedMandate.id)) setSelectedMandate(null);
       setSelectedIds(new Set());
-      showToast(isAr ? 'تم حذف الوكالات المحددة' : 'Mandats sélectionnés supprimés', 'success');
     },
-    [deleteMandate, selectedMandate, isAr]
+    [deleteMandate, selectedMandate, currentBranch?.id, isAr, isEn]
   );
 
   const handleTogglePin = useCallback((m: RealEstateMandate) => {

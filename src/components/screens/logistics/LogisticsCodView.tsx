@@ -13,6 +13,7 @@ import {
   Pin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { cloneSnapshot, pickLocalizedText, registerUndoEntry } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { LogisticsShipment } from '../../../types';
 import { useLogisticsData } from './logisticsData';
@@ -213,16 +214,25 @@ export const LogisticsCodView: React.FC<any> = () => {
   const handleSettle = useCallback(
     (id: string, merchant: string, netAmount: number) => {
       if (!settledIds.includes(id)) {
-        setSettledIds((prev) => [...prev, id]);
-        showToast(
-          isAr
-            ? `تم تحويل مستحقات التاجر (${formatMoney(netAmount, language)}) بنجاح`
-            : `Virement net de ${formatMoney(netAmount, language)} validé pour ${merchant}`,
-          'success'
-        );
+        const prevSettled = cloneSnapshot(settledIds);
+        const nextSettled = [...prevSettled, id];
+        setSettledIds(nextSettled);
+        registerUndoEntry({
+          vertical: 'logistics_delivery',
+          operationType: 'status',
+          summary: pickLocalizedText(language, {
+            en: `COD settled for ${merchant} (${formatMoney(netAmount, language)})`,
+            fr: `Virement net validé pour ${merchant} (${formatMoney(netAmount, language)})`,
+            ar: `تم تحويل مستحقات ${merchant} (${formatMoney(netAmount, language)})`,
+          }),
+          entityLabel: merchant,
+          toastType: 'success',
+          undo: () => setSettledIds(cloneSnapshot(prevSettled)),
+          redo: () => setSettledIds(cloneSnapshot(nextSettled)),
+        });
       }
     },
-    [settledIds, isAr, language]
+    [settledIds, language]
   );
 
   const handleSelectShipment = useCallback(
@@ -809,12 +819,23 @@ export const LogisticsCodView: React.FC<any> = () => {
               label: isAr ? 'تحويل المستحقات' : 'Virer Net',
               icon: <Send size={14} />,
               onClick: (ids) => {
-                setSettledIds((prev) => Array.from(new Set([...prev, ...Array.from(ids)])));
+                const prevSettled = cloneSnapshot(settledIds);
+                const nextSettled = Array.from(new Set([...prevSettled, ...Array.from(ids)]));
+                setSettledIds(nextSettled);
                 setSelectedIds(new Set<string>());
-                showToast(
-                  isAr ? `تم تحويل ${ids.size} شحنة` : `${ids.size} versements marqués comme virés`,
-                  'success'
-                );
+                registerUndoEntry({
+                  vertical: 'logistics_delivery',
+                  operationType: 'bulk',
+                  summary: pickLocalizedText(language, {
+                    en: `Settled ${ids.size} COD shipment(s)`,
+                    fr: `${ids.size} versement(s) marqués comme virés`,
+                    ar: `تم تحويل مستحقات ${ids.size} شحنة`,
+                  }),
+                  affectedCount: ids.size,
+                  toastType: 'success',
+                  undo: () => setSettledIds(cloneSnapshot(prevSettled)),
+                  redo: () => setSettledIds(cloneSnapshot(nextSettled)),
+                });
               },
             }}
             isPinned={(s) => pinnedIds.has(s.id)}
@@ -1174,12 +1195,6 @@ export const LogisticsCodView: React.FC<any> = () => {
                       icon: <Send className="w-[15px] h-[15px]" />,
                       onClick: () => {
                         executeRemittance(r.id);
-                        showToast(
-                          isAr
-                            ? `تم تنفيذ التحويل للدفعة ${r.batchNumber}`
-                            : `Virement ${r.batchNumber} exécuté`,
-                          'success'
-                        );
                       },
                     },
                   ]
@@ -1200,12 +1215,6 @@ export const LogisticsCodView: React.FC<any> = () => {
                       icon: <Send className="w-3.5 h-3.5" />,
                       onClick: () => {
                         executeRemittance(r.id);
-                        showToast(
-                          isAr
-                            ? `تم تنفيذ التحويل للدفعة ${r.batchNumber}`
-                            : `Virement ${r.batchNumber} exécuté`,
-                          'success'
-                        );
                       },
                     },
                   ]

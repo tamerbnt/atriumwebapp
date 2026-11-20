@@ -18,6 +18,7 @@ import {
   selectCurrentBusinessConfigFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import {
   useGarageData,
@@ -328,7 +329,6 @@ export const AutoGarageBillingView: React.FC<any> = () => {
       issuedAt: new Date().toISOString(),
       isPaid: true,
     };
-    createInvoice(newInvoice);
     const updatedOrder: RepairOrder = {
       ...orderToSettle,
       status: 'Delivered',
@@ -337,18 +337,30 @@ export const AutoGarageBillingView: React.FC<any> = () => {
       billingType,
       invoiceId: newInvoice.id,
     };
-    updateOrder(updatedOrder);
+    runUndoBatch(
+      {
+        operationType: 'create',
+        vertical: 'garage',
+        label: {
+          fr: `Facture ${newInvoice.invoiceNumber} émise & OR soldé`,
+          en: `Invoice ${newInvoice.invoiceNumber} issued & RO settled`,
+          ar: `تم إصدار الفاتورة ${newInvoice.invoiceNumber} وتسوية الأمر`,
+        },
+        moduleLabel: {
+          fr: 'Facturation & Caisse',
+          en: 'Garage Billing',
+          ar: 'الفوترة والصندوق',
+        },
+      },
+      () => {
+        createInvoice(newInvoice);
+        updateOrder(updatedOrder);
+      }
+    );
     if (inspectedOrder?.id === updatedOrder.id) setInspectedOrder(updatedOrder);
     setIsPaymentModalOpen(false);
     setActivePrintInvoice(newInvoice);
     setIsPrintModalOpen(true);
-    showToast({
-      type: 'success',
-      title: newInvoice.invoiceNumber,
-      message: isAr
-        ? `تم تسجيل التحصيل المالي (${formatMoney(net, language)}) وطباعة الفاتورة`
-        : `Règlement enregistré (${formatMoney(net, language)}) & Facture émise`,
-    });
   };
 
   const handleExportCsv = useCallback(() => {

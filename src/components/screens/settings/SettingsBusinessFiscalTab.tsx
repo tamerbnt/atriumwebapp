@@ -8,7 +8,7 @@ import {
   Lock,
   Save,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumStore } from '../../../services/store';
 import {
   CategorySpecificSettings,
   CurrencyCode,
@@ -121,23 +121,12 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
       delete next.bizName;
       return next;
     });
-    const ok = updateBusinessIdentity({
+    updateBusinessIdentity({
       name: bizName.trim(),
       displayName: (bizDisplayName.trim() || bizName.trim()),
       address: bizAddress.trim(),
       phone: bizPhone.trim(),
     });
-    if (ok) {
-      showToast({
-        type: 'success',
-        title: L('Identity Updated', 'Identité enregistrée', 'تم حفظ هوية المنشأة'),
-        message: L(
-          'Business profile and main branch details synced.',
-          'Nom, adresse et coordonnées enregistrés.',
-          'تم تحديث الاسم والعنوان ورقم الهاتف.'
-        ),
-      });
-    }
   };
 
   const handleSaveFiscalAndRules = (e: React.FormEvent) => {
@@ -159,15 +148,6 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
     if (category === 'pos_inventory') {
       updateReceiptConfig(posReceipt);
     }
-    showToast({
-      type: 'success',
-      title: L('Configuration Saved', 'Paramètres fiscaux enregistrés', 'تم حفظ الإعدادات الجبائية'),
-      message: L(
-        `TVA (${defaultTvaRate}%), fiscal IDs, and category rules are now live.`,
-        `TVA (${defaultTvaRate}%), identifiants fiscaux et règles métier appliqués.`,
-        `تم تفعيل نسبة الضريبة (${defaultTvaRate}%) وقواعد النشاط فوراً.`
-      ),
-    });
   };
 
   const updateSetting = <K extends keyof CategorySpecificSettings>(

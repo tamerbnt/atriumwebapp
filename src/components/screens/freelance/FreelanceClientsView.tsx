@@ -16,6 +16,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatCurrencyAmount, formatDuration } from '../../../utils/rules';
 import { FreelanceClient, FreelanceClientStatus, CurrencyCode } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
@@ -621,48 +622,72 @@ export const FreelanceClientsView: React.FC = () => {
 
   const handleBatchSetRetainer = () => {
     if (selectedClientIds.size === 0) return;
-    selectedClientIds.forEach((id) => {
-      updateFreelanceClient(id, { status: 'ActiveRetainer' });
-    });
     const count = selectedClientIds.size;
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `تفعيل عقد شهري (${count})`
+          : isFr
+          ? `Passage forfait (${count})`
+          : `Set Active Retainer (${count})`,
+        entityType: 'freelanceClient',
+      },
+      () => {
+        selectedClientIds.forEach((id) => {
+          updateFreelanceClient(id, { status: 'ActiveRetainer' });
+        });
+      }
+    );
     setSelectedClientIds(new Set());
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم التحديث' : isFr ? 'Mis à jour' : 'Updated',
-      message: `${count} ${isAr ? 'عملاء تم تحويلهم لعقد شهري' : 'clients updated to Active Retainer'}`,
-      category: 'freelance_solo',
-    });
   };
 
   const handleBatchSetProject = () => {
     if (selectedClientIds.size === 0) return;
-    selectedClientIds.forEach((id) => {
-      updateFreelanceClient(id, { status: 'ProjectBased' });
-    });
     const count = selectedClientIds.size;
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `تحويل للمشاريع (${count})`
+          : isFr
+          ? `Passage au projet (${count})`
+          : `Set Project Based (${count})`,
+        entityType: 'freelanceClient',
+      },
+      () => {
+        selectedClientIds.forEach((id) => {
+          updateFreelanceClient(id, { status: 'ProjectBased' });
+        });
+      }
+    );
     setSelectedClientIds(new Set());
-    showToast({
-      type: 'info',
-      title: isAr ? 'تم التحديث' : isFr ? 'Mis à jour' : 'Updated',
-      message: `${count} ${isAr ? 'عملاء تم تحويلهم لنمط المشاريع' : 'clients updated to Project Based'}`,
-      category: 'freelance_solo',
-    });
   };
 
   const handleBatchDelete = () => {
     if (selectedClientIds.size === 0) return;
     const count = selectedClientIds.size;
-    selectedClientIds.forEach((id) => {
-      deleteFreelanceClient(id, false);
-      if (selectedClient?.id === id) setSelectedClient(null);
-    });
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `حذف عملاء (${count})`
+          : isFr
+          ? `Suppression clients (${count})`
+          : `Delete clients (${count})`,
+        entityType: 'freelanceClient',
+      },
+      () => {
+        selectedClientIds.forEach((id) => {
+          deleteFreelanceClient(id, false);
+          if (selectedClient?.id === id) setSelectedClient(null);
+        });
+      }
+    );
     setSelectedClientIds(new Set());
-    showToast({
-      type: 'info',
-      title: isAr ? 'تم الحذف' : isFr ? 'Suppression' : 'Deleted',
-      message: `${count} ${isAr ? 'عملاء تم حذفهم' : 'clients deleted'}`,
-      category: 'freelance_solo',
-    });
   };
 
   const statusOptions = useMemo(

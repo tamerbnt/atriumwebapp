@@ -273,13 +273,8 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
       setWalkInName('');
       setWalkInPhone('');
       playChime('success');
-      showToast?.({
-        type: 'success',
-        title: isRtl ? 'تم إصدار تذكرة الحصة' : 'Pass Séance Émis',
-        message: `${ticket.ticketNumber} — ${formatMoney(ticket.amountDzd + ticket.timbreFiscalDzd, 'DZD')}`,
-      });
     },
-    [walkInAmount, walkInPaymentMethod, account, currentBusinessId, currentBranchId, currentUser, walkInName, walkInPhone, isRtl, addWalkInTicket, playChime, showToast]
+    [walkInAmount, walkInPaymentMethod, account, currentBusinessId, currentBranchId, currentUser, walkInName, walkInPhone, isRtl, addWalkInTicket, playChime]
   );
 
   const { activeMembersCount, grantedLogsCount, alertLogsCount, visibleLogs } = useMemo(() => {

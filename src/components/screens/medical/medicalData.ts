@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   MedicalPatient,
   MedicalConsultation,
@@ -14,6 +14,11 @@ import {
 } from '../../../types';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import {
+  cloneSnapshot,
+  pickLocalizedText,
+  registerUndoEntry,
+} from '../../../services/undoEngine';
 import {
   isSupabaseConfigured,
   medicalService,
@@ -793,6 +798,7 @@ export const useMedicalData = () => {
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
   const currentAccountId = useAtriumSelector((s) => s.account.id);
   const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
+  const language = useAtriumSelector((s) => s.language);
   const activeBranchId = currentBranchId || 'branch_medical_main';
   const medCtx = useMemo(
     () => ({
@@ -1236,122 +1242,6 @@ export const useMedicalData = () => {
     };
   }, [activeBranchId]);
 
-  // Actions
-  const addPatient = (patient: MedicalPatient) => {
-    const scoped = withBranch(patient);
-    setPatients((prev) => [scoped, ...prev]);
-    void medicalService.upsertPatient(scoped).catch(() => {});
-  };
-
-  const updatePatient = (updated: MedicalPatient) => {
-    const scoped = withBranch(updated);
-    setPatients((prev) => prev.map((p) => (p.id === updated.id ? scoped : p)));
-    void medicalService.upsertPatient(scoped).catch(() => {});
-  };
-
-  const deletePatient = (id: string) => {
-    setPatients((prev) => prev.filter((p) => p.id !== id));
-    void medicalService.deletePatient(id, currentStaffId).catch(() => {});
-  };
-
-  const deletePractitioner = (id: string) => {
-    setPractitioners((prev) => prev.filter((p) => p.id !== id));
-    void medicalService.deletePractitioner(id, currentStaffId).catch(() => {});
-  };
-
-  const addConsultation = (cons: MedicalConsultation) => {
-    const scoped = withBranch(cons);
-    setConsultations((prev) => [scoped, ...prev]);
-    void medicalService.upsertConsultation(scoped).catch(() => {});
-  };
-
-  const deleteConsultation = (id: string) => {
-    setConsultations((prev) => prev.filter((c) => c.id !== id));
-    void medicalService.deleteConsultation(id, currentStaffId).catch(() => {});
-  };
-
-  const updateConsultationStatus = (id: string, status: MedicalConsultation['status']) => {
-    setConsultations((prev) =>
-      prev.map((c) => {
-        if (c.id !== id) return c;
-        const next = { ...c, status };
-        void medicalService.upsertConsultation(withBranch(next)).catch(() => {});
-        return next;
-      })
-    );
-  };
-
-  const markConsultationPaid = (id: string, method: 'Cash' | 'BaridiMob' | 'Card' | 'ChifaDirect' = 'Cash') => {
-    setConsultations((prev) =>
-      prev.map((c) => {
-        if (c.id !== id) return c;
-        const next = { ...c, isPaid: true, paymentMethod: method };
-        void medicalService.upsertConsultation(withBranch(next)).catch(() => {});
-        return next;
-      })
-    );
-  };
-
-  const addAppointment = (apt: MedicalAppointmentSlot) => {
-    const scoped = withBranch(apt);
-    setAppointments((prev) => [...prev, scoped]);
-    void medicalService.upsertAppointment(scoped, medCtx).catch(() => {});
-  };
-
-  const updateAppointmentStatus = (id: string, status: MedicalAppointmentSlot['status']) => {
-    setAppointments((prev) =>
-      prev.map((a) => {
-        if (a.id !== id) return a;
-        const next = { ...a, status };
-        void medicalService.upsertAppointment(next, medCtx).catch(() => {});
-        return next;
-      })
-    );
-  };
-
-  const deleteAppointment = (id: string) => {
-    setAppointments((prev) => prev.filter((a) => a.id !== id));
-    void medicalService.deleteAppointment(id, currentStaffId).catch(() => {});
-  };
-
-  const addPrescription = (rx: MedicalPrescription) => {
-    const scoped = withBranch(rx);
-    setPrescriptions((prev) => [scoped, ...prev]);
-    void medicalService.upsertPrescription(scoped, medCtx).catch(() => {});
-  };
-
-  const saveDoctorConfig = (doctorId: string, config: DoctorOrdonnanceConfig) => {
-    setDoctorConfigs((prev) => ({
-      ...prev,
-      [doctorId]: config,
-    }));
-    void medicalService.upsertOrdonnanceConfig(config, medCtx).catch(() => {});
-  };
-
-  const addCertificate = (cert: MedicalCertificateRecord) => {
-    const scoped = withBranch(cert);
-    setCertificates((prev) => [scoped, ...prev]);
-    void medicalService.upsertCertificate(scoped, medCtx).catch(() => {});
-  };
-
-  const addLabRecord = (lab: MedicalLabRecord) => {
-    const scoped = withBranch(lab);
-    setLabRecords((prev) => [scoped, ...prev]);
-    void medicalService.upsertLabRecord(scoped, medCtx).catch(() => {});
-  };
-
-  const addChifaClaim = (claim: ChifaClaimRecord) => {
-    const scoped = withBranch(claim);
-    setChifaClaims((prev) => [scoped, ...prev]);
-    void medicalService.upsertChifaClaim(scoped, medCtx).catch(() => {});
-  };
-
-  const addCashClosure = (closure: DailyCashClosure) => {
-    const scoped = withBranch(closure);
-    setCashClosures((prev) => [scoped, ...prev]);
-    void medicalService.upsertCashClosure(scoped, medCtx).catch(() => {});
-  };
-
   const [isEmergencyAlarmActive, setIsEmergencyAlarmActive] = useState<boolean>(() => {
     try {
       return localStorage.getItem('atrium_medical_emergency_v2') === 'true';
@@ -1362,57 +1252,814 @@ export const useMedicalData = () => {
 
   useIdlePersist('atrium_medical_emergency_v2', isEmergencyAlarmActive);
 
-  const toggleEmergencyAlarm = (overrideState?: boolean) => {
-    setIsEmergencyAlarmActive((prev) => (typeof overrideState === 'boolean' ? overrideState : !prev));
+  const latestRef = useRef({
+    practitioners,
+    doctorConfigs,
+    patients,
+    consultations,
+    appointments,
+    prescriptions,
+    labRecords,
+    certificates,
+    chifaClaims,
+    consumables,
+    cashClosures,
+    isEmergencyAlarmActive,
+  });
+  latestRef.current = {
+    practitioners,
+    doctorConfigs,
+    patients,
+    consultations,
+    appointments,
+    prescriptions,
+    labRecords,
+    certificates,
+    chifaClaims,
+    consumables,
+    cashClosures,
+    isEmergencyAlarmActive,
   };
 
-  const depleteConsumable = (itemCode: string, quantity: number) => {
+  const restoreAt = <T extends { id: string }>(
+    setter: React.Dispatch<React.SetStateAction<T[]>>,
+    snapshot: T,
+    index: number
+  ) => {
+    const item = cloneSnapshot(snapshot);
+    setter((prev) => {
+      if (prev.some((x) => x.id === item.id)) return prev;
+      const next = [...prev];
+      const safeIndex = Math.max(0, Math.min(index, next.length));
+      next.splice(safeIndex, 0, item);
+      return next;
+    });
+  };
+
+  // Actions
+  const addPatient = (patient: MedicalPatient) => {
+    const scoped = withBranch(patient);
+    const snap = cloneSnapshot(scoped);
+    setPatients((prev) => [scoped, ...prev]);
+    void medicalService.upsertPatient(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'create',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.fullName,
+      summary: pickLocalizedText(language, {
+        fr: `Patient ${scoped.fullName} ajouté`,
+        en: `Patient ${scoped.fullName} added`,
+        ar: `تمت إضافة المريض ${scoped.fullName}`,
+      }),
+      undo: () => {
+        setPatients((prev) => prev.filter((p) => p.id !== snap.id));
+        void medicalService.deletePatient(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setPatients((prev) => (prev.some((p) => p.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('medical_patients', re.id, currentStaffId)
+          .then(() => medicalService.upsertPatient(re))
+          .catch(() => {});
+      },
+    });
+  };
+
+  const updatePatient = (updated: MedicalPatient) => {
+    const scoped = withBranch(updated);
+    const existing = latestRef.current.patients.find((p) => p.id === updated.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
+    setPatients((prev) => prev.map((p) => (p.id === updated.id ? scoped : p)));
+    void medicalService.upsertPatient(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'medical_clinic',
+        operationType: 'edit',
+        businessId: medCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.fullName,
+        summary: pickLocalizedText(language, {
+          fr: `Dossier patient ${nextSnap.fullName} modifié`,
+          en: `Patient ${nextSnap.fullName} updated`,
+          ar: `تم تعديل ملف المريض ${nextSnap.fullName}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setPatients((prev) => prev.map((p) => (p.id === prevCopy.id ? prevCopy : p)));
+          void medicalService.upsertPatient(prevCopy).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setPatients((prev) => prev.map((p) => (p.id === nextCopy.id ? nextCopy : p)));
+          void medicalService.upsertPatient(nextCopy).catch(() => {});
+        },
+      });
+    }
+  };
+
+  const deletePatient = (id: string) => {
+    const idx = latestRef.current.patients.findIndex((p) => p.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.patients[idx]) : null;
+    setPatients((prev) => prev.filter((p) => p.id !== id));
+    void medicalService.deletePatient(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'medical_clinic',
+        operationType: 'delete',
+        businessId: medCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: existing.fullName,
+        summary: pickLocalizedText(language, {
+          fr: `Patient ${existing.fullName} supprimé`,
+          en: `Patient ${existing.fullName} deleted`,
+          ar: `تم حذف المريض ${existing.fullName}`,
+        }),
+        undo: () => {
+          restoreAt(setPatients, existing, idx);
+          void syncCoordinator
+            .restoreRow('medical_patients', existing.id, currentStaffId)
+            .then(() => medicalService.upsertPatient(cloneSnapshot(existing)))
+            .catch(() => {});
+        },
+        redo: () => {
+          setPatients((prev) => prev.filter((p) => p.id !== existing.id));
+          void medicalService.deletePatient(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
+  };
+
+  const deletePractitioner = (id: string) => {
+    const idx = latestRef.current.practitioners.findIndex((p) => p.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.practitioners[idx]) : null;
+    setPractitioners((prev) => prev.filter((p) => p.id !== id));
+    void medicalService.deletePractitioner(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'medical_clinic',
+        operationType: 'delete',
+        businessId: medCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: existing.fullName,
+        summary: pickLocalizedText(language, {
+          fr: `Praticien ${existing.fullName} supprimé`,
+          en: `Practitioner ${existing.fullName} deleted`,
+          ar: `تم حذف الطبيب ${existing.fullName}`,
+        }),
+        undo: () => {
+          restoreAt(setPractitioners, existing, idx);
+          void syncCoordinator
+            .restoreRow('medical_staff', existing.id, currentStaffId)
+            .catch(() => {});
+        },
+        redo: () => {
+          setPractitioners((prev) => prev.filter((p) => p.id !== existing.id));
+          void medicalService.deletePractitioner(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
+  };
+
+  const addConsultation = (cons: MedicalConsultation) => {
+    const scoped = withBranch(cons);
+    const snap = cloneSnapshot(scoped);
+    setConsultations((prev) => [scoped, ...prev]);
+    void medicalService.upsertConsultation(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'create',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.patientName,
+      summary: pickLocalizedText(language, {
+        fr: `Consultation ${scoped.ticketNumber || ''} (${scoped.patientName}) ajoutée`.trim(),
+        en: `Consultation ${scoped.ticketNumber || ''} (${scoped.patientName}) added`.trim(),
+        ar: `تمت إضافة استشارة (${scoped.patientName})`,
+      }),
+      undo: () => {
+        setConsultations((prev) => prev.filter((c) => c.id !== snap.id));
+        void medicalService.deleteConsultation(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setConsultations((prev) => (prev.some((c) => c.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('medical_consultations', re.id, currentStaffId)
+          .then(() => medicalService.upsertConsultation(re))
+          .catch(() => {});
+      },
+    });
+  };
+
+  const deleteConsultation = (id: string) => {
+    const idx = latestRef.current.consultations.findIndex((c) => c.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.consultations[idx]) : null;
+    setConsultations((prev) => prev.filter((c) => c.id !== id));
+    void medicalService.deleteConsultation(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'medical_clinic',
+        operationType: 'delete',
+        businessId: medCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: existing.patientName,
+        summary: pickLocalizedText(language, {
+          fr: `Consultation ${existing.ticketNumber || ''} (${existing.patientName}) supprimée`.trim(),
+          en: `Consultation ${existing.ticketNumber || ''} (${existing.patientName}) deleted`.trim(),
+          ar: `تم حذف استشارة (${existing.patientName})`,
+        }),
+        undo: () => {
+          restoreAt(setConsultations, existing, idx);
+          void syncCoordinator
+            .restoreRow('medical_consultations', existing.id, currentStaffId)
+            .then(() => medicalService.upsertConsultation(cloneSnapshot(existing)))
+            .catch(() => {});
+        },
+        redo: () => {
+          setConsultations((prev) => prev.filter((c) => c.id !== existing.id));
+          void medicalService.deleteConsultation(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
+  };
+
+  const updateConsultationStatus = (id: string, status: MedicalConsultation['status']) => {
+    const existing = latestRef.current.consultations.find((c) => c.id === id);
+    if (!existing) return;
+    const prevSnap = cloneSnapshot(existing);
+    const next = withBranch({ ...existing, status });
+    const nextSnap = cloneSnapshot(next);
+    setConsultations((prev) => prev.map((c) => (c.id === id ? next : c)));
+    void medicalService.upsertConsultation(next).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'status',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: existing.patientName,
+      summary: pickLocalizedText(language, {
+        fr: `Statut consultation ${existing.patientName} → ${status}`,
+        en: `Consultation status ${existing.patientName} → ${status}`,
+        ar: `تحديث حالة استشارة ${existing.patientName} → ${status}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevSnap);
+        setConsultations((prev) => prev.map((c) => (c.id === prevCopy.id ? prevCopy : c)));
+        void medicalService.upsertConsultation(withBranch(prevCopy)).catch(() => {});
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextSnap);
+        setConsultations((prev) => prev.map((c) => (c.id === nextCopy.id ? nextCopy : c)));
+        void medicalService.upsertConsultation(nextCopy).catch(() => {});
+      },
+    });
+  };
+
+  const markConsultationPaid = (id: string, method: 'Cash' | 'BaridiMob' | 'Card' | 'ChifaDirect' = 'Cash') => {
+    const existing = latestRef.current.consultations.find((c) => c.id === id);
+    if (!existing) return;
+    const prevSnap = cloneSnapshot(existing);
+    const next = withBranch({ ...existing, isPaid: true, paymentMethod: method });
+    const nextSnap = cloneSnapshot(next);
+    setConsultations((prev) => prev.map((c) => (c.id === id ? next : c)));
+    void medicalService.upsertConsultation(next).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'status',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: existing.patientName,
+      summary: pickLocalizedText(language, {
+        fr: `Encaissement consultation ${existing.patientName} (${method})`,
+        en: `Consultation ${existing.patientName} marked paid (${method})`,
+        ar: `تم تحصيل رسوم استشارة ${existing.patientName}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevSnap);
+        setConsultations((prev) => prev.map((c) => (c.id === prevCopy.id ? prevCopy : c)));
+        void medicalService.upsertConsultation(withBranch(prevCopy)).catch(() => {});
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextSnap);
+        setConsultations((prev) => prev.map((c) => (c.id === nextCopy.id ? nextCopy : c)));
+        void medicalService.upsertConsultation(nextCopy).catch(() => {});
+      },
+    });
+  };
+
+  const addAppointment = (apt: MedicalAppointmentSlot) => {
+    const scoped = withBranch(apt);
+    const snap = cloneSnapshot(scoped);
+    setAppointments((prev) => [...prev, scoped]);
+    void medicalService.upsertAppointment(scoped, medCtx).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'create',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.patientName,
+      summary: pickLocalizedText(language, {
+        fr: `RDV médical ${scoped.patientName} (${scoped.startTime}) créé`,
+        en: `Appointment ${scoped.patientName} (${scoped.startTime}) created`,
+        ar: `تم حجز موعد ${scoped.patientName} (${scoped.startTime})`,
+      }),
+      undo: () => {
+        setAppointments((prev) => prev.filter((a) => a.id !== snap.id));
+        void medicalService.deleteAppointment(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setAppointments((prev) => (prev.some((a) => a.id === re.id) ? prev : [...prev, re]));
+        void syncCoordinator
+          .restoreRow('medical_appointments', re.id, currentStaffId)
+          .then(() => medicalService.upsertAppointment(re, medCtx))
+          .catch(() => {});
+      },
+    });
+  };
+
+  const updateAppointmentStatus = (id: string, status: MedicalAppointmentSlot['status']) => {
+    const existing = latestRef.current.appointments.find((a) => a.id === id);
+    if (!existing) return;
+    const prevSnap = cloneSnapshot(existing);
+    const next = { ...existing, status };
+    const nextSnap = cloneSnapshot(next);
+    setAppointments((prev) => prev.map((a) => (a.id === id ? next : a)));
+    void medicalService.upsertAppointment(next, medCtx).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'status',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: existing.patientName,
+      summary: pickLocalizedText(language, {
+        fr: `Statut RDV ${existing.patientName} → ${status}`,
+        en: `Appointment ${existing.patientName} → ${status}`,
+        ar: `تحديث موعد ${existing.patientName} → ${status}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevSnap);
+        setAppointments((prev) => prev.map((a) => (a.id === prevCopy.id ? prevCopy : a)));
+        void medicalService.upsertAppointment(prevCopy, medCtx).catch(() => {});
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextSnap);
+        setAppointments((prev) => prev.map((a) => (a.id === nextCopy.id ? nextCopy : a)));
+        void medicalService.upsertAppointment(nextCopy, medCtx).catch(() => {});
+      },
+    });
+  };
+
+  const deleteAppointment = (id: string) => {
+    const idx = latestRef.current.appointments.findIndex((a) => a.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.appointments[idx]) : null;
+    setAppointments((prev) => prev.filter((a) => a.id !== id));
+    void medicalService.deleteAppointment(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'medical_clinic',
+        operationType: 'delete',
+        businessId: medCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: existing.patientName,
+        summary: pickLocalizedText(language, {
+          fr: `RDV médical ${existing.patientName} supprimé`,
+          en: `Appointment ${existing.patientName} deleted`,
+          ar: `تم حذف موعد ${existing.patientName}`,
+        }),
+        undo: () => {
+          restoreAt(setAppointments, existing, idx);
+          void syncCoordinator
+            .restoreRow('medical_appointments', existing.id, currentStaffId)
+            .then(() => medicalService.upsertAppointment(cloneSnapshot(existing), medCtx))
+            .catch(() => {});
+        },
+        redo: () => {
+          setAppointments((prev) => prev.filter((a) => a.id !== existing.id));
+          void medicalService.deleteAppointment(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
+  };
+
+  const addPrescription = (rx: MedicalPrescription) => {
+    const scoped = withBranch(rx);
+    const snap = cloneSnapshot(scoped);
+    setPrescriptions((prev) => [scoped, ...prev]);
+    void medicalService.upsertPrescription(scoped, medCtx).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'create',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.patientName,
+      summary: pickLocalizedText(language, {
+        fr: `Ordonnance ${scoped.patientName} créée`,
+        en: `Prescription for ${scoped.patientName} created`,
+        ar: `تم إنشاء وصفة طبية للمريض ${scoped.patientName}`,
+      }),
+      undo: () => {
+        setPrescriptions((prev) => prev.filter((r) => r.id !== snap.id));
+        void syncCoordinator
+          .softDeleteRow('medical_consultations', `rx_${snap.id}`, currentStaffId)
+          .catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setPrescriptions((prev) => (prev.some((r) => r.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('medical_consultations', `rx_${re.id}`, currentStaffId)
+          .then(() => medicalService.upsertPrescription(re, medCtx))
+          .catch(() => {});
+      },
+    });
+  };
+
+  const saveDoctorConfig = (doctorId: string, config: DoctorOrdonnanceConfig) => {
+    const prevCfg = latestRef.current.doctorConfigs[doctorId]
+      ? cloneSnapshot(latestRef.current.doctorConfigs[doctorId])
+      : undefined;
+    const nextCfg = cloneSnapshot(config);
+    setDoctorConfigs((prev) => ({
+      ...prev,
+      [doctorId]: config,
+    }));
+    void medicalService.upsertOrdonnanceConfig(config, medCtx).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'edit',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: config.doctorName,
+      summary: pickLocalizedText(language, {
+        fr: `Modèle ordonnance ${config.doctorName} enregistré`,
+        en: `Prescription header for ${config.doctorName} saved`,
+        ar: `تم حفظ إعدادات وصفة ${config.doctorName}`,
+      }),
+      undo: () => {
+        setDoctorConfigs((prev) => {
+          const copy = { ...prev };
+          if (prevCfg) {
+            copy[doctorId] = cloneSnapshot(prevCfg);
+            void medicalService.upsertOrdonnanceConfig(cloneSnapshot(prevCfg), medCtx).catch(() => {});
+          } else {
+            delete copy[doctorId];
+          }
+          return copy;
+        });
+      },
+      redo: () => {
+        const re = cloneSnapshot(nextCfg);
+        setDoctorConfigs((prev) => ({ ...prev, [doctorId]: re }));
+        void medicalService.upsertOrdonnanceConfig(re, medCtx).catch(() => {});
+      },
+    });
+  };
+
+  const addCertificate = (cert: MedicalCertificateRecord) => {
+    const scoped = withBranch(cert);
+    const snap = cloneSnapshot(scoped);
+    setCertificates((prev) => [scoped, ...prev]);
+    void medicalService.upsertCertificate(scoped, medCtx).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'create',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.patientName,
+      summary: pickLocalizedText(language, {
+        fr: `Certificat médical ${scoped.patientName} émis`,
+        en: `Medical certificate for ${scoped.patientName} issued`,
+        ar: `تم إصدار شهادة طبية للمريض ${scoped.patientName}`,
+      }),
+      undo: () => {
+        setCertificates((prev) => prev.filter((c) => c.id !== snap.id));
+        void syncCoordinator
+          .softDeleteRow('medical_consultations', `cert_${snap.id}`, currentStaffId)
+          .catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setCertificates((prev) => (prev.some((c) => c.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('medical_consultations', `cert_${re.id}`, currentStaffId)
+          .then(() => medicalService.upsertCertificate(re, medCtx))
+          .catch(() => {});
+      },
+    });
+  };
+
+  const addLabRecord = (lab: MedicalLabRecord) => {
+    const scoped = withBranch(lab);
+    const snap = cloneSnapshot(scoped);
+    setLabRecords((prev) => [scoped, ...prev]);
+    void medicalService.upsertLabRecord(scoped, medCtx).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'create',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.patientName,
+      summary: pickLocalizedText(language, {
+        fr: `Bilan labo ${scoped.testCategory} (${scoped.patientName}) ajouté`,
+        en: `Lab record ${scoped.testCategory} (${scoped.patientName}) added`,
+        ar: `تمت إضافة تحليل مخبري (${scoped.patientName})`,
+      }),
+      undo: () => {
+        setLabRecords((prev) => prev.filter((l) => l.id !== snap.id));
+        void syncCoordinator
+          .softDeleteRow('medical_consultations', `lab_${snap.id}`, currentStaffId)
+          .catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setLabRecords((prev) => (prev.some((l) => l.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('medical_consultations', `lab_${re.id}`, currentStaffId)
+          .then(() => medicalService.upsertLabRecord(re, medCtx))
+          .catch(() => {});
+      },
+    });
+  };
+
+  const addChifaClaim = (claim: ChifaClaimRecord) => {
+    const scoped = withBranch(claim);
+    const snap = cloneSnapshot(scoped);
+    setChifaClaims((prev) => [scoped, ...prev]);
+    void medicalService.upsertChifaClaim(scoped, medCtx).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'create',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.claimNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Bordereau Chifa ${scoped.claimNumber} enregistré`,
+        en: `Chifa claim ${scoped.claimNumber} created`,
+        ar: `تم تسجيل ملف شفاء ${scoped.claimNumber}`,
+      }),
+      undo: () => {
+        setChifaClaims((prev) => prev.filter((c) => c.id !== snap.id));
+        void syncCoordinator
+          .softDeleteRow('medical_invoices', `chifa_${snap.id}`, currentStaffId)
+          .catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setChifaClaims((prev) => (prev.some((c) => c.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('medical_invoices', `chifa_${re.id}`, currentStaffId)
+          .then(() => medicalService.upsertChifaClaim(re, medCtx))
+          .catch(() => {});
+      },
+    });
+  };
+
+  const addCashClosure = (closure: DailyCashClosure) => {
+    const scoped = withBranch(closure);
+    const snap = cloneSnapshot(scoped);
+    setCashClosures((prev) => [scoped, ...prev]);
+    void medicalService.upsertCashClosure(scoped, medCtx).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'create',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.date || scoped.id,
+      summary: pickLocalizedText(language, {
+        fr: `Clôture caisse médicale ${scoped.date || ''} enregistrée`.trim(),
+        en: `Medical cash closure ${scoped.date || ''} saved`.trim(),
+        ar: `تم تسجيل إغلاق الصندوق الطبي ${scoped.date || ''}`.trim(),
+      }),
+      undo: () => {
+        setCashClosures((prev) => prev.filter((c) => c.id !== snap.id));
+        void syncCoordinator
+          .softDeleteRow('medical_invoices', `close_${snap.id}`, currentStaffId)
+          .catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setCashClosures((prev) => (prev.some((c) => c.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('medical_invoices', `close_${re.id}`, currentStaffId)
+          .then(() => medicalService.upsertCashClosure(re, medCtx))
+          .catch(() => {});
+      },
+    });
+  };
+
+  const toggleEmergencyAlarm = (overrideState?: boolean) => {
+    const prevVal = latestRef.current.isEmergencyAlarmActive;
+    const nextVal = typeof overrideState === 'boolean' ? overrideState : !prevVal;
+    if (prevVal === nextVal) return;
+    setIsEmergencyAlarmActive(nextVal);
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'status',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: 'Urgence',
+      summary: pickLocalizedText(language, {
+        fr: nextVal ? 'Alerte urgence clinique activée' : 'Alerte urgence clinique désactivée',
+        en: nextVal ? 'Clinic emergency alarm activated' : 'Clinic emergency alarm cleared',
+        ar: nextVal ? 'تم تفعيل إنذار الطوارئ' : 'تم إيقاف إنذار الطوارئ',
+      }),
+      undo: () => setIsEmergencyAlarmActive(prevVal),
+      redo: () => setIsEmergencyAlarmActive(nextVal),
+    });
+  };
+
+  const applyDepleteConsumable = (itemCode: string, quantity: number) => {
+    let matchedPrev: ClinicConsumableItem | null = null;
+    let matchedNext: ClinicConsumableItem | null = null;
     setConsumables((prev) =>
       prev.map((item) => {
         if (item.itemCode === itemCode || item.id === itemCode) {
+          matchedPrev = cloneSnapshot(item);
           const prevQty = item.currentStockUnits ?? item.currentStock ?? 0;
           const newQty = Math.max(0, prevQty - quantity);
           const next = { ...item, currentStock: newQty, currentStockUnits: newQty };
+          matchedNext = cloneSnapshot(next);
           void medicalService.upsertConsumable(next, medCtx).catch(() => {});
           return next;
         }
         return item;
       })
     );
+    return { matchedPrev, matchedNext };
+  };
+
+  const depleteConsumable = (itemCode: string, quantity: number) => {
+    const existing = latestRef.current.consumables.find(
+      (item) => item.itemCode === itemCode || item.id === itemCode
+    );
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const { matchedNext } = applyDepleteConsumable(itemCode, quantity);
+
+    if (prevSnap && matchedNext) {
+      const nextSnap = matchedNext;
+      registerUndoEntry({
+        vertical: 'medical_clinic',
+        operationType: 'edit',
+        businessId: medCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: prevSnap.name,
+        summary: pickLocalizedText(language, {
+          fr: `Sortie consommable ${prevSnap.name} (-${quantity})`,
+          en: `Consumable depleted: ${prevSnap.name} (-${quantity})`,
+          ar: `تم خصم ${prevSnap.name} (-${quantity})`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setConsumables((prev) => prev.map((c) => (c.id === prevCopy.id ? prevCopy : c)));
+          void medicalService.upsertConsumable(prevCopy, medCtx).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setConsumables((prev) => prev.map((c) => (c.id === nextCopy.id ? nextCopy : c)));
+          void medicalService.upsertConsumable(nextCopy, medCtx).catch(() => {});
+        },
+      });
+    }
   };
 
   const restockConsumable = (itemCode: string, quantity: number) => {
+    const existing = latestRef.current.consumables.find(
+      (item) => item.itemCode === itemCode || item.id === itemCode
+    );
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    let nextSnap: ClinicConsumableItem | null = null;
     setConsumables((prev) =>
       prev.map((item) => {
         if (item.itemCode === itemCode || item.id === itemCode) {
           const prevQty = item.currentStockUnits ?? item.currentStock ?? 0;
           const newQty = prevQty + quantity;
           const next = { ...item, currentStock: newQty, currentStockUnits: newQty };
+          nextSnap = cloneSnapshot(next);
           void medicalService.upsertConsumable(next, medCtx).catch(() => {});
           return next;
         }
         return item;
       })
     );
-  };
 
-  const depleteForAct = (actCode: string) => {
-    if (actCode === 'C' || actCode === 'CS') {
-      depleteConsumable('CON_01', 1);
-    } else if (actCode === 'K') {
-      depleteConsumable('CON_01', 1);
-      depleteConsumable('CON_02', 1);
-      depleteConsumable('CON_03', 1);
-    } else if (actCode === 'KE') {
-      depleteConsumable('CON_05', 1);
-    } else if (actCode === 'ECG') {
-      depleteConsumable('CON_04', 6);
+    if (prevSnap && nextSnap) {
+      const capturedNext = nextSnap;
+      registerUndoEntry({
+        vertical: 'medical_clinic',
+        operationType: 'edit',
+        businessId: medCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: prevSnap.name,
+        summary: pickLocalizedText(language, {
+          fr: `Réapprovisionnement ${prevSnap.name} (+${quantity})`,
+          en: `Restocked ${prevSnap.name} (+${quantity})`,
+          ar: `تم تزويد ${prevSnap.name} (+${quantity})`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setConsumables((prev) => prev.map((c) => (c.id === prevCopy.id ? prevCopy : c)));
+          void medicalService.upsertConsumable(prevCopy, medCtx).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(capturedNext);
+          setConsumables((prev) => prev.map((c) => (c.id === nextCopy.id ? nextCopy : c)));
+          void medicalService.upsertConsumable(nextCopy, medCtx).catch(() => {});
+        },
+      });
     }
   };
 
+  const depleteForAct = (actCode: string) => {
+    const prevConsumables = cloneSnapshot(latestRef.current.consumables);
+    if (actCode === 'C' || actCode === 'CS') {
+      applyDepleteConsumable('CON_01', 1);
+    } else if (actCode === 'K') {
+      applyDepleteConsumable('CON_01', 1);
+      applyDepleteConsumable('CON_02', 1);
+      applyDepleteConsumable('CON_03', 1);
+    } else if (actCode === 'KE') {
+      applyDepleteConsumable('CON_05', 1);
+    } else if (actCode === 'ECG') {
+      applyDepleteConsumable('CON_04', 6);
+    } else {
+      return;
+    }
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'bulk',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: actCode,
+      summary: pickLocalizedText(language, {
+        fr: `Consommables déduits pour acte ${actCode}`,
+        en: `Consumables deducted for act ${actCode}`,
+        ar: `تم خصم المستلزمات للعمل الطبي ${actCode}`,
+      }),
+      undo: () => {
+        const prevList = cloneSnapshot(prevConsumables);
+        setConsumables(prevList);
+        prevList.forEach((item) => {
+          void medicalService.upsertConsumable(item, medCtx).catch(() => {});
+        });
+      },
+    });
+  };
+
   const deleteConsumable = (id: string) => {
+    const idx = latestRef.current.consumables.findIndex((c) => c.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.consumables[idx]) : null;
     setConsumables((prev) => prev.filter((c) => c.id !== id));
     void medicalService.deleteConsumable(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'medical_clinic',
+        operationType: 'delete',
+        businessId: medCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: existing.name,
+        summary: pickLocalizedText(language, {
+          fr: `Consommable ${existing.name} supprimé`,
+          en: `Consumable ${existing.name} deleted`,
+          ar: `تم حذف المستلزم ${existing.name}`,
+        }),
+        undo: () => {
+          restoreAt(setConsumables, existing, idx);
+          void syncCoordinator
+            .restoreRow('medical_consumables', existing.id, currentStaffId)
+            .then(() => medicalService.upsertConsumable(cloneSnapshot(existing), medCtx))
+            .catch(() => {});
+        },
+        redo: () => {
+          setConsumables((prev) => prev.filter((c) => c.id !== existing.id));
+          void medicalService.deleteConsumable(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const scopedPractitioners = useMemo(() => practitioners.filter(belongsToActiveBranch), [practitioners, belongsToActiveBranch]);
@@ -1446,6 +2093,7 @@ export const useMedicalData = () => {
   };
 
   const resetToDemoData = () => {
+    const snap = cloneSnapshot(latestRef.current);
     setPractitioners(INITIAL_PRACTITIONERS);
     setDoctorConfigs(DEFAULT_ORDONNANCE_CONFIGS);
     setPatients((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
@@ -1458,6 +2106,33 @@ export const useMedicalData = () => {
     setConsumables((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
     setCashClosures((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
     setIsEmergencyAlarmActive(false);
+
+    registerUndoEntry({
+      vertical: 'medical_clinic',
+      operationType: 'bulk',
+      businessId: medCtx.businessId,
+      branchId: activeBranchId,
+      summary: pickLocalizedText(language, {
+        fr: 'Données cliniques réinitialisées',
+        en: 'Clinic data reset',
+        ar: 'تمت إعادة ضبط بيانات العيادة',
+      }),
+      undo: () => {
+        const s = cloneSnapshot(snap);
+        setPractitioners(s.practitioners);
+        setDoctorConfigs(s.doctorConfigs);
+        setPatients(s.patients);
+        setConsultations(s.consultations);
+        setAppointments(s.appointments);
+        setPrescriptions(s.prescriptions);
+        setLabRecords(s.labRecords);
+        setCertificates(s.certificates);
+        setChifaClaims(s.chifaClaims);
+        setConsumables(s.consumables);
+        setCashClosures(s.cashClosures);
+        setIsEmergencyAlarmActive(s.isEmergencyAlarmActive);
+      },
+    });
   };
 
   return {

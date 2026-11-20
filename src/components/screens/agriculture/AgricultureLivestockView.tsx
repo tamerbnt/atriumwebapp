@@ -19,6 +19,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -218,14 +219,9 @@ export const AgricultureLivestockView: React.FC = () => {
     if (animalToEdit) {
       updateLivestock(payload);
       if (selectedAnimal?.id === payload.id) setSelectedAnimal(payload);
-      showToast(isAr ? 'تم تحديث بيانات الحيوان' : 'Fiche animale mise à jour', 'success');
     } else {
       addLivestock(payload);
       setSelectedAnimal(payload);
-      showToast(
-        isAr ? 'تم تسجيل رأس الماشية في السجل البيطري' : 'Animal enregistré au carnet sanitaire',
-        'success'
-      );
     }
     setIsAnimalModalOpen(false);
   };
@@ -400,9 +396,8 @@ export const AgricultureLivestockView: React.FC = () => {
     (a: AgriLivestock) => {
       deleteLivestock(a.id);
       if (selectedAnimal?.id === a.id) setSelectedAnimal(null);
-      showToast(isAr ? 'تم حذف الحيوان من السجل' : 'Animal retiré du registre', 'info');
     },
-    [deleteLivestock, selectedAnimal, isAr]
+    [deleteLivestock, selectedAnimal]
   );
 
   const handleToggleHealth = useCallback(
@@ -417,12 +412,8 @@ export const AgricultureLivestockView: React.FC = () => {
       };
       updateLivestock(updated);
       if (selectedAnimal?.id === a.id) setSelectedAnimal(updated);
-      showToast(
-        isAr ? `تغيرت الحالة الصحية: ${nextHealth}` : `Statut sanitaire mis à jour : ${nextHealth}`,
-        'info'
-      );
     },
-    [updateLivestock, selectedAnimal, isAr]
+    [updateLivestock, selectedAnimal]
   );
 
   const handleExportCsv = useCallback(() => {
@@ -1186,10 +1177,28 @@ export const AgricultureLivestockView: React.FC = () => {
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
             onBulkDelete={(ids) => {
-              ids.forEach((id) => deleteLivestock(id));
+              const count = ids.size;
+              runUndoBatch(
+                {
+                  operationType: 'bulk',
+                  vertical: 'agriculture',
+                  label: {
+                    fr: `${count} têtes retirées du cheptel`,
+                    en: `${count} livestock records deleted`,
+                    ar: `تم حذف ${count} رؤوس ماشية`,
+                  },
+                  moduleLabel: {
+                    fr: 'Cheptel & Lait',
+                    en: 'Livestock & Dairy',
+                    ar: 'الثروة الحيوانية',
+                  },
+                },
+                () => {
+                  ids.forEach((id) => deleteLivestock(id));
+                }
+              );
               setSelectedIds(new Set<string>());
               if (selectedAnimal && ids.has(selectedAnimal.id)) setSelectedAnimal(null);
-              showToast(isAr ? 'تم حذف الرؤوس المحددة' : 'Animaux retirés du registre', 'info');
             }}
             isPinned={(a) => pinnedIds.has(a.id)}
             onTogglePin={handlePin}
@@ -1251,10 +1260,28 @@ export const AgricultureLivestockView: React.FC = () => {
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
             onBulkDelete={(ids) => {
-              ids.forEach((id) => deleteMilkingRecord(id));
+              const count = ids.size;
+              runUndoBatch(
+                {
+                  operationType: 'bulk',
+                  vertical: 'agriculture',
+                  label: {
+                    fr: `${count} sessions de traite supprimées`,
+                    en: `${count} milking sessions deleted`,
+                    ar: `تم حذف ${count} جلسات حلب`,
+                  },
+                  moduleLabel: {
+                    fr: 'Cheptel & Lait',
+                    en: 'Livestock & Dairy',
+                    ar: 'الثروة الحيوانية',
+                  },
+                },
+                () => {
+                  ids.forEach((id) => deleteMilkingRecord(id));
+                }
+              );
               setSelectedIds(new Set<string>());
               if (selectedMilking && ids.has(selectedMilking.id)) setSelectedMilking(null);
-              showToast(isAr ? 'تم حذف الجلسات المحددة' : 'Sessions de traite retirées', 'info');
             }}
             isPinned={(m) => pinnedIds.has(m.id)}
             onTogglePin={handlePin}
@@ -1283,7 +1310,6 @@ export const AgricultureLivestockView: React.FC = () => {
             onDelete={(m) => {
               deleteMilkingRecord(m.id);
               if (selectedMilking?.id === m.id) setSelectedMilking(null);
-              showToast(isAr ? 'تم حذف جلسة الحلب' : 'Session de traite retirée', 'info');
             }}
             emptyTitle={
               isAr ? 'لا توجد جلسات حلب مسجلة' : 'Aucune session de traite enregistrée'
@@ -1394,7 +1420,6 @@ export const AgricultureLivestockView: React.FC = () => {
                     const updated: AgriLivestock = { ...animal, notes: next };
                     updateLivestock(updated);
                     setSelectedAnimal(updated);
-                    showToast(isAr ? 'تم حفظ الملاحظات البيطرية' : 'Carnet sanitaire enregistré', 'success');
                   }}
                   placeholder="Vaccinations, vermifuges, dates d'insémination..."
                 />
@@ -1507,7 +1532,6 @@ export const AgricultureLivestockView: React.FC = () => {
         onDelete={(m) => {
           deleteMilkingRecord(m.id);
           if (selectedMilking?.id === m.id) setSelectedMilking(null);
-          showToast(isAr ? 'تم حذف جلسة الحلب' : 'Session de traite retirée', 'info');
         }}
         holdToDelete
         renderBody={(milk, tab) => {
@@ -1727,10 +1751,6 @@ export const AgricultureLivestockView: React.FC = () => {
           addMilkingRecord(rec);
           setSelectedMilking(rec);
           setIsMilkingModalOpen(false);
-          showToast(
-            isAr ? 'تم قيد جلسة الحلب بنجاح' : 'Session de traite enregistrée',
-            'success'
-          );
         }}
         dairyCows={livestock}
       />

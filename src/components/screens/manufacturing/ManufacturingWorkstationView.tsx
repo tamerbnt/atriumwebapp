@@ -225,11 +225,6 @@ export const ManufacturingWorkstationView: React.FC = () => {
     const scrapQty = parseInt(scrapQuantityInput, 10) || 0;
     const updatedProduced =
       (currentOrder.actualQuantityProduced || currentOrder.quantityProduced || 0) + goodQty;
-    const yieldStats = computeScrapYield(
-      currentOrder.targetQuantity,
-      updatedProduced,
-      (currentOrder.scrapQuantity || 0) + scrapQty
-    );
     const updatedOrder: ManufacturingOrder = {
       ...currentOrder,
       actualQuantityProduced: updatedProduced,
@@ -241,14 +236,6 @@ export const ManufacturingWorkstationView: React.FC = () => {
     setIsFinishModalOpen(false);
     setElapsedSeconds(0);
     setSessionStartTime(null);
-    showToast(
-      isAr
-        ? `تم تسجيل ${goodQty} وحدة مطابقة و ${scrapQty} قطعة خردة. نسبة المطابقة: ${yieldStats.yieldPercent}%`
-        : isEn
-        ? `Logged +${goodQty} good units, +${scrapQty} scrap. Yield: ${yieldStats.yieldPercent}%`
-        : `Déclaration validée : +${goodQty} pièces conformes, +${scrapQty} rebuts. Rendement : ${yieldStats.yieldPercent}%`,
-      'success'
-    );
   };
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({

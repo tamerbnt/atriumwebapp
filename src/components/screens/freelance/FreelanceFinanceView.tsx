@@ -9,7 +9,8 @@ import {
   CheckCircle2,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumStore } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceExpense, ExpenseCategory, CurrencyCode } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
@@ -221,18 +222,26 @@ export const FreelanceFinanceView: React.FC = () => {
 
   const handleBatchDeleteExpenses = () => {
     const targetIds = Array.from(selectedExpenseIds);
-    targetIds.forEach((id) => {
-      deleteFreelanceExpense(id);
-      if (selectedExpense?.id === id) setSelectedExpense(null);
-    });
+    if (targetIds.length === 0) return;
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `حذف مصاريف (${targetIds.length})`
+          : isFr
+          ? `Suppression dépenses (${targetIds.length})`
+          : `Delete expenses (${targetIds.length})`,
+        entityType: 'freelanceExpense',
+      },
+      () => {
+        targetIds.forEach((id) => {
+          deleteFreelanceExpense(id);
+          if (selectedExpense?.id === id) setSelectedExpense(null);
+        });
+      }
+    );
     setSelectedExpenseIds(new Set());
-    showToast({
-      type: 'warning',
-      title: isAr ? 'تم حذف المصاريف' : isFr ? 'Dépenses supprimées' : 'Expenses Removed',
-      message: `${targetIds.length} ${
-        isAr ? 'مصروف تم حذفه بنجاح' : isFr ? 'dépenses supprimées' : 'expenses removed'
-      }.`,
-    });
   };
 
   const handleExportCSV = useCallback(() => {

@@ -248,14 +248,9 @@ export const MembershipShopView: React.FC = React.memo(() => {
       quantity: item.quantity,
       discount: item.discount,
     }));
-    const newSale = processSale(saleItems, paymentMethod);
+    processSale(saleItems, paymentMethod);
     setCart([]);
-    showToast?.({
-      type: 'success',
-      title: isAr ? 'تمت عملية البيع بنجاح' : 'Vente Clôturée avec Succès',
-      message: `${isAr ? 'وصل رقم' : 'Ticket'} #${newSale.id.slice(-6).toUpperCase()} · ${formatMoney(cartTotal)}`,
-    });
-  }, [cart, processSale, paymentMethod, showToast, isAr, cartTotal]);
+  }, [cart, processSale, paymentMethod]);
 
   const handleResetFilters = useCallback(() => {
     setSelectedCategory('All');

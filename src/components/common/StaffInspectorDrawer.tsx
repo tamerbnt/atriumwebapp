@@ -27,7 +27,6 @@ import {
   canCreateStaff,
 } from '../../utils/staffRules';
 import { formatMoney } from '../../utils/rules';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
 import {
   KineticSlideOverInspector,
   InspectorSection,
@@ -96,8 +95,6 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
     punchStaffAttendance,
     updateStaffMember,
   } = useAtriumActions();
-
-  const [confirmAction, setConfirmAction] = useState<'freeze' | 'vacation' | 'terminate' | null>(null);
 
   const isAr = storeSlice.language === 'ar';
   const isEn = storeSlice.language === 'en';
@@ -175,20 +172,17 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
     }
   };
 
-  const handleConfirm = () => {
-    if (!staff) return;
+  const handleLifecycleAction = (action: 'freeze' | 'vacation' | 'terminate', targetId: string) => {
     try {
-      if (confirmAction === 'freeze') freezeStaffMember(staff.id);
-      else if (confirmAction === 'vacation') vacationStaffMember(staff.id);
-      else if (confirmAction === 'terminate') terminateStaffMember(staff.id);
+      if (action === 'freeze') freezeStaffMember(targetId);
+      else if (action === 'vacation') vacationStaffMember(targetId);
+      else if (action === 'terminate') terminateStaffMember(targetId);
     } catch (e: any) {
       showToast({
         type: 'warning',
         title: isAr ? 'تعذر إتمام العملية' : isEn ? 'Operation Restricted' : 'Action refusée',
         message: e.message || 'Action impossible.',
       });
-    } finally {
-      setConfirmAction(null);
     }
   };
 
@@ -248,11 +242,6 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
             ? (target) => {
                 deleteStaffMember(target.id);
                 onClose();
-                showToast({
-                  type: 'warning',
-                  title: isAr ? 'تم الحذف' : isEn ? 'Removed' : 'Collaborateur supprimé',
-                  message: target.fullName,
-                });
               }
             : undefined
         }
@@ -441,21 +430,21 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
                           label: isAr ? 'تجميد' : isEn ? 'Pause' : 'Suspendre accès',
                           icon: <PauseCircle className="w-4 h-4 text-amber-500" strokeWidth={1.5} />,
                           disabled: activeStaff.status === 'frozen',
-                          onClick: () => setConfirmAction('freeze'),
+                          onClick: () => handleLifecycleAction('freeze', activeStaff.id),
                         },
                         {
                           id: 'leave',
                           label: isAr ? 'عطلة' : isEn ? 'Leave' : 'Mettre en congé',
                           icon: <Plane className="w-4 h-4 text-blue-500" strokeWidth={1.5} />,
                           disabled: activeStaff.status === 'vacation' || activeStaff.status === 'on_leave',
-                          onClick: () => setConfirmAction('vacation'),
+                          onClick: () => handleLifecycleAction('vacation', activeStaff.id),
                         },
                         {
                           id: 'end',
                           label: isAr ? 'إنهاء العقد' : isEn ? 'Terminate' : 'Fin de contrat',
                           icon: <AlertTriangle className="w-4 h-4 text-[#c0283d]" strokeWidth={1.5} />,
                           disabled: activeStaff.status === 'terminated',
-                          onClick: () => setConfirmAction('terminate'),
+                          onClick: () => handleLifecycleAction('terminate', activeStaff.id),
                         },
                       ]}
                     />
@@ -486,14 +475,14 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
                     label: isAr ? 'عطلة' : isEn ? 'Set Leave' : 'Congé',
                     icon: <Plane className="w-4 h-4 text-blue-500" strokeWidth={1.5} />,
                     disabled: activeStaff.status === 'vacation' || activeStaff.status === 'on_leave',
-                    onClick: () => setConfirmAction('vacation'),
+                    onClick: () => handleLifecycleAction('vacation', activeStaff.id),
                   },
                   {
                     id: 'freeze',
                     label: isAr ? 'تجميد' : isEn ? 'Pause' : 'Suspendre',
                     icon: <PauseCircle className="w-4 h-4 text-amber-500" strokeWidth={1.5} />,
                     disabled: activeStaff.status === 'frozen',
-                    onClick: () => setConfirmAction('freeze'),
+                    onClick: () => handleLifecycleAction('freeze', activeStaff.id),
                   },
                 ]
               : [
@@ -611,39 +600,12 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
                   }
                   onSave={(nextNotes) => {
                     updateStaffMember(activeStaff.id, { notes: nextNotes });
-                    showToast({
-                      type: 'success',
-                      title: isAr ? 'تم الحفظ' : isEn ? 'Notes saved' : 'Notes enregistrées',
-                      message: activeStaff.fullName,
-                    });
                   }}
                 />
               </InspectorSection>
             </>
           );
         }}
-      />
-
-      <ConfirmDialog
-        isOpen={confirmAction !== null}
-        onClose={() => setConfirmAction(null)}
-        onConfirm={handleConfirm}
-        title={
-          confirmAction === 'freeze'
-            ? 'Geler le compte de ce collaborateur ?'
-            : confirmAction === 'vacation'
-            ? 'Marquer le départ en congé ?'
-            : 'Arrêter définitivement le contrat ?'
-        }
-        description={staff ? `Confirmer la modification de statut pour ${staff.fullName} ?` : ''}
-        confirmLabel={
-          confirmAction === 'freeze'
-            ? "Geler l'accès"
-            : confirmAction === 'terminate'
-            ? 'Arrêter contrat'
-            : 'Confirmer'
-        }
-        variant={confirmAction === 'terminate' ? 'danger' : 'warning'}
       />
     </>
   );

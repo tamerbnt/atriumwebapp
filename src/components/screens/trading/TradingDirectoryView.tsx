@@ -9,12 +9,12 @@ import {
   Download,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { B2bClient, B2bSupplier } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { B2bEntityModal } from './B2bEntityModal';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
-import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -90,7 +90,6 @@ export const TradingDirectoryView: React.FC = () => {
   const [entityModalOpen, setEntityModalOpen] = useState(false);
   const [editingEntity, setEditingEntity] = useState<B2bClient | B2bSupplier | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<B2bClient | B2bSupplier | null>(null);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -363,7 +362,8 @@ export const TradingDirectoryView: React.FC = () => {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setDeleteTarget(c);
+                deleteB2bClient(c.id);
+                if (selectedEntity?.id === c.id) setSelectedEntity(null);
               }}
               aria-label={t('action_delete', 'Supprimer')}
               data-sq="ctl-sm"
@@ -376,7 +376,7 @@ export const TradingDirectoryView: React.FC = () => {
         ),
       },
     ],
-    [t, isAr, isEn, branchesById, currentBranch, language]
+    [t, isAr, isEn, branchesById, currentBranch, language, deleteB2bClient, selectedEntity?.id]
   );
 
   const supplierColumns: ColumnDefinition<B2bSupplier>[] = useMemo(
@@ -469,7 +469,8 @@ export const TradingDirectoryView: React.FC = () => {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setDeleteTarget(s);
+                deleteB2bSupplier(s.id);
+                if (selectedEntity?.id === s.id) setSelectedEntity(null);
               }}
               aria-label={t('action_delete', 'Supprimer')}
               data-sq="ctl-sm"
@@ -482,7 +483,7 @@ export const TradingDirectoryView: React.FC = () => {
         ),
       },
     ],
-    [t, isAr, isEn, branchesById, currentBranch, language]
+    [t, isAr, isEn, branchesById, currentBranch, language, deleteB2bSupplier, selectedEntity?.id]
   );
 
   const entityHistory = useMemo(() => {
@@ -671,14 +672,24 @@ export const TradingDirectoryView: React.FC = () => {
               },
             }}
             onBulkDelete={(ids) => {
-              ids.forEach((id) => deleteB2bClient(id));
+              if (ids.size === 0) return;
+              runUndoBatch(
+                {
+                  category: 'b2b_commercial',
+                  operationType: 'bulk',
+                  label: isAr
+                    ? `حذف عملاء (${ids.size})`
+                    : isEn
+                    ? `Delete clients (${ids.size})`
+                    : `Suppression clients (${ids.size})`,
+                  entityType: 'b2bClient',
+                },
+                () => {
+                  ids.forEach((id) => deleteB2bClient(id));
+                }
+              );
               setSelectedEntityIds(new Set<string>());
               if (selectedEntity && ids.has(selectedEntity.id)) setSelectedEntity(null);
-              showToast({
-                type: 'info',
-                title: isAr ? 'تم الحذف' : 'Partenaires supprimés',
-                message: `${ids.size} fiche(s) retirée(s).`,
-              });
             }}
             onItemClick={(c, el) => {
               setDrawerOpenerEl(el || null);
@@ -692,7 +703,10 @@ export const TradingDirectoryView: React.FC = () => {
               setEditingEntity(c);
               setEntityModalOpen(true);
             }}
-            onDelete={(c) => setDeleteTarget(c)}
+            onDelete={(c) => {
+              deleteB2bClient(c.id);
+              if (selectedEntity?.id === c.id) setSelectedEntity(null);
+            }}
             getRowMeta={(c) => {
               const isOver = (c.outstandingBalance || 0) > (c.creditLimit || 0);
               const branchInfo = resolveRecordBranch(c, branchesById, currentBranch, language);
@@ -737,7 +751,10 @@ export const TradingDirectoryView: React.FC = () => {
                 label: t('action_delete', 'Supprimer'),
                 icon: <Trash2 size={14} />,
                 isDanger: true,
-                onClick: () => setDeleteTarget(c),
+                onClick: () => {
+                  deleteB2bClient(c.id);
+                  if (selectedEntity?.id === c.id) setSelectedEntity(null);
+                },
               },
             ]}
             getDetailActions={(c) => [
@@ -797,10 +814,24 @@ export const TradingDirectoryView: React.FC = () => {
               },
             }}
             onBulkDelete={(ids) => {
-              ids.forEach((id) => deleteB2bSupplier(id));
+              if (ids.size === 0) return;
+              runUndoBatch(
+                {
+                  category: 'b2b_commercial',
+                  operationType: 'bulk',
+                  label: isAr
+                    ? `حذف موردين (${ids.size})`
+                    : isEn
+                    ? `Delete suppliers (${ids.size})`
+                    : `Suppression fournisseurs (${ids.size})`,
+                  entityType: 'b2bSupplier',
+                },
+                () => {
+                  ids.forEach((id) => deleteB2bSupplier(id));
+                }
+              );
               setSelectedEntityIds(new Set<string>());
               if (selectedEntity && ids.has(selectedEntity.id)) setSelectedEntity(null);
-              showToast({ type: 'info', title: 'Fournisseurs supprimés', message: `${ids.size} fiche(s) retirée(s).` });
             }}
             onItemClick={(s, el) => {
               setDrawerOpenerEl(el || null);
@@ -814,7 +845,10 @@ export const TradingDirectoryView: React.FC = () => {
               setEditingEntity(s);
               setEntityModalOpen(true);
             }}
-            onDelete={(s) => setDeleteTarget(s)}
+            onDelete={(s) => {
+              deleteB2bSupplier(s.id);
+              if (selectedEntity?.id === s.id) setSelectedEntity(null);
+            }}
             getRowMeta={(s) => {
               const branchInfo = resolveRecordBranch(s, branchesById, currentBranch, language);
               return {
@@ -849,7 +883,10 @@ export const TradingDirectoryView: React.FC = () => {
                 label: t('action_delete', 'Supprimer'),
                 icon: <Trash2 size={14} />,
                 isDanger: true,
-                onClick: () => setDeleteTarget(s),
+                onClick: () => {
+                  deleteB2bSupplier(s.id);
+                  if (selectedEntity?.id === s.id) setSelectedEntity(null);
+                },
               },
             ]}
             getDetailActions={(s) => [
@@ -866,7 +903,10 @@ export const TradingDirectoryView: React.FC = () => {
                 id: 'delete',
                 label: t('action_delete', 'Supprimer'),
                 icon: <Trash2 size={13} />,
-                onClick: () => setDeleteTarget(s),
+                onClick: () => {
+                  deleteB2bSupplier(s.id);
+                  if (selectedEntity?.id === s.id) setSelectedEntity(null);
+                },
               },
             ]}
             emptyTitle={isAr ? 'لم يتم العثور على موردين' : 'Aucun fournisseur trouvé'}
@@ -939,7 +979,11 @@ export const TradingDirectoryView: React.FC = () => {
         onTabChange={(tab) => setDrawerTab(tab as DrawerTab)}
         onClose={() => setSelectedEntity(null)}
         onSelectItem={(e) => setSelectedEntity(e)}
-        onDelete={(e) => setDeleteTarget(e)}
+        onDelete={(e) => {
+          if (mode === 'clients') deleteB2bClient(e.id);
+          else deleteB2bSupplier(e.id);
+          setSelectedEntity(null);
+        }}
         holdToDelete
         renderBody={(ent, tab) => {
           const isClient = 'outstandingBalance' in ent;
@@ -1099,22 +1143,6 @@ export const TradingDirectoryView: React.FC = () => {
         editingEntity={editingEntity as any}
       />
       <CommercialDocComposerModal isOpen={composerOpen} onClose={() => setComposerOpen(false)} />
-      <ConfirmDialog
-        isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={() => {
-          if (deleteTarget) {
-            if (mode === 'clients') deleteB2bClient(deleteTarget.id);
-            else deleteB2bSupplier(deleteTarget.id);
-            setDeleteTarget(null);
-            setSelectedEntity(null);
-          }
-        }}
-        title="Supprimer la fiche partenaire ?"
-        description="Êtes-vous certain de vouloir supprimer cette fiche ? Cette action retirera les coordonnées associées."
-        confirmLabel="Supprimer définitivement"
-        variant="danger"
-      />
     </div>
   );
 };

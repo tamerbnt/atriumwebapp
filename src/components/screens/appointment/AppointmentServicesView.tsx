@@ -24,7 +24,6 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney } from '../../../utils/rules';
-import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 import {
@@ -114,7 +113,6 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
 
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<ServiceItem | null>(null);
-  const [serviceToDelete, setServiceToDelete] = useState<ServiceItem | null>(null);
 
   const [formName, setFormName] = useState('');
   const [formCategory, setFormCategory] = useState<ServiceItem['category']>('Hair');
@@ -264,7 +262,6 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
           color: formColor,
           description: formDescription.trim(),
         });
-        showToast?.({ type: 'success', title: 'Prestation mise à jour', message: formName });
       } else {
         addServiceItem({
           tenantId: 'acc_01',
@@ -280,7 +277,6 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
           description: formDescription.trim(),
           isActive: true,
         });
-        showToast?.({ type: 'success', title: 'Prestation ajoutée', message: formName });
       }
       setIsServiceModalOpen(false);
     },
@@ -297,16 +293,13 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
       formDescription,
       updateServiceItem,
       addServiceItem,
-      showToast,
     ]
   );
 
   const handleBatchDelete = useCallback(() => {
-    const count = selectedServiceIds.size;
     batchDeleteServiceItems(Array.from(selectedServiceIds));
     setSelectedServiceIds(new Set());
-    showToast?.({ type: 'info', title: 'Suppression en masse', message: `${count} prestations supprimées.` });
-  }, [selectedServiceIds, batchDeleteServiceItems, showToast]);
+  }, [selectedServiceIds, batchDeleteServiceItems]);
 
   const handleExportCSV = useCallback(() => {
     const headers = [
@@ -522,10 +515,13 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         label: isAr ? 'حذف' : 'Supprimer',
         icon: <Trash2 className="w-[15px] h-[15px]" />,
         isDanger: true,
-        onClick: () => setServiceToDelete(service),
+        onClick: () => {
+          deleteServiceItem(service.id);
+          if (inspectingService?.id === service.id) setInspectingService(null);
+        },
       },
     ],
-    [isAr, handleOpenEditModal]
+    [isAr, handleOpenEditModal, deleteServiceItem, inspectingService?.id]
   );
 
   const getDetailActions = useCallback(
@@ -679,7 +675,10 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
             setInspectingService(service);
           }}
           onEdit={(service) => handleOpenEditModal(service)}
-          onDelete={(service) => setServiceToDelete(service)}
+          onDelete={(service) => {
+            deleteServiceItem(service.id);
+            if (inspectingService?.id === service.id) setInspectingService(null);
+          }}
           onBulkDelete={handleBatchDelete}
           emptyTitle={isAr ? 'لا توجد خدمات' : 'Aucune prestation trouvée'}
           emptyDescription={isAr ? 'أضف خدمات جديدة للكتالوج' : 'Ajoutez de nouvelles prestations au catalogue.'}
@@ -940,23 +939,6 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
           </div>
         </div>
       )}
-
-      <ConfirmDialog
-        isOpen={Boolean(serviceToDelete)}
-        onClose={() => setServiceToDelete(null)}
-        onConfirm={() => {
-          if (serviceToDelete) {
-            deleteServiceItem(serviceToDelete.id);
-            showToast?.({ type: 'info', title: 'Prestation retirée', message: serviceToDelete.name });
-            setServiceToDelete(null);
-          }
-        }}
-        title="Supprimer la prestation"
-        description={`Supprimer définitivement "${serviceToDelete?.name}" du catalogue ?`}
-        confirmLabel="Supprimer"
-        cancelLabel="Annuler"
-        variant="danger"
-      />
     </div>
   );
 });

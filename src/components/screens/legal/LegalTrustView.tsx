@@ -250,12 +250,6 @@ export const LegalTrustView: React.FC<any> = () => {
     };
     updateEscrowAccount(updated);
     setSelectedEscrow(updated);
-    showToast(
-      isAr
-        ? `تم التحقق وتثبيت الإشهار العقاري (${cadastralVolume} / ${cadastralNumber})`
-        : `Publicité foncière validée : ${cadastralVolume} ${cadastralNumber}`,
-      'success'
-    );
   };
 
   const handleExecuteDoubleLockRelease = () => {
@@ -299,12 +293,6 @@ export const LegalTrustView: React.FC<any> = () => {
     updateEscrowAccount(updated);
     setSelectedEscrow(updated);
     setNotaryPin('');
-    showToast(
-      isAr
-        ? `تم فك القفل المزدوج وتحويل ${formatMoney(amountToRelease, language)}`
-        : `Double-verrou validé : ${formatMoney(amountToRelease, language)} transférés`,
-      'success'
-    );
   };
 
   const handleSaveSCFEntry = (e: React.FormEvent) => {
@@ -369,12 +357,6 @@ export const LegalTrustView: React.FC<any> = () => {
     setSelectedSCFEntry(newEntry);
     setIsSCFModalOpen(false);
     setScfLibelle('');
-    showToast(
-      isAr
-        ? `تم تسجيل وترحيل القيد المحاسبي SCF رقم ${newEntry.entryNumber}`
-        : `Écriture SCF ${newEntry.entryNumber} équilibrée et validée au Grand Livre`,
-      'success'
-    );
   };
 
   const handleSaveCashReceipt = (e: React.FormEvent) => {
@@ -413,12 +395,6 @@ export const LegalTrustView: React.FC<any> = () => {
     setIsNewReceiptModalOpen(false);
     setReceiptClientName('');
     setReceiptMatterTitle('');
-    showToast(
-      isAr
-        ? `تم استلام ${formatMoney(newRc.netCollectedDzd, language)} نقداً`
-        : `Encaissement espèces enregistré : ${formatMoney(newRc.netCollectedDzd, language)}`,
-      'success'
-    );
   };
 
   const handleReleaseTrustFunds = useCallback(
@@ -437,14 +413,8 @@ export const LegalTrustView: React.FC<any> = () => {
       };
       updateMatter(updated);
       if (selectedMatter?.id === matter.id) setSelectedMatter(updated);
-      showToast(
-        isAr
-          ? `تم الإفراج عن الوديعة (${formatMoney(amount, language)})`
-          : `Déblocage des fonds séquestre (${formatMoney(amount, language)}) validé par CARPA`,
-        'success'
-      );
     },
-    [isAr, language, selectedMatter, updateMatter]
+    [isAr, selectedMatter, updateMatter]
   );
 
   const getEscrowRowMeta = useCallback(

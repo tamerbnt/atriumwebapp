@@ -9,6 +9,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { RealEstateProperty } from '../../../types';
 import { useRealEstateData } from './realEstateData';
@@ -190,19 +191,32 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
     (p: RealEstateProperty) => {
       deleteProperty(p.id);
       if (selectedProperty?.id === p.id) setSelectedProperty(null);
-      showToast(isAr ? 'تم حذف العقار من المحفظة' : 'Bien immobilier retiré du portefeuille', 'success');
     },
-    [deleteProperty, selectedProperty?.id, isAr]
+    [deleteProperty, selectedProperty?.id]
   );
 
   const handleBulkDelete = useCallback(
     (ids: Set<string>) => {
-      ids.forEach((id) => deleteProperty(id));
+      runUndoBatch(
+        {
+          vertical: 'real_estate',
+          operationType: 'bulk',
+          branchId: currentBranch?.id || 'branch_realestate_main',
+          summary: isAr
+            ? `حذف ${ids.size} عقارات`
+            : isEn
+            ? `Deleted ${ids.size} properties`
+            : `Suppression de ${ids.size} biens immobiliers`,
+          affectedCount: ids.size,
+        },
+        () => {
+          ids.forEach((id) => deleteProperty(id));
+        }
+      );
       if (selectedProperty && ids.has(selectedProperty.id)) setSelectedProperty(null);
       setSelectedIds(new Set());
-      showToast(isAr ? 'تم حذف العقارات المحددة' : 'Biens sélectionnés supprimés', 'success');
     },
-    [deleteProperty, selectedProperty, isAr]
+    [deleteProperty, selectedProperty, currentBranch?.id, isAr, isEn]
   );
 
   const handleTogglePin = useCallback((item: RealEstateProperty) => {
@@ -836,10 +850,8 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
             if (propertyToEdit) {
               updateProperty(p);
               if (selectedProperty?.id === p.id) setSelectedProperty(p);
-              showToast(isAr ? 'تم تحديث بيانات العقار' : 'Bien immobilier mis à jour', 'success');
             } else {
               addProperty(p);
-              showToast(isAr ? 'تم إضافة العقار بنجاح' : 'Bien immobilier ajouté avec succès', 'success');
             }
             setIsPropertyModalOpen(false);
             setPropertyToEdit(null);
@@ -856,13 +868,28 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
           }}
           properties={[leaseProperty]}
           onSave={(lease) => {
-            addLease(lease);
             const updated: RealEstateProperty = { ...leaseProperty, status: 'Rented' };
-            updateProperty(updated);
+            runUndoBatch(
+              {
+                vertical: 'real_estate',
+                operationType: 'create',
+                branchId: currentBranch?.id || 'branch_realestate_main',
+                summary: isAr
+                  ? `تحرير عقد إيجار — ${leaseProperty.title}`
+                  : isEn
+                  ? `Lease created — ${leaseProperty.title}`
+                  : `Bail locatif — ${leaseProperty.title}`,
+                entityLabel: leaseProperty.title,
+                toastType: 'success',
+              },
+              () => {
+                addLease(lease);
+                updateProperty(updated);
+              }
+            );
             if (selectedProperty?.id === leaseProperty.id) setSelectedProperty(updated);
             setIsLeaseModalOpen(false);
             setLeaseProperty(null);
-            showToast(isAr ? 'تم تحرير عقد الإيجار بنجاح' : 'Bail locatif enregistré avec succès', 'success');
           }}
         />
       )}

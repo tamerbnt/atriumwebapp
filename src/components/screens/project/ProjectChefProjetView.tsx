@@ -351,21 +351,13 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     setCartItems([]);
     setIsCartOpen(false);
     setActiveTab('orders');
-    showToast(
-      isAr ? `تم إرسال الطلب ${orderNumber} للاستوديو` : `Commande ${orderNumber} transmise au Studio Créa`,
-      'success'
-    );
   };
 
   const handleApproveBat = useCallback(
     (batId: string) => {
       reviewPmBatDeliverable(batId, 'approved');
-      showToast(
-        isAr ? 'تم اعتماد ملف الطباعة BAT' : isEn ? 'BAT Proof approved' : 'Bon à Tirer validé',
-        'success'
-      );
     },
-    [reviewPmBatDeliverable, isAr, isEn]
+    [reviewPmBatDeliverable]
   );
 
   const handleRequestRevision = () => {
@@ -374,10 +366,6 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
       setIsCorrectionModalOpen(false);
       setCorrectionNote('');
       setActiveBatId(null);
-      showToast(
-        isAr ? 'تم إرسال طلب التعديل للاستوديو' : isEn ? 'Revision sent to studio' : 'Demande de correction transmise',
-        'info'
-      );
     }
   };
 

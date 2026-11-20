@@ -14,6 +14,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { AdmissionStage, EduAdmissionLead } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -187,21 +188,11 @@ export const EducationAdmissionsView: React.FC = () => {
       notes: formData.notes || undefined,
     });
     setIsAddLeadModalOpen(false);
-    showToast({
-      type: 'success',
-      title: isAr ? 'تمت إضافة المترشح' : isEn ? 'Lead Created' : 'Prospect ajouté',
-      message: `${formData.studentName} — ${course.title}`,
-    });
   };
 
   const handleConfirmConversion = () => {
     if (!conversionLead || !targetCohortId) return;
     convertAdmissionToStudent(conversionLead.id, targetCohortId, conversionDeposit);
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم التحويل إلى طالب مسجل' : isEn ? 'Converted to Student' : 'Converti en Étudiant',
-      message: conversionLead.studentName,
-    });
     setConversionLead(null);
     setConversionDeposit(0);
   };
@@ -242,26 +233,44 @@ export const EducationAdmissionsView: React.FC = () => {
   const handleBatchSetStage = (stage: AdmissionStage) => {
     if (selectedLeadIds.size === 0) return;
     const count = selectedLeadIds.size;
-    selectedLeadIds.forEach((id) => updateAdmissionStage(id, stage));
+    runUndoBatch(
+      {
+        category: 'education_cohort',
+        operationType: 'bulk',
+        label: isAr
+          ? `تحديث المرحلة (${count})`
+          : isEn
+          ? `Update stage (${count})`
+          : `Mise à jour statut (${count})`,
+        entityType: 'eduAdmissionLead',
+      },
+      () => {
+        selectedLeadIds.forEach((id) => updateAdmissionStage(id, stage));
+      }
+    );
     setSelectedLeadIds(new Set<string>());
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم تحديث المرحلة' : isEn ? 'Stage Updated' : 'Statut Mis à Jour',
-      message: `${count} dossiers passés à l'étape ${stage}`,
-    });
   };
 
   const handleBatchDelete = () => {
     if (selectedLeadIds.size === 0) return;
     const count = selectedLeadIds.size;
-    selectedLeadIds.forEach((id) => deleteEduAdmissionLead(id));
+    runUndoBatch(
+      {
+        category: 'education_cohort',
+        operationType: 'bulk',
+        label: isAr
+          ? `حذف مترشحين (${count})`
+          : isEn
+          ? `Delete leads (${count})`
+          : `Suppression prospects (${count})`,
+        entityType: 'eduAdmissionLead',
+      },
+      () => {
+        selectedLeadIds.forEach((id) => deleteEduAdmissionLead(id));
+      }
+    );
     if (selectedLead && selectedLeadIds.has(selectedLead.id)) setSelectedLead(null);
     setSelectedLeadIds(new Set<string>());
-    showToast({
-      type: 'info',
-      title: isAr ? 'تم الحذف' : isEn ? 'Deleted' : 'Suppression',
-      message: `${count} ${isAr ? 'ملفات تم حذفها' : 'leads deleted'}`,
-    });
   };
 
   const filterSections: KineticFilterSection[] = useMemo(() => {

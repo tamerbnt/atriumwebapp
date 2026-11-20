@@ -14,6 +14,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { ManufacturingBom } from '../../../types';
 import { useManufacturingData } from './manufacturingData';
@@ -147,10 +148,8 @@ export const ManufacturingBomView: React.FC<any> = () => {
     if (bomToEdit) {
       updateBom(payload);
       if (selectedBom?.id === payload.id) setSelectedBom(payload);
-      showToast(isAr ? 'تم تحديث جدول المكونات BOM' : 'Nomenclature mise à jour avec succès', 'success');
     } else {
       addBom(payload);
-      showToast(isAr ? 'تم إنشاء جدول مكونات جديد' : 'Nouvelle nomenclature BOM créée', 'success');
     }
     setIsModalOpen(false);
   };
@@ -250,19 +249,36 @@ export const ManufacturingBomView: React.FC<any> = () => {
     (b: ManufacturingBom) => {
       deleteBom(b.id);
       if (selectedBom?.id === b.id) setSelectedBom(null);
-      showToast(isAr ? 'تم حذف جدول المكونات' : 'Nomenclature supprimée', 'success');
     },
-    [deleteBom, selectedBom?.id, isAr]
+    [deleteBom, selectedBom?.id]
   );
 
   const handleBulkDelete = useCallback(
     (ids: Set<string>) => {
-      ids.forEach((id) => deleteBom(id));
+      const count = ids.size;
+      runUndoBatch(
+        {
+          operationType: 'bulk',
+          vertical: 'manufacturing',
+          label: {
+            fr: `${count} nomenclatures BOM supprimées`,
+            en: `${count} BOMs deleted`,
+            ar: `تم حذف ${count} جداول مكونات`,
+          },
+          moduleLabel: {
+            fr: 'Nomenclatures BOM',
+            en: 'Bills of Materials',
+            ar: 'جداول المكونات BOM',
+          },
+        },
+        () => {
+          ids.forEach((id) => deleteBom(id));
+        }
+      );
       if (selectedBom && ids.has(selectedBom.id)) setSelectedBom(null);
       setSelectedIds(new Set());
-      showToast(isAr ? 'تم حذف الجداول المحددة' : 'Nomenclatures sélectionnées supprimées', 'success');
     },
-    [deleteBom, selectedBom, isAr]
+    [deleteBom, selectedBom]
   );
 
   const handleToggleActive = useCallback(
@@ -270,14 +286,8 @@ export const ManufacturingBomView: React.FC<any> = () => {
       const updated: ManufacturingBom = { ...b, isActive: !b.isActive, status: !b.isActive ? 'Active' : 'Archived' };
       updateBom(updated);
       if (selectedBom?.id === b.id) setSelectedBom(updated);
-      showToast(
-        updated.isActive
-          ? isAr ? 'تم تفعيل جدول المكونات' : 'BOM activée pour les OF'
-          : isAr ? 'تم إيقاف تفعيل التركيبة' : 'BOM désactivée',
-        'info'
-      );
     },
-    [updateBom, selectedBom?.id, isAr]
+    [updateBom, selectedBom?.id]
   );
 
   const handleSelectBom = useCallback((b: ManufacturingBom, openerEl?: HTMLElement | null) => {

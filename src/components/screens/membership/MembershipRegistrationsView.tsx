@@ -21,6 +21,7 @@ import {
   selectTerminologyFromState,
   showToast,
 } from '../../../services/store';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { RegistrationLead } from '../../../types/index';
 import { Avatar } from '../../ui/Avatar';
 import { Modal } from '../../ui/Modal';
@@ -215,40 +216,58 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
   const handleBatchApprove = useCallback(() => {
     const targetIds = Array.from(selectedLeadIds);
     const plan = plans[0];
-    targetIds.forEach((id) => {
-      const lead = leads.find((l) => l.id === id);
-      if (lead && lead.status === 'Pending') {
-        convertLeadToMember(
-          lead.id,
-          lead.preferredPlanId || (plan ? plan.id : 'standard_pkg'),
-          lead.preferredPlanName || (plan ? plan.name : 'Standard Package'),
-          plan ? plan.durationDays : 365
-        );
+    if (targetIds.length === 0) return;
+    runUndoBatch(
+      {
+        vertical: 'membership_session',
+        operationType: 'bulk',
+        affectedCount: targetIds.length,
+        toastType: 'success',
+        summary: pickLocalizedText(language, {
+          en: `Converted ${targetIds.length} registration(s)`,
+          fr: `${targetIds.length} demande(s) convertie(s)`,
+          ar: `تم اعتماد ${targetIds.length} طلبات تسجيل`,
+        }),
+      },
+      () => {
+        targetIds.forEach((id) => {
+          const lead = leads.find((l) => l.id === id);
+          if (lead && lead.status === 'Pending') {
+            convertLeadToMember(
+              lead.id,
+              lead.preferredPlanId || (plan ? plan.id : 'standard_pkg'),
+              lead.preferredPlanName || (plan ? plan.name : 'Standard Package'),
+              plan ? plan.durationDays : 365
+            );
+          }
+        });
       }
-    });
+    );
     setSelectedLeadIds(new Set<string>());
-    showToast?.({
-      type: 'success',
-      title: language === 'ar' ? 'تم اعتماد الطلبات' : language === 'fr' ? 'Dossiers validés' : 'Leads Converted',
-      message: `${targetIds.length} ${
-        language === 'ar' ? 'طلب تم تحويلهم بنجاح' : language === 'fr' ? 'demandes approuvées et inscrites' : 'leads approved and converted'
-      }.`,
-    });
-  }, [selectedLeadIds, plans, leads, convertLeadToMember, showToast, language]);
+  }, [selectedLeadIds, plans, leads, convertLeadToMember, language]);
 
   const handleBatchDelete = useCallback(() => {
     const targetIds = Array.from(selectedLeadIds);
-    if (deleteLead) targetIds.forEach((id) => deleteLead(id));
-    else targetIds.forEach((id) => updateLeadStatus(id, 'Declined'));
+    if (targetIds.length === 0) return;
+    runUndoBatch(
+      {
+        vertical: 'membership_session',
+        operationType: 'bulk',
+        affectedCount: targetIds.length,
+        toastType: 'info',
+        summary: pickLocalizedText(language, {
+          en: deleteLead ? `Deleted ${targetIds.length} registration(s)` : `Declined ${targetIds.length} registration(s)`,
+          fr: deleteLead ? `${targetIds.length} demande(s) supprimée(s)` : `${targetIds.length} demande(s) refusée(s)`,
+          ar: deleteLead ? `تم حذف ${targetIds.length} طلبات` : `تم رفض ${targetIds.length} طلبات`,
+        }),
+      },
+      () => {
+        if (deleteLead) targetIds.forEach((id) => deleteLead(id));
+        else targetIds.forEach((id) => updateLeadStatus(id, 'Declined'));
+      }
+    );
     setSelectedLeadIds(new Set<string>());
-    showToast?.({
-      type: 'warning',
-      title: language === 'ar' ? 'حذف من السجل' : language === 'fr' ? 'Suppression effectuée' : 'Leads Removed',
-      message: `${targetIds.length} ${
-        language === 'ar' ? 'طلب تم حذفه من السجل' : language === 'fr' ? 'demandes supprimées' : 'leads removed'
-      }.`,
-    });
-  }, [selectedLeadIds, deleteLead, updateLeadStatus, showToast, language]);
+  }, [selectedLeadIds, deleteLead, updateLeadStatus, language]);
 
   const handleExportCSV = useCallback(() => {
     const headers = [

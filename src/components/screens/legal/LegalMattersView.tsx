@@ -16,6 +16,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { LegalMatter, NotaryDeed } from '../../../types';
 import { useLegalData } from './legalData';
@@ -634,7 +635,6 @@ export const LegalMattersView: React.FC<any> = () => {
         onClick: () => {
           deleteMatter(m.id);
           if (activeMatter?.id === m.id) setSelectedMatter(null);
-          showToast(isAr ? 'تم حذف ملف القضية' : 'Dossier supprimé', 'info');
         },
       },
     ],
@@ -679,7 +679,6 @@ export const LegalMattersView: React.FC<any> = () => {
         onClick: () => {
           deleteMatter(m.id);
           if (activeMatter?.id === m.id) setSelectedMatter(null);
-          showToast(isAr ? 'تم حذف ملف القضية' : 'Dossier supprimé', 'info');
         },
       },
     ],
@@ -1155,12 +1154,27 @@ export const LegalMattersView: React.FC<any> = () => {
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
             onBulkDelete={(ids) => {
-              ids.forEach((id) => deleteMatter(id));
-              setSelectedIds(new Set());
-              showToast(
-                isAr ? 'تم حذف الملفات المحددة' : `${ids.size} dossier(s) supprimé(s)`,
-                'info'
+              const count = ids.size;
+              runUndoBatch(
+                {
+                  operationType: 'bulk',
+                  vertical: 'legal_accounting',
+                  label: {
+                    fr: `${count} dossiers supprimés`,
+                    en: `${count} legal matters deleted`,
+                    ar: `تم حذف ${count} ملفات قضايا`,
+                  },
+                  moduleLabel: {
+                    fr: 'Dossiers & Actes',
+                    en: 'Matters & Deeds',
+                    ar: 'ملفات القضايا',
+                  },
+                },
+                () => {
+                  ids.forEach((id) => deleteMatter(id));
+                }
               );
+              setSelectedIds(new Set());
             }}
             isPinned={(m) => pinnedIds.has(m.id)}
             onTogglePin={togglePin}
@@ -1187,7 +1201,6 @@ export const LegalMattersView: React.FC<any> = () => {
             onDelete={(m) => {
               deleteMatter(m.id);
               if (activeMatter?.id === m.id) setSelectedMatter(null);
-              showToast(isAr ? 'تم حذف ملف القضية' : 'Dossier supprimé', 'info');
             }}
             emptyTitle={isAr ? 'لا توجد قضايا مطابقة' : 'Aucun dossier juridique'}
             emptyDescription={
@@ -1416,7 +1429,6 @@ export const LegalMattersView: React.FC<any> = () => {
           onClose={() => setSelectedMatter(null)}
           onDelete={(m) => {
             deleteMatter(m.id);
-            showToast(isAr ? 'تم حذف القضية' : 'Dossier supprimé', 'info');
           }}
           holdToDelete
           renderBody={(m, tab) => {
@@ -1543,7 +1555,6 @@ export const LegalMattersView: React.FC<any> = () => {
                     placeholder={isAr ? 'ملاحظات المحامي والاستراتيجية...' : 'Stratégie du cabinet, consignes...'}
                     onSave={(next) => {
                       updateMatter({ ...m, notes: next });
-                      showToast(isAr ? 'تم حفظ الملاحظات' : 'Notes enregistrées', 'success');
                     }}
                   />
                 </InspectorSection>

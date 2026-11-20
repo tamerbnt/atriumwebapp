@@ -100,10 +100,6 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
     };
 
     onSaveDischarge(discharge);
-    showToast(
-      isAr ? 'تم تسجيل محضر تبرئة ذمة السائق وخزن النقد' : 'Billet de décharge caisse validé',
-      'success'
-    );
     onClose();
   };
 

@@ -228,13 +228,8 @@ export const MedicalQueueView: React.FC<any> = () => {
       if (activeConsultation?.id === c.id) {
         setInspectedConsultation({ ...c, status: 'InConsultation' });
       }
-      showToast({
-        type: 'info',
-        title: isAr ? 'استدعاء المريض' : 'Patient appelé',
-        message: isAr ? 'تم استدعاء المريض لغرفة الكشف' : 'Patient appelé au cabinet de consultation',
-      });
     },
-    [updateConsultationStatus, activeConsultation, isAr]
+    [updateConsultationStatus, activeConsultation]
   );
 
   const handleFinishExam = useCallback(
@@ -243,13 +238,8 @@ export const MedicalQueueView: React.FC<any> = () => {
       if (activeConsultation?.id === c.id) {
         setInspectedConsultation({ ...c, status: 'Completed' });
       }
-      showToast({
-        type: 'success',
-        title: isAr ? 'اكتمال الفحص' : 'Consultation clôturée',
-        message: isAr ? 'تم إنهاء وتأكيد الفحص الطبي' : 'Consultation clôturée avec succès',
-      });
     },
-    [updateConsultationStatus, activeConsultation, isAr]
+    [updateConsultationStatus, activeConsultation]
   );
 
   const handleSelectConsultation = useCallback(
@@ -1160,11 +1150,6 @@ export const MedicalQueueView: React.FC<any> = () => {
                             onClick={() => {
                               markConsultationPaid(cons.id);
                               setInspectedConsultation({ ...cons, isPaid: true });
-                              showToast({
-                                type: 'success',
-                                title: 'Encaissement validé',
-                                message: 'Paiement enregistré avec succès',
-                              });
                             }}
                           />
                         )}

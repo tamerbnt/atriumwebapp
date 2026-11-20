@@ -53,7 +53,6 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 			status: "Active",
 			paymentFrequency: frequency
 		});
-		showToast(language === "ar" ? "تم تحرير عقد الكراء بنجاح" : "Bail de location établi avec succès", "success");
 		onClose();
 	};
 	const propOptions = properties.map((p: any) => ({

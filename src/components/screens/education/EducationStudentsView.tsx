@@ -12,7 +12,8 @@ import {
   Phone,
   Mail,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumStore } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { EduStudent, StudentStatus } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { CertificateModal } from './CertificateModal';
@@ -794,25 +795,45 @@ export const EducationStudentsView: React.FC = () => {
             label: isAr ? 'تفعيل الطلبة' : isEn ? 'Activate Selected' : 'Activer sélection',
             icon: <Check size={13} />,
             onClick: (ids) => {
-              ids.forEach((id) => updateEduStudent(id, { status: 'Active' }));
+              if (ids.size === 0) return;
+              runUndoBatch(
+                {
+                  category: 'education_cohort',
+                  operationType: 'bulk',
+                  label: isAr
+                    ? `تفعيل طلبة (${ids.size})`
+                    : isEn
+                    ? `Activate students (${ids.size})`
+                    : `Activation étudiants (${ids.size})`,
+                  entityType: 'eduStudent',
+                },
+                () => {
+                  ids.forEach((id) => updateEduStudent(id, { status: 'Active' }));
+                }
+              );
               setSelectedStudentIds(new Set<string>());
-              showToast({
-                type: 'success',
-                title: isAr ? 'تم التحديث' : 'Mise à jour',
-                message: `${ids.size} étudiants activés.`,
-              });
             },
             variant: 'primary',
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteEduStudent(id));
+            if (ids.size === 0) return;
+            runUndoBatch(
+              {
+                category: 'education_cohort',
+                operationType: 'bulk',
+                label: isAr
+                  ? `حذف طلبة (${ids.size})`
+                  : isEn
+                  ? `Delete students (${ids.size})`
+                  : `Suppression étudiants (${ids.size})`,
+                entityType: 'eduStudent',
+              },
+              () => {
+                ids.forEach((id) => deleteEduStudent(id));
+              }
+            );
             setSelectedStudentIds(new Set<string>());
             if (selectedStudent && ids.has(selectedStudent.id)) setSelectedStudent(null);
-            showToast({
-              type: 'info',
-              title: isAr ? 'حذف الطلبة' : 'Étudiants retirés',
-              message: `${ids.size} étudiants supprimés.`,
-            });
           }}
           emptyTitle={t('edu_no_students_enrolled')}
           emptyDescription={t('edu_no_students_enrolled')}
@@ -981,11 +1002,6 @@ export const EducationStudentsView: React.FC = () => {
                     value={st.notes || ''}
                     onSave={(next) => {
                       updateEduStudent(st.id, { notes: next });
-                      showToast({
-                        type: 'success',
-                        title: isAr ? 'تم الحفظ' : 'Note enregistrée',
-                        message: st.fullName,
-                      });
                     }}
                   />
                 </InspectorSection>

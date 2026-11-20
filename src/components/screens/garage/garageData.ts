@@ -1,6 +1,11 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import {
+  cloneSnapshot,
+  pickLocalizedText,
+  registerUndoEntry,
+} from '../../../services/undoEngine';
 import {
   isSupabaseConfigured,
   garageService,
@@ -899,6 +904,7 @@ export const useGarageData = () => {
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
   const currentAccountId = useAtriumSelector((s) => s.account.id);
   const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
+  const language = useAtriumSelector((s) => s.language);
   const activeBranchId = currentBranchId || 'branch_garage_main';
   const garageCtx = useMemo(
     () => ({
@@ -1186,72 +1192,252 @@ export const useGarageData = () => {
     };
   }, [activeBranchId]);
 
+  const latestRef = useRef({
+    orders,
+    vehicles,
+    parts,
+    bays,
+    fleets,
+    invoices,
+  });
+  latestRef.current = {
+    orders,
+    vehicles,
+    parts,
+    bays,
+    fleets,
+    invoices,
+  };
+
+  const restoreAt = <T extends { id: string }>(
+    setter: React.Dispatch<React.SetStateAction<T[]>>,
+    snapshot: T,
+    index: number
+  ) => {
+    const item = cloneSnapshot(snapshot);
+    setter((prev) => {
+      if (prev.some((x) => x.id === item.id)) return prev;
+      const next = [...prev];
+      const safeIndex = Math.max(0, Math.min(index, next.length));
+      next.splice(safeIndex, 0, item);
+      return next;
+    });
+  };
+
   // Order Mutations
   const addOrder = (order: RepairOrder) => {
     const scopedOrder = withBranch(order);
+    const snap = cloneSnapshot(scopedOrder);
+    const prevBays = scopedOrder.assignedBayId ? cloneSnapshot(latestRef.current.bays) : null;
+
     setOrders((prev) => [scopedOrder, ...prev]);
     void garageService.upsertWorkOrder(scopedOrder, garageCtx).catch(() => {});
-    // If assigned to a bay, lock that bay
     if (scopedOrder.assignedBayId) {
-      setBays((prevBays) =>
-        prevBays.map((b) =>
+      setBays((prevBaysState) =>
+        prevBaysState.map((b) =>
           b.id === scopedOrder.assignedBayId ? { ...b, isOccupied: true, activeOrderId: scopedOrder.id } : b
         )
       );
       void garageService.assignBay(scopedOrder.assignedBayId, scopedOrder.id, scopedOrder.technicianName || '').catch(() => {});
     }
+
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'create',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scopedOrder.orderNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Ordre de réparation ${scopedOrder.orderNumber} créé`,
+        en: `Repair order ${scopedOrder.orderNumber} created`,
+        ar: `تم إنشاء أمر الإصلاح ${scopedOrder.orderNumber}`,
+      }),
+      undo: () => {
+        setOrders((prev) => prev.filter((o) => o.id !== snap.id));
+        if (prevBays) {
+          setBays(cloneSnapshot(prevBays));
+        }
+        void garageService.deleteWorkOrder(snap.id, currentStaffId).catch(() => {});
+        if (snap.assignedBayId) {
+          void garageService.releaseBay(snap.assignedBayId).catch(() => {});
+        }
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setOrders((prev) => (prev.some((o) => o.id === re.id) ? prev : [re, ...prev]));
+        if (re.assignedBayId) {
+          setBays((prevBaysState) =>
+            prevBaysState.map((b) =>
+              b.id === re.assignedBayId ? { ...b, isOccupied: true, activeOrderId: re.id } : b
+            )
+          );
+          void garageService.assignBay(re.assignedBayId, re.id, re.technicianName || '').catch(() => {});
+        }
+        void syncCoordinator
+          .restoreRow('garage_work_orders', re.id, currentStaffId)
+          .then(() => garageService.upsertWorkOrder(re, garageCtx))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateOrder = (order: RepairOrder) => {
     const scopedOrder = withBranch(order);
+    const existing = latestRef.current.orders.find((o) => o.id === order.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scopedOrder);
     setOrders((prev) => prev.map((o) => (o.id === order.id ? scopedOrder : o)));
     void garageService.upsertWorkOrder(scopedOrder, garageCtx).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'auto_garage',
+        operationType: 'edit',
+        businessId: garageCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.orderNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Ordre ${nextSnap.orderNumber} modifié`,
+          en: `Repair order ${nextSnap.orderNumber} updated`,
+          ar: `تم تعديل أمر الإصلاح ${nextSnap.orderNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setOrders((prev) => prev.map((o) => (o.id === prevCopy.id ? prevCopy : o)));
+          void garageService.upsertWorkOrder(withBranch(prevCopy), garageCtx).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setOrders((prev) => prev.map((o) => (o.id === nextCopy.id ? nextCopy : o)));
+          void garageService.upsertWorkOrder(nextCopy, garageCtx).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteOrder = (id: string) => {
-    const existing = orders.find((o) => o.id === id);
+    const idx = latestRef.current.orders.findIndex((o) => o.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.orders[idx]) : null;
+    const prevBays = cloneSnapshot(latestRef.current.bays);
+
     setOrders((prev) => prev.filter((o) => o.id !== id));
-    setBays((prevBays) =>
-      prevBays.map((b) => (b.activeOrderId === id ? { ...b, isOccupied: false, activeOrderId: undefined } : b))
+    setBays((prevBaysState) =>
+      prevBaysState.map((b) => (b.activeOrderId === id ? { ...b, isOccupied: false, activeOrderId: undefined } : b))
     );
     void garageService.deleteWorkOrder(id, currentStaffId).catch(() => {});
     if (existing?.assignedBayId) {
       void garageService.releaseBay(existing.assignedBayId).catch(() => {});
     }
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'auto_garage',
+        operationType: 'delete',
+        businessId: garageCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: existing.orderNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Ordre ${existing.orderNumber} supprimé`,
+          en: `Repair order ${existing.orderNumber} deleted`,
+          ar: `تم حذف أمر الإصلاح ${existing.orderNumber}`,
+        }),
+        undo: () => {
+          restoreAt(setOrders, existing, idx);
+          setBays(cloneSnapshot(prevBays));
+          void syncCoordinator
+            .restoreRow('garage_work_orders', existing.id, currentStaffId)
+            .then(() => garageService.upsertWorkOrder(withBranch(cloneSnapshot(existing)), garageCtx))
+            .catch(() => {});
+          if (existing.assignedBayId) {
+            void garageService
+              .assignBay(existing.assignedBayId, existing.id, existing.technicianName || '')
+              .catch(() => {});
+          }
+        },
+        redo: () => {
+          setOrders((prev) => prev.filter((o) => o.id !== existing.id));
+          setBays((prevBaysState) =>
+            prevBaysState.map((b) =>
+              b.activeOrderId === existing.id ? { ...b, isOccupied: false, activeOrderId: undefined } : b
+            )
+          );
+          void garageService.deleteWorkOrder(existing.id, currentStaffId).catch(() => {});
+          if (existing.assignedBayId) {
+            void garageService.releaseBay(existing.assignedBayId).catch(() => {});
+          }
+        },
+      });
+    }
   };
 
   const updateOrderStatus = (id: string, status: RepairOrder['status']) => {
-    setOrders((prev) =>
-      prev.map((o) => {
-        if (o.id !== id) return o;
-        // If delivered or ready, optionally release bay
-        if (status === 'Delivered' && o.assignedBayId) {
-          setBays((prevBays) =>
-            prevBays.map((b) =>
-              b.id === o.assignedBayId ? { ...b, isOccupied: false, activeOrderId: undefined } : b
+    const existing = latestRef.current.orders.find((o) => o.id === id);
+    if (!existing) return;
+    const prevOrder = cloneSnapshot(existing);
+    const prevBays = cloneSnapshot(latestRef.current.bays);
+    const nextOrder = withBranch({ ...existing, status });
+    const nextSnap = cloneSnapshot(nextOrder);
+
+    setOrders((prev) => prev.map((o) => (o.id === id ? nextOrder : o)));
+    if (status === 'Delivered' && existing.assignedBayId) {
+      setBays((prevBaysState) =>
+        prevBaysState.map((b) =>
+          b.id === existing.assignedBayId ? { ...b, isOccupied: false, activeOrderId: undefined } : b
+        )
+      );
+      void garageService.releaseBay(existing.assignedBayId).catch(() => {});
+    }
+    void garageService.upsertWorkOrder(nextOrder, garageCtx).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'status',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: existing.orderNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Statut ordre ${existing.orderNumber} → ${status}`,
+        en: `Order ${existing.orderNumber} → ${status}`,
+        ar: `تحديث حالة الأمر ${existing.orderNumber} → ${status}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevOrder);
+        setOrders((prev) => prev.map((o) => (o.id === prevCopy.id ? prevCopy : o)));
+        setBays(cloneSnapshot(prevBays));
+        void garageService.upsertWorkOrder(withBranch(prevCopy), garageCtx).catch(() => {});
+        if (status === 'Delivered' && prevCopy.assignedBayId) {
+          void garageService
+            .assignBay(prevCopy.assignedBayId, prevCopy.id, prevCopy.technicianName || '')
+            .catch(() => {});
+        }
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextSnap);
+        setOrders((prev) => prev.map((o) => (o.id === nextCopy.id ? nextCopy : o)));
+        if (status === 'Delivered' && nextCopy.assignedBayId) {
+          setBays((prevBaysState) =>
+            prevBaysState.map((b) =>
+              b.id === nextCopy.assignedBayId ? { ...b, isOccupied: false, activeOrderId: undefined } : b
             )
           );
-          void garageService.releaseBay(o.assignedBayId).catch(() => {});
+          void garageService.releaseBay(nextCopy.assignedBayId).catch(() => {});
         }
-        const next = { ...o, status };
-        void garageService.upsertWorkOrder(withBranch(next), garageCtx).catch(() => {});
-        return next;
-      })
-    );
+        void garageService.upsertWorkOrder(nextCopy, garageCtx).catch(() => {});
+      },
+    });
   };
 
   // Bay Assignment
   const assignBayToOrder = (orderId: string, bayId: string) => {
-    const targetBay = bays.find((b) => b.id === bayId);
-    const targetOrder = orders.find((o) => o.id === orderId);
-    setOrders((prev) =>
-      prev.map((o) => {
-        if (o.id !== orderId) return o;
-        const next = { ...o, assignedBayId: bayId, bayName: targetBay?.name };
-        void garageService.upsertWorkOrder(withBranch(next), garageCtx).catch(() => {});
-        return next;
-      })
-    );
+    const targetBay = latestRef.current.bays.find((b) => b.id === bayId);
+    const targetOrder = latestRef.current.orders.find((o) => o.id === orderId);
+    if (!targetOrder) return;
+
+    const prevOrder = cloneSnapshot(targetOrder);
+    const prevBays = cloneSnapshot(latestRef.current.bays);
+    const nextOrder = withBranch({ ...targetOrder, assignedBayId: bayId, bayName: targetBay?.name });
+
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? nextOrder : o)));
     setBays((prev) =>
       prev.map((b) => {
         if (b.id === bayId) return { ...b, isOccupied: true, activeOrderId: orderId };
@@ -1259,111 +1445,370 @@ export const useGarageData = () => {
         return b;
       })
     );
-    void garageService.assignBay(bayId, orderId, targetOrder?.technicianName || '').catch(() => {});
+    void garageService.upsertWorkOrder(nextOrder, garageCtx).catch(() => {});
+    void garageService.assignBay(bayId, orderId, targetOrder.technicianName || '').catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'status',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: targetOrder.orderNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Pont ${targetBay?.name || bayId} affecté à ${targetOrder.orderNumber}`,
+        en: `Bay ${targetBay?.name || bayId} assigned to ${targetOrder.orderNumber}`,
+        ar: `تم تخصيص المحطة لطلب ${targetOrder.orderNumber}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevOrder);
+        setOrders((prev) => prev.map((o) => (o.id === prevCopy.id ? prevCopy : o)));
+        setBays(cloneSnapshot(prevBays));
+        void garageService.upsertWorkOrder(withBranch(prevCopy), garageCtx).catch(() => {});
+        void garageService.releaseBay(bayId).catch(() => {});
+        if (prevCopy.assignedBayId) {
+          void garageService
+            .assignBay(prevCopy.assignedBayId, prevCopy.id, prevCopy.technicianName || '')
+            .catch(() => {});
+        }
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextOrder);
+        setOrders((prev) => prev.map((o) => (o.id === nextCopy.id ? nextCopy : o)));
+        setBays((prev) =>
+          prev.map((b) => {
+            if (b.id === bayId) return { ...b, isOccupied: true, activeOrderId: orderId };
+            if (b.activeOrderId === orderId) return { ...b, isOccupied: false, activeOrderId: undefined };
+            return b;
+          })
+        );
+        void garageService.upsertWorkOrder(nextCopy, garageCtx).catch(() => {});
+        void garageService.assignBay(bayId, orderId, targetOrder.technicianName || '').catch(() => {});
+      },
+    });
   };
 
   const releaseBay = (bayId: string) => {
+    const existingBay = latestRef.current.bays.find((b) => b.id === bayId);
+    const prevBay = existingBay ? cloneSnapshot(existingBay) : null;
     setBays((prev) =>
       prev.map((b) => (b.id === bayId ? { ...b, isOccupied: false, activeOrderId: undefined } : b))
     );
     void garageService.releaseBay(bayId).catch(() => {});
+
+    if (prevBay) {
+      registerUndoEntry({
+        vertical: 'auto_garage',
+        operationType: 'status',
+        businessId: garageCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: prevBay.name,
+        summary: pickLocalizedText(language, {
+          fr: `Pont ${prevBay.name} libéré`,
+          en: `Bay ${prevBay.name} released`,
+          ar: `تم تحرير المحطة ${prevBay.name}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevBay);
+          setBays((prev) => prev.map((b) => (b.id === prevCopy.id ? prevCopy : b)));
+          if (prevCopy.isOccupied && prevCopy.activeOrderId) {
+            void garageService
+              .assignBay(prevCopy.id, prevCopy.activeOrderId, prevCopy.assignedTechnicianName || '')
+              .catch(() => {});
+          }
+        },
+        redo: () => {
+          setBays((prev) =>
+            prev.map((b) => (b.id === bayId ? { ...b, isOccupied: false, activeOrderId: undefined } : b))
+          );
+          void garageService.releaseBay(bayId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Vehicle Mutations
   const addVehicle = (vehicle: VehicleAsset) => {
     const scoped = withBranch(vehicle);
+    const snap = cloneSnapshot(scoped);
     setVehicles((prev) => [scoped, ...prev]);
     void garageService.upsertVehicle(scoped, garageCtx).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'create',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.plateNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Véhicule ${scoped.plateNumber} ajouté`,
+        en: `Vehicle ${scoped.plateNumber} added`,
+        ar: `تمت إضافة المركبة ${scoped.plateNumber}`,
+      }),
+      undo: () => {
+        setVehicles((prev) => prev.filter((v) => v.id !== snap.id));
+        void garageService.deleteVehicle(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setVehicles((prev) => (prev.some((v) => v.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('garage_vehicles', re.id, currentStaffId)
+          .then(() => garageService.upsertVehicle(re, garageCtx))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateVehicle = (vehicle: VehicleAsset) => {
     const scoped = withBranch(vehicle);
+    const existing = latestRef.current.vehicles.find((v) => v.id === vehicle.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setVehicles((prev) => prev.map((v) => (v.id === vehicle.id ? scoped : v)));
     void garageService.upsertVehicle(scoped, garageCtx).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'auto_garage',
+        operationType: 'edit',
+        businessId: garageCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.plateNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Véhicule ${nextSnap.plateNumber} modifié`,
+          en: `Vehicle ${nextSnap.plateNumber} updated`,
+          ar: `تم تعديل المركبة ${nextSnap.plateNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setVehicles((prev) => prev.map((v) => (v.id === prevCopy.id ? prevCopy : v)));
+          void garageService.upsertVehicle(withBranch(prevCopy), garageCtx).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setVehicles((prev) => prev.map((v) => (v.id === nextCopy.id ? nextCopy : v)));
+          void garageService.upsertVehicle(nextCopy, garageCtx).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteVehicle = (id: string) => {
+    const idx = latestRef.current.vehicles.findIndex((v) => v.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.vehicles[idx]) : null;
     setVehicles((prev) => prev.filter((v) => v.id !== id));
     void garageService.deleteVehicle(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'auto_garage',
+        operationType: 'delete',
+        businessId: garageCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: existing.plateNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Véhicule ${existing.plateNumber} supprimé`,
+          en: `Vehicle ${existing.plateNumber} deleted`,
+          ar: `تم حذف المركبة ${existing.plateNumber}`,
+        }),
+        undo: () => {
+          restoreAt(setVehicles, existing, idx);
+          void syncCoordinator
+            .restoreRow('garage_vehicles', existing.id, currentStaffId)
+            .then(() => garageService.upsertVehicle(withBranch(cloneSnapshot(existing)), garageCtx))
+            .catch(() => {});
+        },
+        redo: () => {
+          setVehicles((prev) => prev.filter((v) => v.id !== existing.id));
+          void garageService.deleteVehicle(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Spare Part Mutations & Requisition
   const addPart = (part: SparePart) => {
     const scoped = withBranch(part);
+    const snap = cloneSnapshot(scoped);
     setParts((prev) => [scoped, ...prev]);
     void garageService.upsertPart(scoped, garageCtx).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'create',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.name,
+      summary: pickLocalizedText(language, {
+        fr: `Pièce ${scoped.name} ajoutée`,
+        en: `Spare part ${scoped.name} added`,
+        ar: `تمت إضافة قطعة الغيار ${scoped.name}`,
+      }),
+      undo: () => {
+        setParts((prev) => prev.filter((p) => p.id !== snap.id));
+        void garageService.deletePart(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setParts((prev) => (prev.some((p) => p.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('garage_parts', re.id, currentStaffId)
+          .then(() => garageService.upsertPart(re, garageCtx))
+          .catch(() => {});
+      },
+    });
   };
 
   const updatePart = (part: SparePart) => {
     const scoped = withBranch(part);
+    const existing = latestRef.current.parts.find((p) => p.id === part.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setParts((prev) => prev.map((p) => (p.id === part.id ? scoped : p)));
     void garageService.upsertPart(scoped, garageCtx).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'auto_garage',
+        operationType: 'edit',
+        businessId: garageCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.name,
+        summary: pickLocalizedText(language, {
+          fr: `Pièce ${nextSnap.name} modifiée`,
+          en: `Spare part ${nextSnap.name} updated`,
+          ar: `تم تعديل قطعة الغيار ${nextSnap.name}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setParts((prev) => prev.map((p) => (p.id === prevCopy.id ? prevCopy : p)));
+          void garageService.upsertPart(withBranch(prevCopy), garageCtx).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setParts((prev) => prev.map((p) => (p.id === nextCopy.id ? nextCopy : p)));
+          void garageService.upsertPart(nextCopy, garageCtx).catch(() => {});
+        },
+      });
+    }
   };
 
   const deletePart = (id: string) => {
+    const idx = latestRef.current.parts.findIndex((p) => p.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.parts[idx]) : null;
     setParts((prev) => prev.filter((p) => p.id !== id));
     void garageService.deletePart(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'auto_garage',
+        operationType: 'delete',
+        businessId: garageCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: existing.name,
+        summary: pickLocalizedText(language, {
+          fr: `Pièce ${existing.name} supprimée`,
+          en: `Spare part ${existing.name} deleted`,
+          ar: `تم حذف قطعة الغيار ${existing.name}`,
+        }),
+        undo: () => {
+          restoreAt(setParts, existing, idx);
+          void syncCoordinator
+            .restoreRow('garage_parts', existing.id, currentStaffId)
+            .then(() => garageService.upsertPart(withBranch(cloneSnapshot(existing)), garageCtx))
+            .catch(() => {});
+        },
+        redo: () => {
+          setParts((prev) => prev.filter((p) => p.id !== existing.id));
+          void garageService.deletePart(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const requisitionPartToOrder = (orderId: string, partId: string, quantity = 1) => {
-    const part = parts.find((p) => p.id === partId);
-    if (!part || part.stockQuantity < quantity) return false;
+    const part = latestRef.current.parts.find((p) => p.id === partId);
+    const targetOrder = latestRef.current.orders.find((o) => o.id === orderId);
+    if (!part || !targetOrder || part.stockQuantity < quantity) return false;
 
+    const prevPartSnap = cloneSnapshot(part);
+    const prevOrderSnap = cloneSnapshot(targetOrder);
     const nextStock = Math.max(0, part.stockQuantity - quantity);
-    // Deduct warehouse stock
-    setParts((prev) =>
-      prev.map((p) =>
-        p.id === partId ? { ...p, stockQuantity: nextStock } : p
-      )
-    );
-    void garageService.upsertPart(withBranch({ ...part, stockQuantity: nextStock }), garageCtx).catch(() => {});
+    const nextPartSnap = cloneSnapshot(withBranch({ ...part, stockQuantity: nextStock }));
+
+    const existingLine = targetOrder.partsUsed.find((line) => line.partId === partId);
+    let updatedParts: RequisitionedPartLine[];
+    if (existingLine) {
+      updatedParts = targetOrder.partsUsed.map((line) =>
+        line.partId === partId
+          ? {
+              ...line,
+              quantity: line.quantity + quantity,
+              totalPriceDzd: (line.quantity + quantity) * line.unitPriceDzd,
+            }
+          : line
+      );
+    } else {
+      updatedParts = [
+        ...targetOrder.partsUsed,
+        {
+          id: `req_${Date.now()}`,
+          partId: part.id,
+          name: part.name,
+          sku: part.sku,
+          quantity,
+          unitPriceDzd: part.sellingPriceDzd,
+          totalPriceDzd: quantity * part.sellingPriceDzd,
+          issuedAt: new Date().toISOString(),
+        },
+      ];
+    }
+
+    const newPartsCost = updatedParts.reduce((acc, p) => acc + p.totalPriceDzd, 0);
+    const finalCost = (targetOrder.laborCostDzd || 0) + newPartsCost;
+    const nextOrder = withBranch({
+      ...targetOrder,
+      partsUsed: updatedParts,
+      partsCostDzd: newPartsCost,
+      finalCostDzd: finalCost,
+    });
+    const nextOrderSnap = cloneSnapshot(nextOrder);
+
+    setParts((prev) => prev.map((p) => (p.id === partId ? nextPartSnap : p)));
+    void garageService.upsertPart(nextPartSnap, garageCtx).catch(() => {});
     void garageService.requisitionPart(orderId, partId, quantity).catch(() => {});
 
-    // Append line to repair order
-    setOrders((prev) =>
-      prev.map((o) => {
-        if (o.id !== orderId) return o;
-        const existingLine = o.partsUsed.find((line) => line.partId === partId);
-        let updatedParts: RequisitionedPartLine[];
-        if (existingLine) {
-          updatedParts = o.partsUsed.map((line) =>
-            line.partId === partId
-              ? {
-                  ...line,
-                  quantity: line.quantity + quantity,
-                  totalPriceDzd: (line.quantity + quantity) * line.unitPriceDzd,
-                }
-              : line
-          );
-        } else {
-          updatedParts = [
-            ...o.partsUsed,
-            {
-              id: `req_${Date.now()}`,
-              partId: part.id,
-              name: part.name,
-              sku: part.sku,
-              quantity,
-              unitPriceDzd: part.sellingPriceDzd,
-              totalPriceDzd: quantity * part.sellingPriceDzd,
-              issuedAt: new Date().toISOString(),
-            },
-          ];
-        }
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? nextOrder : o)));
+    void garageService.upsertWorkOrder(nextOrder, garageCtx).catch(() => {});
 
-        const newPartsCost = updatedParts.reduce((acc, p) => acc + p.totalPriceDzd, 0);
-        const finalCost = (o.laborCostDzd || 0) + newPartsCost;
-
-        const nextOrder = {
-          ...o,
-          partsUsed: updatedParts,
-          partsCostDzd: newPartsCost,
-          finalCostDzd: finalCost,
-        };
-        void garageService.upsertWorkOrder(withBranch(nextOrder), garageCtx).catch(() => {});
-        return nextOrder;
-      })
-    );
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'edit',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: targetOrder.orderNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Pièce ${part.name} (×${quantity}) imputée à ${targetOrder.orderNumber}`,
+        en: `Part ${part.name} (×${quantity}) issued to ${targetOrder.orderNumber}`,
+        ar: `تم صرف ${part.name} (×${quantity}) للأمر ${targetOrder.orderNumber}`,
+      }),
+      undo: () => {
+        const prevPartCopy = cloneSnapshot(prevPartSnap);
+        const prevOrderCopy = cloneSnapshot(prevOrderSnap);
+        setParts((prev) => prev.map((p) => (p.id === prevPartCopy.id ? prevPartCopy : p)));
+        setOrders((prev) => prev.map((o) => (o.id === prevOrderCopy.id ? prevOrderCopy : o)));
+        void garageService.upsertPart(withBranch(prevPartCopy), garageCtx).catch(() => {});
+        void garageService.upsertWorkOrder(withBranch(prevOrderCopy), garageCtx).catch(() => {});
+      },
+      redo: () => {
+        const nextPartCopy = cloneSnapshot(nextPartSnap);
+        const nextOrderCopy = cloneSnapshot(nextOrderSnap);
+        setParts((prev) => prev.map((p) => (p.id === nextPartCopy.id ? nextPartCopy : p)));
+        setOrders((prev) => prev.map((o) => (o.id === nextOrderCopy.id ? nextOrderCopy : o)));
+        void garageService.upsertPart(nextPartCopy, garageCtx).catch(() => {});
+        void garageService.upsertWorkOrder(nextOrderCopy, garageCtx).catch(() => {});
+      },
+    });
 
     return true;
   };
@@ -1371,27 +1816,112 @@ export const useGarageData = () => {
   // Fleet Mutations
   const addFleet = (fleet: CorporateFleetAccount) => {
     const scoped = withBranch(fleet);
+    const snap = cloneSnapshot(scoped);
     setFleets((prev) => [scoped, ...prev]);
     void garageService.upsertFleetAccount(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'create',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.companyName,
+      summary: pickLocalizedText(language, {
+        fr: `Flotte ${scoped.companyName} ajoutée`,
+        en: `Fleet ${scoped.companyName} added`,
+        ar: `تمت إضافة الأسطول ${scoped.companyName}`,
+      }),
+      undo: () => {
+        setFleets((prev) => prev.filter((f) => f.id !== snap.id));
+        void garageService.deleteFleetAccount(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setFleets((prev) => (prev.some((f) => f.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('garage_fleet_contracts', re.id, currentStaffId)
+          .then(() => garageService.upsertFleetAccount(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateFleet = (fleet: CorporateFleetAccount) => {
     const scoped = withBranch(fleet);
+    const existing = latestRef.current.fleets.find((f) => f.id === fleet.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setFleets((prev) => prev.map((f) => (f.id === fleet.id ? scoped : f)));
     void garageService.upsertFleetAccount(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'auto_garage',
+        operationType: 'edit',
+        businessId: garageCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.companyName,
+        summary: pickLocalizedText(language, {
+          fr: `Flotte ${nextSnap.companyName} modifiée`,
+          en: `Fleet ${nextSnap.companyName} updated`,
+          ar: `تم تعديل الأسطول ${nextSnap.companyName}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setFleets((prev) => prev.map((f) => (f.id === prevCopy.id ? prevCopy : f)));
+          void garageService.upsertFleetAccount(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setFleets((prev) => prev.map((f) => (f.id === nextCopy.id ? nextCopy : f)));
+          void garageService.upsertFleetAccount(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteFleet = (id: string) => {
+    const idx = latestRef.current.fleets.findIndex((f) => f.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.fleets[idx]) : null;
     setFleets((prev) => prev.filter((f) => f.id !== id));
     void garageService.deleteFleetAccount(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'auto_garage',
+        operationType: 'delete',
+        businessId: garageCtx.businessId,
+        branchId: activeBranchId,
+        entityLabel: existing.companyName,
+        summary: pickLocalizedText(language, {
+          fr: `Flotte ${existing.companyName} supprimée`,
+          en: `Fleet ${existing.companyName} deleted`,
+          ar: `تم حذف الأسطول ${existing.companyName}`,
+        }),
+        undo: () => {
+          restoreAt(setFleets, existing, idx);
+          void syncCoordinator
+            .restoreRow('garage_fleet_contracts', existing.id, currentStaffId)
+            .then(() => garageService.upsertFleetAccount(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setFleets((prev) => prev.filter((f) => f.id !== existing.id));
+          void garageService.deleteFleetAccount(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Invoicing Mutations
   const createInvoice = (inv: GarageInvoice) => {
     const scopedInv = withBranch(inv);
+    const invSnap = cloneSnapshot(scopedInv);
+    const linkedOrder = latestRef.current.orders.find((o) => o.id === scopedInv.orderId);
+    const prevOrderSnap = linkedOrder ? cloneSnapshot(linkedOrder) : null;
+
     setInvoices((prev) => [scopedInv, ...prev]);
     void garageService.upsertInvoice(scopedInv).catch(() => {});
-    // Mark order as paid or invoiced
     setOrders((prev) =>
       prev.map((o) => {
         if (o.id !== scopedInv.orderId) return o;
@@ -1405,21 +1935,82 @@ export const useGarageData = () => {
         return next;
       })
     );
+
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'create',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: scopedInv.invoiceNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Facture ${scopedInv.invoiceNumber} générée`,
+        en: `Invoice ${scopedInv.invoiceNumber} generated`,
+        ar: `تم إنشاء الفاتورة ${scopedInv.invoiceNumber}`,
+      }),
+      undo: () => {
+        setInvoices((prev) => prev.filter((i) => i.id !== invSnap.id));
+        void garageService.deleteInvoice(invSnap.id, currentStaffId).catch(() => {});
+        if (prevOrderSnap) {
+          const prevOrderCopy = cloneSnapshot(prevOrderSnap);
+          setOrders((prev) => prev.map((o) => (o.id === prevOrderCopy.id ? prevOrderCopy : o)));
+          void garageService.upsertWorkOrder(withBranch(prevOrderCopy), garageCtx).catch(() => {});
+        }
+      },
+      redo: () => {
+        const re = cloneSnapshot(invSnap);
+        setInvoices((prev) => (prev.some((i) => i.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('garage_invoices', re.id, currentStaffId)
+          .then(() => garageService.upsertInvoice(re))
+          .catch(() => {});
+        setOrders((prev) =>
+          prev.map((o) => {
+            if (o.id !== re.orderId) return o;
+            const next = { ...o, isPaid: re.isPaid, billingType: re.billingType, invoiceId: re.id };
+            void garageService.upsertWorkOrder(withBranch(next), garageCtx).catch(() => {});
+            return next;
+          })
+        );
+      },
+    });
   };
 
   const markInvoicePaid = (id: string) => {
-    setInvoices((prev) =>
-      prev.map((i) => {
-        if (i.id !== id) return i;
-        const next = { ...i, isPaid: true };
-        void garageService.upsertInvoice(withBranch(next)).catch(() => {});
-        return next;
-      })
-    );
+    const existing = latestRef.current.invoices.find((i) => i.id === id);
+    if (!existing) return;
+    const prevSnap = cloneSnapshot(existing);
+    const next = withBranch({ ...existing, isPaid: true });
+    const nextSnap = cloneSnapshot(next);
+    setInvoices((prev) => prev.map((i) => (i.id === id ? next : i)));
+    void garageService.upsertInvoice(next).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'status',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      entityLabel: existing.invoiceNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Facture ${existing.invoiceNumber} encaissée`,
+        en: `Invoice ${existing.invoiceNumber} marked paid`,
+        ar: `تم تحصيل الفاتورة ${existing.invoiceNumber}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevSnap);
+        setInvoices((prev) => prev.map((i) => (i.id === prevCopy.id ? prevCopy : i)));
+        void garageService.upsertInvoice(withBranch(prevCopy)).catch(() => {});
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextSnap);
+        setInvoices((prev) => prev.map((i) => (i.id === nextCopy.id ? nextCopy : i)));
+        void garageService.upsertInvoice(nextCopy).catch(() => {});
+      },
+    });
   };
 
   // Reset active branch data to empty state
   const resetGarageDemoData = () => {
+    const snap = cloneSnapshot(latestRef.current);
     setOrders((prev) => prev.filter((o) => !belongsToActiveBranch(o)));
     setVehicles((prev) => prev.filter((v) => !belongsToActiveBranch(v)));
     setParts((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
@@ -1428,6 +2019,27 @@ export const useGarageData = () => {
       setBays(INITIAL_BAYS);
       setFleets(INITIAL_FLEETS);
     }
+
+    registerUndoEntry({
+      vertical: 'auto_garage',
+      operationType: 'bulk',
+      businessId: garageCtx.businessId,
+      branchId: activeBranchId,
+      summary: pickLocalizedText(language, {
+        fr: 'Données atelier réinitialisées',
+        en: 'Workshop data reset',
+        ar: 'تمت إعادة ضبط بيانات الورشة',
+      }),
+      undo: () => {
+        const s = cloneSnapshot(snap);
+        setOrders(s.orders);
+        setVehicles(s.vehicles);
+        setParts(s.parts);
+        setInvoices(s.invoices);
+        setBays(s.bays);
+        setFleets(s.fleets);
+      },
+    });
   };
 
   const scopedOrders = useMemo(() => orders.filter(belongsToActiveBranch), [orders, belongsToActiveBranch]);

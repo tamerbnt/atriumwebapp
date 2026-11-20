@@ -108,12 +108,6 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
     };
 
     onSave(payload);
-    showToast(
-      initialData
-        ? (isAr ? 'تم تحديث القطعة الفلاحية بنجاح' : 'Parcelle agricole mise à jour avec succès')
-        : (isAr ? 'تم تسجيل القطعة الفلاحية بنجاح' : 'Parcelle agricole enregistrée avec succès'),
-      'success'
-    );
   };
 
   return (

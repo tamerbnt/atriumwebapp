@@ -18,6 +18,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { cloneSnapshot, pickLocalizedText, registerUndoEntry } from '../../../services/undoEngine';
 import { localizeStatus } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -297,21 +298,54 @@ export const LegalVaultView: React.FC<any> = () => {
         vaultToEdit?.officialSealNumber || `SEAL-${Math.floor(1000 + Math.random() * 9000)}`,
     };
     if (vaultToEdit) {
+      const prevItems = cloneSnapshot(vaultItems);
       const updated = vaultItems.map((item) => (item.id === payload.id ? payload : item));
       saveVault(updated);
       if (selectedItem?.id === payload.id) setSelectedItem(payload);
-      showToast(
-        isAr ? 'تم تحديث بيانات الوثيقة بالخزينة' : 'Pièce mise à jour au coffre-fort',
-        'success'
-      );
+      registerUndoEntry({
+        vertical: 'legal_accounting',
+        operationType: 'edit',
+        summary: pickLocalizedText(language, {
+          en: `Updated vault item (${payload.code})`,
+          fr: `Pièce mise à jour au coffre-fort (${payload.code})`,
+          ar: `تم تحديث الوثيقة بالخزينة (${payload.code})`,
+        }),
+        entityLabel: payload.code,
+        toastType: 'success',
+        undo: () => {
+          saveVault(cloneSnapshot(prevItems));
+          const prevItem = prevItems.find((i) => i.id === payload.id) || null;
+          setSelectedItem((cur) => (cur?.id === payload.id ? prevItem : cur));
+        },
+        redo: () => {
+          saveVault(cloneSnapshot(updated));
+          setSelectedItem((cur) => (cur?.id === payload.id ? payload : cur));
+        },
+      });
     } else {
+      const prevItems = cloneSnapshot(vaultItems);
       const updated = [payload, ...vaultItems];
       saveVault(updated);
       setSelectedItem(payload);
-      showToast(
-        isAr ? 'تم إيداع الوثيقة بالخزينة الرسمية' : 'Pièce scellée avec succès au coffre-fort',
-        'success'
-      );
+      registerUndoEntry({
+        vertical: 'legal_accounting',
+        operationType: 'create',
+        summary: pickLocalizedText(language, {
+          en: `Sealed vault item (${payload.code})`,
+          fr: `Pièce scellée au coffre-fort (${payload.code})`,
+          ar: `تم إيداع الوثيقة بالخزينة (${payload.code})`,
+        }),
+        entityLabel: payload.code,
+        toastType: 'success',
+        undo: () => {
+          saveVault(cloneSnapshot(prevItems));
+          setSelectedItem((cur) => (cur?.id === payload.id ? null : cur));
+        },
+        redo: () => {
+          saveVault(cloneSnapshot(updated));
+          setSelectedItem(payload);
+        },
+      });
     }
     setIsModalOpen(false);
   };
@@ -327,12 +361,30 @@ export const LegalVaultView: React.FC<any> = () => {
 
   const handleDelete = useCallback(
     (item: VaultItem) => {
+      const prevItems = cloneSnapshot(vaultItems);
       const updated = vaultItems.filter((i) => i.id !== item.id);
       saveVault(updated);
       if (selectedItem?.id === item.id) setSelectedItem(null);
-      showToast(isAr ? 'تم سحب الوثيقة من الخزينة' : 'Pièce retirée du coffre-fort', 'success');
+      registerUndoEntry({
+        vertical: 'legal_accounting',
+        operationType: 'delete',
+        summary: pickLocalizedText(language, {
+          en: `Removed vault item (${item.code})`,
+          fr: `Pièce retirée du coffre-fort (${item.code})`,
+          ar: `تم سحب الوثيقة من الخزينة (${item.code})`,
+        }),
+        entityLabel: item.code,
+        toastType: 'info',
+        undo: () => {
+          saveVault(cloneSnapshot(prevItems));
+        },
+        redo: () => {
+          saveVault(cloneSnapshot(updated));
+          setSelectedItem((cur) => (cur?.id === item.id ? null : cur));
+        },
+      });
     },
-    [vaultItems, saveVault, selectedItem, isAr]
+    [vaultItems, saveVault, selectedItem, language]
   );
 
   const handleCertifyHash = useCallback(
@@ -841,13 +893,29 @@ export const LegalVaultView: React.FC<any> = () => {
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
           onBulkDelete={(ids) => {
+            const prevItems = cloneSnapshot(vaultItems);
             const updated = vaultItems.filter((i) => !ids.has(i.id));
             saveVault(updated);
             setSelectedIds(new Set());
-            showToast(
-              isAr ? 'تم سحب الوثائق المحددة' : `${ids.size} pièce(s) retirée(s) du coffre`,
-              'info'
-            );
+            if (selectedItem && ids.has(selectedItem.id)) setSelectedItem(null);
+            registerUndoEntry({
+              vertical: 'legal_accounting',
+              operationType: 'bulk',
+              summary: pickLocalizedText(language, {
+                en: `Removed ${ids.size} vault item(s)`,
+                fr: `${ids.size} pièce(s) retirée(s) du coffre`,
+                ar: `تم سحب ${ids.size} وثائق من الخزينة`,
+              }),
+              affectedCount: ids.size,
+              toastType: 'info',
+              undo: () => {
+                saveVault(cloneSnapshot(prevItems));
+              },
+              redo: () => {
+                saveVault(cloneSnapshot(updated));
+                setSelectedItem((cur) => (cur && ids.has(cur.id) ? null : cur));
+              },
+            });
           }}
           isPinned={(i) => pinnedIds.has(i.id)}
           onTogglePin={togglePin}

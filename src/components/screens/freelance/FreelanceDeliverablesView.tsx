@@ -16,6 +16,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import {
   FreelanceProject,
   FreelanceDeliverable,
@@ -658,38 +659,50 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
   const handleBatchSetStage = (newStage: DeliverableStage) => {
     if (selectedDeliverableIds.size === 0) return;
-    flatDeliverablesList.forEach((item) => {
-      if (selectedDeliverableIds.has(item.id)) {
-        updateDeliverableStage(item.projectId, item.id, newStage);
+    const targets = flatDeliverablesList.filter((item) => selectedDeliverableIds.has(item.id));
+    if (targets.length === 0) return;
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `تحديث المهام (${targets.length})`
+          : isFr
+          ? `Mise à jour livrables (${targets.length})`
+          : `Move deliverables (${targets.length})`,
+        entityType: 'freelanceDeliverable',
+      },
+      () => {
+        targets.forEach((item) => {
+          updateDeliverableStage(item.projectId, item.id, newStage);
+        });
       }
-    });
-    const count = selectedDeliverableIds.size;
+    );
     setSelectedDeliverableIds(new Set());
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم التحديث' : isFr ? 'Mis à jour' : 'Updated',
-      message: `${count} ${
-        isAr ? 'مهام تم تحديث مرحلتها' : `deliverables moved to ${newStage}`
-      }`,
-      category: 'freelance_solo',
-    });
   };
 
   const handleBatchDeleteDeliverables = () => {
     if (selectedDeliverableIds.size === 0) return;
-    const count = selectedDeliverableIds.size;
-    flatDeliverablesList.forEach((item) => {
-      if (selectedDeliverableIds.has(item.id)) {
-        deleteDeliverable(item.projectId, item.id);
+    const targets = flatDeliverablesList.filter((item) => selectedDeliverableIds.has(item.id));
+    if (targets.length === 0) return;
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `حذف المهام (${targets.length})`
+          : isFr
+          ? `Suppression livrables (${targets.length})`
+          : `Delete deliverables (${targets.length})`,
+        entityType: 'freelanceDeliverable',
+      },
+      () => {
+        targets.forEach((item) => {
+          deleteDeliverable(item.projectId, item.id);
+        });
       }
-    });
+    );
     setSelectedDeliverableIds(new Set());
-    showToast({
-      type: 'info',
-      title: isAr ? 'تم الحذف' : isFr ? 'Suppression' : 'Deleted',
-      message: `${count} ${isAr ? 'مهام تم حذفها' : 'deliverables deleted'}`,
-      category: 'freelance_solo',
-    });
   };
 
   const totalScopeCreepItems = flatDeliverablesList.filter(

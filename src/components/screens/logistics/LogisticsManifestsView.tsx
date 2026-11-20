@@ -12,6 +12,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { LogisticsManifest } from '../../../types';
 import { useLogisticsData } from './logisticsData';
@@ -199,14 +200,9 @@ export const LogisticsManifestsView: React.FC<any> = () => {
     if (manifestToEdit) {
       updateManifest(payload);
       if (selectedManifest?.id === payload.id) setSelectedManifest(payload);
-      showToast(isAr ? 'تم تحديث ورقة الطريق' : 'Manifeste mis à jour', 'success');
     } else {
       addManifest(payload);
       setSelectedManifest(payload);
-      showToast(
-        isAr ? 'تم إنشاء ورقة طريق السائق بنجاح' : 'Feuille de route émise avec succès',
-        'success'
-      );
     }
     setIsModalOpen(false);
   };
@@ -309,9 +305,8 @@ export const LogisticsManifestsView: React.FC<any> = () => {
     (m: LogisticsManifest) => {
       deleteManifest(m.id);
       if (selectedManifest?.id === m.id) setSelectedManifest(null);
-      showToast(isAr ? 'تم حذف ورقة الطريق' : 'Manifeste de distribution supprimé', 'success');
     },
-    [deleteManifest, selectedManifest, isAr]
+    [deleteManifest, selectedManifest]
   );
 
   const handleCloseTournee = useCallback(
@@ -325,14 +320,8 @@ export const LogisticsManifestsView: React.FC<any> = () => {
       };
       updateManifest(updated);
       if (selectedManifest?.id === m.id) setSelectedManifest(updated);
-      showToast(
-        nextStatus === 'Completed'
-          ? isAr ? 'تم تأكيد عودة السائق وتصفية الطرود' : 'Tournée clôturée et encaissement validé'
-          : isAr ? 'إعادة فتح المسار' : 'Tournée réouverte',
-        'success'
-      );
     },
-    [updateManifest, selectedManifest, isAr]
+    [updateManifest, selectedManifest]
   );
 
   const handleSelectManifest = useCallback((m: LogisticsManifest, originEl?: HTMLElement | null) => {
@@ -758,19 +747,55 @@ export const LogisticsManifestsView: React.FC<any> = () => {
             label: isAr ? 'إغلاق المسارات' : 'Clôturer tournées',
             icon: <CheckCircle2 size={14} />,
             onClick: (ids) => {
-              ids.forEach((id) => {
-                const m = manifests.find((item) => item.id === id);
-                if (m && m.status !== 'Completed') handleCloseTournee(m);
-              });
+              const count = ids.size;
+              runUndoBatch(
+                {
+                  operationType: 'bulk',
+                  vertical: 'logistics',
+                  label: {
+                    fr: `${count} tournées clôturées`,
+                    en: `${count} routes closed`,
+                    ar: `تم إغلاق ${count} مسارات`,
+                  },
+                  moduleLabel: {
+                    fr: 'Feuilles de Route',
+                    en: 'Dispatch Manifests',
+                    ar: 'أوراق الطريق',
+                  },
+                },
+                () => {
+                  ids.forEach((id) => {
+                    const m = manifests.find((item) => item.id === id);
+                    if (m && m.status !== 'Completed') handleCloseTournee(m);
+                  });
+                }
+              );
               setSelectedIds(new Set<string>());
-              showToast(isAr ? 'تم إغلاق المسارات المحددة' : 'Tournées clôturées avec succès', 'success');
             },
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteManifest(id));
+            const count = ids.size;
+            runUndoBatch(
+              {
+                operationType: 'bulk',
+                vertical: 'logistics',
+                label: {
+                  fr: `${count} manifestes supprimés`,
+                  en: `${count} manifests deleted`,
+                  ar: `تم حذف ${count} أوراق طريق`,
+                },
+                moduleLabel: {
+                  fr: 'Feuilles de Route',
+                  en: 'Dispatch Manifests',
+                  ar: 'أوراق الطريق',
+                },
+              },
+              () => {
+                ids.forEach((id) => deleteManifest(id));
+              }
+            );
             setSelectedIds(new Set<string>());
             if (selectedManifest && ids.has(selectedManifest.id)) setSelectedManifest(null);
-            showToast(isAr ? 'تم حذف أوراق الطريق المحددة' : 'Manifestes sélectionnés supprimés', 'success');
           }}
           isPinned={(m) => pinnedIds.has(m.id)}
           onTogglePin={handleTogglePin}
@@ -1116,12 +1141,30 @@ export const LogisticsManifestsView: React.FC<any> = () => {
           onClose={() => setIsDischargeModalOpen(false)}
           manifest={manifestToDischarge}
           onSaveDischarge={(d) => {
-            addDischarge(d);
-            updateManifest({
-              ...manifestToDischarge,
-              status: 'Completed',
-              totalCodCollectedDzd: d.actualCashTurnedInDzd,
-            });
+            runUndoBatch(
+              {
+                operationType: 'status',
+                vertical: 'logistics',
+                label: {
+                  fr: `Décharge ${d.dischargeNumber} & clôture ${manifestToDischarge.manifestNumber}`,
+                  en: `Discharge ${d.dischargeNumber} & closed ${manifestToDischarge.manifestNumber}`,
+                  ar: `تصفية ${d.dischargeNumber} وإغلاق ${manifestToDischarge.manifestNumber}`,
+                },
+                moduleLabel: {
+                  fr: 'Feuilles de Route',
+                  en: 'Dispatch Manifests',
+                  ar: 'أوراق الطريق',
+                },
+              },
+              () => {
+                addDischarge(d);
+                updateManifest({
+                  ...manifestToDischarge,
+                  status: 'Completed',
+                  totalCodCollectedDzd: d.actualCashTurnedInDzd,
+                });
+              }
+            );
           }}
         />
       )}

@@ -121,7 +121,6 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 			mandateNumber: propertyToEdit?.mandateNumber,
 			createdAt: propertyToEdit?.createdAt || (/* @__PURE__ */ new Date()).toISOString()
 		});
-		showToast(language === "ar" ? "تم حفظ العقار والسند القانوني بنجاح" : "Bien et titre cadastral enregistrés avec succès", "success");
 		onClose();
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">

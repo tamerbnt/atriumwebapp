@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   ManufacturingBom,
   ManufacturingOrder,
@@ -8,6 +8,11 @@ import {
 } from '../../../types';
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
+import {
+  cloneSnapshot,
+  pickLocalizedText,
+  registerUndoEntry,
+} from '../../../services/undoEngine';
 import {
   isSupabaseConfigured,
   manufacturingService,
@@ -601,7 +606,9 @@ export const useManufacturingData = () => {
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
   const currentAccountId = useAtriumSelector((s) => s.account.id);
   const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
+  const language = useAtriumSelector((s) => s.language);
   const activeBranchId = currentBranchId || 'branch_manufacturing_main';
+  const activeBusinessId = currentBusinessId || 'biz_manufacturing';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
       (item.branchId || item.facilityId || 'branch_manufacturing_main') === activeBranchId,
@@ -848,92 +855,463 @@ export const useManufacturingData = () => {
     };
   }, [activeBranchId]);
 
+  const latestRef = useRef({
+    boms,
+    orders,
+    materials,
+    vouchers,
+    qcRecords,
+  });
+  latestRef.current = {
+    boms,
+    orders,
+    materials,
+    vouchers,
+    qcRecords,
+  };
+
+  const restoreAt = <T extends { id: string }>(
+    setter: React.Dispatch<React.SetStateAction<T[]>>,
+    snapshot: T,
+    index: number
+  ) => {
+    const item = cloneSnapshot(snapshot);
+    setter((prev) => {
+      if (prev.some((x) => x.id === item.id)) return prev;
+      const next = [...prev];
+      const safeIndex = Math.max(0, Math.min(index, next.length));
+      next.splice(safeIndex, 0, item);
+      return next;
+    });
+  };
+
   // Order CRUD
   const addOrder = (order: ManufacturingOrder) => {
     const scoped = withBranch(order);
+    const snap = cloneSnapshot(scoped);
     setOrders((prev) => [scoped, ...prev]);
     void manufacturingService.upsertOrder(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'manufacturing_production',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.orderNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Ordre de fabrication ${scoped.orderNumber} créé`,
+        en: `Production order ${scoped.orderNumber} created`,
+        ar: `تم إنشاء أمر التصنيع ${scoped.orderNumber}`,
+      }),
+      undo: () => {
+        setOrders((prev) => prev.filter((o) => o.id !== snap.id));
+        void manufacturingService.deleteOrder(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setOrders((prev) => (prev.some((o) => o.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('mfg_orders', re.id, currentStaffId)
+          .then(() => manufacturingService.upsertOrder(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateOrder = (order: ManufacturingOrder) => {
     const scoped = withBranch(order);
+    const existing = latestRef.current.orders.find((o) => o.id === order.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setOrders((prev) => prev.map((o) => (o.id === order.id ? scoped : o)));
     void manufacturingService.upsertOrder(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'manufacturing_production',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.orderNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Ordre ${nextSnap.orderNumber} modifié`,
+          en: `Production order ${nextSnap.orderNumber} updated`,
+          ar: `تم تعديل أمر التصنيع ${nextSnap.orderNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setOrders((prev) => prev.map((o) => (o.id === prevCopy.id ? prevCopy : o)));
+          void manufacturingService.upsertOrder(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setOrders((prev) => prev.map((o) => (o.id === nextCopy.id ? nextCopy : o)));
+          void manufacturingService.upsertOrder(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteOrder = (id: string) => {
+    const idx = latestRef.current.orders.findIndex((o) => o.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.orders[idx]) : null;
     setOrders((prev) => prev.filter((o) => o.id !== id));
     void manufacturingService.deleteOrder(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'manufacturing_production',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.orderNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Ordre ${existing.orderNumber} supprimé`,
+          en: `Production order ${existing.orderNumber} deleted`,
+          ar: `تم حذف أمر التصنيع ${existing.orderNumber}`,
+        }),
+        undo: () => {
+          restoreAt(setOrders, existing, idx);
+          void syncCoordinator
+            .restoreRow('mfg_orders', existing.id, currentStaffId)
+            .then(() => manufacturingService.upsertOrder(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setOrders((prev) => prev.filter((o) => o.id !== existing.id));
+          void manufacturingService.deleteOrder(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const updateOrderStatus = (id: string, status: ManufacturingOrder['status']) => {
-    setOrders((prev) =>
-      prev.map((o) => {
-        if (o.id !== id) return o;
-        const next = { ...o, status };
-        void manufacturingService.upsertOrder(withBranch(next)).catch(() => {});
-        return next;
-      })
-    );
+    const existing = latestRef.current.orders.find((o) => o.id === id);
+    if (!existing) return;
+    const prevSnap = cloneSnapshot(existing);
+    const next = withBranch({ ...existing, status });
+    const nextSnap = cloneSnapshot(next);
+    setOrders((prev) => prev.map((o) => (o.id === id ? next : o)));
+    void manufacturingService.upsertOrder(next).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'manufacturing_production',
+      operationType: 'status',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: existing.orderNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Statut OF ${existing.orderNumber} → ${status}`,
+        en: `Order ${existing.orderNumber} → ${status}`,
+        ar: `تحديث حالة التصنيع ${existing.orderNumber} → ${status}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevSnap);
+        setOrders((prev) => prev.map((o) => (o.id === prevCopy.id ? prevCopy : o)));
+        void manufacturingService.upsertOrder(withBranch(prevCopy)).catch(() => {});
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextSnap);
+        setOrders((prev) => prev.map((o) => (o.id === nextCopy.id ? nextCopy : o)));
+        void manufacturingService.upsertOrder(nextCopy).catch(() => {});
+      },
+    });
   };
 
   // BOM CRUD
   const addBom = (bom: ManufacturingBom) => {
     const scoped = withBranch(bom);
+    const snap = cloneSnapshot(scoped);
     setBoms((prev) => [scoped, ...prev]);
     void manufacturingService.upsertBom(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'manufacturing_production',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.bomCode,
+      summary: pickLocalizedText(language, {
+        fr: `Nomenclature ${scoped.bomCode} créée`,
+        en: `BOM ${scoped.bomCode} created`,
+        ar: `تم إنشاء قائمة المواد ${scoped.bomCode}`,
+      }),
+      undo: () => {
+        setBoms((prev) => prev.filter((b) => b.id !== snap.id));
+        void manufacturingService.deleteBom(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setBoms((prev) => (prev.some((b) => b.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('mfg_bom_recipes', re.id, currentStaffId)
+          .then(() => manufacturingService.upsertBom(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateBom = (bom: ManufacturingBom) => {
     const scoped = withBranch(bom);
+    const existing = latestRef.current.boms.find((b) => b.id === bom.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setBoms((prev) => prev.map((b) => (b.id === bom.id ? scoped : b)));
     void manufacturingService.upsertBom(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'manufacturing_production',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.bomCode,
+        summary: pickLocalizedText(language, {
+          fr: `Nomenclature ${nextSnap.bomCode} modifiée`,
+          en: `BOM ${nextSnap.bomCode} updated`,
+          ar: `تم تعديل قائمة المواد ${nextSnap.bomCode}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setBoms((prev) => prev.map((b) => (b.id === prevCopy.id ? prevCopy : b)));
+          void manufacturingService.upsertBom(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setBoms((prev) => prev.map((b) => (b.id === nextCopy.id ? nextCopy : b)));
+          void manufacturingService.upsertBom(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteBom = (id: string) => {
+    const idx = latestRef.current.boms.findIndex((b) => b.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.boms[idx]) : null;
     setBoms((prev) => prev.filter((b) => b.id !== id));
     void manufacturingService.deleteBom(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'manufacturing_production',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.bomCode,
+        summary: pickLocalizedText(language, {
+          fr: `Nomenclature ${existing.bomCode} supprimée`,
+          en: `BOM ${existing.bomCode} deleted`,
+          ar: `تم حذف قائمة المواد ${existing.bomCode}`,
+        }),
+        undo: () => {
+          restoreAt(setBoms, existing, idx);
+          void syncCoordinator
+            .restoreRow('mfg_bom_recipes', existing.id, currentStaffId)
+            .then(() => manufacturingService.upsertBom(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setBoms((prev) => prev.filter((b) => b.id !== existing.id));
+          void manufacturingService.deleteBom(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Raw Materials CRUD
   const addMaterial = (mat: RawMaterialStockItem) => {
     const scoped = withBranch(mat);
+    const snap = cloneSnapshot(scoped);
     setMaterials((prev) => [scoped, ...prev]);
     void manufacturingService.upsertRawMaterial(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'manufacturing_production',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.name,
+      summary: pickLocalizedText(language, {
+        fr: `Matière première ${scoped.name} ajoutée`,
+        en: `Raw material ${scoped.name} added`,
+        ar: `تمت إضافة المادة الخام ${scoped.name}`,
+      }),
+      undo: () => {
+        setMaterials((prev) => prev.filter((m) => m.id !== snap.id));
+        void syncCoordinator.softDeleteRow('mfg_raw_materials', snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setMaterials((prev) => (prev.some((m) => m.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('mfg_raw_materials', re.id, currentStaffId)
+          .then(() => manufacturingService.upsertRawMaterial(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateMaterial = (mat: RawMaterialStockItem) => {
     const scoped = withBranch(mat);
+    const existing = latestRef.current.materials.find((m) => m.id === mat.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setMaterials((prev) => prev.map((m) => (m.id === mat.id ? scoped : m)));
     void manufacturingService.upsertRawMaterial(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'manufacturing_production',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.name,
+        summary: pickLocalizedText(language, {
+          fr: `Matière ${nextSnap.name} mise à jour`,
+          en: `Raw material ${nextSnap.name} updated`,
+          ar: `تم تحديث المادة الخام ${nextSnap.name}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setMaterials((prev) => prev.map((m) => (m.id === prevCopy.id ? prevCopy : m)));
+          void manufacturingService.upsertRawMaterial(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setMaterials((prev) => prev.map((m) => (m.id === nextCopy.id ? nextCopy : m)));
+          void manufacturingService.upsertRawMaterial(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   // Transfer Vouchers CRUD
   const addVoucher = (voucher: MaterialTransferVoucher) => {
     const scoped = withBranch(voucher);
+    const snap = cloneSnapshot(scoped);
     setVouchers((prev) => [scoped, ...prev]);
     void manufacturingService.processMaterialVoucher(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'manufacturing_production',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.voucherNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Bon matière ${scoped.voucherNumber} enregistré`,
+        en: `Material voucher ${scoped.voucherNumber} recorded`,
+        ar: `تم تسجيل سند المواد ${scoped.voucherNumber}`,
+      }),
+      undo: () => {
+        setVouchers((prev) => prev.filter((v) => v.id !== snap.id));
+        void syncCoordinator.softDeleteRow('mfg_material_vouchers', snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setVouchers((prev) => (prev.some((v) => v.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('mfg_material_vouchers', re.id, currentStaffId)
+          .then(() => manufacturingService.processMaterialVoucher(re))
+          .catch(() => {});
+      },
+    });
   };
 
   // Quality Inspections CRUD
   const addQcRecord = (record: QualityInspectionRecord) => {
     const scoped = withBranch(record);
+    const snap = cloneSnapshot(scoped);
     setQcRecords((prev) => [scoped, ...prev]);
     void manufacturingService.upsertQcInspection(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'manufacturing_production',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.inspectionNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Contrôle qualité ${scoped.inspectionNumber} ajouté`,
+        en: `QC inspection ${scoped.inspectionNumber} added`,
+        ar: `تمت إضافة فحص الجودة ${scoped.inspectionNumber}`,
+      }),
+      undo: () => {
+        setQcRecords((prev) => prev.filter((q) => q.id !== snap.id));
+        void syncCoordinator.softDeleteRow('mfg_qc_inspections', snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setQcRecords((prev) => (prev.some((q) => q.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('mfg_qc_inspections', re.id, currentStaffId)
+          .then(() => manufacturingService.upsertQcInspection(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateQcRecord = (record: QualityInspectionRecord) => {
     const scoped = withBranch(record);
+    const existing = latestRef.current.qcRecords.find((q) => q.id === record.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setQcRecords((prev) => prev.map((q) => (q.id === record.id ? scoped : q)));
     void manufacturingService.upsertQcInspection(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'manufacturing_production',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.inspectionNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Contrôle qualité ${nextSnap.inspectionNumber} modifié`,
+          en: `QC inspection ${nextSnap.inspectionNumber} updated`,
+          ar: `تم تعديل فحص الجودة ${nextSnap.inspectionNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setQcRecords((prev) => prev.map((q) => (q.id === prevCopy.id ? prevCopy : q)));
+          void manufacturingService.upsertQcInspection(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setQcRecords((prev) => prev.map((q) => (q.id === nextCopy.id ? nextCopy : q)));
+          void manufacturingService.upsertQcInspection(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const resetManufacturingDemoData = () => {
+    const snap = cloneSnapshot(latestRef.current);
     setBoms((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
     setOrders((prev) => prev.filter((o) => !belongsToActiveBranch(o)));
     setMaterials((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
     setVouchers((prev) => prev.filter((v) => !belongsToActiveBranch(v)));
     setQcRecords((prev) => prev.filter((q) => !belongsToActiveBranch(q)));
+
+    registerUndoEntry({
+      vertical: 'manufacturing_production',
+      operationType: 'bulk',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      summary: pickLocalizedText(language, {
+        fr: 'Données usine réinitialisées',
+        en: 'Manufacturing data reset',
+        ar: 'تمت إعادة ضبط بيانات التصنيع',
+      }),
+      undo: () => {
+        const s = cloneSnapshot(snap);
+        setBoms(s.boms);
+        setOrders(s.orders);
+        setMaterials(s.materials);
+        setVouchers(s.vouchers);
+        setQcRecords(s.qcRecords);
+      },
+    });
   };
 
   const scopedBoms = useMemo(() => boms.filter(belongsToActiveBranch), [boms, belongsToActiveBranch]);

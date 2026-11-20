@@ -24,6 +24,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { Member } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
@@ -291,32 +292,54 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
     }, []);
 
     const handleBatchSetVIP = useCallback(() => {
-      selectedClientIds.forEach((id) => {
-        const client = salonClients.find((c) => c.id === id);
-        if (client) {
-          updateMember(id, {
-            membershipPlanName: 'VIP',
-            segmentData: { ...client.segmentData, isVip: true },
+      const count = selectedClientIds.size;
+      if (count === 0) return;
+      runUndoBatch(
+        {
+          category: 'appointment_service',
+          operationType: 'bulk',
+          label: isAr
+            ? `ترقية VIP (${count})`
+            : isEn
+            ? `Promote VIP (${count})`
+            : `Promotion VIP (${count})`,
+          entityType: 'member',
+        },
+        () => {
+          selectedClientIds.forEach((id) => {
+            const client = salonClients.find((c) => c.id === id);
+            if (client) {
+              updateMember(id, {
+                membershipPlanName: 'VIP',
+                segmentData: { ...client.segmentData, isVip: true },
+              });
+            }
           });
         }
-      });
-      showToast?.({
-        type: 'success',
-        title: isAr ? 'تم منح VIP' : 'Statut VIP attribué',
-        message: `${selectedClientIds.size} ${isAr ? 'عميلة' : 'clientes VIP'}`,
-      });
+      );
       setSelectedClientIds(new Set());
-    }, [selectedClientIds, salonClients, updateMember, showToast, isAr]);
+    }, [selectedClientIds, salonClients, updateMember, isAr, isEn]);
 
     const handleBatchDelete = useCallback(() => {
-      selectedClientIds.forEach((id) => deleteMember(id));
-      showToast?.({
-        type: 'info',
-        title: isAr ? 'تم حذف الملفات' : 'Dossiers supprimés',
-        message: `${selectedClientIds.size} ${isAr ? 'ملفات' : 'fiches retirées'}`,
-      });
+      const count = selectedClientIds.size;
+      if (count === 0) return;
+      runUndoBatch(
+        {
+          category: 'appointment_service',
+          operationType: 'bulk',
+          label: isAr
+            ? `حذف ملفات (${count})`
+            : isEn
+            ? `Remove clients (${count})`
+            : `Suppression dossiers (${count})`,
+          entityType: 'member',
+        },
+        () => {
+          selectedClientIds.forEach((id) => deleteMember(id));
+        }
+      );
       setSelectedClientIds(new Set());
-    }, [selectedClientIds, deleteMember, showToast, isAr]);
+    }, [selectedClientIds, deleteMember, isAr, isEn]);
 
     const handleAddFormula = useCallback(
       (e: React.FormEvent) => {
@@ -337,13 +360,8 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
         setInspectingClient({ ...inspectingClient, segmentData: nextSeg });
         setNewFormulaText('');
         setNewFormulaNotes('');
-        showToast?.({
-          type: 'success',
-          title: isAr ? 'تم حفظ الوصفة' : 'Formulation enregistrée',
-          message: inspectingClient.fullName,
-        });
       },
-      [inspectingClient, newFormulaText, newFormulaStylist, newFormulaNotes, updateMember, showToast, isAr]
+      [inspectingClient, newFormulaText, newFormulaStylist, newFormulaNotes, updateMember]
     );
 
     const handleExportCSV = useCallback(() => {
@@ -623,7 +641,6 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
           onClick: () => {
             deleteMember(client.id);
             if (inspectingClient?.id === client.id) setInspectingClient(null);
-            showToast?.({ type: 'info', title: isAr ? 'تم الحذف' : 'Dossier retiré', message: client.fullName });
           },
         },
       ],
@@ -787,7 +804,6 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
             onDelete={(client) => {
               deleteMember(client.id);
               if (inspectingClient?.id === client.id) setInspectingClient(null);
-              showToast?.({ type: 'info', title: isAr ? 'تم الحذف' : 'Dossier retiré', message: client.fullName });
             }}
             bulkSecondaryAction={{
               label: isAr ? 'ترقية VIP' : 'Promouvoir VIP',
@@ -976,7 +992,6 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
                       placeholder="Ajouter une préférence boisson, protocole cuir chevelu..."
                       onSave={(txt) => {
                         updateMember(client.id, { notes: txt });
-                        showToast?.({ type: 'success', title: 'Notes enregistrées', message: client.fullName });
                       }}
                     />
                   </InspectorSection>

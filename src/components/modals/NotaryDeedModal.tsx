@@ -8,7 +8,7 @@ import {
   AlertCircle,
   Coins,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../services/store';
+import { useAtriumStore } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { AtriumButton } from '../ui/AtriumButton';
 import { LabelInput } from '../ui/LabelInput';
@@ -102,14 +102,6 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
     };
 
     onSaveDeed(deed);
-    showToast(
-      isAr
-        ? `تم تسجيل العقد (${repertoireNumber})`
-        : isEn
-        ? `Deed saved (${repertoireNumber})`
-        : `Acte enregistré (${repertoireNumber})`,
-      'success'
-    );
     onClose();
   };
 

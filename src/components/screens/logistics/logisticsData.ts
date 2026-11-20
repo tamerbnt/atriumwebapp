@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   LogisticsShipment,
   LogisticsManifest,
@@ -11,6 +11,11 @@ import { computeAlgerianFiscalStamp, calculateCcpKey } from '../../../utils/logi
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import type { Dispatch, SetStateAction } from 'react';
+import {
+  cloneSnapshot,
+  pickLocalizedText,
+  registerUndoEntry,
+} from '../../../services/undoEngine';
 import { isSupabaseConfigured, logisticsService, realtimeService, syncCoordinator, subscribeConcurrencyResolutions, runWithConcurrency } from '../../../lib/supabase';
 
 function mergeLogById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
@@ -535,7 +540,9 @@ export const useLogisticsData = () => {
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
   const currentAccountId = useAtriumSelector((s) => s.account.id);
   const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
+  const language = useAtriumSelector((s) => s.language);
   const activeBranchId = currentBranchId || 'branch_logistics_main';
+  const activeBusinessId = currentBusinessId || 'biz_logistics';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
       (item.branchId || item.facilityId || 'branch_logistics_main') === activeBranchId,
@@ -744,125 +751,468 @@ export const useLogisticsData = () => {
     };
   }, [activeBranchId]);
 
+  const latestRef = useRef({
+    shipments,
+    bags,
+    manifests,
+    discharges,
+    remittances,
+  });
+  latestRef.current = {
+    shipments,
+    bags,
+    manifests,
+    discharges,
+    remittances,
+  };
+
+  const restoreAt = <T extends { id: string }>(
+    setter: Dispatch<SetStateAction<T[]>>,
+    snapshot: T,
+    index: number
+  ) => {
+    const item = cloneSnapshot(snapshot);
+    setter((prev) => {
+      if (prev.some((x) => x.id === item.id)) return prev;
+      const next = [...prev];
+      const safeIndex = Math.max(0, Math.min(index, next.length));
+      next.splice(safeIndex, 0, item);
+      return next;
+    });
+  };
+
   const addShipment = (shipment: LogisticsShipment) => {
     const scoped = withBranch(shipment);
+    const snap = cloneSnapshot(scoped);
     setShipments((prev) => [scoped, ...prev]);
     void logisticsService.upsertShipment(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'logistics_delivery',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.trackingCode,
+      summary: pickLocalizedText(language, {
+        fr: `Colis ${scoped.trackingCode} créé`,
+        en: `Shipment ${scoped.trackingCode} created`,
+        ar: `تم إنشاء الطرد ${scoped.trackingCode}`,
+      }),
+      undo: () => {
+        setShipments((prev) => prev.filter((s) => s.id !== snap.id));
+        void logisticsService.deleteShipment(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setShipments((prev) => (prev.some((s) => s.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('logistics_parcels', re.id, currentStaffId)
+          .then(() => logisticsService.upsertShipment(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateShipment = (shipment: LogisticsShipment) => {
     const scoped = withBranch(shipment);
+    const existing = latestRef.current.shipments.find((s) => s.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setShipments((prev) => prev.map((s) => (s.id === scoped.id ? scoped : s)));
     void logisticsService.upsertShipment(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'logistics_delivery',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.trackingCode,
+        summary: pickLocalizedText(language, {
+          fr: `Colis ${nextSnap.trackingCode} modifié`,
+          en: `Shipment ${nextSnap.trackingCode} updated`,
+          ar: `تم تعديل الطرد ${nextSnap.trackingCode}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setShipments((prev) => prev.map((s) => (s.id === prevCopy.id ? prevCopy : s)));
+          void logisticsService.upsertShipment(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setShipments((prev) => prev.map((s) => (s.id === nextCopy.id ? nextCopy : s)));
+          void logisticsService.upsertShipment(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteShipment = (id: string) => {
+    const idx = latestRef.current.shipments.findIndex((s) => s.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.shipments[idx]) : null;
     setShipments((prev) => prev.filter((s) => s.id !== id));
     void logisticsService.deleteShipment(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'logistics_delivery',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.trackingCode,
+        summary: pickLocalizedText(language, {
+          fr: `Colis ${existing.trackingCode} supprimé`,
+          en: `Shipment ${existing.trackingCode} deleted`,
+          ar: `تم حذف الطرد ${existing.trackingCode}`,
+        }),
+        undo: () => {
+          restoreAt(setShipments, existing, idx);
+          void syncCoordinator
+            .restoreRow('logistics_parcels', existing.id, currentStaffId)
+            .then(() => logisticsService.upsertShipment(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setShipments((prev) => prev.filter((s) => s.id !== existing.id));
+          void logisticsService.deleteShipment(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const updateShipmentStatus = (id: string, status: LogisticsShipment['status']) => {
-    let updated: LogisticsShipment | null = null;
-    setShipments((prev) =>
-      prev.map((s) => {
-        if (s.id === id) {
-          updated = { ...s, status };
-          return updated;
-        }
-        return s;
-      })
-    );
-    if (updated) {
-      void logisticsService.upsertShipment(updated).catch(() => {});
-    }
+    const existing = latestRef.current.shipments.find((s) => s.id === id);
+    if (!existing) return;
+    const prevSnap = cloneSnapshot(existing);
+    const updated = withBranch({ ...existing, status });
+    const nextSnap = cloneSnapshot(updated);
+    setShipments((prev) => prev.map((s) => (s.id === id ? updated : s)));
+    void logisticsService.upsertShipment(updated).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'logistics_delivery',
+      operationType: 'status',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: existing.trackingCode,
+      summary: pickLocalizedText(language, {
+        fr: `Statut colis ${existing.trackingCode} → ${status}`,
+        en: `Shipment ${existing.trackingCode} → ${status}`,
+        ar: `تحديث حالة الطرد ${existing.trackingCode} → ${status}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevSnap);
+        setShipments((prev) => prev.map((s) => (s.id === prevCopy.id ? prevCopy : s)));
+        void logisticsService.upsertShipment(withBranch(prevCopy)).catch(() => {});
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextSnap);
+        setShipments((prev) => prev.map((s) => (s.id === nextCopy.id ? nextCopy : s)));
+        void logisticsService.upsertShipment(nextCopy).catch(() => {});
+      },
+    });
   };
 
   const addBag = (bag: TransportBag) => {
     const scoped = withBranch(bag);
+    const snap = cloneSnapshot(scoped);
     setBags((prev) => [scoped, ...prev]);
     void logisticsService.upsertBag(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'logistics_delivery',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.bagCode,
+      summary: pickLocalizedText(language, {
+        fr: `Sac navette ${scoped.bagCode} créé`,
+        en: `Shuttle bag ${scoped.bagCode} created`,
+        ar: `تم إنشاء حقيبة النقل ${scoped.bagCode}`,
+      }),
+      undo: () => {
+        setBags((prev) => prev.filter((b) => b.id !== snap.id));
+        void logisticsService.deleteBag(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setBags((prev) => (prev.some((b) => b.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('logistics_courier_bags', re.id, currentStaffId)
+          .then(() => logisticsService.upsertBag(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const sealBag = (bagId: string, securitySealNumber: string) => {
-    const targetBag = bags.find((b) => b.id === bagId);
-    const sealedBag: TransportBag | null = targetBag
-      ? {
-          ...targetBag,
-          securitySealNumber,
-          status: 'Sealed',
-          sealedAt: new Date().toISOString(),
-        }
-      : null;
+    const targetBag = latestRef.current.bags.find((b) => b.id === bagId);
+    if (!targetBag) return;
+    const prevSnap = cloneSnapshot(targetBag);
+    const sealedBag: TransportBag = withBranch({
+      ...targetBag,
+      securitySealNumber,
+      status: 'Sealed',
+      sealedAt: new Date().toISOString(),
+    });
+    const nextSnap = cloneSnapshot(sealedBag);
 
-    setBags((prev) =>
-      prev.map((b) =>
-        b.id === bagId
-          ? {
-              ...b,
-              securitySealNumber,
-              status: 'Sealed',
-              sealedAt: sealedBag?.sealedAt || new Date().toISOString(),
-            }
-          : b
-      )
-    );
-    void logisticsService.sealBag(bagId, securitySealNumber, targetBag?.shipmentIds || []).catch(() => {});
-    if (sealedBag) {
-      void logisticsService.upsertBag(sealedBag).catch(() => {});
-    }
+    setBags((prev) => prev.map((b) => (b.id === bagId ? sealedBag : b)));
+    void logisticsService.sealBag(bagId, securitySealNumber, targetBag.shipmentIds || []).catch(() => {});
+    void logisticsService.upsertBag(sealedBag).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'logistics_delivery',
+      operationType: 'status',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: targetBag.bagCode,
+      summary: pickLocalizedText(language, {
+        fr: `Sac ${targetBag.bagCode} scellé (${securitySealNumber})`,
+        en: `Bag ${targetBag.bagCode} sealed (${securitySealNumber})`,
+        ar: `تم ختم الحقيبة ${targetBag.bagCode}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevSnap);
+        setBags((prev) => prev.map((b) => (b.id === prevCopy.id ? prevCopy : b)));
+        void logisticsService.upsertBag(withBranch(prevCopy)).catch(() => {});
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextSnap);
+        setBags((prev) => prev.map((b) => (b.id === nextCopy.id ? nextCopy : b)));
+        void logisticsService.sealBag(nextCopy.id, nextCopy.securitySealNumber, nextCopy.shipmentIds || []).catch(() => {});
+        void logisticsService.upsertBag(nextCopy).catch(() => {});
+      },
+    });
   };
 
   const addManifest = (manifest: LogisticsManifest) => {
     const scoped = withBranch(manifest);
+    const snap = cloneSnapshot(scoped);
     setManifests((prev) => [scoped, ...prev]);
     void logisticsService.upsertManifest(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'logistics_delivery',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.manifestNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Feuille de route ${scoped.manifestNumber} créée`,
+        en: `Manifest ${scoped.manifestNumber} created`,
+        ar: `تم إنشاء بيان الرحلة ${scoped.manifestNumber}`,
+      }),
+      undo: () => {
+        setManifests((prev) => prev.filter((m) => m.id !== snap.id));
+        void logisticsService.deleteManifest(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setManifests((prev) => (prev.some((m) => m.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('logistics_fleet', re.id, currentStaffId)
+          .then(() => logisticsService.upsertManifest(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateManifest = (manifest: LogisticsManifest) => {
     const scoped = withBranch(manifest);
+    const existing = latestRef.current.manifests.find((m) => m.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setManifests((prev) => prev.map((m) => (m.id === scoped.id ? scoped : m)));
     void logisticsService.upsertManifest(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'logistics_delivery',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.manifestNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Feuille de route ${nextSnap.manifestNumber} modifiée`,
+          en: `Manifest ${nextSnap.manifestNumber} updated`,
+          ar: `تم تعديل بيان الرحلة ${nextSnap.manifestNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setManifests((prev) => prev.map((m) => (m.id === prevCopy.id ? prevCopy : m)));
+          void logisticsService.upsertManifest(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setManifests((prev) => prev.map((m) => (m.id === nextCopy.id ? nextCopy : m)));
+          void logisticsService.upsertManifest(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteManifest = (id: string) => {
+    const idx = latestRef.current.manifests.findIndex((m) => m.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.manifests[idx]) : null;
     setManifests((prev) => prev.filter((m) => m.id !== id));
     void logisticsService.deleteManifest(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'logistics_delivery',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.manifestNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Feuille de route ${existing.manifestNumber} supprimée`,
+          en: `Manifest ${existing.manifestNumber} deleted`,
+          ar: `تم حذف بيان الرحلة ${existing.manifestNumber}`,
+        }),
+        undo: () => {
+          restoreAt(setManifests, existing, idx);
+          void syncCoordinator
+            .restoreRow('logistics_fleet', existing.id, currentStaffId)
+            .then(() => logisticsService.upsertManifest(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setManifests((prev) => prev.filter((m) => m.id !== existing.id));
+          void logisticsService.deleteManifest(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const addDischarge = (discharge: CourierCashDischarge) => {
     const scoped = withBranch(discharge);
+    const snap = cloneSnapshot(scoped);
     setDischarges((prev) => [scoped, ...prev]);
     void logisticsService.upsertDischarge(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'logistics_delivery',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.dischargeNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Décharge COD ${scoped.dischargeNumber} enregistrée`,
+        en: `COD discharge ${scoped.dischargeNumber} recorded`,
+        ar: `تم تسجيل تسوية الدفع ${scoped.dischargeNumber}`,
+      }),
+      undo: () => {
+        setDischarges((prev) => prev.filter((d) => d.id !== snap.id));
+        void logisticsService.deleteDischarge(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setDischarges((prev) => (prev.some((d) => d.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('logistics_discharges', re.id, currentStaffId)
+          .then(() => logisticsService.upsertDischarge(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const addRemittance = (remittance: MerchantRemittanceBatch) => {
     const scoped = withBranch(remittance);
+    const snap = cloneSnapshot(scoped);
     setRemittances((prev) => [scoped, ...prev]);
     void logisticsService.upsertRemittance(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'logistics_delivery',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.batchNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Lot virement ${scoped.batchNumber} créé`,
+        en: `Remittance batch ${scoped.batchNumber} created`,
+        ar: `تم إنشاء دفعة التحويل ${scoped.batchNumber}`,
+      }),
+      undo: () => {
+        setRemittances((prev) => prev.filter((r) => r.id !== snap.id));
+        void logisticsService.deleteRemittance(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setRemittances((prev) => (prev.some((r) => r.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('logistics_remittances', re.id, currentStaffId)
+          .then(() => logisticsService.upsertRemittance(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const executeRemittance = (batchId: string) => {
-    let executed: MerchantRemittanceBatch | null = null;
-    setRemittances((prev) =>
-      prev.map((r) => {
-        if (r.id === batchId) {
-          executed = { ...r, status: 'Executed', executedAt: new Date().toISOString() };
-          return executed;
-        }
-        return r;
-      })
-    );
-    if (executed) {
-      void logisticsService.upsertRemittance(executed).catch(() => {});
-    }
+    const existing = latestRef.current.remittances.find((r) => r.id === batchId);
+    if (!existing) return;
+    const prevSnap = cloneSnapshot(existing);
+    const executed: MerchantRemittanceBatch = withBranch({
+      ...existing,
+      status: 'Executed',
+      executedAt: new Date().toISOString(),
+    });
+    const nextSnap = cloneSnapshot(executed);
+    setRemittances((prev) => prev.map((r) => (r.id === batchId ? executed : r)));
+    void logisticsService.upsertRemittance(executed).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'logistics_delivery',
+      operationType: 'status',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: existing.batchNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Lot virement ${existing.batchNumber} exécuté`,
+        en: `Remittance batch ${existing.batchNumber} executed`,
+        ar: `تم تنفيذ دفعة التحويل ${existing.batchNumber}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevSnap);
+        setRemittances((prev) => prev.map((r) => (r.id === prevCopy.id ? prevCopy : r)));
+        void logisticsService.upsertRemittance(withBranch(prevCopy)).catch(() => {});
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextSnap);
+        setRemittances((prev) => prev.map((r) => (r.id === nextCopy.id ? nextCopy : r)));
+        void logisticsService.upsertRemittance(nextCopy).catch(() => {});
+      },
+    });
   };
 
   const resetLogisticsDemoData = () => {
+    const snap = cloneSnapshot(latestRef.current);
     setShipments((prev) => prev.filter((s) => !belongsToActiveBranch(s)));
     setBags((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
     setManifests((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
     setDischarges((prev) => prev.filter((d) => !belongsToActiveBranch(d)));
     setRemittances((prev) => prev.filter((r) => !belongsToActiveBranch(r)));
+
+    registerUndoEntry({
+      vertical: 'logistics_delivery',
+      operationType: 'bulk',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      summary: pickLocalizedText(language, {
+        fr: 'Données logistiques réinitialisées',
+        en: 'Logistics data reset',
+        ar: 'تمت إعادة ضبط بيانات اللوجستيك',
+      }),
+      undo: () => {
+        const s = cloneSnapshot(snap);
+        setShipments(s.shipments);
+        setBags(s.bags);
+        setManifests(s.manifests);
+        setDischarges(s.discharges);
+        setRemittances(s.remittances);
+      },
+    });
   };
 
   const scopedShipments = useMemo(() => shipments.filter(belongsToActiveBranch), [shipments, belongsToActiveBranch]);

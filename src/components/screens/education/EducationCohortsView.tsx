@@ -10,7 +10,8 @@ import {
   Trash2,
   CheckCircle2,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumStore } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { CohortStatus, EduCohort } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { LabelInput } from '../../ui/LabelInput';
@@ -684,17 +685,45 @@ export const EducationCohortsView: React.FC = () => {
             label: isAr ? 'بدء الدراسة' : isEn ? 'Start Term' : 'Lancer',
             icon: <Play size={13} />,
             onClick: (ids) => {
-              ids.forEach((id) => updateEduCohort(id, { status: 'InProgress' }));
+              if (ids.size === 0) return;
+              runUndoBatch(
+                {
+                  category: 'education_cohort',
+                  operationType: 'bulk',
+                  label: isAr
+                    ? `بدء أفواج (${ids.size})`
+                    : isEn
+                    ? `Start cohorts (${ids.size})`
+                    : `Lancement cohortes (${ids.size})`,
+                  entityType: 'eduCohort',
+                },
+                () => {
+                  ids.forEach((id) => updateEduCohort(id, { status: 'InProgress' }));
+                }
+              );
               setSelectedCohortIds(new Set<string>());
-              showToast({ type: 'success', title: 'Cohortes Lancées', message: `${ids.size} cohortes démarrées.` });
             },
             variant: 'primary',
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteEduCohort(id));
+            if (ids.size === 0) return;
+            runUndoBatch(
+              {
+                category: 'education_cohort',
+                operationType: 'bulk',
+                label: isAr
+                  ? `حذف أفواج (${ids.size})`
+                  : isEn
+                  ? `Delete cohorts (${ids.size})`
+                  : `Suppression cohortes (${ids.size})`,
+                entityType: 'eduCohort',
+              },
+              () => {
+                ids.forEach((id) => deleteEduCohort(id));
+              }
+            );
             setSelectedCohortIds(new Set<string>());
             if (selectedCohort && ids.has(selectedCohort.id)) setSelectedCohort(null);
-            showToast({ type: 'info', title: 'Suppression', message: `${ids.size} cohortes supprimées.` });
           }}
           emptyTitle={t('edu_no_cohorts_found')}
           emptyDescription={t('edu_no_cohorts_found')}

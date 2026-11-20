@@ -89,14 +89,6 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
     };
 
     onSaveDeadline(newDeadline);
-    showToast(
-      isAr
-        ? `تم حفظ الأجل حتى ${new Date(preview.terminalExpiryDate).toLocaleDateString('fr-DZ')}`
-        : isEn
-        ? `Deadline set for ${new Date(preview.terminalExpiryDate).toLocaleDateString('fr-DZ')}`
-        : `Délai fixé au ${new Date(preview.terminalExpiryDate).toLocaleDateString('fr-DZ')}`,
-      'success'
-    );
     onClose();
   };
 

@@ -15,6 +15,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, RepairOrder } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -284,13 +285,8 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
     (order: RepairOrder) => {
       deleteOrder(order.id);
       if (inspectedOrder?.id === order.id) setInspectedOrder(null);
-      showToast({
-        type: 'success',
-        title: isAr ? 'حذف' : 'Supprimé',
-        message: isAr ? 'تم حذف أمر التصليح' : 'Ordre de réparation supprimé',
-      });
     },
-    [deleteOrder, inspectedOrder, isAr]
+    [deleteOrder, inspectedOrder]
   );
 
   const handleNextStatus = useCallback(
@@ -302,14 +298,9 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         if (inspectedOrder?.id === order.id) {
           setInspectedOrder({ ...order, status: next });
         }
-        showToast({
-          type: 'success',
-          title: order.orderNumber,
-          message: isAr ? `تم تحديث الحالة إلى: ${getStatusLabel(next)}` : `Statut mis à jour : ${getStatusLabel(next)}`,
-        });
       }
     },
-    [updateOrderStatus, inspectedOrder, isAr, getStatusLabel]
+    [updateOrderStatus, inspectedOrder]
   );
 
   const handleRequisitionSubmit = (e: React.FormEvent) => {
@@ -317,11 +308,6 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
     if (!activeOrder || !selectedPartId) return;
     const qty = parseInt(selectedPartQty, 10) || 1;
     if (requisitionPartToOrder(activeOrder.id, selectedPartId, qty)) {
-      showToast({
-        type: 'success',
-        title: activeOrder.orderNumber,
-        message: isAr ? 'تم صرف القطعة وإضافتها لأمر التصليح' : 'Pièce réquisitionnée et sortie du stock',
-      });
       setIsRequisitionModalOpen(false);
     } else {
       showToast({
@@ -950,27 +936,55 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
               label: isAr ? 'تقديم المرحلة للمحدد' : 'Avancer étape atelier',
               icon: <ArrowRight size={14} />,
               onClick: (ids) => {
-                ids.forEach((id) => {
-                  const ord = orders.find((o) => o.id === id);
-                  if (ord) handleNextStatus(ord);
-                });
+                const count = ids.size;
+                runUndoBatch(
+                  {
+                    operationType: 'bulk',
+                    vertical: 'garage',
+                    label: {
+                      fr: `${count} ordres avancés à l'étape suivante`,
+                      en: `${count} repair orders advanced`,
+                      ar: `تمت ترقية مرحلة ${count} أوامر إصلاح`,
+                    },
+                    moduleLabel: {
+                      fr: 'Ordres de Réparation',
+                      en: 'Repair Orders',
+                      ar: 'أوامر التصليح',
+                    },
+                  },
+                  () => {
+                    ids.forEach((id) => {
+                      const ord = orders.find((o) => o.id === id);
+                      if (ord) handleNextStatus(ord);
+                    });
+                  }
+                );
                 setSelectedIds(new Set());
-                showToast({
-                  type: 'success',
-                  title: isAr ? 'تحديث جماعي' : 'Atelier',
-                  message: isAr ? 'تم تحديث مرحلة الأوامر المحددة' : 'Statut mis à jour pour la sélection',
-                });
               },
             }}
             onBulkDelete={(ids) => {
-              ids.forEach((id) => deleteOrder(id));
+              const count = ids.size;
+              runUndoBatch(
+                {
+                  operationType: 'bulk',
+                  vertical: 'garage',
+                  label: {
+                    fr: `${count} ordres de réparation supprimés`,
+                    en: `${count} repair orders deleted`,
+                    ar: `تم حذف ${count} أوامر تصليح`,
+                  },
+                  moduleLabel: {
+                    fr: 'Ordres de Réparation',
+                    en: 'Repair Orders',
+                    ar: 'أوامر التصليح',
+                  },
+                },
+                () => {
+                  ids.forEach((id) => deleteOrder(id));
+                }
+              );
               setSelectedIds(new Set());
               if (inspectedOrder && ids.has(inspectedOrder.id)) setInspectedOrder(null);
-              showToast({
-                type: 'success',
-                title: isAr ? 'حذف' : 'Supprimé',
-                message: isAr ? 'تم حذف الأوامر المحددة' : 'Ordres de réparation supprimés',
-              });
             }}
             isPinned={(o) => pinnedIds.has(o.id)}
             onTogglePin={handleTogglePin}

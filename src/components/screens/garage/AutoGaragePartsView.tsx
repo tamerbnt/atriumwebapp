@@ -18,6 +18,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, SparePart } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -273,19 +274,9 @@ export const AutoGaragePartsView: React.FC<any> = () => {
     if (partToEdit) {
       updatePart(payload);
       if (inspectedPart?.id === payload.id) setInspectedPart(payload);
-      showToast({
-        type: 'success',
-        title: payload.sku,
-        message: isAr ? 'تم تحديث بيانات الصنف' : 'Pièce mise à jour avec succès',
-      });
     } else {
       addPart(payload);
       setInspectedPart(payload);
-      showToast({
-        type: 'success',
-        title: payload.sku,
-        message: isAr ? 'تمت إضافة صنف جديد للمخزن' : 'Nouvelle référence enregistrée',
-      });
     }
     setIsModalOpen(false);
   };
@@ -317,13 +308,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
     (p: SparePart) => {
       deletePart(p.id);
       if (inspectedPart?.id === p.id) setInspectedPart(null);
-      showToast({
-        type: 'success',
-        title: isAr ? 'حذف' : 'Supprimé',
-        message: isAr ? 'تم حذف القطعة من المخزن' : 'Référence retirée du stock',
-      });
     },
-    [deletePart, inspectedPart, isAr]
+    [deletePart, inspectedPart]
   );
 
   const handleQuickAddStock = useCallback(
@@ -334,15 +320,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
       };
       updatePart(updated);
       if (inspectedPart?.id === p.id) setInspectedPart(updated);
-      showToast({
-        type: 'success',
-        title: updated.sku,
-        message: isAr
-          ? `تمت زيادة المخزون (+5): ${updated.stockQuantity} وحدات`
-          : `Stock réapprovisionné (+5) : ${updated.stockQuantity} unités`,
-      });
     },
-    [updatePart, inspectedPart, isAr]
+    [updatePart, inspectedPart]
   );
 
   const handleExportCsv = useCallback(() => {
@@ -796,14 +775,28 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             },
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deletePart(id));
+            const count = ids.size;
+            runUndoBatch(
+              {
+                operationType: 'bulk',
+                vertical: 'garage',
+                label: {
+                  fr: `${count} pièces retirées du stock`,
+                  en: `${count} spare parts deleted`,
+                  ar: `تم حذف ${count} قطع غيار`,
+                },
+                moduleLabel: {
+                  fr: 'Magasin Pièces',
+                  en: 'Spare Parts',
+                  ar: 'مخزن القطع',
+                },
+              },
+              () => {
+                ids.forEach((id) => deletePart(id));
+              }
+            );
             setSelectedIds(new Set());
             if (inspectedPart && ids.has(inspectedPart.id)) setInspectedPart(null);
-            showToast({
-              type: 'success',
-              title: isAr ? 'حذف' : 'Supprimé',
-              message: isAr ? 'تم حذف القطع المحددة' : 'Pièces sélectionnées supprimées',
-            });
           }}
           isPinned={(p) => pinnedIds.has(p.id)}
           onTogglePin={handlePin}
@@ -1160,13 +1153,6 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                   updatePart(updated);
                   if (inspectedPart?.id === target.id) setInspectedPart(updated);
                 }
-                showToast({
-                  type: 'success',
-                  title: isAr ? 'استلام طلبية' : 'Réception Stock',
-                  message: isAr
-                    ? `تم تسجيل استلام الطلبية (+${qty}) بنجاح من ${poSupplier}`
-                    : `Bon d'entrée stock validé (+${qty} unités) depuis ${poSupplier}`,
-                });
                 setIsPoModalOpen(false);
               }}
               className="space-y-4"

@@ -170,14 +170,8 @@ export const ManufacturingQcView: React.FC<any> = () => {
       const updated: ManufacturingOrder = { ...order, status: 'Completed' };
       updateOrder(updated);
       if (selectedOrder?.id === order.id) setSelectedOrder(updated);
-      showToast(
-        isAr
-          ? `تم اعتماد وتحرير الدفعة ${order.orderNumber} كدفعة مطابقة للمواصفات ISO 9001`
-          : `Lot ${order.orderNumber} libéré et certifié conforme ISO 9001`,
-        'success'
-      );
     },
-    [updateOrder, selectedOrder?.id, isAr]
+    [updateOrder, selectedOrder?.id]
   );
 
   const handleSelectOrder = useCallback((order: ManufacturingOrder, openerEl?: HTMLElement | null) => {

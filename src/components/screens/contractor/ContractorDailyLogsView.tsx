@@ -393,12 +393,6 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
     setIsLogModalOpen(false);
     setTasks('');
     setSelectedLog(newLog);
-    showToast(
-      isAr
-        ? 'تم توقيع وتسجيل محضر الورشة اليومي مع تعداد العمال'
-        : 'Rapport journalier de chantier & pointage validés',
-      'success'
-    );
   };
 
   const handleCreateConcretePour = (e: React.FormEvent) => {
@@ -440,16 +434,6 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
     setIsConcreteModalOpen(false);
     setPourElement('');
     setPourSlip('');
-    showToast(
-      validation.isConforming
-        ? isAr
-          ? 'تم تسجيل صبة الخرسانة ومطابقتها للمواصفات'
-          : 'Coulée de béton enregistrée conforme au contrôle 7 jours'
-        : isAr
-        ? 'تنبيه CTC: الخرسانة تحتاج فحص 28 يوم قبل إزالة الدعائم'
-        : 'Alerte CTC: Maintien des étais requis jusqu au contrôle 28 jours',
-      validation.isConforming ? 'success' : 'warning'
-    );
   };
 
   const handleCreateEquipmentLog = (e: React.FormEvent) => {
@@ -479,16 +463,6 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
     };
     addEquipmentLog(newLog as never);
     setIsEquipmentModalOpen(false);
-    showToast(
-      anomaly.isAnomaly
-        ? isAr
-          ? 'تم تسجيل الآلية مع تنبيه استهلاك غير طبيعي للوقود'
-          : 'Pointage enregistré avec alerte surconsommation gasoil'
-        : isAr
-        ? 'تم تسجيل ساعات عمل الآلية والوقود'
-        : 'Heures et consommation gasoil enregistrées avec succès',
-      anomaly.isAnomaly ? 'warning' : 'success'
-    );
   };
 
   const handleExportLogs = useCallback(() => {
@@ -665,10 +639,6 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
           };
           addDailyLog(dup);
           setSelectedLog(dup);
-          showToast(
-            isAr ? 'تم تكرار المحضر' : 'Journal dupliqué pour aujourd’hui',
-            'success'
-          );
         },
       },
       {
@@ -1016,10 +986,6 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   };
                   addDailyLog(dup);
                   setSelectedLog(dup);
-                  showToast(
-                    isAr ? 'تم تكرار محضر الورشة لليوم الجديد' : 'Rapport de chantier dupliqué pour aujourd’hui',
-                    'success'
-                  );
                 },
               },
             ]}
@@ -1521,10 +1487,6 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                         };
                         addDailyLog(dup);
                         setSelectedLog(dup);
-                        showToast(
-                          isAr ? 'تم تكرار محضر الورشة' : 'Rapport dupliqué pour aujourd’hui',
-                          'success'
-                        );
                       },
                     },
                     {

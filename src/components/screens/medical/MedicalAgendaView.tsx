@@ -188,13 +188,8 @@ export const MedicalAgendaView: React.FC<any> = () => {
   const handleStatusChange = useCallback(
     (apt: MedicalAppointmentSlot, nextStatus: MedicalAppointmentSlot['status']) => {
       updateAppointmentStatus(apt.id, nextStatus);
-      showToast({
-        type: 'success',
-        title: isAr ? 'تم تحديث الموعد' : isFr ? 'Statut RDV mis à jour' : 'Status Updated',
-        message: `${apt.patientName} → ${nextStatus}`,
-      });
     },
-    [updateAppointmentStatus, isAr, isFr]
+    [updateAppointmentStatus]
   );
 
   const bookedCount = useMemo(

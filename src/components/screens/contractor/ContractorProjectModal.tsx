@@ -100,12 +100,6 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
     };
 
     onSave(payload);
-    showToast(
-      initialData
-        ? (isAr ? 'تم تحديث ورشة المشروع بنجاح' : 'Chantier mis à jour avec succès')
-        : (isAr ? 'تم فتح ورشة المشروع وتسجيل عقد المقاولة' : 'Chantier créé et contrat enregistré'),
-      'success'
-    );
   };
 
   return (

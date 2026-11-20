@@ -883,7 +883,6 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       onBlur={() => {
                         if (activeMember && notesText.trim() !== (activeMember.notes || '').trim()) {
                           onUpdateNotes(activeMember.id, notesText.trim());
-                          showToast('Notes enregistrées');
                         }
                       }}
                       placeholder="Ajouter une note relative à cet adhérent…"

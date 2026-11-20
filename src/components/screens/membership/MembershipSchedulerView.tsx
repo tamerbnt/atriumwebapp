@@ -291,12 +291,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
     };
     upsertScheduleEvent(created);
     setIsAddModalOpen(false);
-    showToast?.({
-      type: 'success',
-      title: isAr ? 'تمت إضافة الحصة' : isEn ? 'Session Scheduled' : 'Créneau planifié',
-      message: `${created.title} · ${created.startTime}-${created.endTime}`,
-    });
-  }, [currentBranch, newTitle, newCategory, selectedDay, newStartTime, newEndTime, newTrainer, newRoom, newCapacity, upsertScheduleEvent, showToast, isAr, isEn]);
+  }, [currentBranch, newTitle, newCategory, selectedDay, newStartTime, newEndTime, newTrainer, newRoom, newCapacity, upsertScheduleEvent]);
 
   const eventColumns: ColumnDefinition<ScheduleEvent>[] = useMemo(
     () => [
@@ -452,13 +447,8 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
     (ev: ScheduleEvent) => {
       batchDeleteScheduleEvents([ev.id]);
       if (selectedEvent?.id === ev.id) setSelectedEvent(null);
-      showToast?.({
-        type: 'info',
-        title: isAr ? 'تم حذف الحصة' : isEn ? 'Session Removed' : 'Créneau supprimé',
-        message: ev.title,
-      });
     },
-    [batchDeleteScheduleEvents, selectedEvent?.id, isAr, isEn]
+    [batchDeleteScheduleEvents, selectedEvent?.id]
   );
 
   const getRowMeta = useCallback(
@@ -836,11 +826,6 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
           }}
           onBulkDelete={(ids) => {
             batchDeleteScheduleEvents(Array.from(ids));
-            showToast?.({
-              type: 'info',
-              title: 'Sessions supprimées',
-              message: `${ids.size} sessions retirées du planning.`,
-            });
           }}
           emptyTitle={isAr ? 'لا توجد حصص' : 'No timetable sessions found'}
           emptyDescription={isAr ? 'جرب تغيير الفلاتر' : 'Try adjusting search, branch, or discipline filters.'}
@@ -1018,11 +1003,6 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                           enrolledCount: 0,
                         };
                         upsertScheduleEvent(clone);
-                        showToast?.({
-                          type: 'success',
-                          title: isAr ? 'تم النسخ' : 'Séance dupliquée',
-                          message: ev.title,
-                        });
                       },
                     },
                     {

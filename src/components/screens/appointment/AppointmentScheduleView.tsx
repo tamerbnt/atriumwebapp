@@ -20,7 +20,6 @@ import {
   selectCurrentAppointmentsFromState,
   selectCurrentStaffFromState,
   selectCurrentBranchFromState,
-  showToast,
 } from '../../../services/store';
 import { Appointment } from '../../../types/index';
 import { AppointmentModal } from '../../modals/AppointmentModal';
@@ -220,14 +219,9 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
 
   const handleOneClickCheckout = useCallback(
     (apt: Appointment) => {
-      const sale = checkoutAppointment(apt.id, 'Cash');
-      showToast?.({
-        type: 'success',
-        title: isAr ? 'تم التحصيل' : 'Encaissement validé',
-        message: `${apt.clientName} · #${sale.id.slice(-6).toUpperCase()}`,
-      });
+      checkoutAppointment(apt.id, 'Cash');
     },
-    [checkoutAppointment, showToast, isAr]
+    [checkoutAppointment]
   );
 
   const handleOpenAddModal = useCallback(

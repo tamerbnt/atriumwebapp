@@ -15,6 +15,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { ManufacturingOrder } from '../../../types';
 import { useManufacturingData } from './manufacturingData';
@@ -192,19 +193,36 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
     (o: ManufacturingOrder) => {
       deleteOrder(o.id);
       if (selectedOrder?.id === o.id) setSelectedOrder(null);
-      showToast(isAr ? 'تم حذف أمر التصنيع' : 'Ordre de fabrication supprimé', 'success');
     },
-    [deleteOrder, selectedOrder?.id, isAr]
+    [deleteOrder, selectedOrder?.id]
   );
 
   const handleBulkDelete = useCallback(
     (ids: Set<string>) => {
-      ids.forEach((id) => deleteOrder(id));
+      const count = ids.size;
+      runUndoBatch(
+        {
+          operationType: 'bulk',
+          vertical: 'manufacturing',
+          label: {
+            fr: `${count} ordres de fabrication supprimés`,
+            en: `${count} manufacturing orders deleted`,
+            ar: `تم حذف ${count} أوامر تصنيع`,
+          },
+          moduleLabel: {
+            fr: 'Ordres de Fabrication',
+            en: 'Manufacturing Orders',
+            ar: 'أوامر التصنيع',
+          },
+        },
+        () => {
+          ids.forEach((id) => deleteOrder(id));
+        }
+      );
       if (selectedOrder && ids.has(selectedOrder.id)) setSelectedOrder(null);
       setSelectedIds(new Set());
-      showToast(isAr ? 'تم حذف الأوامر المحددة' : 'Ordres de fabrication supprimés', 'success');
     },
-    [deleteOrder, selectedOrder, isAr]
+    [deleteOrder, selectedOrder]
   );
 
   const handleTogglePin = useCallback((o: ManufacturingOrder) => {
@@ -234,9 +252,8 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
       if (selectedOrder?.id === o.id) {
         setSelectedOrder({ ...selectedOrder, status: nextStatus });
       }
-      showToast(isAr ? `تم تحديث حالة الأمر إلى ${nextStatus}` : `Statut mis à jour : ${nextStatus}`, 'info');
     },
-    [updateOrderStatus, selectedOrder, isAr]
+    [updateOrderStatus, selectedOrder]
   );
 
   const handleSaveNotes = () => {
@@ -246,7 +263,6 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
     setSelectedOrder(updated);
     setNoteSaved(true);
     setTimeout(() => setNoteSaved(false), 2000);
-    showToast(isAr ? 'تم حفظ ملاحظات الأمر' : 'Consignes de fabrication enregistrées', 'success');
   };
 
   const handleExportCSV = useCallback(() => {
@@ -981,10 +997,8 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
             if (orderToEdit) {
               updateOrder(o);
               if (selectedOrder?.id === o.id) setSelectedOrder(o);
-              showToast(isAr ? 'تم تحديث أمر التصنيع' : 'Ordre de fabrication mis à jour', 'success');
             } else {
               addOrder(o);
-              showToast(isAr ? 'تم إنشاء أمر التصنيع بنجاح' : 'Ordre de fabrication créé avec succès', 'success');
             }
             setIsOrderModalOpen(false);
             setOrderToEdit(null);

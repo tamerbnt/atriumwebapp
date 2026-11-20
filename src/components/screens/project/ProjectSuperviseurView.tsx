@@ -302,15 +302,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
   const handleCloseShift = useCallback(() => {
     if (!selectedMission) return;
     closePmRollCall(selectedMission.id);
-    showToast(
-      isAr
-        ? 'تم غلق سجل الحضور وإحالة كشف الأجور للمديرية'
-        : isEn
-        ? 'Roll call locked & sent to direction payroll'
-        : 'Émargement clôturé et transmis à la paie DG',
-      'success'
-    );
-  }, [selectedMission, closePmRollCall, isAr, isEn]);
+  }, [selectedMission, closePmRollCall]);
 
   const handleExpenseSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -332,10 +324,6 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
       hasFiscalInvoice: false,
     });
     setExpenseSubmitted(true);
-    showToast(
-      isAr ? 'تم إرسال وصل النفقة للمصادقة' : 'Dépense terrain soumise à la Direction',
-      'success'
-    );
     setTimeout(() => {
       setExpenseSubmitted(false);
       setExpenseTitle('');

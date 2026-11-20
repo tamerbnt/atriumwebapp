@@ -397,7 +397,6 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
         onClick: () => {
           deleteAppointment(apt.id);
           if (receiptAppointment?.id === apt.id) setReceiptAppointment(null);
-          showToast?.({ type: 'info', title: 'Rendez-vous supprimé', message: apt.clientName });
         },
       },
     ],
@@ -562,7 +561,6 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
           onDelete={(apt) => {
             deleteAppointment(apt.id);
             if (receiptAppointment?.id === apt.id) setReceiptAppointment(null);
-            showToast?.({ type: 'info', title: 'Rendez-vous supprimé', message: apt.clientName });
           }}
           onBulkDelete={(ids) => {
             batchDeleteAppointments(Array.from(ids));

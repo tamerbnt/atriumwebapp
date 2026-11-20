@@ -173,10 +173,13 @@ import { AtriumIntroOverlay } from './components/ui/AtriumIntroOverlay';
 import { AppleOverscrollProvider } from './components/common/AppleOverscrollProvider';
 import { ChevronDown } from 'lucide-react';
 import { useTranslation } from './utils/useTranslation';
+import { applyFacilityAccentCssVars, undoLatestForBranch } from './services/undoEngine';
 
 export default function App() {
   useAtriumStoreLifecycle();
   const currentBusiness = useAtriumSelector(selectCurrentBusinessFromState);
+  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
+  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const activeScreen = useAtriumSelector((s) => s.activeScreen);
   const theme = useAtriumSelector((s) => s.theme);
   const density = useAtriumSelector((s) => s.density || 'default');
@@ -248,31 +251,48 @@ export default function App() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Global keyboard shortcuts (Ctrl+K, Cmd+K, '/')
+  // Global keyboard shortcuts (Ctrl+K, Cmd+K, Ctrl+Z/Cmd+Z, '/')
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const targetEl = e.target as HTMLElement | null;
+      const isEditingInput =
+        Boolean(targetEl) &&
+        (['INPUT', 'TEXTAREA', 'SELECT'].includes(targetEl!.tagName) ||
+          targetEl!.isContentEditable);
+
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
+      } else if (
+        (e.metaKey || e.ctrlKey) &&
+        !e.shiftKey &&
+        e.key.toLowerCase() === 'z' &&
+        !isEditingInput
+      ) {
+        e.preventDefault();
+        void undoLatestForBranch(currentBusinessId, currentBranchId);
       } else if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
         e.preventDefault();
         toggleTopBarCollapsed();
       } else if (e.key === 'Escape' && isTopBarCollapsed) {
         setTopBarCollapsed(false);
-      } else if (
-        e.key === '/' &&
-        !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)
-      ) {
+      } else if (e.key === '/' && !isEditingInput) {
         e.preventDefault();
         setIsCommandPaletteOpen(true);
       }
     };
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [isTopBarCollapsed,
-    isTopBarAutoHide, toggleTopBarCollapsed, setTopBarCollapsed]);
+  }, [
+    isTopBarCollapsed,
+    isTopBarAutoHide,
+    toggleTopBarCollapsed,
+    setTopBarCollapsed,
+    currentBusinessId,
+    currentBranchId,
+  ]);
 
-  // Sync theme, density & RTL on boot
+  // Sync theme, density, facility accent & RTL on boot
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('data-atrium-theme', theme);
@@ -284,7 +304,8 @@ export default function App() {
     }
     document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
     document.documentElement.setAttribute('lang', language);
-  }, [theme, density, language]);
+    applyFacilityAccentCssVars(currentBusiness?.category, theme);
+  }, [theme, density, language, currentBusiness?.category]);
 
   // Natively follow system default language changes if auto mode is enabled
   useEffect(() => {

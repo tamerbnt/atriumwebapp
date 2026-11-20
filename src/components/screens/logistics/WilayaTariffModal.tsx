@@ -1,14 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { MapPin, X, Save, RotateCcw, ShieldCheck } from 'lucide-react';
-import { useAtriumStore, useAtriumSelector, showToast } from '../../../services/store';
+import React, { useState, useEffect, useRef } from 'react';
+import { MapPin, X, Save, RotateCcw } from 'lucide-react';
+import { useAtriumStore, useAtriumSelector } from '../../../services/store';
 import { DEFAULT_TARIFF_RULES, TariffRule, WilayaZone } from '../../../utils/logisticsRules';
-import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { isSupabaseConfigured, logisticsService, syncCoordinator } from '../../../lib/supabase';
+import { cloneSnapshot, pickLocalizedText, registerUndoEntry } from '../../../services/undoEngine';
 
 interface WilayaTariffModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+function persistTariffRules(
+  rules: Record<WilayaZone, TariffRule>,
+  ctx: { accountId: string; businessId: string; branchId: string; staffId: string }
+) {
+  try {
+    localStorage.setItem('atrium_logistics_tariffs_v1', JSON.stringify(rules));
+  } catch {}
+  void logisticsService.upsertWilayaTariffs(rules, ctx).catch(() => {});
 }
 
 export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, onClose }) => {
@@ -28,6 +38,19 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
       return DEFAULT_TARIFF_RULES;
     }
   });
+  const savedRulesRef = useRef<Record<WilayaZone, TariffRule>>(cloneSnapshot(tariffRules));
+
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const saved = localStorage.getItem('atrium_logistics_tariffs_v1');
+      const parsed = saved ? (JSON.parse(saved) as Record<WilayaZone, TariffRule>) : DEFAULT_TARIFF_RULES;
+      savedRulesRef.current = cloneSnapshot(parsed);
+      setTariffRules(cloneSnapshot(parsed));
+    } catch {
+      savedRulesRef.current = cloneSnapshot(DEFAULT_TARIFF_RULES);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || !isSupabaseConfigured()) return;
@@ -37,6 +60,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
       if (cancelled || Object.keys(remote).length === 0) return;
       setTariffRules((prev) => {
         const merged = { ...DEFAULT_TARIFF_RULES, ...prev, ...remote } as Record<WilayaZone, TariffRule>;
+        savedRulesRef.current = cloneSnapshot(merged);
         try {
           localStorage.setItem('atrium_logistics_tariffs_v1', JSON.stringify(merged));
         } catch {}
@@ -60,42 +84,67 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
     }));
   };
 
+  const upsertCtx = {
+    accountId: currentAccountId || 'acc_01',
+    businessId: currentBusinessId || 'biz_logistics',
+    branchId: activeBranchId,
+    staffId: currentStaffId || 'staff_01',
+  };
+
   const handleSave = () => {
-    try {
-      localStorage.setItem('atrium_logistics_tariffs_v1', JSON.stringify(tariffRules));
-    } catch {}
-    void logisticsService
-      .upsertWilayaTariffs(tariffRules, {
-        accountId: currentAccountId || 'acc_01',
-        businessId: currentBusinessId || 'biz_logistics',
-        branchId: activeBranchId,
-        staffId: currentStaffId || 'staff_01',
-      })
-      .catch(() => {});
-    showToast(
-      isAr ? 'تم حفظ جدول تسعيرات الولايات بنجاح' : 'Grille tarifaire des 58 Wilayas enregistrée',
-      'success'
-    );
+    const prevSnapshot = cloneSnapshot(savedRulesRef.current);
+    const nextSnapshot = cloneSnapshot(tariffRules);
+    persistTariffRules(nextSnapshot, upsertCtx);
+    savedRulesRef.current = cloneSnapshot(nextSnapshot);
+    registerUndoEntry({
+      vertical: 'logistics_delivery',
+      operationType: 'edit',
+      summary: pickLocalizedText(language, {
+        en: 'Wilaya tariff matrix updated',
+        fr: 'Grille tarifaire des 58 Wilayas enregistrée',
+        ar: 'تم حفظ جدول تسعيرات الولايات',
+      }),
+      toastType: 'success',
+      undo: () => {
+        setTariffRules(cloneSnapshot(prevSnapshot));
+        savedRulesRef.current = cloneSnapshot(prevSnapshot);
+        persistTariffRules(prevSnapshot, upsertCtx);
+      },
+      redo: () => {
+        setTariffRules(cloneSnapshot(nextSnapshot));
+        savedRulesRef.current = cloneSnapshot(nextSnapshot);
+        persistTariffRules(nextSnapshot, upsertCtx);
+      },
+    });
     onClose();
   };
 
   const handleReset = () => {
-    setTariffRules(DEFAULT_TARIFF_RULES);
-    try {
-      localStorage.setItem('atrium_logistics_tariffs_v1', JSON.stringify(DEFAULT_TARIFF_RULES));
-    } catch {}
-    void logisticsService
-      .upsertWilayaTariffs(DEFAULT_TARIFF_RULES, {
-        accountId: currentAccountId || 'acc_01',
-        businessId: currentBusinessId || 'biz_logistics',
-        branchId: activeBranchId,
-        staffId: currentStaffId || 'staff_01',
-      })
-      .catch(() => {});
-    showToast(
-      isAr ? 'تمت استعادة التسعيرات الافتراضية' : 'Tarifs par défaut réinitialisés',
-      'info'
-    );
+    const prevSnapshot = cloneSnapshot(savedRulesRef.current);
+    const nextSnapshot = cloneSnapshot(DEFAULT_TARIFF_RULES);
+    setTariffRules(cloneSnapshot(nextSnapshot));
+    savedRulesRef.current = cloneSnapshot(nextSnapshot);
+    persistTariffRules(nextSnapshot, upsertCtx);
+    registerUndoEntry({
+      vertical: 'logistics_delivery',
+      operationType: 'edit',
+      summary: pickLocalizedText(language, {
+        en: 'Wilaya tariffs reset to defaults',
+        fr: 'Tarifs par défaut réinitialisés',
+        ar: 'تمت استعادة التسعيرات الافتراضية',
+      }),
+      toastType: 'info',
+      undo: () => {
+        setTariffRules(cloneSnapshot(prevSnapshot));
+        savedRulesRef.current = cloneSnapshot(prevSnapshot);
+        persistTariffRules(prevSnapshot, upsertCtx);
+      },
+      redo: () => {
+        setTariffRules(cloneSnapshot(nextSnapshot));
+        savedRulesRef.current = cloneSnapshot(nextSnapshot);
+        persistTariffRules(nextSnapshot, upsertCtx);
+      },
+    });
   };
 
   const zones: Array<{ id: WilayaZone; nameFr: string; nameAr: string; wilayasExample: string }> = [

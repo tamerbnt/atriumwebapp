@@ -216,11 +216,6 @@ export const EducationAttendanceView: React.FC = () => {
     });
 
     setIsGradeModalOpen(false);
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم تسجيل النقطة' : isEn ? 'Grade Recorded' : 'Note enregistrée',
-      message: `${student.fullName} — ${gradeForm.score}/${gradeForm.maxScore}`,
-    });
   };
 
   const handleBatchMarkStatus = (status: AttendanceStatus) => {
@@ -240,11 +235,6 @@ export const EducationAttendanceView: React.FC = () => {
 
     batchRecordAttendance(sessionId, targetCohortId, records);
     setSelectedStudentIds(new Set<string>());
-    showToast({
-      type: 'success',
-      title: 'Batch Attendance Logged',
-      message: `${records.length} students marked ${status}.`,
-    });
   };
 
   const handleExportCSV = useCallback(() => {

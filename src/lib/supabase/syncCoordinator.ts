@@ -1,6 +1,7 @@
 import type { BusinessCategory } from '../../types/index';
 import { getSupabaseClient, isSupabaseConfigured, isUuid, toValidUuid } from './client';
 import {
+  cancelQueuedMutations,
   enqueueMutation,
   flushOfflineQueue,
   isStaleVersionError,
@@ -625,6 +626,61 @@ export const syncCoordinator = {
         versionColumn: versionCol,
         entityType: options?.entityType,
         entityLabel: options?.entityLabel,
+      });
+      return { success: false, queued: true, error: err?.message || 'Network exception' };
+    }
+  },
+
+  /**
+   * Restores a soft-deleted record (`deleted_at = null`) for Undo operations.
+   * Also cancels any un-flushed soft_delete queued offline for the same record.
+   */
+  async restoreRow(
+    table: string,
+    id: string,
+    restoredByStaffId?: string | null
+  ): Promise<{ success: boolean; queued: boolean; error?: string }> {
+    const recordId = toValidUuid(id);
+    const staffUuid = restoredByStaffId ? normalizeUuidOrNull(restoredByStaffId) : null;
+    cancelQueuedMutations(table, recordId, ['soft_delete']);
+
+    const client = getSupabaseClient();
+    if (!client || !isSupabaseConfigured()) {
+      enqueueMutation({
+        kind: 'restore',
+        table,
+        recordId,
+        deletedByStaffId: staffUuid,
+      });
+      return { success: false, queued: true };
+    }
+
+    try {
+      const { error } = await (client as any)
+        .from(table)
+        .update({
+          deleted_at: null,
+          updated_at: new Date().toISOString(),
+          ...(staffUuid ? { updated_by_staff_id: staffUuid } : {}),
+        })
+        .eq('id', recordId);
+
+      if (error) {
+        enqueueMutation({
+          kind: 'restore',
+          table,
+          recordId,
+          deletedByStaffId: staffUuid,
+        });
+        return { success: false, queued: true, error: error.message };
+      }
+      return { success: true, queued: false };
+    } catch (err: any) {
+      enqueueMutation({
+        kind: 'restore',
+        table,
+        recordId,
+        deletedByStaffId: staffUuid,
       });
       return { success: false, queued: true, error: err?.message || 'Network exception' };
     }

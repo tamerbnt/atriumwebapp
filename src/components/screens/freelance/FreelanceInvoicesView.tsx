@@ -12,6 +12,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { InvoicePreviewModal } from './InvoicePreviewModal';
 import { FreelanceInvoice, CurrencyCode } from '../../../types/index';
@@ -274,21 +275,27 @@ export const FreelanceInvoicesView: React.FC = () => {
       timeLogs.some((tl) => tl.clientId === c.id && tl.isBillable && !tl.isInvoiced)
     );
     if (clientsWithUnbilled.length > 0) {
-      clientsWithUnbilled.forEach((c) => {
-        try {
-          billUnbilledHours(c.id);
-        } catch (err) {
-          console.error(err);
+      runUndoBatch(
+        {
+          category: 'freelance_solo',
+          operationType: 'bulk',
+          label: isAr
+            ? `فوترة ساعات (${clientsWithUnbilled.length})`
+            : isFr
+            ? `Facturation heures (${clientsWithUnbilled.length})`
+            : `Bill unbilled hours (${clientsWithUnbilled.length})`,
+          entityType: 'freelanceInvoice',
+        },
+        () => {
+          clientsWithUnbilled.forEach((c) => {
+            try {
+              billUnbilledHours(c.id);
+            } catch (err) {
+              console.error(err);
+            }
+          });
         }
-      });
-      showToast({
-        type: 'success',
-        title: isAr ? 'فوترة الساعات' : 'Bill Hours',
-        message: isAr
-          ? 'تم تحويل الساعات غير المفوترة إلى مسودات'
-          : 'Unbilled hours drafted into invoices',
-        category: 'freelance_solo',
-      });
+      );
     } else {
       showToast({
         type: 'info',
@@ -566,48 +573,72 @@ export const FreelanceInvoicesView: React.FC = () => {
 
   const handleBatchMarkPaid = () => {
     if (selectedInvoiceIds.size === 0) return;
-    selectedInvoiceIds.forEach((id) => {
-      updateInvoiceStatus(id, 'Paid');
-    });
     const count = selectedInvoiceIds.size;
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `تسوية فواتير (${count})`
+          : isFr
+          ? `Règlement factures (${count})`
+          : `Mark invoices Paid (${count})`,
+        entityType: 'freelanceInvoice',
+      },
+      () => {
+        selectedInvoiceIds.forEach((id) => {
+          updateInvoiceStatus(id, 'Paid');
+        });
+      }
+    );
     setSelectedInvoiceIds(new Set());
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم التحديث' : isFr ? 'Mis à jour' : 'Updated',
-      message: `${count} ${isAr ? 'فواتير تم تعليمها كمدفوعة' : 'invoices marked as Paid'}`,
-      category: 'freelance_solo',
-    });
   };
 
   const handleBatchMarkSent = () => {
     if (selectedInvoiceIds.size === 0) return;
-    selectedInvoiceIds.forEach((id) => {
-      updateInvoiceStatus(id, 'Sent');
-    });
     const count = selectedInvoiceIds.size;
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `إرسال فواتير (${count})`
+          : isFr
+          ? `Envoi factures (${count})`
+          : `Mark invoices Sent (${count})`,
+        entityType: 'freelanceInvoice',
+      },
+      () => {
+        selectedInvoiceIds.forEach((id) => {
+          updateInvoiceStatus(id, 'Sent');
+        });
+      }
+    );
     setSelectedInvoiceIds(new Set());
-    showToast({
-      type: 'info',
-      title: isAr ? 'تم التحديث' : isFr ? 'Mis à jour' : 'Updated',
-      message: `${count} ${isAr ? 'فواتير تم تعليمها كمرسلة' : 'invoices marked as Sent'}`,
-      category: 'freelance_solo',
-    });
   };
 
   const handleBatchDelete = () => {
     if (selectedInvoiceIds.size === 0) return;
     const count = selectedInvoiceIds.size;
-    selectedInvoiceIds.forEach((id) => {
-      deleteFreelanceInvoice(id);
-      if (selectedInvoice?.id === id) setSelectedInvoice(null);
-    });
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `حذف فواتير (${count})`
+          : isFr
+          ? `Suppression factures (${count})`
+          : `Delete invoices (${count})`,
+        entityType: 'freelanceInvoice',
+      },
+      () => {
+        selectedInvoiceIds.forEach((id) => {
+          deleteFreelanceInvoice(id);
+          if (selectedInvoice?.id === id) setSelectedInvoice(null);
+        });
+      }
+    );
     setSelectedInvoiceIds(new Set());
-    showToast({
-      type: 'info',
-      title: isAr ? 'تم الحذف' : isFr ? 'Suppression' : 'Deleted',
-      message: `${count} ${isAr ? 'فواتير تم حذفها' : 'invoices deleted'}`,
-      category: 'freelance_solo',
-    });
   };
 
   const paidCount = freelanceInvoices.filter((i) => i.status === 'Paid').length;

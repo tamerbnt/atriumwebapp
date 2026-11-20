@@ -11,6 +11,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { EduEnrollment } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -186,31 +187,36 @@ export const EducationFinanceView: React.FC = () => {
       date: new Date().toISOString().split('T')[0],
       receiptNumber: `REC-${Date.now().toString().slice(-6)}`,
     });
-    showToast({
-      type: 'success',
-      title: 'Paiement Enregistré',
-      message: `${formatMoney(paymentAmount)} encaissés pour ${selectedEnrollmentForPayment.studentName} (${paymentMethod}).`,
-    });
     setSelectedEnrollmentForPayment(null);
   };
 
   const handleBatchMarkInstallmentPaid = () => {
     if (selectedEnrollmentIds.size === 0) return;
-    let count = 0;
-    eduEnrollments.forEach((enr) => {
-      if (selectedEnrollmentIds.has(enr.id) && enr.balanceDue > 0) {
-        const nextIndex = enr.installments?.findIndex((i) => !i.isPaid) ?? 0;
-        const inst = enr.installments?.[nextIndex];
-        const amt = inst ? inst.amount : enr.balanceDue;
-        recordTuitionPayment(enr.id, Math.max(0, nextIndex), amt, 'Cash');
-        count++;
+    const targets = eduEnrollments.filter((enr) => selectedEnrollmentIds.has(enr.id) && enr.balanceDue > 0);
+    if (targets.length === 0) {
+      setSelectedEnrollmentIds(new Set<string>());
+      return;
+    }
+    runUndoBatch(
+      {
+        category: 'education_cohort',
+        operationType: 'bulk',
+        label: isAr
+          ? `تسجيل دفعات (${targets.length})`
+          : isEn
+          ? `Log payments (${targets.length})`
+          : `Encaissement échéances (${targets.length})`,
+        entityType: 'eduEnrollment',
+      },
+      () => {
+        targets.forEach((enr) => {
+          const nextIndex = enr.installments?.findIndex((i) => !i.isPaid) ?? 0;
+          const inst = enr.installments?.[nextIndex];
+          const amt = inst ? inst.amount : enr.balanceDue;
+          recordTuitionPayment(enr.id, Math.max(0, nextIndex), amt, 'Cash');
+        });
       }
-    });
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم تسجيل الدفعات' : 'Versements Encaissés',
-      message: `${count} échéances ont été validées en lot.`,
-    });
+    );
     setSelectedEnrollmentIds(new Set<string>());
   };
 

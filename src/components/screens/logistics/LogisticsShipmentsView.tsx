@@ -11,6 +11,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { LogisticsShipment } from '../../../types';
 import { useLogisticsData } from './logisticsData';
@@ -200,9 +201,8 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
     (s: LogisticsShipment) => {
       deleteShipment(s.id);
       if (selectedShipment?.id === s.id) setSelectedShipment(null);
-      showToast(isAr ? 'تم إلغاء الشحنة' : 'Colis supprimé du système', 'success');
     },
-    [deleteShipment, selectedShipment, isAr]
+    [deleteShipment, selectedShipment]
   );
 
   const handleTogglePin = useCallback((s: LogisticsShipment) => {
@@ -238,12 +238,8 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
       if (selectedShipment?.id === s.id) {
         setSelectedShipment({ ...s, status: nextStatus });
       }
-      showToast(
-        isAr ? `تم تحديث حالة الشحنة إلى ${nextStatus}` : `Statut mis à jour : ${nextStatus}`,
-        'info'
-      );
     },
-    [updateShipmentStatus, selectedShipment, isAr]
+    [updateShipmentStatus, selectedShipment]
   );
 
   const getShipmentRowMeta = useCallback(
@@ -733,10 +729,28 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
             },
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteShipment(id));
+            const count = ids.size;
+            runUndoBatch(
+              {
+                operationType: 'bulk',
+                vertical: 'logistics',
+                label: {
+                  fr: `${count} colis supprimés`,
+                  en: `${count} shipments deleted`,
+                  ar: `تم حذف ${count} شحنات`,
+                },
+                moduleLabel: {
+                  fr: 'Expéditions & Colis',
+                  en: 'Shipments',
+                  ar: 'إدارة الشحنات',
+                },
+              },
+              () => {
+                ids.forEach((id) => deleteShipment(id));
+              }
+            );
             setSelectedIds(new Set<string>());
             if (selectedShipment && ids.has(selectedShipment.id)) setSelectedShipment(null);
-            showToast(isAr ? 'تم حذف الطرود المحددة' : 'Colis sélectionnés supprimés', 'success');
           }}
           isPinned={(s) => pinnedIds.has(s.id)}
           onTogglePin={handleTogglePin}
@@ -1000,13 +1014,8 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
             if (shipmentToEdit) {
               updateShipment(s);
               if (selectedShipment?.id === s.id) setSelectedShipment(s);
-              showToast(isAr ? 'تم تحديث بيانات الشحنة' : 'Colis mis à jour', 'success');
             } else {
               addShipment(s);
-              showToast(
-                isAr ? 'تم إنشاء الشحنة بنجاح' : 'Colis enregistré avec succès (AWB)',
-                'success'
-              );
             }
             setIsShipmentModalOpen(false);
             setShipmentToEdit(null);

@@ -175,10 +175,6 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
     };
 
     onSave(saved);
-    showToast(
-      isAr ? 'تم تسجيل الطرد وحساب التسعيرة آلياً' : 'Colis enregistré avec succès (AWB & Tarification)',
-      'success'
-    );
     onClose();
   };
 

@@ -14,6 +14,7 @@ import {
   ClipboardList,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { EduSession } from '../../../types';
 import { RollCallModal } from './RollCallModal';
 import { LabelInput } from '../../ui/LabelInput';
@@ -198,11 +199,6 @@ export const EducationTimetableView: React.FC = () => {
       status: 'Scheduled',
     });
     setIsAddSessionModalOpen(false);
-    showToast({
-      type: 'success',
-      title: isAr ? 'تمت إضافة الحصة' : isEn ? 'Session Scheduled' : 'Séance planifiée',
-      message: isAr ? 'تمت إضافة الحصة التدريبية' : 'Créneau d’enseignement ajouté au planning',
-    });
   };
 
   const handleExportCSV = useCallback(() => {
@@ -722,11 +718,6 @@ export const EducationTimetableView: React.FC = () => {
           onDelete={(s) => {
             deleteEduSession(s.id);
             if (selectedSession?.id === s.id) setSelectedSession(null);
-            showToast({
-              type: 'info',
-              title: isAr ? 'تم حذف الحصة' : 'Séance retirée du planning',
-              message: s.cohortName || '',
-            });
           }}
           customActions={(s) => [
             {
@@ -768,14 +759,24 @@ export const EducationTimetableView: React.FC = () => {
             },
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteEduSession(id));
+            if (ids.size === 0) return;
+            runUndoBatch(
+              {
+                category: 'education_cohort',
+                operationType: 'bulk',
+                label: isAr
+                  ? `حذف حصص (${ids.size})`
+                  : isEn
+                  ? `Delete sessions (${ids.size})`
+                  : `Suppression séances (${ids.size})`,
+                entityType: 'eduSession',
+              },
+              () => {
+                ids.forEach((id) => deleteEduSession(id));
+              }
+            );
             setSelectedSessionIds(new Set<string>());
             if (selectedSession && ids.has(selectedSession.id)) setSelectedSession(null);
-            showToast({
-              type: 'info',
-              title: isAr ? 'تم الحذف' : 'Séances supprimées',
-              message: isAr ? 'تم حذف الحصص المحددة' : 'Séances supprimées du planning',
-            });
           }}
         />
       </ScreenPod>

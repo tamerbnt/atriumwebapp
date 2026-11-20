@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   AgriParcel,
   AgriCropCycle,
@@ -12,6 +12,11 @@ import {
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import type { Dispatch, SetStateAction } from 'react';
+import {
+  cloneSnapshot,
+  pickLocalizedText,
+  registerUndoEntry,
+} from '../../../services/undoEngine';
 import { isSupabaseConfigured, agricultureService, realtimeService, syncCoordinator, subscribeConcurrencyResolutions, runWithConcurrency } from '../../../lib/supabase';
 
 function mergeAgriById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
@@ -555,7 +560,9 @@ export const useAgricultureData = () => {
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
   const currentAccountId = useAtriumSelector((s) => s.account.id);
   const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
+  const language = useAtriumSelector((s) => s.language);
   const activeBranchId = currentBranchId || 'branch_agri_main';
+  const activeBusinessId = currentBusinessId || 'biz_agri';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
       (item.branchId || item.facilityId || 'branch_agri_main') === activeBranchId,
@@ -851,157 +858,849 @@ export const useAgricultureData = () => {
     };
   }, [activeBranchId]);
 
+  const latestRef = useRef({
+    parcels,
+    cropCycles,
+    treatmentLogs,
+    workers,
+    pointages,
+    dairyCows,
+    milkingRecords,
+    weighbridgeTickets,
+  });
+  latestRef.current = {
+    parcels,
+    cropCycles,
+    treatmentLogs,
+    workers,
+    pointages,
+    dairyCows,
+    milkingRecords,
+    weighbridgeTickets,
+  };
+
+  const restoreAt = <T extends { id: string }>(
+    setter: Dispatch<SetStateAction<T[]>>,
+    snapshot: T,
+    index: number
+  ) => {
+    const item = cloneSnapshot(snapshot);
+    setter((prev) => {
+      if (prev.some((x) => x.id === item.id)) return prev;
+      const next = [...prev];
+      const safeIndex = Math.max(0, Math.min(index, next.length));
+      next.splice(safeIndex, 0, item);
+      return next;
+    });
+  };
+
   // Parcel handlers
   const addParcel = (parcel: AgriParcel) => {
     const scoped = withBranch(parcel);
+    const snap = cloneSnapshot(scoped);
     setParcels((prev) => [scoped, ...prev]);
     void agricultureService.upsertParcel(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'agriculture_farming',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.code || scoped.name,
+      summary: pickLocalizedText(language, {
+        fr: `Parcelle ${scoped.name} ajoutée`,
+        en: `Parcel ${scoped.name} added`,
+        ar: `تمت إضافة القطعة ${scoped.name}`,
+      }),
+      undo: () => {
+        setParcels((prev) => prev.filter((p) => p.id !== snap.id));
+        void agricultureService.deleteParcel(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setParcels((prev) => (prev.some((p) => p.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('agri_parcels', re.id, currentStaffId)
+          .then(() => agricultureService.upsertParcel(re))
+          .catch(() => {});
+      },
+    });
   };
+
   const updateParcel = (parcel: AgriParcel) => {
     const scoped = withBranch(parcel);
+    const existing = latestRef.current.parcels.find((p) => p.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setParcels((prev) => prev.map((p) => (p.id === scoped.id ? scoped : p)));
     void agricultureService.upsertParcel(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.code || nextSnap.name,
+        summary: pickLocalizedText(language, {
+          fr: `Parcelle ${nextSnap.name} modifiée`,
+          en: `Parcel ${nextSnap.name} updated`,
+          ar: `تم تعديل القطعة ${nextSnap.name}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setParcels((prev) => prev.map((p) => (p.id === prevCopy.id ? prevCopy : p)));
+          void agricultureService.upsertParcel(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setParcels((prev) => prev.map((p) => (p.id === nextCopy.id ? nextCopy : p)));
+          void agricultureService.upsertParcel(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
+
   const deleteParcel = (id: string) => {
+    const idx = latestRef.current.parcels.findIndex((p) => p.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.parcels[idx]) : null;
     setParcels((prev) => prev.filter((p) => p.id !== id));
     void agricultureService.deleteParcel(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.code || existing.name,
+        summary: pickLocalizedText(language, {
+          fr: `Parcelle ${existing.name} supprimée`,
+          en: `Parcel ${existing.name} deleted`,
+          ar: `تم حذف القطعة ${existing.name}`,
+        }),
+        undo: () => {
+          restoreAt(setParcels, existing, idx);
+          void syncCoordinator
+            .restoreRow('agri_parcels', existing.id, currentStaffId)
+            .then(() => agricultureService.upsertParcel(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setParcels((prev) => prev.filter((p) => p.id !== existing.id));
+          void agricultureService.deleteParcel(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Crop cycle handlers
   const addCropCycle = (cycle: AgriCropCycle) => {
     const scoped = withBranch(cycle);
-    const parcelName = parcels.find((p) => p.id === scoped.parcelId)?.name;
+    const snap = cloneSnapshot(scoped);
+    const parcelName = latestRef.current.parcels.find((p) => p.id === scoped.parcelId)?.name;
     setCropCycles((prev) => [scoped, ...prev]);
     void agricultureService.upsertCropCycle(scoped, parcelName).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'agriculture_farming',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.cropName,
+      summary: pickLocalizedText(language, {
+        fr: `Cycle cultural ${scoped.cropName} créé`,
+        en: `Crop cycle ${scoped.cropName} created`,
+        ar: `تم إنشاء الدورة الزراعية ${scoped.cropName}`,
+      }),
+      undo: () => {
+        setCropCycles((prev) => prev.filter((c) => c.id !== snap.id));
+        void agricultureService.deleteCropCycle(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setCropCycles((prev) => (prev.some((c) => c.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('agri_crop_cycles', re.id, currentStaffId)
+          .then(() => agricultureService.upsertCropCycle(re, parcelName))
+          .catch(() => {});
+      },
+    });
   };
+
   const updateCropCycle = (cycle: AgriCropCycle) => {
     const scoped = withBranch(cycle);
-    const parcelName = parcels.find((p) => p.id === scoped.parcelId)?.name;
+    const existing = latestRef.current.cropCycles.find((c) => c.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
+    const parcelName = latestRef.current.parcels.find((p) => p.id === scoped.parcelId)?.name;
     setCropCycles((prev) => prev.map((c) => (c.id === scoped.id ? scoped : c)));
     void agricultureService.upsertCropCycle(scoped, parcelName).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.cropName,
+        summary: pickLocalizedText(language, {
+          fr: `Cycle cultural ${nextSnap.cropName} modifié`,
+          en: `Crop cycle ${nextSnap.cropName} updated`,
+          ar: `تم تعديل الدورة الزراعية ${nextSnap.cropName}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setCropCycles((prev) => prev.map((c) => (c.id === prevCopy.id ? prevCopy : c)));
+          void agricultureService.upsertCropCycle(withBranch(prevCopy), parcelName).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setCropCycles((prev) => prev.map((c) => (c.id === nextCopy.id ? nextCopy : c)));
+          void agricultureService.upsertCropCycle(nextCopy, parcelName).catch(() => {});
+        },
+      });
+    }
   };
+
   const deleteCropCycle = (id: string) => {
+    const idx = latestRef.current.cropCycles.findIndex((c) => c.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.cropCycles[idx]) : null;
+    const parcelName = existing ? latestRef.current.parcels.find((p) => p.id === existing.parcelId)?.name : undefined;
     setCropCycles((prev) => prev.filter((c) => c.id !== id));
     void agricultureService.deleteCropCycle(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.cropName,
+        summary: pickLocalizedText(language, {
+          fr: `Cycle cultural ${existing.cropName} supprimé`,
+          en: `Crop cycle ${existing.cropName} deleted`,
+          ar: `تم حذف الدورة الزراعية ${existing.cropName}`,
+        }),
+        undo: () => {
+          restoreAt(setCropCycles, existing, idx);
+          void syncCoordinator
+            .restoreRow('agri_crop_cycles', existing.id, currentStaffId)
+            .then(() => agricultureService.upsertCropCycle(withBranch(cloneSnapshot(existing)), parcelName))
+            .catch(() => {});
+        },
+        redo: () => {
+          setCropCycles((prev) => prev.filter((c) => c.id !== existing.id));
+          void agricultureService.deleteCropCycle(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Treatment handlers
   const addTreatmentLog = (treatment: AgriTreatmentLog) => {
     const scopedTreatment = withBranch(treatment);
+    const snapTreatment = cloneSnapshot(scopedTreatment);
+    const existingCycle =
+      scopedTreatment.cropCycleId && scopedTreatment.darDays > 0
+        ? latestRef.current.cropCycles.find((c) => c.id === scopedTreatment.cropCycleId)
+        : undefined;
+    const prevCycleSnap = existingCycle ? cloneSnapshot(existingCycle) : null;
+    const updatedCycle: AgriCropCycle | null = existingCycle
+      ? {
+          ...existingCycle,
+          currentPhase: 'treatment_locked',
+          activeDarLockoutUntil: scopedTreatment.harvestAllowedDate,
+          activePestWarning: `DAR Actif: ${scopedTreatment.commercialProductName} (${scopedTreatment.darDays}j)`,
+        }
+      : null;
+    const nextCycleSnap = updatedCycle ? cloneSnapshot(updatedCycle) : null;
+    const parcelName = updatedCycle
+      ? latestRef.current.parcels.find((p) => p.id === updatedCycle.parcelId)?.name
+      : undefined;
+
     setTreatmentLogs((prev) => [scopedTreatment, ...prev]);
     void agricultureService.upsertTreatment(scopedTreatment).catch(() => {});
-    // If treatment has active DAR, update linked crop cycle
-    if (scopedTreatment.cropCycleId && scopedTreatment.darDays > 0) {
-      let updatedCycle: AgriCropCycle | null = null;
-      setCropCycles((prev) =>
-        prev.map((c) => {
-          if (c.id === scopedTreatment.cropCycleId) {
-            updatedCycle = {
-              ...c,
-              currentPhase: 'treatment_locked',
-              activeDarLockoutUntil: scopedTreatment.harvestAllowedDate,
-              activePestWarning: `DAR Actif: ${scopedTreatment.commercialProductName} (${scopedTreatment.darDays}j)`,
-            };
-            return updatedCycle;
-          }
-          return c;
-        })
-      );
-      if (updatedCycle) {
-        const parcelName = parcels.find((p) => p.id === updatedCycle?.parcelId)?.name;
-        void agricultureService.upsertCropCycle(updatedCycle, parcelName).catch(() => {});
-      }
+    if (updatedCycle) {
+      setCropCycles((prev) => prev.map((c) => (c.id === updatedCycle.id ? updatedCycle : c)));
+      void agricultureService.upsertCropCycle(updatedCycle, parcelName).catch(() => {});
     }
+
+    registerUndoEntry({
+      vertical: 'agriculture_farming',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scopedTreatment.commercialProductName,
+      summary: pickLocalizedText(language, {
+        fr: `Traitement ${scopedTreatment.commercialProductName} enregistré`,
+        en: `Treatment ${scopedTreatment.commercialProductName} recorded`,
+        ar: `تم تسجيل المعالجة ${scopedTreatment.commercialProductName}`,
+      }),
+      undo: () => {
+        setTreatmentLogs((prev) => prev.filter((t) => t.id !== snapTreatment.id));
+        void agricultureService.deleteTreatment(snapTreatment.id, currentStaffId).catch(() => {});
+        if (prevCycleSnap) {
+          const prevCycleCopy = cloneSnapshot(prevCycleSnap);
+          setCropCycles((prev) => prev.map((c) => (c.id === prevCycleCopy.id ? prevCycleCopy : c)));
+          void agricultureService.upsertCropCycle(withBranch(prevCycleCopy), parcelName).catch(() => {});
+        }
+      },
+      redo: () => {
+        const re = cloneSnapshot(snapTreatment);
+        setTreatmentLogs((prev) => (prev.some((t) => t.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('agri_treatments', re.id, currentStaffId)
+          .then(() => agricultureService.upsertTreatment(re))
+          .catch(() => {});
+        if (nextCycleSnap) {
+          const nextCycleCopy = cloneSnapshot(nextCycleSnap);
+          setCropCycles((prev) => prev.map((c) => (c.id === nextCycleCopy.id ? nextCycleCopy : c)));
+          void agricultureService.upsertCropCycle(withBranch(nextCycleCopy), parcelName).catch(() => {});
+        }
+      },
+    });
   };
+
   const updateTreatmentLog = (treatment: AgriTreatmentLog) => {
     const scoped = withBranch(treatment);
+    const existing = latestRef.current.treatmentLogs.find((t) => t.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setTreatmentLogs((prev) => prev.map((t) => (t.id === scoped.id ? scoped : t)));
     void agricultureService.upsertTreatment(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.commercialProductName,
+        summary: pickLocalizedText(language, {
+          fr: `Traitement ${nextSnap.commercialProductName} modifié`,
+          en: `Treatment ${nextSnap.commercialProductName} updated`,
+          ar: `تم تعديل المعالجة ${nextSnap.commercialProductName}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setTreatmentLogs((prev) => prev.map((t) => (t.id === prevCopy.id ? prevCopy : t)));
+          void agricultureService.upsertTreatment(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setTreatmentLogs((prev) => prev.map((t) => (t.id === nextCopy.id ? nextCopy : t)));
+          void agricultureService.upsertTreatment(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
+
   const deleteTreatmentLog = (id: string) => {
+    const idx = latestRef.current.treatmentLogs.findIndex((t) => t.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.treatmentLogs[idx]) : null;
     setTreatmentLogs((prev) => prev.filter((t) => t.id !== id));
     void agricultureService.deleteTreatment(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.commercialProductName,
+        summary: pickLocalizedText(language, {
+          fr: `Traitement ${existing.commercialProductName} supprimé`,
+          en: `Treatment ${existing.commercialProductName} deleted`,
+          ar: `تم حذف المعالجة ${existing.commercialProductName}`,
+        }),
+        undo: () => {
+          restoreAt(setTreatmentLogs, existing, idx);
+          void syncCoordinator
+            .restoreRow('agri_treatments', existing.id, currentStaffId)
+            .then(() => agricultureService.upsertTreatment(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setTreatmentLogs((prev) => prev.filter((t) => t.id !== existing.id));
+          void agricultureService.deleteTreatment(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Worker handlers
   const addWorker = (worker: AgriWorker) => {
     const scoped = withBranch(worker);
+    const snap = cloneSnapshot(scoped);
     setWorkers((prev) => [scoped, ...prev]);
     void agricultureService.upsertWorker(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'agriculture_farming',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.fullName,
+      summary: pickLocalizedText(language, {
+        fr: `Ouvrier ${scoped.fullName} ajouté`,
+        en: `Worker ${scoped.fullName} added`,
+        ar: `تمت إضافة العامل ${scoped.fullName}`,
+      }),
+      undo: () => {
+        setWorkers((prev) => prev.filter((w) => w.id !== snap.id));
+        void agricultureService.deleteWorker(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setWorkers((prev) => (prev.some((w) => w.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('agri_staff', re.id, currentStaffId)
+          .then(() => agricultureService.upsertWorker(re))
+          .catch(() => {});
+      },
+    });
   };
+
   const updateWorker = (worker: AgriWorker) => {
     const scoped = withBranch(worker);
+    const existing = latestRef.current.workers.find((w) => w.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setWorkers((prev) => prev.map((w) => (w.id === scoped.id ? scoped : w)));
     void agricultureService.upsertWorker(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.fullName,
+        summary: pickLocalizedText(language, {
+          fr: `Ouvrier ${nextSnap.fullName} modifié`,
+          en: `Worker ${nextSnap.fullName} updated`,
+          ar: `تم تعديل العامل ${nextSnap.fullName}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setWorkers((prev) => prev.map((w) => (w.id === prevCopy.id ? prevCopy : w)));
+          void agricultureService.upsertWorker(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setWorkers((prev) => prev.map((w) => (w.id === nextCopy.id ? nextCopy : w)));
+          void agricultureService.upsertWorker(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
+
   const deleteWorker = (id: string) => {
+    const idx = latestRef.current.workers.findIndex((w) => w.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.workers[idx]) : null;
     setWorkers((prev) => prev.filter((w) => w.id !== id));
     void agricultureService.deleteWorker(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.fullName,
+        summary: pickLocalizedText(language, {
+          fr: `Ouvrier ${existing.fullName} supprimé`,
+          en: `Worker ${existing.fullName} deleted`,
+          ar: `تم حذف العامل ${existing.fullName}`,
+        }),
+        undo: () => {
+          restoreAt(setWorkers, existing, idx);
+          void syncCoordinator
+            .restoreRow('agri_staff', existing.id, currentStaffId)
+            .then(() => agricultureService.upsertWorker(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setWorkers((prev) => prev.filter((w) => w.id !== existing.id));
+          void agricultureService.deleteWorker(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Pointage handlers
   const addPointage = (pointage: AgriDailyPointage) => {
     const scoped = withBranch(pointage);
+    const snap = cloneSnapshot(scoped);
     setPointages((prev) => [scoped, ...prev]);
     void agricultureService.upsertPointage(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'agriculture_farming',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.workerName,
+      summary: pickLocalizedText(language, {
+        fr: `Pointage ${scoped.workerName} (${scoped.date}) enregistré`,
+        en: `Attendance ${scoped.workerName} (${scoped.date}) recorded`,
+        ar: `تم تسجيل حضور ${scoped.workerName}`,
+      }),
+      undo: () => {
+        setPointages((prev) => prev.filter((p) => p.id !== snap.id));
+        void agricultureService.deletePointage(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setPointages((prev) => (prev.some((p) => p.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('agri_sales', `ptg_${re.id}`, currentStaffId)
+          .then(() => agricultureService.upsertPointage(re))
+          .catch(() => {});
+      },
+    });
   };
+
   const updatePointage = (pointage: AgriDailyPointage) => {
     const scoped = withBranch(pointage);
+    const existing = latestRef.current.pointages.find((p) => p.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setPointages((prev) => prev.map((p) => (p.id === scoped.id ? scoped : p)));
     void agricultureService.upsertPointage(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.workerName,
+        summary: pickLocalizedText(language, {
+          fr: `Pointage ${nextSnap.workerName} modifié`,
+          en: `Attendance ${nextSnap.workerName} updated`,
+          ar: `تم تعديل حضور ${nextSnap.workerName}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setPointages((prev) => prev.map((p) => (p.id === prevCopy.id ? prevCopy : p)));
+          void agricultureService.upsertPointage(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setPointages((prev) => prev.map((p) => (p.id === nextCopy.id ? nextCopy : p)));
+          void agricultureService.upsertPointage(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
+
   const deletePointage = (id: string) => {
+    const idx = latestRef.current.pointages.findIndex((p) => p.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.pointages[idx]) : null;
     setPointages((prev) => prev.filter((p) => p.id !== id));
     void agricultureService.deletePointage(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.workerName,
+        summary: pickLocalizedText(language, {
+          fr: `Pointage ${existing.workerName} supprimé`,
+          en: `Attendance ${existing.workerName} deleted`,
+          ar: `تم حذف حضور ${existing.workerName}`,
+        }),
+        undo: () => {
+          restoreAt(setPointages, existing, idx);
+          void syncCoordinator
+            .restoreRow('agri_sales', `ptg_${existing.id}`, currentStaffId)
+            .then(() => agricultureService.upsertPointage(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setPointages((prev) => prev.filter((p) => p.id !== existing.id));
+          void agricultureService.deletePointage(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Dairy herd handlers
   const addDairyCow = (cow: AgriDairyCow) => {
     const scoped = withBranch(cow);
+    const snap = cloneSnapshot(scoped);
     setDairyCows((prev) => [scoped, ...prev]);
     void agricultureService.upsertLivestock(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'agriculture_farming',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.earTagNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Bovin ${scoped.earTagNumber} ajouté`,
+        en: `Livestock ${scoped.earTagNumber} added`,
+        ar: `تمت إضافة الماشية ${scoped.earTagNumber}`,
+      }),
+      undo: () => {
+        setDairyCows((prev) => prev.filter((c) => c.id !== snap.id));
+        void agricultureService.deleteLivestock(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setDairyCows((prev) => (prev.some((c) => c.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('agri_livestock', re.id, currentStaffId)
+          .then(() => agricultureService.upsertLivestock(re))
+          .catch(() => {});
+      },
+    });
   };
+
   const updateDairyCow = (cow: AgriDairyCow) => {
     const scoped = withBranch(cow);
+    const existing = latestRef.current.dairyCows.find((c) => c.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setDairyCows((prev) => prev.map((c) => (c.id === scoped.id ? scoped : c)));
     void agricultureService.upsertLivestock(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.earTagNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Bovin ${nextSnap.earTagNumber} modifié`,
+          en: `Livestock ${nextSnap.earTagNumber} updated`,
+          ar: `تم تعديل الماشية ${nextSnap.earTagNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setDairyCows((prev) => prev.map((c) => (c.id === prevCopy.id ? prevCopy : c)));
+          void agricultureService.upsertLivestock(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setDairyCows((prev) => prev.map((c) => (c.id === nextCopy.id ? nextCopy : c)));
+          void agricultureService.upsertLivestock(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
+
   const deleteDairyCow = (id: string) => {
+    const idx = latestRef.current.dairyCows.findIndex((c) => c.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.dairyCows[idx]) : null;
     setDairyCows((prev) => prev.filter((c) => c.id !== id));
     void agricultureService.deleteLivestock(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.earTagNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Bovin ${existing.earTagNumber} supprimé`,
+          en: `Livestock ${existing.earTagNumber} deleted`,
+          ar: `تم حذف الماشية ${existing.earTagNumber}`,
+        }),
+        undo: () => {
+          restoreAt(setDairyCows, existing, idx);
+          void syncCoordinator
+            .restoreRow('agri_livestock', existing.id, currentStaffId)
+            .then(() => agricultureService.upsertLivestock(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setDairyCows((prev) => prev.filter((c) => c.id !== existing.id));
+          void agricultureService.deleteLivestock(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Milking record handlers
   const addMilkingRecord = (record: AgriMilkingRecord) => {
     const scoped = withBranch(record);
+    const snap = cloneSnapshot(scoped);
     setMilkingRecords((prev) => [scoped, ...prev]);
     void agricultureService.upsertMilkingLog(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'agriculture_farming',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: `${scoped.sessionDate} (${scoped.sessionPeriod})`,
+      summary: pickLocalizedText(language, {
+        fr: `Traite ${scoped.sessionDate} (${scoped.totalTankLiters}L) enregistrée`,
+        en: `Milking ${scoped.sessionDate} (${scoped.totalTankLiters}L) recorded`,
+        ar: `تم تسجيل الحلب ${scoped.sessionDate}`,
+      }),
+      undo: () => {
+        setMilkingRecords((prev) => prev.filter((m) => m.id !== snap.id));
+        void agricultureService.deleteMilkingLog(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setMilkingRecords((prev) => (prev.some((m) => m.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('agri_milking_logs', re.id, currentStaffId)
+          .then(() => agricultureService.upsertMilkingLog(re))
+          .catch(() => {});
+      },
+    });
   };
+
   const deleteMilkingRecord = (id: string) => {
+    const idx = latestRef.current.milkingRecords.findIndex((m) => m.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.milkingRecords[idx]) : null;
     setMilkingRecords((prev) => prev.filter((m) => m.id !== id));
     void agricultureService.deleteMilkingLog(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: `${existing.sessionDate} (${existing.sessionPeriod})`,
+        summary: pickLocalizedText(language, {
+          fr: `Traite ${existing.sessionDate} supprimée`,
+          en: `Milking ${existing.sessionDate} deleted`,
+          ar: `تم حذف سجل الحلب ${existing.sessionDate}`,
+        }),
+        undo: () => {
+          restoreAt(setMilkingRecords, existing, idx);
+          void syncCoordinator
+            .restoreRow('agri_milking_logs', existing.id, currentStaffId)
+            .then(() => agricultureService.upsertMilkingLog(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setMilkingRecords((prev) => prev.filter((m) => m.id !== existing.id));
+          void agricultureService.deleteMilkingLog(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Weighbridge ticket handlers
   const addWeighbridgeTicket = (ticket: AgriWeighbridgeTicket) => {
     const scoped = withBranch(ticket);
-    const fallbackParcelId = selectedParcelId || parcels[0]?.id || 'parc_01';
+    const snap = cloneSnapshot(scoped);
+    const fallbackParcelId = selectedParcelId || latestRef.current.parcels[0]?.id || 'parc_01';
     setWeighbridgeTickets((prev) => [scoped, ...prev]);
     void agricultureService.upsertHarvestTicket(scoped, fallbackParcelId).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'agriculture_farming',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.ticketNumber || scoped.cropDesignation,
+      summary: pickLocalizedText(language, {
+        fr: `Ticket pont-bascule ${scoped.ticketNumber} créé`,
+        en: `Weighbridge ticket ${scoped.ticketNumber} created`,
+        ar: `تم إنشاء تذكرة الميزان ${scoped.ticketNumber}`,
+      }),
+      undo: () => {
+        setWeighbridgeTickets((prev) => prev.filter((t) => t.id !== snap.id));
+        void agricultureService.deleteHarvestTicket(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setWeighbridgeTickets((prev) => (prev.some((t) => t.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('agri_harvests', re.id, currentStaffId)
+          .then(() => agricultureService.upsertHarvestTicket(re, fallbackParcelId))
+          .catch(() => {});
+      },
+    });
   };
+
   const updateWeighbridgeTicket = (ticket: AgriWeighbridgeTicket) => {
     const scoped = withBranch(ticket);
-    const fallbackParcelId = selectedParcelId || parcels[0]?.id || 'parc_01';
+    const existing = latestRef.current.weighbridgeTickets.find((t) => t.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
+    const fallbackParcelId = selectedParcelId || latestRef.current.parcels[0]?.id || 'parc_01';
     setWeighbridgeTickets((prev) => prev.map((t) => (t.id === scoped.id ? scoped : t)));
     void agricultureService.upsertHarvestTicket(scoped, fallbackParcelId).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.ticketNumber || nextSnap.cropDesignation,
+        summary: pickLocalizedText(language, {
+          fr: `Ticket pont-bascule ${nextSnap.ticketNumber} modifié`,
+          en: `Weighbridge ticket ${nextSnap.ticketNumber} updated`,
+          ar: `تم تعديل تذكرة الميزان ${nextSnap.ticketNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setWeighbridgeTickets((prev) => prev.map((t) => (t.id === prevCopy.id ? prevCopy : t)));
+          void agricultureService.upsertHarvestTicket(withBranch(prevCopy), fallbackParcelId).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setWeighbridgeTickets((prev) => prev.map((t) => (t.id === nextCopy.id ? nextCopy : t)));
+          void agricultureService.upsertHarvestTicket(nextCopy, fallbackParcelId).catch(() => {});
+        },
+      });
+    }
   };
+
   const deleteWeighbridgeTicket = (id: string) => {
+    const idx = latestRef.current.weighbridgeTickets.findIndex((t) => t.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.weighbridgeTickets[idx]) : null;
+    const fallbackParcelId = selectedParcelId || latestRef.current.parcels[0]?.id || 'parc_01';
     setWeighbridgeTickets((prev) => prev.filter((t) => t.id !== id));
     void agricultureService.deleteHarvestTicket(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.ticketNumber || existing.cropDesignation,
+        summary: pickLocalizedText(language, {
+          fr: `Ticket pont-bascule ${existing.ticketNumber} supprimé`,
+          en: `Weighbridge ticket ${existing.ticketNumber} deleted`,
+          ar: `تم حذف تذكرة الميزان ${existing.ticketNumber}`,
+        }),
+        undo: () => {
+          restoreAt(setWeighbridgeTickets, existing, idx);
+          void syncCoordinator
+            .restoreRow('agri_harvests', existing.id, currentStaffId)
+            .then(() => agricultureService.upsertHarvestTicket(withBranch(cloneSnapshot(existing)), fallbackParcelId))
+            .catch(() => {});
+        },
+        redo: () => {
+          setWeighbridgeTickets((prev) => prev.filter((t) => t.id !== existing.id));
+          void agricultureService.deleteHarvestTicket(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   // Reset active branch data to empty state
   const resetToSeed = () => {
+    const snap = cloneSnapshot(latestRef.current);
     setParcels((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
     setCropCycles((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
     setTreatmentLogs((prev) => prev.filter((t) => !belongsToActiveBranch(t)));
@@ -1010,6 +1709,29 @@ export const useAgricultureData = () => {
     setDairyCows((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
     setMilkingRecords((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
     setWeighbridgeTickets((prev) => prev.filter((t) => !belongsToActiveBranch(t)));
+
+    registerUndoEntry({
+      vertical: 'agriculture_farming',
+      operationType: 'bulk',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      summary: pickLocalizedText(language, {
+        fr: 'Données exploitation agricole réinitialisées',
+        en: 'Agriculture data reset',
+        ar: 'تمت إعادة ضبط بيانات الاستغلال الفلاحي',
+      }),
+      undo: () => {
+        const s = cloneSnapshot(snap);
+        setParcels(s.parcels);
+        setCropCycles(s.cropCycles);
+        setTreatmentLogs(s.treatmentLogs);
+        setWorkers(s.workers);
+        setPointages(s.pointages);
+        setDairyCows(s.dairyCows);
+        setMilkingRecords(s.milkingRecords);
+        setWeighbridgeTickets(s.weighbridgeTickets);
+      },
+    });
   };
 
   const scopedParcels = useMemo(() => parcels.filter(belongsToActiveBranch), [parcels, belongsToActiveBranch]);

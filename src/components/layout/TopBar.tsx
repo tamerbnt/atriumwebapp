@@ -64,6 +64,7 @@ import {
   Building,
   User,
   LayoutDashboard,
+  Undo2,
 } from 'lucide-react';
 import {
   useAtriumSelector,
@@ -98,6 +99,8 @@ import { NotificationDropdown } from './NotificationDropdown';
 import { Menu, MenuTriggerProps } from '@/atrium';
 import { isSupabaseConfigured as checkSupabaseConfigured } from '../../lib/supabase/client';
 import { LiveButton, LiveIconButton } from '../ui/live';
+import { UndoHistoryPopover } from '../ui/UndoHistoryPopover';
+import { useUndoHistory } from '../../services/undoEngine';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -188,6 +191,8 @@ export const TopBar: React.FC<TopBarProps> = ({
     terminology,
     isSyncing,
     currentBusiness,
+    currentBusinessId,
+    currentBranchId,
     activePmRole,
     activeGarageRole,
     activeRealEstateRole,
@@ -207,6 +212,8 @@ export const TopBar: React.FC<TopBarProps> = ({
       terminology: selectTerminologyFromState(s),
       isSyncing: s.isSyncing,
       currentBusiness: selectCurrentBusinessFromState(s),
+      currentBusinessId: s.currentBusinessId,
+      currentBranchId: s.currentBranchId,
       activePmRole: s.activePmRole || 'direction',
       activeGarageRole: s.activeGarageRole || 'gerant',
       activeRealEstateRole: s.activeRealEstateRole || 'direction',
@@ -221,9 +228,11 @@ export const TopBar: React.FC<TopBarProps> = ({
     shallowEqualObjects
   );
   const isSupabaseConfigured = checkSupabaseConfigured();
+  const { availableCount: undoAvailableCount } = useUndoHistory(currentBusinessId, currentBranchId);
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [undoHistoryOpen, setUndoHistoryOpen] = useState(false);
   const [networkMenuOpen, setNetworkMenuOpen] = useState(false);
   const [topBarSearch, setTopBarSearch] = useState('');
 
@@ -249,6 +258,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const userButtonRef = useRef<HTMLButtonElement>(null);
   const networkMenuRef = useRef<HTMLDivElement>(null);
   const notificationMenuRef = useRef<HTMLDivElement>(null);
+  const undoMenuRef = useRef<HTMLDivElement>(null);
 
   // Exclusive toggle handlers: opening one closes all other dropdowns
   const toggleUserMenu = (e?: React.MouseEvent) => {
@@ -258,6 +268,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       if (next) {
         setNetworkMenuOpen(false);
         setNotificationsOpen(false);
+        setUndoHistoryOpen(false);
       }
       return next;
     });
@@ -270,6 +281,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       if (next) {
         setUserMenuOpen(false);
         setNotificationsOpen(false);
+        setUndoHistoryOpen(false);
       }
       return next;
     });
@@ -282,6 +294,20 @@ export const TopBar: React.FC<TopBarProps> = ({
       if (next) {
         setUserMenuOpen(false);
         setNetworkMenuOpen(false);
+        setUndoHistoryOpen(false);
+      }
+      return next;
+    });
+  };
+
+  const toggleUndoHistory = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setUndoHistoryOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        setUserMenuOpen(false);
+        setNetworkMenuOpen(false);
+        setNotificationsOpen(false);
       }
       return next;
     });
@@ -289,7 +315,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   // Auto-close any open dropdown when clicking or touching anywhere outside, or when pressing Escape
   useEffect(() => {
-    const isAnyOpen = userMenuOpen || networkMenuOpen || notificationsOpen;
+    const isAnyOpen = userMenuOpen || networkMenuOpen || notificationsOpen || undoHistoryOpen;
     if (!isAnyOpen) return;
 
     const handlePointerDown = (e: MouseEvent | TouchEvent) => {
@@ -313,6 +339,10 @@ export const TopBar: React.FC<TopBarProps> = ({
           setNotificationsOpen(false);
         }
       }
+
+      if (undoHistoryOpen && undoMenuRef.current && !undoMenuRef.current.contains(target)) {
+        setUndoHistoryOpen(false);
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -320,6 +350,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         setUserMenuOpen(false);
         setNetworkMenuOpen(false);
         setNotificationsOpen(false);
+        setUndoHistoryOpen(false);
       }
     };
 
@@ -992,6 +1023,34 @@ export const TopBar: React.FC<TopBarProps> = ({
           }
           aria-label="Refresh and sync"
         />
+
+        {/* TopBar Global Undo History & Filter Trigger */}
+        <div ref={undoMenuRef} className="relative">
+          <LiveIconButton
+            icon={<Undo2 size={18} strokeWidth={1.6} />}
+            badge={undoAvailableCount > 0 ? (undoAvailableCount > 9 ? '9+' : undoAvailableCount) : null}
+            tone={undoHistoryOpen ? 'accent' : 'soft'}
+            onClick={toggleUndoHistory}
+            title={
+              language === 'ar'
+                ? 'سجل التراجع (Ctrl+Z)'
+                : language === 'fr'
+                ? "Historique d'annulation (Ctrl+Z)"
+                : 'Undo History (Ctrl+Z)'
+            }
+            aria-label="Open undo history and filter"
+            className="!w-[var(--top-ctl-h,40px)] !h-[var(--top-ctl-h,40px)] !rounded-full"
+          />
+
+          <UndoHistoryPopover
+            isOpen={undoHistoryOpen}
+            onClose={() => setUndoHistoryOpen(false)}
+            businessId={currentBusinessId}
+            branchId={currentBranchId}
+            currentCategory={currentBusiness?.category}
+            language={language}
+          />
+        </div>
 
         {/* TopBar Notification Bell & Center Trigger */}
         <div ref={notificationMenuRef} className="relative">

@@ -16,6 +16,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import {
   useGarageData,
@@ -225,13 +226,8 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
     (v: VehicleAsset) => {
       deleteVehicle(v.id);
       if (inspectedVehicle?.id === v.id) setInspectedVehicle(null);
-      showToast({
-        type: 'success',
-        title: isAr ? 'حذف' : 'Supprimé',
-        message: isAr ? 'تم حذف المركبة من الحظيرة' : 'Véhicule retiré du parc',
-      });
     },
-    [deleteVehicle, inspectedVehicle, isAr]
+    [deleteVehicle, inspectedVehicle]
   );
 
   const handleTogglePin = useCallback((v: VehicleAsset) => {
@@ -746,14 +742,28 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteVehicle(id));
+            const count = ids.size;
+            runUndoBatch(
+              {
+                operationType: 'bulk',
+                vertical: 'garage',
+                label: {
+                  fr: `${count} véhicules supprimés`,
+                  en: `${count} vehicles deleted`,
+                  ar: `تم حذف ${count} مركبات`,
+                },
+                moduleLabel: {
+                  fr: 'Parc Véhicules',
+                  en: 'Vehicle Fleet',
+                  ar: 'حظيرة المركبات',
+                },
+              },
+              () => {
+                ids.forEach((id) => deleteVehicle(id));
+              }
+            );
             setSelectedIds(new Set());
             if (inspectedVehicle && ids.has(inspectedVehicle.id)) setInspectedVehicle(null);
-            showToast({
-              type: 'success',
-              title: isAr ? 'حذف' : 'Supprimé',
-              message: isAr ? 'تم حذف المركبات المحددة' : 'Véhicules sélectionnés supprimés',
-            });
           }}
           isPinned={(v) => pinnedIds.has(v.id)}
           onTogglePin={handleTogglePin}
@@ -981,18 +991,8 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
             if (vehicleToEdit) {
               updateVehicle(v);
               if (inspectedVehicle?.id === v.id) setInspectedVehicle(v);
-              showToast({
-                type: 'success',
-                title: v.plateNumber,
-                message: isAr ? 'تم تحديث بيانات المركبة' : 'Véhicule mis à jour',
-              });
             } else {
               addVehicle(v);
-              showToast({
-                type: 'success',
-                title: v.plateNumber,
-                message: isAr ? 'تم تسجيل المركبة بنجاح' : 'Véhicule enregistré avec succès',
-              });
             }
             setIsVehicleModalOpen(false);
             setVehicleToEdit(null);
@@ -1013,11 +1013,6 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
             addOrder(order);
             setIsOrderModalOpen(false);
             setOrderVehicle(null);
-            showToast({
-              type: 'success',
-              title: order.orderNumber,
-              message: isAr ? 'تم إنشاء أمر الإصلاح بنجاح' : 'Ordre de réparation créé',
-            });
           }}
         />
       )}

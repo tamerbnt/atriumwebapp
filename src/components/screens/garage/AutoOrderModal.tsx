@@ -139,11 +139,6 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 			isPaid: false
 		};
 		onSave(newOrder);
-		showToast({
-			type: "success",
-			title: newOrder.orderNumber,
-			message: language === "ar" ? `تم فتح أمر التصليح (${newOrder.orderNumber}) وفحص الاستلام` : `Ordre de réparation (${newOrder.orderNumber}) et fiche d'entrée créés`,
-		});
 		onClose();
 	};
 	const vehicleOptions = vehicles.map((v: VehicleAsset) => ({

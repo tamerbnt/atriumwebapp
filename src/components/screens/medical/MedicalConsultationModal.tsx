@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Stethoscope, X, UserCheck, AlertTriangle } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumStore } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { MedicalPatient, MedicalConsultation } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -107,15 +108,24 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
       createdAt: new Date().toISOString(),
     };
 
-    // Auto-deplete standard consultation consumable
-    depleteForAct('C');
-
-    onSave(created);
-    showToast(
-      language === 'ar'
-        ? `تم تسجيل المريض وتوجيهه إلى ${assignedDoc?.roomNumber || 'العيادة'}`
-        : `Patient admis et orienté vers ${assignedDoc?.fullName} (${assignedDoc?.roomNumber})`,
-      'success'
+    runUndoBatch(
+      {
+        vertical: 'medical_clinic',
+        operationType: 'create',
+        branchId: currentBranch?.id || 'branch_medical_main',
+        summary:
+          language === 'ar'
+            ? `استشارة طبية — ${pat.fullName}`
+            : language === 'en'
+            ? `Consultation — ${pat.fullName}`
+            : `Consultation — ${pat.fullName}`,
+        entityLabel: pat.fullName,
+        toastType: 'success',
+      },
+      () => {
+        depleteForAct('C');
+        onSave(created);
+      }
     );
     onClose();
   };

@@ -203,6 +203,19 @@ import {
   computeHomeSetupProgress,
   type SetupEvaluationContext,
 } from '../utils/businessConfig';
+import {
+  applyFacilityAccentCssVars,
+  cloneSnapshot,
+  configureUndoToastBridge,
+  getFacilityAccentForCategory,
+  getUndoButtonLabel,
+  isApplyingUndo,
+  registerUndoEntry,
+  REGULAR_TOAST_DURATION_MS,
+  UNDO_EXIT_ANIMATION_MS,
+  UNDO_HOVER_GRACE_MS,
+  UNDO_TOAST_DURATION_MS,
+} from './undoEngine';
 
 import {
   isSupabaseConfigured,
@@ -1531,6 +1544,8 @@ export function setThemeAction(theme: AppTheme) {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    const biz = selectCurrentBusinessFromState(globalState);
+    applyFacilityAccentCssVars(biz?.category, theme);
   }
   notify();
 }
@@ -1860,6 +1875,7 @@ export function switchFacilityAction(businessId: string, branchId?: string) {
     selectedMemberId: null,
     isDetailOpen: false,
   };
+  applyFacilityAccentCssVars(targetBusiness?.category, globalState.theme);
   ensureBranchSubscription(targetBranchId);
   notify();
 
@@ -1868,11 +1884,10 @@ export function switchFacilityAction(businessId: string, branchId?: string) {
     title: 'Facility Switched',
     message: `Active workspace changed to ${targetBusiness?.name || 'facility'}.`,
     category: targetBusiness?.category,
-    action: {
-      label: 'Undo Switch',
-      onClick: () => {
-        switchFacilityAction(prevBusinessId, prevBranchId);
-      },
+    hasUndo: true,
+    undoLabel: getUndoButtonLabel(globalState.language),
+    onUndo: () => {
+      switchFacilityAction(prevBusinessId, prevBranchId);
     },
   });
 }
@@ -1884,6 +1899,27 @@ export function switchBusinessAction(businessId: string) {
 export function switchBranchAction(branchId: string) {
   const targetBranch = globalState.branches.find((b) => b.id === branchId);
   switchFacilityAction(targetBranch?.businessId || globalState.currentBusinessId, branchId);
+}
+
+function ul(en: string, fr: string, ar: string): string {
+  const lang = globalState.language || 'fr';
+  return lang === 'ar' ? ar : lang === 'en' ? en : fr;
+}
+
+function captureStoreSlices<K extends keyof AppState>(keys: K[]): Pick<AppState, K> {
+  const snapshot = {} as Pick<AppState, K>;
+  for (const k of keys) {
+    snapshot[k] = cloneSnapshot(globalState[k]);
+  }
+  return snapshot;
+}
+
+function restoreStoreSlices<K extends keyof AppState>(snapshot: Pick<AppState, K>) {
+  globalState = {
+    ...globalState,
+    ...cloneSnapshot(snapshot),
+  };
+  notify();
 }
 
 export function startTimerAction(
@@ -1942,6 +1978,7 @@ export function resumeTimerAction() {
 export function stopTimerAction() {
   const timer = globalState.activeTimer;
   if (timer.elapsedSeconds >= 10) {
+    const before = captureStoreSlices(['timeLogs', 'freelanceProjects', 'activeTimer']);
     const client = globalState.freelanceClients.find((c) => c.id === timer.clientId);
     const rate = client?.hourlyRate || 85;
     const currency = client?.currency || 'EUR';
@@ -2007,20 +2044,39 @@ export function stopTimerAction() {
       }
     }
 
+    const after = captureStoreSlices(['timeLogs', 'freelanceProjects', 'activeTimer']);
     const hours = Math.floor(newEntry.durationSeconds / 3600);
     const mins = Math.floor((newEntry.durationSeconds % 3600) / 60);
     const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m ${newEntry.durationSeconds % 60}s`;
-    showToast({
-      type: 'success',
-      title: 'Time Logged',
-      message: `${timeStr} recorded for "${newEntry.projectTitle || 'Project'}".`,
-      category: 'freelance_solo',
-      action: {
-        label: 'Invoice',
-        onClick: () => {
-          globalState = { ...globalState, activeScreen: 'shop' };
-          notify();
-        },
+    const msg = `${timeStr} recorded for "${newEntry.projectTitle || 'Project'}".`;
+    registerUndoEntry({
+      vertical: 'freelance_solo',
+      operationType: 'create',
+      summary: ul(
+        `Logged ${timeStr} for ${newEntry.projectTitle || 'Project'}`,
+        `Temps enregistré (${timeStr}) — ${newEntry.projectTitle || 'Projet'}`,
+        `تسجيل وقت (${timeStr}) — ${newEntry.projectTitle || 'المشروع'}`
+      ),
+      entityLabel: newEntry.projectTitle || newEntry.taskDescription,
+      toastType: 'success',
+      toastTitle: ul('Time Logged', 'Temps enregistré', 'تم تسجيل الوقت'),
+      toastMessage: msg,
+      undo: () => {
+        restoreStoreSlices({ timeLogs: before.timeLogs, freelanceProjects: before.freelanceProjects });
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteTimeLog(newEntry.id, globalState.currentUser?.id).catch(() => {});
+          const prevProj = before.freelanceProjects.find((p) => p.id === timer.projectId);
+          if (prevProj) freelanceService.upsertProject(prevProj).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices({ timeLogs: after.timeLogs, freelanceProjects: after.freelanceProjects });
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_time_logs', newEntry.id, globalState.currentUser?.id).catch(() => {});
+          freelanceService.upsertTimeLog(newEntry).catch(() => {});
+          const nextProj = after.freelanceProjects.find((p) => p.id === timer.projectId);
+          if (nextProj) freelanceService.upsertProject(nextProj).catch(() => {});
+        }
       },
     });
 
@@ -2043,6 +2099,8 @@ export function stopTimerAction() {
 }
 
 export function resetTimerAction() {
+  const before = captureStoreSlices(['activeTimer']);
+  const hadProgress = before.activeTimer.elapsedSeconds > 0 || before.activeTimer.isRunning;
   globalState = {
     ...globalState,
     activeTimer: {
@@ -2055,6 +2113,24 @@ export function resetTimerAction() {
   };
   ensureTimerTick(false, false);
   notify();
+  if (hadProgress) {
+    const after = captureStoreSlices(['activeTimer']);
+    registerUndoEntry({
+      vertical: 'freelance_solo',
+      operationType: 'edit',
+      summary: ul('Reset active timer', 'Chronomètre réinitialisé', 'إعادة ضبط المؤقت'),
+      entityLabel: before.activeTimer.projectTitle || 'Timer',
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        ensureTimerTick(before.activeTimer.isRunning, before.activeTimer.isPaused);
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        ensureTimerTick(false, false);
+      },
+    });
+  }
 }
 
 export function setActivePmRoleAction(role: PMRole) {
@@ -2136,6 +2212,7 @@ export function setActivePmSubScreenAction(subScreen: string) {
 }
 
 export function addPmProjectAction(projectData: Omit<PMProject, 'id' | 'createdAt' | 'updatedAt'>) {
+  const before = captureStoreSlices(['pmProjects']);
   const newProj: PMProject = {
     ...getTraceContextFromGlobal(),
     ...projectData,
@@ -2149,17 +2226,35 @@ export function addPmProjectAction(projectData: Omit<PMProject, 'id' | 'createdA
   };
   notify();
   projectMilestoneService.upsertProject(newProj).catch(() => {});
-  showToast({
-    type: 'success',
-    title: 'Projet Initié',
-    message: `${newProj.title} créé avec un plafond budgétaire de ${newProj.budgetCapDzd.toLocaleString()} DA.`,
-    syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-    category: 'project_milestone',
+  const after = captureStoreSlices(['pmProjects']);
+  registerUndoEntry({
+    vertical: 'project_milestone',
+    operationType: 'create',
+    summary: ul(`Created project ${newProj.title}`, `Projet créé : ${newProj.title}`, `تم إنشاء المشروع: ${newProj.title}`),
+    entityLabel: newProj.title,
+    toastType: 'success',
+    toastTitle: ul('Project Initiated', 'Projet Initié', 'تم إطلاق المشروع'),
+    toastMessage: `${newProj.title} (${newProj.budgetCapDzd.toLocaleString()} DA)`,
+    undo: () => {
+      restoreStoreSlices(before);
+      if (isSupabaseConfigured()) {
+        projectMilestoneService.deleteProject(newProj.id, globalState.currentUser?.id).catch(() => {});
+      }
+    },
+    redo: () => {
+      restoreStoreSlices(after);
+      if (isSupabaseConfigured()) {
+        syncCoordinator.restoreRow('pm_projects', newProj.id, globalState.currentUser?.id).catch(() => {});
+        projectMilestoneService.upsertProject(newProj).catch(() => {});
+      }
+    },
   });
   return newProj;
 }
 
 export function approvePmExpenseAction(expenseId: string, notes?: string) {
+  const before = captureStoreSlices(['pmExpenses']);
+  const prevExp = (before.pmExpenses || []).find((e) => e.id === expenseId);
   globalState = {
     ...globalState,
     pmExpenses: (globalState.pmExpenses || []).map((e) =>
@@ -2175,15 +2270,42 @@ export function approvePmExpenseAction(expenseId: string, notes?: string) {
   };
   notify();
   projectMilestoneService.approveDisbursement('expense', expenseId, globalState.currentUser.id, notes).catch(() => {});
-  showToast({
-    type: 'success',
-    title: 'Frais Validé par la Direction',
-    message: 'Autorisation de décaissement transmise à la Comptabilité.',
-    category: 'project_milestone',
+  const after = captureStoreSlices(['pmExpenses']);
+  registerUndoEntry({
+    vertical: 'project_milestone',
+    operationType: 'status',
+    summary: ul(
+      `Approved expense ${prevExp?.title || expenseId}`,
+      `Frais validé : ${prevExp?.title || expenseId}`,
+      `اعتماد مصروف: ${prevExp?.title || expenseId}`
+    ),
+    entityLabel: prevExp?.title,
+    toastType: 'success',
+    toastTitle: ul('Expense Approved', 'Frais Validé par la Direction', 'تمت الموافقة على المصروف'),
+    toastMessage: ul(
+      'Disbursement authorization sent to Accounting.',
+      'Autorisation de décaissement transmise à la Comptabilité.',
+      'تم إرسال إذن الصرف إلى المحاسبة.'
+    ),
+    undo: () => {
+      restoreStoreSlices(before);
+      if (prevExp && isSupabaseConfigured()) {
+        projectMilestoneService.upsertExpense(prevExp).catch(() => {});
+      }
+    },
+    redo: () => {
+      restoreStoreSlices(after);
+      const nextExp = (after.pmExpenses || []).find((e) => e.id === expenseId);
+      if (nextExp && isSupabaseConfigured()) {
+        projectMilestoneService.upsertExpense(nextExp).catch(() => {});
+      }
+    },
   });
 }
 
 export function rejectPmExpenseAction(expenseId: string, notes?: string) {
+  const before = captureStoreSlices(['pmExpenses']);
+  const prevExp = (before.pmExpenses || []).find((e) => e.id === expenseId);
   globalState = {
     ...globalState,
     pmExpenses: (globalState.pmExpenses || []).map((e) =>
@@ -2201,15 +2323,37 @@ export function rejectPmExpenseAction(expenseId: string, notes?: string) {
   if (updated && isSupabaseConfigured()) {
     projectMilestoneService.upsertExpense(updated).catch(() => {});
   }
-  showToast({
-    type: 'error',
-    title: 'Frais Rejeté',
-    message: notes || 'Le remboursement a été refusé.',
-    category: 'project_milestone',
+  const after = captureStoreSlices(['pmExpenses']);
+  registerUndoEntry({
+    vertical: 'project_milestone',
+    operationType: 'status',
+    summary: ul(
+      `Rejected expense ${prevExp?.title || expenseId}`,
+      `Frais rejeté : ${prevExp?.title || expenseId}`,
+      `رفض مصروف: ${prevExp?.title || expenseId}`
+    ),
+    entityLabel: prevExp?.title,
+    toastType: 'warning',
+    toastTitle: ul('Expense Rejected', 'Frais Rejeté', 'تم رفض المصروف'),
+    toastMessage: notes || ul('Reimbursement declined.', 'Le remboursement a été refusé.', 'تم رفض التعويض.'),
+    undo: () => {
+      restoreStoreSlices(before);
+      if (prevExp && isSupabaseConfigured()) {
+        projectMilestoneService.upsertExpense(prevExp).catch(() => {});
+      }
+    },
+    redo: () => {
+      restoreStoreSlices(after);
+      if (updated && isSupabaseConfigured()) {
+        projectMilestoneService.upsertExpense(updated).catch(() => {});
+      }
+    },
   });
 }
 
 export function approvePmPayrollBatchAction(batchId: string) {
+  const before = captureStoreSlices(['pmPayrollBatches']);
+  const prevBatch = (before.pmPayrollBatches || []).find((b) => b.id === batchId);
   globalState = {
     ...globalState,
     pmPayrollBatches: (globalState.pmPayrollBatches || []).map((b) =>
@@ -2224,15 +2368,46 @@ export function approvePmPayrollBatchAction(batchId: string) {
   };
   notify();
   projectMilestoneService.approveDisbursement('payroll_batch', batchId, globalState.currentUser.id).catch(() => {});
-  showToast({
-    type: 'success',
-    title: 'Lot de Paie Validé (Double-Clé)',
-    message: 'Déblocage accordé pour l\'émission des bordereaux CCP SFP 01 en Comptabilité.',
-    category: 'project_milestone',
+  const after = captureStoreSlices(['pmPayrollBatches']);
+  registerUndoEntry({
+    vertical: 'project_milestone',
+    operationType: 'status',
+    summary: ul(
+      `Approved payroll batch ${prevBatch?.batchNumber || batchId}`,
+      `Lot de paie validé : ${prevBatch?.batchNumber || batchId}`,
+      `اعتماد دفعة الرواتب: ${prevBatch?.batchNumber || batchId}`
+    ),
+    entityLabel: prevBatch?.batchNumber,
+    toastType: 'success',
+    toastTitle: ul('Payroll Batch Approved', 'Lot de Paie Validé (Double-Clé)', 'تم اعتماد دفعة الرواتب'),
+    toastMessage: ul(
+      'Released for CCP SFP 01 slip generation.',
+      "Déblocage accordé pour l'émission des bordereaux CCP SFP 01 en Comptabilité.",
+      'تم الإفراج عن الدفعة لإصدار حوالات CCP SFP 01.'
+    ),
+    undo: () => {
+      restoreStoreSlices(before);
+      if (prevBatch && isSupabaseConfigured()) {
+        syncCoordinator
+          .mutateOrQueueUpdate('pm_payroll_batches', batchId, {
+            status: prevBatch.status,
+            direction_approved_at: prevBatch.directionApprovedAt || null,
+          })
+          .catch(() => {});
+      }
+    },
+    redo: () => {
+      restoreStoreSlices(after);
+      if (isSupabaseConfigured()) {
+        projectMilestoneService.approveDisbursement('payroll_batch', batchId, globalState.currentUser.id).catch(() => {});
+      }
+    },
   });
 }
 
 export function deletePmProjectAction(projectId: string) {
+  const before = captureStoreSlices(['pmProjects']);
+  const target = (before.pmProjects || []).find((p) => p.id === projectId);
   globalState = {
     ...globalState,
     pmProjects: (globalState.pmProjects || []).filter((p) => p.id !== projectId),
@@ -2241,9 +2416,35 @@ export function deletePmProjectAction(projectId: string) {
   if (isSupabaseConfigured()) {
     projectMilestoneService.deleteProject(projectId, globalState.currentUser?.id).catch(() => {});
   }
+  const after = captureStoreSlices(['pmProjects']);
+  registerUndoEntry({
+    vertical: 'project_milestone',
+    operationType: 'delete',
+    summary: ul(
+      `Deleted project ${target?.title || projectId}`,
+      `Projet supprimé : ${target?.title || projectId}`,
+      `حذف المشروع: ${target?.title || projectId}`
+    ),
+    entityLabel: target?.title,
+    toastType: 'warning',
+    undo: () => {
+      restoreStoreSlices(before);
+      if (isSupabaseConfigured()) {
+        syncCoordinator.restoreRow('pm_projects', projectId, globalState.currentUser?.id).catch(() => {});
+      }
+    },
+    redo: () => {
+      restoreStoreSlices(after);
+      if (isSupabaseConfigured()) {
+        projectMilestoneService.deleteProject(projectId, globalState.currentUser?.id).catch(() => {});
+      }
+    },
+  });
 }
 
 export function batchDeletePmProjectsAction(projectIds: string[]) {
+  if (projectIds.length === 0) return;
+  const before = captureStoreSlices(['pmProjects']);
   const idSet = new Set(projectIds);
   globalState = {
     ...globalState,
@@ -2256,15 +2457,43 @@ export function batchDeletePmProjectsAction(projectIds: string[]) {
       4
     ).catch(() => {});
   }
-  showToast({
-    type: 'info',
-    title: 'Projets Supprimés',
-    message: `${projectIds.length} projet(s) supprimé(s).`,
-    category: 'project_milestone',
+  const after = captureStoreSlices(['pmProjects']);
+  registerUndoEntry({
+    vertical: 'project_milestone',
+    operationType: 'bulk',
+    affectedCount: projectIds.length,
+    summary: ul(
+      `Deleted ${projectIds.length} project(s)`,
+      `${projectIds.length} projet(s) supprimé(s)`,
+      `حذف ${projectIds.length} مشاريع`
+    ),
+    toastType: 'warning',
+    toastTitle: ul('Projects Deleted', 'Projets Supprimés', 'تم حذف المشاريع'),
+    toastMessage: ul(`${projectIds.length} project(s) deleted.`, `${projectIds.length} projet(s) supprimé(s).`, `تم حذف ${projectIds.length} مشاريع.`),
+    undo: () => {
+      restoreStoreSlices(before);
+      if (isSupabaseConfigured()) {
+        runWithConcurrency(
+          projectIds.map((id) => () => syncCoordinator.restoreRow('pm_projects', id, globalState.currentUser?.id)),
+          4
+        ).catch(() => {});
+      }
+    },
+    redo: () => {
+      restoreStoreSlices(after);
+      if (isSupabaseConfigured()) {
+        runWithConcurrency(
+          projectIds.map((id) => () => projectMilestoneService.deleteProject(id, globalState.currentUser?.id)),
+          4
+        ).catch(() => {});
+      }
+    },
   });
 }
 
 export function batchUpdatePmProjectStatusAction(projectIds: string[], status: PMProject['status']) {
+  if (projectIds.length === 0) return;
+  const before = captureStoreSlices(['pmProjects']);
   const idSet = new Set(projectIds);
   const updatedProjects = (globalState.pmProjects || []).map((p) =>
     idSet.has(p.id) ? { ...p, status, updatedAt: new Date().toISOString() } : p
@@ -2281,15 +2510,49 @@ export function batchUpdatePmProjectStatusAction(projectIds: string[], status: P
       4
     ).catch(() => {});
   }
-  showToast({
-    type: 'success',
-    title: 'Statuts Projets Mis à Jour',
-    message: `${projectIds.length} projet(s) passés en statut '${status}'.`,
-    category: 'project_milestone',
+  const after = captureStoreSlices(['pmProjects']);
+  registerUndoEntry({
+    vertical: 'project_milestone',
+    operationType: 'bulk',
+    affectedCount: projectIds.length,
+    summary: ul(
+      `Updated ${projectIds.length} project(s) → ${status}`,
+      `${projectIds.length} projet(s) → ${status}`,
+      `تحديث حالة ${projectIds.length} مشاريع → ${status}`
+    ),
+    toastType: 'success',
+    toastTitle: ul('Project Statuses Updated', 'Statuts Projets Mis à Jour', 'تم تحديث حالات المشاريع'),
+    toastMessage: ul(
+      `${projectIds.length} project(s) set to '${status}'.`,
+      `${projectIds.length} projet(s) passés en statut '${status}'.`,
+      `تم تغيير حالة ${projectIds.length} مشاريع إلى '${status}'.`
+    ),
+    undo: () => {
+      restoreStoreSlices(before);
+      if (isSupabaseConfigured()) {
+        const prevAffected = (before.pmProjects || []).filter((p) => idSet.has(p.id));
+        runWithConcurrency(
+          prevAffected.map((p) => () => projectMilestoneService.upsertProject(p)),
+          4
+        ).catch(() => {});
+      }
+    },
+    redo: () => {
+      restoreStoreSlices(after);
+      if (isSupabaseConfigured()) {
+        const nextAffected = (after.pmProjects || []).filter((p) => idSet.has(p.id));
+        runWithConcurrency(
+          nextAffected.map((p) => () => projectMilestoneService.upsertProject(p)),
+          4
+        ).catch(() => {});
+      }
+    },
   });
 }
 
 export function batchApprovePmExpensesAction(expenseIds: string[], notes?: string) {
+  if (expenseIds.length === 0) return;
+  const before = captureStoreSlices(['pmExpenses']);
   const idSet = new Set(expenseIds);
   globalState = {
     ...globalState,
@@ -2311,15 +2574,48 @@ export function batchApprovePmExpensesAction(expenseIds: string[], notes?: strin
       4
     ).catch(() => {});
   }
-  showToast({
-    type: 'success',
-    title: 'Frais Validés en Lot',
-    message: `${expenseIds.length} demande(s) de frais validée(s) par la Direction.`,
-    category: 'project_milestone',
+  const after = captureStoreSlices(['pmExpenses']);
+  registerUndoEntry({
+    vertical: 'project_milestone',
+    operationType: 'bulk',
+    affectedCount: expenseIds.length,
+    summary: ul(
+      `Approved ${expenseIds.length} expense(s)`,
+      `${expenseIds.length} frais validé(s) en lot`,
+      `اعتماد ${expenseIds.length} مصاريف`
+    ),
+    toastType: 'success',
+    toastTitle: ul('Expenses Approved', 'Frais Validés en Lot', 'تم اعتماد المصاريف'),
+    toastMessage: ul(
+      `${expenseIds.length} expense request(s) approved.`,
+      `${expenseIds.length} demande(s) de frais validée(s) par la Direction.`,
+      `تمت الموافقة على ${expenseIds.length} طلبات مصاريف.`
+    ),
+    undo: () => {
+      restoreStoreSlices(before);
+      if (isSupabaseConfigured()) {
+        const prevAffected = (before.pmExpenses || []).filter((e) => idSet.has(e.id));
+        runWithConcurrency(
+          prevAffected.map((e) => () => projectMilestoneService.upsertExpense(e)),
+          4
+        ).catch(() => {});
+      }
+    },
+    redo: () => {
+      restoreStoreSlices(after);
+      if (isSupabaseConfigured()) {
+        runWithConcurrency(
+          expenseIds.map((id) => () => projectMilestoneService.approveDisbursement('expense', id, globalState.currentUser.id, notes)),
+          4
+        ).catch(() => {});
+      }
+    },
   });
 }
 
 export function batchRejectPmExpensesAction(expenseIds: string[], notes?: string) {
+  if (expenseIds.length === 0) return;
+  const before = captureStoreSlices(['pmExpenses']);
   const idSet = new Set(expenseIds);
   const updatedExpenses = (globalState.pmExpenses || []).map((e) =>
     idSet.has(e.id)
@@ -2342,15 +2638,49 @@ export function batchRejectPmExpensesAction(expenseIds: string[], notes?: string
       4
     ).catch(() => {});
   }
-  showToast({
-    type: 'error',
-    title: 'Frais Rejetés en Lot',
-    message: `${expenseIds.length} demande(s) de frais rejetée(s).`,
-    category: 'project_milestone',
+  const after = captureStoreSlices(['pmExpenses']);
+  registerUndoEntry({
+    vertical: 'project_milestone',
+    operationType: 'bulk',
+    affectedCount: expenseIds.length,
+    summary: ul(
+      `Rejected ${expenseIds.length} expense(s)`,
+      `${expenseIds.length} frais rejeté(s) en lot`,
+      `رفض ${expenseIds.length} مصاريف`
+    ),
+    toastType: 'warning',
+    toastTitle: ul('Expenses Rejected', 'Frais Rejetés en Lot', 'تم رفض المصاريف'),
+    toastMessage: ul(
+      `${expenseIds.length} expense request(s) rejected.`,
+      `${expenseIds.length} demande(s) de frais rejetée(s).`,
+      `تم رفض ${expenseIds.length} طلبات مصاريف.`
+    ),
+    undo: () => {
+      restoreStoreSlices(before);
+      if (isSupabaseConfigured()) {
+        const prevAffected = (before.pmExpenses || []).filter((e) => idSet.has(e.id));
+        runWithConcurrency(
+          prevAffected.map((e) => () => projectMilestoneService.upsertExpense(e)),
+          4
+        ).catch(() => {});
+      }
+    },
+    redo: () => {
+      restoreStoreSlices(after);
+      if (isSupabaseConfigured()) {
+        const nextAffected = (after.pmExpenses || []).filter((e) => idSet.has(e.id));
+        runWithConcurrency(
+          nextAffected.map((e) => () => projectMilestoneService.upsertExpense(e)),
+          4
+        ).catch(() => {});
+      }
+    },
   });
 }
 
 export function batchDeletePmExpensesAction(expenseIds: string[]) {
+  if (expenseIds.length === 0) return;
+  const before = captureStoreSlices(['pmExpenses']);
   const idSet = new Set(expenseIds);
   globalState = {
     ...globalState,
@@ -2363,15 +2693,47 @@ export function batchDeletePmExpensesAction(expenseIds: string[]) {
       4
     ).catch(() => {});
   }
-  showToast({
-    type: 'info',
-    title: 'Frais Supprimés',
-    message: `${expenseIds.length} entrée(s) de frais supprimée(s).`,
-    category: 'project_milestone',
+  const after = captureStoreSlices(['pmExpenses']);
+  registerUndoEntry({
+    vertical: 'project_milestone',
+    operationType: 'bulk',
+    affectedCount: expenseIds.length,
+    summary: ul(
+      `Deleted ${expenseIds.length} expense(s)`,
+      `${expenseIds.length} frais supprimé(s)`,
+      `حذف ${expenseIds.length} مصاريف`
+    ),
+    toastType: 'warning',
+    toastTitle: ul('Expenses Deleted', 'Frais Supprimés', 'تم حذف المصاريف'),
+    toastMessage: ul(
+      `${expenseIds.length} expense(s) removed.`,
+      `${expenseIds.length} entrée(s) de frais supprimée(s).`,
+      `تم حذف ${expenseIds.length} مصاريف.`
+    ),
+    undo: () => {
+      restoreStoreSlices(before);
+      if (isSupabaseConfigured()) {
+        runWithConcurrency(
+          expenseIds.map((id) => () => syncCoordinator.restoreRow('pm_expenses', id, globalState.currentUser?.id)),
+          4
+        ).catch(() => {});
+      }
+    },
+    redo: () => {
+      restoreStoreSlices(after);
+      if (isSupabaseConfigured()) {
+        runWithConcurrency(
+          expenseIds.map((id) => () => projectMilestoneService.deleteExpense(id, globalState.currentUser?.id)),
+          4
+        ).catch(() => {});
+      }
+    },
   });
 }
 
 export function batchApprovePmPayrollBatchesAction(batchIds: string[]) {
+  if (batchIds.length === 0) return;
+  const before = captureStoreSlices(['pmPayrollBatches']);
   const idSet = new Set(batchIds);
   globalState = {
     ...globalState,
@@ -2392,11 +2754,47 @@ export function batchApprovePmPayrollBatchesAction(batchIds: string[]) {
       4
     ).catch(() => {});
   }
-  showToast({
-    type: 'success',
-    title: 'Lots de Paie Validés (Double-Clé)',
-    message: `${batchIds.length} lot(s) de paie validé(s) pour virement CCP.`,
-    category: 'project_milestone',
+  const after = captureStoreSlices(['pmPayrollBatches']);
+  registerUndoEntry({
+    vertical: 'project_milestone',
+    operationType: 'bulk',
+    affectedCount: batchIds.length,
+    summary: ul(
+      `Approved ${batchIds.length} payroll batch(es)`,
+      `${batchIds.length} lot(s) de paie validé(s)`,
+      `اعتماد ${batchIds.length} دفعات رواتب`
+    ),
+    toastType: 'success',
+    toastTitle: ul('Payroll Batches Approved', 'Lots de Paie Validés (Double-Clé)', 'تم اعتماد دفعات الرواتب'),
+    toastMessage: ul(
+      `${batchIds.length} payroll batch(es) cleared for CCP.`,
+      `${batchIds.length} lot(s) de paie validé(s) pour virement CCP.`,
+      `تم اعتماد ${batchIds.length} دفعات للتحويل البريدي.`
+    ),
+    undo: () => {
+      restoreStoreSlices(before);
+      if (isSupabaseConfigured()) {
+        const prevAffected = (before.pmPayrollBatches || []).filter((b) => idSet.has(b.id));
+        runWithConcurrency(
+          prevAffected.map((b) => () =>
+            syncCoordinator.mutateOrQueueUpdate('pm_payroll_batches', b.id, {
+              status: b.status,
+              direction_approved_at: b.directionApprovedAt || null,
+            })
+          ),
+          4
+        ).catch(() => {});
+      }
+    },
+    redo: () => {
+      restoreStoreSlices(after);
+      if (isSupabaseConfigured()) {
+        runWithConcurrency(
+          batchIds.map((id) => () => projectMilestoneService.approveDisbursement('payroll_batch', id, globalState.currentUser.id)),
+          4
+        ).catch(() => {});
+      }
+    },
   });
 }
 
@@ -3984,10 +4382,100 @@ function ensureTimerTick(isRunning: boolean, isPaused: boolean) {
   }
 }
 
+let toastDispatcherTimer: ReturnType<typeof setInterval> | null = null;
+const toastExitTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+function stopToastDispatcherIfEmpty() {
+  if ((globalState.toasts || []).length === 0 && toastDispatcherTimer !== null) {
+    clearInterval(toastDispatcherTimer);
+    toastDispatcherTimer = null;
+  }
+}
+
+function ensureToastDispatcherRunning() {
+  if (toastDispatcherTimer !== null) return;
+  toastDispatcherTimer = setInterval(() => {
+    const active = globalState.toasts || [];
+    if (active.length === 0) {
+      stopToastDispatcherIfEmpty();
+      return;
+    }
+    const now = Date.now();
+    for (const t of active) {
+      if (t.isPaused || t.isExiting) continue;
+      const dur = t.duration ?? (t.hasUndo ? UNDO_TOAST_DURATION_MS : REGULAR_TOAST_DURATION_MS);
+      if (dur > 0 && now - t.createdAt >= dur) {
+        beginToastExit(t.id);
+      }
+    }
+  }, 500);
+}
+
 export function dismissToast(id: string) {
+  const existingExit = toastExitTimers.get(id);
+  if (existingExit) {
+    clearTimeout(existingExit);
+    toastExitTimers.delete(id);
+  }
   globalState = {
     ...globalState,
     toasts: (globalState.toasts || []).filter((t) => t.id !== id),
+  };
+  stopToastDispatcherIfEmpty();
+  notify(false, true);
+}
+
+export function beginToastExit(id: string) {
+  const target = (globalState.toasts || []).find((t) => t.id === id);
+  if (!target || target.isExiting) return;
+
+  globalState = {
+    ...globalState,
+    toasts: (globalState.toasts || []).map((t) =>
+      t.id === id ? { ...t, isExiting: true } : t
+    ),
+  };
+  notify(false, true);
+
+  if (toastExitTimers.has(id)) {
+    clearTimeout(toastExitTimers.get(id)!);
+  }
+  const timer = setTimeout(() => {
+    toastExitTimers.delete(id);
+    dismissToast(id);
+  }, UNDO_EXIT_ANIMATION_MS);
+  toastExitTimers.set(id, timer);
+}
+
+export function pauseToast(id: string) {
+  const target = (globalState.toasts || []).find((t) => t.id === id);
+  if (!target || target.isPaused || target.isExiting) return;
+  globalState = {
+    ...globalState,
+    toasts: (globalState.toasts || []).map((t) =>
+      t.id === id ? { ...t, isPaused: true } : t
+    ),
+  };
+  notify(false, true);
+}
+
+export function resumeToast(id: string) {
+  const target = (globalState.toasts || []).find((t) => t.id === id);
+  if (!target || !target.isPaused || target.isExiting) return;
+  const dur = target.duration ?? (target.hasUndo ? UNDO_TOAST_DURATION_MS : REGULAR_TOAST_DURATION_MS);
+  const elapsed = Date.now() - target.createdAt;
+  const remaining = dur - elapsed;
+  // Ensure at least UNDO_HOVER_GRACE_MS (2s) remains upon mouse leave
+  const nextCreatedAt =
+    remaining < UNDO_HOVER_GRACE_MS
+      ? Date.now() - Math.max(0, dur - UNDO_HOVER_GRACE_MS)
+      : target.createdAt;
+
+  globalState = {
+    ...globalState,
+    toasts: (globalState.toasts || []).map((t) =>
+      t.id === id ? { ...t, isPaused: false, createdAt: nextCreatedAt } : t
+    ),
   };
   notify(false, true);
 }
@@ -4064,9 +4552,12 @@ export function showToast(
         syncStatus?: ToastSyncStatus;
         table?: string;
         category?: BusinessCategory;
+        hasUndo?: boolean;
+        undoLabel?: string;
+        onUndo?: () => Promise<void> | void;
         action?: {
           label: string;
-          onClick: () => void;
+          onClick: () => Promise<void> | void;
         };
       },
   toastType?: ToastType
@@ -4077,13 +4568,32 @@ export function showToast(
     ? (type === 'success' ? 'Succès' : type === 'error' ? 'Erreur' : type === 'warning' ? 'Attention' : 'Notification')
     : toastInputOrMessage.title;
   const message: string = isString ? toastInputOrMessage : toastInputOrMessage.message;
-  const duration = isString ? 3000 : (toastInputOrMessage.duration ?? 3000);
   const syncStatus = isString ? undefined : toastInputOrMessage.syncStatus;
   const table = isString ? undefined : toastInputOrMessage.table;
-  const category = isString ? undefined : toastInputOrMessage.category;
+  const currentBiz = selectCurrentBusinessFromState(globalState);
+  const category = (isString ? undefined : toastInputOrMessage.category) || currentBiz?.category;
   const action = isString ? undefined : toastInputOrMessage.action;
+  const explicitOnUndo = isString ? undefined : toastInputOrMessage.onUndo;
+  const explicitHasUndo = isString ? false : Boolean(toastInputOrMessage.hasUndo || explicitOnUndo);
+  const isActionUndo =
+    !explicitHasUndo &&
+    Boolean(action?.label) &&
+    /undo|annul|تراجع/i.test(action!.label);
+  const hasUndo = explicitHasUndo || isActionUndo;
+  const undoHandler = explicitOnUndo || (isActionUndo ? action?.onClick : undefined);
+  const undoLabel =
+    (!isString && toastInputOrMessage.undoLabel) ||
+    (isActionUndo && action?.label) ||
+    getUndoButtonLabel(globalState.language);
 
+  const duration = isString
+    ? REGULAR_TOAST_DURATION_MS
+    : toastInputOrMessage.duration ??
+      (hasUndo ? UNDO_TOAST_DURATION_MS : REGULAR_TOAST_DURATION_MS);
+
+  const { accent } = getFacilityAccentForCategory(category, globalState.theme);
   const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
   const newToast: ToastNotification = {
     id,
     type,
@@ -4093,9 +4603,24 @@ export function showToast(
     syncStatus,
     table,
     category,
-    action,
+    hasUndo,
+    undoLabel: hasUndo ? undoLabel : undefined,
+    onUndo: hasUndo ? undoHandler : undefined,
+    isExiting: false,
+    isPaused: false,
+    facilityAccent: accent,
+    action: hasUndo ? undefined : action,
     createdAt: Date.now(),
   };
+
+  // Clear any pending exit timers for replaced toasts (MaxVisibleToasts = 1)
+  for (const prev of globalState.toasts || []) {
+    const pendingExit = toastExitTimers.get(prev.id);
+    if (pendingExit) {
+      clearTimeout(pendingExit);
+      toastExitTimers.delete(prev.id);
+    }
+  }
 
   // Log into persistent notification history so user never misses critical updates
   const notifCategory: NotificationCategory =
@@ -4113,21 +4638,42 @@ export function showToast(
     category: notifCategory,
     read: false,
     createdAt: Date.now(),
-    action,
+    action: hasUndo && undoHandler
+      ? { label: undoLabel, onClick: undoHandler }
+      : action,
   };
 
   globalState = {
     ...globalState,
-    toasts: [...(globalState.toasts || []), newToast],
+    // MaxVisibleToasts = 1 per desktop guide §2.4
+    toasts: [newToast],
     notifications: [newNotification, ...(globalState.notifications || [])].slice(0, 60),
   };
   notify();
 
-  if (newToast.duration && newToast.duration > 0) {
-    setTimeout(() => {
-      dismissToast(id);
-    }, newToast.duration);
+  if (duration > 0) {
+    ensureToastDispatcherRunning();
   }
+}
+
+configureUndoToastBridge({
+  emitToast: (opts) => showToast(opts),
+  getContext: () => {
+    const biz = selectCurrentBusinessFromState(globalState);
+    return {
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      category: biz?.category || 'membership_session',
+      language: globalState.language || 'fr',
+    };
+  },
+});
+
+if (typeof document !== 'undefined') {
+  applyFacilityAccentCssVars(
+    selectCurrentBusinessFromState(globalState)?.category,
+    globalState.theme
+  );
 }
 
 
@@ -4176,6 +4722,7 @@ function createAtriumActions() {
   };
 
   const addMember = (newMember: Omit<Member, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>) => {
+    const before = captureStoreSlices(['members', 'selectedMemberId', 'isDetailOpen']);
     const trace = getTraceContext();
     const member: Member = {
       ...trace,
@@ -4197,36 +4744,47 @@ function createAtriumActions() {
     const lang = globalState.language || 'fr';
     const terms = getCategoryTerminology(cat, lang);
 
-    showToast({
-      type: 'success',
-      title: `${terms.memberSingle} : ${t('toast_member_enrolled_title', lang)}`,
-      message: `${member.fullName} ${t('toast_member_enrolled_msg', lang)} ${member.membershipPlanName || 'Standard'}.`,
-      category: cat,
-      action: {
-        label: t('nav_members', lang),
-        onClick: () => {
-          globalState = {
-            ...globalState,
-            selectedMemberId: member.id,
-            isDetailOpen: true,
-            activeScreen: 'members',
-          };
-          notify();
-        },
-      },
-    });
-
     if (isSupabaseConfigured()) {
       memberService.createMember(member).catch((err) => {
         console.warn('[store] Failed to save member to Supabase:', err);
       });
     }
 
+    const after = captureStoreSlices(['members', 'selectedMemberId', 'isDetailOpen']);
+    registerUndoEntry({
+      vertical: cat,
+      operationType: 'create',
+      summary: ul(
+        `Added ${terms.memberSingle}: ${member.fullName}`,
+        `Ajout ${terms.memberSingle} : ${member.fullName}`,
+        `إضافة ${terms.memberSingle}: ${member.fullName}`
+      ),
+      entityLabel: member.fullName,
+      toastType: 'success',
+      toastTitle: `${terms.memberSingle} : ${t('toast_member_enrolled_title', lang)}`,
+      toastMessage: `${member.fullName} ${t('toast_member_enrolled_msg', lang)} ${member.membershipPlanName || 'Standard'}.`,
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          memberService.deleteMember(member.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('gym_members', member.id, globalState.currentUser?.id).catch(() => {});
+          memberService.createMember(member).catch(() => {});
+        }
+      },
+    });
+
     return member;
   };
 
   const updateMember = (id: string, updates: Partial<Member>) => {
     const target = globalState.members.find((m) => m.id === id);
+    if (!target) return;
+    const before = captureStoreSlices(['members']);
     globalState = {
       ...globalState,
       members: globalState.members.map((m) =>
@@ -4238,24 +4796,49 @@ function createAtriumActions() {
     const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
     const cat = currentBiz?.category || 'membership_session';
     const lang = globalState.language || 'fr';
-    showToast({
-      type: 'info',
-      title: t('toast_profile_updated_title', lang),
-      message: `${updates.fullName || target?.fullName || 'Record'} : ${t('toast_profile_updated_msg', lang)}`,
-      category: cat,
-    });
 
-    if (isSupabaseConfigured()) {
-      if (target) {
-        memberService.updateMember({ ...target, ...updates }).catch((err) => {
-          console.warn('[store] Failed to update member in Supabase:', err);
-        });
-      }
+    const updatedMember = globalState.members.find((m) => m.id === id);
+    if (isSupabaseConfigured() && updatedMember) {
+      memberService.updateMember(updatedMember).catch((err) => {
+        console.warn('[store] Failed to update member in Supabase:', err);
+      });
     }
+
+    const after = captureStoreSlices(['members']);
+    const isStatusOnly =
+      updates.status !== undefined &&
+      Object.keys(updates).every((k) => k === 'status' || k === 'updatedAt');
+    registerUndoEntry({
+      vertical: cat,
+      operationType: isStatusOnly ? 'status' : 'edit',
+      summary: ul(
+        `Updated ${updates.fullName || target.fullName}`,
+        `Modifié : ${updates.fullName || target.fullName}`,
+        `تعديل: ${updates.fullName || target.fullName}`
+      ),
+      entityLabel: updates.fullName || target.fullName,
+      toastType: 'info',
+      toastTitle: t('toast_profile_updated_title', lang),
+      toastMessage: `${updates.fullName || target.fullName} : ${t('toast_profile_updated_msg', lang)}`,
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          memberService.updateMember(target).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (updatedMember && isSupabaseConfigured()) {
+          memberService.updateMember(updatedMember).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteMember = (id: string) => {
     const target = globalState.members.find((m) => m.id === id);
+    if (!target) return;
+    const before = captureStoreSlices(['members', 'selectedMemberId', 'isDetailOpen']);
     globalState = {
       ...globalState,
       members: globalState.members.filter((m) => m.id !== id),
@@ -4268,18 +4851,39 @@ function createAtriumActions() {
     const cat = currentBiz?.category || 'membership_session';
     const lang = globalState.language || 'fr';
     const terms = getCategoryTerminology(cat, lang);
-    showToast({
-      type: 'warning',
-      title: `${terms.memberSingle} : ${t('toast_member_removed_title', lang)}`,
-      message: `${target?.fullName || 'Record'} ${t('toast_member_removed_msg', lang)}`,
-      category: cat,
-    });
 
     if (isSupabaseConfigured()) {
       memberService.deleteMember(id, globalState.currentUser?.id).catch((err) => {
         console.warn('[store] Failed to delete member in Supabase:', err);
       });
     }
+
+    const after = captureStoreSlices(['members', 'selectedMemberId', 'isDetailOpen']);
+    registerUndoEntry({
+      vertical: cat,
+      operationType: 'delete',
+      summary: ul(
+        `Deleted ${terms.memberSingle}: ${target.fullName}`,
+        `Supprimé : ${target.fullName}`,
+        `حذف: ${target.fullName}`
+      ),
+      entityLabel: target.fullName,
+      toastType: 'warning',
+      toastTitle: `${terms.memberSingle} : ${t('toast_member_removed_title', lang)}`,
+      toastMessage: `${target.fullName} ${t('toast_member_removed_msg', lang)}`,
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('gym_members', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          memberService.deleteMember(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const checkInMember = (id: string) => {
@@ -4326,6 +4930,7 @@ function createAtriumActions() {
     }
 
     // 4. Access Granted
+    const before = captureStoreSlices(['members', 'memberCheckIns']);
     const updatedSessions = member.remainingSessions !== undefined ? Math.max(0, member.remainingSessions - 1) : undefined;
     const nowIso = new Date().toISOString();
     const checkInLog: MemberCheckInLog = {
@@ -4368,15 +4973,37 @@ function createAtriumActions() {
         });
     }
 
-    showToast({
-      type: 'success',
-      title: t('toast_checkin_granted_title', lang),
-      message: `${member.fullName} (${member.cardId || 'RFID'}): ${t('toast_checkin_granted_msg', lang)}`,
-      category: cat,
+    const after = captureStoreSlices(['members', 'memberCheckIns']);
+    registerUndoEntry({
+      vertical: cat,
+      operationType: 'create',
+      summary: ul(
+        `Check-in: ${member.fullName}`,
+        `Passage validé : ${member.fullName}`,
+        `تسجيل دخول: ${member.fullName}`
+      ),
+      entityLabel: member.fullName,
+      toastType: 'success',
+      toastTitle: t('toast_checkin_granted_title', lang),
+      toastMessage: `${member.fullName} (${member.cardId || 'RFID'}): ${t('toast_checkin_granted_msg', lang)}`,
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          memberService.updateMember(member).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        const updatedM = after.members.find((m) => m.id === id);
+        if (updatedM && isSupabaseConfigured()) {
+          memberService.updateMember(updatedM).catch(() => {});
+        }
+      },
     });
   };
 
   const addLead = (newLead: Omit<RegistrationLead, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>) => {
+    const before = captureStoreSlices(['leads']);
     const activeStaffId = globalState.currentUser?.id || globalState.staff[0]?.id || undefined;
     const lead: RegistrationLead = {
       ...newLead,
@@ -4402,11 +5029,35 @@ function createAtriumActions() {
       });
     }
 
+    const after = captureStoreSlices(['leads']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(`Added lead ${lead.fullName}`, `Prospect ajouté : ${lead.fullName}`, `إضافة مهتم: ${lead.fullName}`),
+      entityLabel: lead.fullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          memberService.deleteLead(lead.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('gym_registration_leads', lead.id, globalState.currentUser?.id).catch(() => {});
+          memberService.createRegistrationRequest(lead).catch(() => {});
+        }
+      },
+    });
+
     return lead;
   };
 
   const updateLeadStatus = (leadId: string, status: 'Pending' | 'Approved' | 'Declined') => {
     const existingLead = globalState.leads.find((l) => l.id === leadId);
+    if (!existingLead) return;
+    const before = captureStoreSlices(['leads']);
     globalState = {
       ...globalState,
       leads: globalState.leads.map((l) =>
@@ -4416,11 +5067,39 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      memberService.updateLeadStatus(leadId, status, existingLead?.version).catch(() => {});
+      memberService.updateLeadStatus(leadId, status, existingLead.version).catch(() => {});
     }
+
+    const after = captureStoreSlices(['leads']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Lead ${existingLead.fullName} → ${status}`,
+        `Prospect ${existingLead.fullName} → ${status}`,
+        `حالة الطلب ${existingLead.fullName} → ${status}`
+      ),
+      entityLabel: existingLead.fullName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          memberService.updateLeadStatus(leadId, existingLead.status).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          memberService.updateLeadStatus(leadId, status).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteLead = (leadId: string) => {
+    const existingLead = globalState.leads.find((l) => l.id === leadId);
+    if (!existingLead) return;
+    const before = captureStoreSlices(['leads']);
     globalState = {
       ...globalState,
       leads: globalState.leads.filter((l) => l.id !== leadId),
@@ -4430,6 +5109,31 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       memberService.deleteLead(leadId, globalState.currentUser?.id).catch(() => {});
     }
+
+    const after = captureStoreSlices(['leads']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted lead ${existingLead.fullName}`,
+        `Prospect supprimé : ${existingLead.fullName}`,
+        `حذف الطلب: ${existingLead.fullName}`
+      ),
+      entityLabel: existingLead.fullName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('gym_registration_leads', leadId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          memberService.deleteLead(leadId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const convertLeadToMember = (
@@ -4440,6 +5144,7 @@ function createAtriumActions() {
   ) => {
     const lead = globalState.leads.find((l) => l.id === leadId);
     if (!lead) return;
+    const before = captureStoreSlices(['leads', 'members', 'selectedMemberId', 'isDetailOpen', 'activeScreen']);
 
     const startDate = new Date().toISOString().split('T')[0];
     const expDateObj = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
@@ -4484,6 +5189,34 @@ function createAtriumActions() {
         console.warn('[store] Failed to save converted member to Supabase:', err);
       });
     }
+
+    const after = captureStoreSlices(['leads', 'members', 'selectedMemberId', 'isDetailOpen', 'activeScreen']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Converted lead ${lead.fullName} to member`,
+        `Prospect converti en adhérent : ${lead.fullName}`,
+        `تحويل الطلب إلى عضو: ${lead.fullName}`
+      ),
+      entityLabel: lead.fullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          memberService.updateLeadStatus(leadId, lead.status).catch(() => {});
+          memberService.deleteMember(newMember.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          memberService.updateLeadStatus(leadId, 'Approved').catch(() => {});
+          syncCoordinator.restoreRow('gym_members', newMember.id, globalState.currentUser?.id).catch(() => {});
+          memberService.createMember(newMember).catch(() => {});
+        }
+      },
+    });
   };
 
   const processSale = (
@@ -4509,6 +5242,7 @@ function createAtriumActions() {
       customerName?: string;
     }
   ) => {
+    const before = captureStoreSlices(['products', 'sales', 'stockMovements']);
     const rawSubtotal = items.reduce((sum, item) => {
       const lineTotal = item.product.price.amount * item.quantity;
       const lineDiscount = item.discount || 0;
@@ -4598,12 +5332,50 @@ function createAtriumActions() {
       });
     }
 
+    const after = captureStoreSlices(['products', 'sales', 'stockMovements']);
+    const activeCat = getActiveCategoryForBranch(globalState.currentBranchId);
+    const touchedIds = new Set(items.map((i) => i.product.id));
+    registerUndoEntry({
+      vertical: activeCat,
+      operationType: 'create',
+      summary: ul(
+        `Sale #${sale.id.slice(-6).toUpperCase()} (${sale.totalAmount.toLocaleString()})`,
+        `Vente #${sale.id.slice(-6).toUpperCase()} (${sale.totalAmount.toLocaleString()})`,
+        `عملية بيع #${sale.id.slice(-6).toUpperCase()} (${sale.totalAmount.toLocaleString()})`
+      ),
+      entityLabel: sale.memberName || `Sale #${sale.id.slice(-6).toUpperCase()}`,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('pos_sales', sale.id, globalState.currentUser?.id).catch(() => {});
+          const prevProds = before.products.filter((p) => touchedIds.has(p.id));
+          runWithConcurrency(
+            prevProds.map((p) => () => posService.upsertProduct(p)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('pos_sales', sale.id, globalState.currentUser?.id).catch(() => {});
+          const nextProds = after.products.filter((p) => touchedIds.has(p.id));
+          runWithConcurrency(
+            nextProds.map((p) => () => posService.upsertProduct(p)),
+            4
+          ).catch(() => {});
+        }
+      },
+    });
+
     return sale;
   };
 
   const refundSale = (saleId: string, reason?: string) => {
     const sale = globalState.sales.find((s) => s.id === saleId);
     if (!sale || sale.status === 'Refunded') return;
+    const before = captureStoreSlices(['products', 'sales', 'stockMovements']);
 
     const returnMovements: StockMovement[] = [];
     const updatedProducts = globalState.products.map((p) => {
@@ -4706,6 +5478,53 @@ function createAtriumActions() {
         ).catch(() => {});
       }
     }
+
+    const after = captureStoreSlices(['products', 'sales', 'stockMovements']);
+    const returnedProductIds = new Set(returnMovements.map((m) => m.productId));
+    const tradingMode = isTradingCategory();
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Refunded sale #${sale.id.slice(-6).toUpperCase()}`,
+        `Vente remboursée #${sale.id.slice(-6).toUpperCase()}`,
+        `استرجاع عملية بيع #${sale.id.slice(-6).toUpperCase()}`
+      ),
+      entityLabel: `Sale #${sale.id.slice(-6).toUpperCase()}`,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.mutateOrQueueUpdate('pos_sales', saleId, {
+            status: sale.status,
+            notes: sale.notes || null,
+          }).catch(() => {});
+          const prevTouched = before.products.filter((p) => returnedProductIds.has(p.id));
+          runWithConcurrency(
+            prevTouched.map((p) => () =>
+              tradingMode ? tradingService.upsertProduct(p) : posService.upsertProduct(p)
+            ),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.mutateOrQueueUpdate('pos_sales', saleId, {
+            status: 'Refunded',
+            notes: reason ? `Refund: ${reason}` : 'Customer Return',
+          }).catch(() => {});
+          const nextTouched = after.products.filter((p) => returnedProductIds.has(p.id));
+          runWithConcurrency(
+            nextTouched.map((p) => () =>
+              tradingMode ? tradingService.upsertProduct(p) : posService.upsertProduct(p)
+            ),
+            4
+          ).catch(() => {});
+        }
+      },
+    });
   };
 
   const adjustStock = (
@@ -4715,6 +5534,7 @@ function createAtriumActions() {
     reason: string,
     type: StockMovement['type'] = 'Adjustment'
   ) => {
+    const before = captureStoreSlices(['products', 'stockMovements']);
     let movement: StockMovement | null = null;
     const updatedProducts = globalState.products.map((p) => {
       if (p.id === productId) {
@@ -4795,23 +5615,42 @@ function createAtriumActions() {
 
     if (movement) {
       const mv: StockMovement = movement;
-      showToast({
-        type: 'info',
-        title: 'Inventory Adjusted',
-        message: `${mv.productName} updated: ${mv.previousStock} → ${mv.newStock} (${reason}).`,
-        category: 'pos_inventory',
-        action: {
-          label: 'Inventory',
-          onClick: () => {
-            globalState = { ...globalState, activeScreen: 'shop' };
-            notify();
-          },
+      const after = captureStoreSlices(['products', 'stockMovements']);
+      const tradingMode = isTradingCategory();
+      registerUndoEntry({
+        vertical: tradingMode ? 'trading_commercial' : 'pos_inventory',
+        operationType: 'edit',
+        summary: ul(
+          `Stock ${mv.productName}: ${mv.previousStock} → ${mv.newStock}`,
+          `Stock ${mv.productName} : ${mv.previousStock} → ${mv.newStock}`,
+          `تعديل المخزون ${mv.productName}: ${mv.previousStock} → ${mv.newStock}`
+        ),
+        entityLabel: mv.productName,
+        toastType: 'info',
+        toastTitle: ul('Inventory Adjusted', 'Stock Ajusté', 'تم تعديل المخزون'),
+        toastMessage: `${mv.productName} : ${mv.previousStock} → ${mv.newStock} (${reason}).`,
+        undo: () => {
+          restoreStoreSlices(before);
+          const prevProd = before.products.find((p) => p.id === productId);
+          if (prevProd && isSupabaseConfigured()) {
+            (tradingMode ? tradingService.upsertProduct(prevProd) : posService.upsertProduct(prevProd)).catch(() => {});
+          }
+        },
+        redo: () => {
+          restoreStoreSlices(after);
+          const nextProd = after.products.find((p) => p.id === productId);
+          if (nextProd && isSupabaseConfigured()) {
+            (tradingMode ? tradingService.upsertProduct(nextProd) : posService.upsertProduct(nextProd)).catch(() => {});
+          }
         },
       });
     }
   };
 
   const updateProduct = (productId: string, updates: Partial<Product>) => {
+    const prevProd = globalState.products.find((p) => p.id === productId);
+    if (!prevProd) return;
+    const before = captureStoreSlices(['products']);
     const updatedProducts = globalState.products.map((p) =>
       p.id === productId ? { ...p, ...updates } : p
     );
@@ -4822,38 +5661,95 @@ function createAtriumActions() {
     notify();
 
     const target = updatedProducts.find((p) => p.id === productId);
+    const tradingMode = isTradingCategory();
     if (target && isSupabaseConfigured()) {
-      (isTradingCategory()
+      (tradingMode
         ? tradingService.upsertProduct(target)
         : posService.upsertProduct(target)
       ).catch(() => {});
     }
+
+    const after = captureStoreSlices(['products']);
+    registerUndoEntry({
+      vertical: tradingMode ? 'trading_commercial' : 'pos_inventory',
+      operationType: 'edit',
+      summary: ul(
+        `Updated product ${target?.name || prevProd.name}`,
+        `Produit modifié : ${target?.name || prevProd.name}`,
+        `تعديل المنتج: ${target?.name || prevProd.name}`
+      ),
+      entityLabel: target?.name || prevProd.name,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          (tradingMode ? tradingService.upsertProduct(prevProd) : posService.upsertProduct(prevProd)).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          (tradingMode ? tradingService.upsertProduct(target) : posService.upsertProduct(target)).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteProduct = (productId: string) => {
     const target = globalState.products.find((p) => p.id === productId);
+    if (!target) return;
+    const before = captureStoreSlices(['products']);
     globalState = {
       ...globalState,
       products: globalState.products.filter((p) => p.id !== productId),
     };
     notify();
 
+    const tradingMode = isTradingCategory();
     if (isSupabaseConfigured()) {
-      (isTradingCategory()
+      (tradingMode
         ? tradingService.deleteProduct(productId, globalState.currentUser?.id)
         : posService.deleteProduct(productId, globalState.currentUser?.id)
       ).catch(() => {});
     }
 
-    showToast({
-      type: 'warning',
-      title: 'Product Removed',
-      message: `${target?.name || 'Item'} removed from store inventory.`,
-      category: 'pos_inventory',
+    const after = captureStoreSlices(['products']);
+    registerUndoEntry({
+      vertical: tradingMode ? 'trading_commercial' : 'pos_inventory',
+      operationType: 'delete',
+      summary: ul(
+        `Removed product ${target.name}`,
+        `Produit supprimé : ${target.name}`,
+        `حذف المنتج: ${target.name}`
+      ),
+      entityLabel: target.name,
+      toastType: 'warning',
+      toastTitle: ul('Product Removed', 'Produit Supprimé', 'تم حذف المنتج'),
+      toastMessage: `${target.name} removed from inventory.`,
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow(tradingMode ? 'trading_products' : 'pos_products', productId, globalState.currentUser?.id)
+            .catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          (tradingMode
+            ? tradingService.deleteProduct(productId, globalState.currentUser?.id)
+            : posService.deleteProduct(productId, globalState.currentUser?.id)
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const deleteSale = (saleId: string) => {
+    const target = globalState.sales.find((s) => s.id === saleId);
+    if (!target) return;
+    const before = captureStoreSlices(['sales']);
     globalState = {
       ...globalState,
       sales: globalState.sales.filter((s) => s.id !== saleId),
@@ -4862,9 +5758,35 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       syncCoordinator.softDeleteRow('pos_sales', saleId, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['sales']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted sale #${saleId.slice(-6).toUpperCase()}`,
+        `Vente supprimée #${saleId.slice(-6).toUpperCase()}`,
+        `حذف عملية بيع #${saleId.slice(-6).toUpperCase()}`
+      ),
+      entityLabel: target.memberName || `Sale #${saleId.slice(-6).toUpperCase()}`,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('pos_sales', saleId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('pos_sales', saleId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const batchDeleteSales = (saleIds: string[]) => {
+    if (saleIds.length === 0) return;
+    const before = captureStoreSlices(['sales']);
     const idSet = new Set(saleIds);
     globalState = {
       ...globalState,
@@ -4879,9 +5801,40 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
+    const after = captureStoreSlices(['sales']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: saleIds.length,
+      summary: ul(
+        `Deleted ${saleIds.length} sale(s)`,
+        `${saleIds.length} vente(s) supprimée(s)`,
+        `حذف ${saleIds.length} مبيعات`
+      ),
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            saleIds.map((id) => () => syncCoordinator.restoreRow('pos_sales', id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            saleIds.map((id) => () => syncCoordinator.softDeleteRow('pos_sales', id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+    });
   };
 
   const upsertScheduleEvent = (event: ScheduleEvent) => {
+    const before = captureStoreSlices(['schedule']);
     const scoped: ScheduleEvent = {
       ...getTraceContext(),
       ...event,
@@ -4893,7 +5846,8 @@ function createAtriumActions() {
       branchId: event.branchId || globalState.currentBranchId,
       staffId: event.staffId || globalState.currentUser?.id,
     };
-    const existing = (globalState.schedule || []).some((sc) => sc.id === scoped.id);
+    const existingItem = (globalState.schedule || []).find((sc) => sc.id === scoped.id);
+    const existing = Boolean(existingItem);
     globalState = {
       ...globalState,
       schedule: existing
@@ -4912,10 +5866,60 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+
+    const after = captureStoreSlices(['schedule']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: existing ? 'edit' : 'create',
+      summary: ul(
+        `${existing ? 'Updated' : 'Created'} session: ${scoped.title}`,
+        `${existing ? 'Séance modifiée' : 'Séance créée'} : ${scoped.title}`,
+        `${existing ? 'تعديل حصة' : 'إنشاء حصة'}: ${scoped.title}`
+      ),
+      entityLabel: scoped.title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          if (existingItem) {
+            memberService
+              .upsertScheduleEvent(existingItem, {
+                accountId: globalState.account.id,
+                businessId: globalState.currentBusinessId,
+                branchId: globalState.currentBranchId,
+                staffId: globalState.currentUser?.id,
+              })
+              .catch(() => {});
+          } else {
+            memberService.deleteScheduleEvent(scoped.id, globalState.currentUser?.id).catch(() => {});
+          }
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          if (!existing) {
+            syncCoordinator.restoreRow('gym_schedule_events', scoped.id, globalState.currentUser?.id).catch(() => {});
+          }
+          memberService
+            .upsertScheduleEvent(scoped, {
+              accountId: globalState.account.id,
+              businessId: globalState.currentBusinessId,
+              branchId: globalState.currentBranchId,
+              staffId: globalState.currentUser?.id,
+            })
+            .catch(() => {});
+        }
+      },
+    });
+
     return scoped;
   };
 
   const deleteScheduleEvent = (eventId: string) => {
+    const existingItem = (globalState.schedule || []).find((sc) => sc.id === eventId);
+    if (!existingItem) return;
+    const before = captureStoreSlices(['schedule']);
     globalState = {
       ...globalState,
       schedule: (globalState.schedule || []).filter((sc) => sc.id !== eventId),
@@ -4924,9 +5928,35 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       memberService.deleteScheduleEvent(eventId, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['schedule']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted session: ${existingItem.title}`,
+        `Séance supprimée : ${existingItem.title}`,
+        `حذف الحصة: ${existingItem.title}`
+      ),
+      entityLabel: existingItem.title,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('gym_schedule_events', eventId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          memberService.deleteScheduleEvent(eventId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const batchDeleteScheduleEvents = (eventIds: string[]) => {
+    if (eventIds.length === 0) return;
+    const before = captureStoreSlices(['schedule']);
     const idSet = new Set(eventIds);
     globalState = {
       ...globalState,
@@ -4939,9 +5969,40 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
+    const after = captureStoreSlices(['schedule']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: eventIds.length,
+      summary: ul(
+        `Deleted ${eventIds.length} session(s)`,
+        `${eventIds.length} séance(s) supprimée(s)`,
+        `حذف ${eventIds.length} حصص`
+      ),
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            eventIds.map((id) => () => syncCoordinator.restoreRow('gym_schedule_events', id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            eventIds.map((id) => () => memberService.deleteScheduleEvent(id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+    });
   };
 
   const createStaffMember = (staffData: Omit<StaffMember, 'id' | 'tenantId' | 'facilityId'>) => {
+    const before = captureStoreSlices(['staff']);
     const trace = getTraceContext();
     const newStaff: StaffMember = {
       ...trace,
@@ -4969,11 +6030,31 @@ function createAtriumActions() {
       staffService.createStaff(newStaff).catch(() => {});
     }
 
-    showToast({
-      type: 'success',
-      title: 'Collaborateur créé',
-      message: `${newStaff.fullName} a été intégré(e) à l'équipe.`,
-      category: globalState.businesses.find((b) => b.id === globalState.currentBusinessId)?.category,
+    const after = captureStoreSlices(['staff']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added staff member: ${newStaff.fullName}`,
+        `Collaborateur créé : ${newStaff.fullName}`,
+        `تمت إضافة موظف: ${newStaff.fullName}`
+      ),
+      entityLabel: newStaff.fullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          staffService.deleteStaff(newStaff.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('staff', newStaff.id, globalState.currentUser?.id)
+            .then(() => staffService.createStaff(newStaff))
+            .catch(() => {});
+        }
+      },
     });
 
     return newStaff;
@@ -4989,6 +6070,7 @@ function createAtriumActions() {
       }
     }
 
+    const before = captureStoreSlices(['staff']);
     const updatedStaffList = globalState.staff.map((s) =>
       s.id === id
         ? {
@@ -5010,10 +6092,29 @@ function createAtriumActions() {
       staffService.updateStaff(updated).catch(() => {});
     }
 
-    showToast({
-      type: 'info',
-      title: 'Fiche collaborateur mise à jour',
-      message: `Les informations de ${target.fullName} ont été actualisées.`,
+    const after = captureStoreSlices(['staff']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: updates.status && updates.status !== target.status ? 'status' : 'edit',
+      summary: ul(
+        `Updated staff member: ${target.fullName}`,
+        `Fiche mise à jour : ${target.fullName}`,
+        `تحديث بيانات الموظف: ${target.fullName}`
+      ),
+      entityLabel: target.fullName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          staffService.updateStaff(target).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (updated && isSupabaseConfigured()) {
+          staffService.updateStaff(updated).catch(() => {});
+        }
+      },
     });
   };
 
@@ -5022,6 +6123,8 @@ function createAtriumActions() {
       throw new Error('Action refusée : le seul propriétaire actif ne peut pas être gelé.');
     }
     const target = globalState.staff.find((s) => s.id === id);
+    if (!target) return;
+    const before = captureStoreSlices(['staff']);
     const updatedStaffList = globalState.staff.map((s) =>
       s.id === id ? { ...s, status: 'frozen' as const, isActive: false } : s
     );
@@ -5034,15 +6137,36 @@ function createAtriumActions() {
     if (updated && isSupabaseConfigured()) {
       staffService.updateStaff(updated).catch(() => {});
     }
-    showToast({
-      type: 'warning',
-      title: 'Compte gelé',
-      message: `L'accès de ${target?.fullName || 'ce membre'} a été temporairement suspendu.`,
+    const after = captureStoreSlices(['staff']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Froze staff account: ${target.fullName}`,
+        `Compte gelé : ${target.fullName}`,
+        `تجميد حساب الموظف: ${target.fullName}`
+      ),
+      entityLabel: target.fullName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          staffService.updateStaff(target).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (updated && isSupabaseConfigured()) {
+          staffService.updateStaff(updated).catch(() => {});
+        }
+      },
     });
   };
 
   const vacationStaffMember = (id: string, vacationUntil?: string) => {
     const target = globalState.staff.find((s) => s.id === id);
+    if (!target) return;
+    const before = captureStoreSlices(['staff']);
     const updatedStaffList = globalState.staff.map((s) =>
       s.id === id
         ? {
@@ -5062,10 +6186,29 @@ function createAtriumActions() {
     if (updated && isSupabaseConfigured()) {
       staffService.updateStaff(updated).catch(() => {});
     }
-    showToast({
-      type: 'info',
-      title: 'Départ en congé',
-      message: `${target?.fullName || 'Le collaborateur'} est désormais marqué en congé.`,
+    const after = captureStoreSlices(['staff']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Marked on leave: ${target.fullName}`,
+        `En congé : ${target.fullName}`,
+        `في عطلة: ${target.fullName}`
+      ),
+      entityLabel: target.fullName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          staffService.updateStaff(target).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (updated && isSupabaseConfigured()) {
+          staffService.updateStaff(updated).catch(() => {});
+        }
+      },
     });
   };
 
@@ -5074,6 +6217,8 @@ function createAtriumActions() {
       throw new Error('Action refusée : le seul propriétaire actif ne peut pas être arrêté définitivement.');
     }
     const target = globalState.staff.find((s) => s.id === id);
+    if (!target) return;
+    const before = captureStoreSlices(['staff']);
     const updatedStaffList = globalState.staff.map((s) =>
       s.id === id
         ? {
@@ -5093,10 +6238,29 @@ function createAtriumActions() {
     if (updated && isSupabaseConfigured()) {
       staffService.updateStaff(updated).catch(() => {});
     }
-    showToast({
-      type: 'warning',
-      title: 'Contrat arrêté',
-      message: `Le contrat de ${target?.fullName || 'ce membre'} a été résilié définitivement.`,
+    const after = captureStoreSlices(['staff']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Terminated contract: ${target.fullName}`,
+        `Contrat arrêté : ${target.fullName}`,
+        `إنهاء عقد الموظف: ${target.fullName}`
+      ),
+      entityLabel: target.fullName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          staffService.updateStaff(target).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (updated && isSupabaseConfigured()) {
+          staffService.updateStaff(updated).catch(() => {});
+        }
+      },
     });
   };
 
@@ -5105,6 +6269,8 @@ function createAtriumActions() {
       throw new Error('Action refusée : suppression interdite du seul propriétaire actif.');
     }
     const target = globalState.staff.find((s) => s.id === id);
+    if (!target) return;
+    const before = captureStoreSlices(['staff']);
     globalState = {
       ...globalState,
       staff: globalState.staff.filter((s) => s.id !== id),
@@ -5113,10 +6279,29 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       staffService.deleteStaff(id, globalState.currentUser?.id).catch(() => {});
     }
-    showToast({
-      type: 'warning',
-      title: 'Collaborateur supprimé',
-      message: `${target?.fullName || 'Le membre'} a été retiré de l'annuaire d'équipe.`,
+    const after = captureStoreSlices(['staff']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted staff member: ${target.fullName}`,
+        `Collaborateur supprimé : ${target.fullName}`,
+        `تم حذف الموظف: ${target.fullName}`
+      ),
+      entityLabel: target.fullName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('staff', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          staffService.deleteStaff(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
     });
   };
 
@@ -5148,6 +6333,7 @@ function createAtriumActions() {
       return { success: false, message: 'Membre inactif' };
     }
 
+    const before = captureStoreSlices(['staff', 'staffAttendanceLogs']);
     const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const nowIso = new Date().toISOString();
     const todayStr = nowIso.slice(0, 10);
@@ -5197,10 +6383,31 @@ function createAtriumActions() {
       staffService.upsertAttendanceLog(newLogEntry).catch(() => {});
     }
 
-    showToast({
-      type: 'success',
-      title: isClockingIn ? 'Pointage : Arrivée enregistrée' : 'Pointage : Sortie enregistrée',
-      message: `${target.fullName} (${target.role}) : pointage validé à ${nowTime}.`,
+    const after = captureStoreSlices(['staff', 'staffAttendanceLogs']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `${isClockingIn ? 'Clock-in' : 'Clock-out'}: ${target.fullName} (${nowTime})`,
+        `${isClockingIn ? 'Pointage arrivée' : 'Pointage sortie'} : ${target.fullName} (${nowTime})`,
+        `${isClockingIn ? 'تسجيل دخول' : 'تسجيل خروج'}: ${target.fullName} (${nowTime})`
+      ),
+      entityLabel: target.fullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('staff_attendance_logs', newLogEntry.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('staff_attendance_logs', newLogEntry.id, globalState.currentUser?.id)
+            .then(() => staffService.upsertAttendanceLog(newLogEntry))
+            .catch(() => {});
+        }
+      },
     });
 
     return {
@@ -5218,6 +6425,7 @@ function createAtriumActions() {
     paymentMethod: 'cash' | 'ccp' | 'bank_transfer';
     reason?: string;
   }) => {
+    const before = captureStoreSlices(['staffSalaryAdvances']);
     const newAdvance: StaffSalaryAdvance = {
       id: `adv_${Date.now()}`,
       accountId: globalState.account.id,
@@ -5240,15 +6448,39 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       staffService.upsertSalaryAdvance(newAdvance).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Acompte enregistré',
-      message: `Acompte de ${data.amountDzd.toLocaleString()} DZD octroyé à ${data.staffName}.`,
+    const after = captureStoreSlices(['staffSalaryAdvances']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Salary advance: ${data.staffName} (${data.amountDzd.toLocaleString()} DZD)`,
+        `Acompte enregistré : ${data.staffName} (${data.amountDzd.toLocaleString()} DZD)`,
+        `تسبيق راتب: ${data.staffName} (${data.amountDzd.toLocaleString()} دج)`
+      ),
+      entityLabel: data.staffName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('staff_salary_advances', newAdvance.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('staff_salary_advances', newAdvance.id, globalState.currentUser?.id)
+            .then(() => staffService.upsertSalaryAdvance(newAdvance))
+            .catch(() => {});
+        }
+      },
     });
     return newAdvance;
   };
 
   const waiveStaffSalaryAdvance = (advanceId: string) => {
+    const prevTarget = (globalState.staffSalaryAdvances || []).find((a) => a.id === advanceId);
+    if (!prevTarget) return;
+    const before = captureStoreSlices(['staffSalaryAdvances']);
     const updatedAdvances = (globalState.staffSalaryAdvances || []).map((a) =>
       a.id === advanceId ? { ...a, status: 'waived' as const } : a
     );
@@ -5261,9 +6493,34 @@ function createAtriumActions() {
     if (target && isSupabaseConfigured()) {
       staffService.upsertSalaryAdvance(target).catch(() => {});
     }
+    const after = captureStoreSlices(['staffSalaryAdvances']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Waived salary advance: ${prevTarget.staffName}`,
+        `Acompte annulé/remis : ${prevTarget.staffName}`,
+        `إلغاء تسبيق الراتب: ${prevTarget.staffName}`
+      ),
+      entityLabel: prevTarget.staffName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          staffService.upsertSalaryAdvance(prevTarget).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          staffService.upsertSalaryAdvance(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const generateStaffPayrollRun = (month: number, year: number, category = 'membership_session') => {
+    const before = captureStoreSlices(['staffPayrollRuns', 'staffPayrollSlips']);
     const dateObj = new Date(year, month - 1, 1);
     const periodMonthName = dateObj.toLocaleString('fr-FR', { month: 'long' });
     const capitalizedPeriod = periodMonthName.charAt(0).toUpperCase() + periodMonthName.slice(1) + ' ' + year;
@@ -5380,10 +6637,49 @@ function createAtriumActions() {
         .catch(() => {});
     }
 
-    showToast({
-      type: 'success',
-      title: 'Paie calculée avec succès',
-      message: `Calcul effectué pour ${slips.length} collaborateurs (${capitalizedPeriod}). Masse nette : ${totalNet.toLocaleString()} DZD.`,
+    const after = captureStoreSlices(['staffPayrollRuns', 'staffPayrollSlips']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Generated payroll: ${capitalizedPeriod} (${slips.length} slips)`,
+        `Paie calculée : ${capitalizedPeriod} (${slips.length} bulletins)`,
+        `احتساب الرواتب: ${capitalizedPeriod} (${slips.length})`
+      ),
+      entityLabel: capitalizedPeriod,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('staff_payroll_runs', runId, globalState.currentUser?.id).catch(() => {});
+          runWithConcurrency(
+            slips.map((s) => () => syncCoordinator.softDeleteRow('staff_payroll_slips', s.id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          const ctx = {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+          };
+          syncCoordinator.restoreRow('staff_payroll_runs', runId, globalState.currentUser?.id)
+            .then(() => staffService.upsertPayrollRun(newRun, category))
+            .then(() =>
+              runWithConcurrency(
+                slips.map((slip) => () =>
+                  syncCoordinator.restoreRow('staff_payroll_slips', slip.id, globalState.currentUser?.id)
+                    .then(() => staffService.upsertPayrollSlip(slip, ctx))
+                ),
+                4
+              )
+            )
+            .catch(() => {});
+        }
+      },
     });
 
     return newRun;
@@ -5392,6 +6688,7 @@ function createAtriumActions() {
   const approveStaffPayrollRun = (runId: string) => {
     const run = (globalState.staffPayrollRuns || []).find((r) => r.id === runId);
     if (!run) return;
+    const before = captureStoreSlices(['staffPayrollRuns', 'staffPayrollSlips', 'staffSalaryAdvances']);
 
     const updatedAdvances = (globalState.staffSalaryAdvances || []).map((adv) =>
       adv.status === 'pending'
@@ -5432,14 +6729,63 @@ function createAtriumActions() {
       ).catch(() => {});
     }
 
-    showToast({
-      type: 'success',
-      title: 'Paie clôturée & validée',
-      message: `${run.title} clôturée avec succès. Bulletins de paie disponibles.`,
+    const after = captureStoreSlices(['staffPayrollRuns', 'staffPayrollSlips', 'staffSalaryAdvances']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Approved payroll: ${run.title}`,
+        `Paie clôturée : ${run.title}`,
+        `اعتماد كشف الرواتب: ${run.title}`
+      ),
+      entityLabel: run.title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          const ctx = {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+          };
+          staffService.upsertPayrollRun(run, getActiveCategoryForBranch(globalState.currentBranchId)).catch(() => {});
+          runWithConcurrency(
+            [
+              ...before.staffPayrollSlips.filter((s) => s.payrollRunId === runId).map((s) => () => staffService.upsertPayrollSlip(s, ctx)),
+              ...before.staffSalaryAdvances.map((a) => () => staffService.upsertSalaryAdvance(a)),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          const approvedRun = updatedRuns.find((r) => r.id === runId);
+          const ctx = {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+          };
+          if (approvedRun) {
+            staffService.upsertPayrollRun(approvedRun, getActiveCategoryForBranch(globalState.currentBranchId)).catch(() => {});
+          }
+          runWithConcurrency(
+            [
+              ...updatedSlips.filter((s) => s.payrollRunId === runId).map((s) => () => staffService.upsertPayrollSlip(s, ctx)),
+              ...updatedAdvances.filter((a) => a.status === 'deducted').map((a) => () => staffService.upsertSalaryAdvance(a)),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const markStaffPayrollSlipPaid = (slipId: string) => {
+    const prevTarget = (globalState.staffPayrollSlips || []).find((s) => s.id === slipId);
+    if (!prevTarget) return;
+    const before = captureStoreSlices(['staffPayrollSlips']);
     const updatedSlips = (globalState.staffPayrollSlips || []).map((s) =>
       s.id === slipId ? { ...s, isPaid: true, paidDate: new Date().toISOString().slice(0, 10) } : s
     );
@@ -5459,6 +6805,38 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+    const after = captureStoreSlices(['staffPayrollSlips']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Paid slip: ${prevTarget.staffFullName}`,
+        `Bulletin payé : ${prevTarget.staffFullName}`,
+        `صرف قسيمة الراتب: ${prevTarget.staffFullName}`
+      ),
+      entityLabel: prevTarget.staffFullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          staffService.upsertPayrollSlip(prevTarget, {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+          }).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          staffService.upsertPayrollSlip(target, {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+          }).catch(() => {});
+        }
+      },
+    });
   };
 
   const logStaffAttendanceManual = (
@@ -5470,6 +6848,7 @@ function createAtriumActions() {
   ) => {
     const target = (globalState.staff || []).find((s) => s.id === staffId);
     if (!target) return;
+    const before = captureStoreSlices(['staffAttendanceLogs']);
 
     const logEntry: StaffAttendanceLogRecord = {
       id: `att_log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -5497,16 +6876,38 @@ function createAtriumActions() {
       staffService.upsertAttendanceLog(logEntry).catch(() => {});
     }
 
-    showToast({
-      type: 'success',
-      title: 'Pointage enregistré',
-      message: `${target.fullName} : ${type === 'in' ? 'Arrivée' : 'Sortie'} manuelle à ${time} (${date}).`,
+    const after = captureStoreSlices(['staffAttendanceLogs']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Manual attendance: ${target.fullName} (${time})`,
+        `Pointage manuel : ${target.fullName} (${time})`,
+        `تسجيل حضور يدوي: ${target.fullName} (${time})`
+      ),
+      entityLabel: target.fullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('staff_attendance_logs', logEntry.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('staff_attendance_logs', logEntry.id, globalState.currentUser?.id)
+            .then(() => staffService.upsertAttendanceLog(logEntry))
+            .catch(() => {});
+        }
+      },
     });
   };
 
   const parkOrder = (
     orderData: Omit<ParkedOrder, 'id' | 'createdAt' | 'tenantId' | 'facilityId'>
   ) => {
+    const before = captureStoreSlices(['parkedOrders']);
     const trace = getTraceContext();
     const parked: ParkedOrder = {
       ...trace,
@@ -5524,12 +6925,39 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       posService.upsertParkedOrder(parked).catch(() => {});
     }
+    const after = captureStoreSlices(['parkedOrders']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Parked order: ${parked.label || parked.id.slice(-4)}`,
+        `Commande mise en attente : ${parked.label || parked.id.slice(-4)}`,
+        `تعليق طلب: ${parked.label || parked.id.slice(-4)}`
+      ),
+      entityLabel: parked.label,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          posService.deleteParkedOrder(parked.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('pos_parked_orders', parked.id, globalState.currentUser?.id)
+            .then(() => posService.upsertParkedOrder(parked))
+            .catch(() => {});
+        }
+      },
+    });
     return parked;
   };
 
   const resumeParkedOrder = (orderId: string) => {
     const target = (globalState.parkedOrders || []).find((p) => p.id === orderId);
     if (target) {
+      const before = captureStoreSlices(['parkedOrders']);
       globalState = {
         ...globalState,
         parkedOrders: (globalState.parkedOrders || []).filter((p) => p.id !== orderId),
@@ -5538,11 +6966,38 @@ function createAtriumActions() {
       if (isSupabaseConfigured()) {
         posService.deleteParkedOrder(orderId, globalState.currentUser?.id).catch(() => {});
       }
+      const after = captureStoreSlices(['parkedOrders']);
+      registerUndoEntry({
+        vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+        operationType: 'status',
+        summary: ul(
+          `Resumed parked order: ${target.label || orderId.slice(-4)}`,
+          `Commande reprise : ${target.label || orderId.slice(-4)}`,
+          `استئناف طلب معلق: ${target.label || orderId.slice(-4)}`
+        ),
+        entityLabel: target.label,
+        toastType: 'info',
+        undo: () => {
+          restoreStoreSlices(before);
+          if (isSupabaseConfigured()) {
+            syncCoordinator.restoreRow('pos_parked_orders', orderId, globalState.currentUser?.id).catch(() => {});
+          }
+        },
+        redo: () => {
+          restoreStoreSlices(after);
+          if (isSupabaseConfigured()) {
+            posService.deleteParkedOrder(orderId, globalState.currentUser?.id).catch(() => {});
+          }
+        },
+      });
     }
     return target;
   };
 
   const deleteParkedOrder = (orderId: string) => {
+    const target = (globalState.parkedOrders || []).find((p) => p.id === orderId);
+    if (!target) return;
+    const before = captureStoreSlices(['parkedOrders']);
     globalState = {
       ...globalState,
       parkedOrders: (globalState.parkedOrders || []).filter((p) => p.id !== orderId),
@@ -5551,11 +7006,37 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       posService.deleteParkedOrder(orderId, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['parkedOrders']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted parked order: ${target.label || orderId.slice(-4)}`,
+        `Commande en attente supprimée : ${target.label || orderId.slice(-4)}`,
+        `حذف طلب معلق: ${target.label || orderId.slice(-4)}`
+      ),
+      entityLabel: target.label,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('pos_parked_orders', orderId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          posService.deleteParkedOrder(orderId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const updateReceiptConfig = (config: Partial<ReceiptConfig>) => {
+    const before = captureStoreSlices(['receiptConfig']);
+    const prevConfig = globalState.receiptConfig || DEFAULT_RECEIPT_CONFIG;
     const nextConfig: ReceiptConfig = {
-      ...(globalState.receiptConfig || DEFAULT_RECEIPT_CONFIG),
+      ...prevConfig,
       ...config,
     };
     globalState = {
@@ -5572,9 +7053,41 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+    const after = captureStoreSlices(['receiptConfig']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'edit',
+      summary: ul(
+        'Updated receipt configuration',
+        'Configuration des reçus mise à jour',
+        'تحديث إعدادات الإيصال'
+      ),
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          posService.upsertReceiptConfig(prevConfig, {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+          }).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          posService.upsertReceiptConfig(nextConfig, {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+          }).catch(() => {});
+        }
+      },
+    });
   };
 
   const seedDemoInventory = (branchId?: string) => {
+    const before = captureStoreSlices(['products']);
     const targetBranchId = branchId || globalState.currentBranchId;
     const demoItems: Product[] = [
       {
@@ -5688,17 +7201,34 @@ function createAtriumActions() {
       products: [...enrichedDemoItems, ...globalState.products],
     };
     notify();
+    const after = captureStoreSlices(['products']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: enrichedDemoItems.length,
+      summary: ul(
+        `Seeded ${enrichedDemoItems.length} demo inventory items`,
+        `${enrichedDemoItems.length} produits démo ajoutés`,
+        `إضافة ${enrichedDemoItems.length} منتجات تجريبية`
+      ),
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
   };
 
   const batchDeleteProducts = (productIds: string[]) => {
+    if (productIds.length === 0) return;
+    const before = captureStoreSlices(['products']);
     const idSet = new Set(productIds);
+    const tradingMode = isTradingCategory();
+    const tableName = tradingMode ? 'trading_products' : 'pos_products';
     globalState = {
       ...globalState,
       products: globalState.products.filter((p) => !idSet.has(p.id)),
     };
     notify();
     if (isSupabaseConfigured()) {
-      const tradingMode = isTradingCategory();
       runWithConcurrency(
         productIds.map((id) => () =>
           tradingMode
@@ -5708,18 +7238,49 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
-    showToast({
-      type: 'warning',
-      title: 'Products Removed',
-      message: `${productIds.length} items removed from inventory.`,
-      category: 'pos_inventory',
+    const after = captureStoreSlices(['products']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: productIds.length,
+      summary: ul(
+        `Deleted ${productIds.length} product(s)`,
+        `${productIds.length} produit(s) supprimé(s)`,
+        `حذف ${productIds.length} منتجات`
+      ),
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            productIds.map((id) => () => syncCoordinator.restoreRow(tableName, id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            productIds.map((id) => () =>
+              tradingMode
+                ? tradingService.deleteProduct(id, globalState.currentUser?.id)
+                : posService.deleteProduct(id, globalState.currentUser?.id)
+            ),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const batchRestockProducts = (productIds: string[], restockQty = 10) => {
+    if (productIds.length === 0) return;
+    const before = captureStoreSlices(['products', 'stockMovements']);
     const idSet = new Set(productIds);
     const trace = getTraceContext();
     const newMovements: StockMovement[] = [];
+    const tradingMode = isTradingCategory();
 
     const updated = globalState.products.map((p) => {
       if (idSet.has(p.id)) {
@@ -5754,7 +7315,6 @@ function createAtriumActions() {
 
     if (isSupabaseConfigured()) {
       const restocked = updated.filter((p) => idSet.has(p.id));
-      const tradingMode = isTradingCategory();
       runWithConcurrency(
         restocked.map((p) => () =>
           tradingMode ? tradingService.upsertProduct(p) : posService.upsertProduct(p)
@@ -5790,15 +7350,56 @@ function createAtriumActions() {
       ).catch(() => {});
     }
 
-    showToast({
-      type: 'success',
-      title: 'Batch Restock Complete',
-      message: `Restocked +${restockQty} units across ${productIds.length} items.`,
-      category: 'pos_inventory',
+    const after = captureStoreSlices(['products', 'stockMovements']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: productIds.length,
+      summary: ul(
+        `Restocked ${productIds.length} product(s) (+${restockQty})`,
+        `Réapprovisionné ${productIds.length} produit(s) (+${restockQty})`,
+        `تمت إعادة تموين ${productIds.length} منتجات (+${restockQty})`
+      ),
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          const prevProds = before.products.filter((p) => idSet.has(p.id));
+          runWithConcurrency(
+            [
+              ...prevProds.map((p) => () =>
+                tradingMode ? tradingService.upsertProduct(p) : posService.upsertProduct(p)
+              ),
+              ...newMovements.map((mv) => () =>
+                syncCoordinator.softDeleteRow('pos_stock_movements', mv.id, globalState.currentUser?.id)
+              ),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          const nextProds = after.products.filter((p) => idSet.has(p.id));
+          runWithConcurrency(
+            [
+              ...nextProds.map((p) => () =>
+                tradingMode ? tradingService.upsertProduct(p) : posService.upsertProduct(p)
+              ),
+              ...newMovements.map((mv) => () =>
+                syncCoordinator.restoreRow('pos_stock_movements', mv.id, globalState.currentUser?.id)
+              ),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const resetPosMockData = () => {
+    const before = captureStoreSlices(['products', 'sales', 'parkedOrders', 'stockMovements', 'receiptConfig']);
     const targetBranchId = globalState.currentBranchId || 'branch_rest_didouche';
     const trace = getTraceContext();
 
@@ -5852,17 +7453,26 @@ function createAtriumActions() {
     };
     notify();
 
-    showToast({
-      type: 'success',
-      title: 'POS Catalog & Ledger Recharged',
-      message: `${posProducts.length} retail items, recent transactions, and held orders restored.`,
-      category: 'pos_inventory',
+    const after = captureStoreSlices(['products', 'sales', 'parkedOrders', 'stockMovements', 'receiptConfig']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: posProducts.length,
+      summary: ul(
+        'POS demo catalog recharged',
+        'Catalogue POS réinitialisé',
+        'إعادة ضبط بيانات نقطة البيع'
+      ),
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
     });
   };
 
   const createAppointment = (
     aptData: Omit<Appointment, 'id' | 'createdAt' | 'tenantId' | 'facilityId'>
   ) => {
+    const before = captureStoreSlices(['appointments']);
     const newApt: Appointment = {
       ...getTraceContext(),
       ...aptData,
@@ -5877,36 +7487,46 @@ function createAtriumActions() {
     };
     notify();
 
-    const lang = globalState.language || 'fr';
-    showToast({
-      type: 'success',
-      title: t('toast_apt_booked_title', lang),
-      message: t('toast_apt_booked_msg', lang)
-        .replace('{client}', newApt.clientName)
-        .replace('{stylist}', newApt.staffName)
-        .replace('{date}', newApt.date)
-        .replace('{time}', newApt.startTime),
-      category: 'appointment_service',
-      action: {
-        label: t('toast_action_schedule', lang),
-        onClick: () => {
-          globalState = { ...globalState, activeScreen: 'scheduler' };
-          notify();
-        },
-      },
-    });
-
     if (isSupabaseConfigured()) {
       appointmentService.upsertAppointment(newApt).catch((err) => {
         console.warn('[store] Failed to save appointment to Supabase:', err);
       });
     }
 
+    const after = captureStoreSlices(['appointments']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Booked: ${newApt.clientName} (${newApt.startTime})`,
+        `RDV créé : ${newApt.clientName} (${newApt.startTime})`,
+        `حجز موعد: ${newApt.clientName} (${newApt.startTime})`
+      ),
+      entityLabel: newApt.clientName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          appointmentService.deleteAppointment(newApt.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('salon_appointments', newApt.id, globalState.currentUser?.id)
+            .then(() => appointmentService.upsertAppointment(newApt))
+            .catch(() => {});
+        }
+      },
+    });
+
     return newApt;
   };
 
   const updateAppointmentStatus = (id: string, status: AppointmentStatus) => {
     const apt = (globalState.appointments || []).find((a) => a.id === id);
+    if (!apt) return;
+    const before = captureStoreSlices(['appointments']);
     globalState = {
       ...globalState,
       appointments: (globalState.appointments || []).map((a) =>
@@ -5915,37 +7535,36 @@ function createAtriumActions() {
     };
     notify();
 
-    const lang = globalState.language || 'fr';
-    if (status === 'InChair') {
-      showToast({
-        type: 'info',
-        title: t('toast_apt_seated_title', lang),
-        message: t('toast_apt_seated_msg', lang)
-          .replace('{client}', apt?.clientName || 'Client')
-          .replace('{stylist}', apt?.staffName || 'Stylist'),
-        category: 'appointment_service',
-        action: {
-          label: t('toast_action_timer', lang),
-          onClick: () => {
-            globalState = { ...globalState, activeScreen: 'scheduler' };
-            notify();
-          },
-        },
-      });
-    } else if (status === 'Cancelled') {
-      showToast({
-        type: 'warning',
-        title: t('toast_apt_cancelled_title', lang),
-        message: t('toast_apt_cancelled_msg', lang).replace('{client}', apt?.clientName || 'Client'),
-        category: 'appointment_service',
-      });
-    }
-
     if (isSupabaseConfigured()) {
       appointmentService.updateStatus(id, status, apt?.version).catch((err) => {
         console.warn('[store] Failed to update appointment status in Supabase:', err);
       });
     }
+
+    const after = captureStoreSlices(['appointments']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `${apt.clientName}: ${status}`,
+        `${apt.clientName} : ${status}`,
+        `${apt.clientName}: ${status}`
+      ),
+      entityLabel: apt.clientName,
+      toastType: status === 'Cancelled' ? 'warning' : 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          appointmentService.updateStatus(id, apt.status, apt.version).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          appointmentService.updateStatus(id, status, apt.version).catch(() => {});
+        }
+      },
+    });
   };
 
   const rescheduleAppointment = (
@@ -5957,6 +7576,8 @@ function createAtriumActions() {
     staffName?: string
   ) => {
     const apt = (globalState.appointments || []).find((a) => a.id === id);
+    if (!apt) return;
+    const before = captureStoreSlices(['appointments']);
     globalState = {
       ...globalState,
       appointments: (globalState.appointments || []).map((a) => {
@@ -5974,28 +7595,43 @@ function createAtriumActions() {
     };
     notify();
 
-    const lang = globalState.language || 'fr';
-    showToast({
-      type: 'info',
-      title: t('toast_apt_rescheduled_title', lang),
-      message: t('toast_apt_rescheduled_msg', lang)
-        .replace('{client}', apt?.clientName || 'Client')
-        .replace('{date}', date)
-        .replace('{time}', startTime),
-      category: 'appointment_service',
-    });
-
-    if (isSupabaseConfigured()) {
-      const target = globalState.appointments?.find((a) => a.id === id);
-      if (target) {
-        appointmentService.upsertAppointment(target).catch((err) => {
-          console.warn('[store] Failed to reschedule appointment in Supabase:', err);
-        });
-      }
+    const updatedTarget = globalState.appointments?.find((a) => a.id === id);
+    if (isSupabaseConfigured() && updatedTarget) {
+      appointmentService.upsertAppointment(updatedTarget).catch((err) => {
+        console.warn('[store] Failed to reschedule appointment in Supabase:', err);
+      });
     }
+
+    const after = captureStoreSlices(['appointments']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'edit',
+      summary: ul(
+        `Rescheduled: ${apt.clientName} → ${date} ${startTime}`,
+        `Reporté : ${apt.clientName} → ${date} ${startTime}`,
+        `إعادة جدولة: ${apt.clientName} ← ${date} ${startTime}`
+      ),
+      entityLabel: apt.clientName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          appointmentService.upsertAppointment(apt).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured() && updatedTarget) {
+          appointmentService.upsertAppointment(updatedTarget).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteAppointment = (id: string) => {
+    const target = (globalState.appointments || []).find((a) => a.id === id);
+    if (!target) return;
+    const before = captureStoreSlices(['appointments']);
     globalState = {
       ...globalState,
       appointments: (globalState.appointments || []).filter((a) => a.id !== id),
@@ -6004,9 +7640,34 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       appointmentService.deleteAppointment(id, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['appointments']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted appointment: ${target.clientName}`,
+        `Rendez-vous supprimé : ${target.clientName}`,
+        `حذف موعد: ${target.clientName}`
+      ),
+      entityLabel: target.clientName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('salon_appointments', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          appointmentService.deleteAppointment(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const addServiceItem = (serviceData: Omit<ServiceItem, 'id' | 'facilityId'>) => {
+    const before = captureStoreSlices(['servicesCatalog']);
     const newService: ServiceItem = {
       ...getTraceContext(),
       ...serviceData,
@@ -6021,6 +7682,32 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       appointmentService.upsertService(newService).catch(() => {});
     }
+    const after = captureStoreSlices(['servicesCatalog']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added service: ${newService.name}`,
+        `Prestation ajoutée : ${newService.name}`,
+        `إضافة خدمة: ${newService.name}`
+      ),
+      entityLabel: newService.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          appointmentService.deleteService(newService.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('salon_services', newService.id, globalState.currentUser?.id)
+            .then(() => appointmentService.upsertService(newService))
+            .catch(() => {});
+        }
+      },
+    });
     return newService;
   };
 
@@ -6031,6 +7718,7 @@ function createAtriumActions() {
     const apt = (globalState.appointments || []).find((a) => a.id === appointmentId);
     if (!apt) throw new Error('Appointment not found');
 
+    const before = captureStoreSlices(['appointments', 'sales']);
     const sale: Sale = {
       ...getTraceContext(),
       id: `sale_${Date.now()}`,
@@ -6070,17 +7758,30 @@ function createAtriumActions() {
 
     const checkoutLang = globalState.language || 'fr';
     const localizedService = getLocalizedServiceName(apt.serviceId, apt.serviceName, checkoutLang);
-    showToast({
-      type: 'success',
-      title: t('toast_apt_checkout_title', checkoutLang),
-      message: t('toast_apt_checkout_msg', checkoutLang)
-        .replace('{service}', localizedService)
-        .replace('{client}', apt.clientName)
-        .replace('{price}', formatMoney(apt.price)),
-      category: 'appointment_service',
-      action: {
-        label: t('toast_action_receipt', checkoutLang),
-        onClick: () => window.print?.(),
+    const after = captureStoreSlices(['appointments', 'sales']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Checked out: ${apt.clientName} (${formatMoney(apt.price)})`,
+        `Encaissé : ${apt.clientName} (${localizedService} · ${formatMoney(apt.price)})`,
+        `تحصيل موعد: ${apt.clientName} (${formatMoney(apt.price)})`
+      ),
+      entityLabel: apt.clientName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          appointmentService.updateStatus(appointmentId, apt.status, apt.version).catch(() => {});
+          syncCoordinator.softDeleteRow('pos_sales', sale.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          appointmentService.updateStatus(appointmentId, 'Completed', apt.version).catch(() => {});
+          syncCoordinator.restoreRow('pos_sales', sale.id, globalState.currentUser?.id).catch(() => {});
+        }
       },
     });
 
@@ -6088,6 +7789,8 @@ function createAtriumActions() {
   };
 
   const batchDeleteAppointments = (ids: string[]) => {
+    if (ids.length === 0) return;
+    const before = captureStoreSlices(['appointments']);
     const idSet = new Set(ids);
     globalState = {
       ...globalState,
@@ -6100,16 +7803,43 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
-    showToast({
-      type: 'info',
-      title: 'Rendez-vous supprimés',
-      message: `${ids.length} rendez-vous ont été retirés de l'agenda.`,
-      category: 'appointment_service',
+    const after = captureStoreSlices(['appointments']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: ids.length,
+      summary: ul(
+        `Deleted ${ids.length} appointment(s)`,
+        `${ids.length} rendez-vous supprimé(s)`,
+        `حذف ${ids.length} مواعيد`
+      ),
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            ids.map((id) => () => syncCoordinator.restoreRow('salon_appointments', id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            ids.map((id) => () => appointmentService.deleteAppointment(id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const batchUpdateAppointmentStatus = (ids: string[], status: AppointmentStatus) => {
+    if (ids.length === 0) return;
+    const before = captureStoreSlices(['appointments']);
     const idSet = new Set(ids);
+    const prevList = (globalState.appointments || []).filter((a) => idSet.has(a.id));
     const prevVersionMap = new Map(
       (globalState.appointments || []).map((a) => [a.id, a.version])
     );
@@ -6126,15 +7856,42 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Statuts mis à jour',
-      message: `${ids.length} rendez-vous passés en état "${status}".`,
-      category: 'appointment_service',
+    const after = captureStoreSlices(['appointments']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: ids.length,
+      summary: ul(
+        `Updated ${ids.length} appointment(s) → ${status}`,
+        `${ids.length} rendez-vous passés en "${status}"`,
+        `تحديث ${ids.length} مواعيد ← ${status}`
+      ),
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            prevList.map((a) => () => appointmentService.updateStatus(a.id, a.status, a.version)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            ids.map((id) => () => appointmentService.updateStatus(id, status, prevVersionMap.get(id))),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const updateServiceItem = (id: string, updates: Partial<ServiceItem>) => {
+    const prev = (globalState.servicesCatalog || []).find((s) => s.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['servicesCatalog']);
     const updatedCatalog = (globalState.servicesCatalog || []).map((s) =>
       s.id === id ? { ...s, ...updates } : s
     );
@@ -6143,19 +7900,40 @@ function createAtriumActions() {
       servicesCatalog: updatedCatalog,
     };
     notify();
-    if (isSupabaseConfigured()) {
-      const target = updatedCatalog.find((s) => s.id === id);
-      if (target) appointmentService.upsertService(target).catch(() => {});
+    const target = updatedCatalog.find((s) => s.id === id);
+    if (isSupabaseConfigured() && target) {
+      appointmentService.upsertService(target).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Prestation mise à jour',
-      message: 'Les détails du service et son tarif ont été modifiés.',
-      category: 'appointment_service',
+    const after = captureStoreSlices(['servicesCatalog']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'edit',
+      summary: ul(
+        `Updated service: ${target?.name || prev.name}`,
+        `Prestation mise à jour : ${target?.name || prev.name}`,
+        `تحديث خدمة: ${target?.name || prev.name}`
+      ),
+      entityLabel: target?.name || prev.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          appointmentService.upsertService(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured() && target) {
+          appointmentService.upsertService(target).catch(() => {});
+        }
+      },
     });
   };
 
   const deleteServiceItem = (id: string) => {
+    const prev = (globalState.servicesCatalog || []).find((s) => s.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['servicesCatalog']);
     globalState = {
       ...globalState,
       servicesCatalog: (globalState.servicesCatalog || []).filter((s) => s.id !== id),
@@ -6164,15 +7942,35 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       appointmentService.deleteService(id, globalState.currentUser?.id).catch(() => {});
     }
-    showToast({
-      type: 'info',
-      title: 'Prestation supprimée',
-      message: 'Le service a été retiré du catalogue.',
-      category: 'appointment_service',
+    const after = captureStoreSlices(['servicesCatalog']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted service: ${prev.name}`,
+        `Prestation supprimée : ${prev.name}`,
+        `حذف خدمة: ${prev.name}`
+      ),
+      entityLabel: prev.name,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('salon_services', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          appointmentService.deleteService(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
     });
   };
 
   const batchDeleteServiceItems = (ids: string[]) => {
+    if (ids.length === 0) return;
+    const before = captureStoreSlices(['servicesCatalog']);
     const idSet = new Set(ids);
     globalState = {
       ...globalState,
@@ -6185,15 +7983,42 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
-    showToast({
-      type: 'info',
-      title: 'Prestations supprimées',
-      message: `${ids.length} prestations ont été retirées du catalogue.`,
-      category: 'appointment_service',
+    const after = captureStoreSlices(['servicesCatalog']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: ids.length,
+      summary: ul(
+        `Deleted ${ids.length} service(s)`,
+        `${ids.length} prestation(s) supprimée(s)`,
+        `حذف ${ids.length} خدمات`
+      ),
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            ids.map((id) => () => syncCoordinator.restoreRow('salon_services', id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            ids.map((id) => () => appointmentService.deleteService(id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const updateStylistPayoutStatus = (id: string, status: 'Pending' | 'Approved' | 'Paid', paymentMethod?: string) => {
+    const prev = (globalState.stylistPayouts || []).find((p) => p.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['stylistPayouts']);
     const updatedPayouts = (globalState.stylistPayouts || []).map((p) =>
       p.id === id
         ? {
@@ -6209,27 +8034,52 @@ function createAtriumActions() {
       stylistPayouts: updatedPayouts,
     };
     notify();
-    if (isSupabaseConfigured()) {
-      const target = updatedPayouts.find((p) => p.id === id);
-      if (target) {
-        appointmentService
-          .upsertStylistPayout(target, {
+    const target = updatedPayouts.find((p) => p.id === id);
+    if (isSupabaseConfigured() && target) {
+      appointmentService
+        .upsertStylistPayout(target, {
+          accountId: globalState.account.id,
+          businessId: globalState.currentBusinessId,
+          branchId: globalState.currentBranchId,
+        })
+        .catch(() => {});
+    }
+    const after = captureStoreSlices(['stylistPayouts']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Stylist payout: ${prev.staffName} → ${status}`,
+        `Commission styliste : ${prev.staffName} → ${status}`,
+        `عمولة المصمم: ${prev.staffName} ← ${status}`
+      ),
+      entityLabel: prev.staffName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          appointmentService.upsertStylistPayout(prev, {
             accountId: globalState.account.id,
             businessId: globalState.currentBusinessId,
             branchId: globalState.currentBranchId,
-          })
-          .catch(() => {});
-      }
-    }
-    showToast({
-      type: 'success',
-      title: 'Commission styliste mise à jour',
-      message: `Bordereau de commission passé en état ${status}.`,
-      category: 'appointment_service',
+          }).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured() && target) {
+          appointmentService.upsertStylistPayout(target, {
+            accountId: globalState.account.id,
+            businessId: globalState.currentBusinessId,
+            branchId: globalState.currentBranchId,
+          }).catch(() => {});
+        }
+      },
     });
   };
 
   const resetSalonMockData = () => {
+    const before = captureStoreSlices(['servicesCatalog', 'appointments', 'members', 'salonWorkstations', 'stylistPayouts']);
     const targetBranchId = globalState.currentBranchId || 'branch_salon_hydra';
     const trace = getTraceContext();
 
@@ -6274,11 +8124,19 @@ function createAtriumActions() {
     };
     notify();
 
-    showToast({
-      type: 'success',
-      title: 'Salon & Spa Data Recharged',
-      message: `${salonAppointments.length} appointments, ${salonServices.length} treatments, and ${salonClients.length} client diagnostics restored.`,
-      category: 'appointment_service',
+    const after = captureStoreSlices(['servicesCatalog', 'appointments', 'members', 'salonWorkstations', 'stylistPayouts']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: salonAppointments.length + salonServices.length,
+      summary: ul(
+        'Salon & Spa data recharged',
+        'Données Salon & Spa réinitialisées',
+        'إعادة ضبط بيانات الصالون'
+      ),
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
     });
   };
 
@@ -6290,6 +8148,7 @@ function createAtriumActions() {
       throw new Error(`Staff limit reached for ${plan.name} plan. Upgrade to expand capacity.`);
     }
 
+    const before = captureStoreSlices(['staff']);
     const newStaff: StaffMember = {
       ...getTraceContext(),
       ...staffData,
@@ -6309,6 +8168,33 @@ function createAtriumActions() {
       });
     }
 
+    const after = captureStoreSlices(['staff']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added staff: ${newStaff.fullName}`,
+        `Collaborateur ajouté : ${newStaff.fullName}`,
+        `إضافة موظف: ${newStaff.fullName}`
+      ),
+      entityLabel: newStaff.fullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          staffService.deleteStaff(newStaff.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('staff', newStaff.id, globalState.currentUser?.id)
+            .then(() => staffService.createStaff(newStaff))
+            .catch(() => {});
+        }
+      },
+    });
+
     return newStaff;
   };
 
@@ -6320,6 +8206,7 @@ function createAtriumActions() {
       throw new Error(`Business limit reached for ${plan.name} (${plan.maxBusinesses}). Upgrade to Atrium Desktop to unlock multi-business management.`);
     }
 
+    const before = captureStoreSlices(['businesses', 'branches', 'currentBusinessId', 'currentBranchId']);
     const newBiz: Business = {
       id: `biz_${Date.now()}`,
       accountId: globalState.account.id,
@@ -6362,6 +8249,21 @@ function createAtriumActions() {
         });
     }
 
+    const after = captureStoreSlices(['businesses', 'branches', 'currentBusinessId', 'currentBranchId']);
+    registerUndoEntry({
+      vertical: category,
+      operationType: 'create',
+      summary: ul(
+        `Created business: ${name}`,
+        `Établissement créé : ${name}`,
+        `إنشاء منشأة: ${name}`
+      ),
+      entityLabel: name,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+
     return newBiz;
   };
 
@@ -6373,6 +8275,7 @@ function createAtriumActions() {
       throw new Error(`Branch limit reached for ${plan.name}. Upgrade to Atrium Desktop to unlock multi-branch management.`);
     }
 
+    const before = captureStoreSlices(['branches', 'currentBranchId']);
     const newBranch: Branch = {
       id: `branch_${Date.now()}`,
       accountId: globalState.account.id,
@@ -6401,6 +8304,21 @@ function createAtriumActions() {
         });
     }
 
+    const after = captureStoreSlices(['branches', 'currentBranchId']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added branch: ${name}`,
+        `Succursale ajoutée : ${name}`,
+        `إضافة فرع: ${name}`
+      ),
+      entityLabel: name,
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
+
     return newBranch;
   };
 
@@ -6411,6 +8329,7 @@ function createAtriumActions() {
       throw new Error(`Device limit reached for ${plan.name} plan.`);
     }
 
+    const before = captureStoreSlices(['devices']);
     const newDevice: Device = {
       id: `dev_${Date.now()}`,
       accountId: globalState.account.id,
@@ -6428,21 +8347,22 @@ function createAtriumActions() {
     };
     notify();
 
+    const devPayload = {
+      id: toValidUuid(newDevice.id),
+      account_id: toValidUuid(newDevice.accountId),
+      business_id: toValidUuid(globalState.currentBusinessId),
+      branch_id: toValidUuid(newDevice.branchId),
+      hardware_id: newDevice.hardwareId,
+      label: newDevice.label,
+      is_active: true,
+      last_seen_at: newDevice.lastSeenAt,
+      registered_at: newDevice.registeredAt,
+      updated_by_staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
+      device_id: getActiveDeviceId(),
+      updated_at: new Date().toISOString(),
+    };
+
     if (isSupabaseConfigured()) {
-      const devPayload = {
-        id: toValidUuid(newDevice.id),
-        account_id: toValidUuid(newDevice.accountId),
-        business_id: toValidUuid(globalState.currentBusinessId),
-        branch_id: toValidUuid(newDevice.branchId),
-        hardware_id: newDevice.hardwareId,
-        label: newDevice.label,
-        is_active: true,
-        last_seen_at: newDevice.lastSeenAt,
-        registered_at: newDevice.registeredAt,
-        updated_by_staff_id: normalizeUuidOrNull(globalState.currentUser?.id),
-        device_id: getActiveDeviceId(),
-        updated_at: new Date().toISOString(),
-      };
       syncCoordinator
         .mutateOrQueueUpsert('devices', devPayload, {
           expectedVersion: newDevice.version,
@@ -6453,10 +8373,47 @@ function createAtriumActions() {
         .catch(() => {});
     }
 
+    const after = captureStoreSlices(['devices']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Registered device: ${label}`,
+        `Terminal enregistré : ${label}`,
+        `تسجيل جهاز: ${label}`
+      ),
+      entityLabel: label,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('devices', newDevice.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('devices', newDevice.id, globalState.currentUser?.id)
+            .then(() =>
+              syncCoordinator.mutateOrQueueUpsert('devices', devPayload, {
+                expectedVersion: newDevice.version,
+                entityType: 'Device',
+                entityLabel: newDevice.label,
+                localData: devPayload,
+              })
+            )
+            .catch(() => {});
+        }
+      },
+    });
+
     return newDevice;
   };
 
   const revokeDevice = (deviceId: string) => {
+    const prev = (globalState.devices || []).find((d) => d.id === deviceId);
+    if (!prev) return;
+    const before = captureStoreSlices(['devices']);
     globalState = {
       ...globalState,
       devices: globalState.devices.filter((d) => d.id !== deviceId),
@@ -6465,6 +8422,30 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       syncCoordinator.softDeleteRow('devices', deviceId, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['devices']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Revoked device: ${prev.label}`,
+        `Terminal révoqué : ${prev.label}`,
+        `إلغاء صلاحية جهاز: ${prev.label}`
+      ),
+      entityLabel: prev.label,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('devices', deviceId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('devices', deviceId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const redeemVoucher = (code: string) => {
@@ -6520,6 +8501,9 @@ function createAtriumActions() {
   };
 
   const addProduct = (productData: Omit<Product, 'id' | 'tenantId' | 'facilityId'>) => {
+    const before = captureStoreSlices(['products']);
+    const tradingMode = isTradingCategory();
+    const tableName = tradingMode ? 'trading_products' : 'pos_products';
     const newProduct: Product = {
       ...getTraceContext(),
       ...productData,
@@ -6533,28 +8517,48 @@ function createAtriumActions() {
     };
     notify();
 
-    showToast({
-      type: 'success',
-      title: 'Product Created',
-      message: `${newProduct.name} added to inventory (${newProduct.stockQuantity} in stock).`,
-      category: 'pos_inventory',
-      action: {
-        label: 'Register',
-        onClick: () => {
-          globalState = { ...globalState, activeScreen: 'shop' };
-          notify();
-        },
-      },
-    });
-
     if (isSupabaseConfigured()) {
-      (isTradingCategory()
+      (tradingMode
         ? tradingService.upsertProduct(newProduct)
         : posService.upsertProduct(newProduct)
       ).catch((err) => {
         console.warn('[store] Failed to save product to Supabase:', err);
       });
     }
+
+    const after = captureStoreSlices(['products']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Created product: ${newProduct.name}`,
+        `Produit créé : ${newProduct.name}`,
+        `إضافة منتج: ${newProduct.name}`
+      ),
+      entityLabel: newProduct.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          (tradingMode
+            ? tradingService.deleteProduct(newProduct.id, globalState.currentUser?.id)
+            : posService.deleteProduct(newProduct.id, globalState.currentUser?.id)
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow(tableName, newProduct.id, globalState.currentUser?.id)
+            .then(() =>
+              tradingMode
+                ? tradingService.upsertProduct(newProduct)
+                : posService.upsertProduct(newProduct)
+            )
+            .catch(() => {});
+        }
+      },
+    });
 
     return newProduct;
   };
@@ -7119,6 +9123,7 @@ function createAtriumActions() {
   const resetTimer = resetTimerAction;
 
   const addFreelanceClient = (clientData: Omit<FreelanceClient, 'id' | 'tenantId' | 'facilityId' | 'lifetimeBilled' | 'createdAt'>) => {
+    const before = captureStoreSlices(['freelanceClients']);
     const newClient: FreelanceClient = {
       ...getTraceContext(),
       ...clientData,
@@ -7140,10 +9145,40 @@ function createAtriumActions() {
       });
     }
 
+    const after = captureStoreSlices(['freelanceClients']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added client: ${newClient.name}`,
+        `Client ajouté : ${newClient.name}`,
+        `إضافة عميل: ${newClient.name}`
+      ),
+      entityLabel: newClient.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteClient(newClient.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_clients', newClient.id, globalState.currentUser?.id)
+            .then(() => freelanceService.upsertClient(newClient))
+            .catch(() => {});
+        }
+      },
+    });
+
     return newClient;
   };
 
   const updateFreelanceClient = (id: string, updates: Partial<FreelanceClient>) => {
+    const prev = globalState.freelanceClients.find((c) => c.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['freelanceClients']);
     const updatedClients = globalState.freelanceClients.map((c) => (c.id === id ? { ...c, ...updates } : c));
     globalState = {
       ...globalState,
@@ -7157,10 +9192,43 @@ function createAtriumActions() {
         console.warn('[store] Supabase updateClient notice:', err);
       });
     }
+
+    const after = captureStoreSlices(['freelanceClients']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'edit',
+      summary: ul(
+        `Updated client: ${target?.name || prev.name}`,
+        `Client mis à jour : ${target?.name || prev.name}`,
+        `تحديث بيانات العميل: ${target?.name || prev.name}`
+      ),
+      entityLabel: target?.name || prev.name,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.upsertClient(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          freelanceService.upsertClient(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteFreelanceClient = (clientId: string, cascade = false) => {
     const target = globalState.freelanceClients.find((c) => c.id === clientId);
+    if (!target) return;
+    const before = captureStoreSlices([
+      'freelanceClients',
+      'freelanceProjects',
+      'timeLogs',
+      'freelanceInvoices',
+      'freelanceProposals',
+    ]);
     const updatedClients = globalState.freelanceClients.filter((c) => c.id !== clientId);
     let updatedProjects = globalState.freelanceProjects;
     let updatedTimeLogs = globalState.timeLogs;
@@ -7191,9 +9259,41 @@ function createAtriumActions() {
         console.warn('[store] Supabase deleteClient notice:', err);
       });
     }
+
+    const after = captureStoreSlices([
+      'freelanceClients',
+      'freelanceProjects',
+      'timeLogs',
+      'freelanceInvoices',
+      'freelanceProposals',
+    ]);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted client: ${target.name}`,
+        `Client supprimé : ${target.name}`,
+        `حذف العميل: ${target.name}`
+      ),
+      entityLabel: target.name,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_clients', clientId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteClient(clientId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const addFreelanceProject = (projectData: Omit<FreelanceProject, 'id' | 'tenantId' | 'facilityId' | 'loggedHours' | 'createdAt'>) => {
+    const before = captureStoreSlices(['freelanceProjects']);
     const newProject: FreelanceProject = {
       ...getTraceContext(),
       ...projectData,
@@ -7215,10 +9315,40 @@ function createAtriumActions() {
       });
     }
 
+    const after = captureStoreSlices(['freelanceProjects']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Created project: ${newProject.title}`,
+        `Projet créé : ${newProject.title}`,
+        `إنشاء مشروع: ${newProject.title}`
+      ),
+      entityLabel: newProject.title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteProject(newProject.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_projects', newProject.id, globalState.currentUser?.id)
+            .then(() => freelanceService.upsertProject(newProject))
+            .catch(() => {});
+        }
+      },
+    });
+
     return newProject;
   };
 
   const updateFreelanceProject = (projectId: string, updates: Partial<FreelanceProject>) => {
+    const prev = globalState.freelanceProjects.find((p) => p.id === projectId);
+    if (!prev) return;
+    const before = captureStoreSlices(['freelanceProjects']);
     const updatedProjects = globalState.freelanceProjects.map((p) =>
       p.id === projectId ? { ...p, ...updates } : p
     );
@@ -7234,9 +9364,37 @@ function createAtriumActions() {
         console.warn('[store] Supabase updateFreelanceProject notice:', err);
       });
     }
+
+    const after = captureStoreSlices(['freelanceProjects']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'edit',
+      summary: ul(
+        `Updated project: ${target?.title || prev.title}`,
+        `Projet mis à jour : ${target?.title || prev.title}`,
+        `تحديث المشروع: ${target?.title || prev.title}`
+      ),
+      entityLabel: target?.title || prev.title,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.upsertProject(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          freelanceService.upsertProject(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteFreelanceProject = (projectId: string) => {
+    const prev = globalState.freelanceProjects.find((p) => p.id === projectId);
+    if (!prev) return;
+    const before = captureStoreSlices(['freelanceProjects', 'timeLogs']);
     globalState = {
       ...globalState,
       freelanceProjects: globalState.freelanceProjects.filter((p) => p.id !== projectId),
@@ -7249,9 +9407,37 @@ function createAtriumActions() {
         console.warn('[store] Supabase deleteProject notice:', err);
       });
     }
+
+    const after = captureStoreSlices(['freelanceProjects', 'timeLogs']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted project: ${prev.title}`,
+        `Projet supprimé : ${prev.title}`,
+        `حذف المشروع: ${prev.title}`
+      ),
+      entityLabel: prev.title,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_projects', projectId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteProject(projectId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const updateProjectStage = (projectId: string, stage: DeliverableStage) => {
+    const prev = globalState.freelanceProjects.find((p) => p.id === projectId);
+    if (!prev) return;
+    const before = captureStoreSlices(['freelanceProjects']);
     const updatedProjects = globalState.freelanceProjects.map((p) => (p.id === projectId ? { ...p, stage } : p));
     globalState = {
       ...globalState,
@@ -7265,9 +9451,36 @@ function createAtriumActions() {
         console.warn('[store] Supabase updateProjectStage notice:', err);
       });
     }
+
+    const after = captureStoreSlices(['freelanceProjects']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `${prev.title}: ${stage}`,
+        `${prev.title} : ${stage}`,
+        `${prev.title}: ${stage}`
+      ),
+      entityLabel: prev.title,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.upsertProject(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          freelanceService.upsertProject(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const addDeliverable = (projectId: string, title: string, estimatedHours: number, dueDate: string, description?: string) => {
+    const prev = globalState.freelanceProjects.find((p) => p.id === projectId);
+    const before = captureStoreSlices(['freelanceProjects']);
     const newDeliv: FreelanceDeliverable = {
       id: `deliv_${Date.now()}`,
       projectId,
@@ -7303,6 +9516,31 @@ function createAtriumActions() {
       });
     }
 
+    const after = captureStoreSlices(['freelanceProjects']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added deliverable: ${title}`,
+        `Livrable ajouté : ${title}`,
+        `إضافة تسليم: ${title}`
+      ),
+      entityLabel: title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (prev && isSupabaseConfigured()) {
+          freelanceService.upsertProject(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          freelanceService.upsertProject(target).catch(() => {});
+        }
+      },
+    });
+
     return newDeliv;
   };
 
@@ -7311,6 +9549,10 @@ function createAtriumActions() {
     deliverableId: string,
     updates: Partial<FreelanceDeliverable>
   ) => {
+    const prev = globalState.freelanceProjects.find((p) => p.id === projectId);
+    if (!prev) return;
+    const prevDeliv = prev.deliverables.find((d) => d.id === deliverableId);
+    const before = captureStoreSlices(['freelanceProjects']);
     const updatedProjects = globalState.freelanceProjects.map((p) => {
       if (p.id === projectId) {
         const updatedDeliverables = p.deliverables.map((d) => {
@@ -7351,12 +9593,41 @@ function createAtriumActions() {
         console.warn('[store] Supabase updateDeliverable notice:', err);
       });
     }
+
+    const after = captureStoreSlices(['freelanceProjects']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: updates.stage ? 'status' : 'edit',
+      summary: ul(
+        `Updated deliverable: ${prevDeliv?.title || deliverableId}`,
+        `Livrable mis à jour : ${prevDeliv?.title || deliverableId}`,
+        `تحديث التسليم: ${prevDeliv?.title || deliverableId}`
+      ),
+      entityLabel: prevDeliv?.title,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.upsertProject(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          freelanceService.upsertProject(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteDeliverable = (projectId: string, deliverableId: string) => {
+    const prev = globalState.freelanceProjects.find((p) => p.id === projectId);
+    if (!prev) return;
+    const removed = prev.deliverables.find((d) => d.id === deliverableId);
+    if (!removed) return;
+    const before = captureStoreSlices(['freelanceProjects']);
     const updatedProjects = globalState.freelanceProjects.map((p) => {
       if (p.id === projectId) {
-        const removed = p.deliverables.find((d) => d.id === deliverableId);
         const filtered = p.deliverables.filter((d) => d.id !== deliverableId);
         const estDiff = removed ? removed.estimatedHours : 0;
         const loggedDiff = removed ? removed.loggedHours : 0;
@@ -7382,6 +9653,31 @@ function createAtriumActions() {
         console.warn('[store] Supabase deleteDeliverable notice:', err);
       });
     }
+
+    const after = captureStoreSlices(['freelanceProjects']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted deliverable: ${removed.title}`,
+        `Livrable supprimé : ${removed.title}`,
+        `حذف التسليم: ${removed.title}`
+      ),
+      entityLabel: removed.title,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.upsertProject(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          freelanceService.upsertProject(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const updateDeliverableStage = (projectId: string, deliverableId: string, stage: DeliverableStage) => {
@@ -7389,6 +9685,8 @@ function createAtriumActions() {
   };
 
   const logTimeEntry = (entryData: Omit<TimeLogEntry, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'isInvoiced'>) => {
+    const before = captureStoreSlices(['timeLogs', 'freelanceProjects']);
+    const prevProject = globalState.freelanceProjects.find((p) => p.id === entryData.projectId);
     const trace = getTraceContext();
     const entry: TimeLogEntry = {
       ...trace,
@@ -7427,12 +9725,44 @@ function createAtriumActions() {
       });
     }
 
+    const updatedProject = updatedProjects.find((p) => p.id === entry.projectId);
+    const after = captureStoreSlices(['timeLogs', 'freelanceProjects']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Logged time: ${entry.taskDescription} (${addHours}h)`,
+        `Temps saisi : ${entry.taskDescription} (${addHours}h)`,
+        `تسجيل وقت: ${entry.taskDescription} (${addHours}س)`
+      ),
+      entityLabel: entry.taskDescription,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteTimeLog(entry.id, globalState.currentUser?.id).catch(() => {});
+          if (prevProject) freelanceService.upsertProject(prevProject).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_time_logs', entry.id, globalState.currentUser?.id)
+            .then(() => freelanceService.upsertTimeLog(entry))
+            .catch(() => {});
+          if (updatedProject) freelanceService.upsertProject(updatedProject).catch(() => {});
+        }
+      },
+    });
+
     return entry;
   };
 
   const updateTimeLog = (id: string, updates: Partial<TimeLogEntry>) => {
     const current = globalState.timeLogs.find((t) => t.id === id);
     if (!current) return;
+    const before = captureStoreSlices(['timeLogs', 'freelanceProjects']);
+    const prevProject = globalState.freelanceProjects.find((p) => p.id === current.projectId);
 
     const diffHours = updates.durationSeconds !== undefined
       ? Number(((updates.durationSeconds - current.durationSeconds) / 3600).toFixed(2))
@@ -7471,11 +9801,41 @@ function createAtriumActions() {
         console.warn('[store] Supabase upsertTimeLog notice:', err);
       });
     }
+
+    const updatedProject = updatedProjects.find((p) => p.id === current.projectId);
+    const after = captureStoreSlices(['timeLogs', 'freelanceProjects']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'edit',
+      summary: ul(
+        `Updated time log: ${target?.taskDescription || current.taskDescription}`,
+        `Entrée de temps mise à jour : ${target?.taskDescription || current.taskDescription}`,
+        `تحديث سجل الوقت: ${target?.taskDescription || current.taskDescription}`
+      ),
+      entityLabel: target?.taskDescription || current.taskDescription,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.upsertTimeLog(current).catch(() => {});
+          if (prevProject) freelanceService.upsertProject(prevProject).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          freelanceService.upsertTimeLog(target).catch(() => {});
+          if (updatedProject) freelanceService.upsertProject(updatedProject).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteTimeLog = (id: string) => {
     const current = globalState.timeLogs.find((t) => t.id === id);
     if (!current) return;
+    const before = captureStoreSlices(['timeLogs', 'freelanceProjects']);
+    const prevProject = globalState.freelanceProjects.find((p) => p.id === current.projectId);
 
     const hoursToRemove = Number((current.durationSeconds / 3600).toFixed(2));
     const updatedProjects = globalState.freelanceProjects.map((p) => {
@@ -7505,6 +9865,34 @@ function createAtriumActions() {
         console.warn('[store] Supabase deleteTimeLog notice:', err);
       });
     }
+
+    const updatedProject = updatedProjects.find((p) => p.id === current.projectId);
+    const after = captureStoreSlices(['timeLogs', 'freelanceProjects']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted time log: ${current.taskDescription}`,
+        `Entrée de temps supprimée : ${current.taskDescription}`,
+        `حذف سجل الوقت: ${current.taskDescription}`
+      ),
+      entityLabel: current.taskDescription,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_time_logs', id, globalState.currentUser?.id).catch(() => {});
+          if (prevProject) freelanceService.upsertProject(prevProject).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteTimeLog(id, globalState.currentUser?.id).catch(() => {});
+          if (updatedProject) freelanceService.upsertProject(updatedProject).catch(() => {});
+        }
+      },
+    });
   };
 
   const billUnbilledHours = (clientId: string, taxPercent = 0, notes?: string) => {
@@ -7516,6 +9904,7 @@ function createAtriumActions() {
     );
     if (unbilled.length === 0) throw new Error('No unbilled hours available for this client');
 
+    const before = captureStoreSlices(['freelanceInvoices', 'timeLogs', 'freelanceClients']);
     const totalHours = unbilled.reduce((sum, item) => sum + item.durationSeconds / 3600, 0);
     const subtotal = unbilled.reduce((sum, item) => sum + (item.durationSeconds / 3600) * item.rateAtMoment, 0);
     const roundedSubtotal = Math.round(subtotal * 100) / 100;
@@ -7561,13 +9950,14 @@ function createAtriumActions() {
     const updatedTimeLogs = globalState.timeLogs.map((t) =>
       unbilledIds.has(t.id) ? { ...t, isInvoiced: true } : t
     );
+    const updatedClient = { ...client, lifetimeBilled: client.lifetimeBilled + totalAmount };
 
     globalState = {
       ...globalState,
       freelanceInvoices: [newInvoice, ...globalState.freelanceInvoices],
       timeLogs: updatedTimeLogs,
       freelanceClients: globalState.freelanceClients.map((c) =>
-        c.id === clientId ? { ...c, lifetimeBilled: c.lifetimeBilled + totalAmount } : c
+        c.id === clientId ? updatedClient : c
       ),
     };
     notify();
@@ -7583,10 +9973,43 @@ function createAtriumActions() {
       });
     }
 
+    const after = captureStoreSlices(['freelanceInvoices', 'timeLogs', 'freelanceClients']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Billed ${totalHours.toFixed(1)}h → ${invoiceNum}`,
+        `Facturé ${totalHours.toFixed(1)}h → ${invoiceNum}`,
+        `فوترة ${totalHours.toFixed(1)}س ← ${invoiceNum}`
+      ),
+      entityLabel: client.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteInvoice(newInvoice.id, globalState.currentUser?.id).catch(() => {});
+          unbilled.forEach((t) => freelanceService.upsertTimeLog({ ...t, isInvoiced: false }).catch(() => {}));
+          freelanceService.upsertClient(client).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_invoices', newInvoice.id, globalState.currentUser?.id)
+            .then(() => freelanceService.upsertInvoice(newInvoice))
+            .catch(() => {});
+          unbilled.forEach((t) => freelanceService.upsertTimeLog({ ...t, isInvoiced: true }).catch(() => {}));
+          freelanceService.upsertClient(updatedClient).catch(() => {});
+        }
+      },
+    });
+
     return newInvoice;
   };
 
   const createFreelanceInvoice = (invoiceData: Omit<FreelanceInvoice, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const before = captureStoreSlices(['freelanceInvoices', 'freelanceClients']);
+    const prevClient = globalState.freelanceClients.find((c) => c.id === invoiceData.clientId);
     const newInv: FreelanceInvoice = {
       ...getTraceContext(),
       ...invoiceData,
@@ -7595,29 +10018,15 @@ function createAtriumActions() {
       facilityId: globalState.currentBranchId,
       createdAt: new Date().toISOString(),
     };
+    const updatedClients = globalState.freelanceClients.map((c) =>
+      c.id === newInv.clientId ? { ...c, lifetimeBilled: c.lifetimeBilled + newInv.totalAmount } : c
+    );
     globalState = {
       ...globalState,
       freelanceInvoices: [newInv, ...globalState.freelanceInvoices],
-      freelanceClients: globalState.freelanceClients.map((c) =>
-        c.id === newInv.clientId ? { ...c, lifetimeBilled: c.lifetimeBilled + newInv.totalAmount } : c
-      ),
+      freelanceClients: updatedClients,
     };
     notify();
-
-    const lang = globalState.language || 'en';
-    showToast({
-      type: 'success',
-      title: t('toast_invoice_gen_title', lang),
-      message: `${t('toast_invoice_gen_msg', lang)} ${newInv.clientName} (#${newInv.invoiceNumber} - ${newInv.totalAmount.toLocaleString()} ${newInv.currency}).`,
-      category: 'freelance_solo',
-      action: {
-        label: t('toast_invoice_preview_btn', lang),
-        onClick: () => {
-          globalState = { ...globalState, activeScreen: 'shop' };
-          notify();
-        },
-      },
-    });
 
     if (isSupabaseConfigured()) {
       freelanceService.upsertInvoice(newInv).catch((err) => {
@@ -7625,10 +10034,43 @@ function createAtriumActions() {
       });
     }
 
+    const updatedClient = updatedClients.find((c) => c.id === newInv.clientId);
+    const after = captureStoreSlices(['freelanceInvoices', 'freelanceClients']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Created invoice #${newInv.invoiceNumber} (${newInv.clientName})`,
+        `Facture créée #${newInv.invoiceNumber} (${newInv.clientName})`,
+        `إنشاء فاتورة #${newInv.invoiceNumber} (${newInv.clientName})`
+      ),
+      entityLabel: newInv.clientName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteInvoice(newInv.id, globalState.currentUser?.id).catch(() => {});
+          if (prevClient) freelanceService.upsertClient(prevClient).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_invoices', newInv.id, globalState.currentUser?.id)
+            .then(() => freelanceService.upsertInvoice(newInv))
+            .catch(() => {});
+          if (updatedClient) freelanceService.upsertClient(updatedClient).catch(() => {});
+        }
+      },
+    });
+
     return newInv;
   };
 
   const updateInvoiceStatus = (invoiceId: string, status: InvoiceStatus) => {
+    const prev = globalState.freelanceInvoices.find((inv) => inv.id === invoiceId);
+    if (!prev) return;
+    const before = captureStoreSlices(['freelanceInvoices']);
     const updatedInvoices = globalState.freelanceInvoices.map((inv) =>
       inv.id === invoiceId
         ? {
@@ -7645,51 +10087,54 @@ function createAtriumActions() {
     notify();
 
     const target = updatedInvoices.find((inv) => inv.id === invoiceId);
-    const lang = globalState.language || 'en';
-    if (target && status === 'Paid') {
-      showToast({
-        type: 'success',
-        title: t('toast_invoice_settled_title', lang),
-        message: `${target.clientName} ${t('toast_invoice_settled_msg', lang)} #${target.invoiceNumber} (${target.totalAmount.toLocaleString()} ${target.currency}).`,
-        category: 'freelance_solo',
-        action: {
-          label: t('toast_invoice_receipt_btn', lang),
-          onClick: () => window.print?.(),
-        },
-      });
-    } else if (target && status === 'Sent') {
-      showToast({
-        type: 'info',
-        title: t('toast_invoice_dispatched_title', lang),
-        message: `${t('toast_invoice_dispatched_title', lang)}: #${target.invoiceNumber} ${t('toast_invoice_dispatched_msg', lang)} ${target.clientName}.`,
-        category: 'freelance_solo',
-      });
-    }
-
     if (target && isSupabaseConfigured()) {
       freelanceService.upsertInvoice(target).catch((err) => {
         console.warn('[store] Supabase updateInvoice notice:', err);
       });
     }
+
+    const after = captureStoreSlices(['freelanceInvoices']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Invoice #${prev.invoiceNumber}: ${status}`,
+        `Facture #${prev.invoiceNumber} : ${status}`,
+        `الفاتورة #${prev.invoiceNumber}: ${status}`
+      ),
+      entityLabel: prev.clientName,
+      toastType: status === 'Paid' ? 'success' : 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.upsertInvoice(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          freelanceService.upsertInvoice(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteFreelanceInvoice = (invoiceId: string) => {
     const target = globalState.freelanceInvoices.find((inv) => inv.id === invoiceId);
     if (!target) return;
+    const before = captureStoreSlices(['freelanceInvoices', 'timeLogs', 'freelanceClients']);
+    const prevClient = globalState.freelanceClients.find((c) => c.id === target.clientId);
 
-    // Identify any time log IDs contained in the invoice items
     const loggedIds = new Set(
       target.items
         .filter((item) => item.id.startsWith('item_time_'))
         .map((item) => item.id.replace('item_', ''))
     );
 
-    // If invoice had time logs, release them back to uninvoiced
     const updatedTimeLogs = globalState.timeLogs.map((t) =>
       loggedIds.has(t.id) ? { ...t, isInvoiced: false } : t
     );
 
-    // Deduct lifetimeBilled if client exists
     const updatedClients = globalState.freelanceClients.map((c) =>
       c.id === target.clientId
         ? { ...c, lifetimeBilled: Math.max(0, c.lifetimeBilled - target.totalAmount) }
@@ -7717,9 +10162,46 @@ function createAtriumActions() {
         }
       });
     }
+
+    const updatedClient = updatedClients.find((c) => c.id === target.clientId);
+    const after = captureStoreSlices(['freelanceInvoices', 'timeLogs', 'freelanceClients']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted invoice #${target.invoiceNumber}`,
+        `Facture supprimée #${target.invoiceNumber}`,
+        `حذف الفاتورة #${target.invoiceNumber}`
+      ),
+      entityLabel: target.clientName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_invoices', invoiceId, globalState.currentUser?.id).catch(() => {});
+          loggedIds.forEach((tId) => {
+            const logItem = before.timeLogs.find((l) => l.id === tId);
+            if (logItem) freelanceService.upsertTimeLog(logItem).catch(() => {});
+          });
+          if (prevClient) freelanceService.upsertClient(prevClient).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteInvoice(invoiceId, globalState.currentUser?.id).catch(() => {});
+          loggedIds.forEach((tId) => {
+            const logItem = updatedTimeLogs.find((l) => l.id === tId);
+            if (logItem) freelanceService.upsertTimeLog(logItem).catch(() => {});
+          });
+          if (updatedClient) freelanceService.upsertClient(updatedClient).catch(() => {});
+        }
+      },
+    });
   };
 
   const createFreelanceProposal = (proposalData: Omit<FreelanceProposal, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const before = captureStoreSlices(['freelanceProposals']);
     const newProp: FreelanceProposal = {
       ...getTraceContext(),
       ...proposalData,
@@ -7740,10 +10222,40 @@ function createAtriumActions() {
       });
     }
 
+    const after = captureStoreSlices(['freelanceProposals']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Created proposal: ${newProp.title}`,
+        `Proposition créée : ${newProp.title}`,
+        `إنشاء عرض سعر: ${newProp.title}`
+      ),
+      entityLabel: newProp.clientName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteProposal(newProp.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_proposals', newProp.id, globalState.currentUser?.id)
+            .then(() => freelanceService.upsertProposal(newProp))
+            .catch(() => {});
+        }
+      },
+    });
+
     return newProp;
   };
 
   const updateFreelanceProposal = (id: string, updates: Partial<FreelanceProposal>) => {
+    const prev = globalState.freelanceProposals.find((p) => p.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['freelanceProposals']);
     const updatedProps = globalState.freelanceProposals.map((p) => (p.id === id ? { ...p, ...updates } : p));
     globalState = {
       ...globalState,
@@ -7757,9 +10269,37 @@ function createAtriumActions() {
         console.warn('[store] Supabase updateProposal notice:', err);
       });
     }
+
+    const after = captureStoreSlices(['freelanceProposals']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: updates.status && updates.status !== prev.status ? 'status' : 'edit',
+      summary: ul(
+        `Updated proposal: ${target?.title || prev.title}`,
+        `Proposition mise à jour : ${target?.title || prev.title}`,
+        `تحديث عرض السعر: ${target?.title || prev.title}`
+      ),
+      entityLabel: target?.clientName || prev.clientName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.upsertProposal(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          freelanceService.upsertProposal(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteFreelanceProposal = (id: string) => {
+    const prev = globalState.freelanceProposals.find((p) => p.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['freelanceProposals']);
     globalState = {
       ...globalState,
       freelanceProposals: globalState.freelanceProposals.filter((p) => p.id !== id),
@@ -7771,17 +10311,44 @@ function createAtriumActions() {
         console.warn('[store] Supabase deleteProposal notice:', err);
       });
     }
+
+    const after = captureStoreSlices(['freelanceProposals']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted proposal: ${prev.title}`,
+        `Proposition supprimée : ${prev.title}`,
+        `حذف عرض السعر: ${prev.title}`
+      ),
+      entityLabel: prev.clientName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_proposals', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteProposal(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const convertProposalToProject = (proposalId: string) => {
     const prop = globalState.freelanceProposals.find((p) => p.id === proposalId);
     if (!prop) throw new Error('Proposal not found');
 
+    const before = captureStoreSlices(['freelanceClients', 'freelanceProjects', 'freelanceProposals']);
     let client = globalState.freelanceClients.find(
       (c) => c.email.toLowerCase() === prop.clientEmail.toLowerCase()
     );
+    let createdNewClient: FreelanceClient | null = null;
     if (!client) {
-      client = {
+      createdNewClient = {
         ...getTraceContext(),
         id: `fcli_${Date.now()}`,
         tenantId: globalState.account.id,
@@ -7795,15 +10362,17 @@ function createAtriumActions() {
         lifetimeBilled: 0,
         createdAt: new Date().toISOString(),
       };
+      client = createdNewClient;
       globalState = {
         ...globalState,
-        freelanceClients: [client, ...globalState.freelanceClients],
+        freelanceClients: [createdNewClient, ...globalState.freelanceClients],
       };
     }
 
+    const newProjectId = `fproj_${Date.now()}`;
     const newProject: FreelanceProject = {
       ...getTraceContext(),
-      id: `fproj_${Date.now()}`,
+      id: newProjectId,
       tenantId: globalState.account.id,
       facilityId: globalState.currentBranchId,
       clientId: client.id,
@@ -7820,7 +10389,7 @@ function createAtriumActions() {
       deadline: prop.validUntil,
       deliverables: prop.scopeItems.map((item, idx) => ({
         id: `deliv_${Date.now()}_${idx}`,
-        projectId: `fproj_${Date.now()}`,
+        projectId: newProjectId,
         title: item,
         stage: idx === 0 ? 'InProgress' : 'Briefing',
         estimatedHours: Math.round((prop.estimatedTimelineWeeks * 20) / (prop.scopeItems.length || 1)),
@@ -7831,45 +10400,70 @@ function createAtriumActions() {
       createdAt: new Date().toISOString(),
     };
 
+    const acceptedProp: FreelanceProposal = { ...prop, status: 'Accepted' };
     globalState = {
       ...globalState,
       freelanceProjects: [newProject, ...globalState.freelanceProjects],
       freelanceProposals: globalState.freelanceProposals.map((p) =>
-        p.id === proposalId ? { ...p, status: 'Accepted' } : p
+        p.id === proposalId ? acceptedProp : p
       ),
     };
     notify();
 
-    const lang = globalState.language || 'en';
-    showToast({
-      type: 'success',
-      title: t('toast_prop_converted_title', lang),
-      message: `"${prop.title}" ${t('toast_prop_converted_msg', lang)} ${newProject.deliverables.length} ${t('free_prop_deliverable_item', lang)}.`,
-      category: 'freelance_solo',
-      action: {
-        label: t('toast_prop_kanban_btn', lang),
-        onClick: () => {
-          globalState = { ...globalState, activeScreen: 'scheduler' };
-          notify();
-        },
-      },
-    });
-
     if (isSupabaseConfigured()) {
+      if (createdNewClient) {
+        freelanceService.upsertClient(createdNewClient).catch(() => {});
+      }
       freelanceService.upsertProject(newProject).catch((err) => {
         console.warn('[store] Failed to save converted project to Supabase:', err);
       });
-      if (prop) {
-        freelanceService.upsertProposal({ ...prop, status: 'Accepted' }).catch((err) => {
-          console.warn('[store] Failed to update proposal status in Supabase:', err);
-        });
-      }
+      freelanceService.upsertProposal(acceptedProp).catch((err) => {
+        console.warn('[store] Failed to update proposal status in Supabase:', err);
+      });
     }
+
+    const after = captureStoreSlices(['freelanceClients', 'freelanceProjects', 'freelanceProposals']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Converted proposal → project: ${prop.title}`,
+        `Proposition convertie en projet : ${prop.title}`,
+        `تحويل العرض إلى مشروع: ${prop.title}`
+      ),
+      entityLabel: prop.title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteProject(newProjectId, globalState.currentUser?.id).catch(() => {});
+          freelanceService.upsertProposal(prop).catch(() => {});
+          if (createdNewClient) {
+            freelanceService.deleteClient(createdNewClient.id, globalState.currentUser?.id).catch(() => {});
+          }
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          if (createdNewClient) {
+            syncCoordinator.restoreRow('freelance_clients', createdNewClient.id, globalState.currentUser?.id)
+              .then(() => freelanceService.upsertClient(createdNewClient!))
+              .catch(() => {});
+          }
+          syncCoordinator.restoreRow('freelance_projects', newProjectId, globalState.currentUser?.id)
+            .then(() => freelanceService.upsertProject(newProject))
+            .catch(() => {});
+          freelanceService.upsertProposal(acceptedProp).catch(() => {});
+        }
+      },
+    });
 
     return newProject;
   };
 
   const addFreelanceExpense = (expenseData: Omit<FreelanceExpense, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const before = captureStoreSlices(['freelanceExpenses']);
     const newExp: FreelanceExpense = {
       ...getTraceContext(),
       ...expenseData,
@@ -7890,10 +10484,40 @@ function createAtriumActions() {
       });
     }
 
+    const after = captureStoreSlices(['freelanceExpenses']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added expense: ${newExp.vendor} (${newExp.amount.toLocaleString()} ${newExp.currency})`,
+        `Dépense ajoutée : ${newExp.vendor} (${newExp.amount.toLocaleString()} ${newExp.currency})`,
+        `إضافة مصروف: ${newExp.vendor}`
+      ),
+      entityLabel: newExp.vendor,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteExpense(newExp.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_expenses', newExp.id, globalState.currentUser?.id)
+            .then(() => freelanceService.upsertExpense(newExp))
+            .catch(() => {});
+        }
+      },
+    });
+
     return newExp;
   };
 
   const deleteFreelanceExpense = (id: string) => {
+    const prev = globalState.freelanceExpenses.find((e) => e.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['freelanceExpenses']);
     globalState = {
       ...globalState,
       freelanceExpenses: globalState.freelanceExpenses.filter((e) => e.id !== id),
@@ -7902,6 +10526,30 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       freelanceService.deleteExpense(id, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['freelanceExpenses']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted expense: ${prev.vendor}`,
+        `Dépense supprimée : ${prev.vendor}`,
+        `حذف المصروف: ${prev.vendor}`
+      ),
+      entityLabel: prev.vendor,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('freelance_expenses', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          freelanceService.deleteExpense(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   // ==========================================
@@ -7911,6 +10559,7 @@ function createAtriumActions() {
   const createRentalBooking = (
     bookingData: Omit<RentalBooking, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>
   ) => {
+    const before = captureStoreSlices(['rentalBookings', 'securityDeposits', 'rentableUnits']);
     const bookingId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `bk_${Date.now()}`;
     const newBooking: RentalBooking = {
       ...getTraceContext(),
@@ -7922,7 +10571,6 @@ function createAtriumActions() {
       updatedAt: new Date().toISOString(),
     };
 
-    // Auto-create or link deposit record if deposit > 0
     let newDeposit: SecurityDepositRecord | null = null;
     if (newBooking.depositAmount > 0 && newBooking.depositStatus === 'Held') {
       const depositId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `dep_${Date.now()}`;
@@ -7942,7 +10590,7 @@ function createAtriumActions() {
       };
     }
 
-    // Update unit status if checked in
+    const prevUnit = globalState.rentableUnits.find((u) => u.id === newBooking.unitId);
     const updatedUnits = globalState.rentableUnits.map((u) => {
       if (u.id === newBooking.unitId && newBooking.status === 'CheckedIn') {
         return { ...u, status: 'Occupied' as const };
@@ -7961,56 +10609,61 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService
-        .upsertBooking(newBooking)
-        .then((res) => {
-          if (res.success) {
-            showToast({
-              type: 'success',
-              title: 'Reservation Saved to Cloud',
-              message: `Booking for ${newBooking.renterName} in "${newBooking.unitName}" successfully written to Supabase ("rental_bookings").`,
-              syncStatus: 'synced',
-              table: 'rental_bookings',
-            });
-          } else {
-            showToast({
-              type: 'warning',
-              title: 'Saved Locally (Cloud Alert)',
-              message: `Booking saved in offline storage. Supabase notice: ${res.error || 'Check table schema/permissions'}`,
-              syncStatus: 'error',
-              table: 'rental_bookings',
-            });
-          }
-        })
-        .catch((err) => {
-          showToast({
-            type: 'warning',
-            title: 'Saved Locally',
-            message: `Booking stored locally. Network notice: ${err?.message || 'Offline mode'}`,
-            syncStatus: 'local',
-          });
-        });
-
+      rentalService.upsertBooking(newBooking).catch(() => {});
       if (newDeposit) {
         rentalService.upsertDeposit(newDeposit).catch((err) => console.warn('[store] Supabase upsertDeposit notice:', err));
       }
       const chgUnit = updatedUnits.find((u) => u.id === newBooking.unitId);
-      if (chgUnit) {
+      if (chgUnit && newBooking.status === 'CheckedIn') {
         rentalService.upsertUnit(chgUnit).catch((err) => console.warn('[store] Supabase upsertUnit notice:', err));
       }
-    } else {
-      showToast({
-        type: 'success',
-        title: 'Reservation Saved',
-        message: `Booking for ${newBooking.renterName} in "${newBooking.unitName}" saved to local storage.`,
-        syncStatus: 'local',
-      });
     }
+
+    const chgUnit = updatedUnits.find((u) => u.id === newBooking.unitId);
+    const after = captureStoreSlices(['rentalBookings', 'securityDeposits', 'rentableUnits']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Booked: ${newBooking.renterName} (${newBooking.unitName})`,
+        `Réservation créée : ${newBooking.renterName} (${newBooking.unitName})`,
+        `حجز جديد: ${newBooking.renterName} (${newBooking.unitName})`
+      ),
+      entityLabel: newBooking.renterName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          rentalService.deleteBooking(newBooking.id, globalState.currentUser?.id).catch(() => {});
+          if (newDeposit) rentalService.deleteDeposit(newDeposit.id, globalState.currentUser?.id).catch(() => {});
+          if (prevUnit && newBooking.status === 'CheckedIn') rentalService.upsertUnit(prevUnit).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('rental_bookings', newBooking.id, globalState.currentUser?.id)
+            .then(() => rentalService.upsertBooking(newBooking))
+            .catch(() => {});
+          if (newDeposit) {
+            syncCoordinator.restoreRow('rental_security_deposits', newDeposit.id, globalState.currentUser?.id)
+              .then(() => rentalService.upsertDeposit(newDeposit!))
+              .catch(() => {});
+          }
+          if (chgUnit && newBooking.status === 'CheckedIn') {
+            rentalService.upsertUnit(chgUnit).catch(() => {});
+          }
+        }
+      },
+    });
 
     return newBooking;
   };
 
   const updateRentalBooking = (id: string, updates: Partial<RentalBooking>) => {
+    const prev = globalState.rentalBookings.find((b) => b.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['rentalBookings']);
     const updatedBookings = globalState.rentalBookings.map((b) =>
       b.id === id ? { ...b, ...updates, updatedAt: new Date().toISOString() } : b
     );
@@ -8022,39 +10675,39 @@ function createAtriumActions() {
 
     const target = updatedBookings.find((b) => b.id === id);
     if (target && isSupabaseConfigured()) {
-      rentalService
-        .upsertBooking(target)
-        .then((res) => {
-          if (res.success) {
-            showToast({
-              type: 'success',
-              title: 'Reservation Updated & Synced',
-              message: `Changes for "${target.renterName}" written to Supabase cloud.`,
-              syncStatus: 'synced',
-              table: 'rental_bookings',
-            });
-          } else {
-            showToast({
-              type: 'info',
-              title: 'Reservation Updated',
-              message: `Changes saved locally. Cloud notice: ${res.error || 'Pending sync'}`,
-              syncStatus: 'local',
-            });
-          }
-        })
-        .catch((err) => console.warn('[store] Supabase updateRentalBooking notice:', err));
-    } else if (target) {
-      showToast({
-        type: 'info',
-        title: 'Reservation Updated',
-        message: `Changes for "${target.renterName}" saved to local storage.`,
-        syncStatus: 'local',
-      });
+      rentalService.upsertBooking(target).catch((err) => console.warn('[store] Supabase updateRentalBooking notice:', err));
     }
+
+    const after = captureStoreSlices(['rentalBookings']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: updates.status && updates.status !== prev.status ? 'status' : 'edit',
+      summary: ul(
+        `Updated booking: ${target?.renterName || prev.renterName}`,
+        `Réservation mise à jour : ${target?.renterName || prev.renterName}`,
+        `تحديث الحجز: ${target?.renterName || prev.renterName}`
+      ),
+      entityLabel: target?.renterName || prev.renterName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          rentalService.upsertBooking(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          rentalService.upsertBooking(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteRentalBooking = (id: string) => {
     const target = globalState.rentalBookings.find((b) => b.id === id);
+    if (!target) return;
+    const before = captureStoreSlices(['rentalBookings']);
     globalState = {
       ...globalState,
       rentalBookings: globalState.rentalBookings.filter((b) => b.id !== id),
@@ -8062,30 +10715,40 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService
-        .deleteBooking(id, globalState.currentUser?.id)
-        .then((res) => {
-          showToast({
-            type: 'info',
-            title: 'Reservation Removed',
-            message: res.success ? `Booking for "${target?.renterName || 'guest'}" deleted from Supabase cloud.` : 'Booking removed from local storage.',
-            syncStatus: res.success ? 'synced' : 'local',
-          });
-        })
-        .catch((err) => console.warn('[store] Supabase deleteRentalBooking notice:', err));
-    } else {
-      showToast({
-        type: 'info',
-        title: 'Reservation Removed',
-        message: 'Booking removed from local storage.',
-        syncStatus: 'local',
-      });
+      rentalService.deleteBooking(id, globalState.currentUser?.id).catch((err) => console.warn('[store] Supabase deleteRentalBooking notice:', err));
     }
+
+    const after = captureStoreSlices(['rentalBookings']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted booking: ${target.renterName}`,
+        `Réservation supprimée : ${target.renterName}`,
+        `حذف الحجز: ${target.renterName}`
+      ),
+      entityLabel: target.renterName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('rental_bookings', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          rentalService.deleteBooking(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const checkInBooking = (id: string) => {
     const booking = globalState.rentalBookings.find((b) => b.id === id);
     if (!booking) return;
+    const prevUnit = globalState.rentableUnits.find((u) => u.id === booking.unitId);
+    const before = captureStoreSlices(['rentalBookings', 'rentableUnits']);
 
     const updatedBookings = globalState.rentalBookings.map((b) =>
       b.id === id ? { ...b, status: 'CheckedIn' as const, updatedAt: new Date().toISOString() } : b
@@ -8101,31 +10764,46 @@ function createAtriumActions() {
     };
     notify();
 
+    const nextBooking = updatedBookings.find((x) => x.id === id);
+    const nextUnit = updatedUnits.find((x) => x.id === booking.unitId);
     if (isSupabaseConfigured()) {
-      const b = updatedBookings.find((x) => x.id === id);
-      if (b) rentalService.upsertBooking(b).catch(console.warn);
-      const u = updatedUnits.find((x) => x.id === booking.unitId);
-      if (u) rentalService.upsertUnit(u).catch(console.warn);
+      if (nextBooking) rentalService.upsertBooking(nextBooking).catch(console.warn);
+      if (nextUnit) rentalService.upsertUnit(nextUnit).catch(console.warn);
     }
 
-    const lang = globalState.language;
-    showToast({
-      type: 'success',
-      title: lang === 'ar' ? 'تم تسجيل دخول الضيف' : lang === 'fr' ? 'Client Enregistré' : 'Guest Checked In',
-      message: lang === 'ar'
-        ? `تم تسجيل دخول ${booking.renterName} إلى "${booking.unitName}". الفضاء الآن قيد الاستخدام.`
-        : lang === 'fr'
-        ? `${booking.renterName} est installé dans « ${booking.unitName} ». L'espace est désormais occupé.`
-        : `${booking.renterName} checked into "${booking.unitName}". Space is now marked Occupied.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'rental_bookings',
-      category: 'rental_booking',
+    const after = captureStoreSlices(['rentalBookings', 'rentableUnits']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Checked in: ${booking.renterName} (${booking.unitName})`,
+        `Arrivée enregistrée : ${booking.renterName} (${booking.unitName})`,
+        `تسجيل دخول: ${booking.renterName} (${booking.unitName})`
+      ),
+      entityLabel: booking.renterName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          rentalService.upsertBooking(booking).catch(() => {});
+          if (prevUnit) rentalService.upsertUnit(prevUnit).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          if (nextBooking) rentalService.upsertBooking(nextBooking).catch(() => {});
+          if (nextUnit) rentalService.upsertUnit(nextUnit).catch(() => {});
+        }
+      },
     });
   };
 
   const checkOutBooking = (id: string) => {
     const booking = globalState.rentalBookings.find((b) => b.id === id);
     if (!booking) return;
+    const prevUnit = globalState.rentableUnits.find((u) => u.id === booking.unitId);
+    const before = captureStoreSlices(['rentalBookings', 'rentableUnits']);
 
     const updatedBookings = globalState.rentalBookings.map((b) =>
       b.id === id ? { ...b, status: 'Completed' as const, updatedAt: new Date().toISOString() } : b
@@ -8141,31 +10819,45 @@ function createAtriumActions() {
     };
     notify();
 
+    const nextBooking = updatedBookings.find((x) => x.id === id);
+    const nextUnit = updatedUnits.find((x) => x.id === booking.unitId);
     if (isSupabaseConfigured()) {
-      const b = updatedBookings.find((x) => x.id === id);
-      if (b) rentalService.upsertBooking(b).catch(console.warn);
-      const u = updatedUnits.find((x) => x.id === booking.unitId);
-      if (u) rentalService.upsertUnit(u).catch(console.warn);
+      if (nextBooking) rentalService.upsertBooking(nextBooking).catch(console.warn);
+      if (nextUnit) rentalService.upsertUnit(nextUnit).catch(console.warn);
     }
 
-    const lang = globalState.language;
-    showToast({
-      type: 'info',
-      title: lang === 'ar' ? 'اكتمل تسليم وإخلاء القاعة' : lang === 'fr' ? 'Restitution & Sortie Terminées' : 'Handover & Check-Out Complete',
-      message: lang === 'ar'
-        ? `تم إخلاء "${booking.unitName}" بنجاح وأصبح متاحاً لحجوزات جديدة.`
-        : lang === 'fr'
-        ? `« ${booking.unitName} » a été libéré et est de nouveau disponible.`
-        : `"${booking.unitName}" has been freed and marked Available for new bookings.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'rental_bookings',
-      category: 'rental_booking',
+    const after = captureStoreSlices(['rentalBookings', 'rentableUnits']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Checked out: ${booking.renterName} (${booking.unitName})`,
+        `Sortie terminée : ${booking.renterName} (${booking.unitName})`,
+        `تسجيل خروج: ${booking.renterName} (${booking.unitName})`
+      ),
+      entityLabel: booking.unitName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          rentalService.upsertBooking(booking).catch(() => {});
+          if (prevUnit) rentalService.upsertUnit(prevUnit).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          if (nextBooking) rentalService.upsertBooking(nextBooking).catch(() => {});
+          if (nextUnit) rentalService.upsertUnit(nextUnit).catch(() => {});
+        }
+      },
     });
   };
 
   const createRentableUnit = (
     unitData: Omit<RentableUnit, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>
   ) => {
+    const before = captureStoreSlices(['rentableUnits']);
     const unitId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `unit_${Date.now()}`;
     const newUnit: RentableUnit = {
       ...getTraceContext(),
@@ -8182,40 +10874,43 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService
-        .upsertUnit(newUnit)
-        .then((res) => {
-          if (res.success) {
-            showToast({
-              type: 'success',
-              title: 'Space Added & Synced',
-              message: `"${newUnit.name}" (${newUnit.code}) written to Supabase ("rentable_units").`,
-              syncStatus: 'synced',
-              table: 'rentable_units',
-            });
-          } else {
-            showToast({
-              type: 'warning',
-              title: 'Space Added Locally',
-              message: `"${newUnit.name}" saved locally. Supabase notice: ${res.error || 'Pending'}`,
-              syncStatus: 'error',
-            });
-          }
-        })
-        .catch((err) => console.warn('[store] Supabase upsertUnit notice:', err));
-    } else {
-      showToast({
-        type: 'info',
-        title: 'Space Added',
-        message: `"${newUnit.name}" (${newUnit.code}) saved locally.`,
-        syncStatus: 'local',
-      });
+      rentalService.upsertUnit(newUnit).catch((err) => console.warn('[store] Supabase upsertUnit notice:', err));
     }
+
+    const after = captureStoreSlices(['rentableUnits']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added space: ${newUnit.name}`,
+        `Espace ajouté : ${newUnit.name}`,
+        `إضافة مساحة: ${newUnit.name}`
+      ),
+      entityLabel: newUnit.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          rentalService.deleteUnit(newUnit.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('rental_units', newUnit.id, globalState.currentUser?.id)
+            .then(() => rentalService.upsertUnit(newUnit))
+            .catch(() => {});
+        }
+      },
+    });
 
     return newUnit;
   };
 
   const updateRentableUnit = (id: string, updates: Partial<RentableUnit>) => {
+    const prev = globalState.rentableUnits.find((u) => u.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['rentableUnits']);
     const updatedUnits = globalState.rentableUnits.map((u) => (u.id === id ? { ...u, ...updates } : u));
     globalState = {
       ...globalState,
@@ -8225,32 +10920,39 @@ function createAtriumActions() {
 
     const target = updatedUnits.find((u) => u.id === id);
     if (target && isSupabaseConfigured()) {
-      rentalService
-        .upsertUnit(target)
-        .then((res) => {
-          if (res.success) {
-            showToast({
-              type: 'success',
-              title: 'Space Updated & Synced',
-              message: `Changes to "${target.name}" synced to Supabase ("rentable_units").`,
-              syncStatus: 'synced',
-              table: 'rentable_units',
-            });
-          }
-        })
-        .catch((err) => console.warn('[store] Supabase updateRentableUnit notice:', err));
-    } else if (target) {
-      showToast({
-        type: 'info',
-        title: 'Space Updated',
-        message: `"${target.name}" updated locally.`,
-        syncStatus: 'local',
-      });
+      rentalService.upsertUnit(target).catch((err) => console.warn('[store] Supabase updateRentableUnit notice:', err));
     }
+
+    const after = captureStoreSlices(['rentableUnits']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: updates.status && updates.status !== prev.status ? 'status' : 'edit',
+      summary: ul(
+        `Updated space: ${target?.name || prev.name}`,
+        `Espace mis à jour : ${target?.name || prev.name}`,
+        `تحديث المساحة: ${target?.name || prev.name}`
+      ),
+      entityLabel: target?.name || prev.name,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          rentalService.upsertUnit(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          rentalService.upsertUnit(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteRentableUnit = (id: string) => {
     const target = globalState.rentableUnits.find((u) => u.id === id);
+    if (!target) return;
+    const before = captureStoreSlices(['rentableUnits']);
     globalState = {
       ...globalState,
       rentableUnits: globalState.rentableUnits.filter((u) => u.id !== id),
@@ -8258,30 +10960,39 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService
-        .deleteUnit(id, globalState.currentUser?.id)
-        .then((res) => {
-          showToast({
-            type: 'info',
-            title: 'Space Removed',
-            message: res.success ? `"${target?.name || 'Unit'}" removed from Supabase cloud.` : 'Space removed from local view.',
-            syncStatus: res.success ? 'synced' : 'local',
-          });
-        })
-        .catch((err) => console.warn('[store] Supabase deleteRentableUnit notice:', err));
-    } else {
-      showToast({
-        type: 'info',
-        title: 'Space Removed',
-        message: 'Space removed from local view.',
-        syncStatus: 'local',
-      });
+      rentalService.deleteUnit(id, globalState.currentUser?.id).catch((err) => console.warn('[store] Supabase deleteRentableUnit notice:', err));
     }
+
+    const after = captureStoreSlices(['rentableUnits']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted space: ${target.name}`,
+        `Espace supprimé : ${target.name}`,
+        `حذف المساحة: ${target.name}`
+      ),
+      entityLabel: target.name,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('rental_units', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          rentalService.deleteUnit(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const createRentalRenter = (
     renterData: Omit<RentalRenter, 'id' | 'tenantId' | 'facilityId' | 'totalBookings' | 'totalSpent' | 'createdAt'>
   ) => {
+    const before = captureStoreSlices(['rentalRenters']);
     const renterId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `rnt_${Date.now()}`;
     const newRenter: RentalRenter = {
       ...getTraceContext(),
@@ -8300,40 +11011,43 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService
-        .upsertRenter(newRenter)
-        .then((res) => {
-          if (res.success) {
-            showToast({
-              type: 'success',
-              title: 'Renter Created & Synced',
-              message: `"${newRenter.fullName}" written to Supabase ("rental_renters").`,
-              syncStatus: 'synced',
-              table: 'rental_renters',
-            });
-          } else {
-            showToast({
-              type: 'warning',
-              title: 'Renter Saved Locally',
-              message: `"${newRenter.fullName}" saved locally. Supabase notice: ${res.error || 'Pending'}`,
-              syncStatus: 'error',
-            });
-          }
-        })
-        .catch((err) => console.warn('[store] Supabase upsertRenter notice:', err));
-    } else {
-      showToast({
-        type: 'info',
-        title: 'Renter Added',
-        message: `"${newRenter.fullName}" saved locally.`,
-        syncStatus: 'local',
-      });
+      rentalService.upsertRenter(newRenter).catch((err) => console.warn('[store] Supabase upsertRenter notice:', err));
     }
+
+    const after = captureStoreSlices(['rentalRenters']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added renter: ${newRenter.fullName}`,
+        `Locataire ajouté : ${newRenter.fullName}`,
+        `إضافة مستأجر: ${newRenter.fullName}`
+      ),
+      entityLabel: newRenter.fullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          rentalService.deleteRenter(newRenter.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('rental_renters', newRenter.id, globalState.currentUser?.id)
+            .then(() => rentalService.upsertRenter(newRenter))
+            .catch(() => {});
+        }
+      },
+    });
 
     return newRenter;
   };
 
   const updateRentalRenter = (id: string, updates: Partial<RentalRenter>) => {
+    const prev = globalState.rentalRenters.find((r) => r.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['rentalRenters']);
     const updatedRenters = globalState.rentalRenters.map((r) => (r.id === id ? { ...r, ...updates } : r));
     globalState = {
       ...globalState,
@@ -8343,32 +11057,39 @@ function createAtriumActions() {
 
     const target = updatedRenters.find((r) => r.id === id);
     if (target && isSupabaseConfigured()) {
-      rentalService
-        .upsertRenter(target)
-        .then((res) => {
-          if (res.success) {
-            showToast({
-              type: 'success',
-              title: 'Renter Profile Synced',
-              message: `Changes to "${target.fullName}" synced to Supabase ("rental_renters").`,
-              syncStatus: 'synced',
-              table: 'rental_renters',
-            });
-          }
-        })
-        .catch((err) => console.warn('[store] Supabase updateRentalRenter notice:', err));
-    } else if (target) {
-      showToast({
-        type: 'info',
-        title: 'Renter Updated',
-        message: `Profile for "${target.fullName}" saved locally.`,
-        syncStatus: 'local',
-      });
+      rentalService.upsertRenter(target).catch((err) => console.warn('[store] Supabase updateRentalRenter notice:', err));
     }
+
+    const after = captureStoreSlices(['rentalRenters']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'edit',
+      summary: ul(
+        `Updated renter: ${target?.fullName || prev.fullName}`,
+        `Locataire mis à jour : ${target?.fullName || prev.fullName}`,
+        `تحديث المستأجر: ${target?.fullName || prev.fullName}`
+      ),
+      entityLabel: target?.fullName || prev.fullName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          rentalService.upsertRenter(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          rentalService.upsertRenter(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteRentalRenter = (id: string) => {
     const target = globalState.rentalRenters.find((r) => r.id === id);
+    if (!target) return;
+    const before = captureStoreSlices(['rentalRenters']);
     globalState = {
       ...globalState,
       rentalRenters: globalState.rentalRenters.filter((r) => r.id !== id),
@@ -8376,36 +11097,50 @@ function createAtriumActions() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService
-        .deleteRenter(id, globalState.currentUser?.id)
-        .then((res) => {
-          showToast({
-            type: 'info',
-            title: 'Renter Removed',
-            message: res.success ? `"${target?.fullName || 'Renter'}" removed from Supabase cloud.` : 'Renter removed from local directory.',
-            syncStatus: res.success ? 'synced' : 'local',
-          });
-        })
-        .catch((err) => console.warn('[store] Supabase deleteRentalRenter notice:', err));
-    } else {
-      showToast({
-        type: 'info',
-        title: 'Renter Removed',
-        message: 'Renter removed from directory.',
-        syncStatus: 'local',
-      });
+      rentalService.deleteRenter(id, globalState.currentUser?.id).catch((err) => console.warn('[store] Supabase deleteRentalRenter notice:', err));
     }
+
+    const after = captureStoreSlices(['rentalRenters']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted renter: ${target.fullName}`,
+        `Locataire supprimé : ${target.fullName}`,
+        `حذف المستأجر: ${target.fullName}`
+      ),
+      entityLabel: target.fullName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('rental_renters', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          rentalService.deleteRenter(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const releaseSecurityDeposit = (depositId: string) => {
+    const target = globalState.securityDeposits.find((d) => d.id === depositId);
+    if (!target) return;
+    const prevBooking = target.bookingId
+      ? globalState.rentalBookings.find((b) => b.id === target.bookingId)
+      : undefined;
+    const before = captureStoreSlices(['securityDeposits', 'rentalBookings']);
+
     const updatedDeposits = globalState.securityDeposits.map((d) =>
       d.id === depositId
         ? { ...d, status: 'Released' as const, releasedAt: new Date().toISOString() }
         : d
     );
-    const target = globalState.securityDeposits.find((d) => d.id === depositId);
     let updatedBookings = globalState.rentalBookings;
-    if (target?.bookingId) {
+    if (target.bookingId) {
       updatedBookings = updatedBookings.map((b) =>
         b.id === target.bookingId ? { ...b, depositStatus: 'Refunded' as const } : b
       );
@@ -8417,33 +11152,37 @@ function createAtriumActions() {
     };
     notify();
 
+    const nextDeposit = updatedDeposits.find((d) => d.id === depositId);
+    const nextBooking = target.bookingId ? updatedBookings.find((b) => b.id === target.bookingId) : undefined;
     if (isSupabaseConfigured()) {
-      const dep = updatedDeposits.find((d) => d.id === depositId);
-      if (dep) rentalService.upsertDeposit(dep).catch(console.warn);
-      if (target?.bookingId) {
-        const bk = updatedBookings.find((b) => b.id === target.bookingId);
-        if (bk) rentalService.upsertBooking(bk).catch(console.warn);
-      }
+      if (nextDeposit) rentalService.upsertDeposit(nextDeposit).catch(console.warn);
+      if (nextBooking) rentalService.upsertBooking(nextBooking).catch(console.warn);
     }
 
-    const lang = globalState.language;
-    showToast({
-      type: 'success',
-      title: lang === 'ar' ? 'تم استرجاع كفالة التأمين' : lang === 'fr' ? 'Caution Restituée' : 'Security Caution Refunded',
-      message: lang === 'ar'
-        ? `تم رد مبلغ الضمان الخاص بالمستأجر "${target?.renterName || 'الزبون'}".`
-        : lang === 'fr'
-        ? `Le dépôt de garantie pour « ${target?.renterName || 'Client'} » a été restitué.`
-        : `Deposit for "${target?.renterName || 'Client'}" has been released back to renter.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'security_deposits',
-      category: 'rental_booking',
-      action: {
-        label: lang === 'ar' ? 'سجل الكفالات' : lang === 'fr' ? 'Registre Cautions' : 'Deposit Log',
-        onClick: () => {
-          globalState = { ...globalState, activeScreen: 'finance' };
-          notify();
-        },
+    const after = captureStoreSlices(['securityDeposits', 'rentalBookings']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Released deposit: ${target.renterName}`,
+        `Caution restituée : ${target.renterName}`,
+        `رد الكفالة: ${target.renterName}`
+      ),
+      entityLabel: target.renterName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          rentalService.upsertDeposit(target).catch(() => {});
+          if (prevBooking) rentalService.upsertBooking(prevBooking).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          if (nextDeposit) rentalService.upsertDeposit(nextDeposit).catch(() => {});
+          if (nextBooking) rentalService.upsertBooking(nextBooking).catch(() => {});
+        }
       },
     });
   };
@@ -8451,6 +11190,10 @@ function createAtriumActions() {
   const deductSecurityDeposit = (depositId: string, reason: string, deductedAmount?: number) => {
     const target = globalState.securityDeposits.find((d) => d.id === depositId);
     if (!target) return;
+    const prevBooking = target.bookingId
+      ? globalState.rentalBookings.find((b) => b.id === target.bookingId)
+      : undefined;
+    const before = captureStoreSlices(['securityDeposits', 'rentalBookings']);
 
     const updatedDeposits = globalState.securityDeposits.map((d) =>
       d.id === depositId
@@ -8476,31 +11219,43 @@ function createAtriumActions() {
     };
     notify();
 
+    const nextDeposit = updatedDeposits.find((d) => d.id === depositId);
+    const nextBooking = target.bookingId ? updatedBookings.find((b) => b.id === target.bookingId) : undefined;
     if (isSupabaseConfigured()) {
-      const dep = updatedDeposits.find((d) => d.id === depositId);
-      if (dep) rentalService.upsertDeposit(dep).catch(console.warn);
-      if (target?.bookingId) {
-        const bk = updatedBookings.find((b) => b.id === target.bookingId);
-        if (bk) rentalService.upsertBooking(bk).catch(console.warn);
-      }
+      if (nextDeposit) rentalService.upsertDeposit(nextDeposit).catch(console.warn);
+      if (nextBooking) rentalService.upsertBooking(nextBooking).catch(console.warn);
     }
 
-    const lang = globalState.language;
-    showToast({
-      type: 'warning',
-      title: lang === 'ar' ? 'تم خصم من كفالة التأمين' : lang === 'fr' ? 'Caution Retenue pour Dégradation' : 'Caution Escrow Deducted',
-      message: lang === 'ar'
-        ? `تم احتجاز مبلغ من الكفالة. السبب: ${reason}.`
-        : lang === 'fr'
-        ? `Dépôt retenu. Motif : ${reason}.`
-        : `Deposit retained. Reason: ${reason}.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'security_deposits',
-      category: 'rental_booking',
+    const after = captureStoreSlices(['securityDeposits', 'rentalBookings']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Deducted deposit: ${target.renterName} (${reason})`,
+        `Caution retenue : ${target.renterName}`,
+        `خصم كفالة: ${target.renterName}`
+      ),
+      entityLabel: target.renterName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          rentalService.upsertDeposit(target).catch(() => {});
+          if (prevBooking) rentalService.upsertBooking(prevBooking).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          if (nextDeposit) rentalService.upsertDeposit(nextDeposit).catch(() => {});
+          if (nextBooking) rentalService.upsertBooking(nextBooking).catch(() => {});
+        }
+      },
     });
   };
 
   const resetVenueMockData = () => {
+    const before = captureStoreSlices(['rentableUnits', 'rentalRenters', 'rentalBookings', 'securityDeposits']);
     const targetFacilityId = globalState.currentBranchId || 'branch_venue_main';
     const targetAccountId = globalState.account.id || 'acc_01';
     const targetBusinessId = globalState.currentBusinessId || 'biz_venue';
@@ -8542,15 +11297,34 @@ function createAtriumActions() {
       securityDeposits: targetFacilityId === 'branch_venue_main' ? freshDeposits : [...freshDeposits, ...createInitialSecurityDeposits()],
     };
     notify();
-    showToast({
-      type: 'success',
-      title: 'Données Démo Espace & Lieux',
-      message: `${freshRenters.length} locataires, ${freshUnits.length} espaces, et ${freshBookings.length} réservations chargés.`,
-      category: 'rental_booking',
+
+    const after = captureStoreSlices(['rentableUnits', 'rentalRenters', 'rentalBookings', 'securityDeposits']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: freshBookings.length + freshUnits.length,
+      summary: ul(
+        'Venue & Rental demo data recharged',
+        'Données Démo Espace & Lieux réinitialisées',
+        'إعادة ضبط بيانات التأجير والقاعات'
+      ),
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
     });
   };
 
   const resetEduMockData = () => {
+    const before = captureStoreSlices([
+      'eduStudents',
+      'eduCohorts',
+      'eduEnrollments',
+      'eduSessions',
+      'eduAttendance',
+      'eduGrades',
+      'eduCertificates',
+      'eduAdmissions',
+    ]);
     const targetFacilityId = globalState.currentBranchId || 'branch_edu_main';
     const targetAccountId = globalState.account.id || 'acc_01';
     const targetBusinessId = globalState.currentBusinessId || 'biz_edu';
@@ -8624,15 +11398,41 @@ function createAtriumActions() {
       eduAdmissions: freshAdmissions,
     };
     notify();
-    showToast({
-      type: 'success',
-      title: 'Données Démo Académie & Formation',
-      message: `${freshStudents.length} étudiants, ${freshCohorts.length} promotions et ${freshAdmissions.length} dossiers d'admission réinitialisés.`,
-      category: 'education_cohort',
+
+    const after = captureStoreSlices([
+      'eduStudents',
+      'eduCohorts',
+      'eduEnrollments',
+      'eduSessions',
+      'eduAttendance',
+      'eduGrades',
+      'eduCertificates',
+      'eduAdmissions',
+    ]);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: freshStudents.length + freshCohorts.length,
+      summary: ul(
+        'Education & Academy demo data recharged',
+        'Données Démo Académie réinitialisées',
+        'إعادة ضبط بيانات الأكاديمية'
+      ),
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
     });
   };
 
   const resetFreelanceMockData = () => {
+    const before = captureStoreSlices([
+      'freelanceClients',
+      'freelanceProjects',
+      'timeLogs',
+      'freelanceInvoices',
+      'freelanceProposals',
+      'freelanceExpenses',
+    ]);
     const targetFacilityId = globalState.currentBranchId || 'branch_freelance_main';
     const targetAccountId = globalState.account.id || 'acc_01';
 
@@ -8677,11 +11477,27 @@ function createAtriumActions() {
       freelanceExpenses: freshExpenses,
     };
     notify();
-    showToast({
-      type: 'success',
-      title: 'Données Démo Freelance & Studio',
-      message: `${freshClients.length} clients, ${freshProjects.length} projets et ${freshInvoices.length} factures réinitialisés.`,
-      category: 'freelance_solo',
+
+    const after = captureStoreSlices([
+      'freelanceClients',
+      'freelanceProjects',
+      'timeLogs',
+      'freelanceInvoices',
+      'freelanceProposals',
+      'freelanceExpenses',
+    ]);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: freshClients.length + freshProjects.length,
+      summary: ul(
+        'Freelance & Studio demo data recharged',
+        'Données Démo Freelance réinitialisées',
+        'إعادة ضبط بيانات الاستوديو والعمل الحر'
+      ),
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
     });
   };
 
@@ -8690,6 +11506,7 @@ function createAtriumActions() {
   // ==========================================
 
   const addEduStudent = (studentData: Omit<EduStudent, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const before = captureStoreSlices(['eduStudents']);
     const newStudent: EduStudent = {
       ...getTraceContext(),
       ...studentData,
@@ -8706,17 +11523,39 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.upsertStudent(newStudent).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Student Enrolled',
-      message: `${newStudent.fullName} added to student directory.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_students',
+    const after = captureStoreSlices(['eduStudents']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added student: ${newStudent.fullName}`,
+        `Étudiant ajouté : ${newStudent.fullName}`,
+        `إضافة طالب: ${newStudent.fullName}`
+      ),
+      entityLabel: newStudent.fullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          educationService.deleteStudent(newStudent.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_students', newStudent.id, globalState.currentUser?.id)
+            .then(() => educationService.upsertStudent(newStudent))
+            .catch(() => {});
+        }
+      },
     });
     return newStudent;
   };
 
   const updateEduStudent = (studentId: string, updates: Partial<EduStudent>) => {
+    const prev = (globalState.eduStudents || []).find((s) => s.id === studentId);
+    if (!prev) return;
+    const before = captureStoreSlices(['eduStudents']);
     const updatedStudents = (globalState.eduStudents || []).map((s) =>
       s.id === studentId ? { ...s, ...updates } : s
     );
@@ -8729,17 +11568,36 @@ function createAtriumActions() {
     if (target && isSupabaseConfigured()) {
       educationService.upsertStudent(target).catch(() => {});
     }
-    showToast({
-      type: 'info',
-      title: 'Student Updated',
-      message: `Student profile updated successfully.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_students',
+    const after = captureStoreSlices(['eduStudents']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: updates.status && updates.status !== prev.status ? 'status' : 'edit',
+      summary: ul(
+        `Updated student: ${target?.fullName || prev.fullName}`,
+        `Étudiant mis à jour : ${target?.fullName || prev.fullName}`,
+        `تحديث الطالب: ${target?.fullName || prev.fullName}`
+      ),
+      entityLabel: target?.fullName || prev.fullName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          educationService.upsertStudent(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          educationService.upsertStudent(target).catch(() => {});
+        }
+      },
     });
   };
 
   const deleteEduStudent = (studentId: string) => {
     const student = (globalState.eduStudents || []).find((s) => s.id === studentId);
+    if (!student) return;
+    const before = captureStoreSlices(['eduStudents', 'eduEnrollments', 'eduAttendance', 'eduGrades']);
     globalState = {
       ...globalState,
       eduStudents: (globalState.eduStudents || []).filter((s) => s.id !== studentId),
@@ -8751,16 +11609,34 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.deleteStudent(studentId, globalState.currentUser?.id).catch(() => {});
     }
-    showToast({
-      type: 'warning',
-      title: 'Student Removed',
-      message: `${student?.fullName || 'Student'} deleted from directory.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_students',
+    const after = captureStoreSlices(['eduStudents', 'eduEnrollments', 'eduAttendance', 'eduGrades']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted student: ${student.fullName}`,
+        `Étudiant supprimé : ${student.fullName}`,
+        `حذف الطالب: ${student.fullName}`
+      ),
+      entityLabel: student.fullName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_students', studentId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          educationService.deleteStudent(studentId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
     });
   };
 
   const addEduCohort = (cohortData: Omit<EduCohort, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'enrolledCount'>) => {
+    const before = captureStoreSlices(['eduCohorts']);
     const newCohort: EduCohort = {
       ...getTraceContext(),
       ...cohortData,
@@ -8778,17 +11654,39 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.upsertCohort(newCohort).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Cohort Created',
-      message: `Batch "${newCohort.name}" initialized.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_cohorts',
+    const after = captureStoreSlices(['eduCohorts']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Created cohort: ${newCohort.name}`,
+        `Promotion créée : ${newCohort.name}`,
+        `إنشاء فوج: ${newCohort.name}`
+      ),
+      entityLabel: newCohort.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          educationService.deleteCohort(newCohort.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_cohorts', newCohort.id, globalState.currentUser?.id)
+            .then(() => educationService.upsertCohort(newCohort))
+            .catch(() => {});
+        }
+      },
     });
     return newCohort;
   };
 
   const updateEduCohort = (cohortId: string, updates: Partial<EduCohort>) => {
+    const prev = (globalState.eduCohorts || []).find((c) => c.id === cohortId);
+    if (!prev) return;
+    const before = captureStoreSlices(['eduCohorts']);
     const updatedCohorts = (globalState.eduCohorts || []).map((ch) =>
       ch.id === cohortId ? { ...ch, ...updates } : ch
     );
@@ -8801,9 +11699,36 @@ function createAtriumActions() {
     if (target && isSupabaseConfigured()) {
       educationService.upsertCohort(target).catch(() => {});
     }
+    const after = captureStoreSlices(['eduCohorts']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: updates.status && updates.status !== prev.status ? 'status' : 'edit',
+      summary: ul(
+        `Updated cohort: ${target?.name || prev.name}`,
+        `Promotion mise à jour : ${target?.name || prev.name}`,
+        `تحديث الفوج: ${target?.name || prev.name}`
+      ),
+      entityLabel: target?.name || prev.name,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          educationService.upsertCohort(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          educationService.upsertCohort(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteEduCohort = (cohortId: string) => {
+    const prev = (globalState.eduCohorts || []).find((c) => c.id === cohortId);
+    if (!prev) return;
+    const before = captureStoreSlices(['eduCohorts', 'eduSessions']);
     globalState = {
       ...globalState,
       eduCohorts: (globalState.eduCohorts || []).filter((ch) => ch.id !== cohortId),
@@ -8813,16 +11738,34 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.deleteCohort(cohortId, globalState.currentUser?.id).catch(() => {});
     }
-    showToast({
-      type: 'warning',
-      title: 'Cohort Deleted',
-      message: 'Cohort and syllabus schedule removed.',
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_cohorts',
+    const after = captureStoreSlices(['eduCohorts', 'eduSessions']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted cohort: ${prev.name}`,
+        `Promotion supprimée : ${prev.name}`,
+        `حذف الفوج: ${prev.name}`
+      ),
+      entityLabel: prev.name,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_cohorts', cohortId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          educationService.deleteCohort(cohortId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
     });
   };
 
   const addEduSession = (sessionData: Omit<EduSession, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const before = captureStoreSlices(['eduSessions']);
     const newSession: EduSession = {
       ...getTraceContext(),
       ...sessionData,
@@ -8839,17 +11782,39 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.upsertSession(newSession).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Class Scheduled',
-      message: `Session for ${newSession.cohortName} booked on ${newSession.date}.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_sessions',
+    const after = captureStoreSlices(['eduSessions']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Scheduled class: ${newSession.cohortName} (${newSession.date})`,
+        `Séance planifiée : ${newSession.cohortName} (${newSession.date})`,
+        `جدولة حصة: ${newSession.cohortName}`
+      ),
+      entityLabel: newSession.cohortName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          educationService.deleteSession(newSession.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_sessions', newSession.id, globalState.currentUser?.id)
+            .then(() => educationService.upsertSession(newSession))
+            .catch(() => {});
+        }
+      },
     });
     return newSession;
   };
 
   const updateEduSession = (sessionId: string, updates: Partial<EduSession>) => {
+    const prev = (globalState.eduSessions || []).find((se) => se.id === sessionId);
+    if (!prev) return;
+    const before = captureStoreSlices(['eduSessions']);
     const updatedSessions = (globalState.eduSessions || []).map((se) =>
       se.id === sessionId ? { ...se, ...updates } : se
     );
@@ -8862,9 +11827,36 @@ function createAtriumActions() {
     if (target && isSupabaseConfigured()) {
       educationService.upsertSession(target).catch(() => {});
     }
+    const after = captureStoreSlices(['eduSessions']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: updates.status && updates.status !== prev.status ? 'status' : 'edit',
+      summary: ul(
+        `Updated session: ${target?.cohortName || prev.cohortName}`,
+        `Séance mise à jour : ${target?.cohortName || prev.cohortName}`,
+        `تحديث الحصة: ${target?.cohortName || prev.cohortName}`
+      ),
+      entityLabel: target?.cohortName || prev.cohortName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          educationService.upsertSession(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          educationService.upsertSession(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteEduSession = (sessionId: string) => {
+    const prev = (globalState.eduSessions || []).find((se) => se.id === sessionId);
+    if (!prev) return;
+    const before = captureStoreSlices(['eduSessions']);
     globalState = {
       ...globalState,
       eduSessions: (globalState.eduSessions || []).filter((se) => se.id !== sessionId),
@@ -8873,6 +11865,30 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.deleteSession(sessionId, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['eduSessions']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted session: ${prev.cohortName} (${prev.date})`,
+        `Séance supprimée : ${prev.cohortName} (${prev.date})`,
+        `حذف الحصة: ${prev.cohortName}`
+      ),
+      entityLabel: prev.cohortName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_sessions', sessionId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          educationService.deleteSession(sessionId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const batchRecordAttendance = (
@@ -8880,6 +11896,9 @@ function createAtriumActions() {
     cohortId: string,
     records: { studentId: string; studentName: string; status: AttendanceStatus; minutesLate?: number; excuseNote?: string }[]
   ) => {
+    const before = captureStoreSlices(['eduAttendance', 'eduSessions', 'eduStudents']);
+    const prevSession = (globalState.eduSessions || []).find((s) => s.id === sessionId);
+    const prevAttendanceForSession = (globalState.eduAttendance || []).filter((a) => a.sessionId === sessionId);
     const nowIso = new Date().toISOString();
     const trace = getTraceContext();
     const newRecords: EduAttendance[] = records.map((r) => ({
@@ -8920,8 +11939,8 @@ function createAtriumActions() {
     };
     notify();
 
+    const targetSession = updatedSessions.find((s) => s.id === sessionId);
     if (isSupabaseConfigured()) {
-      const targetSession = updatedSessions.find((s) => s.id === sessionId);
       runWithConcurrency(
         [
           ...newRecords.map((rec) => () => educationService.upsertAttendance(rec)),
@@ -8932,16 +11951,50 @@ function createAtriumActions() {
     }
 
     const presentTally = records.filter((r) => r.status === 'Present' || r.status === 'Late').length;
-    showToast({
-      type: 'success',
-      title: 'Roll Call Submitted',
-      message: `${presentTally}/${records.length} students logged present.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_attendance',
+    const after = captureStoreSlices(['eduAttendance', 'eduSessions', 'eduStudents']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'bulk',
+      affectedCount: records.length,
+      summary: ul(
+        `Roll call: ${presentTally}/${records.length} present`,
+        `Appel validé : ${presentTally}/${records.length} présents`,
+        `تسجيل الحضور: ${presentTally}/${records.length}`
+      ),
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              ...newRecords.map((rec) => () => syncCoordinator.softDeleteRow('edu_attendance', rec.id, globalState.currentUser?.id)),
+              ...prevAttendanceForSession.map((rec) => () => educationService.upsertAttendance(rec)),
+              ...(prevSession ? [() => educationService.upsertSession(prevSession)] : []),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              ...newRecords.map((rec) => () =>
+                syncCoordinator.restoreRow('edu_attendance', rec.id, globalState.currentUser?.id)
+                  .then(() => educationService.upsertAttendance(rec))
+              ),
+              ...(targetSession ? [() => educationService.upsertSession(targetSession)] : []),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const recordEduGrade = (gradeData: Omit<EduGrade, 'id' | 'tenantId' | 'facilityId' | 'gradedAt'>) => {
+    const before = captureStoreSlices(['eduGrades']);
     const newGrade: EduGrade = {
       ...getTraceContext(),
       ...gradeData,
@@ -8958,17 +12011,39 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.upsertGrade(newGrade).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Grade Recorded',
-      message: `${newGrade.studentName}: ${newGrade.score}/${newGrade.maxScore} on ${newGrade.assessmentTitle}.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_grades',
+    const after = captureStoreSlices(['eduGrades']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Recorded grade: ${newGrade.studentName} (${newGrade.score}/${newGrade.maxScore})`,
+        `Note saisie : ${newGrade.studentName} (${newGrade.score}/${newGrade.maxScore})`,
+        `رصد علامة: ${newGrade.studentName} (${newGrade.score}/${newGrade.maxScore})`
+      ),
+      entityLabel: newGrade.studentName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          educationService.deleteGrade(newGrade.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_grades', newGrade.id, globalState.currentUser?.id)
+            .then(() => educationService.upsertGrade(newGrade))
+            .catch(() => {});
+        }
+      },
     });
     return newGrade;
   };
 
   const deleteEduGrade = (gradeId: string) => {
+    const prev = (globalState.eduGrades || []).find((g) => g.id === gradeId);
+    if (!prev) return;
+    const before = captureStoreSlices(['eduGrades']);
     globalState = {
       ...globalState,
       eduGrades: (globalState.eduGrades || []).filter((g) => g.id !== gradeId),
@@ -8977,6 +12052,30 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.deleteGrade(gradeId, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['eduGrades']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted grade: ${prev.studentName} (${prev.assessmentTitle})`,
+        `Note supprimée : ${prev.studentName}`,
+        `حذف علامة: ${prev.studentName}`
+      ),
+      entityLabel: prev.studentName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_grades', gradeId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          educationService.deleteGrade(gradeId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const recordTuitionPayment = (
@@ -8985,6 +12084,9 @@ function createAtriumActions() {
     amount: number,
     paymentMethod: string = 'Cash'
   ) => {
+    const prevEn = (globalState.eduEnrollments || []).find((e) => e.id === enrollmentId);
+    if (!prevEn) return;
+    const before = captureStoreSlices(['eduEnrollments']);
     const nowIso = new Date().toISOString();
     const updatedEnrollments = (globalState.eduEnrollments || []).map((en) => {
       if (en.id !== enrollmentId) return en;
@@ -9016,21 +12118,35 @@ function createAtriumActions() {
     if (updatedEn && isSupabaseConfigured()) {
       educationService.upsertEnrollment(updatedEn).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Tuition Payment Logged',
-      message: `Recorded payment of ${amount.toLocaleString()} DZD via ${paymentMethod}.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_enrollments',
-      category: 'education_cohort',
-      action: {
-        label: 'Receipt',
-        onClick: () => window.print?.(),
+    const after = captureStoreSlices(['eduEnrollments']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Tuition payment: ${prevEn.studentName} (${amount.toLocaleString()} DZD · ${paymentMethod})`,
+        `Paiement scolarité : ${prevEn.studentName} (${amount.toLocaleString()} DZD)`,
+        `دفع رسوم: ${prevEn.studentName} (${amount.toLocaleString()} دج)`
+      ),
+      entityLabel: prevEn.studentName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          educationService.upsertEnrollment(prevEn).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (updatedEn && isSupabaseConfigured()) {
+          educationService.upsertEnrollment(updatedEn).catch(() => {});
+        }
       },
     });
   };
 
   const addEduEnrollment = (enrollmentData: Omit<EduEnrollment, 'id' | 'tenantId' | 'facilityId' | 'enrolledAt'>) => {
+    const before = captureStoreSlices(['eduEnrollments', 'eduCohorts']);
+    const prevCohort = (globalState.eduCohorts || []).find((c) => c.id === enrollmentData.cohortId);
     const newEnrollment: EduEnrollment = {
       ...getTraceContext(),
       ...enrollmentData,
@@ -9052,22 +12168,44 @@ function createAtriumActions() {
       eduCohorts: updatedCohorts,
     };
     notify();
+    const targetCohort = updatedCohorts.find((c) => c.id === newEnrollment.cohortId);
     if (isSupabaseConfigured()) {
-      const targetCohort = updatedCohorts.find((c) => c.id === newEnrollment.cohortId);
       educationService.upsertEnrollment(newEnrollment).catch(() => {});
       if (targetCohort) educationService.upsertCohort(targetCohort).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Enrollment Confirmed',
-      message: `${newEnrollment.studentName} enrolled in ${newEnrollment.cohortName}.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_enrollments',
+    const after = captureStoreSlices(['eduEnrollments', 'eduCohorts']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Enrolled: ${newEnrollment.studentName} → ${newEnrollment.cohortName}`,
+        `Inscription confirmée : ${newEnrollment.studentName}`,
+        `تسجيل طالب: ${newEnrollment.studentName}`
+      ),
+      entityLabel: newEnrollment.studentName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('edu_enrollments', newEnrollment.id, globalState.currentUser?.id).catch(() => {});
+          if (prevCohort) educationService.upsertCohort(prevCohort).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_enrollments', newEnrollment.id, globalState.currentUser?.id)
+            .then(() => educationService.upsertEnrollment(newEnrollment))
+            .catch(() => {});
+          if (targetCohort) educationService.upsertCohort(targetCohort).catch(() => {});
+        }
+      },
     });
     return newEnrollment;
   };
 
   const addEduAdmissionLead = (leadData: Omit<EduAdmissionLead, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const before = captureStoreSlices(['eduAdmissions']);
     const newLead: EduAdmissionLead = {
       ...getTraceContext(),
       ...leadData,
@@ -9084,17 +12222,39 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.upsertAdmission(newLead).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Prospect Added',
-      message: `${newLead.studentName} logged in admissions pipeline.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_admissions',
+    const after = captureStoreSlices(['eduAdmissions']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added prospect: ${newLead.studentName}`,
+        `Candidat ajouté : ${newLead.studentName}`,
+        `إضافة طلب التحاق: ${newLead.studentName}`
+      ),
+      entityLabel: newLead.studentName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          educationService.deleteAdmission(newLead.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_admissions', newLead.id, globalState.currentUser?.id)
+            .then(() => educationService.upsertAdmission(newLead))
+            .catch(() => {});
+        }
+      },
     });
     return newLead;
   };
 
   const updateAdmissionStage = (leadId: string, stage: AdmissionStage) => {
+    const prev = (globalState.eduAdmissions || []).find((l) => l.id === leadId);
+    if (!prev) return;
+    const before = captureStoreSlices(['eduAdmissions']);
     const updatedLeads = (globalState.eduAdmissions || []).map((l) =>
       l.id === leadId ? { ...l, stage } : l
     );
@@ -9107,9 +12267,36 @@ function createAtriumActions() {
     if (target && isSupabaseConfigured()) {
       educationService.upsertAdmission(target).catch(() => {});
     }
+    const after = captureStoreSlices(['eduAdmissions']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Admission stage: ${prev.studentName} → ${stage}`,
+        `Admission : ${prev.studentName} → ${stage}`,
+        `مرحلة القبول: ${prev.studentName} ← ${stage}`
+      ),
+      entityLabel: prev.studentName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          educationService.upsertAdmission(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          educationService.upsertAdmission(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const updateEduAdmissionLead = (leadId: string, updates: Partial<EduAdmissionLead>) => {
+    const prev = (globalState.eduAdmissions || []).find((l) => l.id === leadId);
+    if (!prev) return;
+    const before = captureStoreSlices(['eduAdmissions']);
     const updatedLeads = (globalState.eduAdmissions || []).map((l) =>
       l.id === leadId ? { ...l, ...updates } : l
     );
@@ -9122,9 +12309,36 @@ function createAtriumActions() {
     if (target && isSupabaseConfigured()) {
       educationService.upsertAdmission(target).catch(() => {});
     }
+    const after = captureStoreSlices(['eduAdmissions']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: updates.stage && updates.stage !== prev.stage ? 'status' : 'edit',
+      summary: ul(
+        `Updated prospect: ${target?.studentName || prev.studentName}`,
+        `Candidat mis à jour : ${target?.studentName || prev.studentName}`,
+        `تحديث طلب الالتحاق: ${target?.studentName || prev.studentName}`
+      ),
+      entityLabel: target?.studentName || prev.studentName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          educationService.upsertAdmission(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          educationService.upsertAdmission(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteEduAdmissionLead = (leadId: string) => {
+    const prev = (globalState.eduAdmissions || []).find((l) => l.id === leadId);
+    if (!prev) return;
+    const before = captureStoreSlices(['eduAdmissions']);
     globalState = {
       ...globalState,
       eduAdmissions: (globalState.eduAdmissions || []).filter((l) => l.id !== leadId),
@@ -9133,6 +12347,30 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.deleteAdmission(leadId, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['eduAdmissions']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'delete',
+      summary: ul(
+        `Deleted prospect: ${prev.studentName}`,
+        `Candidat supprimé : ${prev.studentName}`,
+        `حذف طلب الالتحاق: ${prev.studentName}`
+      ),
+      entityLabel: prev.studentName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_admissions', leadId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          educationService.deleteAdmission(leadId, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const convertAdmissionToStudent = (leadId: string, cohortId: string, initialDeposit: number = 0) => {
@@ -9140,6 +12378,7 @@ function createAtriumActions() {
     const cohort = (globalState.eduCohorts || []).find((c) => c.id === cohortId);
     if (!lead || !cohort) return;
 
+    const before = captureStoreSlices(['eduStudents', 'eduEnrollments', 'eduCohorts', 'eduAdmissions']);
     const trace = getTraceContext();
     const newStudent: EduStudent = {
       ...trace,
@@ -9202,9 +12441,9 @@ function createAtriumActions() {
     };
     notify();
 
+    const updatedCohort = updatedCohorts.find((c) => c.id === cohort.id);
+    const updatedLead = updatedAdmissions.find((l) => l.id === leadId);
     if (isSupabaseConfigured()) {
-      const updatedCohort = updatedCohorts.find((c) => c.id === cohort.id);
-      const updatedLead = updatedAdmissions.find((l) => l.id === leadId);
       runWithConcurrency(
         [
           () => educationService.upsertStudent(newStudent),
@@ -9216,24 +12455,50 @@ function createAtriumActions() {
       ).catch(() => {});
     }
 
-    showToast({
-      type: 'success',
-      title: 'Student Enrolled',
-      message: `${newStudent.fullName} admitted & enrolled in ${cohort.name}!${paid > 0 ? ` (Acompte: ${paid.toLocaleString()} DZD)` : ''}`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_students',
-      category: 'education_cohort',
-      action: {
-        label: 'Cohorts',
-        onClick: () => {
-          globalState = { ...globalState, activeScreen: 'shop' };
-          notify();
-        },
+    const after = captureStoreSlices(['eduStudents', 'eduEnrollments', 'eduCohorts', 'eduAdmissions']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'status',
+      summary: ul(
+        `Enrolled applicant: ${newStudent.fullName} → ${cohort.name}`,
+        `Candidat inscrit : ${newStudent.fullName} → ${cohort.name}`,
+        `تسجيل متقدم: ${newStudent.fullName}`
+      ),
+      entityLabel: newStudent.fullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () => educationService.deleteStudent(newStudent.id, globalState.currentUser?.id),
+              () => syncCoordinator.softDeleteRow('edu_enrollments', newEnrollment.id, globalState.currentUser?.id),
+              () => educationService.upsertCohort(cohort),
+              () => educationService.upsertAdmission(lead),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () => syncCoordinator.restoreRow('edu_students', newStudent.id, globalState.currentUser?.id).then(() => educationService.upsertStudent(newStudent)),
+              () => syncCoordinator.restoreRow('edu_enrollments', newEnrollment.id, globalState.currentUser?.id).then(() => educationService.upsertEnrollment(newEnrollment)),
+              ...(updatedCohort ? [() => educationService.upsertCohort(updatedCohort)] : []),
+              ...(updatedLead ? [() => educationService.upsertAdmission(updatedLead)] : []),
+            ],
+            4
+          ).catch(() => {});
+        }
       },
     });
   };
 
   const issueEduCertificate = (certData: Omit<EduCertificate, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'certificateNumber' | 'verificationHash'>) => {
+    const before = captureStoreSlices(['eduCertificates']);
     const certNum = `ATRIUM-CERT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const hash = '0x' + Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
     const newCert: EduCertificate = {
@@ -9254,22 +12519,37 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.upsertCertificate(newCert).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Certificate Issued',
-      message: `Accredited diploma #${certNum} issued for ${newCert.studentName}.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      table: 'edu_certificates',
-      category: 'education_cohort',
-      action: {
-        label: 'View Cert',
-        onClick: () => window.print?.(),
+    const after = captureStoreSlices(['eduCertificates']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Issued certificate #${certNum} (${newCert.studentName})`,
+        `Certificat émis #${certNum} (${newCert.studentName})`,
+        `إصدار شهادة #${certNum} (${newCert.studentName})`
+      ),
+      entityLabel: newCert.studentName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('edu_certificates', newCert.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_certificates', newCert.id, globalState.currentUser?.id)
+            .then(() => educationService.upsertCertificate(newCert))
+            .catch(() => {});
+        }
       },
     });
     return newCert;
   };
 
   const addEduClassroom = (classroomData: Omit<EduClassroom, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const before = captureStoreSlices(['eduClassrooms']);
     const newRoom: EduClassroom = {
       ...getTraceContext(),
       ...classroomData,
@@ -9286,10 +12566,37 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.upsertClassroom(newRoom).catch(() => {});
     }
+    const after = captureStoreSlices(['eduClassrooms']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added classroom: ${newRoom.name}`,
+        `Salle ajoutée : ${newRoom.name}`,
+        `إضافة قاعة: ${newRoom.name}`
+      ),
+      entityLabel: newRoom.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('edu_classrooms', newRoom.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_classrooms', newRoom.id, globalState.currentUser?.id)
+            .then(() => educationService.upsertClassroom(newRoom))
+            .catch(() => {});
+        }
+      },
+    });
     return newRoom;
   };
 
   const addEduCourse = (courseData: Omit<EduCourse, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const before = captureStoreSlices(['eduCourses']);
     const newCourse: EduCourse = {
       ...getTraceContext(),
       ...courseData,
@@ -9306,6 +12613,32 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       educationService.upsertCourse(newCourse).catch(() => {});
     }
+    const after = captureStoreSlices(['eduCourses']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Added course: ${newCourse.title}`,
+        `Programme ajouté : ${newCourse.title}`,
+        `إضافة برنامج: ${newCourse.title}`
+      ),
+      entityLabel: newCourse.title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('edu_courses', newCourse.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('edu_courses', newCourse.id, globalState.currentUser?.id)
+            .then(() => educationService.upsertCourse(newCourse))
+            .catch(() => {});
+        }
+      },
+    });
     return newCourse;
   };
 
@@ -9364,6 +12697,9 @@ function createAtriumActions() {
   const addPmProject = addPmProjectAction;
 
   const updatePmProjectStatus = (projectId: string, status: PMProject['status']) => {
+    const prevProject = (globalState.pmProjects || []).find((p) => p.id === projectId);
+    if (!prevProject) return;
+    const before = captureStoreSlices(['pmProjects']);
     globalState = {
       ...globalState,
       pmProjects: (globalState.pmProjects || []).map((p) =>
@@ -9373,9 +12709,34 @@ function createAtriumActions() {
     notify();
     const updated = globalState.pmProjects.find((p) => p.id === projectId);
     if (updated) projectMilestoneService.upsertProject(updated).catch(() => {});
+    const after = captureStoreSlices(['pmProjects']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'status',
+      summary: ul(
+        `Project ${prevProject.title} → ${status}`,
+        `Projet ${prevProject.title} → ${status}`,
+        `حالة المشروع ${prevProject.title} → ${status}`
+      ),
+      entityLabel: prevProject.title,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertProject(prevProject).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (updated && isSupabaseConfigured()) {
+          projectMilestoneService.upsertProject(updated).catch(() => {});
+        }
+      },
+    });
   };
 
   const addPmPrintOrder = (orderData: Omit<PMPrintOrder, 'id' | 'createdAt'>) => {
+    const before = captureStoreSlices(['pmPrintOrders']);
     const newOrder: PMPrintOrder = {
       ...getTraceContext(),
       ...orderData,
@@ -9388,17 +12749,40 @@ function createAtriumActions() {
     };
     notify();
     projectMilestoneService.createPrintOrder(newOrder).catch(() => {});
-    showToast({
-      type: 'success',
-      title: 'Bon de Commande Impression Transmis',
-      message: `${newOrder.orderNumber} transmis à la Créa (${newOrder.items.length} références).`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmPrintOrders']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'create',
+      summary: ul(
+        `Print order sent: ${newOrder.orderNumber}`,
+        `Bon d'impression transmis : ${newOrder.orderNumber}`,
+        `إرسال أمر طباعة: ${newOrder.orderNumber}`
+      ),
+      entityLabel: newOrder.orderNumber,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.deletePrintOrder(newOrder.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('pm_print_orders', newOrder.id, globalState.currentUser?.id)
+            .then(() => projectMilestoneService.createPrintOrder(newOrder))
+            .catch(() => {});
+        }
+      },
     });
     return newOrder;
   };
 
   const updatePmPrintOrderStatus = (orderId: string, status: PMPrintOrder['status']) => {
+    const prev = (globalState.pmPrintOrders || []).find((o) => o.id === orderId);
+    if (!prev) return;
+    const before = captureStoreSlices(['pmPrintOrders']);
     const updatedOrders = (globalState.pmPrintOrders || []).map((o) =>
       o.id === orderId ? { ...o, status } : o
     );
@@ -9411,9 +12795,34 @@ function createAtriumActions() {
     if (target && isSupabaseConfigured()) {
       projectMilestoneService.createPrintOrder(target).catch(() => {});
     }
+    const after = captureStoreSlices(['pmPrintOrders']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'status',
+      summary: ul(
+        `Print order ${prev.orderNumber} → ${status}`,
+        `Bon ${prev.orderNumber} → ${status}`,
+        `أمر الطباعة ${prev.orderNumber} → ${status}`
+      ),
+      entityLabel: prev.orderNumber,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.createPrintOrder(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          projectMilestoneService.createPrintOrder(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const addPmBatDeliverable = (batData: Omit<PMBatDeliverable, 'id' | 'createdAt'>) => {
+    const before = captureStoreSlices(['pmBatDeliverables']);
     const newBat: PMBatDeliverable = {
       ...getTraceContext(),
       ...batData,
@@ -9426,17 +12835,40 @@ function createAtriumActions() {
     };
     notify();
     projectMilestoneService.upsertBatDeliverable(newBat).catch(() => {});
-    showToast({
-      type: 'success',
-      title: 'Livrable BAT Déposé',
-      message: `${newBat.title} (${newBat.versionCode}) soumis pour validation technique.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmBatDeliverables']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'create',
+      summary: ul(
+        `BAT submitted: ${newBat.title} (${newBat.versionCode})`,
+        `Livrable BAT déposé : ${newBat.title} (${newBat.versionCode})`,
+        `إيداع ملف الطباعة: ${newBat.title}`
+      ),
+      entityLabel: newBat.title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.deleteBatDeliverable(newBat.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('pm_bat_deliverables', newBat.id, globalState.currentUser?.id)
+            .then(() => projectMilestoneService.upsertBatDeliverable(newBat))
+            .catch(() => {});
+        }
+      },
     });
     return newBat;
   };
 
   const reviewPmBatDeliverable = (batId: string, status: 'approved' | 'revision_requested', comments?: string) => {
+    const prev = (globalState.pmBatDeliverables || []).find((b) => b.id === batId);
+    if (!prev) return;
+    const before = captureStoreSlices(['pmBatDeliverables']);
     globalState = {
       ...globalState,
       pmBatDeliverables: (globalState.pmBatDeliverables || []).map((b) =>
@@ -9452,15 +12884,34 @@ function createAtriumActions() {
     notify();
     const updated = globalState.pmBatDeliverables.find((b) => b.id === batId);
     if (updated) projectMilestoneService.upsertBatDeliverable(updated).catch(() => {});
-    showToast({
-      type: status === 'approved' ? 'success' : 'warning',
-      title: status === 'approved' ? 'BAT Validé Bon à Tirer' : 'Corrections Demandées',
-      message: status === 'approved' ? 'Livrable prêt pour impression et déblocage imprimeur.' : 'Remarques transmises au Studio Créa.',
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmBatDeliverables']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'status',
+      summary: ul(
+        status === 'approved' ? `BAT approved: ${prev.title}` : `BAT revision requested: ${prev.title}`,
+        status === 'approved' ? `BAT validé : ${prev.title}` : `Corrections demandées : ${prev.title}`,
+        status === 'approved' ? `اعتماد الملف: ${prev.title}` : `طلب تعديل الملف: ${prev.title}`
+      ),
+      entityLabel: prev.title,
+      toastType: status === 'approved' ? 'success' : 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertBatDeliverable(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (updated && isSupabaseConfigured()) {
+          projectMilestoneService.upsertBatDeliverable(updated).catch(() => {});
+        }
+      },
     });
   };
 
   const addPmTalent = (talentData: Omit<PMTalent, 'id' | 'createdAt' | 'consolidatedScore'>) => {
+    const before = captureStoreSlices(['pmTalents']);
     const score = Number(((talentData.initialHrScore + talentData.averageMissionRating) / 2).toFixed(2));
     const newTalent: PMTalent = {
       ...getTraceContext(),
@@ -9475,17 +12926,40 @@ function createAtriumActions() {
     };
     notify();
     projectMilestoneService.upsertTalent(newTalent).catch(() => {});
-    showToast({
-      type: 'success',
-      title: 'Profil Candidat Enregistré',
-      message: `${newTalent.fullName} (Wilaya ${newTalent.wilayaCode} - ${newTalent.wilayaName}) inscrit avec CCP ${newTalent.ccpNumber}.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmTalents']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'create',
+      summary: ul(
+        `Talent registered: ${newTalent.fullName}`,
+        `Candidat enregistré : ${newTalent.fullName}`,
+        `تسجيل متعاون: ${newTalent.fullName}`
+      ),
+      entityLabel: newTalent.fullName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.deleteTalent(newTalent.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('pm_talents', newTalent.id, globalState.currentUser?.id)
+            .then(() => projectMilestoneService.upsertTalent(newTalent))
+            .catch(() => {});
+        }
+      },
     });
     return newTalent;
   };
 
   const updatePmTalentStatus = (talentId: string, status: PMTalent['status']) => {
+    const prev = (globalState.pmTalents || []).find((t) => t.id === talentId);
+    if (!prev) return;
+    const before = captureStoreSlices(['pmTalents']);
     globalState = {
       ...globalState,
       pmTalents: (globalState.pmTalents || []).map((t) =>
@@ -9495,9 +12969,34 @@ function createAtriumActions() {
     notify();
     const updated = globalState.pmTalents.find((t) => t.id === talentId);
     if (updated) projectMilestoneService.upsertTalent(updated).catch(() => {});
+    const after = captureStoreSlices(['pmTalents']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'status',
+      summary: ul(
+        `Talent ${prev.fullName} → ${status}`,
+        `Talent ${prev.fullName} → ${status}`,
+        `حالة المتعاون ${prev.fullName} → ${status}`
+      ),
+      entityLabel: prev.fullName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertTalent(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (updated && isSupabaseConfigured()) {
+          projectMilestoneService.upsertTalent(updated).catch(() => {});
+        }
+      },
+    });
   };
 
   const addPmMission = (missionData: Omit<PMMission, 'id' | 'createdAt'>) => {
+    const before = captureStoreSlices(['pmMissions']);
     const newMission: PMMission = {
       ...getTraceContext(),
       ...missionData,
@@ -9510,12 +13009,32 @@ function createAtriumActions() {
     };
     notify();
     projectMilestoneService.upsertMission(newMission).catch(() => {});
-    showToast({
-      type: 'success',
-      title: 'Mission Terrain Planifiée',
-      message: `${newMission.code}: ${newMission.title} à ${newMission.venueName}.`,
-      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmMissions']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'create',
+      summary: ul(
+        `Mission scheduled: ${newMission.code} — ${newMission.title}`,
+        `Mission planifiée : ${newMission.code} — ${newMission.title}`,
+        `برمجة مهمة: ${newMission.code}`
+      ),
+      entityLabel: newMission.title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.deleteMission(newMission.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('pm_missions', newMission.id, globalState.currentUser?.id)
+            .then(() => projectMilestoneService.upsertMission(newMission))
+            .catch(() => {});
+        }
+      },
     });
     return newMission;
   };
@@ -9526,6 +13045,9 @@ function createAtriumActions() {
     minutesLate?: number,
     shiftRating?: number
   ) => {
+    const prev = (globalState.pmAttendances || []).find((a) => a.id === attendanceId);
+    if (!prev) return;
+    const before = captureStoreSlices(['pmAttendances']);
     globalState = {
       ...globalState,
       pmAttendances: (globalState.pmAttendances || []).map((a) => {
@@ -9544,32 +13066,83 @@ function createAtriumActions() {
       }),
     };
     notify();
-    if (isSupabaseConfigured()) {
-      const updatedAtt = globalState.pmAttendances.find((a) => a.id === attendanceId);
-      if (updatedAtt) {
-        const patch = {
-          status: updatedAtt.status,
-          minutes_late: updatedAtt.minutesLate,
-          shift_rating: updatedAtt.shiftRating,
-          gross_payable_dzd: updatedAtt.grossPayableDzd,
-          check_in_time: updatedAtt.checkInTime || null,
-        };
-        syncCoordinator
-          .mutateOrQueueUpdate('pm_attendances', attendanceId, patch, {
-            expectedVersion: updatedAtt.version,
-            entityType: 'PMAttendance',
-            entityLabel: updatedAtt.talentName,
-            localData: patch,
-          })
-          .catch(() => {});
-      }
+    const updatedAtt = globalState.pmAttendances.find((a) => a.id === attendanceId);
+    if (isSupabaseConfigured() && updatedAtt) {
+      const patch = {
+        status: updatedAtt.status,
+        minutes_late: updatedAtt.minutesLate,
+        shift_rating: updatedAtt.shiftRating,
+        gross_payable_dzd: updatedAtt.grossPayableDzd,
+        check_in_time: updatedAtt.checkInTime || null,
+      };
+      syncCoordinator
+        .mutateOrQueueUpdate('pm_attendances', attendanceId, patch, {
+          expectedVersion: updatedAtt.version,
+          entityType: 'PMAttendance',
+          entityLabel: updatedAtt.talentName,
+          localData: patch,
+        })
+        .catch(() => {});
     }
+    const after = captureStoreSlices(['pmAttendances']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'status',
+      summary: ul(
+        `Attendance ${prev.talentName} → ${status}`,
+        `Pointage ${prev.talentName} → ${status}`,
+        `تسجيل حضور ${prev.talentName} → ${status}`
+      ),
+      entityLabel: prev.talentName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          const patch = {
+            status: prev.status,
+            minutes_late: prev.minutesLate,
+            shift_rating: prev.shiftRating,
+            gross_payable_dzd: prev.grossPayableDzd,
+            check_in_time: prev.checkInTime || null,
+          };
+          syncCoordinator
+            .mutateOrQueueUpdate('pm_attendances', attendanceId, patch, {
+              expectedVersion: prev.version,
+              entityType: 'PMAttendance',
+              entityLabel: prev.talentName,
+              localData: patch,
+            })
+            .catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured() && updatedAtt) {
+          const patch = {
+            status: updatedAtt.status,
+            minutes_late: updatedAtt.minutesLate,
+            shift_rating: updatedAtt.shiftRating,
+            gross_payable_dzd: updatedAtt.grossPayableDzd,
+            check_in_time: updatedAtt.checkInTime || null,
+          };
+          syncCoordinator
+            .mutateOrQueueUpdate('pm_attendances', attendanceId, patch, {
+              expectedVersion: updatedAtt.version,
+              entityType: 'PMAttendance',
+              entityLabel: updatedAtt.talentName,
+              localData: patch,
+            })
+            .catch(() => {});
+        }
+      },
+    });
   };
 
   const closePmRollCall = (missionId: string) => {
     const mission = (globalState.pmMissions || []).find((m) => m.id === missionId);
     if (!mission) return;
 
+    const before = captureStoreSlices(['pmAttendances', 'pmPayrollBatches']);
     const missionAtts = (globalState.pmAttendances || []).filter((a) => a.missionId === missionId);
     let totalDzd = 0;
     let count = 0;
@@ -9610,16 +13183,47 @@ function createAtriumActions() {
     notify();
 
     projectMilestoneService.closeRollCall(missionId, mission.supervisorId, missionAtts).catch(() => {});
-
-    showToast({
-      type: 'success',
-      title: 'Pointage Clôturé & Verrouillé',
-      message: `${count} animateurs pointés pour ${totalDzd.toLocaleString()} DA. Lot de paie ${batchNumber} en attente DG.`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmAttendances', 'pmPayrollBatches']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'status',
+      summary: ul(
+        `Roll call locked (${batchNumber}): ${count} staff · ${totalDzd.toLocaleString()} DA`,
+        `Pointage clôturé (${batchNumber}) : ${count} animateurs · ${totalDzd.toLocaleString()} DA`,
+        `إغلاق الحضور (${batchNumber}): ${count} متعاونين`
+      ),
+      entityLabel: batchNumber,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () => syncCoordinator.softDeleteRow('pm_payroll_batches', newBatch.id, globalState.currentUser?.id),
+              ...missionAtts.map((a) => () =>
+                syncCoordinator.mutateOrQueueUpdate(
+                  'pm_attendances',
+                  a.id,
+                  { is_locked: Boolean(a.isLocked), locked_at: a.lockedAt || null },
+                  { entityType: 'PMAttendance', entityLabel: a.talentName, localData: { is_locked: Boolean(a.isLocked) } }
+                )
+              ),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.closeRollCall(missionId, mission.supervisorId, missionAtts).catch(() => {});
+        }
+      },
     });
   };
 
   const addPmExpense = (expenseData: Omit<PMExpense, 'id' | 'createdAt' | 'status'>) => {
+    const before = captureStoreSlices(['pmExpenses', 'pmEquipmentStock']);
     const newExp: PMExpense = {
       ...getTraceContext(),
       ...expenseData,
@@ -9671,11 +13275,32 @@ function createAtriumActions() {
     };
     notify();
     projectMilestoneService.upsertExpense(newExp).catch(() => {});
-    showToast({
-      type: 'warning',
-      title: 'Achat Déclaré & Stock Codé',
-      message: `${newStockItem.assetCode} (${newExp.title}) ajouté à l'inventaire et soumis à la DG.`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmExpenses', 'pmEquipmentStock']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'create',
+      summary: ul(
+        `Expense declared: ${newExp.title} (${newStockItem.assetCode})`,
+        `Achat déclaré : ${newExp.title} (${newStockItem.assetCode})`,
+        `تصريح مصروف: ${newExp.title}`
+      ),
+      entityLabel: newExp.title,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.deleteExpense(newExp.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('pm_expenses', newExp.id, globalState.currentUser?.id)
+            .then(() => projectMilestoneService.upsertExpense(newExp))
+            .catch(() => {});
+        }
+      },
     });
     return newExp;
   };
@@ -9688,6 +13313,7 @@ function createAtriumActions() {
     const batch = (globalState.pmPayrollBatches || []).find((b) => b.id === batchId);
     if (!batch) return;
 
+    const before = captureStoreSlices(['pmCcpSlips', 'pmPayrollBatches']);
     const attendances = (globalState.pmAttendances || []).filter((a) => a.missionId === batch.missionId);
     const talentsMap = new Map((globalState.pmTalents || []).map((t) => [t.id, t]));
 
@@ -9733,17 +13359,50 @@ function createAtriumActions() {
     notify();
 
     projectMilestoneService.generateCcpBatchSlips(batch, attendances, talentsMap).catch(() => {});
-
-    showToast({
-      type: 'success',
-      title: 'Bordereaux CCP SFP 01 Générés',
-      message: `${newSlips.length} mandats postaux prêts pour impression et virement Algérie Poste.`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmCcpSlips', 'pmPayrollBatches']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'create',
+      summary: ul(
+        `Generated ${newSlips.length} CCP slips (${batch.batchNumber})`,
+        `${newSlips.length} bordereaux CCP SFP 01 générés (${batch.batchNumber})`,
+        `إصدار ${newSlips.length} حوالة بريدية CCP`
+      ),
+      entityLabel: batch.batchNumber,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () =>
+                syncCoordinator.mutateOrQueueUpdate(
+                  'pm_payroll_batches',
+                  batchId,
+                  { status: batch.status, ccp_generated_at: batch.ccpGeneratedAt || null },
+                  { entityType: 'PMPayrollBatch', entityLabel: batch.batchNumber, localData: { status: batch.status } }
+                ),
+              ...attendances.map((a) => () =>
+                syncCoordinator.softDeleteRow('pm_ccp_slips', `slip-${a.id}`, globalState.currentUser?.id)
+              ),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.generateCcpBatchSlips(batch, attendances, talentsMap).catch(() => {});
+        }
+      },
     });
   };
 
   const markPmCcpSlipPrinted = (slipId: string) => {
     const targetSlip = (globalState.pmCcpSlips || []).find((s) => s.id === slipId);
+    if (!targetSlip) return;
+    const before = captureStoreSlices(['pmCcpSlips']);
     const printedAt = new Date().toISOString();
     globalState = {
       ...globalState,
@@ -9766,9 +13425,58 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+    const after = captureStoreSlices(['pmCcpSlips']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'status',
+      summary: ul(
+        `CCP slip printed: ${targetSlip.beneficiaryName}`,
+        `Bordereau CCP imprimé : ${targetSlip.beneficiaryName}`,
+        `طباعة حوالة CCP: ${targetSlip.beneficiaryName}`
+      ),
+      entityLabel: targetSlip.beneficiaryName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .mutateOrQueueUpdate(
+              'pm_ccp_slips',
+              slipId,
+              { is_printed: Boolean(targetSlip.isPrinted), printed_at: targetSlip.printedAt || null },
+              {
+                expectedVersion: targetSlip.version,
+                entityType: 'PMCcpSlip',
+                entityLabel: targetSlip.beneficiaryName,
+                localData: { is_printed: Boolean(targetSlip.isPrinted) },
+              }
+            )
+            .catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .mutateOrQueueUpdate(
+              'pm_ccp_slips',
+              slipId,
+              { is_printed: true, printed_at: printedAt },
+              {
+                expectedVersion: targetSlip.version,
+                entityType: 'PMCcpSlip',
+                entityLabel: targetSlip.beneficiaryName,
+                localData: { is_printed: true },
+              }
+            )
+            .catch(() => {});
+        }
+      },
+    });
   };
 
   const addPmEquipmentStock = (itemData: Omit<PMEquipmentStock, 'id' | 'createdAt'>) => {
+    const before = captureStoreSlices(['pmEquipmentStock']);
     const newItem: PMEquipmentStock = {
       ...getTraceContext(),
       ...itemData,
@@ -9781,11 +13489,32 @@ function createAtriumActions() {
     };
     notify();
     projectMilestoneService.upsertEquipmentStock(newItem).catch(() => {});
-    showToast({
-      type: 'success',
-      title: 'Matériel Enregistré',
-      message: `${newItem.assetCode}: ${newItem.title} ajouté à l\'inventaire d\'agence.`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmEquipmentStock']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'create',
+      summary: ul(
+        `Equipment registered: ${newItem.assetCode} — ${newItem.title}`,
+        `Matériel enregistré : ${newItem.assetCode} — ${newItem.title}`,
+        `إضافة عتاد: ${newItem.assetCode}`
+      ),
+      entityLabel: newItem.title,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.deleteEquipmentStock(newItem.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('pm_equipment_stock', newItem.id, globalState.currentUser?.id)
+            .then(() => projectMilestoneService.upsertEquipmentStock(newItem))
+            .catch(() => {});
+        }
+      },
     });
     return newItem;
   };
@@ -9795,6 +13524,9 @@ function createAtriumActions() {
     status: PMEquipmentStock['currentStatus'],
     conditionReport?: PMEquipmentStock['conditionReport']
   ) => {
+    const prev = (globalState.pmEquipmentStock || []).find((eq) => eq.id === assetId);
+    if (!prev) return;
+    const before = captureStoreSlices(['pmEquipmentStock']);
     globalState = {
       ...globalState,
       pmEquipmentStock: (globalState.pmEquipmentStock || []).map((eq) =>
@@ -9810,9 +13542,49 @@ function createAtriumActions() {
     notify();
     const updated = globalState.pmEquipmentStock.find((e) => e.id === assetId);
     if (updated) projectMilestoneService.upsertEquipmentStock(updated).catch(() => {});
+    const after = captureStoreSlices(['pmEquipmentStock']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'status',
+      summary: ul(
+        `Asset ${prev.assetCode} → ${status}`,
+        `Matériel ${prev.assetCode} → ${status}`,
+        `حالة العتاد ${prev.assetCode} → ${status}`
+      ),
+      entityLabel: prev.title,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          projectMilestoneService.upsertEquipmentStock(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (updated && isSupabaseConfigured()) {
+          projectMilestoneService.upsertEquipmentStock(updated).catch(() => {});
+        }
+      },
+    });
   };
 
   const resetPmMockData = () => {
+    const pmKeys: (keyof AppState)[] = [
+      'pmClients',
+      'pmProjects',
+      'pmMilestones',
+      'pmCollateralCatalog',
+      'pmPrintOrders',
+      'pmBatDeliverables',
+      'pmTalents',
+      'pmMissions',
+      'pmAttendances',
+      'pmExpenses',
+      'pmPayrollBatches',
+      'pmCcpSlips',
+      'pmEquipmentStock',
+    ];
+    const before = captureStoreSlices(pmKeys);
     const targetFacilityId = globalState.currentBranchId || 'branch_agency_main';
     const targetAccountId = globalState.account.id || 'acc_01';
     const targetBizId = globalState.currentBusinessId || 'biz_agency';
@@ -9939,11 +13711,18 @@ function createAtriumActions() {
       pmEquipmentStock: freshEquipment,
     };
     notify();
-    showToast({
-      type: 'success',
-      title: 'Données Démo Agence Réinitialisées',
-      message: `${freshProjects.length} projets, ${freshMissions.length} missions et ${freshTalents.length} talents rechargés avec succès.`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(pmKeys);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        'Agency demo data reset',
+        'Données démo agence réinitialisées',
+        'إعادة ضبط بيانات الوكالة'
+      ),
+      toastType: 'success',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
     });
   };
 
@@ -9957,6 +13736,9 @@ function createAtriumActions() {
 
   const batchUpdatePmPrintOrderStatus = (orderIds: string[], status: PMPrintOrder['status']) => {
     const idSet = new Set(orderIds);
+    const prevOrders = (globalState.pmPrintOrders || []).filter((o) => idSet.has(o.id));
+    if (prevOrders.length === 0) return;
+    const before = captureStoreSlices(['pmPrintOrders']);
     const updatedOrders = (globalState.pmPrintOrders || []).map((o) =>
       idSet.has(o.id) ? { ...o, status } : o
     );
@@ -9965,23 +13747,49 @@ function createAtriumActions() {
       pmPrintOrders: updatedOrders,
     };
     notify();
+    const affected = updatedOrders.filter((o) => idSet.has(o.id));
     if (isSupabaseConfigured()) {
-      const affected = updatedOrders.filter((o) => idSet.has(o.id));
       runWithConcurrency(
         affected.map((o) => () => projectMilestoneService.createPrintOrder(o)),
         4
       ).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Commandes Impression Mises à Jour',
-      message: `${orderIds.length} bon(s) de commande mis à jour.`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmPrintOrders']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        `Updated ${orderIds.length} print order(s) → ${status}`,
+        `${orderIds.length} bon(s) d'impression → ${status}`,
+        `تحديث ${orderIds.length} أمر طباعة`
+      ),
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            prevOrders.map((o) => () => projectMilestoneService.createPrintOrder(o)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            affected.map((o) => () => projectMilestoneService.createPrintOrder(o)),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const batchDeletePmPrintOrders = (orderIds: string[]) => {
     const idSet = new Set(orderIds);
+    const removed = (globalState.pmPrintOrders || []).filter((o) => idSet.has(o.id));
+    if (removed.length === 0) return;
+    const before = captureStoreSlices(['pmPrintOrders']);
     globalState = {
       ...globalState,
       pmPrintOrders: (globalState.pmPrintOrders || []).filter((o) => !idSet.has(o.id)),
@@ -9993,6 +13801,35 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
+    const after = captureStoreSlices(['pmPrintOrders']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        `Deleted ${removed.length} print order(s)`,
+        `${removed.length} bon(s) d'impression supprimé(s)`,
+        `حذف ${removed.length} أمر طباعة`
+      ),
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            removed.map((o) => () => syncCoordinator.restoreRow('pm_print_orders', o.id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            orderIds.map((id) => () => projectMilestoneService.deletePrintOrder(id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+    });
   };
 
   const batchReviewPmBatDeliverables = (
@@ -10001,6 +13838,9 @@ function createAtriumActions() {
     comments?: string
   ) => {
     const idSet = new Set(batIds);
+    const prevBats = (globalState.pmBatDeliverables || []).filter((b) => idSet.has(b.id));
+    if (prevBats.length === 0) return;
+    const before = captureStoreSlices(['pmBatDeliverables']);
     const updatedBats = (globalState.pmBatDeliverables || []).map((b) =>
       idSet.has(b.id)
         ? {
@@ -10015,23 +13855,53 @@ function createAtriumActions() {
       pmBatDeliverables: updatedBats,
     };
     notify();
+    const affected = updatedBats.filter((b) => idSet.has(b.id));
     if (isSupabaseConfigured()) {
-      const affected = updatedBats.filter((b) => idSet.has(b.id));
       runWithConcurrency(
         affected.map((b) => () => projectMilestoneService.upsertBatDeliverable(b)),
         4
       ).catch(() => {});
     }
-    showToast({
-      type: status === 'approved' ? 'success' : 'warning',
-      title: status === 'approved' ? 'BAT Validés en Lot' : 'Révisions Demandées',
-      message: `${batIds.length} livrable(s) ${status === 'approved' ? 'validé(s) Bon à Tirer' : 'renvoyé(s) pour correction'}.`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmBatDeliverables']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        status === 'approved'
+          ? `Approved ${batIds.length} BAT deliverable(s)`
+          : `Requested revision on ${batIds.length} BAT(s)`,
+        status === 'approved'
+          ? `${batIds.length} livrable(s) BAT validé(s)`
+          : `Révisions demandées sur ${batIds.length} BAT`,
+        `تحديث ${batIds.length} ملف طباعة`
+      ),
+      toastType: status === 'approved' ? 'success' : 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            prevBats.map((b) => () => projectMilestoneService.upsertBatDeliverable(b)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            affected.map((b) => () => projectMilestoneService.upsertBatDeliverable(b)),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const batchDeletePmBatDeliverables = (batIds: string[]) => {
     const idSet = new Set(batIds);
+    const removed = (globalState.pmBatDeliverables || []).filter((b) => idSet.has(b.id));
+    if (removed.length === 0) return;
+    const before = captureStoreSlices(['pmBatDeliverables']);
     globalState = {
       ...globalState,
       pmBatDeliverables: (globalState.pmBatDeliverables || []).filter((b) => !idSet.has(b.id)),
@@ -10043,10 +13913,42 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
+    const after = captureStoreSlices(['pmBatDeliverables']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        `Deleted ${removed.length} BAT deliverable(s)`,
+        `${removed.length} livrable(s) BAT supprimé(s)`,
+        `حذف ${removed.length} ملف طباعة`
+      ),
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            removed.map((b) => () => syncCoordinator.restoreRow('pm_bat_deliverables', b.id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            batIds.map((id) => () => projectMilestoneService.deleteBatDeliverable(id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+    });
   };
 
   const batchDeletePmTalents = (talentIds: string[]) => {
     const idSet = new Set(talentIds);
+    const removed = (globalState.pmTalents || []).filter((t) => idSet.has(t.id));
+    if (removed.length === 0) return;
+    const before = captureStoreSlices(['pmTalents']);
     globalState = {
       ...globalState,
       pmTalents: (globalState.pmTalents || []).filter((t) => !idSet.has(t.id)),
@@ -10058,16 +13960,42 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
-    showToast({
-      type: 'info',
-      title: 'Talents Supprimés',
-      message: `${talentIds.length} profil(s) supprimé(s).`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmTalents']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        `Deleted ${removed.length} talent profile(s)`,
+        `${removed.length} profil(s) talent supprimé(s)`,
+        `حذف ${removed.length} متعاون`
+      ),
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            removed.map((t) => () => syncCoordinator.restoreRow('pm_talents', t.id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            talentIds.map((id) => () => projectMilestoneService.deleteTalent(id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const batchUpdatePmTalentStatus = (talentIds: string[], status: PMTalent['status']) => {
     const idSet = new Set(talentIds);
+    const prevTalents = (globalState.pmTalents || []).filter((t) => idSet.has(t.id));
+    if (prevTalents.length === 0) return;
+    const before = captureStoreSlices(['pmTalents']);
     const updatedTalents = (globalState.pmTalents || []).map((t) =>
       idSet.has(t.id) ? { ...t, status } : t
     );
@@ -10076,23 +14004,49 @@ function createAtriumActions() {
       pmTalents: updatedTalents,
     };
     notify();
+    const affected = updatedTalents.filter((t) => idSet.has(t.id));
     if (isSupabaseConfigured()) {
-      const affected = updatedTalents.filter((t) => idSet.has(t.id));
       runWithConcurrency(
         affected.map((t) => () => projectMilestoneService.upsertTalent(t)),
         4
       ).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Statuts Talents Mis à Jour',
-      message: `${talentIds.length} talent(s) mis à jour en '${status}'.`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmTalents']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        `Updated ${talentIds.length} talent(s) → ${status}`,
+        `${talentIds.length} talent(s) → ${status}`,
+        `تحديث ${talentIds.length} متعاون → ${status}`
+      ),
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            prevTalents.map((t) => () => projectMilestoneService.upsertTalent(t)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            affected.map((t) => () => projectMilestoneService.upsertTalent(t)),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const batchDeletePmMissions = (missionIds: string[]) => {
     const idSet = new Set(missionIds);
+    const removed = (globalState.pmMissions || []).filter((m) => idSet.has(m.id));
+    if (removed.length === 0) return;
+    const before = captureStoreSlices(['pmMissions']);
     globalState = {
       ...globalState,
       pmMissions: (globalState.pmMissions || []).filter((m) => !idSet.has(m.id)),
@@ -10104,16 +14058,42 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
-    showToast({
-      type: 'info',
-      title: 'Missions Supprimées',
-      message: `${missionIds.length} mission(s) retirée(s).`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmMissions']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        `Deleted ${removed.length} mission(s)`,
+        `${removed.length} mission(s) supprimée(s)`,
+        `حذف ${removed.length} مهمة`
+      ),
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            removed.map((m) => () => syncCoordinator.restoreRow('pm_missions', m.id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            missionIds.map((id) => () => projectMilestoneService.deleteMission(id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const batchUpdatePmAttendanceStatus = (attendanceIds: string[], status: PMAttendance['status']) => {
     const idSet = new Set(attendanceIds);
+    const prevAtts = (globalState.pmAttendances || []).filter((a) => idSet.has(a.id));
+    if (prevAtts.length === 0) return;
+    const before = captureStoreSlices(['pmAttendances']);
     const updatedAttendances = (globalState.pmAttendances || []).map((a) => {
       if (idSet.has(a.id)) {
         const grossPayableDzd = ['present', 'late', 'replacement'].includes(status) ? a.dayRateDzd : 0;
@@ -10131,8 +14111,8 @@ function createAtriumActions() {
       pmAttendances: updatedAttendances,
     };
     notify();
+    const affected = updatedAttendances.filter((a) => idSet.has(a.id));
     if (isSupabaseConfigured()) {
-      const affected = updatedAttendances.filter((a) => idSet.has(a.id));
       runWithConcurrency(
         affected.map((a) => () => {
           const patch = {
@@ -10150,16 +14130,66 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Pointages Mis à Jour',
-      message: `${attendanceIds.length} animateur(s) marqué(s) '${status}'.`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmAttendances']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        `Updated ${attendanceIds.length} attendance(s) → ${status}`,
+        `${attendanceIds.length} pointage(s) → ${status}`,
+        `تحديث ${attendanceIds.length} سجل حضور`
+      ),
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            prevAtts.map((a) => () => {
+              const patch = {
+                status: a.status,
+                gross_payable_dzd: a.grossPayableDzd,
+                check_in_time: a.checkInTime || null,
+              };
+              return syncCoordinator.mutateOrQueueUpdate('pm_attendances', a.id, patch, {
+                expectedVersion: a.version,
+                entityType: 'PMAttendance',
+                entityLabel: a.talentName,
+                localData: patch,
+              });
+            }),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            affected.map((a) => () => {
+              const patch = {
+                status: a.status,
+                gross_payable_dzd: a.grossPayableDzd,
+                check_in_time: a.checkInTime || null,
+              };
+              return syncCoordinator.mutateOrQueueUpdate('pm_attendances', a.id, patch, {
+                expectedVersion: a.version,
+                entityType: 'PMAttendance',
+                entityLabel: a.talentName,
+                localData: patch,
+              });
+            }),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const batchMarkPmCcpSlipsPrinted = (slipIds: string[]) => {
     const idSet = new Set(slipIds);
+    const prevSlips = (globalState.pmCcpSlips || []).filter((s) => idSet.has(s.id));
+    if (prevSlips.length === 0) return;
+    const before = captureStoreSlices(['pmCcpSlips']);
     const slipMap = new Map((globalState.pmCcpSlips || []).map((s) => [s.id, s]));
     const printedAt = new Date().toISOString();
     globalState = {
@@ -10187,11 +14217,55 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Bordereaux Marqués Imprimés',
-      message: `${slipIds.length} bordereau(x) CCP SFP 01 prêts pour le guichet postal.`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmCcpSlips']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        `Marked ${slipIds.length} CCP slip(s) printed`,
+        `${slipIds.length} bordereau(x) CCP marqués imprimés`,
+        `طباعة ${slipIds.length} حوالة بريدية CCP`
+      ),
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            prevSlips.map((s) => () =>
+              syncCoordinator.mutateOrQueueUpdate(
+                'pm_ccp_slips',
+                s.id,
+                { is_printed: Boolean(s.isPrinted), printed_at: s.printedAt || null },
+                {
+                  expectedVersion: s.version,
+                  entityType: 'PMCcpSlip',
+                  entityLabel: s.beneficiaryName,
+                  localData: { is_printed: Boolean(s.isPrinted) },
+                }
+              )
+            ),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            slipIds.map((id) => () => {
+              const slip = slipMap.get(id);
+              const patch = { is_printed: true, printed_at: printedAt };
+              return syncCoordinator.mutateOrQueueUpdate('pm_ccp_slips', id, patch, {
+                expectedVersion: slip?.version,
+                entityType: 'PMCcpSlip',
+                entityLabel: slip?.beneficiaryName,
+                localData: patch,
+              });
+            }),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
@@ -10200,6 +14274,9 @@ function createAtriumActions() {
     status: PMEquipmentStock['currentStatus']
   ) => {
     const idSet = new Set(assetIds);
+    const prevStock = (globalState.pmEquipmentStock || []).filter((eq) => idSet.has(eq.id));
+    if (prevStock.length === 0) return;
+    const before = captureStoreSlices(['pmEquipmentStock']);
     const updatedStock = (globalState.pmEquipmentStock || []).map((eq) =>
       idSet.has(eq.id) ? { ...eq, currentStatus: status } : eq
     );
@@ -10208,23 +14285,49 @@ function createAtriumActions() {
       pmEquipmentStock: updatedStock,
     };
     notify();
+    const affected = updatedStock.filter((eq) => idSet.has(eq.id));
     if (isSupabaseConfigured()) {
-      const affected = updatedStock.filter((eq) => idSet.has(eq.id));
       runWithConcurrency(
         affected.map((eq) => () => projectMilestoneService.upsertEquipmentStock(eq)),
         4
       ).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Matériels Mis à Jour',
-      message: `${assetIds.length} équipement(s) mis à jour en '${status}'.`,
-      category: 'project_milestone',
+    const after = captureStoreSlices(['pmEquipmentStock']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        `Updated ${assetIds.length} asset(s) → ${status}`,
+        `${assetIds.length} équipement(s) → ${status}`,
+        `تحديث ${assetIds.length} عتاد`
+      ),
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            prevStock.map((eq) => () => projectMilestoneService.upsertEquipmentStock(eq)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            affected.map((eq) => () => projectMilestoneService.upsertEquipmentStock(eq)),
+            4
+          ).catch(() => {});
+        }
+      },
     });
   };
 
   const batchDeletePmEquipmentStock = (assetIds: string[]) => {
     const idSet = new Set(assetIds);
+    const removed = (globalState.pmEquipmentStock || []).filter((eq) => idSet.has(eq.id));
+    if (removed.length === 0) return;
+    const before = captureStoreSlices(['pmEquipmentStock']);
     globalState = {
       ...globalState,
       pmEquipmentStock: (globalState.pmEquipmentStock || []).filter((eq) => !idSet.has(eq.id)),
@@ -10236,10 +14339,39 @@ function createAtriumActions() {
         4
       ).catch(() => {});
     }
+    const after = captureStoreSlices(['pmEquipmentStock']);
+    registerUndoEntry({
+      vertical: 'project_milestone',
+      operationType: 'bulk',
+      summary: ul(
+        `Deleted ${removed.length} equipment asset(s)`,
+        `${removed.length} équipement(s) supprimé(s)`,
+        `حذف ${removed.length} عتاد`
+      ),
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            removed.map((eq) => () => syncCoordinator.restoreRow('pm_equipment_stock', eq.id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            assetIds.map((id) => () => projectMilestoneService.deleteEquipmentStock(id, globalState.currentUser?.id)),
+            4
+          ).catch(() => {});
+        }
+      },
+    });
   };
 
   const resetAllData = () => {
-    const previousSnapshot = { ...globalState };
+    const previousSnapshot = cloneSnapshot(globalState);
     globalState = {
       ...DEFAULT_STATE,
       storageVersion: ATRIUM_STORAGE_VERSION,
@@ -10247,29 +14379,31 @@ function createAtriumActions() {
       theme: globalState.theme,
       density: globalState.density,
       currentUser: globalState.currentUser,
+      toasts: globalState.toasts,
     };
     notify();
-    showToast({
-      type: 'info',
-      title: 'Toutes les données réinitialisées',
-      message: 'La base de données locale a été réinitialisée avec les données de démonstration.',
-      action: {
-        label: 'Annuler',
-        onClick: () => {
-          globalState = previousSnapshot;
-          notify();
-          showToast({
-            type: 'success',
-            title: 'Annulation effectuée',
-            message: 'Les données précédentes ont été rétablies.',
-          });
-        },
+    const afterSnapshot = cloneSnapshot(globalState);
+    registerUndoEntry({
+      vertical: 'settings',
+      operationType: 'bulk',
+      summary: ul(
+        'All local data reset to demo defaults',
+        'Toutes les données réinitialisées',
+        'إعادة ضبط كافة البيانات المحلية'
+      ),
+      toastType: 'warning',
+      undo: () => {
+        globalState = { ...cloneSnapshot(previousSnapshot), toasts: globalState.toasts };
+        notify();
+      },
+      redo: () => {
+        globalState = { ...cloneSnapshot(afterSnapshot), toasts: globalState.toasts };
+        notify();
       },
     });
   };
 
   const resetToDefaultDemoData = (targetCategory?: BusinessCategory) => {
-    const previousSnapshot = { ...globalState };
     if (!targetCategory) {
       resetAllData();
       return;
@@ -10353,29 +14487,27 @@ function createAtriumActions() {
       };
     }
 
+    const sliceKeys = Object.keys(updates) as (keyof AppState)[];
+    const before = captureStoreSlices(sliceKeys);
     globalState = {
       ...globalState,
       ...updates,
       storageVersion: ATRIUM_STORAGE_VERSION,
     };
     notify();
+    const after = captureStoreSlices(sliceKeys);
 
-    showToast({
-      type: 'info',
-      title: 'Données de démo réinitialisées',
-      message: `Le jeu de données de ${targetCategory} a été réinitialisé.`,
-      action: {
-        label: 'Annuler',
-        onClick: () => {
-          globalState = previousSnapshot;
-          notify();
-          showToast({
-            type: 'success',
-            title: 'Annulation effectuée',
-            message: 'Les données précédentes ont été rétablies.',
-          });
-        },
-      },
+    registerUndoEntry({
+      vertical: targetCategory,
+      operationType: 'bulk',
+      summary: ul(
+        `Demo dataset reset (${targetCategory})`,
+        `Jeu de données démo réinitialisé (${targetCategory})`,
+        `إعادة ضبط البيانات التجريبية (${targetCategory})`
+      ),
+      toastType: 'info',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
     });
   };
 
@@ -10384,6 +14516,7 @@ function createAtriumActions() {
   // ============================================================
 
   const createCommercialDoc = (doc: Omit<CommercialDocument, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const before = captureStoreSlices(['commercialDocs']);
     const id = `cdoc_${Date.now()}`;
     const newDoc: CommercialDocument = {
       ...doc,
@@ -10404,16 +14537,40 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       tradingService.upsertCommercialDoc(newDoc).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Document commercial créé',
-      message: `${newDoc.docNumber} (${newDoc.clientName}) a été enregistré.`,
-      category: 'trading_commercial',
+    const after = captureStoreSlices(['commercialDocs']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'create',
+      summary: ul(
+        `Created document ${newDoc.docNumber} (${newDoc.clientName})`,
+        `Document créé : ${newDoc.docNumber} (${newDoc.clientName})`,
+        `إنشاء مستند تجاري: ${newDoc.docNumber}`
+      ),
+      entityLabel: newDoc.docNumber,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          tradingService.deleteCommercialDoc(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('trading_commercial_docs', id, globalState.currentUser?.id)
+            .then(() => tradingService.upsertCommercialDoc(newDoc))
+            .catch(() => {});
+        }
+      },
     });
     return newDoc;
   };
 
   const updateCommercialDoc = (id: string, updates: Partial<CommercialDocument>) => {
+    const prev = (globalState.commercialDocs || []).find((d) => d.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['commercialDocs']);
     const updatedDocs = (globalState.commercialDocs || []).map((d) =>
       d.id === id ? { ...d, ...updates, updatedAt: new Date().toISOString() } : d
     );
@@ -10426,16 +14583,37 @@ function createAtriumActions() {
     if (target && isSupabaseConfigured()) {
       tradingService.upsertCommercialDoc(target).catch(() => {});
     }
-    showToast({
-      type: 'info',
-      title: 'Document mis à jour',
-      message: `Modifications enregistrées.`,
-      category: 'trading_commercial',
+    const after = captureStoreSlices(['commercialDocs']);
+    const opType: UndoOperationType = updates.status && updates.status !== prev.status ? 'status' : 'edit';
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: opType,
+      summary: ul(
+        `Updated document ${prev.docNumber}`,
+        `Document mis à jour : ${prev.docNumber}`,
+        `تحديث المستند: ${prev.docNumber}`
+      ),
+      entityLabel: prev.docNumber,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          tradingService.upsertCommercialDoc(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          tradingService.upsertCommercialDoc(target).catch(() => {});
+        }
+      },
     });
   };
 
   const deleteCommercialDoc = (id: string) => {
     const doc = (globalState.commercialDocs || []).find((d) => d.id === id);
+    if (!doc) return;
+    const before = captureStoreSlices(['commercialDocs']);
     globalState = {
       ...globalState,
       commercialDocs: (globalState.commercialDocs || []).filter((d) => d.id !== id),
@@ -10444,11 +14622,29 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       tradingService.deleteCommercialDoc(id, globalState.currentUser?.id).catch(() => {});
     }
-    showToast({
-      type: 'warning',
-      title: 'Document supprimé',
-      message: `${doc?.docNumber || id} a été retiré.`,
-      category: 'trading_commercial',
+    const after = captureStoreSlices(['commercialDocs']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'delete',
+      summary: ul(
+        `Deleted document ${doc.docNumber}`,
+        `Document supprimé : ${doc.docNumber}`,
+        `حذف المستند: ${doc.docNumber}`
+      ),
+      entityLabel: doc.docNumber,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('trading_commercial_docs', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          tradingService.deleteCommercialDoc(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
     });
   };
 
@@ -10456,6 +14652,7 @@ function createAtriumActions() {
     const sourceDoc = (globalState.commercialDocs || []).find((d) => d.id === sourceDocId);
     if (!sourceDoc) return null;
 
+    const before = captureStoreSlices(['commercialDocs']);
     const currentYear = new Date().getFullYear();
     const count = (globalState.commercialDocs || []).filter((d) => d.type === targetType).length + 1;
     const prefix = targetType === 'bl' ? 'BL' : targetType === 'facture' ? 'FAC' : targetType === 'commande' ? 'BC' : 'AV';
@@ -10495,17 +14692,48 @@ function createAtriumActions() {
       tradingService.upsertCommercialDoc(updatedSource).catch(() => {});
     }
 
-    showToast({
-      type: 'success',
-      title: `Conversion effectuée`,
-      message: `${sourceDoc.docNumber} converti en ${newDoc.docNumber}.`,
-      category: 'trading_commercial',
+    const after = captureStoreSlices(['commercialDocs']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'status',
+      summary: ul(
+        `Converted ${sourceDoc.docNumber} → ${newDoc.docNumber}`,
+        `${sourceDoc.docNumber} converti en ${newDoc.docNumber}`,
+        `تحويل ${sourceDoc.docNumber} ← ${newDoc.docNumber}`
+      ),
+      entityLabel: newDoc.docNumber,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () => tradingService.deleteCommercialDoc(newDoc.id, globalState.currentUser?.id),
+              () => tradingService.upsertCommercialDoc(sourceDoc),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () => syncCoordinator.restoreRow('trading_commercial_docs', newDoc.id, globalState.currentUser?.id).then(() => tradingService.upsertCommercialDoc(newDoc)),
+              () => tradingService.upsertCommercialDoc(updatedSource),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
     });
 
     return newDoc;
   };
 
   const createPurchaseDoc = (doc: Omit<PurchaseDocument, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const before = captureStoreSlices(['purchaseDocs']);
     const id = `pdoc_${Date.now()}`;
     const newDoc: PurchaseDocument = {
       ...doc,
@@ -10526,16 +14754,40 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       tradingService.upsertPurchaseDoc(newDoc).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Commande Fournisseur Créée',
-      message: `${newDoc.docNumber} (${newDoc.supplierName}) enregistrée.`,
-      category: 'trading_commercial',
+    const after = captureStoreSlices(['purchaseDocs']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'create',
+      summary: ul(
+        `Purchase order created: ${newDoc.docNumber}`,
+        `Commande fournisseur créée : ${newDoc.docNumber}`,
+        `إنشاء طلب شراء: ${newDoc.docNumber}`
+      ),
+      entityLabel: newDoc.docNumber,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          tradingService.deletePurchaseDoc(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('trading_purchase_docs', id, globalState.currentUser?.id)
+            .then(() => tradingService.upsertPurchaseDoc(newDoc))
+            .catch(() => {});
+        }
+      },
     });
     return newDoc;
   };
 
   const updatePurchaseDoc = (id: string, updates: Partial<PurchaseDocument>) => {
+    const prev = (globalState.purchaseDocs || []).find((p) => p.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['purchaseDocs']);
     const updatedDocs = (globalState.purchaseDocs || []).map((p) =>
       p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p
     );
@@ -10548,12 +14800,41 @@ function createAtriumActions() {
     if (target && isSupabaseConfigured()) {
       tradingService.upsertPurchaseDoc(target).catch(() => {});
     }
+    const after = captureStoreSlices(['purchaseDocs']);
+    const opType: UndoOperationType = updates.status && updates.status !== prev.status ? 'status' : 'edit';
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: opType,
+      summary: ul(
+        `Updated purchase doc ${prev.docNumber}`,
+        `Document d'achat mis à jour : ${prev.docNumber}`,
+        `تحديث مستند الشراء: ${prev.docNumber}`
+      ),
+      entityLabel: prev.docNumber,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          tradingService.upsertPurchaseDoc(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          tradingService.upsertPurchaseDoc(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const receivePurchaseDoc = (poId: string) => {
     const po = (globalState.purchaseDocs || []).find((p) => p.id === poId);
     if (!po) return null;
 
+    const before = captureStoreSlices(['purchaseDocs', 'stockVouchers', 'products']);
+    const prevTouchedProducts = (globalState.products || []).filter((prod) =>
+      po.items.some((it) => it.productId === prod.id || it.description === prod.name)
+    );
     const currentYear = new Date().getFullYear();
     const count = (globalState.purchaseDocs || []).filter((p) => p.type === 'br').length + 1;
     const brNumber = `BR-${currentYear}-${count.toString().padStart(4, '0')}`;
@@ -10633,10 +14914,10 @@ function createAtriumActions() {
     };
     notify();
 
+    const touchedProds = updatedProducts.filter((prod) =>
+      po.items.some((it) => it.productId === prod.id || it.description === prod.name)
+    );
     if (isSupabaseConfigured()) {
-      const touchedProds = updatedProducts.filter((prod) =>
-        po.items.some((it) => it.productId === prod.id || it.description === prod.name)
-      );
       runWithConcurrency(
         [
           () => tradingService.upsertPurchaseDoc(newBr),
@@ -10648,17 +14929,55 @@ function createAtriumActions() {
       ).catch(() => {});
     }
 
-    showToast({
-      type: 'success',
-      title: 'Réception à Quai Validée',
-      message: `${brNumber} généré. Les stocks ont été automatiquement incrémentés.`,
-      category: 'trading_commercial',
+    const after = captureStoreSlices(['purchaseDocs', 'stockVouchers', 'products']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'status',
+      summary: ul(
+        `Received ${po.docNumber} → ${brNumber}`,
+        `Réception validée : ${brNumber} (stock incrémenté)`,
+        `تأكيد الاستلام: ${brNumber}`
+      ),
+      entityLabel: brNumber,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () => tradingService.deletePurchaseDoc(newBr.id, globalState.currentUser?.id),
+              () => tradingService.upsertPurchaseDoc(po),
+              () => tradingService.deleteStockVoucher(newVoucher.id, globalState.currentUser?.id),
+              ...prevTouchedProducts.map((p) => () => tradingService.upsertProduct(p, po.depotId)),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () => syncCoordinator.restoreRow('trading_purchase_docs', newBr.id, globalState.currentUser?.id).then(() => tradingService.upsertPurchaseDoc(newBr)),
+              () => tradingService.upsertPurchaseDoc(updatedPo),
+              () => syncCoordinator.restoreRow('trading_stock_vouchers', newVoucher.id, globalState.currentUser?.id).then(() => tradingService.upsertStockVoucher(newVoucher)),
+              ...touchedProds.map((p) => () => tradingService.upsertProduct(p, po.depotId)),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
     });
 
     return newBr;
   };
 
   const createStockVoucher = (voucher: Omit<StockMovementVoucher, 'id' | 'createdAt'>) => {
+    const before = captureStoreSlices(['stockVouchers', 'products']);
+    const prevTouchedProducts = (globalState.products || []).filter((prod) =>
+      voucher.items.some((it) => it.productId === prod.id)
+    );
     const id = `svouch_${Date.now()}`;
     const newVoucher: StockMovementVoucher = {
       ...getTraceContext(),
@@ -10686,10 +15005,10 @@ function createAtriumActions() {
     };
     notify();
 
+    const touchedProds = updatedProducts.filter((prod) =>
+      voucher.items.some((it) => it.productId === prod.id)
+    );
     if (isSupabaseConfigured()) {
-      const touchedProds = updatedProducts.filter((prod) =>
-        voucher.items.some((it) => it.productId === prod.id)
-      );
       runWithConcurrency(
         [
           () => tradingService.upsertStockVoucher(newVoucher),
@@ -10699,17 +15018,48 @@ function createAtriumActions() {
       ).catch(() => {});
     }
 
-    showToast({
-      type: 'info',
-      title: `Mouvement de stock enregistré`,
-      message: `${newVoucher.voucherNumber} (${voucher.reason}) validé.`,
-      category: 'trading_commercial',
+    const after = captureStoreSlices(['stockVouchers', 'products']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'create',
+      summary: ul(
+        `Stock voucher: ${newVoucher.voucherNumber}`,
+        `Mouvement de stock : ${newVoucher.voucherNumber}`,
+        `حركة مخزون: ${newVoucher.voucherNumber}`
+      ),
+      entityLabel: newVoucher.voucherNumber,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () => tradingService.deleteStockVoucher(id, globalState.currentUser?.id),
+              ...prevTouchedProducts.map((p) => () => tradingService.upsertProduct(p, voucher.depotSourceId)),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          runWithConcurrency(
+            [
+              () => syncCoordinator.restoreRow('trading_stock_vouchers', id, globalState.currentUser?.id).then(() => tradingService.upsertStockVoucher(newVoucher)),
+              ...touchedProds.map((p) => () => tradingService.upsertProduct(p, voucher.depotSourceId)),
+            ],
+            4
+          ).catch(() => {});
+        }
+      },
     });
 
     return newVoucher;
   };
 
   const createB2bClient = (client: Omit<B2bClient, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const before = captureStoreSlices(['b2bClients']);
     const id = `b2b_cli_${Date.now()}`;
     const newClient: B2bClient = {
       ...getTraceContext(),
@@ -10728,16 +15078,40 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       tradingService.upsertClient(newClient).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Client B2B Créé',
-      message: `${newClient.companyName} ajouté au répertoire commercial.`,
-      category: 'trading_commercial',
+    const after = captureStoreSlices(['b2bClients']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'create',
+      summary: ul(
+        `Created B2B client: ${newClient.companyName}`,
+        `Client B2B créé : ${newClient.companyName}`,
+        `إضافة عميل B2B: ${newClient.companyName}`
+      ),
+      entityLabel: newClient.companyName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          tradingService.deleteClient(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('trading_b2b_clients', id, globalState.currentUser?.id)
+            .then(() => tradingService.upsertClient(newClient))
+            .catch(() => {});
+        }
+      },
     });
     return newClient;
   };
 
   const updateB2bClient = (id: string, updates: Partial<B2bClient>) => {
+    const prev = (globalState.b2bClients || []).find((c) => c.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['b2bClients']);
     const updatedClients = (globalState.b2bClients || []).map((c) =>
       c.id === id ? { ...c, ...updates, updatedAt: new Date().toISOString() } : c
     );
@@ -10750,9 +15124,36 @@ function createAtriumActions() {
     if (target && isSupabaseConfigured()) {
       tradingService.upsertClient(target).catch(() => {});
     }
+    const after = captureStoreSlices(['b2bClients']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'edit',
+      summary: ul(
+        `Updated B2B client: ${prev.companyName}`,
+        `Client B2B modifié : ${prev.companyName}`,
+        `تعديل عميل B2B: ${prev.companyName}`
+      ),
+      entityLabel: prev.companyName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          tradingService.upsertClient(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          tradingService.upsertClient(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteB2bClient = (id: string) => {
+    const prev = (globalState.b2bClients || []).find((c) => c.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['b2bClients']);
     globalState = {
       ...globalState,
       b2bClients: (globalState.b2bClients || []).filter((c) => c.id !== id),
@@ -10761,9 +15162,34 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       tradingService.deleteClient(id, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['b2bClients']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'delete',
+      summary: ul(
+        `Deleted B2B client: ${prev.companyName}`,
+        `Client B2B supprimé : ${prev.companyName}`,
+        `حذف عميل B2B: ${prev.companyName}`
+      ),
+      entityLabel: prev.companyName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('trading_b2b_clients', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          tradingService.deleteClient(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const createB2bSupplier = (supplier: Omit<B2bSupplier, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const before = captureStoreSlices(['b2bSuppliers']);
     const id = `b2b_sup_${Date.now()}`;
     const newSup: B2bSupplier = {
       ...getTraceContext(),
@@ -10782,16 +15208,40 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       tradingService.upsertSupplier(newSup).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Fournisseur Référencé',
-      message: `${newSup.supplierName} enregistré.`,
-      category: 'trading_commercial',
+    const after = captureStoreSlices(['b2bSuppliers']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'create',
+      summary: ul(
+        `Supplier added: ${newSup.supplierName}`,
+        `Fournisseur référencé : ${newSup.supplierName}`,
+        `إضافة مورد: ${newSup.supplierName}`
+      ),
+      entityLabel: newSup.supplierName,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          tradingService.deleteSupplier(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('trading_b2b_suppliers', id, globalState.currentUser?.id)
+            .then(() => tradingService.upsertSupplier(newSup))
+            .catch(() => {});
+        }
+      },
     });
     return newSup;
   };
 
   const updateB2bSupplier = (id: string, updates: Partial<B2bSupplier>) => {
+    const prev = (globalState.b2bSuppliers || []).find((s) => s.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['b2bSuppliers']);
     const updatedSuppliers = (globalState.b2bSuppliers || []).map((s) =>
       s.id === id ? { ...s, ...updates, updatedAt: new Date().toISOString() } : s
     );
@@ -10804,9 +15254,36 @@ function createAtriumActions() {
     if (target && isSupabaseConfigured()) {
       tradingService.upsertSupplier(target).catch(() => {});
     }
+    const after = captureStoreSlices(['b2bSuppliers']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'edit',
+      summary: ul(
+        `Updated supplier: ${prev.supplierName}`,
+        `Fournisseur modifié : ${prev.supplierName}`,
+        `تعديل المورد: ${prev.supplierName}`
+      ),
+      entityLabel: prev.supplierName,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          tradingService.upsertSupplier(prev).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (target && isSupabaseConfigured()) {
+          tradingService.upsertSupplier(target).catch(() => {});
+        }
+      },
+    });
   };
 
   const deleteB2bSupplier = (id: string) => {
+    const prev = (globalState.b2bSuppliers || []).find((s) => s.id === id);
+    if (!prev) return;
+    const before = captureStoreSlices(['b2bSuppliers']);
     globalState = {
       ...globalState,
       b2bSuppliers: (globalState.b2bSuppliers || []).filter((s) => s.id !== id),
@@ -10815,9 +15292,34 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       tradingService.deleteSupplier(id, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['b2bSuppliers']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'delete',
+      summary: ul(
+        `Deleted supplier: ${prev.supplierName}`,
+        `Fournisseur supprimé : ${prev.supplierName}`,
+        `حذف المورد: ${prev.supplierName}`
+      ),
+      entityLabel: prev.supplierName,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('trading_b2b_suppliers', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          tradingService.deleteSupplier(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
   };
 
   const createWarehouseDepot = (depot: Omit<WarehouseDepot, 'id' | 'createdAt'>) => {
+    const before = captureStoreSlices(['warehouses']);
     const id = `depot_${Date.now()}`;
     const newDepot: WarehouseDepot = {
       ...getTraceContext(),
@@ -10836,16 +15338,46 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       tradingService.upsertWarehouse(newDepot).catch(() => {});
     }
-    showToast({
-      type: 'success',
-      title: 'Dépôt Créé',
-      message: `${newDepot.name} (${newDepot.code}) opérationnel.`,
-      category: 'trading_commercial',
+    const after = captureStoreSlices(['warehouses']);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'create',
+      summary: ul(
+        `Warehouse created: ${newDepot.name}`,
+        `Dépôt créé : ${newDepot.name}`,
+        `إضافة مستودع: ${newDepot.name}`
+      ),
+      entityLabel: newDepot.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          tradingService.deleteWarehouse(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('trading_warehouses', id, globalState.currentUser?.id)
+            .then(() => tradingService.upsertWarehouse(newDepot))
+            .catch(() => {});
+        }
+      },
     });
     return newDepot;
   };
 
   const resetTradingMockData = () => {
+    const keys: (keyof AppState)[] = [
+      'b2bClients',
+      'b2bSuppliers',
+      'warehouses',
+      'commercialDocs',
+      'purchaseDocs',
+      'stockVouchers',
+    ];
+    const before = captureStoreSlices(keys);
     globalState = {
       ...globalState,
       b2bClients: INITIAL_B2B_CLIENTS,
@@ -10856,11 +15388,18 @@ function createAtriumActions() {
       stockVouchers: INITIAL_STOCK_VOUCHERS,
     };
     notify();
-    showToast({
-      type: 'info',
-      title: 'Négoce Commercial Réinitialisé',
-      message: 'Données de démonstration B2B restaurées.',
-      category: 'trading_commercial',
+    const after = captureStoreSlices(keys);
+    registerUndoEntry({
+      vertical: 'trading_commercial',
+      operationType: 'bulk',
+      summary: ul(
+        'B2B Trading demo data reset',
+        'Négoce commercial réinitialisé',
+        'إعادة ضبط بيانات التجارة'
+      ),
+      toastType: 'info',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
     });
   };
 
@@ -10890,6 +15429,7 @@ function createAtriumActions() {
       return false;
     }
 
+    const previousSnapshot = cloneSnapshot(globalState);
     const parsed = report.parsed;
     globalState = {
       ...DEFAULT_STATE,
@@ -10904,14 +15444,28 @@ function createAtriumActions() {
       categoryFormules: Array.isArray(parsed.categoryFormules)
         ? parsed.categoryFormules
         : INITIAL_CATEGORY_FORMULES,
-      toasts: [],
+      toasts: globalState.toasts,
       concurrencyConflicts: [],
     };
     notify();
-    showToast({
-      type: 'success',
-      title: 'Database Restored Successfully',
-      message: `Restored ${parsed.businesses.length} businesses, ${parsed.branches.length} branches, and ${report.totalRecords} records (${report.checksum}).`,
+    const afterSnapshot = cloneSnapshot(globalState);
+    registerUndoEntry({
+      vertical: 'settings',
+      operationType: 'bulk',
+      summary: ul(
+        `Database restored (${report.totalRecords} records)`,
+        `Sauvegarde importée (${report.totalRecords} enregistrements)`,
+        `استعادة قاعدة البيانات (${report.totalRecords} سجل)`
+      ),
+      toastType: 'success',
+      undo: () => {
+        globalState = { ...cloneSnapshot(previousSnapshot), toasts: globalState.toasts };
+        notify();
+      },
+      redo: () => {
+        globalState = { ...cloneSnapshot(afterSnapshot), toasts: globalState.toasts };
+        notify();
+      },
     });
     return true;
   };
@@ -10946,6 +15500,7 @@ function createAtriumActions() {
     notify();
   };
   const addMemberCheckIn = (checkIn: MemberCheckInLog) => {
+    const before = captureStoreSlices(['memberCheckIns']);
     const scopedCheckIn: MemberCheckInLog = {
       ...checkIn,
       businessId: checkIn.businessId || globalState.currentBusinessId,
@@ -10956,8 +15511,23 @@ function createAtriumActions() {
       memberCheckIns: [scopedCheckIn, ...(globalState.memberCheckIns || [])],
     };
     notify();
+    const after = captureStoreSlices(['memberCheckIns']);
+    registerUndoEntry({
+      vertical: 'membership_session',
+      operationType: 'create',
+      summary: ul(
+        `Check-in logged: ${scopedCheckIn.memberName}`,
+        `Passage enregistré : ${scopedCheckIn.memberName}`,
+        `تسجيل دخول عضو: ${scopedCheckIn.memberName}`
+      ),
+      entityLabel: scopedCheckIn.memberName,
+      toastType: 'info',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
   };
   const addWalkInTicket = (ticket: WalkInTicket) => {
+    const before = captureStoreSlices(['walkInTickets']);
     globalState = {
       ...globalState,
       walkInTickets: [ticket, ...(globalState.walkInTickets || [])],
@@ -10972,11 +15542,46 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+    const after = captureStoreSlices(['walkInTickets']);
+    registerUndoEntry({
+      vertical: getActiveCategoryForBranch(globalState.currentBranchId),
+      operationType: 'create',
+      summary: ul(
+        `Walk-in ticket issued: ${ticket.ticketNumber || ticket.id}`,
+        `Ticket sans RDV émis : ${ticket.ticketNumber || ticket.id}`,
+        `تذكرة دخول فوري: ${ticket.ticketNumber || ticket.id}`
+      ),
+      entityLabel: ticket.ticketNumber || ticket.id,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.softDeleteRow('gym_walk_in_tickets', ticket.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('gym_walk_in_tickets', ticket.id, globalState.currentUser?.id)
+            .then(() =>
+              memberService.upsertWalkInTicket(ticket, {
+                accountId: globalState.account.id,
+                businessId: globalState.currentBusinessId,
+                branchId: globalState.currentBranchId,
+              })
+            )
+            .catch(() => {});
+        }
+      },
+    });
   };
   const updateSalonChairStation = (station: SalonChairStation) => {
+    const before = captureStoreSlices(['salonChairStations']);
     const existing = (globalState.salonChairStations || []).findIndex(
       (s) => s.workstationId === station.workstationId
     );
+    const prevStation = existing >= 0 ? (globalState.salonChairStations || [])[existing] : null;
     const nextStations = [...(globalState.salonChairStations || [])];
     if (existing >= 0) nextStations[existing] = station;
     else nextStations.push(station);
@@ -10991,8 +15596,49 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+    const after = captureStoreSlices(['salonChairStations']);
+    registerUndoEntry({
+      vertical: 'appointment_service',
+      operationType: 'status',
+      summary: ul(
+        `Chair station updated: ${station.workstationId}`,
+        `Poste salon mis à jour : ${station.workstationId}`,
+        `تحديث كرسي الصالون: ${station.workstationId}`
+      ),
+      entityLabel: station.workstationId,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          if (prevStation) {
+            appointmentService
+              .upsertChairStation(prevStation, {
+                accountId: globalState.account.id,
+                businessId: globalState.currentBusinessId,
+                branchId: globalState.currentBranchId,
+              })
+              .catch(() => {});
+          } else {
+            syncCoordinator.softDeleteRow('salon_chair_stations', station.workstationId, globalState.currentUser?.id).catch(() => {});
+          }
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          appointmentService
+            .upsertChairStation(station, {
+              accountId: globalState.account.id,
+              businessId: globalState.currentBusinessId,
+              branchId: globalState.currentBranchId,
+            })
+            .catch(() => {});
+        }
+      },
+    });
   };
   const recordQuickAttendance = (record: EduQuickAttendanceRecord) => {
+    const before = captureStoreSlices(['eduQuickAttendance']);
     const existing = (globalState.eduQuickAttendance || []).findIndex(
       (r) => r.sessionId === record.sessionId && r.studentId === record.studentId
     );
@@ -11001,6 +15647,19 @@ function createAtriumActions() {
     else nextRecords.push(record);
     globalState = { ...globalState, eduQuickAttendance: nextRecords };
     notify();
+    const after = captureStoreSlices(['eduQuickAttendance']);
+    registerUndoEntry({
+      vertical: 'education_cohort',
+      operationType: 'status',
+      summary: ul(
+        `Roll call marked (${record.status})`,
+        `Présence enregistrée (${record.status})`,
+        `تسجيل حضور سريع (${record.status})`
+      ),
+      toastType: 'info',
+      undo: () => restoreStoreSlices(before),
+      redo: () => restoreStoreSlices(after),
+    });
   };
   const toggleTopBarCollapsed = toggleTopBarCollapsedAction;
   const toggleTopBarAutoHide = toggleTopBarAutoHideAction;
@@ -11047,6 +15706,7 @@ function createAtriumActions() {
     phone?: string;
   }) => {
     if (!ensureExecutiveGuard()) return false;
+    const before = captureStoreSlices(['businesses', 'branches']);
     const biz = selectCurrentBusinessFromState(globalState);
     const updatedBusinesses = globalState.businesses.map((b) =>
       b.id === biz.id
@@ -11075,8 +15735,8 @@ function createAtriumActions() {
     };
     notify();
 
+    const targetBiz = updatedBusinesses.find((b) => b.id === biz.id) || biz;
     if (isSupabaseConfigured()) {
-      const targetBiz = updatedBusinesses.find((b) => b.id === biz.id) || biz;
       configService
         .updateBusinessIdentity({
           businessId: biz.id,
@@ -11087,6 +15747,46 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+    const after = captureStoreSlices(['businesses', 'branches']);
+    registerUndoEntry({
+      vertical: 'settings',
+      operationType: 'edit',
+      summary: ul(
+        `Updated business profile: ${targetBiz.displayName || targetBiz.name}`,
+        `Identité mise à jour : ${targetBiz.displayName || targetBiz.name}`,
+        `تحديث هوية النشاط: ${targetBiz.displayName || targetBiz.name}`
+      ),
+      entityLabel: targetBiz.displayName || targetBiz.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          configService
+            .updateBusinessIdentity({
+              businessId: biz.id,
+              name: biz.name,
+              displayName: biz.displayName,
+              address: biz.address,
+              phone: biz.phone,
+            })
+            .catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          configService
+            .updateBusinessIdentity({
+              businessId: biz.id,
+              name: targetBiz.name,
+              displayName: targetBiz.displayName,
+              address: targetBiz.address,
+              phone: targetBiz.phone,
+            })
+            .catch(() => {});
+        }
+      },
+    });
     return true;
   };
 
@@ -11099,6 +15799,7 @@ function createAtriumActions() {
     >
   ) => {
     if (!ensureExecutiveGuard()) return null;
+    const before = captureStoreSlices(['businessConfigs']);
     const biz = selectCurrentBusinessFromState(globalState);
     const current = selectCurrentBusinessConfigFromState(globalState);
     const nextConfig: BusinessCategoryConfig = {
@@ -11129,6 +15830,30 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       configService.upsertBusinessConfig(nextConfig).catch(() => {});
     }
+    const after = captureStoreSlices(['businessConfigs']);
+    registerUndoEntry({
+      vertical: 'settings',
+      operationType: 'edit',
+      summary: ul(
+        `Updated configuration (${biz.displayName || biz.name})`,
+        `Configuration mise à jour (${biz.displayName || biz.name})`,
+        `تحديث إعدادات النشاط`
+      ),
+      entityLabel: biz.displayName || biz.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          configService.upsertBusinessConfig(current).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          configService.upsertBusinessConfig(nextConfig).catch(() => {});
+        }
+      },
+    });
     return nextConfig;
   };
 
@@ -11157,6 +15882,7 @@ function createAtriumActions() {
     input: Omit<MembershipPlan, 'id' | 'tenantId' | 'facilityId'>
   ) => {
     if (!ensureExecutiveGuard()) return null;
+    const before = captureStoreSlices(['plansByBranch']);
     const biz = selectCurrentBusinessFromState(globalState);
     const branchId = globalState.currentBranchId;
     const plan: MembershipPlan = {
@@ -11186,6 +15912,39 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+    const after = captureStoreSlices(['plansByBranch']);
+    registerUndoEntry({
+      vertical: 'settings',
+      operationType: 'create',
+      summary: ul(
+        `Added plan: ${plan.name}`,
+        `Formule ajoutée : ${plan.name}`,
+        `إضافة باقة اشتراك: ${plan.name}`
+      ),
+      entityLabel: plan.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          memberService.deletePlan(plan.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('gym_plans', plan.id, globalState.currentUser?.id)
+            .then(() =>
+              memberService.upsertPlan(plan, {
+                accountId: globalState.account.id,
+                businessId: biz.id,
+                branchId,
+              })
+            )
+            .catch(() => {});
+        }
+      },
+    });
     return plan;
   };
 
@@ -11194,6 +15953,9 @@ function createAtriumActions() {
     const biz = selectCurrentBusinessFromState(globalState);
     const branchId = globalState.currentBranchId;
     const existing = globalState.plansByBranch[branchId] || [];
+    const prevPlan = existing.find((p) => p.id === id);
+    if (!prevPlan) return null;
+    const before = captureStoreSlices(['plansByBranch']);
     let updatedTarget: MembershipPlan | null = null;
     const nextList = existing.map((p) => {
       if (p.id !== id) return p;
@@ -11217,6 +15979,44 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+    const after = captureStoreSlices(['plansByBranch']);
+    const opType: UndoOperationType =
+      updates.isActive !== undefined && updates.isActive !== prevPlan.isActive ? 'status' : 'edit';
+    registerUndoEntry({
+      vertical: 'settings',
+      operationType: opType,
+      summary: ul(
+        `Updated plan: ${prevPlan.name}`,
+        `Formule mise à jour : ${prevPlan.name}`,
+        `تعديل الباقة: ${prevPlan.name}`
+      ),
+      entityLabel: prevPlan.name,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          memberService
+            .upsertPlan(prevPlan, {
+              accountId: globalState.account.id,
+              businessId: biz.id,
+              branchId,
+            })
+            .catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (updatedTarget && isSupabaseConfigured()) {
+          memberService
+            .upsertPlan(updatedTarget, {
+              accountId: globalState.account.id,
+              businessId: biz.id,
+              branchId,
+            })
+            .catch(() => {});
+        }
+      },
+    });
     return updatedTarget;
   };
 
@@ -11239,6 +16039,9 @@ function createAtriumActions() {
       return { success: false, blockedByReferences: true, referenceCount: totalRefs };
     }
     const existing = globalState.plansByBranch[branchId] || [];
+    const prevPlan = existing.find((p) => p.id === id);
+    if (!prevPlan) return { success: false };
+    const before = captureStoreSlices(['plansByBranch']);
     globalState = {
       ...globalState,
       plansByBranch: {
@@ -11250,6 +16053,30 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       memberService.deletePlan(id, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['plansByBranch']);
+    registerUndoEntry({
+      vertical: 'settings',
+      operationType: 'delete',
+      summary: ul(
+        `Deleted plan: ${prevPlan.name}`,
+        `Formule supprimée : ${prevPlan.name}`,
+        `حذف الباقة: ${prevPlan.name}`
+      ),
+      entityLabel: prevPlan.name,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('gym_plans', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          memberService.deletePlan(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
     return { success: true };
   };
 
@@ -11257,6 +16084,7 @@ function createAtriumActions() {
     input: Omit<CategoryFormule, 'id' | 'accountId' | 'businessId' | 'branchId' | 'category'>
   ) => {
     if (!ensureExecutiveGuard()) return null;
+    const before = captureStoreSlices(['categoryFormules']);
     const biz = selectCurrentBusinessFromState(globalState);
     const frm: CategoryFormule = {
       ...input,
@@ -11283,6 +16111,40 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+    const after = captureStoreSlices(['categoryFormules']);
+    registerUndoEntry({
+      vertical: 'settings',
+      operationType: 'create',
+      summary: ul(
+        `Added formule: ${frm.name}`,
+        `Formule métier ajoutée : ${frm.name}`,
+        `إضافة صيغة عمل: ${frm.name}`
+      ),
+      entityLabel: frm.name,
+      toastType: 'success',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          configService.deleteCategoryFormule(frm.id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          syncCoordinator
+            .restoreRow('category_formules', frm.id, globalState.currentUser?.id)
+            .then(() =>
+              configService.upsertCategoryFormule(frm, {
+                accountId: frm.accountId || globalState.account.id,
+                businessId: frm.businessId || biz.id,
+                branchId: frm.branchId || globalState.currentBranchId,
+                staffId: globalState.currentUser?.id,
+              })
+            )
+            .catch(() => {});
+        }
+      },
+    });
     return frm;
   };
 
@@ -11290,6 +16152,7 @@ function createAtriumActions() {
     if (!ensureExecutiveGuard()) return null;
     const existing = (globalState.categoryFormules || []).find((f) => f.id === id);
     if (!existing) return null;
+    const before = captureStoreSlices(['categoryFormules']);
     const updatedTarget: CategoryFormule = {
       ...existing,
       ...updates,
@@ -11314,6 +16177,48 @@ function createAtriumActions() {
         })
         .catch(() => {});
     }
+    const after = captureStoreSlices(['categoryFormules']);
+    const opType: UndoOperationType =
+      updates.isActive !== undefined && updates.isActive !== existing.isActive ? 'status' : 'edit';
+    registerUndoEntry({
+      vertical: 'settings',
+      operationType: opType,
+      summary: ul(
+        `Updated formule: ${existing.name}`,
+        `Formule mise à jour : ${existing.name}`,
+        `تعديل الصيغة: ${existing.name}`
+      ),
+      entityLabel: existing.name,
+      toastType: 'info',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          configService
+            .upsertCategoryFormule(existing, {
+              accountId: existing.accountId || globalState.account.id,
+              businessId:
+                existing.businessId || selectCurrentBusinessFromState(globalState).id,
+              branchId: existing.branchId || globalState.currentBranchId,
+              staffId: globalState.currentUser?.id,
+            })
+            .catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          configService
+            .upsertCategoryFormule(updatedTarget, {
+              accountId: updatedTarget.accountId || globalState.account.id,
+              businessId:
+                updatedTarget.businessId || selectCurrentBusinessFromState(globalState).id,
+              branchId: updatedTarget.branchId || globalState.currentBranchId,
+              staffId: globalState.currentUser?.id,
+            })
+            .catch(() => {});
+        }
+      },
+    });
     return updatedTarget;
   };
 
@@ -11364,6 +16269,7 @@ function createAtriumActions() {
       return { success: false, blockedByReferences: true, referenceCount: refs };
     }
 
+    const before = captureStoreSlices(['categoryFormules']);
     globalState = {
       ...globalState,
       categoryFormules: (globalState.categoryFormules || []).filter((f) => f.id !== id),
@@ -11372,6 +16278,30 @@ function createAtriumActions() {
     if (isSupabaseConfigured()) {
       configService.deleteCategoryFormule(id, globalState.currentUser?.id).catch(() => {});
     }
+    const after = captureStoreSlices(['categoryFormules']);
+    registerUndoEntry({
+      vertical: 'settings',
+      operationType: 'delete',
+      summary: ul(
+        `Deleted formule: ${target.name}`,
+        `Formule supprimée : ${target.name}`,
+        `حذف الصيغة: ${target.name}`
+      ),
+      entityLabel: target.name,
+      toastType: 'warning',
+      undo: () => {
+        restoreStoreSlices(before);
+        if (isSupabaseConfigured()) {
+          syncCoordinator.restoreRow('category_formules', id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+      redo: () => {
+        restoreStoreSlices(after);
+        if (isSupabaseConfigured()) {
+          configService.deleteCategoryFormule(id, globalState.currentUser?.id).catch(() => {});
+        }
+      },
+    });
     return { success: true };
   };
 

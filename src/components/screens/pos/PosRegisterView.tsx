@@ -511,19 +511,6 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     setSelectedCustomerId('');
     setCheckoutNotes('');
     setIsCheckoutModalOpen(false);
-    showToast({
-      type: 'success',
-      title: t('shop_toast_settled_title'),
-      message: t('shop_toast_settled_msg', {
-        id: sale.id.slice(-6).toUpperCase(),
-        amount: formatMoney(sale.totalAmount),
-      }),
-      category: 'pos_inventory',
-      action: {
-        label: t('shop_receipt_printed'),
-        onClick: () => window.print?.(),
-      },
-    });
   };
 
   const handleHoldOrder = (e: React.FormEvent) => {
@@ -561,11 +548,6 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     setHoldOrderRefName('');
     setHoldOrderNotes('');
     setIsHoldOrderModalOpen(false);
-    showToast({
-      type: 'info',
-      title: t('shop_toast_parked_title'),
-      message: t('shop_toast_parked_msg'),
-    });
   };
 
   const handleResumeOrder = (parked: ParkedOrder) => {

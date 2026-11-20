@@ -12,6 +12,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceProposal, PricingModel, CurrencyCode } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
@@ -614,48 +615,72 @@ export const FreelanceProposalsView: React.FC = () => {
 
   const handleBatchAccept = () => {
     if (selectedProposalIds.size === 0) return;
-    selectedProposalIds.forEach((id) => {
-      updateFreelanceProposal(id, { status: 'Accepted' });
-    });
     const count = selectedProposalIds.size;
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `قبول عروض (${count})`
+          : isFr
+          ? `Acceptation devis (${count})`
+          : `Accept proposals (${count})`,
+        entityType: 'freelanceProposal',
+      },
+      () => {
+        selectedProposalIds.forEach((id) => {
+          updateFreelanceProposal(id, { status: 'Accepted' });
+        });
+      }
+    );
     setSelectedProposalIds(new Set());
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم التحديث' : isFr ? 'Mis à jour' : 'Updated',
-      message: `${count} ${isAr ? 'عروض أسعار تم قبولها' : 'proposals marked as Accepted'}`,
-      category: 'freelance_solo',
-    });
   };
 
   const handleBatchDecline = () => {
     if (selectedProposalIds.size === 0) return;
-    selectedProposalIds.forEach((id) => {
-      updateFreelanceProposal(id, { status: 'Declined' });
-    });
     const count = selectedProposalIds.size;
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `رفض عروض (${count})`
+          : isFr
+          ? `Refus devis (${count})`
+          : `Decline proposals (${count})`,
+        entityType: 'freelanceProposal',
+      },
+      () => {
+        selectedProposalIds.forEach((id) => {
+          updateFreelanceProposal(id, { status: 'Declined' });
+        });
+      }
+    );
     setSelectedProposalIds(new Set());
-    showToast({
-      type: 'info',
-      title: isAr ? 'تم التحديث' : isFr ? 'Mis à jour' : 'Updated',
-      message: `${count} ${isAr ? 'عروض أسعار تم رفضها' : 'proposals marked as Declined'}`,
-      category: 'freelance_solo',
-    });
   };
 
   const handleBatchDelete = () => {
     if (selectedProposalIds.size === 0) return;
     const count = selectedProposalIds.size;
-    selectedProposalIds.forEach((id) => {
-      deleteFreelanceProposal(id);
-      if (selectedProposal?.id === id) setSelectedProposal(null);
-    });
+    runUndoBatch(
+      {
+        category: 'freelance_solo',
+        operationType: 'bulk',
+        label: isAr
+          ? `حذف عروض (${count})`
+          : isFr
+          ? `Suppression devis (${count})`
+          : `Delete proposals (${count})`,
+        entityType: 'freelanceProposal',
+      },
+      () => {
+        selectedProposalIds.forEach((id) => {
+          deleteFreelanceProposal(id);
+          if (selectedProposal?.id === id) setSelectedProposal(null);
+        });
+      }
+    );
     setSelectedProposalIds(new Set());
-    showToast({
-      type: 'info',
-      title: isAr ? 'تم الحذف' : isFr ? 'Suppression' : 'Deleted',
-      message: `${count} ${isAr ? 'عروض أسعار تم حذفها' : 'proposals deleted'}`,
-      category: 'freelance_solo',
-    });
   };
 
   const statusOptions = useMemo(

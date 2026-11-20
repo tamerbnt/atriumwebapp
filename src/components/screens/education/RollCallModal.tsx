@@ -10,7 +10,7 @@ import {
   Calendar,
   Save,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumStore } from '../../../services/store';
 import { AttendanceStatus, EduSession } from '../../../types';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -35,7 +35,6 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
     eduEnrollments,
     eduAttendance,
     batchRecordAttendance,
-    setScreen,
   } = useAtriumStore();
 
   const [selectedCohortId, setSelectedCohortId] = useState<string>(
@@ -135,22 +134,6 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
     });
 
     batchRecordAttendance(selectedSessionId, selectedCohortId, records);
-    showToast({
-      type: 'success',
-      title: t('edu_toast_roll_saved'),
-      message: t('edu_toast_roll_msg', {
-        cohort: activeCohort?.name || t('edu_label_cohort'),
-        present: String(presentCount),
-        total: String(studentsInCohort.length),
-      }),
-      category: 'education_cohort',
-      action: {
-        label: t('edu_btn_gradebook'),
-        onClick: () => {
-          setScreen('analytics');
-        },
-      },
-    });
     onClose();
   };
 

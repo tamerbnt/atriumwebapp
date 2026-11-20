@@ -42,7 +42,6 @@ import {
 import { SettingsTabId } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { AuditLogViewerModal } from '../modals/AuditLogViewerModal';
-import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { validateVoucherCode } from '../../utils/rules';
 import { LabelInput } from '../ui/LabelInput';
 import { Button, LiquidButton, Toggle } from '@/atrium';
@@ -198,11 +197,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     if (!pendingBackupContent) return;
     const success = importDatabase(pendingBackupContent);
     if (success) {
-      showToast({
-        type: 'success',
-        title: 'Database Restored',
-        message: 'All records, settings, and business states restored successfully.',
-      });
       setExportedStatus('Database restored successfully from backup!');
       setTimeout(() => setExportedStatus(null), 4000);
     } else {
@@ -525,11 +519,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 style={{ '--sq-stroke': isLanguageAuto ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
                 onClick={() => {
                   setSystemDefaultLanguage();
-                  showToast({
-                    type: 'info',
-                    title: t('topbar_auto_detected', language),
-                    message: t('settings_lang_changed_toast', language),
-                  });
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] card-opt flex flex-col gap-[var(--s2,8px)] text-start transition-all cursor-pointer relative ${
                   isLanguageAuto
@@ -563,11 +552,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 style={{ '--sq-stroke': !isLanguageAuto && language === 'en' ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
                 onClick={() => {
                   setLanguage('en', false);
-                  showToast({
-                    type: 'success',
-                    title: 'Language Updated',
-                    message: 'Interface display language set to English.',
-                  });
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] card-opt flex flex-col gap-[var(--s2,8px)] text-start transition-all cursor-pointer relative ${
                   !isLanguageAuto && language === 'en'
@@ -601,11 +585,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 style={{ '--sq-stroke': !isLanguageAuto && language === 'fr' ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
                 onClick={() => {
                   setLanguage('fr', false);
-                  showToast({
-                    type: 'success',
-                    title: 'Langue modifiée',
-                    message: 'La langue d\'affichage est maintenant le Français.',
-                  });
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] card-opt flex flex-col gap-[var(--s2,8px)] text-start transition-all cursor-pointer relative ${
                   !isLanguageAuto && language === 'fr'
@@ -639,11 +618,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 style={{ '--sq-stroke': !isLanguageAuto && language === 'ar' ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
                 onClick={() => {
                   setLanguage('ar', false);
-                  showToast({
-                    type: 'success',
-                    title: 'تم تحديث اللغة',
-                    message: 'تم تفعيل اللغة العربية والواجهة من اليمين إلى اليسار.',
-                  });
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] card-opt flex flex-col gap-[var(--s2,8px)] text-start transition-all cursor-pointer relative ${
                   !isLanguageAuto && language === 'ar'
@@ -751,11 +725,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 style={{ '--sq-stroke': theme === 'light' ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
                 onClick={() => {
                   setTheme('light');
-                  showToast({
-                    type: 'info',
-                    title: language === 'ar' ? 'الوضع الفاتح' : language === 'fr' ? 'Mode clair' : 'Light Mode',
-                    message: language === 'ar' ? 'تم تفعيل الوضع الفاتح' : language === 'fr' ? 'Mode clair activé.' : 'Light theme enabled.',
-                  });
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] text-start transition-all cursor-pointer relative flex flex-col gap-[var(--s2,8px)] card-opt ${
                   theme === 'light'
@@ -791,11 +760,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 style={{ '--sq-stroke': theme === 'dark' ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
                 onClick={() => {
                   setTheme('dark');
-                  showToast({
-                    type: 'info',
-                    title: language === 'ar' ? 'الوضع الداكن' : language === 'fr' ? 'Mode sombre' : 'Dark Mode',
-                    message: language === 'ar' ? 'تم تفعيل الوضع الداكن' : language === 'fr' ? 'Mode sombre activé.' : 'Dark theme enabled.',
-                  });
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] text-start transition-all cursor-pointer relative flex flex-col gap-[var(--s2,8px)] card-opt ${
                   theme === 'dark'
@@ -882,17 +846,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 aria-label="Toggle Compact Mode"
                 checked={density === 'compact'}
                 onCheckedChange={(checked) => {
-                  const next = checked ? 'compact' : 'default';
-                  setDensity(next);
-                  showToast({
-                    type: 'info',
-                    title: next === 'compact'
-                      ? (language === 'ar' ? 'الوضع المكثف' : language === 'fr' ? 'Mode compact activé' : 'Compact Mode On')
-                      : (language === 'ar' ? 'الوضع القياسي' : language === 'fr' ? 'Densité standard' : 'Standard Density'),
-                    message: next === 'compact'
-                      ? (language === 'ar' ? 'تم تقليل الحواشي وارتفاع الصفوف للشاشات الصغيرة.' : language === 'fr' ? 'Espacements optimisés pour écrans compacts.' : 'Tightened cards, rows, and pods for high-density viewports.')
-                      : (language === 'ar' ? 'تم استعادة المسافات القياسية.' : language === 'fr' ? 'Espacements standard rétablis.' : 'Default 4pt/8pt layout spacing restored.'),
-                  });
+                  setDensity(checked ? 'compact' : 'default');
                 }}
               />
             </div>
@@ -921,13 +875,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 checked={isTopBarAutoHide}
                 onCheckedChange={() => {
                   toggleTopBarAutoHide();
-                  showToast({
-                    type: 'info',
-                    title: isTopBarAutoHide ? (language === 'ar' ? 'الشريط ثابت' : language === 'fr' ? 'Barre fixée' : 'Bar Pinned') : (language === 'ar' ? 'إخفاء تلقائي' : language === 'fr' ? 'Masquage auto activé' : 'Auto-Hide On'),
-                    message: isTopBarAutoHide
-                      ? (language === 'ar' ? 'الشريط العلوي يبقى ظاهراً.' : language === 'fr' ? 'La barre reste visible.' : 'Top bar stays visible.')
-                      : (language === 'ar' ? 'سيختفي الشريط عند التمرير.' : language === 'fr' ? 'La barre s\'efface au défilement.' : 'Top bar hides on scroll.'),
-                  });
                 }}
               />
             </div>
@@ -989,11 +936,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 variant="secondary"
                 onClick={() => {
                   restoreSetupBanner();
-                  showToast({
-                    type: 'info',
-                    title: language === 'ar' ? 'تم استعادة شريط الإعداد' : language === 'fr' ? 'Bannière restaurée' : 'Setup pod restored',
-                    message: language === 'ar' ? 'ستظهر بطاقة الإعداد في الرئيسية.' : language === 'fr' ? "Le bloc de configuration s'affichera à l'accueil." : 'Configuration pod is visible on Home again.',
-                  });
                 }}
               >
                 {language === 'ar' ? 'إظهار في الرئيسية' : language === 'fr' ? 'Réafficher' : 'Restore'}

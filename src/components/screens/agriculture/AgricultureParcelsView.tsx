@@ -18,6 +18,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { AgriParcel, AgriParcelStatus, AgriTreatmentLog, AgriHarvestTicket } from '../../../types';
 import { useAgricultureData } from './agricultureData';
 import { AgricultureParcelModal } from './AgricultureParcelModal';
@@ -268,9 +269,8 @@ export const AgricultureParcelsView: React.FC = () => {
     (p: AgriParcel) => {
       deleteParcel(p.id);
       if (selectedParcel?.id === p.id) setSelectedParcel(null);
-      showToast(isAr ? 'تم حذف القطعة الفلاحية' : 'Parcelle agricole supprimée', 'success');
     },
-    [deleteParcel, selectedParcel, isAr]
+    [deleteParcel, selectedParcel]
   );
 
   const handleQuickCycle = useCallback(
@@ -283,12 +283,8 @@ export const AgricultureParcelsView: React.FC = () => {
       };
       updateParcel(updated);
       if (selectedParcel?.id === p.id) setSelectedParcel(updated);
-      showToast(
-        isAr ? `تم تحديث الطور الزراعي: ${nextStatus}` : `Stade phénologique actualisé : ${nextStatus}`,
-        'success'
-      );
     },
-    [updateParcel, selectedParcel, isAr]
+    [updateParcel, selectedParcel]
   );
 
   const handleQuickTreatmentLog = useCallback(
@@ -313,15 +309,9 @@ export const AgricultureParcelsView: React.FC = () => {
         createdAt: new Date().toISOString(),
       };
       addTreatmentLog(newTreat);
-      showToast(
-        isAr
-          ? 'تم قيد معالجة زراعية في السجل النباتي'
-          : 'Traitement consigné dans le carnet phytosanitaire',
-        'success'
-      );
       if (selectedParcel?.id === p.id) setActiveTab('treatments');
     },
-    [addTreatmentLog, selectedParcel, isAr]
+    [addTreatmentLog, selectedParcel]
   );
 
   const handleExportCsv = useCallback(() => {
@@ -364,8 +354,7 @@ export const AgricultureParcelsView: React.FC = () => {
     setSelectedParcel(updated);
     setNoteSaved(true);
     setTimeout(() => setNoteSaved(false), 2000);
-    showToast(isAr ? 'تم حفظ التوجيهات الزراعية' : 'Cahier agronomique mis à jour', 'success');
-  }, [activeParcel, inspectorNotes, updateParcel, isAr]);
+  }, [activeParcel, inspectorNotes, updateParcel]);
 
   const currentTreatments = useMemo(() => {
     if (!activeParcel) return [];
@@ -841,13 +830,28 @@ export const AgricultureParcelsView: React.FC = () => {
             onClick: () => handleExportCsv(),
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteParcel(id));
+            const count = ids.size;
+            runUndoBatch(
+              {
+                operationType: 'bulk',
+                vertical: 'agriculture',
+                label: {
+                  fr: `${count} parcelles supprimées`,
+                  en: `${count} parcels deleted`,
+                  ar: `تم حذف ${count} قطع فلاحية`,
+                },
+                moduleLabel: {
+                  fr: 'Parcellaire agricole',
+                  en: 'Farm Parcels',
+                  ar: 'سجل القطع الفلاحية',
+                },
+              },
+              () => {
+                ids.forEach((id) => deleteParcel(id));
+              }
+            );
             setSelectedIds(new Set<string>());
             if (selectedParcel && ids.has(selectedParcel.id)) setSelectedParcel(null);
-            showToast(
-              isAr ? 'تم حذف القطع الفلاحية المحددة' : 'Parcelles sélectionnées supprimées',
-              'info'
-            );
           }}
           isPinned={(p) => pinnedIds.has(p.id)}
           onTogglePin={handleTogglePin}

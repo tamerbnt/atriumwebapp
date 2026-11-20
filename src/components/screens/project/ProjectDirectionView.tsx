@@ -23,6 +23,7 @@ import {
   setActivePmSubScreenAction as setActivePmSubScreen,
   showToast,
 } from '../../../services/store';
+import { registerUndoEntry } from '../../../services/undoEngine';
 import { PMProject } from '../../../types/index';
 import {
   TrendingUp,
@@ -834,10 +835,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         icon: <TrendingUp size={13} />,
         onClick: () => {
           batchUpdatePmProjectStatus([proj.id], 'field_active');
-          showToast(
-            localizeText(language, 'Campagne passée en exécution terrain', 'Moved to live field', 'تم التحويل إلى الميدان'),
-            'success'
-          );
         },
       },
       {
@@ -846,10 +843,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         icon: <CheckCircle size={13} />,
         onClick: () => {
           batchUpdatePmProjectStatus([proj.id], 'closed');
-          showToast(
-            localizeText(language, 'Projet clôturé', 'Project closed', 'تم إغلاق المشروع'),
-            'success'
-          );
         },
       },
       {
@@ -859,7 +852,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         onClick: () => handleTogglePinProject(proj),
       },
     ],
-    [isAr, language, pinnedProjectIds, handleTogglePinProject]
+    [isAr, pinnedProjectIds, handleTogglePinProject]
   );
 
   const getProjectDetailActions = useCallback(
@@ -870,7 +863,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         icon: <TrendingUp size={14} />,
         onClick: () => {
           batchUpdatePmProjectStatus([proj.id], 'field_active');
-          showToast(localizeText(language, 'Statut mis à jour : Terrain', 'Status updated: Field', 'تم التحديث'), 'success');
         },
       },
       {
@@ -879,11 +871,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         icon: <CheckCircle size={14} />,
         onClick: () => {
           batchUpdatePmProjectStatus([proj.id], 'closed');
-          showToast(localizeText(language, 'Campagne clôturée', 'Campaign closed', 'تم الإغلاق'), 'success');
         },
       },
     ],
-    [isAr, language]
+    [isAr]
   );
 
   const handleCreateProject = (e: React.FormEvent) => {
@@ -917,10 +908,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
       status: 'framing',
     });
     setProjectCreatedSuccess(true);
-    showToast(
-      localizeText(language, 'Campagne créée et dispatchée', 'Project created and dispatched', 'تم إنشاء المشروع وتوزيعه'),
-      'success'
-    );
     setTimeout(() => {
       setProjectCreatedSuccess(false);
       setActivePmSubScreen('projects');
@@ -1473,10 +1460,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               onDelete={(p) => {
                 deletePmProject(p.id);
                 if (activeInspectedProject?.id === p.id) setInspectedProject(null);
-                showToast(
-                  localizeText(language, 'Projet supprimé', 'Project deleted', 'تم حذف المشروع'),
-                  'success'
-                );
               }}
               bulkSecondaryAction={{
                 label: localizeText(language, 'Clôturer sélection', 'Close selected', 'إغلاق المحدد'),
@@ -1484,10 +1467,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 onClick: (ids) => {
                   batchUpdatePmProjectStatus(Array.from(ids), 'closed');
                   setSelectedProjectIds(new Set<string>());
-                  showToast(
-                    localizeText(language, 'Projets marqués clôturés', 'Projects closed', 'تم إغلاق المشاريع'),
-                    'success'
-                  );
                 },
               }}
               onBulkDelete={(ids) => {
@@ -1496,10 +1475,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 if (activeInspectedProject && ids.has(activeInspectedProject.id)) {
                   setInspectedProject(null);
                 }
-                showToast(
-                  localizeText(language, 'Projets supprimés', 'Projects deleted', 'تم حذف المشاريع'),
-                  'success'
-                );
               }}
               getRowMeta={getProjectRowMeta}
               getFanActions={getProjectFanActions}
@@ -1611,7 +1586,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
             onDelete={(p) => {
               deletePmProject(p.id);
               setInspectedProject(null);
-              showToast(localizeText(language, 'Projet supprimé', 'Project deleted', 'تم حذف المشروع'), 'success');
             }}
             holdToDelete
             renderBody={(proj, tab) => {
@@ -1753,7 +1727,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                           icon: <Layers className="w-[18px] h-[18px]" />,
                           onClick: () => {
                             batchUpdatePmProjectStatus([proj.id], 'production');
-                            showToast('Phase mise à jour : Production', 'success');
                           },
                         },
                         {
@@ -1763,7 +1736,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                           primary: true,
                           onClick: () => {
                             batchUpdatePmProjectStatus([proj.id], 'field_active');
-                            showToast('Phase mise à jour : Terrain Live', 'success');
                           },
                         },
                         {
@@ -1772,7 +1744,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                           icon: <CheckCircle className="w-[18px] h-[18px]" />,
                           onClick: () => {
                             batchUpdatePmProjectStatus([proj.id], 'closed');
-                            showToast('Campagne clôturée', 'success');
                           },
                         },
                         {
@@ -1811,8 +1782,27 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                     <InspectorNotesField
                       value={projectNotesMap[proj.id] || ''}
                       onSave={(next) => {
+                        const prevNote = projectNotesMap[proj.id] || '';
                         setProjectNotesMap((prev) => ({ ...prev, [proj.id]: next }));
-                        showToast('Note direction enregistrée', 'success');
+                        registerUndoEntry({
+                          category: 'project_management',
+                          operationType: 'edit',
+                          label: localizeText(
+                            language,
+                            `Directive : ${proj.title}`,
+                            `Directive: ${proj.title}`,
+                            `توجيه: ${proj.title}`
+                          ),
+                          entityType: 'pmProject',
+                          entityId: proj.id,
+                          branchId: proj.facilityId || currentBranch?.id,
+                          undo: () => {
+                            setProjectNotesMap((prev) => ({ ...prev, [proj.id]: prevNote }));
+                          },
+                          redo: () => {
+                            setProjectNotesMap((prev) => ({ ...prev, [proj.id]: next }));
+                          },
+                        });
                       }}
                       placeholder="Ajouter une directive exécutive..."
                     />

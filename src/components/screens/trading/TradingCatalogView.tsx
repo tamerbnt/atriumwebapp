@@ -6,7 +6,8 @@ import {
   Trash2,
   PackagePlus,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumStore } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { Product } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -109,24 +110,14 @@ export const TradingCatalogView: React.FC = () => {
     (val: string) => {
       if (!activeProduct) return;
       updateProduct(activeProduct.id, { description: val });
-      showToast({
-        type: 'success',
-        title: isAr ? 'تم حفظ الملاحظات' : isEn ? 'Notes saved' : 'Spécifications enregistrées',
-        message: activeProduct.name,
-      });
     },
-    [activeProduct, updateProduct, isAr, isEn]
+    [activeProduct, updateProduct]
   );
 
   const handleReplenishStock = useCallback(
     (prod: Product, delta = 10) => {
       const nextStock = (prod.stockQuantity || 0) + delta;
       updateProduct(prod.id, { stockQuantity: nextStock });
-      showToast({
-        type: 'success',
-        title: 'Stock Réapprovisionné',
-        message: `+${delta} ${prod.unit || 'u'} ajoutés à ${prod.name} (Nouveau stock: ${nextStock})`,
-      });
     },
     [updateProduct]
   );
@@ -644,10 +635,24 @@ export const TradingCatalogView: React.FC = () => {
             });
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteProduct(id));
+            if (ids.size === 0) return;
+            runUndoBatch(
+              {
+                category: 'pos_inventory',
+                operationType: 'bulk',
+                label: isAr
+                  ? `حذف منتجات (${ids.size})`
+                  : isEn
+                  ? `Delete items (${ids.size})`
+                  : `Suppression articles (${ids.size})`,
+                entityType: 'product',
+              },
+              () => {
+                ids.forEach((id) => deleteProduct(id));
+              }
+            );
             setSelectedIds(new Set<string>());
             if (selectedProduct && ids.has(selectedProduct.id)) setSelectedProduct(null);
-            showToast({ type: 'info', title: 'Articles supprimés', message: `${ids.size} référence(s) retirée(s).` });
           }}
           onItemClick={(p, el) => {
             setDrawerOpenerEl(el || null);

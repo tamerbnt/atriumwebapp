@@ -4,6 +4,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { PMBatDeliverable } from '../../../types/index';
 import {
   Palette,
@@ -485,7 +486,6 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               icon: <Check size={13} />,
               onClick: () => {
                 reviewPmBatDeliverable(bat.id, 'approved');
-                showToast(`BAT ${bat.title} validé`, 'success');
               },
             },
           ]
@@ -514,7 +514,6 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         icon: <CheckCircle size={14} />,
         onClick: () => {
           reviewPmBatDeliverable(bat.id, 'approved');
-          showToast(`BAT ${bat.title} validé`, 'success');
         },
       },
     ],
@@ -526,29 +525,46 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
     if (!selectedProject || !artworkTitle) return;
     const nextVersion =
       pmBatDeliverables.filter((b) => b.projectId === selectedProject.id).length + 1;
-    addPmBatDeliverable({
-      tenantId: 'acc_01',
-      facilityId: 'branch_agency_main',
-      projectId: selectedProject.id,
-      projectTitle: selectedProject.title,
-      printOrderId: selectedOrderId || undefined,
-      title: artworkTitle.endsWith('.pdf') ? artworkTitle : `${artworkTitle}_v${nextVersion}.pdf`,
-      fileFormat: fileFormat as PMBatDeliverable['fileFormat'],
-      colorSpace: colorSpace as PMBatDeliverable['colorSpace'],
-      resolutionDpi: Number(resolutionDpi) || 300,
-      bleedMm: 3,
-      hasBleedIncluded,
-      version: nextVersion,
-      versionCode: `v${nextVersion}`,
-      previewUrl,
-      fileSizeBytes: 35e6,
-      uploadedByCreativeId: 'crea_lead_01',
-      uploadedByCreativeName: 'Lina Hadj-Ali (Art Director)',
-      approvalStatus: 'pending_review',
-    });
-    if (selectedOrderId) updatePmPrintOrderStatus(selectedOrderId, 'bat_in_progress');
+    const nextTitle = artworkTitle.endsWith('.pdf') ? artworkTitle : `${artworkTitle}_v${nextVersion}.pdf`;
+    const commitUpload = () => {
+      addPmBatDeliverable({
+        tenantId: 'acc_01',
+        facilityId: 'branch_agency_main',
+        projectId: selectedProject.id,
+        projectTitle: selectedProject.title,
+        printOrderId: selectedOrderId || undefined,
+        title: nextTitle,
+        fileFormat: fileFormat as PMBatDeliverable['fileFormat'],
+        colorSpace: colorSpace as PMBatDeliverable['colorSpace'],
+        resolutionDpi: Number(resolutionDpi) || 300,
+        bleedMm: 3,
+        hasBleedIncluded,
+        version: nextVersion,
+        versionCode: `v${nextVersion}`,
+        previewUrl,
+        fileSizeBytes: 35e6,
+        uploadedByCreativeId: 'crea_lead_01',
+        uploadedByCreativeName: 'Lina Hadj-Ali (Art Director)',
+        approvalStatus: 'pending_review',
+      });
+      if (selectedOrderId) updatePmPrintOrderStatus(selectedOrderId, 'bat_in_progress');
+    };
+    if (selectedOrderId) {
+      runUndoBatch(
+        {
+          category: 'project_management',
+          operationType: 'create',
+          label: isAr
+            ? `إيداع BAT: ${nextTitle}`
+            : `Dépôt BAT : ${nextTitle}`,
+          entityType: 'pmBatDeliverable',
+        },
+        commitUpload
+      );
+    } else {
+      commitUpload();
+    }
     setUploadSuccess(true);
-    showToast('Livrable BAT enregistré et transmis au Chef de Projet', 'success');
     setTimeout(() => {
       setUploadSuccess(false);
       setActiveTab('production');
@@ -916,14 +932,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 onClick: (ids) => {
                   batchReviewPmBatDeliverables(Array.from(ids), 'approved');
                   setSelectedBatIds(new Set<string>());
-                  showToast('Livrables BAT approuvés', 'success');
                 },
               }}
               onBulkDelete={(ids) => {
                 batchDeletePmBatDeliverables(Array.from(ids));
                 setSelectedBatIds(new Set<string>());
                 if (activeInspectedBat && ids.has(activeInspectedBat.id)) setInspectedBat(null);
-                showToast('Livrables supprimés', 'success');
               }}
               getRowMeta={getRowMeta}
               getFanActions={getFanActions}
@@ -1199,7 +1213,6 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                     disabled: bat.approvalStatus === 'approved',
                     onClick: () => {
                       reviewPmBatDeliverable(bat.id, 'approved');
-                      showToast(`BAT ${bat.title} validé`, 'success');
                     },
                   },
                   {
@@ -1212,7 +1225,6 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                         'revision_requested',
                         'Reprise traits de coupe / contraste requise.'
                       );
-                      showToast('Demande de correction transmise', 'info');
                     },
                   },
                   {

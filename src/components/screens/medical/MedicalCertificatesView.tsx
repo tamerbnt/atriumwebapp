@@ -256,11 +256,6 @@ export const MedicalCertificatesView: React.FC<any> = () => {
     addCertificate(newCert);
     setIsCreateModalOpen(false);
     setInspectedCert(newCert);
-    showToast({
-      type: 'success',
-      title: 'Certificat Officiel',
-      message: `${getCertTypeLabel(certType)} généré pour ${newCert.patientName}`,
-    });
   };
 
   const handleExportCSV = useCallback(() => {

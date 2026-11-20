@@ -320,10 +320,6 @@ export const ContractorBillingView: React.FC<any> = () => {
     addDgp(newDgp);
     setIsModalOpen(false);
     setSelectedDgp(newDgp);
-    showToast(
-      isAr ? 'تم تحرير كشف الحساب والوضعية المالية (DGP)' : 'Situation DGP enregistrée avec succès',
-      'success'
-    );
   };
 
   const handleExportCsv = useCallback(() => {
@@ -466,7 +462,6 @@ export const ContractorBillingView: React.FC<any> = () => {
               icon: <CheckCircle2 className="w-[15px] h-[15px]" />,
               onClick: () => {
                 updateDgpStatus(d.id, 'Paid');
-                showToast('Situation enregistrée comme réglée', 'success');
               },
             },
           ]
@@ -503,7 +498,6 @@ export const ContractorBillingView: React.FC<any> = () => {
               icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#096b40]" />,
               onClick: () => {
                 updateDgpStatus(d.id, 'Paid');
-                showToast('Situation enregistrée comme réglée', 'success');
               },
             },
           ]
@@ -889,7 +883,6 @@ export const ContractorBillingView: React.FC<any> = () => {
                             onClick: () => {
                               updateDgpStatus(d.id, 'Paid');
                               setSelectedDgp({ ...d, status: 'Paid' });
-                              showToast('Situation enregistrée comme réglée', 'success');
                             },
                           },
                         ]
@@ -922,7 +915,6 @@ export const ContractorBillingView: React.FC<any> = () => {
                           onClick: () => {
                             updateDgpStatus(d.id, 'Paid');
                             setSelectedDgp({ ...d, status: 'Paid' });
-                            showToast('Situation enregistrée comme réglée', 'success');
                           },
                         }
                       : undefined

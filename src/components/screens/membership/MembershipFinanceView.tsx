@@ -18,6 +18,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -248,13 +249,8 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
   const handleSettleTx = useCallback(
     (tx: MembershipTransaction) => {
       updateMember?.(tx.memberId, { balance: 0 } as any);
-      showToast?.({
-        type: 'success',
-        title: isAr ? 'تم التحصيل' : isEn ? 'Settled' : 'Encaissé',
-        message: `${tx.memberName} (${formatMoney(tx.amount)})`,
-      });
     },
-    [updateMember, isAr, isEn]
+    [updateMember]
   );
 
   const getFanActions = useCallback(
@@ -318,21 +314,32 @@ export const MembershipFinanceView: React.FC = React.memo(() => {
 
   const handleBulkSettle = useCallback(
     (ids: Set<string>) => {
-      let count = 0;
-      transactions.forEach((tx) => {
-        if (ids.has(tx.id) && tx.status === 'Pending') {
-          updateMember?.(tx.memberId, { balance: 0 } as any);
-          count++;
+      const pendingTargets = transactions.filter((tx) => ids.has(tx.id) && tx.status === 'Pending');
+      if (pendingTargets.length === 0) {
+        setSelectedTxIds(new Set());
+        return;
+      }
+      runUndoBatch(
+        {
+          vertical: 'membership_session',
+          operationType: 'bulk',
+          affectedCount: pendingTargets.length,
+          toastType: 'success',
+          summary: pickLocalizedText(language, {
+            en: `Settled ${pendingTargets.length} member balance(s)`,
+            fr: `Encaissement groupé (${pendingTargets.length} règlements)`,
+            ar: `تسوية جماعية (${pendingTargets.length} معاملات)`,
+          }),
+        },
+        () => {
+          pendingTargets.forEach((tx) => {
+            updateMember?.(tx.memberId, { balance: 0 } as any);
+          });
         }
-      });
+      );
       setSelectedTxIds(new Set());
-      showToast?.({
-        type: 'success',
-        title: isAr ? 'تسوية جماعية' : isEn ? 'Batch Settled' : 'Encaissement groupé',
-        message: `${count || ids.size} ${isAr ? 'معاملة' : isEn ? 'records' : 'règlements'}`,
-      });
     },
-    [transactions, updateMember, isAr, isEn]
+    [transactions, updateMember, language]
   );
 
   const hasActiveAdvancedFilters = methodFilter !== 'All' || branchFilter !== 'All';

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   LegalMatter,
   LegalHearing,
@@ -14,6 +14,11 @@ import { calculateCPCADeadline, calculateNotaryDecret08243, calculateArticle317S
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import type { Dispatch, SetStateAction } from 'react';
+import {
+  cloneSnapshot,
+  pickLocalizedText,
+  registerUndoEntry,
+} from '../../../services/undoEngine';
 import { isSupabaseConfigured, legalService, realtimeService, syncCoordinator, subscribeConcurrencyResolutions, runWithConcurrency } from '../../../lib/supabase';
 
 function mergeLegalById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
@@ -520,7 +525,9 @@ export const useLegalData = () => {
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
   const currentAccountId = useAtriumSelector((s) => s.account.id);
   const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
+  const language = useAtriumSelector((s) => s.language);
   const activeBranchId = currentBranchId || 'branch_legal_main';
+  const activeBusinessId = currentBusinessId || 'biz_legal';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
       (item.branchId || item.facilityId || 'branch_legal_main') === activeBranchId,
@@ -808,67 +815,414 @@ export const useLegalData = () => {
     };
   }, [activeBranchId]);
 
+  const latestRef = useRef({
+    entities,
+    matters,
+    hearings,
+    deadlines,
+    notaryDeeds,
+    escrowAccounts,
+    scfEntries,
+    cashReceipts,
+    dailyClosure,
+  });
+  latestRef.current = {
+    entities,
+    matters,
+    hearings,
+    deadlines,
+    notaryDeeds,
+    escrowAccounts,
+    scfEntries,
+    cashReceipts,
+    dailyClosure,
+  };
+
+  const restoreAt = <T extends { id: string }>(
+    setter: Dispatch<SetStateAction<T[]>>,
+    snapshot: T,
+    index: number
+  ) => {
+    const item = cloneSnapshot(snapshot);
+    setter((prev) => {
+      if (prev.some((x) => x.id === item.id)) return prev;
+      const next = [...prev];
+      const safeIndex = Math.max(0, Math.min(index, next.length));
+      next.splice(safeIndex, 0, item);
+      return next;
+    });
+  };
+
   // Operational action handlers
   const addEntity = (entity: LegalClientEntity) => {
     const scoped = withBranch(entity);
+    const snap = cloneSnapshot(scoped);
     setEntities((prev) => [scoped, ...prev]);
     void legalService.upsertClient(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'legal_accounting',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.nameFr,
+      summary: pickLocalizedText(language, {
+        fr: `Client ${scoped.nameFr} ajouté`,
+        en: `Client ${scoped.nameFr} added`,
+        ar: `تمت إضافة الموكل ${scoped.nameFr}`,
+      }),
+      undo: () => {
+        setEntities((prev) => prev.filter((e) => e.id !== snap.id));
+        void legalService.deleteClient(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setEntities((prev) => (prev.some((e) => e.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('legal_clients', re.id, currentStaffId)
+          .then(() => legalService.upsertClient(re))
+          .catch(() => {});
+      },
+    });
   };
+
   const addMatter = (matter: LegalMatter) => {
     const scoped = withBranch(matter);
+    const snap = cloneSnapshot(scoped);
     setMatters((prev) => [scoped, ...prev]);
     void legalService.upsertMatter(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'legal_accounting',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.matterNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Dossier ${scoped.matterNumber} créé`,
+        en: `Matter ${scoped.matterNumber} created`,
+        ar: `تم فتح الملف ${scoped.matterNumber}`,
+      }),
+      undo: () => {
+        setMatters((prev) => prev.filter((m) => m.id !== snap.id));
+        void legalService.deleteMatter(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setMatters((prev) => (prev.some((m) => m.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('legal_matters', re.id, currentStaffId)
+          .then(() => legalService.upsertMatter(re))
+          .catch(() => {});
+      },
+    });
   };
+
   const updateMatter = (matter: LegalMatter) => {
     const scoped = withBranch(matter);
+    const existing = latestRef.current.matters.find((m) => m.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setMatters((prev) => prev.map((m) => (m.id === scoped.id ? scoped : m)));
     void legalService.upsertMatter(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'legal_accounting',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.matterNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Dossier ${nextSnap.matterNumber} modifié`,
+          en: `Matter ${nextSnap.matterNumber} updated`,
+          ar: `تم تعديل الملف ${nextSnap.matterNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setMatters((prev) => prev.map((m) => (m.id === prevCopy.id ? prevCopy : m)));
+          void legalService.upsertMatter(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setMatters((prev) => prev.map((m) => (m.id === nextCopy.id ? nextCopy : m)));
+          void legalService.upsertMatter(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
+
   const deleteMatter = (id: string) => {
+    const idx = latestRef.current.matters.findIndex((m) => m.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.matters[idx]) : null;
     setMatters((prev) => prev.filter((m) => m.id !== id));
     void legalService.deleteMatter(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'legal_accounting',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.matterNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Dossier ${existing.matterNumber} supprimé`,
+          en: `Matter ${existing.matterNumber} deleted`,
+          ar: `تم حذف الملف ${existing.matterNumber}`,
+        }),
+        undo: () => {
+          restoreAt(setMatters, existing, idx);
+          void syncCoordinator
+            .restoreRow('legal_matters', existing.id, currentStaffId)
+            .then(() => legalService.upsertMatter(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setMatters((prev) => prev.filter((m) => m.id !== existing.id));
+          void legalService.deleteMatter(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const addHearing = (hearing: LegalHearing) => {
     const scoped = withBranch(hearing);
+    const snap = cloneSnapshot(scoped);
     setHearings((prev) => [scoped, ...prev]);
     void legalService.upsertHearing(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'legal_accounting',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.matterTitle || scoped.matterNumber || scoped.courtName,
+      summary: pickLocalizedText(language, {
+        fr: `Audience ${scoped.hearingDate} programmée`,
+        en: `Hearing ${scoped.hearingDate} scheduled`,
+        ar: `تمت برمجة جلسة ${scoped.hearingDate}`,
+      }),
+      undo: () => {
+        setHearings((prev) => prev.filter((h) => h.id !== snap.id));
+        void legalService.deleteHearing(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setHearings((prev) => (prev.some((h) => h.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('legal_hearings', re.id, currentStaffId)
+          .then(() => legalService.upsertHearing(re))
+          .catch(() => {});
+      },
+    });
   };
+
   const updateHearing = (hearing: LegalHearing) => {
     const scoped = withBranch(hearing);
+    const existing = latestRef.current.hearings.find((h) => h.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setHearings((prev) => prev.map((h) => (h.id === scoped.id ? scoped : h)));
     void legalService.upsertHearing(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'legal_accounting',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.matterTitle || nextSnap.matterNumber || nextSnap.courtName,
+        summary: pickLocalizedText(language, {
+          fr: `Audience ${nextSnap.hearingDate} mise à jour`,
+          en: `Hearing ${nextSnap.hearingDate} updated`,
+          ar: `تم تحديث الجلسة ${nextSnap.hearingDate}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setHearings((prev) => prev.map((h) => (h.id === prevCopy.id ? prevCopy : h)));
+          void legalService.upsertHearing(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setHearings((prev) => prev.map((h) => (h.id === nextCopy.id ? nextCopy : h)));
+          void legalService.upsertHearing(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
+
   const deleteHearing = (id: string) => {
+    const idx = latestRef.current.hearings.findIndex((h) => h.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.hearings[idx]) : null;
     setHearings((prev) => prev.filter((h) => h.id !== id));
     void legalService.deleteHearing(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'legal_accounting',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.matterTitle || existing.matterNumber || existing.courtName,
+        summary: pickLocalizedText(language, {
+          fr: `Audience ${existing.hearingDate} supprimée`,
+          en: `Hearing ${existing.hearingDate} deleted`,
+          ar: `تم حذف الجلسة ${existing.hearingDate}`,
+        }),
+        undo: () => {
+          restoreAt(setHearings, existing, idx);
+          void syncCoordinator
+            .restoreRow('legal_hearings', existing.id, currentStaffId)
+            .then(() => legalService.upsertHearing(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setHearings((prev) => prev.filter((h) => h.id !== existing.id));
+          void legalService.deleteHearing(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const addCPCADeadline = (dl: CPCADeadline) => {
     const scoped = withBranch(dl);
+    const snap = cloneSnapshot(scoped);
     setDeadlines((prev) => [scoped, ...prev]);
     void legalService.upsertCpcaDeadline(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'legal_accounting',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.caseNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Délai CPCA ${scoped.caseNumber} ajouté`,
+        en: `CPCA deadline ${scoped.caseNumber} added`,
+        ar: `تمت إضافة أجل ${scoped.caseNumber}`,
+      }),
+      undo: () => {
+        setDeadlines((prev) => prev.filter((d) => d.id !== snap.id));
+        void legalService.deleteCpcaDeadline(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setDeadlines((prev) => (prev.some((d) => d.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('legal_deadlines', re.id, currentStaffId)
+          .then(() => legalService.upsertCpcaDeadline(re))
+          .catch(() => {});
+      },
+    });
   };
+
   const updateCPCADeadline = (dl: CPCADeadline) => {
     const scoped = withBranch(dl);
+    const existing = latestRef.current.deadlines.find((d) => d.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setDeadlines((prev) => prev.map((d) => (d.id === scoped.id ? scoped : d)));
     void legalService.upsertCpcaDeadline(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'legal_accounting',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.caseNumber,
+        summary: pickLocalizedText(language, {
+          fr: `Délai CPCA ${nextSnap.caseNumber} mis à jour`,
+          en: `CPCA deadline ${nextSnap.caseNumber} updated`,
+          ar: `تم تحديث الأجل ${nextSnap.caseNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setDeadlines((prev) => prev.map((d) => (d.id === prevCopy.id ? prevCopy : d)));
+          void legalService.upsertCpcaDeadline(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setDeadlines((prev) => prev.map((d) => (d.id === nextCopy.id ? nextCopy : d)));
+          void legalService.upsertCpcaDeadline(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const addNotaryDeed = (deed: NotaryDeed) => {
     const scoped = withBranch(deed);
+    const snap = cloneSnapshot(scoped);
+    const defaultMatterId = latestRef.current.matters[0]?.id;
     setNotaryDeeds((prev) => [scoped, ...prev]);
-    void legalService.upsertNotaryDeed(scoped, matters[0]?.id).catch(() => {});
+    void legalService.upsertNotaryDeed(scoped, defaultMatterId).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'legal_accounting',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.repertoireNumber || scoped.title,
+      summary: pickLocalizedText(language, {
+        fr: `Acte notarié ${scoped.repertoireNumber} créé`,
+        en: `Notarial deed ${scoped.repertoireNumber} created`,
+        ar: `تم إنشاء العقد التوثيقي ${scoped.repertoireNumber}`,
+      }),
+      undo: () => {
+        setNotaryDeeds((prev) => prev.filter((n) => n.id !== snap.id));
+        void legalService.deleteNotaryDeed(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setNotaryDeeds((prev) => (prev.some((n) => n.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('legal_documents', re.id, currentStaffId)
+          .then(() => legalService.upsertNotaryDeed(re, defaultMatterId))
+          .catch(() => {});
+      },
+    });
   };
+
   const updateNotaryDeed = (deed: NotaryDeed) => {
     const scoped = withBranch(deed);
+    const existing = latestRef.current.notaryDeeds.find((d) => d.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
+    const defaultMatterId = latestRef.current.matters[0]?.id;
     setNotaryDeeds((prev) => prev.map((d) => (d.id === scoped.id ? scoped : d)));
-    void legalService.upsertNotaryDeed(scoped, matters[0]?.id).catch(() => {});
+    void legalService.upsertNotaryDeed(scoped, defaultMatterId).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'legal_accounting',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.repertoireNumber || nextSnap.title,
+        summary: pickLocalizedText(language, {
+          fr: `Acte notarié ${nextSnap.repertoireNumber} modifié`,
+          en: `Notarial deed ${nextSnap.repertoireNumber} updated`,
+          ar: `تم تعديل العقد التوثيقي ${nextSnap.repertoireNumber}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setNotaryDeeds((prev) => prev.map((d) => (d.id === prevCopy.id ? prevCopy : d)));
+          void legalService.upsertNotaryDeed(withBranch(prevCopy), defaultMatterId).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setNotaryDeeds((prev) => prev.map((d) => (d.id === nextCopy.id ? nextCopy : d)));
+          void legalService.upsertNotaryDeed(nextCopy, defaultMatterId).catch(() => {});
+        },
+      });
+    }
   };
 
   const updateEscrowAccount = (acc: EscrowAccount) => {
     const scoped = withBranch(acc);
-    const prevAcc = escrowAccounts.find((a) => a.id === scoped.id);
+    const prevAcc = latestRef.current.escrowAccounts.find((a) => a.id === scoped.id);
+    const prevSnap = prevAcc ? cloneSnapshot(prevAcc) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setEscrowAccounts((prev) => prev.map((a) => (a.id === scoped.id ? scoped : a)));
     void legalService.upsertEscrowSnapshot(scoped).catch(() => {});
     if (scoped.transactions.length > (prevAcc?.transactions.length ?? 0)) {
@@ -887,31 +1241,139 @@ export const useLegalData = () => {
           .catch(() => {});
       });
     }
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'legal_accounting',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.matterReference || nextSnap.clientName,
+        summary: pickLocalizedText(language, {
+          fr: `Compte séquestre ${nextSnap.matterReference} mis à jour`,
+          en: `Escrow account ${nextSnap.matterReference} updated`,
+          ar: `تم تحديث حساب الأمانات ${nextSnap.matterReference}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setEscrowAccounts((prev) => prev.map((a) => (a.id === prevCopy.id ? prevCopy : a)));
+          void legalService.upsertEscrowSnapshot(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setEscrowAccounts((prev) => prev.map((a) => (a.id === nextCopy.id ? nextCopy : a)));
+          void legalService.upsertEscrowSnapshot(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const addSCFEntry = (entry: SCFJournalEntry) => {
     const scoped = withBranch(entry);
+    const snap = cloneSnapshot(scoped);
+    const defaultMatterId = latestRef.current.matters[0]?.id;
     setScfEntries((prev) => [scoped, ...prev]);
-    void legalService.upsertScfEntry(scoped, matters[0]?.id).catch(() => {});
+    void legalService.upsertScfEntry(scoped, defaultMatterId).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'legal_accounting',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.entryNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Écriture SCF ${scoped.entryNumber} enregistrée`,
+        en: `SCF entry ${scoped.entryNumber} recorded`,
+        ar: `تم تسجيل القيد المحاسبي ${scoped.entryNumber}`,
+      }),
+      undo: () => {
+        setScfEntries((prev) => prev.filter((s) => s.id !== snap.id));
+        void legalService.deleteScfEntry(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setScfEntries((prev) => (prev.some((s) => s.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('legal_time_entries', re.id, currentStaffId)
+          .then(() => legalService.upsertScfEntry(re, defaultMatterId))
+          .catch(() => {});
+      },
+    });
   };
 
   const addCashReceipt = (rc: CashReceipt) => {
     const scopedRc = withBranch(rc);
+    const snapRc = cloneSnapshot(scopedRc);
+    const prevClosure = cloneSnapshot(latestRef.current.dailyClosure);
+    const nextClosure: DailyCashClosure = {
+      ...prevClosure,
+      totalCashReceivedDzd: (prevClosure.totalCashReceivedDzd || 0) + scopedRc.netCollectedDzd,
+      theoreticalCashDzd: (prevClosure.theoreticalCashDzd || 0) + scopedRc.netCollectedDzd,
+      totalTimbreAccruedDzd: (prevClosure.totalTimbreAccruedDzd || 0) + scopedRc.timbreFiscalDzd,
+      actualPhysicalCashCountedDzd: (prevClosure.actualPhysicalCashCountedDzd || 0) + scopedRc.netCollectedDzd,
+    };
+    const nextClosureSnap = cloneSnapshot(nextClosure);
+
     setCashReceipts((prev) => [scopedRc, ...prev]);
     void legalService.upsertCashReceipt(scopedRc).catch(() => {});
-    // update daily closure
-    setDailyClosure((prev) => ({
-      ...prev,
-      totalCashReceivedDzd: (prev.totalCashReceivedDzd || 0) + scopedRc.netCollectedDzd,
-      theoreticalCashDzd: (prev.theoreticalCashDzd || 0) + scopedRc.netCollectedDzd,
-      totalTimbreAccruedDzd: (prev.totalTimbreAccruedDzd || 0) + scopedRc.timbreFiscalDzd,
-      actualPhysicalCashCountedDzd: (prev.actualPhysicalCashCountedDzd || 0) + scopedRc.netCollectedDzd,
-    }));
+    setDailyClosure(nextClosure);
+
+    registerUndoEntry({
+      vertical: 'legal_accounting',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scopedRc.receiptNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Reçu caisse ${scopedRc.receiptNumber} encaissé`,
+        en: `Cash receipt ${scopedRc.receiptNumber} recorded`,
+        ar: `تم تسجيل وصل الدفع ${scopedRc.receiptNumber}`,
+      }),
+      undo: () => {
+        setCashReceipts((prev) => prev.filter((r) => r.id !== snapRc.id));
+        setDailyClosure(cloneSnapshot(prevClosure));
+        void legalService.deleteCashReceipt(snapRc.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snapRc);
+        setCashReceipts((prev) => (prev.some((r) => r.id === re.id) ? prev : [re, ...prev]));
+        setDailyClosure(cloneSnapshot(nextClosureSnap));
+        void syncCoordinator
+          .restoreRow('legal_cash_receipts', re.id, currentStaffId)
+          .then(() => legalService.upsertCashReceipt(re))
+          .catch(() => {});
+      },
+    });
   };
 
-  const updateDailyClosure = (cl: DailyCashClosure) => setDailyClosure(withBranch(cl));
+  const updateDailyClosure = (cl: DailyCashClosure) => {
+    const scoped = withBranch(cl);
+    const prevSnap = cloneSnapshot(latestRef.current.dailyClosure);
+    const nextSnap = cloneSnapshot(scoped);
+    setDailyClosure(scoped);
+
+    registerUndoEntry({
+      vertical: 'legal_accounting',
+      operationType: 'edit',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: nextSnap.closureDate,
+      summary: pickLocalizedText(language, {
+        fr: `Clôture caisse ${nextSnap.closureDate} mise à jour`,
+        en: `Cash closure ${nextSnap.closureDate} updated`,
+        ar: `تم تحديث إغلاق الصندوق ${nextSnap.closureDate}`,
+      }),
+      undo: () => {
+        setDailyClosure(cloneSnapshot(prevSnap));
+      },
+      redo: () => {
+        setDailyClosure(cloneSnapshot(nextSnap));
+      },
+    });
+  };
 
   const resetLegalMockData = () => {
+    const snap = cloneSnapshot(latestRef.current);
     setEntities((prev) => prev.filter((e) => !belongsToActiveBranch(e)));
     setMatters((prev) => prev.filter((m) => !belongsToActiveBranch(m)));
     setHearings((prev) => prev.filter((h) => !belongsToActiveBranch(h)));
@@ -923,6 +1385,30 @@ export const useLegalData = () => {
     if (activeBranchId === 'branch_legal_main') {
       setDailyClosure(INITIAL_DAILY_CLOSURE);
     }
+
+    registerUndoEntry({
+      vertical: 'legal_accounting',
+      operationType: 'bulk',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      summary: pickLocalizedText(language, {
+        fr: 'Données cabinet juridique réinitialisées',
+        en: 'Legal practice data reset',
+        ar: 'تمت إعادة ضبط بيانات المكتب القانوني',
+      }),
+      undo: () => {
+        const s = cloneSnapshot(snap);
+        setEntities(s.entities);
+        setMatters(s.matters);
+        setHearings(s.hearings);
+        setDeadlines(s.deadlines);
+        setNotaryDeeds(s.notaryDeeds);
+        setEscrowAccounts(s.escrowAccounts);
+        setScfEntries(s.scfEntries);
+        setCashReceipts(s.cashReceipts);
+        setDailyClosure(s.dailyClosure);
+      },
+    });
   };
 
   const scopedEntities = useMemo(() => entities.filter(belongsToActiveBranch), [entities, belongsToActiveBranch]);

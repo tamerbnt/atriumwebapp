@@ -13,6 +13,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { MedicalPatient } from '../../../types';
 import { useMedicalData } from './medicalData';
 import { MedicalPatientModal } from './MedicalPatientModal';
@@ -225,13 +226,8 @@ export const MedicalPatientsView: React.FC<any> = () => {
     (p: MedicalPatient) => {
       deletePatient(p.id);
       if (inspectedPatient?.id === p.id) setInspectedPatient(null);
-      showToast({
-        type: 'success',
-        title: isAr ? 'تم أرشفة الملف' : isFr ? 'Dossier archivé' : 'Record Archived',
-        message: isAr ? 'تم حذف ملف المريض بنجاح' : `Dossier ${p.fullName} archivé`,
-      });
     },
-    [deletePatient, inspectedPatient, isAr, isFr]
+    [deletePatient, inspectedPatient]
   );
 
   const handleTogglePin = useCallback((id: string) => {
@@ -672,14 +668,24 @@ export const MedicalPatientsView: React.FC<any> = () => {
             onClick: handleExportCSV,
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deletePatient(id));
+            runUndoBatch(
+              {
+                vertical: 'medical_clinic',
+                operationType: 'bulk',
+                branchId: currentBranch?.id || 'branch_medical_main',
+                summary: isAr
+                  ? `حذف ${ids.size} ملفات مرضى`
+                  : isFr
+                  ? `Suppression de ${ids.size} dossiers patients`
+                  : `Deleted ${ids.size} patient records`,
+                affectedCount: ids.size,
+              },
+              () => {
+                ids.forEach((id) => deletePatient(id));
+              }
+            );
             setSelectedIds(new Set());
             if (activePatient && ids.has(activePatient.id)) setInspectedPatient(null);
-            showToast({
-              type: 'success',
-              title: isAr ? 'تم الحذف' : 'Suppression effectuée',
-              message: isAr ? 'تم حذف المرضى المحددين' : 'Patients sélectionnés supprimés',
-            });
           }}
           getRowMeta={(p): KineticRowMeta => {
             const hasVigilance =
@@ -979,13 +985,6 @@ export const MedicalPatientsView: React.FC<any> = () => {
                         const updated = { ...patient, notes: next };
                         updatePatient(updated);
                         setInspectedPatient(updated);
-                        showToast({
-                          type: 'success',
-                          title: isAr ? 'تم الحفظ' : isFr ? 'Notes enregistrées' : 'Notes Saved',
-                          message: isAr
-                            ? 'تم حفظ الملاحظات السريرية'
-                            : 'Observations cliniques enregistrées',
-                        });
                       }}
                       placeholder={
                         isAr
@@ -1291,11 +1290,6 @@ export const MedicalPatientsView: React.FC<any> = () => {
                                 updatePatient(updated);
                                 setInspectedPatient(updated);
                                 setShowAddVitals(false);
-                                showToast({
-                                  type: 'success',
-                                  title: 'Constantes enregistrées',
-                                  message: `Mesure TA ${sysVal}/${diaVal} mmHg ajoutée au dossier.`,
-                                });
                               }}
                               data-sq="ctl-sm"
                               className="px-3 py-1 bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold cursor-pointer"
@@ -1428,18 +1422,8 @@ export const MedicalPatientsView: React.FC<any> = () => {
             if (patientToEdit) {
               updatePatient(p);
               if (activePatient?.id === p.id) setInspectedPatient(p);
-              showToast({
-                type: 'success',
-                title: isAr ? 'تم التحديث' : 'Dossier mis à jour',
-                message: isAr ? 'تم تحديث الملف الطبي' : 'Dossier patient mis à jour',
-              });
             } else {
               addPatient(p);
-              showToast({
-                type: 'success',
-                title: isAr ? 'تم الإنشاء' : 'Dossier créé',
-                message: isAr ? 'تم إنشاء الملف الطبي بنجاح' : 'Dossier patient créé avec succès',
-              });
             }
             setIsPatientModalOpen(false);
             setPatientToEdit(null);
@@ -1459,11 +1443,6 @@ export const MedicalPatientsView: React.FC<any> = () => {
             addConsultation(cons);
             setIsConsultModalOpen(false);
             setConsultPatient(null);
-            showToast({
-              type: 'success',
-              title: isAr ? 'تم حفظ الفحص' : 'Consultation enregistrée',
-              message: isAr ? 'تم حفظ الفحص السريري بنجاح' : 'Consultation enregistrée avec succès',
-            });
           }}
         />
       )}
@@ -1478,11 +1457,6 @@ export const MedicalPatientsView: React.FC<any> = () => {
           onAddLabRecord={(newRec) => {
             addLabRecord(newRec);
             setIsLabModalOpen(false);
-            showToast({
-              type: 'success',
-              title: isAr ? 'تم حفظ التحليل' : 'Bilan enregistré',
-              message: isAr ? 'تم تسجيل التحليل المخبري' : 'Bilan biologique enregistré',
-            });
           }}
         />
       )}

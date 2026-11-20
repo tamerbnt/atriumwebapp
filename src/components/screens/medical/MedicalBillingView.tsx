@@ -304,15 +304,8 @@ export const MedicalBillingView: React.FC<any> = () => {
     (c: MedicalConsultation) => {
       markConsultationPaid(c.id);
       setInspectedConsultation({ ...c, isPaid: true });
-      showToast({
-        type: 'success',
-        title: isAr ? 'تم التحصيل' : 'Paiement validé',
-        message: isAr
-          ? 'تم تسجيل الدفع وإصدار المخالصة'
-          : `Paiement (${paymentMethod}) enregistré & quittance validée`,
-      });
     },
-    [markConsultationPaid, paymentMethod, isAr]
+    [markConsultationPaid]
   );
 
   const handlePrintReceipt = useCallback(
@@ -352,13 +345,6 @@ export const MedicalBillingView: React.FC<any> = () => {
       verifiedAt: new Date().toLocaleTimeString(),
     };
     addDailyClosure(closure as any);
-    showToast({
-      type: 'success',
-      title: 'Clôture de Caisse',
-      message: isAr
-        ? 'تم إغلاق الصندوق اليومي وحفظ تقرير الكاسة'
-        : 'Clôture de caisse validée et consignée',
-    });
   };
 
   const handleExportCSV = useCallback(() => {
@@ -1487,11 +1473,6 @@ export const MedicalBillingView: React.FC<any> = () => {
                           data-sq-border="solid"
                           onClick={() => {
                             depleteConsumable(code, 1);
-                            showToast({
-                              type: 'info',
-                              title: 'Stock Consommable',
-                              message: `-1 ${item.unit} déduit pour ${item.name}`,
-                            });
                           }}
                           className="px-2 py-1 t-cap border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                           title="Déduire manuellement pour un acte"
@@ -1505,11 +1486,6 @@ export const MedicalBillingView: React.FC<any> = () => {
                           data-sq-border="none"
                           onClick={() => {
                             restockConsumable(code, 50);
-                            showToast({
-                              type: 'success',
-                              title: 'Réapprovisionnement',
-                              message: `+50 ${item.unit} réapprovisionnés pour ${item.name}`,
-                            });
                           }}
                           className="px-2.5 py-1 t-small bg-[var(--brand-fill,#C9461F)] text-white font-semibold hover:bg-[#b0674b] transition-colors cursor-pointer"
                         >

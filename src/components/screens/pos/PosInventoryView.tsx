@@ -238,25 +238,11 @@ export const PosInventoryView: React.FC<any> = () => {
       status: 'Ordered',
       notes: poNotes,
     });
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم إنشاء الطلبية' : 'Commande Fournisseur Créée',
-      message: isAr
-        ? `تم تسجيل طلبية المورد ${docNumber}`
-        : `Commande d’achat ${docNumber} enregistrée avec succès !`,
-    });
     setIsRetailPoModalOpen(false);
   };
 
   const handleReceiveRetailPo = (poId: string) => {
     receivePurchaseDoc(poId);
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم استلام البضاعة' : 'Réception Validée',
-      message: isAr
-        ? 'تم استلام البضاعة وتحديث مخزون المحل آلياً !'
-        : 'Réception confirmée ! Les stocks du magasin ont été augmentés.',
-    });
   };
 
   const purchaseStats = useMemo(() => {
@@ -432,12 +418,6 @@ export const PosInventoryView: React.FC<any> = () => {
         unit: formUnit,
         taxRate: formTaxRate,
       });
-      showToast({
-        type: 'success',
-        title: isAr ? 'تم تعديل المنتج' : 'Produit Mis à Jour',
-        message: `${formName.trim()} (${formSku.trim()})`,
-        category: 'pos_inventory',
-      });
     } else {
       addProduct({
         name: formName.trim(),
@@ -454,12 +434,6 @@ export const PosInventoryView: React.FC<any> = () => {
         taxRate: formTaxRate,
         isActive: true,
         isPinned: false,
-      });
-      showToast({
-        type: 'success',
-        title: isAr ? 'تمت إضافة الصنف' : 'Nouvel Article Ajouté',
-        message: `${formName.trim()} (${formSku.trim()})`,
-        category: 'pos_inventory',
       });
     }
     setIsProductFormModalOpen(false);
@@ -2178,13 +2152,6 @@ export const PosInventoryView: React.FC<any> = () => {
         onClose={() => setIsSupplierModalOpen(false)}
         entityType="supplier"
         onSaved={(sup) => {
-          const supName =
-            'supplierName' in sup ? sup.supplierName : 'companyName' in sup ? sup.companyName : (sup as any).clientName || '';
-          showToast({
-            type: 'success',
-            title: isAr ? 'مورد جديد' : 'Nouveau Fournisseur',
-            message: isAr ? 'تم تسجيل المورد الجديد بنجاح' : `Fournisseur ${supName} enregistré avec succès.`,
-          });
           setPoSupplierId(sup.id);
           setIsSupplierModalOpen(false);
         }}

@@ -17,6 +17,12 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import {
+  cloneSnapshot,
+  pickLocalizedText,
+  registerUndoEntry,
+  runUndoBatch,
+} from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { calculateArt317Timbre } from '../../../utils/agriRules';
 import { AgriHarvestTicket } from '../../../types';
@@ -254,16 +260,25 @@ export const AgricultureWholesaleView: React.FC = () => {
   const handleSettle = useCallback(
     (id: string, ticketNumber: string, netAmount: number) => {
       if (!settledSet.has(id)) {
-        setSettledTickets((prev) => [...prev, id]);
-        showToast(
-          isAr
-            ? `تم استلام صافي مستحقات البيع (${formatMoney(netAmount, language)}) للوصل ${ticketNumber}`
-            : `Encaissement du net mandataire ${formatMoney(netAmount, language)} confirmé`,
-          'success'
-        );
+        const prevSettled = cloneSnapshot(settledTickets);
+        const nextSettled = [...prevSettled, id];
+        setSettledTickets(nextSettled);
+        registerUndoEntry({
+          vertical: 'agriculture_farming',
+          operationType: 'status',
+          summary: pickLocalizedText(language, {
+            en: `Settled wholesale ticket ${ticketNumber} (${formatMoney(netAmount, language)})`,
+            fr: `Encaissement du net confirmé (${ticketNumber} · ${formatMoney(netAmount, language)})`,
+            ar: `تم استلام صافي الوصل ${ticketNumber} (${formatMoney(netAmount, language)})`,
+          }),
+          entityLabel: ticketNumber,
+          toastType: 'success',
+          undo: () => setSettledTickets(cloneSnapshot(prevSettled)),
+          redo: () => setSettledTickets(cloneSnapshot(nextSettled)),
+        });
       }
     },
-    [settledSet, isAr, language]
+    [settledSet, settledTickets, language]
   );
 
   const handleBulkSettle = useCallback(
@@ -276,16 +291,25 @@ export const AgricultureWholesaleView: React.FC = () => {
         );
         return;
       }
-      setSettledTickets((prev) => Array.from(new Set([...prev, ...newlySettled])));
+      const prevSettled = cloneSnapshot(settledTickets);
+      const nextSettled = Array.from(new Set([...prevSettled, ...newlySettled]));
+      setSettledTickets(nextSettled);
       setSelectedIds(new Set<string>());
-      showToast(
-        isAr
-          ? `تم تأكيد قبض ${newlySettled.length} وصولات جملة`
-          : `${newlySettled.length} bordereaux marqués encaissés`,
-        'success'
-      );
+      registerUndoEntry({
+        vertical: 'agriculture_farming',
+        operationType: 'bulk',
+        summary: pickLocalizedText(language, {
+          en: `Settled ${newlySettled.length} wholesale ticket(s)`,
+          fr: `${newlySettled.length} bordereau(x) marqués encaissés`,
+          ar: `تم تأكيد قبض ${newlySettled.length} وصولات جملة`,
+        }),
+        affectedCount: newlySettled.length,
+        toastType: 'success',
+        undo: () => setSettledTickets(cloneSnapshot(prevSettled)),
+        redo: () => setSettledTickets(cloneSnapshot(nextSettled)),
+      });
     },
-    [settledSet, isAr]
+    [settledSet, settledTickets, isAr, language]
   );
 
   const handleTogglePin = useCallback(
@@ -327,9 +351,8 @@ export const AgricultureWholesaleView: React.FC = () => {
         next.delete(ticket.id);
         return next;
       });
-      showToast(isAr ? 'تم حذف وصل الجملة' : 'Bordereau supprimé', 'info');
     },
-    [deleteHarvestTicket, selectedTicket, isAr]
+    [deleteHarvestTicket, selectedTicket]
   );
 
   const handleOpenPrintPrimary = useCallback(() => {
@@ -863,13 +886,24 @@ export const AgricultureWholesaleView: React.FC = () => {
             onClick: handleBulkSettle,
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteHarvestTicket(id));
+            runUndoBatch(
+              {
+                vertical: 'agriculture_farming',
+                operationType: 'bulk',
+                affectedCount: ids.size,
+                toastType: 'info',
+                summary: pickLocalizedText(language, {
+                  en: `Deleted ${ids.size} wholesale ticket(s)`,
+                  fr: `${ids.size} bordereau(x) supprimé(s)`,
+                  ar: `تم حذف ${ids.size} وصولات جملة`,
+                }),
+              },
+              () => {
+                ids.forEach((id) => deleteHarvestTicket(id));
+              }
+            );
             setSelectedIds(new Set<string>());
             if (selectedTicket && ids.has(selectedTicket.id)) setSelectedTicket(null);
-            showToast(
-              isAr ? 'تم حذف وصولات الجملة المحددة' : 'Bordereaux sélectionnés supprimés',
-              'info'
-            );
           }}
           isPinned={(t) => pinnedIds.has(t.id)}
           onTogglePin={handleTogglePin}

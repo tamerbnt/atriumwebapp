@@ -9,6 +9,7 @@ import {
   Power,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { RentableUnit, RentableUnitType, RentableUnitStatus } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -292,13 +293,8 @@ export const VenueInventoryView: React.FC = () => {
       const nextStatus: RentableUnitStatus =
         unit.status === 'Available' ? 'Maintenance' : 'Available';
       updateRentableUnit(unit.id, { status: nextStatus });
-      showToast({
-        type: 'info',
-        title: isFr ? 'Statut mis à jour' : 'Status Updated',
-        message: `${unit.name} → ${nextStatus}`,
-      });
     },
-    [updateRentableUnit, isFr]
+    [updateRentableUnit]
   );
 
   const handleResetFilters = useCallback(() => {
@@ -751,11 +747,6 @@ export const VenueInventoryView: React.FC = () => {
           onDelete={(u) => {
             deleteRentableUnit(u.id);
             if (selectedUnit?.id === u.id) setSelectedUnit(null);
-            showToast({
-              type: 'info',
-              title: isFr ? 'Espace supprimé' : 'Space Removed',
-              message: u.name,
-            });
           }}
           selectedIds={selectedUnitIds}
           onSelectionChange={setSelectedUnitIds}
@@ -763,23 +754,43 @@ export const VenueInventoryView: React.FC = () => {
             label: isAr ? 'تعيين كمتاحة' : isFr ? 'Rendre Disponible' : 'Mark Available',
             icon: <Check size={13} />,
             onClick: (ids: Set<string>) => {
-              ids.forEach((id) => updateRentableUnit(id, { status: 'Available' }));
+              if (ids.size === 0) return;
+              runUndoBatch(
+                {
+                  category: 'rental_booking',
+                  operationType: 'bulk',
+                  label: isAr
+                    ? `تفعيل فضاءات (${ids.size})`
+                    : isFr
+                    ? `Mise à disposition (${ids.size})`
+                    : `Mark spaces available (${ids.size})`,
+                  entityType: 'rentableUnit',
+                },
+                () => {
+                  ids.forEach((id) => updateRentableUnit(id, { status: 'Available' }));
+                }
+              );
               setSelectedUnitIds(new Set<string>());
-              showToast({
-                type: 'success',
-                title: isFr ? 'Statut mis à jour' : 'Status Updated',
-                message: `${ids.size} ${isFr ? 'espaces disponibles' : 'spaces available'}`,
-              });
             },
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteRentableUnit(id));
+            if (ids.size === 0) return;
+            runUndoBatch(
+              {
+                category: 'rental_booking',
+                operationType: 'bulk',
+                label: isAr
+                  ? `حذف فضاءات (${ids.size})`
+                  : isFr
+                  ? `Suppression espaces (${ids.size})`
+                  : `Delete spaces (${ids.size})`,
+                entityType: 'rentableUnit',
+              },
+              () => {
+                ids.forEach((id) => deleteRentableUnit(id));
+              }
+            );
             setSelectedUnitIds(new Set<string>());
-            showToast({
-              type: 'info',
-              title: isFr ? 'Espaces supprimés' : 'Spaces Deleted',
-              message: `${ids.size} ${isFr ? 'espaces supprimés' : 'spaces deleted'}`,
-            });
           }}
           getRowMeta={(unit) => {
             const bInfo = resolveRecordBranch(unit, branchesById, currentBranch, language);

@@ -18,6 +18,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { LegalHearing } from '../../../types';
 import { useLegalData } from './legalData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -247,10 +248,6 @@ export const LegalHearingsView: React.FC<any> = () => {
       status: 'Scheduled',
     };
     addHearing(newH);
-    showToast(
-      isAr ? 'تمت إضافة الجلسة القضائية بنجاح' : 'Audience judiciaire programmée avec succès',
-      'success'
-    );
     setIsNewHearingModalOpen(false);
   };
 
@@ -447,7 +444,6 @@ export const LegalHearingsView: React.FC<any> = () => {
             status: 'Attended',
             resultSummary: 'Plaidée sur le fond. En attente de délibéré.',
           });
-          showToast(isAr ? 'تم تسجيل مرافعة القضية' : 'Audience plaidée avec succès', 'success');
         },
       },
       {
@@ -461,10 +457,6 @@ export const LegalHearingsView: React.FC<any> = () => {
             status: 'Postponed',
             resultSummary: 'Renvoi accordé pour production de pièces adverses',
           });
-          showToast(
-            isAr ? 'تم تسجيل تأجيل الجلسة (RPP)' : 'Renvoi pour pièces (RPP) enregistré',
-            'info'
-          );
         },
       },
     ],
@@ -493,7 +485,6 @@ export const LegalHearingsView: React.FC<any> = () => {
             status: 'Attended',
             resultSummary: 'Plaidée sur le fond. En attente de délibéré.',
           });
-          showToast(isAr ? 'تم تسجيل مرافعة القضية' : 'Audience plaidée avec succès', 'success');
         },
       },
       {
@@ -507,10 +498,6 @@ export const LegalHearingsView: React.FC<any> = () => {
             status: 'Postponed',
             resultSummary: 'Renvoi accordé pour production de pièces adverses',
           });
-          showToast(
-            isAr ? 'تم تسجيل تأجيل الجلسة (RPP)' : 'Renvoi pour pièces (RPP) enregistré',
-            'info'
-          );
         },
       },
       {
@@ -523,7 +510,6 @@ export const LegalHearingsView: React.FC<any> = () => {
             postponementCode: 'DELIB',
             resultSummary: 'Affaire mise en délibéré pour prononcé de jugement',
           });
-          showToast(isAr ? 'تم حجز القضية للمداولة' : 'Affaire mise en délibéré', 'success');
         },
       },
     ],
@@ -549,10 +535,6 @@ export const LegalHearingsView: React.FC<any> = () => {
             status: 'Postponed',
             resultSummary: 'Renvoi accordé pour production de pièces adverses',
           });
-          showToast(
-            isAr ? 'تم تسجيل تأجيل الجلسة (RPP)' : 'Renvoi pour pièces (RPP) enregistré',
-            'info'
-          );
         },
       },
       {
@@ -566,7 +548,6 @@ export const LegalHearingsView: React.FC<any> = () => {
             status: 'Attended',
             resultSummary: 'Plaidée sur le fond. En attente de délibéré.',
           });
-          showToast(isAr ? 'تم تسجيل مرافعة القضية' : 'Audience plaidée avec succès', 'success');
         },
       },
       {
@@ -579,7 +560,6 @@ export const LegalHearingsView: React.FC<any> = () => {
             postponementCode: 'DELIB',
             resultSummary: 'Affaire mise en délibéré pour prononcé de jugement',
           });
-          showToast(isAr ? 'تم حجز القضية للمداولة' : 'Affaire mise en délibéré', 'success');
         },
       },
     ],
@@ -982,12 +962,27 @@ export const LegalHearingsView: React.FC<any> = () => {
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
             onBulkDelete={(ids) => {
-              ids.forEach((id) => deleteHearing(id));
-              setSelectedIds(new Set());
-              showToast(
-                isAr ? 'تم حذف الجلسات المحددة' : `${ids.size} audience(s) retirée(s)`,
-                'info'
+              const count = ids.size;
+              runUndoBatch(
+                {
+                  operationType: 'bulk',
+                  vertical: 'legal_accounting',
+                  label: {
+                    fr: `${count} audiences retirées du rôle`,
+                    en: `${count} hearings deleted`,
+                    ar: `تم حذف ${count} جلسات`,
+                  },
+                  moduleLabel: {
+                    fr: 'Rôle des Audiences',
+                    en: 'Hearings Docket',
+                    ar: 'جدول الجلسات',
+                  },
+                },
+                () => {
+                  ids.forEach((id) => deleteHearing(id));
+                }
               );
+              setSelectedIds(new Set());
             }}
             isPinned={(h) => pinnedIds.has(h.id)}
             onTogglePin={togglePin}
@@ -1012,7 +1007,6 @@ export const LegalHearingsView: React.FC<any> = () => {
             onDelete={(h) => {
               deleteHearing(h.id);
               if (activeHearing?.id === h.id) setSelectedHearing(null);
-              showToast(isAr ? 'تم حذف الجلسة' : 'Audience retirée du rôle', 'info');
             }}
             customActions={getCustomActions}
             emptyTitle={isAr ? 'لا توجد جلسات' : 'Aucune audience enregistrée'}
@@ -1096,7 +1090,6 @@ export const LegalHearingsView: React.FC<any> = () => {
         onClose={() => setSelectedHearing(null)}
         onDelete={(h) => {
           deleteHearing(h.id);
-          showToast(isAr ? 'تم حذف الجلسة' : 'Audience retirée du rôle', 'info');
         }}
         holdToDelete
         renderBody={(h, tab) => {
@@ -1205,10 +1198,6 @@ export const LegalHearingsView: React.FC<any> = () => {
                           status: 'Attended',
                           resultSummary: 'Audience plaidée. Cause entendue.',
                         });
-                        showToast(
-                          isAr ? 'تم تسجيل مرافعة القضية' : 'Audience validée plaidée',
-                          'success'
-                        );
                       },
                     },
                     {
@@ -1222,7 +1211,6 @@ export const LegalHearingsView: React.FC<any> = () => {
                           status: 'Postponed',
                           resultSummary: 'Renvoi sollicité pour communication de nouvelles pièces',
                         });
-                        showToast(isAr ? 'تم تسجيل التأجيل (RPP)' : 'Renvoi RPP accordé', 'info');
                       },
                     },
                     {
@@ -1235,7 +1223,6 @@ export const LegalHearingsView: React.FC<any> = () => {
                           postponementCode: 'DELIB',
                           resultSummary: 'Affaire mise en délibéré pour prononcé de jugement',
                         });
-                        showToast(isAr ? 'تم حجز القضية للمداولة' : 'Affaire mise en délibéré', 'success');
                       },
                     },
                     {
@@ -1284,10 +1271,6 @@ export const LegalHearingsView: React.FC<any> = () => {
         matters={matters}
         onSaveDeadline={(dl) => {
           addCPCADeadline(dl);
-          showToast(
-            isAr ? 'تم حفظ وحساب الميعاد الإجرائي بنجاح' : 'Délai CPCA armé et synchronisé',
-            'success'
-          );
         }}
       />
 

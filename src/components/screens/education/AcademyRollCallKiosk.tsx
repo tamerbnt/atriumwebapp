@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { EduStudent } from '../../../types/index';
+import { pickLocalizedText, registerUndoEntry, runUndoBatch } from '../../../services/undoEngine';
 import { PinVerificationModal } from '../../modals/PinVerificationModal';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -180,29 +181,59 @@ export const AcademyRollCallKiosk: React.FC = () => {
     if (!activeSession) return;
     const now = new Date().toISOString();
     const staffId = currentUser?.id || 'instructor_01';
-    enrolledStudents.forEach((s) => {
-      const current = attendanceMap[s.id] || { status: 'present' as QuickStatus };
-      recordQuickAttendance({
-        sessionId: activeSession.id,
-        cohortId: activeSession.cohortId,
-        studentId: s.id,
-        studentName: s.fullName,
-        status: current.status,
-        markedAt: now,
-        markedByStaffId: currentUser?.fullName || staffId,
-        isLocked: true,
-      });
-    });
+    const prevLocked = isSessionLocked;
+    const prevLockedTs = lockedTimestamp;
+    const prevLockedBy = lockedByStaff;
+    const nextLockedTs = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const nextLockedBy = currentUser?.fullName || 'Enseignant';
+
+    runUndoBatch(
+      {
+        vertical: 'education_cohort',
+        operationType: 'bulk',
+        affectedCount: enrolledStudents.length,
+        toastType: 'success',
+        summary: pickLocalizedText(language, {
+          en: `Roll call locked (${stats.ratePercent}% · ${enrolledStudents.length} students)`,
+          fr: `Appel validé & verrouillé (${stats.ratePercent}% · ${enrolledStudents.length} étudiants)`,
+          ar: `تم تأكيد وقفل الحضور (${stats.ratePercent}%)`,
+        }),
+      },
+      () => {
+        enrolledStudents.forEach((s) => {
+          const current = attendanceMap[s.id] || { status: 'present' as QuickStatus };
+          recordQuickAttendance({
+            sessionId: activeSession.id,
+            cohortId: activeSession.cohortId,
+            studentId: s.id,
+            studentName: s.fullName,
+            status: current.status,
+            markedAt: now,
+            markedByStaffId: currentUser?.fullName || staffId,
+            isLocked: true,
+          });
+        });
+        registerUndoEntry({
+          vertical: 'education_cohort',
+          operationType: 'status',
+          summary: 'Lock roll call state',
+          undo: () => {
+            setIsSessionLocked(prevLocked);
+            setLockedTimestamp(prevLockedTs);
+            setLockedByStaff(prevLockedBy);
+          },
+          redo: () => {
+            setIsSessionLocked(true);
+            setLockedTimestamp(nextLockedTs);
+            setLockedByStaff(nextLockedBy);
+          },
+        });
+      }
+    );
+
     setIsSessionLocked(true);
-    setLockedTimestamp(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-    setLockedByStaff(currentUser?.fullName || 'Enseignant');
-    showToast({
-      type: 'success',
-      title: isRtl ? 'تم تسجيل وتأكيد الحضور بنجاح' : 'Appel Validé & Verrouillé',
-      message: isRtl
-        ? `تم قفل الحصة بمعدل حضور ${stats.ratePercent}% (${stats.present} حاضرين، ${stats.absent} غائبين)`
-        : `Feuille d'émargement verrouillée : ${stats.ratePercent}% de présence (${stats.present} P, ${stats.absent} A).`,
-    });
+    setLockedTimestamp(nextLockedTs);
+    setLockedByStaff(nextLockedBy);
   };
 
   const handleSendGuardianAlert = (student: EduStudent) => {

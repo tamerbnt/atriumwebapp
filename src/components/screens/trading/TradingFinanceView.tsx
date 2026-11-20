@@ -6,6 +6,7 @@ import {
   Pin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { CommercialDocument } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -190,21 +191,31 @@ export const TradingFinanceView: React.FC = () => {
   const handleConfirmSettlement = (e: React.FormEvent) => {
     e.preventDefault();
     if (!settlementDoc) return;
-    updateCommercialDoc(settlementDoc.id, {
-      status: 'Paid',
-      paymentMethod: settleMethod,
-      notesBottom: `Réglé le ${settleDate} par ${settleMethod}${settleRef ? ` (Réf: ${settleRef})` : ''}.`,
-    });
-    const client = b2bClients.find((c) => c.id === settlementDoc.clientId);
-    if (client) {
-      const newBal = Math.max(0, (client.outstandingBalance || 0) - settlementDoc.netToPay);
-      updateB2bClient(client.id, { outstandingBalance: newBal });
-    }
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم تسجيل التحصيل' : 'Encaissement validé',
-      message: `${settlementDoc.docNumber} · ${formatMoney(settlementDoc.netToPay)}`,
-    });
+    runUndoBatch(
+      {
+        category: 'b2b_commercial',
+        operationType: 'status',
+        label: isAr
+          ? `تحصيل فاتورة ${settlementDoc.docNumber}`
+          : isEn
+          ? `Settle invoice ${settlementDoc.docNumber}`
+          : `Règlement ${settlementDoc.docNumber}`,
+        entityType: 'commercialDoc',
+        entityId: settlementDoc.id,
+      },
+      () => {
+        updateCommercialDoc(settlementDoc.id, {
+          status: 'Paid',
+          paymentMethod: settleMethod,
+          notesBottom: `Réglé le ${settleDate} par ${settleMethod}${settleRef ? ` (Réf: ${settleRef})` : ''}.`,
+        });
+        const client = b2bClients.find((c) => c.id === settlementDoc.clientId);
+        if (client) {
+          const newBal = Math.max(0, (client.outstandingBalance || 0) - settlementDoc.netToPay);
+          updateB2bClient(client.id, { outstandingBalance: newBal });
+        }
+      }
+    );
     setSettlementDoc(null);
   };
 

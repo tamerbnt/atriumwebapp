@@ -22,6 +22,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { calculateWorkerPieceworkWage } from '../../../utils/agriRules';
 import { AgriHarvestTicket, AgriDailyPointage } from '../../../types';
@@ -255,14 +256,9 @@ export const AgricultureHarvestView: React.FC = () => {
     if (ticketToEdit) {
       updateHarvestTicket(payload);
       if (selectedTicket?.id === payload.id) setSelectedTicket(payload);
-      showToast(isAr ? 'تم تحديث وصل الوزن' : 'Ticket de pesée mis à jour', 'success');
     } else {
       addHarvestTicket(payload);
       setSelectedTicket(payload);
-      showToast(
-        isAr ? 'تم تسجيل وتأكيد وصل وزن المحصول' : 'Bon de pesée pont-bascule validé',
-        'success'
-      );
     }
     setIsModalOpen(false);
   };
@@ -378,9 +374,8 @@ export const AgricultureHarvestView: React.FC = () => {
     (t: AgriHarvestTicket) => {
       deleteHarvestTicket(t.id);
       if (selectedTicket?.id === t.id) setSelectedTicket(null);
-      showToast(isAr ? 'تم حذف وصل الوزن' : 'Ticket de pesée supprimé', 'success');
     },
-    [deleteHarvestTicket, selectedTicket, isAr]
+    [deleteHarvestTicket, selectedTicket]
   );
 
   const handlePrintTicket = useCallback((t: AgriHarvestTicket) => {
@@ -497,14 +492,8 @@ export const AgricultureHarvestView: React.FC = () => {
         calculatedWageDzd: grossWageDzd,
         netDueDzd,
       });
-      showToast(
-        isAr
-          ? `تم تحديث تسبيق العامل: ${formatMoney(newAdvance, language)}`
-          : `Acompte mis à jour : ${formatMoney(newAdvance, language)}`,
-        'info'
-      );
     },
-    [workers, updatePointage, isAr, language]
+    [workers, updatePointage]
   );
 
   const handlePayPointage = useCallback(
@@ -514,14 +503,8 @@ export const AgricultureHarvestView: React.FC = () => {
         isPaid: true,
         paidAt: new Date().toISOString(),
       });
-      showToast(
-        isAr
-          ? `تم تسديد مستحقات ${p.workerName} (${formatMoney(p.netDueDzd, language)}) نقداً`
-          : `Règlement espèces effectué : ${formatMoney(p.netDueDzd, language)} à ${p.workerName}`,
-        'success'
-      );
     },
-    [updatePointage, isAr, language]
+    [updatePointage]
   );
 
   const handleSavePointage = (e: React.FormEvent) => {
@@ -554,12 +537,6 @@ export const AgricultureHarvestView: React.FC = () => {
     addPointage(newPnt);
     playTallyBeep();
     setIsPointageModalOpen(false);
-    showToast(
-      isAr
-        ? `تم تسجيل حضور وجني ${worker?.fullName || 'العامل'}`
-        : `Pointage enregistré pour ${worker?.fullName || "l'ouvrier"}`,
-      'success'
-    );
   };
 
   const filteredPointages = useMemo(() => {
@@ -1077,10 +1054,28 @@ export const AgricultureHarvestView: React.FC = () => {
               onClick: () => handleExportCsv(),
             }}
             onBulkDelete={(ids) => {
-              ids.forEach((id) => deleteHarvestTicket(id));
+              const count = ids.size;
+              runUndoBatch(
+                {
+                  operationType: 'bulk',
+                  vertical: 'agriculture',
+                  label: {
+                    fr: `${count} bons de pesée supprimés`,
+                    en: `${count} weighbridge tickets deleted`,
+                    ar: `تم حذف ${count} وصولات وزن`,
+                  },
+                  moduleLabel: {
+                    fr: 'Récolte & Pesée',
+                    en: 'Harvest & Weighbridge',
+                    ar: 'الحصاد والوزن',
+                  },
+                },
+                () => {
+                  ids.forEach((id) => deleteHarvestTicket(id));
+                }
+              );
               setSelectedIds(new Set<string>());
               if (selectedTicket && ids.has(selectedTicket.id)) setSelectedTicket(null);
-              showToast(isAr ? 'تم حذف وصولات الوزن المحددة' : 'Bons de pesée supprimés', 'success');
             }}
             isPinned={(t) => pinnedIds.has(t.id)}
             onTogglePin={handlePin}

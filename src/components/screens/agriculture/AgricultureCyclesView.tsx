@@ -15,6 +15,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { AgriTreatmentLog, AgriCropCycle, AgriCyclePhase } from '../../../types';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -302,27 +303,21 @@ export const AgricultureCyclesView: React.FC = () => {
       if (cycleToEdit) {
         updateCropCycle(cycle);
         if (selectedCycle?.id === cycle.id) setSelectedCycle(cycle);
-        showToast(isAr ? 'تم تحديث دورة المحصول' : 'Cycle de culture mis à jour', 'success');
       } else {
         addCropCycle(cycle);
         setSelectedCycle(cycle);
-        showToast(
-          isAr ? 'تم فتح موسم المحصول الفلاحي' : 'Nouveau cycle de culture enregistré',
-          'success'
-        );
       }
       setIsCycleModalOpen(false);
     },
-    [cycleToEdit, updateCropCycle, addCropCycle, selectedCycle, isAr]
+    [cycleToEdit, updateCropCycle, addCropCycle, selectedCycle]
   );
 
   const handleDeleteCycle = useCallback(
     (cycle: AgriCropCycle) => {
       deleteCropCycle(cycle.id);
       if (selectedCycle?.id === cycle.id) setSelectedCycle(null);
-      showToast(isAr ? 'تم حذف دورة المحصول' : 'Cycle de culture supprimé', 'info');
     },
-    [deleteCropCycle, selectedCycle, isAr]
+    [deleteCropCycle, selectedCycle]
   );
 
   const handleOpenCreateTreatment = useCallback(() => {
@@ -340,29 +335,21 @@ export const AgricultureCyclesView: React.FC = () => {
       if (treatmentToEdit) {
         updateTreatmentLog(treatment);
         if (selectedTreatment?.id === treatment.id) setSelectedTreatment(treatment);
-        showToast(isAr ? 'تم تحديث المعالجة في السجل' : 'Traitement sanitaire mis à jour', 'success');
       } else {
         addTreatmentLog(treatment);
         setSelectedTreatment(treatment);
-        showToast(
-          isAr
-            ? 'تم قيد المعالجة وتفعيل فترة الأمان DAR'
-            : 'Traitement consigné et délai DAR activé',
-          'success'
-        );
       }
       setIsTreatmentModalOpen(false);
     },
-    [treatmentToEdit, updateTreatmentLog, addTreatmentLog, selectedTreatment, isAr]
+    [treatmentToEdit, updateTreatmentLog, addTreatmentLog, selectedTreatment]
   );
 
   const handleDeleteTreatment = useCallback(
     (t: AgriTreatmentLog) => {
       deleteTreatmentLog(t.id);
       if (selectedTreatment?.id === t.id) setSelectedTreatment(null);
-      showToast(isAr ? 'تم حذف المعالجة' : 'Traitement retiré', 'info');
     },
-    [deleteTreatmentLog, selectedTreatment, isAr]
+    [deleteTreatmentLog, selectedTreatment]
   );
 
   const handleExportCsv = useCallback(() => {
@@ -1194,10 +1181,28 @@ export const AgricultureCyclesView: React.FC = () => {
               onClick: () => handleExportCsv(),
             }}
             onBulkDelete={(ids) => {
-              ids.forEach((id) => deleteCropCycle(id));
+              const count = ids.size;
+              runUndoBatch(
+                {
+                  operationType: 'bulk',
+                  vertical: 'agriculture',
+                  label: {
+                    fr: `${count} cycles supprimés`,
+                    en: `${count} crop cycles deleted`,
+                    ar: `تم حذف ${count} دورات محاصيل`,
+                  },
+                  moduleLabel: {
+                    fr: 'Cycles & Phyto',
+                    en: 'Crop Cycles',
+                    ar: 'دورات المحاصيل',
+                  },
+                },
+                () => {
+                  ids.forEach((id) => deleteCropCycle(id));
+                }
+              );
               setSelectedIds(new Set<string>());
               if (selectedCycle && ids.has(selectedCycle.id)) setSelectedCycle(null);
-              showToast(isAr ? 'تم حذف الدورات المحددة' : 'Cycles sélectionnés supprimés', 'info');
             }}
             isPinned={(c) => pinnedIds.has(c.id)}
             onTogglePin={handleTogglePin}
@@ -1249,13 +1254,28 @@ export const AgricultureCyclesView: React.FC = () => {
               onClick: () => handleExportCsv(),
             }}
             onBulkDelete={(ids) => {
-              ids.forEach((id) => deleteTreatmentLog(id));
+              const count = ids.size;
+              runUndoBatch(
+                {
+                  operationType: 'bulk',
+                  vertical: 'agriculture',
+                  label: {
+                    fr: `${count} traitements supprimés`,
+                    en: `${count} treatments deleted`,
+                    ar: `تم حذف ${count} معالجات`,
+                  },
+                  moduleLabel: {
+                    fr: 'Registre Phytosanitaire',
+                    en: 'Phytosanitary Log',
+                    ar: 'السجل الصحي النباتي',
+                  },
+                },
+                () => {
+                  ids.forEach((id) => deleteTreatmentLog(id));
+                }
+              );
               setSelectedIds(new Set<string>());
               if (selectedTreatment && ids.has(selectedTreatment.id)) setSelectedTreatment(null);
-              showToast(
-                isAr ? 'تم حذف المعالجات المحددة' : 'Traitements sélectionnés supprimés',
-                'info'
-              );
             }}
             isPinned={(t) => pinnedIds.has(t.id)}
             onTogglePin={handleTogglePin}

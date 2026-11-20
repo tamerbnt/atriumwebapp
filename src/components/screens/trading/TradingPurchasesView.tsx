@@ -6,7 +6,7 @@ import {
   Printer,
   X,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { useAtriumStore } from '../../../services/store';
 import { PurchaseDocument, CommercialDocument } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -263,11 +263,6 @@ export const TradingPurchasesView: React.FC = () => {
       notes: poNotes.trim() || undefined,
     });
     setIsPoModalOpen(false);
-    showToast({
-      type: 'success',
-      title: isAr ? 'تم إنشاء أمر الشراء' : 'Commande PO créée',
-      message: `${docNumber} · ${sup?.supplierName || 'Fournisseur'}`,
-    });
   };
 
   const handleExportCsv = useCallback(() => {

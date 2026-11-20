@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { RentalRenter } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -631,22 +632,27 @@ export const VenueRentersView: React.FC = () => {
           onDelete={(r) => {
             deleteRentalRenter(r.id);
             if (selectedRenter?.id === r.id) setSelectedRenter(null);
-            showToast({
-              type: 'info',
-              title: isFr ? 'Locataire supprimé' : 'Renter Deleted',
-              message: r.fullName,
-            });
           }}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteRentalRenter(id));
+            if (ids.size === 0) return;
+            runUndoBatch(
+              {
+                category: 'rental_booking',
+                operationType: 'bulk',
+                label: isAr
+                  ? `حذف مستأجرين (${ids.size})`
+                  : isFr
+                  ? `Suppression locataires (${ids.size})`
+                  : `Delete renters (${ids.size})`,
+                entityType: 'rentalRenter',
+              },
+              () => {
+                ids.forEach((id) => deleteRentalRenter(id));
+              }
+            );
             setSelectedIds(new Set<string>());
-            showToast({
-              type: 'info',
-              title: isFr ? 'Locataires supprimés' : 'Renters Deleted',
-              message: `${ids.size} ${isFr ? 'locataires supprimés.' : 'renters deleted.'}`,
-            });
           }}
           getRowMeta={(renter) => {
             const bInfo = resolveRecordBranch(renter, branchesById, currentBranch, language);

@@ -13,6 +13,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { RentableUnit, RentalBooking, BookingAddon, BookingStatus, DepositStatus } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -232,96 +233,104 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       return;
     }
 
-    let targetRenterId = selectedRenterId;
-    if (!targetRenterId) {
-      // Create new renter profile automatically
-      const newRenter = createRentalRenter({
-        fullName: renterName.trim(),
-        companyName: renterCompany.trim() || undefined,
-        email: renterEmail.trim() || `${renterName.toLowerCase().replace(/\s+/g, '.')}@client.local`,
-        phone: renterPhone.trim() || '+213 550 00 00 00',
-        currency: selectedUnit.currency || 'DZD',
-      });
-      targetRenterId = newRenter.id;
-    }
-
     const startDateTime = `${startDate}T${startTime}:00Z`;
     const endDateTime = `${startDate}T${endTime}:00Z`;
 
-    if (bookingToEdit) {
-      updateRentalBooking(bookingToEdit.id, {
-        unitId: selectedUnit.id,
-        unitName: selectedUnit.name,
-        unitType: selectedUnit.type,
-        renterId: targetRenterId,
-        renterName: renterName.trim(),
-        renterPhone: renterPhone.trim(),
-        renterEmail: renterEmail.trim() || undefined,
-        renterCompany: renterCompany.trim() || undefined,
-        purpose: purpose.trim(),
-        startDateTime,
-        endDateTime,
-        durationHours,
-        attendeeCount,
-        status,
-        baseAmount,
-        addonsAmount: addonsTotal,
-        totalAmount,
-        currency: selectedUnit.currency,
-        depositAmount,
-        depositStatus,
-        paidAmount,
-        balanceDue,
-        addons,
-        contractSigned,
-        notes: notes.trim() || undefined,
-      });
-    } else {
-      createRentalBooking({
-        renterId: targetRenterId,
-        renterName: renterName.trim(),
-        renterPhone: renterPhone.trim(),
-        renterEmail: renterEmail.trim() || undefined,
-        renterCompany: renterCompany.trim() || undefined,
-        unitId: selectedUnit.id,
-        unitName: selectedUnit.name,
-        unitType: selectedUnit.type,
-        purpose: purpose.trim(),
-        startDateTime,
-        endDateTime,
-        durationHours,
-        attendeeCount,
-        status,
-        baseAmount,
-        addonsAmount: addonsTotal,
-        totalAmount,
-        currency: selectedUnit.currency,
-        depositAmount,
-        depositStatus,
-        paidAmount,
-        balanceDue,
-        addons,
-        contractSigned,
-        notes: notes.trim() || undefined,
-      });
-    }
+    const commitBooking = () => {
+      let targetRenterId = selectedRenterId;
+      if (!targetRenterId) {
+        const newRenter = createRentalRenter({
+          fullName: renterName.trim(),
+          companyName: renterCompany.trim() || undefined,
+          email: renterEmail.trim() || `${renterName.toLowerCase().replace(/\s+/g, '.')}@client.local`,
+          phone: renterPhone.trim() || '+213 550 00 00 00',
+          currency: selectedUnit.currency || 'DZD',
+        });
+        targetRenterId = newRenter.id;
+      }
 
-    showToast({
-      type: 'success',
-      title: bookingToEdit
-        ? (language === 'ar' ? 'تم تحديث الحجز' : language === 'fr' ? 'Réservation mise à jour' : 'Reservation Updated')
-        : (language === 'ar' ? 'تم تأكيد حجز الفضاء' : language === 'fr' ? 'Espace réservé avec succès' : 'Venue Reserved'),
-      message: language === 'ar'
-        ? `تم حجز ${selectedUnit.name} لصالح ${renterName.trim()} (${startDate}).`
-        : language === 'fr'
-        ? `${selectedUnit.name} réservé pour ${renterName.trim()} (${startDate}).`
-        : `${selectedUnit.name} reserved for ${renterName.trim()} (${startDate}).`,
-      category: 'rental_booking',
-      action: {
-        label: language === 'ar' ? 'طباعة العقد' : language === 'fr' ? 'Imprimer Contrat' : 'Print Agreement',
-        onClick: () => window.print?.(),
-      },
-    });
+      if (bookingToEdit) {
+        updateRentalBooking(bookingToEdit.id, {
+          unitId: selectedUnit.id,
+          unitName: selectedUnit.name,
+          unitType: selectedUnit.type,
+          renterId: targetRenterId,
+          renterName: renterName.trim(),
+          renterPhone: renterPhone.trim(),
+          renterEmail: renterEmail.trim() || undefined,
+          renterCompany: renterCompany.trim() || undefined,
+          purpose: purpose.trim(),
+          startDateTime,
+          endDateTime,
+          durationHours,
+          attendeeCount,
+          status,
+          baseAmount,
+          addonsAmount: addonsTotal,
+          totalAmount,
+          currency: selectedUnit.currency,
+          depositAmount,
+          depositStatus,
+          paidAmount,
+          balanceDue,
+          addons,
+          contractSigned,
+          notes: notes.trim() || undefined,
+        });
+      } else {
+        createRentalBooking({
+          renterId: targetRenterId,
+          renterName: renterName.trim(),
+          renterPhone: renterPhone.trim(),
+          renterEmail: renterEmail.trim() || undefined,
+          renterCompany: renterCompany.trim() || undefined,
+          unitId: selectedUnit.id,
+          unitName: selectedUnit.name,
+          unitType: selectedUnit.type,
+          purpose: purpose.trim(),
+          startDateTime,
+          endDateTime,
+          durationHours,
+          attendeeCount,
+          status,
+          baseAmount,
+          addonsAmount: addonsTotal,
+          totalAmount,
+          currency: selectedUnit.currency,
+          depositAmount,
+          depositStatus,
+          paidAmount,
+          balanceDue,
+          addons,
+          contractSigned,
+          notes: notes.trim() || undefined,
+        });
+      }
+    };
+
+    if (!selectedRenterId) {
+      runUndoBatch(
+        {
+          category: 'rental_booking',
+          operationType: bookingToEdit ? 'edit' : 'create',
+          label: bookingToEdit
+            ? language === 'ar'
+              ? `تعديل حجز: ${purpose.trim()}`
+              : language === 'fr'
+              ? `Modification réservation : ${purpose.trim()}`
+              : `Update booking: ${purpose.trim()}`
+            : language === 'ar'
+            ? `حجز جديد: ${purpose.trim()}`
+            : language === 'fr'
+            ? `Nouvelle réservation : ${purpose.trim()}`
+            : `New booking: ${purpose.trim()}`,
+          entityType: 'rentalBooking',
+        },
+        commitBooking
+      );
+    } else {
+      commitBooking();
+    }
 
     onClose();
   };

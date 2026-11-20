@@ -18,6 +18,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { ContractorProject, ContractorDailyLog } from '../../../types';
 import { useContractorData } from './contractorData';
@@ -262,9 +263,8 @@ export const ContractorSitesView: React.FC = () => {
     (p: ContractorProject) => {
       deleteProject(p.id);
       if (selectedProject?.id === p.id) setSelectedProject(null);
-      showToast(isAr ? 'تم حذف ملف الورشة' : 'Fiche chantier supprimée', 'success');
     },
-    [deleteProject, selectedProject, isAr]
+    [deleteProject, selectedProject]
   );
 
   const handleQuickProgress = useCallback(
@@ -277,14 +277,8 @@ export const ContractorSitesView: React.FC = () => {
       };
       updateProject(updated);
       if (selectedProject?.id === p.id) setSelectedProject(updated);
-      showToast(
-        isAr
-          ? `تم تحديث تقدم الورشة: ${nextProgress}%`
-          : `Avancement chantier actualisé : ${nextProgress}%`,
-        'success'
-      );
     },
-    [updateProject, selectedProject, isAr]
+    [updateProject, selectedProject]
   );
 
   const handleCreateDailyLogQuick = useCallback(
@@ -312,13 +306,9 @@ export const ContractorSitesView: React.FC = () => {
         createdAt: new Date().toISOString(),
       };
       addDailyLog(newLog);
-      showToast(
-        isAr ? 'تم إنشاء تقرير يومي سريع للورشة' : 'Nouveau journal quotidien consigné',
-        'success'
-      );
       if (selectedProject?.id === p.id) setActiveTab('logs');
     },
-    [addDailyLog, selectedProject, isAr]
+    [addDailyLog, selectedProject]
   );
 
   const handleExportCsv = useCallback(() => {
@@ -800,13 +790,28 @@ export const ContractorSitesView: React.FC = () => {
             onClick: () => handleExportCsv(),
           }}
           onBulkDelete={(ids) => {
-            ids.forEach((id) => deleteProject(id));
+            const count = ids.size;
+            runUndoBatch(
+              {
+                operationType: 'bulk',
+                vertical: 'contractor',
+                label: {
+                  fr: `${count} chantiers supprimés`,
+                  en: `${count} construction sites deleted`,
+                  ar: `تم حذف ${count} مشاريع`,
+                },
+                moduleLabel: {
+                  fr: 'Chantiers BTP',
+                  en: 'Construction Sites',
+                  ar: 'إدارة الورشات',
+                },
+              },
+              () => {
+                ids.forEach((id) => deleteProject(id));
+              }
+            );
             setSelectedIds(new Set<string>());
             if (selectedProject && ids.has(selectedProject.id)) setSelectedProject(null);
-            showToast(
-              isAr ? 'تم حذف المشاريع المحددة' : 'Chantiers sélectionnés supprimés',
-              'success'
-            );
           }}
           isPinned={(p) => pinnedIds.has(p.id)}
           onTogglePin={handleTogglePin}

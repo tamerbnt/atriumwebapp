@@ -4,6 +4,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import {
   PMCcpSlip,
   PMExpense,
@@ -349,17 +350,27 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
   const handleGenerateAllCcpBatch = useCallback(() => {
     const readyBatches = pmPayrollBatches.filter((b) => b.status === 'approved_by_direction');
-    readyBatches.forEach((batch) => {
-      generatePmCcpSlipsForBatch(batch.id);
-    });
-    showToast(
-      isAr
-        ? `تم إصدار ${readyBatches.length} دفعة صكوك CCP SFP 01`
-        : `${readyBatches.length} lot(s) de bordereaux CCP générés`,
-      'success'
-    );
+    if (readyBatches.length > 0) {
+      runUndoBatch(
+        {
+          category: 'project_management',
+          operationType: 'bulk',
+          label: isAr
+            ? `إصدار صكوك CCP (${readyBatches.length})`
+            : isEn
+            ? `Generate CCP slips (${readyBatches.length})`
+            : `Génération bordereaux CCP (${readyBatches.length})`,
+          entityType: 'pmCcpSlip',
+        },
+        () => {
+          readyBatches.forEach((batch) => {
+            generatePmCcpSlipsForBatch(batch.id);
+          });
+        }
+      );
+    }
     setActiveTab('ccp');
-  }, [pmPayrollBatches, generatePmCcpSlipsForBatch, isAr, setActiveTab]);
+  }, [pmPayrollBatches, generatePmCcpSlipsForBatch, isAr, isEn, setActiveTab]);
 
   // Kinetic Row Metadata
   const getSlipRowMeta = useCallback(

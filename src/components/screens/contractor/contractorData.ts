@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   ContractorProject,
   ContractorBoqItem,
@@ -12,6 +12,11 @@ import {
 import { useAtriumSelector } from '../../../services/store';
 import { useIdlePersist } from '../../../hooks/useIdlePersist';
 import type { Dispatch, SetStateAction } from 'react';
+import {
+  cloneSnapshot,
+  pickLocalizedText,
+  registerUndoEntry,
+} from '../../../services/undoEngine';
 import { isSupabaseConfigured, contractorService, realtimeService, syncCoordinator, subscribeConcurrencyResolutions, runWithConcurrency } from '../../../lib/supabase';
 
 function mergeContractorById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
@@ -656,7 +661,9 @@ export const useContractorData = () => {
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
   const currentAccountId = useAtriumSelector((s) => s.account.id);
   const currentStaffId = useAtriumSelector((s) => s.currentUser.id);
+  const language = useAtriumSelector((s) => s.language);
   const activeBranchId = currentBranchId || 'branch_contractor_main';
+  const activeBusinessId = currentBusinessId || 'biz_contractor';
   const belongsToActiveBranch = useCallback(
     (item: { branchId?: string; facilityId?: string }) =>
       (item.branchId || item.facilityId || 'branch_contractor_main') === activeBranchId,
@@ -946,93 +953,467 @@ export const useContractorData = () => {
     };
   }, [activeBranchId]);
 
+  const latestRef = useRef({
+    projects,
+    boqItems,
+    dailyLogs,
+    dgps,
+    serviceOrders,
+    concretePours,
+    subcontractors,
+    equipmentLogs,
+  });
+  latestRef.current = {
+    projects,
+    boqItems,
+    dailyLogs,
+    dgps,
+    serviceOrders,
+    concretePours,
+    subcontractors,
+    equipmentLogs,
+  };
+
+  const restoreAt = <T extends { id: string }>(
+    setter: Dispatch<SetStateAction<T[]>>,
+    snapshot: T,
+    index: number
+  ) => {
+    const item = cloneSnapshot(snapshot);
+    setter((prev) => {
+      if (prev.some((x) => x.id === item.id)) return prev;
+      const next = [...prev];
+      const safeIndex = Math.max(0, Math.min(index, next.length));
+      next.splice(safeIndex, 0, item);
+      return next;
+    });
+  };
+
   const addProject = (project: ContractorProject) => {
     const scoped = withBranch(project);
+    const snap = cloneSnapshot(scoped);
     setProjects((prev) => [scoped, ...prev]);
     void contractorService.upsertProject(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'construction_contractor',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.projectCode || scoped.projectName,
+      summary: pickLocalizedText(language, {
+        fr: `Chantier ${scoped.projectCode} créé`,
+        en: `Project ${scoped.projectCode} created`,
+        ar: `تم إنشاء المشروع ${scoped.projectCode}`,
+      }),
+      undo: () => {
+        setProjects((prev) => prev.filter((p) => p.id !== snap.id));
+        void contractorService.deleteProject(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setProjects((prev) => (prev.some((p) => p.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('btp_projects', re.id, currentStaffId)
+          .then(() => contractorService.upsertProject(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateProject = (project: ContractorProject) => {
     const scoped = withBranch(project);
+    const existing = latestRef.current.projects.find((p) => p.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setProjects((prev) => prev.map((p) => (p.id === scoped.id ? scoped : p)));
     void contractorService.upsertProject(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'construction_contractor',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.projectCode || nextSnap.projectName,
+        summary: pickLocalizedText(language, {
+          fr: `Chantier ${nextSnap.projectCode} modifié`,
+          en: `Project ${nextSnap.projectCode} updated`,
+          ar: `تم تعديل المشروع ${nextSnap.projectCode}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setProjects((prev) => prev.map((p) => (p.id === prevCopy.id ? prevCopy : p)));
+          void contractorService.upsertProject(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setProjects((prev) => prev.map((p) => (p.id === nextCopy.id ? nextCopy : p)));
+          void contractorService.upsertProject(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteProject = (id: string) => {
+    const idx = latestRef.current.projects.findIndex((p) => p.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.projects[idx]) : null;
     setProjects((prev) => prev.filter((p) => p.id !== id));
     void contractorService.deleteProject(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'construction_contractor',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.projectCode || existing.projectName,
+        summary: pickLocalizedText(language, {
+          fr: `Chantier ${existing.projectCode} supprimé`,
+          en: `Project ${existing.projectCode} deleted`,
+          ar: `تم حذف المشروع ${existing.projectCode}`,
+        }),
+        undo: () => {
+          restoreAt(setProjects, existing, idx);
+          void syncCoordinator
+            .restoreRow('btp_projects', existing.id, currentStaffId)
+            .then(() => contractorService.upsertProject(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setProjects((prev) => prev.filter((p) => p.id !== existing.id));
+          void contractorService.deleteProject(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const addBoqItem = (item: ContractorBoqItem) => {
     const scoped = withBranch(item);
+    const snap = cloneSnapshot(scoped);
     setBoqItems((prev) => [...prev, scoped]);
     void contractorService.upsertBoqItem(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'construction_contractor',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.itemCode || scoped.designation,
+      summary: pickLocalizedText(language, {
+        fr: `Poste DQE ${scoped.itemCode} ajouté`,
+        en: `BOQ item ${scoped.itemCode} added`,
+        ar: `تمت إضافة بند المقايسة ${scoped.itemCode}`,
+      }),
+      undo: () => {
+        setBoqItems((prev) => prev.filter((b) => b.id !== snap.id));
+        void contractorService.deleteBoqItem(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setBoqItems((prev) => (prev.some((b) => b.id === re.id) ? prev : [...prev, re]));
+        void syncCoordinator
+          .restoreRow('btp_boq_items', re.id, currentStaffId)
+          .then(() => contractorService.upsertBoqItem(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateBoqItem = (item: ContractorBoqItem) => {
     const scoped = withBranch(item);
+    const existing = latestRef.current.boqItems.find((b) => b.id === scoped.id);
+    const prevSnap = existing ? cloneSnapshot(existing) : null;
+    const nextSnap = cloneSnapshot(scoped);
     setBoqItems((prev) => prev.map((b) => (b.id === scoped.id ? scoped : b)));
     void contractorService.upsertBoqItem(scoped).catch(() => {});
+
+    if (prevSnap) {
+      registerUndoEntry({
+        vertical: 'construction_contractor',
+        operationType: 'edit',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: nextSnap.itemCode || nextSnap.designation,
+        summary: pickLocalizedText(language, {
+          fr: `Poste DQE ${nextSnap.itemCode} modifié`,
+          en: `BOQ item ${nextSnap.itemCode} updated`,
+          ar: `تم تعديل بند المقايسة ${nextSnap.itemCode}`,
+        }),
+        undo: () => {
+          const prevCopy = cloneSnapshot(prevSnap);
+          setBoqItems((prev) => prev.map((b) => (b.id === prevCopy.id ? prevCopy : b)));
+          void contractorService.upsertBoqItem(withBranch(prevCopy)).catch(() => {});
+        },
+        redo: () => {
+          const nextCopy = cloneSnapshot(nextSnap);
+          setBoqItems((prev) => prev.map((b) => (b.id === nextCopy.id ? nextCopy : b)));
+          void contractorService.upsertBoqItem(nextCopy).catch(() => {});
+        },
+      });
+    }
   };
 
   const deleteBoqItem = (id: string) => {
+    const idx = latestRef.current.boqItems.findIndex((b) => b.id === id);
+    const existing = idx >= 0 ? cloneSnapshot(latestRef.current.boqItems[idx]) : null;
     setBoqItems((prev) => prev.filter((b) => b.id !== id));
     void contractorService.deleteBoqItem(id, currentStaffId).catch(() => {});
+
+    if (existing) {
+      registerUndoEntry({
+        vertical: 'construction_contractor',
+        operationType: 'delete',
+        businessId: activeBusinessId,
+        branchId: activeBranchId,
+        entityLabel: existing.itemCode || existing.designation,
+        summary: pickLocalizedText(language, {
+          fr: `Poste DQE ${existing.itemCode} supprimé`,
+          en: `BOQ item ${existing.itemCode} deleted`,
+          ar: `تم حذف بند المقايسة ${existing.itemCode}`,
+        }),
+        undo: () => {
+          restoreAt(setBoqItems, existing, idx);
+          void syncCoordinator
+            .restoreRow('btp_boq_items', existing.id, currentStaffId)
+            .then(() => contractorService.upsertBoqItem(withBranch(cloneSnapshot(existing))))
+            .catch(() => {});
+        },
+        redo: () => {
+          setBoqItems((prev) => prev.filter((b) => b.id !== existing.id));
+          void contractorService.deleteBoqItem(existing.id, currentStaffId).catch(() => {});
+        },
+      });
+    }
   };
 
   const addDailyLog = (log: ContractorDailyLog) => {
     const scoped = withBranch(log);
+    const snap = cloneSnapshot(scoped);
     setDailyLogs((prev) => [scoped, ...prev]);
     void contractorService.upsertDailyLog(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'construction_contractor',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.date || scoped.logDate,
+      summary: pickLocalizedText(language, {
+        fr: `Journal chantier ${scoped.date} enregistré`,
+        en: `Site log ${scoped.date} recorded`,
+        ar: `تم تسجيل يومية الورشة ${scoped.date}`,
+      }),
+      undo: () => {
+        setDailyLogs((prev) => prev.filter((l) => l.id !== snap.id));
+        void contractorService.deleteDailyLog(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setDailyLogs((prev) => (prev.some((l) => l.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('btp_daily_logs', re.id, currentStaffId)
+          .then(() => contractorService.upsertDailyLog(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const addDgp = (dgp: ContractorDgp) => {
     const scoped = withBranch(dgp);
+    const snap = cloneSnapshot(scoped);
     setDgps((prev) => [scoped, ...prev]);
     void contractorService.upsertDgp(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'construction_contractor',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.dgpNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Décompte ${scoped.dgpNumber} créé`,
+        en: `Progress billing ${scoped.dgpNumber} created`,
+        ar: `تم إنشاء كشف الحساب ${scoped.dgpNumber}`,
+      }),
+      undo: () => {
+        setDgps((prev) => prev.filter((d) => d.id !== snap.id));
+        void contractorService.deleteDgp(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setDgps((prev) => (prev.some((d) => d.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('btp_decomptes', re.id, currentStaffId)
+          .then(() => contractorService.upsertDgp(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const updateDgpStatus = (id: string, status: ContractorDgp['status']) => {
-    let updated: ContractorDgp | null = null;
-    setDgps((prev) =>
-      prev.map((d) => {
-        if (d.id === id) {
-          updated = { ...d, status };
-          return updated;
-        }
-        return d;
-      })
-    );
-    if (updated) {
-      void contractorService.upsertDgp(updated).catch(() => {});
-    }
+    const existing = latestRef.current.dgps.find((d) => d.id === id);
+    if (!existing) return;
+    const prevSnap = cloneSnapshot(existing);
+    const updated = withBranch({ ...existing, status });
+    const nextSnap = cloneSnapshot(updated);
+    setDgps((prev) => prev.map((d) => (d.id === id ? updated : d)));
+    void contractorService.upsertDgp(updated).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'construction_contractor',
+      operationType: 'status',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: existing.dgpNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Statut décompte ${existing.dgpNumber} → ${status}`,
+        en: `Progress billing ${existing.dgpNumber} → ${status}`,
+        ar: `تحديث حالة الكشف ${existing.dgpNumber} → ${status}`,
+      }),
+      undo: () => {
+        const prevCopy = cloneSnapshot(prevSnap);
+        setDgps((prev) => prev.map((d) => (d.id === prevCopy.id ? prevCopy : d)));
+        void contractorService.upsertDgp(withBranch(prevCopy)).catch(() => {});
+      },
+      redo: () => {
+        const nextCopy = cloneSnapshot(nextSnap);
+        setDgps((prev) => prev.map((d) => (d.id === nextCopy.id ? nextCopy : d)));
+        void contractorService.upsertDgp(nextCopy).catch(() => {});
+      },
+    });
   };
 
   const addServiceOrder = (os: ContractorServiceOrder) => {
     const scoped = withBranch(os);
+    const snap = cloneSnapshot(scoped);
     setServiceOrders((prev) => [scoped, ...prev]);
     void contractorService.upsertServiceOrder(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'construction_contractor',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.osNumber,
+      summary: pickLocalizedText(language, {
+        fr: `Ordre de service ${scoped.osNumber} émis`,
+        en: `Service order ${scoped.osNumber} issued`,
+        ar: `تم إصدار أمر الخدمة ${scoped.osNumber}`,
+      }),
+      undo: () => {
+        setServiceOrders((prev) => prev.filter((o) => o.id !== snap.id));
+        void contractorService.deleteServiceOrder(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setServiceOrders((prev) => (prev.some((o) => o.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('btp_daily_logs', `os_${re.id}`, currentStaffId)
+          .then(() => contractorService.upsertServiceOrder(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const addConcretePour = (pour: ConcretePourRecord) => {
     const scoped = withBranch(pour);
+    const snap = cloneSnapshot(scoped);
     setConcretePours((prev) => [scoped, ...prev]);
     void contractorService.upsertConcretePour(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'construction_contractor',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.elementPoured,
+      summary: pickLocalizedText(language, {
+        fr: `Coulage béton ${scoped.elementPoured} enregistré`,
+        en: `Concrete pour ${scoped.elementPoured} recorded`,
+        ar: `تم تسجيل صب الخرسانة ${scoped.elementPoured}`,
+      }),
+      undo: () => {
+        setConcretePours((prev) => prev.filter((c) => c.id !== snap.id));
+        void contractorService.deleteConcretePour(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setConcretePours((prev) => (prev.some((c) => c.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('btp_daily_logs', `pour_${re.id}`, currentStaffId)
+          .then(() => contractorService.upsertConcretePour(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const addSubcontractor = (sub: SubcontractorAgreement) => {
     const scoped = withBranch(sub);
+    const snap = cloneSnapshot(scoped);
     setSubcontractors((prev) => [scoped, ...prev]);
     void contractorService.upsertSubcontractor(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'construction_contractor',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.subcontractorName,
+      summary: pickLocalizedText(language, {
+        fr: `Sous-traitant ${scoped.subcontractorName} ajouté`,
+        en: `Subcontractor ${scoped.subcontractorName} added`,
+        ar: `تمت إضافة المقاول الفرعي ${scoped.subcontractorName}`,
+      }),
+      undo: () => {
+        setSubcontractors((prev) => prev.filter((s) => s.id !== snap.id));
+        void contractorService.deleteSubcontractor(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setSubcontractors((prev) => (prev.some((s) => s.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('btp_subcontractors', re.id, currentStaffId)
+          .then(() => contractorService.upsertSubcontractor(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const addEquipmentLog = (log: EquipmentLogRecord) => {
     const scoped = withBranch(log);
+    const snap = cloneSnapshot(scoped);
     setEquipmentLogs((prev) => [scoped, ...prev]);
     void contractorService.upsertEquipmentLog(scoped).catch(() => {});
+
+    registerUndoEntry({
+      vertical: 'construction_contractor',
+      operationType: 'create',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      entityLabel: scoped.equipmentName,
+      summary: pickLocalizedText(language, {
+        fr: `Pointage engin ${scoped.equipmentName} enregistré`,
+        en: `Equipment log ${scoped.equipmentName} recorded`,
+        ar: `تم تسجيل سجل المعدة ${scoped.equipmentName}`,
+      }),
+      undo: () => {
+        setEquipmentLogs((prev) => prev.filter((e) => e.id !== snap.id));
+        void contractorService.deleteEquipmentLog(snap.id, currentStaffId).catch(() => {});
+      },
+      redo: () => {
+        const re = cloneSnapshot(snap);
+        setEquipmentLogs((prev) => (prev.some((e) => e.id === re.id) ? prev : [re, ...prev]));
+        void syncCoordinator
+          .restoreRow('btp_equipment', re.id, currentStaffId)
+          .then(() => contractorService.upsertEquipmentLog(re))
+          .catch(() => {});
+      },
+    });
   };
 
   const resetContractorDemoData = () => {
+    const snap = cloneSnapshot(latestRef.current);
     setProjects((prev) => prev.filter((p) => !belongsToActiveBranch(p)));
     setBoqItems((prev) => prev.filter((b) => !belongsToActiveBranch(b)));
     setDailyLogs((prev) => prev.filter((l) => !belongsToActiveBranch(l)));
@@ -1041,6 +1422,29 @@ export const useContractorData = () => {
     setConcretePours((prev) => prev.filter((c) => !belongsToActiveBranch(c)));
     setSubcontractors((prev) => prev.filter((s) => !belongsToActiveBranch(s)));
     setEquipmentLogs((prev) => prev.filter((e) => !belongsToActiveBranch(e)));
+
+    registerUndoEntry({
+      vertical: 'construction_contractor',
+      operationType: 'bulk',
+      businessId: activeBusinessId,
+      branchId: activeBranchId,
+      summary: pickLocalizedText(language, {
+        fr: 'Données chantier BTP réinitialisées',
+        en: 'Contractor data reset',
+        ar: 'تمت إعادة ضبط بيانات المقاولات',
+      }),
+      undo: () => {
+        const s = cloneSnapshot(snap);
+        setProjects(s.projects);
+        setBoqItems(s.boqItems);
+        setDailyLogs(s.dailyLogs);
+        setDgps(s.dgps);
+        setServiceOrders(s.serviceOrders);
+        setConcretePours(s.concretePours);
+        setSubcontractors(s.subcontractors);
+        setEquipmentLogs(s.equipmentLogs);
+      },
+    });
   };
 
   const scopedProjects = useMemo(() => projects.filter(belongsToActiveBranch), [projects, belongsToActiveBranch]);

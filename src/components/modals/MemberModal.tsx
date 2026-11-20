@@ -8,7 +8,6 @@ import {
   selectTerminologyFromState,
   addMemberAction,
   updateMemberAction,
-  showToast as showToastAction,
 } from '../../services/store';
 import { Member, Gender } from '../../types/index';
 import {
@@ -60,7 +59,6 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
   const addMember = addMemberAction;
   const updateMember = updateMemberAction;
   const language = useAtriumSelector((s) => s.language);
-  const showToast = showToastAction;
 
   const getDefaultCardId = () => `RFID-${Math.floor(100000 + Math.random() * 900000)}`;
   const getTodayIso = () => new Date().toISOString().split('T')[0];
@@ -846,7 +844,6 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
       ? (retainedMemberRef.current || memberToEdit)
       : (activeMemberToEdit || memberToEdit);
     if (targetEdit) {
-      const prevData = { ...targetEdit };
       const updatedFields: Partial<Member> = {
         fullName: fullName.trim(),
         email: email.trim(),
@@ -864,24 +861,6 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
       };
 
       updateMember(targetEdit.id, updatedFields);
-
-      showToast({
-        type: 'info',
-        title: 'Adhérent modifié',
-        message: `Fiche de ${fullName.trim()} mise à jour.`,
-        action: {
-          label: 'Annuler',
-          onClick: () => {
-            updateMember(targetEdit.id, prevData);
-            showToast({
-              type: 'info',
-              title: 'Modification annulée',
-              message: `Modifications sur ${prevData.fullName} annulées.`,
-            });
-          },
-        },
-      });
-
       requestClose();
     } else {
       const newMember = addMember({
@@ -905,13 +884,6 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
 
       window.dispatchEvent(new CustomEvent('atrium-member-created', { detail: newMember }));
       onCreatedSuccess?.(newMember);
-
-      showToast({
-        type: 'success',
-        title: 'Nouvel adhérent créé',
-        message: `${newMember.fullName} a été inscrit avec succès.`,
-      });
-
       requestClose();
     }
   };

@@ -12,6 +12,7 @@ import {
   Edit,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { calculateCmupWeightedAverage } from '../../../utils/manufacturingRules';
 import { RawMaterialStockItem, MaterialTransferVoucher } from '../../../types';
@@ -283,7 +284,6 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
       };
       updateMaterial(updated);
       if (selectedMaterial?.id === updated.id) setSelectedMaterial(updated);
-      showToast(isAr ? 'تم تحديث بطاقة المادة الأولية' : 'Fiche matière première mise à jour', 'success');
     } else {
       const newItem: RawMaterialStockItem = {
         id: `raw_${Date.now()}`,
@@ -305,7 +305,6 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
         createdAt: new Date().toISOString(),
       };
       addMaterial(newItem);
-      showToast(isAr ? 'تمت إضافة المادة الأولية بنجاح' : 'Nouvelle matière première enregistrée', 'success');
     }
     setIsMaterialModalOpen(false);
   };
@@ -341,34 +340,44 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
       totalValueDzd: totalVal,
       notes: voucherNotes,
     };
-    if (voucherType === 'BonDeSortie') {
-      const updatedStock = Math.max(0, mat.currentStock - qty);
-      updateMaterial({
-        ...mat,
-        currentStock: updatedStock,
-        availableStock: Math.max(0, updatedStock - mat.allocatedStock),
-        totalValuationDzd: updatedStock * mat.unitCostPmpDzd,
-      });
-    } else if (voucherType === 'BonDeReception') {
-      const newCmup = calculateCmupWeightedAverage(mat.currentStock, mat.unitCostPmpDzd, qty, unitCost);
-      const newQty = mat.currentStock + qty;
-      updateMaterial({
-        ...mat,
-        currentStock: newQty,
-        availableStock: newQty - mat.allocatedStock,
-        unitCostPmpDzd: newCmup,
-        totalValuationDzd: newQty * newCmup,
-      });
-    }
-    addVoucher(newVoucher);
+    runUndoBatch(
+      {
+        vertical: 'manufacturing_production',
+        operationType: 'create',
+        branchId: currentBranch?.id || 'branch_manufacturing_main',
+        summary: isAr
+          ? `إصدار سند ${newVoucher.voucherNumber}`
+          : isEn
+          ? `Voucher ${newVoucher.voucherNumber} (${mat.name})`
+          : `Bon ${newVoucher.voucherNumber} (${mat.name})`,
+        entityLabel: newVoucher.voucherNumber,
+        toastType: 'success',
+      },
+      () => {
+        if (voucherType === 'BonDeSortie') {
+          const updatedStock = Math.max(0, mat.currentStock - qty);
+          updateMaterial({
+            ...mat,
+            currentStock: updatedStock,
+            availableStock: Math.max(0, updatedStock - mat.allocatedStock),
+            totalValuationDzd: updatedStock * mat.unitCostPmpDzd,
+          });
+        } else if (voucherType === 'BonDeReception') {
+          const newCmup = calculateCmupWeightedAverage(mat.currentStock, mat.unitCostPmpDzd, qty, unitCost);
+          const newQty = mat.currentStock + qty;
+          updateMaterial({
+            ...mat,
+            currentStock: newQty,
+            availableStock: newQty - mat.allocatedStock,
+            unitCostPmpDzd: newCmup,
+            totalValuationDzd: newQty * newCmup,
+          });
+        }
+        addVoucher(newVoucher);
+      }
+    );
     setIsVoucherModalOpen(false);
     setPrintableVoucher(newVoucher);
-    showToast(
-      isAr
-        ? `تم إصدار السند ${newVoucher.voucherNumber} وفق المرسوم 05-468`
-        : `Bon ${newVoucher.voucherNumber} enregistré selon le Décret 05-468`,
-      'success'
-    );
   };
 
   const handleTogglePin = useCallback((m: RawMaterialStockItem) => {
