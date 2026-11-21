@@ -13,6 +13,7 @@ import {
 import {
   useAtriumSelector,
   useAtriumActions,
+  shallowEqualObjects,
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
@@ -50,12 +51,24 @@ import {
 } from '../../ui/kinetic';
 
 export const LegalMattersView: React.FC<any> = () => {
-  const language = useAtriumSelector((s) => s.language);
-  const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
-  const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
-  const branches = useAtriumSelector((s) => s.branches);
-  const isSyncing = useAtriumSelector((s) => s.isSyncing);
-  const networkMode = useAtriumSelector((s) => s.networkMode);
+  const {
+    language,
+    activeLegalRole,
+    currentBranch,
+    branches,
+    isSyncing,
+    networkMode,
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      activeLegalRole: s.activeLegalRole,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode,
+    }),
+    shallowEqualObjects
+  );
   const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';

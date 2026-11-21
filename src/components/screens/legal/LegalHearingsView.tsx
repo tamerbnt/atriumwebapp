@@ -14,6 +14,7 @@ import {
 import {
   useAtriumSelector,
   useAtriumActions,
+  shallowEqualObjects,
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
   showToast,
@@ -64,14 +65,28 @@ const extractStr = (v: unknown): string => {
 };
 
 export const LegalHearingsView: React.FC<any> = () => {
-  const language = useAtriumSelector((s) => s.language);
-  const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
-  const currentBusiness = useAtriumSelector(selectCurrentBusinessFromState);
-  const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
-  const currentUser = useAtriumSelector((s) => s.currentUser);
-  const branches = useAtriumSelector((s) => s.branches);
-  const isSyncing = useAtriumSelector((s) => s.isSyncing);
-  const networkMode = useAtriumSelector((s) => s.networkMode);
+  const {
+    language,
+    activeLegalRole,
+    currentBusiness,
+    currentBranch,
+    currentUser,
+    branches,
+    isSyncing,
+    networkMode,
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      activeLegalRole: s.activeLegalRole,
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      currentUser: s.currentUser,
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode,
+    }),
+    shallowEqualObjects
+  );
   const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';

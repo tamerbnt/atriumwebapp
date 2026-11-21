@@ -21,6 +21,7 @@ import {
   selectCurrentBranchFromState,
   selectTerminologyFromState,
   selectSelectedMemberFromState,
+  shallowEqualObjects,
   selectMemberAction,
   closeDetailAction,
   addMemberAction,
@@ -116,20 +117,41 @@ interface PreparedMemberEntry {
 }
 
 export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, onEditMember }) => {
-  const members = useAtriumSelector(selectCurrentMembersFromState);
-  const plans = useAtriumSelector(selectCurrentPlansFromState);
-  const branches = useAtriumSelector((s) => s.branches);
-  const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
-  const terminology = useAtriumSelector(selectTerminologyFromState);
-  const language = useAtriumSelector((s) => s.language);
-  const selectedMember = useAtriumSelector(selectSelectedMemberFromState);
-  const isDetailOpen = useAtriumSelector((s) => s.isDetailOpen);
-  const isSyncing = useAtriumSelector((s) => s.isSyncing);
-  const networkMode = useAtriumSelector((s) => s.networkMode || 'online');
-  const lastSyncedAt = useAtriumSelector((s) => s.lastSyncedAt);
-  const syncErrorMessage = useAtriumSelector((s) => s.syncErrorMessage);
-  const isSyncTimeout = useAtriumSelector((s) => s.isSyncTimeout);
-  const currentUser = useAtriumSelector((s) => s.currentUser);
+  const { members, plans, branches, currentBranch, terminology } = useAtriumSelector(
+    (s) => ({
+      members: selectCurrentMembersFromState(s),
+      plans: selectCurrentPlansFromState(s),
+      branches: s.branches,
+      currentBranch: selectCurrentBranchFromState(s),
+      terminology: selectTerminologyFromState(s),
+    }),
+    shallowEqualObjects
+  );
+
+  const {
+    language,
+    selectedMember,
+    isDetailOpen,
+    isSyncing,
+    networkMode,
+    lastSyncedAt,
+    syncErrorMessage,
+    isSyncTimeout,
+    currentUser,
+  } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      selectedMember: selectSelectedMemberFromState(s),
+      isDetailOpen: s.isDetailOpen,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      syncErrorMessage: s.syncErrorMessage,
+      isSyncTimeout: s.isSyncTimeout,
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
 
   const selectMember = selectMemberAction;
   const closeDetail = closeDetailAction;
