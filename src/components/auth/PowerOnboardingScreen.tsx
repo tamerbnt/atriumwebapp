@@ -47,7 +47,7 @@ import {
   AlertCircle,
   TrendingUp,
 } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
+import { shallowEqualObjects, useAtriumActions, useAtriumSelector } from '../../services/store';
 import { BusinessCategory, OnboardingParams } from '../../types/index';
 import { validateVoucherCode } from '../../utils/rules';
 import {
@@ -204,7 +204,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   onComplete,
   onSkipToDashboard,
 }) => {
-  const { completeOnboarding, language, isAuthenticated, currentUser, logout } = useAtriumStore();
+  const { completeOnboarding, logout } = useAtriumActions();
+  const { language, isAuthenticated, currentUser } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      isAuthenticated: s.isAuthenticated,
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
 
 
   const handleReplayIntro = () => {
@@ -658,6 +666,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               <img
                 src={activeSlide.src}
                 alt={activeSlide.alt || 'Atrium OS Showcase'}
+                width={1200}
+                height={1800}
                 className="w-full h-full object-cover object-center"
                 loading="eager"
                 decoding="async"

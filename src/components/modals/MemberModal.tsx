@@ -28,7 +28,7 @@ import {
   shouldCloseOnScrimMouseUp,
   shouldFinishClosing,
 } from './memberModalMotion';
-import { Button, LiquidButton } from '@/atrium';
+import { Button, LiquidButton } from '@/atrium/core';
 import { LiveSegmentedControl } from '../ui/live/LiveSegmentedControl';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Seek } from './Seek';
-import { useAtriumStore } from '../../services/store';
+import { useAtriumSelector } from '../../services/store';
 
 export interface SearchBoxProps {
   value: string;
@@ -21,7 +21,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
   shutSize = 40,
   onSearch,
 }) => {
-  const { language } = useAtriumStore();
+  const language = useAtriumSelector((s) => s.language);
   const defaultPlaceholder = language === 'ar' ? 'بحث...' : language === 'fr' ? 'Rechercher...' : 'Search...';
 
   return (

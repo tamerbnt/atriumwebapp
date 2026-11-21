@@ -1,6 +1,12 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { History, ArrowDownUp, Printer, Eye } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  selectCurrentBranchFromState,
+  selectCurrentStockMovementsFromState,
+  shallowEqualObjects,
+  useAtriumSelector,
+  useDashboardShellState,
+} from '../../../services/store';
 import { StockMovement } from '../../../types/index';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -47,18 +53,19 @@ export const PosHistoryView: React.FC = () => {
   const { language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const {
-    stockMovements,
-    currentBusinessId,
-    currentBranchId,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  const { isSyncing, networkMode, retryCloudSync, lastSyncedAt, isSyncTimeout } =
+    useDashboardShellState();
+  const { stockMovements, currentBusinessId, currentBranchId, currentBranch, branches } =
+    useAtriumSelector(
+      (s) => ({
+        stockMovements: selectCurrentStockMovementsFromState(s),
+        currentBusinessId: s.currentBusinessId,
+        currentBranchId: s.currentBranchId,
+        currentBranch: selectCurrentBranchFromState(s),
+        branches: s.branches,
+      }),
+      shallowEqualObjects
+    );
 
   const { entries: undoEntries } = useUndoHistory(currentBusinessId, currentBranchId);
   const posUndoCount = useMemo(

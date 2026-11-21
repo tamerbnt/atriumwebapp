@@ -11,7 +11,18 @@ import {
   AlertTriangle,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  useDashboardShellState,
+  shallowEqualObjects,
+  selectCurrentFreelanceInvoicesFromState,
+  selectCurrentFreelanceClientsFromState,
+  selectCurrentTimeLogsFromState,
+  selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
+  showToast,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { InvoicePreviewModal } from './InvoicePreviewModal';
@@ -59,21 +70,32 @@ export const FreelanceInvoicesView: React.FC = () => {
     freelanceInvoices,
     freelanceClients,
     timeLogs,
-    createFreelanceInvoice,
-    updateInvoiceStatus,
-    deleteFreelanceInvoice,
-    billUnbilledHours,
     branches,
     currentBranch,
     currentBusiness,
     currentUser,
     account,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      freelanceInvoices: selectCurrentFreelanceInvoicesFromState(s),
+      freelanceClients: selectCurrentFreelanceClientsFromState(s),
+      timeLogs: selectCurrentTimeLogsFromState(s),
+      branches: s.branches,
+      currentBranch: selectCurrentBranchFromState(s),
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentUser: s.currentUser,
+      account: s.account,
+    }),
+    shallowEqualObjects
+  );
+  const { isSyncing, networkMode, retryCloudSync, lastSyncedAt, isSyncTimeout } =
+    useDashboardShellState();
+  const {
+    createFreelanceInvoice,
+    updateInvoiceStatus,
+    deleteFreelanceInvoice,
+    billUnbilledHours,
+  } = useAtriumActions();
 
   const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedInvoiceIds, setPinnedInvoiceIds] = useState<Set<string>>(() => new Set<string>());

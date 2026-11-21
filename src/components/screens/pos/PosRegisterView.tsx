@@ -24,7 +24,21 @@ import {
   Settings2,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
+  selectCurrentMembersFromState,
+  selectCurrentParkedOrdersFromState,
+  selectCurrentProductsFromState,
+  selectCurrentSalesFromState,
+  selectCurrentStaffFromState,
+  selectCurrentStockMovementsFromState,
+  shallowEqualObjects,
+  showToast,
+  useAtriumActions,
+  useAtriumSelector,
+  useDashboardShellState,
+} from '../../../services/store';
 import { Product, ParkedOrder } from '../../../types/index';
 import { formatMoney } from '../../../utils/rules';
 import { Modal } from '../../ui/Modal';
@@ -96,31 +110,44 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
   const isAr = language === 'ar';
   const isEn = language === 'en';
   const {
+    processSale,
+    adjustStock,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    parkOrder,
+    resumeParkedOrder,
+    deleteParkedOrder,
+    updateReceiptConfig,
+  } = useAtriumActions();
+  const { isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } =
+    useDashboardShellState();
+  const {
     products,
     members,
     staff,
     currentBranch,
     currentBusinessConfig,
     branches,
-    processSale,
-    adjustStock,
-    addProduct,
-    updateProduct,
-    deleteProduct,
     parkedOrders,
-    parkOrder,
-    resumeParkedOrder,
-    deleteParkedOrder,
     sales,
     stockMovements,
     receiptConfig,
-    updateReceiptConfig,
-    isSyncing,
-    networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
-    retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      products: selectCurrentProductsFromState(s),
+      members: selectCurrentMembersFromState(s),
+      staff: selectCurrentStaffFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
+      branches: s.branches,
+      parkedOrders: selectCurrentParkedOrdersFromState(s),
+      sales: selectCurrentSalesFromState(s),
+      stockMovements: selectCurrentStockMovementsFromState(s),
+      receiptConfig: s.receiptConfig,
+    }),
+    shallowEqualObjects
+  );
   const configuredDefaultTva = currentBusinessConfig.defaultTvaRate ?? 19;
 
   const [activeTab, setActiveTab] = useState<'register' | 'parked' | 'receipt_settings' | 'inventory'>(initialTab);

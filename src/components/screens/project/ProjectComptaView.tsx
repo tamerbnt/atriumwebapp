@@ -1797,6 +1797,10 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               <img
                 src={selectedReceiptUrl}
                 alt="Scan Justificatif"
+                width={512}
+                height={288}
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
                 data-sq="ctl"
                 data-sq-border="none"

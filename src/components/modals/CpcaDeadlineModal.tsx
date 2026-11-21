@@ -9,7 +9,7 @@ import {
   X,
   Check,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../services/store';
+import { shallowEqualObjects, useAtriumSelector, showToast } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { AtriumButton } from '../ui/AtriumButton';
 import { LabelInput } from '../ui/LabelInput';
@@ -34,7 +34,10 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
   matters,
   onSaveDeadline,
 }) => {
-  const { language, networkMode } = useAtriumStore();
+  const { language, networkMode } = useAtriumSelector(
+    (s) => ({ language: s.language, networkMode: s.networkMode || 'online' }),
+    shallowEqualObjects
+  );
   const isAr = language === 'ar';
   const isEn = language === 'en';
 

@@ -9,7 +9,13 @@ import {
   Trash2,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  selectCurrentBranchFromState,
+  selectCurrentSalesFromState,
+  shallowEqualObjects,
+  useAtriumSelector,
+  useDashboardShellState,
+} from '../../../services/store';
 import { registerUndoEntry, cloneSnapshot } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -69,17 +75,17 @@ export const PosFinanceView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const {
-    sales,
-    currentBranch,
-    branches,
-    currentUser,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  const { isSyncing, networkMode, retryCloudSync, lastSyncedAt, isSyncTimeout } =
+    useDashboardShellState();
+  const { sales, currentBranch, branches, currentUser } = useAtriumSelector(
+    (s) => ({
+      sales: selectCurrentSalesFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
 
   const [expenses, setExpenses] = useState<PosExpense[]>([]);
   const [openingFloat, setOpeningFloat] = useState<number>(15000);

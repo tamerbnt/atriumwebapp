@@ -60,7 +60,9 @@ export const memberService = {
         (from, to) => {
           let query = (client as any)
             .from('gym_members')
-            .select('*')
+            .select(
+              'id, account_id, business_id, branch_id, staff_id, full_name, email, phone_number, card_id, rfid_tag, barcode, plan_id, plan_name, status, start_date, expiration_date, remaining_sessions, gender, notes, emergency_contact_name, emergency_contact_phone, profile_image_url, version, created_at, updated_at'
+            )
             .eq('branch_id', toValidUuid(branchId))
             .is('deleted_at', null)
             .order('created_at', { ascending: false })
@@ -181,7 +183,9 @@ export const memberService = {
     const rows = await fetchAllPages<any>((from, to) => {
       let query = (client as any)
         .from('gym_check_ins')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, member_id, member_name, checked_in_at, status, method, version'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('checked_in_at', { ascending: false })
@@ -239,7 +243,9 @@ export const memberService = {
     const rows = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('gym_plans')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, name, description, duration_days, price_dzd, currency, is_active, session_quota, version'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
@@ -281,7 +287,9 @@ export const memberService = {
     const rows = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('gym_schedule_events')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, title, coach_name, room_name, day_of_week, start_time, end_time, capacity, enrolled_count, version'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
@@ -336,7 +344,9 @@ export const memberService = {
         (from, to) => {
           let query = (client as any)
             .from('gym_registration_leads')
-            .select('*')
+            .select(
+              'id, account_id, business_id, branch_id, staff_id, full_name, email, phone_number, source, status, notes, preferred_plan_name, version, requested_at, processed_at, created_at, updated_at'
+            )
             .eq('branch_id', toValidUuid(branchId))
             .is('deleted_at', null)
             .order('requested_at', { ascending: false })

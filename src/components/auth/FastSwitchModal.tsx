@@ -11,7 +11,12 @@ import {
   AlertCircle,
   Hash,
 } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
+import {
+  selectCurrentStaffFromState,
+  shallowEqualObjects,
+  useAtriumActions,
+  useAtriumSelector,
+} from '../../services/store';
 import { StaffMember } from '../../types/index';
 import { t } from '../../utils/i18n';
 
@@ -26,7 +31,15 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
   onClose,
   onOpenOnboarding,
 }) => {
-  const { currentUser, staff, loginWithPin, logout, language } = useAtriumStore();
+  const { loginWithPin, logout } = useAtriumActions();
+  const { currentUser, staff, language } = useAtriumSelector(
+    (s) => ({
+      currentUser: s.currentUser,
+      staff: selectCurrentStaffFromState(s),
+      language: s.language,
+    }),
+    shallowEqualObjects
+  );
 
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [pinInput, setPinInput] = useState('');

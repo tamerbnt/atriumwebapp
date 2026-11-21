@@ -14,7 +14,9 @@ export const configService = {
         (from, to) =>
           (client as any)
             .from('business_configs')
-            .select('*')
+            .select(
+              'id, account_id, business_id, branch_id, category, currency, default_tva_rate, apply_timbre_fiscal, fiscal_ids, onboarding_context, category_settings, setup_state, version, updated_at'
+            )
             .eq('account_id', accountId)
             .is('deleted_at', null)
             .order('updated_at', { ascending: false })
@@ -144,7 +146,9 @@ export const configService = {
         (from, to) => {
           let query = (client as any)
             .from('category_formules')
-            .select('*')
+            .select(
+              'id, account_id, business_id, branch_id, category, formule_type, code, name, description, price_amount, rate_percent, duration_value, duration_unit, currency, tax_rate, metadata, is_active, sort_order, version, created_at, updated_at'
+            )
             .eq('account_id', accountId)
             .is('deleted_at', null)
             .order('sort_order', { ascending: true })

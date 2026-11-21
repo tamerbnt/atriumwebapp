@@ -11,7 +11,15 @@ import {
   XCircle,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  useDashboardShellState,
+  shallowEqualObjects,
+  selectCurrentFreelanceProposalsFromState,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceProposal, PricingModel, CurrencyCode } from '../../../types/index';
@@ -57,19 +65,25 @@ export const FreelanceProposalsView: React.FC = () => {
 
   const {
     freelanceProposals,
+    branches,
+    currentBranch,
+  } = useAtriumSelector(
+    (s) => ({
+      freelanceProposals: selectCurrentFreelanceProposalsFromState(s),
+      branches: s.branches,
+      currentBranch: selectCurrentBranchFromState(s),
+    }),
+    shallowEqualObjects
+  );
+  const { isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } =
+    useDashboardShellState();
+  const {
     createFreelanceProposal,
     updateFreelanceProposal,
     deleteFreelanceProposal,
     convertProposalToProject,
-    branches,
-    currentBranch,
     setScreen,
-    isSyncing,
-    networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
-    retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const [selectedProposalIds, setSelectedProposalIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedProposalIds, setPinnedProposalIds] = useState<Set<string>>(() => new Set<string>());

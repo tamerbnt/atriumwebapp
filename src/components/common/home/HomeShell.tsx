@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import { ArrowUpRight, LayoutDashboard, Plus, ChevronDown, Compass } from 'lucide-react';
-import { Menu, MenuEntry } from '@/atrium';
+import { Menu, MenuEntry } from '@/atrium/core';
 import {
   ActiveScreen,
   useDashboardShellState,

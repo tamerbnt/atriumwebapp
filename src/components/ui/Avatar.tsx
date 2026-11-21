@@ -28,6 +28,10 @@ export const Avatar: React.FC<AvatarProps> = ({ name, size = 40, imageUrl, class
       <img
         src={imageUrl}
         alt={name}
+        width={size}
+        height={size}
+        loading="lazy"
+        decoding="async"
         referrerPolicy="no-referrer"
         style={{ width: size, height: size, borderRadius: '50%' }}
         className={`object-cover shrink-0 ${className}`}

@@ -13,7 +13,17 @@ import {
   Printer,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
+  selectCurrentProductsFromState,
+  selectCurrentPurchaseDocsFromState,
+  shallowEqualObjects,
+  showToast,
+  useAtriumActions,
+  useAtriumSelector,
+  useDashboardShellState,
+} from '../../../services/store';
 import { Product, PurchaseDocument } from '../../../types/index';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -71,28 +81,39 @@ export const PosInventoryView: React.FC<any> = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
   const {
-    products,
-    currentBranch,
-    branches,
     addProduct,
     updateProduct,
     deleteProduct,
     batchDeleteProducts,
     batchRestockProducts,
     adjustStock,
-    purchaseDocs,
-    b2bSuppliers,
     createPurchaseDoc,
     receivePurchaseDoc,
+  } = useAtriumActions();
+  const { isSyncing, networkMode, retryCloudSync, lastSyncedAt, isSyncTimeout } =
+    useDashboardShellState();
+  const {
+    products,
+    currentBranch,
+    branches,
+    purchaseDocs,
+    b2bSuppliers,
     currentBusiness,
     currentBranchId,
     activePosRole,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      products: selectCurrentProductsFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      purchaseDocs: selectCurrentPurchaseDocsFromState(s),
+      b2bSuppliers: s.b2bSuppliers || [],
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranchId: s.currentBranchId,
+      activePosRole: s.activePosRole || 'owner',
+    }),
+    shallowEqualObjects
+  );
 
   const isStaff = activePosRole === 'staff';
   const [activeSubTab, setActiveSubTab] = useState<'inventory' | 'purchases'>('inventory');

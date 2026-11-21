@@ -15,7 +15,12 @@ import {
   Globe,
   Check,
 } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
+import {
+  selectCurrentStaffFromState,
+  shallowEqualObjects,
+  useAtriumActions,
+  useAtriumSelector,
+} from '../../services/store';
 import { authService } from '../../lib/supabase/services/authService';
 import { t } from '../../utils/i18n';
 
@@ -28,7 +33,15 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) => {
-  const { login, loginWithPin, staff, language, setLanguage, setSystemDefaultLanguage, isLanguageAuto } = useAtriumStore();
+  const { login, loginWithPin, setLanguage, setSystemDefaultLanguage } = useAtriumActions();
+  const { staff, language, isLanguageAuto } = useAtriumSelector(
+    (s) => ({
+      staff: selectCurrentStaffFromState(s),
+      language: s.language,
+      isLanguageAuto: s.isLanguageAuto,
+    }),
+    shallowEqualObjects
+  );
   const [langMenuOpen, setLangMenuOpen] = useState(false);
 
   const [authMode, setAuthMode] = useState<'password' | 'pin'>('password');

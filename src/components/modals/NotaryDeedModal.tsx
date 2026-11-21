@@ -8,7 +8,7 @@ import {
   AlertCircle,
   Coins,
 } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
+import { shallowEqualObjects, useAtriumSelector } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { AtriumButton } from '../ui/AtriumButton';
 import { LabelInput } from '../ui/LabelInput';
@@ -30,7 +30,10 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
   nextIndex,
   onSaveDeed,
 }) => {
-  const { language, networkMode } = useAtriumStore();
+  const { language, networkMode } = useAtriumSelector(
+    (s) => ({ language: s.language, networkMode: s.networkMode || 'online' }),
+    shallowEqualObjects
+  );
   const isAr = language === 'ar';
   const isEn = language === 'en';
 

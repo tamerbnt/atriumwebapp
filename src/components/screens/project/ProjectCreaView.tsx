@@ -378,6 +378,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <img
                 src={bat.previewUrl}
                 alt={bat.title}
+                width={36}
+                height={36}
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
                 className="w-9 h-9 rounded-[var(--r-ctl-sm,10px)] object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
               />
@@ -807,6 +811,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       <img
                         src={bat.previewUrl}
                         alt={bat.title}
+                        width={256}
+                        height={112}
+                        loading="lazy"
+                        decoding="async"
                         referrerPolicy="no-referrer"
                         data-sq="ctl"
                         data-sq-border="none"
@@ -850,6 +858,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       <img
                         src={bat.previewUrl}
                         alt={bat.title}
+                        width={256}
+                        height={112}
+                        loading="lazy"
+                        decoding="async"
                         referrerPolicy="no-referrer"
                         data-sq="ctl"
                         data-sq-border="none"
@@ -969,6 +981,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       <img
                         src={bat.previewUrl}
                         alt={bat.title}
+                        width={280}
+                        height={144}
+                        loading="lazy"
+                        decoding="async"
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover"
                       />
@@ -1219,6 +1235,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <img
                 src={bat.previewUrl}
                 alt={bat.title}
+                width={384}
+                height={176}
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
                 className="w-full h-44 object-cover rounded-[var(--r-card,16px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
               />
@@ -1318,6 +1338,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <img
                 src={selectedPreviewBat.previewUrl}
                 alt={selectedPreviewBat.title}
+                width={512}
+                height={320}
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
                 className="w-full h-80 object-cover rounded-[var(--r-ctl,12px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
               />

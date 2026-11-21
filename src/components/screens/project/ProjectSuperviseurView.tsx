@@ -685,6 +685,10 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               <img
                 src={tal.portraitPhotoUrl}
                 alt={tal.fullName}
+                width={36}
+                height={36}
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
                 className="w-9 h-9 rounded-full object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
               />
@@ -1367,6 +1371,10 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                       <img
                         src={talent.portraitPhotoUrl}
                         alt={talent.fullName}
+                        width={48}
+                        height={48}
+                        loading="lazy"
+                        decoding="async"
                         referrerPolicy="no-referrer"
                         className="w-12 h-12 rounded-full object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
                       />

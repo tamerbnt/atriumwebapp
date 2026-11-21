@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
-import { useAtriumStore } from '../../services/store';
+import {
+  selectCurrentBranchFromState,
+  selectCurrentPlansFromState,
+  selectTerminologyFromState,
+  shallowEqualObjects,
+  useAtriumActions,
+  useAtriumSelector,
+} from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
-import { Button, LiquidButton } from '@/atrium';
+import { Button, LiquidButton } from '@/atrium/core';
 import { t } from '../../utils/i18n';
 
 interface LeadModalProps {
@@ -12,7 +19,17 @@ interface LeadModalProps {
 }
 
 export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
-  const { plans, currentBranch, terminology, addLead, language, networkMode } = useAtriumStore();
+  const { addLead } = useAtriumActions();
+  const { plans, currentBranch, terminology, language, networkMode } = useAtriumSelector(
+    (s) => ({
+      plans: selectCurrentPlansFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      terminology: selectTerminologyFromState(s),
+      language: s.language,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');

@@ -1,6 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import { History, Clock, FileText, Eye } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  useDashboardShellState,
+  shallowEqualObjects,
+  selectCurrentTimeLogsFromState,
+  selectCurrentFreelanceInvoicesFromState,
+  selectCurrentFreelanceProposalsFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { formatDuration, formatMoney } from '../../../utils/rules';
 import { VerticalHistoryScaffold } from '../../common/history/VerticalHistoryScaffold';
 import { ColumnDefinition } from '../../ui/collection';
@@ -38,13 +47,22 @@ export const FreelanceHistoryView: React.FC = React.memo(() => {
     currentBranchId,
     currentBranch,
     language,
-    isSyncing,
-    networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
-    retryCloudSync,
-    setScreen,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      timeLogs: selectCurrentTimeLogsFromState(s),
+      freelanceInvoices: selectCurrentFreelanceInvoicesFromState(s),
+      freelanceProposals: selectCurrentFreelanceProposalsFromState(s),
+      branches: s.branches,
+      currentBusinessId: s.currentBusinessId,
+      currentBranchId: s.currentBranchId,
+      currentBranch: selectCurrentBranchFromState(s),
+      language: s.language,
+    }),
+    shallowEqualObjects
+  );
+  const { isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } =
+    useDashboardShellState();
+  const { setScreen } = useAtriumActions();
 
   const isAr = language === 'ar';
   const isEn = language === 'en';

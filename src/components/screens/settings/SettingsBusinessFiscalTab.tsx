@@ -8,7 +8,13 @@ import {
   Lock,
   Save,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBusinessConfigFromState,
+} from '../../../services/store';
 import {
   CategorySpecificSettings,
   CurrencyCode,
@@ -21,7 +27,7 @@ import {
   validateFiscalProfile,
 } from '../../../utils/businessConfig';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { Toggle } from '@/atrium';
+import { Toggle } from '@/atrium/core';
 
 interface SettingsBusinessFiscalTabProps {
   focusSection?: string | null;
@@ -38,10 +44,17 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
     currentUser,
     language,
     receiptConfig,
-    updateBusinessIdentity,
-    updateBusinessConfig,
-    updateReceiptConfig,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
+      currentUser: s.currentUser,
+      language: s.language,
+      receiptConfig: s.receiptConfig,
+    }),
+    shallowEqualObjects
+  );
+  const { updateBusinessIdentity, updateBusinessConfig, updateReceiptConfig } = useAtriumActions();
 
   const isAr = language === 'ar';
   const isFr = language === 'fr';

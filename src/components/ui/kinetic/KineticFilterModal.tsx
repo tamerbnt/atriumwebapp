@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { SlidersHorizontal, RotateCcw, X } from 'lucide-react';
-import { Button as BrandedAtriumButton } from '@/atrium';
+import { Button as BrandedAtriumButton } from '@/atrium/core';
 import { LiveSegmentedControl, SegmentedOption } from '../live/LiveSegmentedControl';
 import {
   Sp,

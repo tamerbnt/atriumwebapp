@@ -186,7 +186,15 @@ import {
 
 import { checkQuota, getCategoryTerminology, validateVoucherCode, calculateDaysRemaining, formatMoney } from '../utils/rules';
 import { numberToWordsFrench, numberToWordsArabic } from '../utils/algerianPtt';
-import { getInitialLanguageConfig, getSystemDefaultLanguage, t, getLocalizedServiceName } from '../utils/i18n';
+import {
+  ensureLocaleLoadedSync,
+  getInitialLanguageConfig,
+  getLocalizedServiceName,
+  getSystemDefaultLanguage,
+  isLocaleLoaded,
+  loadLocale,
+  t,
+} from '../utils/i18n';
 import {
   isSoleActiveOwner,
   validateStaffCredentials,
@@ -952,10 +960,117 @@ let globalState: AppState = backfillTraceability((() => {
 
 const listeners = new Set<Listener>();
 
+let timerState: ActiveTimerState = globalState.activeTimer;
+const timerListeners = new Set<() => void>();
+
+function notifyTimerListeners() {
+  timerListeners.forEach((l) => l());
+}
+
+function setTimerMicroState(nextTimer: ActiveTimerState, syncToGlobal = false) {
+  timerState = nextTimer;
+  if (syncToGlobal) {
+    globalState = { ...globalState, activeTimer: nextTimer };
+  }
+  notifyTimerListeners();
+}
+
+export function getTimerState(): ActiveTimerState {
+  return timerState;
+}
+
+export function subscribeAtriumStore(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export function subscribeTimerState(listener: () => void): () => void {
+  timerListeners.add(listener);
+  return () => {
+    timerListeners.delete(listener);
+  };
+}
+
+export function useTimerState(): ActiveTimerState {
+  const [timer, setTimer] = useState<ActiveTimerState>(timerState);
+  useEffect(() => {
+    const listener = () => setTimer(timerState);
+    timerListeners.add(listener);
+    setTimer(timerState);
+    return () => {
+      timerListeners.delete(listener);
+    };
+  }, []);
+  return timer;
+}
+
+export function useTimerSelector<T>(
+  selector: (timer: ActiveTimerState) => T,
+  isEqual: (a: T, b: T) => boolean = Object.is
+): T {
+  const selectorRef = useRef(selector);
+  selectorRef.current = selector;
+  const isEqualRef = useRef(isEqual);
+  isEqualRef.current = isEqual;
+
+  const [selected, setSelected] = useState<T>(() => selectorRef.current(timerState));
+  const selectedRef = useRef(selected);
+  selectedRef.current = selected;
+
+  useEffect(() => {
+    const checkAndSync = () => {
+      const next = selectorRef.current(timerState);
+      if (!isEqualRef.current(selectedRef.current, next)) {
+        selectedRef.current = next;
+        setSelected(next);
+      }
+    };
+    timerListeners.add(checkAndSync);
+    checkAndSync();
+    return () => {
+      timerListeners.delete(checkAndSync);
+    };
+  }, []);
+
+  return selected;
+}
+
 let persistTimer: ReturnType<typeof setTimeout> | null = null;
 let persistIdleId: number | null = null;
 let lastPersistedSnapshot: AppState = globalState;
 let hasPendingPersist = false;
+
+const TRANSIENT_UI_KEYS = new Set<keyof AppState>([
+  'toasts',
+  'concurrencyConflicts',
+  'isSyncing',
+  'isSyncTimeout',
+  'syncErrorMessage',
+  'supabaseStatus',
+  'isOnboardingOpen',
+  'isFastSwitchOpen',
+  'isDesktopUpgradeModalOpen',
+  'desktopUpgradeReason',
+]);
+
+function buildPersistableState(state: AppState): Partial<AppState> {
+  const {
+    toasts: _toasts,
+    concurrencyConflicts: _concurrencyConflicts,
+    isSyncing: _isSyncing,
+    isSyncTimeout: _isSyncTimeout,
+    syncErrorMessage: _syncErrorMessage,
+    supabaseStatus: _supabaseStatus,
+    isOnboardingOpen: _isOnboardingOpen,
+    isFastSwitchOpen: _isFastSwitchOpen,
+    isDesktopUpgradeModalOpen: _isDesktopUpgradeModalOpen,
+    desktopUpgradeReason: _desktopUpgradeReason,
+    ...persistable
+  } = state;
+  return persistable;
+}
 
 export function flushAtriumPersist(): void {
   if (persistTimer !== null) {
@@ -966,12 +1081,17 @@ export function flushAtriumPersist(): void {
     (window as any).cancelIdleCallback(persistIdleId);
     persistIdleId = null;
   }
+  const timerDrifted = timerState !== globalState.activeTimer;
+  if (timerDrifted) {
+    globalState = { ...globalState, activeTimer: timerState };
+    hasPendingPersist = true;
+  }
   if (!hasPendingPersist) return;
   hasPendingPersist = false;
   lastPersistedSnapshot = globalState;
   try {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(globalState));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(buildPersistableState(globalState)));
     }
   } catch (e) {
     console.warn('Failed to persist state', e);
@@ -983,7 +1103,7 @@ function isOnlyToastsChanged(prev: AppState, next: AppState): boolean {
   const keys = Object.keys(next) as (keyof AppState)[];
   for (let i = 0; i < keys.length; i++) {
     const k = keys[i];
-    if (k === 'toasts' || k === 'concurrencyConflicts') continue;
+    if (TRANSIENT_UI_KEYS.has(k)) continue;
     if (prev[k] !== next[k]) return false;
   }
   return true;
@@ -1426,37 +1546,98 @@ const safeReadLocalArray = (key: string): any[] => {
   }
 };
 
+let cachedBizConfigBiz: Business | undefined;
+let cachedBizConfigBranchId = '';
+let cachedBizConfigStored: BusinessCategoryConfig | undefined;
+let cachedBizConfigResult: BusinessCategoryConfig | null = null;
+
 export function selectCurrentBusinessConfigFromState(state: AppState): BusinessCategoryConfig {
   const biz = selectCurrentBusinessFromState(state);
-  const base = createDefaultBusinessConfig(biz, undefined, state.currentBranchId);
+  const branchId = state.currentBranchId;
   const stored = state.businessConfigs?.[biz.id];
-  if (!stored) return base;
-  return {
-    ...base,
-    ...stored,
-    fiscalProfile: {
-      ...base.fiscalProfile,
-      ...(stored.fiscalProfile || {}),
-    },
-    onboardingContext: {
-      ...base.onboardingContext,
-      ...(stored.onboardingContext || {}),
-    },
-    categorySettings: {
-      ...base.categorySettings,
-      ...(stored.categorySettings || {}),
-    },
-    setupState: {
-      ...base.setupState,
-      ...(stored.setupState || {}),
-    },
-  };
+  if (
+    cachedBizConfigResult !== null &&
+    cachedBizConfigBiz === biz &&
+    cachedBizConfigBranchId === branchId &&
+    cachedBizConfigStored === stored
+  ) {
+    return cachedBizConfigResult;
+  }
+  const base = createDefaultBusinessConfig(biz, undefined, branchId);
+  const result: BusinessCategoryConfig = !stored
+    ? base
+    : {
+        ...base,
+        ...stored,
+        fiscalProfile: {
+          ...base.fiscalProfile,
+          ...(stored.fiscalProfile || {}),
+        },
+        onboardingContext: {
+          ...base.onboardingContext,
+          ...(stored.onboardingContext || {}),
+        },
+        categorySettings: {
+          ...base.categorySettings,
+          ...(stored.categorySettings || {}),
+        },
+        setupState: {
+          ...base.setupState,
+          ...(stored.setupState || {}),
+        },
+      };
+  cachedBizConfigBiz = biz;
+  cachedBizConfigBranchId = branchId;
+  cachedBizConfigStored = stored;
+  cachedBizConfigResult = result;
+  return result;
 }
+
+let cachedFormulesSrc: CategoryFormule[] | undefined;
+let cachedFormulesBizId = '';
+let cachedFormulesResult: CategoryFormule[] = [];
 
 export function selectCurrentFormulesFromState(state: AppState): CategoryFormule[] {
   const biz = selectCurrentBusinessFromState(state);
-  return (state.categoryFormules || []).filter((f) => f.businessId === biz.id);
+  const src = state.categoryFormules;
+  if (cachedFormulesSrc === src && cachedFormulesBizId === biz.id) {
+    return cachedFormulesResult;
+  }
+  cachedFormulesSrc = src;
+  cachedFormulesBizId = biz.id;
+  cachedFormulesResult = (src || []).filter((f) => f.businessId === biz.id);
+  return cachedFormulesResult;
 }
+
+let cachedQuotaCountsKey = '';
+let cachedQuotasResult: {
+  businesses: ReturnType<typeof checkQuota>;
+  branches: ReturnType<typeof checkQuota>;
+  devices: ReturnType<typeof checkQuota>;
+  staff: ReturnType<typeof checkQuota>;
+} | null = null;
+
+export function selectQuotasFromState(state: AppState) {
+  const plan = state.subscription?.plan || INITIAL_PLANS[0];
+  const bizCount = (state.businesses || []).length;
+  const branchCount = (state.branches || []).length;
+  const deviceCount = (state.devices || []).length;
+  const staffCount = (state.staff || []).length;
+  const key = `${bizCount}/${plan?.maxBusinesses || 1}|${branchCount}/${plan?.maxBranches || 1}|${deviceCount}/${plan?.maxDevices || 1}|${staffCount}/${plan?.maxStaff || 1}`;
+  if (cachedQuotasResult && cachedQuotaCountsKey === key) {
+    return cachedQuotasResult;
+  }
+  cachedQuotaCountsKey = key;
+  cachedQuotasResult = {
+    businesses: checkQuota(bizCount, plan?.maxBusinesses || 1),
+    branches: checkQuota(branchCount, plan?.maxBranches || 1),
+    devices: checkQuota(deviceCount, plan?.maxDevices || 1),
+    staff: checkQuota(staffCount, plan?.maxStaff || 1),
+  };
+  return cachedQuotasResult;
+}
+
+export { isSupabaseConfigured };
 
 export function selectHomeSetupProgressFromState(
   state: AppState,
@@ -1508,23 +1689,11 @@ export function selectHomeSetupProgressFromState(
   return computeHomeSetupProgress(ctx);
 }
 
-export function setSystemDefaultLanguageAction() {
-  const sysLang = getSystemDefaultLanguage();
-  try {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('atrium_language', sysLang);
-      localStorage.setItem('atrium_language_mode', 'auto');
-    }
-  } catch {}
-  globalState = { ...globalState, language: sysLang, isLanguageAuto: true };
-  if (typeof document !== 'undefined') {
-    document.documentElement.setAttribute('dir', sysLang === 'ar' ? 'rtl' : 'ltr');
-    document.documentElement.setAttribute('lang', sysLang);
-  }
-  notify();
+export function getResolvedInitialLanguage(): SupportedLanguage {
+  return globalState.language;
 }
 
-export function setLanguageAction(language: SupportedLanguage, isAuto = false) {
+function applyResolvedLanguage(language: SupportedLanguage, isAuto: boolean) {
   try {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('atrium_language', language);
@@ -1537,6 +1706,27 @@ export function setLanguageAction(language: SupportedLanguage, isAuto = false) {
     document.documentElement.setAttribute('lang', language);
   }
   notify();
+}
+
+export function setSystemDefaultLanguageAction() {
+  const sysLang = getSystemDefaultLanguage();
+  if (isLocaleLoaded(sysLang) || ensureLocaleLoadedSync(sysLang)) {
+    applyResolvedLanguage(sysLang, true);
+    return;
+  }
+  void loadLocale(sysLang).then(() => {
+    applyResolvedLanguage(sysLang, true);
+  });
+}
+
+export function setLanguageAction(language: SupportedLanguage, isAuto = false) {
+  if (isLocaleLoaded(language) || ensureLocaleLoadedSync(language)) {
+    applyResolvedLanguage(language, isAuto);
+    return;
+  }
+  void loadLocale(language).then(() => {
+    applyResolvedLanguage(language, isAuto);
+  });
 }
 
 export function setThemeAction(theme: AppTheme) {
@@ -1930,7 +2120,8 @@ function ul(en: string, fr: string, ar: string): string {
 function captureStoreSlices<K extends keyof AppState>(keys: K[]): Pick<AppState, K> {
   const snapshot = {} as Pick<AppState, K>;
   for (const k of keys) {
-    snapshot[k] = cloneSnapshot(globalState[k]);
+    const val = k === 'activeTimer' ? (timerState as AppState[K]) : globalState[k];
+    snapshot[k] = cloneSnapshot(val);
   }
   return snapshot;
 }
@@ -1940,6 +2131,9 @@ function restoreStoreSlices<K extends keyof AppState>(snapshot: Pick<AppState, K
     ...globalState,
     ...cloneSnapshot(snapshot),
   };
+  if ('activeTimer' in snapshot && snapshot.activeTimer) {
+    setTimerMicroState(globalState.activeTimer, false);
+  }
   notify();
 }
 
@@ -1954,50 +2148,44 @@ export function startTimerAction(
   isBillable = true,
   isPomodoro = false
 ) {
-  globalState = {
-    ...globalState,
-    activeTimer: {
-      isRunning: true,
-      isPaused: false,
-      clientId,
-      clientName,
-      projectId,
-      projectTitle,
-      deliverableId,
-      deliverableTitle,
-      taskDescription,
-      elapsedSeconds: 0,
-      isBillable,
-      isPomodoro,
-      pomodoroRemainingSeconds: 1500,
-      pomodoroMode: 'work',
-      startedAt: new Date().toISOString(),
-    },
+  const nextTimer: ActiveTimerState = {
+    isRunning: true,
+    isPaused: false,
+    clientId,
+    clientName,
+    projectId,
+    projectTitle,
+    deliverableId,
+    deliverableTitle,
+    taskDescription,
+    elapsedSeconds: 0,
+    isBillable,
+    isPomodoro,
+    pomodoroRemainingSeconds: 1500,
+    pomodoroMode: 'work',
+    startedAt: new Date().toISOString(),
   };
+  setTimerMicroState(nextTimer, true);
   ensureTimerTick(true, false);
   notify();
 }
 
 export function pauseTimerAction() {
-  globalState = {
-    ...globalState,
-    activeTimer: { ...globalState.activeTimer, isPaused: true },
-  };
-  ensureTimerTick(globalState.activeTimer.isRunning, true);
+  const nextTimer: ActiveTimerState = { ...timerState, isPaused: true };
+  setTimerMicroState(nextTimer, true);
+  ensureTimerTick(nextTimer.isRunning, true);
   notify();
 }
 
 export function resumeTimerAction() {
-  globalState = {
-    ...globalState,
-    activeTimer: { ...globalState.activeTimer, isPaused: false },
-  };
-  ensureTimerTick(globalState.activeTimer.isRunning, false);
+  const nextTimer: ActiveTimerState = { ...timerState, isPaused: false };
+  setTimerMicroState(nextTimer, true);
+  ensureTimerTick(nextTimer.isRunning, false);
   notify();
 }
 
 export function stopTimerAction() {
-  const timer = globalState.activeTimer;
+  const timer = timerState;
   if (timer.elapsedSeconds >= 10) {
     const before = captureStoreSlices(['timeLogs', 'freelanceProjects', 'activeTimer']);
     const client = globalState.freelanceClients.find((c) => c.id === timer.clientId);
@@ -2042,18 +2230,21 @@ export function stopTimerAction() {
       return p;
     });
 
+    const stoppedTimer: ActiveTimerState = {
+      ...timer,
+      isRunning: false,
+      isPaused: false,
+      elapsedSeconds: 0,
+      startedAt: null,
+    };
+
     globalState = {
       ...globalState,
       timeLogs: [newEntry, ...globalState.timeLogs],
       freelanceProjects: updatedProjects,
-      activeTimer: {
-        ...timer,
-        isRunning: false,
-        isPaused: false,
-        elapsedSeconds: 0,
-        startedAt: null,
-      },
+      activeTimer: stoppedTimer,
     };
+    setTimerMicroState(stoppedTimer, false);
     ensureTimerTick(false, false);
     notify();
 
@@ -2103,16 +2294,14 @@ export function stopTimerAction() {
 
     return newEntry;
   } else {
-    globalState = {
-      ...globalState,
-      activeTimer: {
-        ...timer,
-        isRunning: false,
-        isPaused: false,
-        elapsedSeconds: 0,
-        startedAt: null,
-      },
+    const stoppedTimer: ActiveTimerState = {
+      ...timer,
+      isRunning: false,
+      isPaused: false,
+      elapsedSeconds: 0,
+      startedAt: null,
     };
+    setTimerMicroState(stoppedTimer, true);
     ensureTimerTick(false, false);
     notify();
     return null;
@@ -2122,16 +2311,14 @@ export function stopTimerAction() {
 export function resetTimerAction() {
   const before = captureStoreSlices(['activeTimer']);
   const hadProgress = before.activeTimer.elapsedSeconds > 0 || before.activeTimer.isRunning;
-  globalState = {
-    ...globalState,
-    activeTimer: {
-      ...globalState.activeTimer,
-      isRunning: false,
-      isPaused: false,
-      elapsedSeconds: 0,
-      startedAt: null,
-    },
+  const resetTimer: ActiveTimerState = {
+    ...timerState,
+    isRunning: false,
+    isPaused: false,
+    elapsedSeconds: 0,
+    startedAt: null,
   };
+  setTimerMicroState(resetTimer, true);
   ensureTimerTick(false, false);
   notify();
   if (hadProgress) {
@@ -4207,7 +4394,7 @@ function ensureTimerTick(isRunning: boolean, isPaused: boolean) {
   if (isRunning && !isPaused) {
     if (!activeTimerInterval) {
       activeTimerInterval = setInterval(() => {
-        const current = globalState.activeTimer;
+        const current = timerState;
         if (!current.isRunning || current.isPaused) {
           if (activeTimerInterval) {
             clearInterval(activeTimerInterval);
@@ -4229,16 +4416,15 @@ function ensureTimerTick(isRunning: boolean, isPaused: boolean) {
           }
         }
 
-        globalState = {
-          ...globalState,
-          activeTimer: {
+        setTimerMicroState(
+          {
             ...current,
             elapsedSeconds: newElapsed,
             pomodoroRemainingSeconds: newPomodoroSecs,
             pomodoroMode: newPomodoroMode,
           },
-        };
-        notify(false, true);
+          false
+        );
       }, 1000);
     }
   } else {

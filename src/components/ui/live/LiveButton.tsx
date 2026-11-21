@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
-import { Button as AtriumButton } from '@/atrium';
-import type { ButtonProps, Tone, Size } from '@/atrium';
+import { Button as AtriumButton } from '@/atrium/core';
+import type { ButtonProps, Tone, Size } from '@/atrium/core';
 
 export type LiveButtonTone = Tone;
 export type LiveButtonSize = Size;

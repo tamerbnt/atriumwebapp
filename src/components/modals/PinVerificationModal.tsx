@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Lock, X, Delete, Check } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
-import { Button, LiquidButton } from '@/atrium';
+import { useAtriumSelector } from '../../services/store';
+import { Button, LiquidButton } from '@/atrium/core';
 
 interface PinVerificationModalProps {
   isOpen: boolean;
@@ -20,7 +20,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
   description,
   expectedPin = '1234',
 }) => {
-  const { language } = useAtriumStore();
+  const language = useAtriumSelector((s) => s.language);
   const [pin, setPin] = useState('');
   const [isError, setIsError] = useState(false);
   const [shake, setShake] = useState(false);

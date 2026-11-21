@@ -73,7 +73,9 @@ export const posService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pos_products')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, name, description, price_amount, cost_amount, stock_quantity, sku, category, image_url, reorder_level, is_active, is_pinned, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .eq('is_active', true)
           .is('deleted_at', null)
@@ -137,7 +139,9 @@ export const posService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pos_sales')
-          .select('*, pos_sale_items(*)')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, customer_id, customer_name, total_amount, payment_method, notes, sold_at, created_at, version, pos_sale_items(product_id, product_name, quantity, unit_price, total_price)'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('sold_at', { ascending: false })
@@ -194,7 +198,9 @@ export const posService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('pos_parked_orders')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, label, customer_name, items, discount, total_amount, notes, version, created_at'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('created_at', { ascending: false })
@@ -242,7 +248,9 @@ export const posService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('pos_stock_movements')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, product_id, product_name, movement_type, quantity, previous_stock, new_stock, reason, version, created_at'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('created_at', { ascending: false })

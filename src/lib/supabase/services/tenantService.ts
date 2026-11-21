@@ -47,7 +47,9 @@ export const tenantService = {
         (from, to) =>
           client
             .from('businesses')
-            .select('*')
+            .select(
+              'id, account_id, category, name, display_name, address, phone, logo_url, is_active, version, created_at'
+            )
             .eq('account_id', accountId)
             .eq('is_active', true)
             .is('deleted_at', null)
@@ -71,7 +73,9 @@ export const tenantService = {
         (from, to) => {
           let query = client
             .from('branches')
-            .select('*')
+            .select(
+              'id, account_id, business_id, name, code, address, phone, is_main_branch, is_active, version, created_at'
+            )
             .eq('account_id', accountId)
             .eq('is_active', true)
             .is('deleted_at', null);

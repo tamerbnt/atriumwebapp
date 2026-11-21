@@ -694,6 +694,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               <img
                 src={item.imageUrl}
                 alt={item.title}
+                width={40}
+                height={40}
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
               />
@@ -865,6 +869,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               <img
                 src={bat.previewUrl}
                 alt={bat.title}
+                width={40}
+                height={40}
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
               />
@@ -1357,6 +1365,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                           <img
                             src={item.imageUrl}
                             alt={item.title}
+                            width={280}
+                            height={144}
+                            loading="lazy"
+                            decoding="async"
                             referrerPolicy="no-referrer"
                             className="w-full h-full object-cover"
                           />
@@ -1676,6 +1688,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         <img
                           src={bat.previewUrl}
                           alt={bat.title}
+                          width={280}
+                          height={176}
+                          loading="lazy"
+                          decoding="async"
                           referrerPolicy="no-referrer"
                           className="w-full h-full object-cover"
                         />
@@ -2032,6 +2048,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   <img
                     src={item.imageUrl}
                     alt={item.title}
+                    width={384}
+                    height={192}
+                    loading="lazy"
+                    decoding="async"
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover"
                   />
@@ -2165,6 +2185,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 <img
                   src={bat.previewUrl}
                   alt={bat.title}
+                  width={384}
+                  height={192}
+                  loading="lazy"
+                  decoding="async"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                 />
@@ -2467,6 +2491,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               <img
                 src={selectedReceiptUrl}
                 alt="Justificatif"
+                width={512}
+                height={288}
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
                 data-sq="ctl"
                 data-sq-border="none"

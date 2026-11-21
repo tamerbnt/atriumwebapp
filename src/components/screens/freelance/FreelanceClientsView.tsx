@@ -15,7 +15,18 @@ import {
   X,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  useDashboardShellState,
+  shallowEqualObjects,
+  selectCurrentFreelanceClientsFromState,
+  selectCurrentFreelanceProjectsFromState,
+  selectCurrentTimeLogsFromState,
+  selectCurrentFreelanceInvoicesFromState,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatCurrencyAmount, formatDuration } from '../../../utils/rules';
 import { FreelanceClient, FreelanceClientStatus, CurrencyCode } from '../../../types/index';
@@ -64,20 +75,29 @@ export const FreelanceClientsView: React.FC = () => {
     freelanceProjects,
     timeLogs,
     freelanceInvoices,
+    branches,
+    currentBranch,
+  } = useAtriumSelector(
+    (s) => ({
+      freelanceClients: selectCurrentFreelanceClientsFromState(s),
+      freelanceProjects: selectCurrentFreelanceProjectsFromState(s),
+      timeLogs: selectCurrentTimeLogsFromState(s),
+      freelanceInvoices: selectCurrentFreelanceInvoicesFromState(s),
+      branches: s.branches,
+      currentBranch: selectCurrentBranchFromState(s),
+    }),
+    shallowEqualObjects
+  );
+  const { isSyncing, networkMode, retryCloudSync, lastSyncedAt, isSyncTimeout } =
+    useDashboardShellState();
+  const {
     addFreelanceClient,
     updateFreelanceClient,
     deleteFreelanceClient,
     startTimer,
     billUnbilledHours,
-    branches,
-    currentBranch,
     setScreen,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');

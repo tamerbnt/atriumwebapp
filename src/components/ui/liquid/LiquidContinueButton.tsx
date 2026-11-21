@@ -1,6 +1,6 @@
 import React from 'react';
-import { LiquidButton } from '@/atrium';
-import type { Size } from '@/atrium';
+import { LiquidButton } from '@/atrium/core';
+import type { Size } from '@/atrium/core';
 
 export interface LiquidContinueButtonProps {
   onClick?: () => void;

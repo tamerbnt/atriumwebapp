@@ -34,7 +34,20 @@ import {
   Receipt,
 } from 'lucide-react';
 import {
-  useAtriumStore,
+  useAtriumSelector,
+  useAtriumActions,
+  useDashboardShellState,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBusinessConfigFromState,
+  selectCurrentDevicesFromState,
+  selectCurrentMembersFromState,
+  selectCurrentProductsFromState,
+  selectCurrentFreelanceClientsFromState,
+  selectCurrentFreelanceInvoicesFromState,
+  selectCurrentSalesFromState,
+  selectQuotasFromState,
+  isSupabaseConfigured as checkSupabaseConfigured,
   showToast,
   validateBackupSnapshot,
   type BackupValidationResult,
@@ -44,7 +57,7 @@ import { Modal } from '../ui/Modal';
 import { AuditLogViewerModal } from '../modals/AuditLogViewerModal';
 import { validateVoucherCode } from '../../utils/rules';
 import { LabelInput } from '../ui/LabelInput';
-import { Button, LiquidButton, Toggle } from '@/atrium';
+import { Button, LiquidButton, Toggle } from '@/atrium/core';
 import { AtriumButton } from '../ui/AtriumButton';
 import { t, getSystemDefaultLanguage, SUPPORTED_LANGUAGES } from '../../utils/i18n';
 import { useSkeletonLoading } from '../../hooks/useSkeletonLoading';
@@ -67,20 +80,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     quotas,
     currentBusiness,
     theme,
-    setTheme,
     density,
-    setDensity,
     language,
     isLanguageAuto,
-    setLanguage,
-    setSystemDefaultLanguage,
     isTopBarAutoHide,
-    toggleTopBarAutoHide,
-    addBranch,
-    registerDevice,
-    revokeDevice,
-    openOnboarding,
-    openDesktopUpgradeModal,
     currentUser,
     members,
     products,
@@ -88,22 +91,58 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     freelanceInvoices,
     sales,
     supabaseStatus,
-    isSyncing,
-    syncWithSupabase,
-    isSupabaseConfigured,
-    lastSyncedAt,
     syncErrorMessage,
+    settingsTab,
+    settingsFocusSection,
+    currentBusinessConfig,
+  } = useAtriumSelector(
+    (s) => ({
+      account: s.account,
+      subscription: s.subscription,
+      businesses: s.businesses,
+      branches: s.branches,
+      devices: selectCurrentDevicesFromState(s),
+      quotas: selectQuotasFromState(s),
+      currentBusiness: selectCurrentBusinessFromState(s),
+      theme: s.theme,
+      density: s.density || 'default',
+      language: s.language,
+      isLanguageAuto: s.isLanguageAuto,
+      isTopBarAutoHide: s.isTopBarAutoHide ?? false,
+      currentUser: s.currentUser,
+      members: selectCurrentMembersFromState(s),
+      products: selectCurrentProductsFromState(s),
+      freelanceClients: selectCurrentFreelanceClientsFromState(s),
+      freelanceInvoices: selectCurrentFreelanceInvoicesFromState(s),
+      sales: selectCurrentSalesFromState(s),
+      supabaseStatus: s.supabaseStatus,
+      syncErrorMessage: s.syncErrorMessage,
+      settingsTab: s.settingsTab || 'preferences',
+      settingsFocusSection: s.settingsFocusSection || null,
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
+    }),
+    shallowEqualObjects
+  );
+  const { isSyncing, networkMode, lastSyncedAt, retryCloudSync } = useDashboardShellState();
+  const isSupabaseConfigured = checkSupabaseConfigured();
+  const {
+    setTheme,
+    setDensity,
+    setLanguage,
+    setSystemDefaultLanguage,
+    toggleTopBarAutoHide,
+    addBranch,
+    registerDevice,
+    revokeDevice,
+    openOnboarding,
+    openDesktopUpgradeModal,
+    syncWithSupabase,
     exportDatabase,
     importDatabase,
-    networkMode,
-    retryCloudSync,
-    settingsTab,
     setSettingsTab,
-    settingsFocusSection,
     clearSettingsFocusSection,
-    currentBusinessConfig,
     restoreSetupBanner,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);

@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useLayoutEffect, useMemo, useRef } from
 import { SlidersHorizontal, ChevronDown, List, LayoutGrid, Calendar, X } from 'lucide-react';
 import { Seek } from '../Seek';
 import { LiveSegmentedControl, SegmentedOption } from '../live/LiveSegmentedControl';
-import { LiquidButton } from '@/atrium';
+import { LiquidButton } from '@/atrium/core';
 import { ScreenPodBridgeContext } from './ScreenPod';
 import { ListAdvancedMenuButton } from './ListAdvancedMenuButton';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { showToast } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
-import { LiquidButton } from '@/atrium';
+import { LiquidButton } from '@/atrium/core';
 
 export interface DashboardHeaderProps {
   title?: string;

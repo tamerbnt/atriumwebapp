@@ -12,7 +12,18 @@ import {
   Lock,
   CheckCircle2,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBusinessConfigFromState,
+  selectCurrentFormulesFromState,
+  selectCurrentPlansFromState,
+  selectCurrentServicesFromState,
+  selectCurrentRentableUnitsFromState,
+  selectCurrentEduCoursesFromState,
+} from '../../../services/store';
 import {
   CategoryFormule,
   CurrencyCode,
@@ -40,6 +51,21 @@ export const SettingsFormulesTab: React.FC = () => {
     eduCourses,
     currentUser,
     language,
+  } = useAtriumSelector(
+    (s) => ({
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
+      currentCategoryFormules: selectCurrentFormulesFromState(s),
+      plans: selectCurrentPlansFromState(s),
+      servicesCatalog: selectCurrentServicesFromState(s),
+      rentableUnits: selectCurrentRentableUnitsFromState(s),
+      eduCourses: selectCurrentEduCoursesFromState(s),
+      currentUser: s.currentUser,
+      language: s.language,
+    }),
+    shallowEqualObjects
+  );
+  const {
     addMembershipPlan,
     updateMembershipPlan,
     toggleMembershipPlanActive,
@@ -53,7 +79,7 @@ export const SettingsFormulesTab: React.FC = () => {
     duplicateCategoryFormule,
     deleteCategoryFormule,
     setScreen,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const isAr = language === 'ar';
   const isFr = language === 'fr';

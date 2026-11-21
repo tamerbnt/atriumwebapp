@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Shield, Sparkles, CheckCircle2, AlertCircle, KeyRound, Copy } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../services/store';
+import { shallowEqualObjects, useAtriumActions, useAtriumSelector, showToast } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { AtriumButton } from '../ui/AtriumButton';
@@ -13,7 +13,15 @@ interface VoucherModalProps {
 }
 
 export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) => {
-  const { subscription, redeemVoucher, language, networkMode } = useAtriumStore();
+  const { redeemVoucher } = useAtriumActions();
+  const { subscription, language, networkMode } = useAtriumSelector(
+    (s) => ({
+      subscription: s.subscription,
+      language: s.language,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
   const [code, setCode] = useState('');
   const [resultMessage, setResultMessage] = useState<{
     success: boolean;

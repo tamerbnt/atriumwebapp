@@ -1036,7 +1036,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                 {v.signatureSvgData && (
                   <div data-sq="card" data-sq-border="none" className="mt-3 p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
                     <div className="t-small font-semibold text-black/60 dark:text-white/60 mb-2">Signature Certifiée</div>
-                    <img src={v.signatureSvgData} alt="Signature acquéreur" className="h-24 mx-auto object-contain" />
+                    <img src={v.signatureSvgData} alt="Signature acquéreur" width={240} height={96} loading="lazy" decoding="async" className="h-24 mx-auto object-contain" />
                   </div>
                 )}
               </InspectorSection>

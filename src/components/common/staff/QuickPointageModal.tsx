@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { QrCode, Scan, KeyRound, CheckCircle2, X, Clock, ArrowRight, User } from 'lucide-react';
 import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
-import { LiquidButton } from '@/atrium';
+import { LiquidButton } from '@/atrium/core';
 import { StaffMember } from '../../../types/index';
 
 interface QuickPointageModalProps {

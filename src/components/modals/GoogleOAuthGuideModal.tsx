@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { AtriumButton } from '../ui/AtriumButton';
-import { useAtriumStore } from '../../services/store';
+import { useAtriumActions } from '../../services/store';
 
 interface GoogleOAuthGuideModalProps {
   isOpen: boolean;
@@ -25,7 +25,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
   onClose,
   onInstantLogin,
 }) => {
-  const { login } = useAtriumStore();
+  const { login } = useAtriumActions();
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const supabaseUrl = 'https://tzzncsbvezywtaknwind.supabase.co';

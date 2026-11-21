@@ -2422,6 +2422,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 <img
                   src={selectedReceiptUrl}
                   alt="Scan Justificatif"
+                  width={512}
+                  height={288}
+                  loading="lazy"
+                  decoding="async"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                 />

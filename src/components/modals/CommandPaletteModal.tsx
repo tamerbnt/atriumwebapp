@@ -32,7 +32,22 @@ import {
   Building2,
   LayoutDashboard,
 } from 'lucide-react';
-import { useAtriumStore, ActiveScreen } from '../../services/store';
+import {
+  ActiveScreen,
+  selectCurrentBusinessFromState,
+  selectCurrentEduCohortsFromState,
+  selectCurrentEduStudentsFromState,
+  selectCurrentFreelanceClientsFromState,
+  selectCurrentFreelanceInvoicesFromState,
+  selectCurrentMembersFromState,
+  selectCurrentProductsFromState,
+  selectCurrentRentalBookingsFromState,
+  selectCurrentRentalRentersFromState,
+  selectTerminologyFromState,
+  shallowEqualObjects,
+  useAtriumActions,
+  useAtriumSelector,
+} from '../../services/store';
 import { t } from '../../utils/i18n';
 import { localizeStatus } from '../../utils/rules';
 import { canAccessStaffScreen, getEffectiveUserRole } from '../../utils/staffRules';
@@ -55,12 +70,11 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { setScreen, setTheme, openFastSwitch, openOnboarding, selectMember } = useAtriumActions();
   const {
     activeScreen,
-    setScreen,
     currentBusiness,
     theme,
-    setTheme,
     terminology,
     members,
     products,
@@ -70,9 +84,6 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     rentalBookings,
     eduStudents,
     eduCohorts,
-    openFastSwitch,
-    openOnboarding,
-    selectMember,
     currentUser,
     activePmRole,
     activeGarageRole,
@@ -87,7 +98,37 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     activePosRole,
     activeEducationRole,
     language,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      activeScreen: s.activeScreen,
+      currentBusiness: selectCurrentBusinessFromState(s),
+      theme: s.theme,
+      terminology: selectTerminologyFromState(s),
+      members: selectCurrentMembersFromState(s),
+      products: selectCurrentProductsFromState(s),
+      freelanceClients: selectCurrentFreelanceClientsFromState(s),
+      freelanceInvoices: selectCurrentFreelanceInvoicesFromState(s),
+      rentalRenters: selectCurrentRentalRentersFromState(s),
+      rentalBookings: selectCurrentRentalBookingsFromState(s),
+      eduStudents: selectCurrentEduStudentsFromState(s),
+      eduCohorts: selectCurrentEduCohortsFromState(s),
+      currentUser: s.currentUser,
+      activePmRole: s.activePmRole || 'direction',
+      activeGarageRole: s.activeGarageRole || 'gerant',
+      activeRealEstateRole: s.activeRealEstateRole || 'direction',
+      activeManufacturingRole: s.activeManufacturingRole || 'gerant',
+      activeLegalRole: s.activeLegalRole || 'avocat_associe',
+      activeLogisticsRole: s.activeLogisticsRole || 'gerant',
+      activeContractorRole: s.activeContractorRole || 'gerant',
+      activeAgriRole: s.activeAgriRole || 'gerant',
+      activeMembershipRole: s.activeMembershipRole || 'owner',
+      activeAppointmentRole: s.activeAppointmentRole || 'owner',
+      activePosRole: s.activePosRole || 'owner',
+      activeEducationRole: s.activeEducationRole || 'owner',
+      language: s.language,
+    }),
+    shallowEqualObjects
+  );
 
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);

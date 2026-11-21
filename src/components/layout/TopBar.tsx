@@ -90,12 +90,13 @@ import {
   switchBusinessAction as switchBusiness,
   switchBranchAction as switchBranch,
   setNetworkModeAction as setNetworkMode,
+  useTimerState,
 } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
 import { Seek } from '../ui/Seek';
 import { useTranslation } from '../../utils/useTranslation';
 import { NotificationDropdown } from './NotificationDropdown';
-import { Menu, MenuTriggerProps } from '@/atrium';
+import { Menu, MenuTriggerProps } from '@/atrium/core';
 import { isSupabaseConfigured as checkSupabaseConfigured } from '../../lib/supabase/client';
 import { LiveButton, LiveIconButton } from '../ui/live';
 
@@ -108,7 +109,7 @@ interface TopBarProps {
 const TopBarTimerWidget: React.FC<{ isFreelance: boolean; language: string }> = React.memo(
   ({ isFreelance, language }) => {
     const { t } = useTranslation();
-    const activeTimer = useAtriumSelector((s) => s.activeTimer);
+    const activeTimer = useTimerState();
     if (!activeTimer.isRunning && !isFreelance) return null;
 
     return (

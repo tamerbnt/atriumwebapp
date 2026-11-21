@@ -83,7 +83,9 @@ export const staffService = {
         (from, to) => {
           let query = client
             .from('staff')
-            .select('*')
+            .select(
+              'id, account_id, business_id, branch_id, full_name, email, phone, role, is_active, created_at, salary, payment_day, ccp_number, ccp_key, bank_rib, payment_method, card_id, badge_token, status, version'
+            )
             .eq('account_id', accountId)
             .eq('is_active', true)
             .is('deleted_at', null)
@@ -207,7 +209,9 @@ export const staffService = {
     const rows = await fetchAllPages<any>((from, to) => {
       let query = (client as any)
         .from('staff_attendance_logs')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, staff_name, staff_role, log_timestamp, log_date, type, method, terminal_id, notes, version'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('log_timestamp', { ascending: false })
@@ -255,7 +259,9 @@ export const staffService = {
     const rows = await fetchAllPages<any>((from, to) => {
       let query = (client as any)
         .from('staff_salary_advances')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, staff_name, amount_dzd, date_issued, payment_method, reason, voucher_number, status, deducted_in_period, version'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('date_issued', { ascending: false })
@@ -303,7 +309,9 @@ export const staffService = {
     const rows = await fetchAllPages<any>((from, to) => {
       let query = (client as any)
         .from('staff_payroll_runs')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, period_month, period_year, title, status, total_gross_cotisable, total_cnas_salarial, total_cnas_patronal, total_irg, total_net, slips_count, approved_at, version, created_at'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('created_at', { ascending: false })
@@ -354,7 +362,9 @@ export const staffService = {
     const rows = await fetchAllPages<any>((from, to) => {
       let query = (client as any)
         .from('staff_payroll_slips')
-        .select('*')
+        .select(
+          'id, payroll_run_id, staff_id, matricule, staff_full_name, role, period_month, period_year, period_label, base_salary, actual_base_salary, worked_days, standard_days, coaching_commission, primes_cotisables, salaire_brut_cotisable, cnas_salarial, cnas_patronal, salaire_brut_imposable, irg_tax, primes_non_imposables, acomptes_deduits, autres_retenues, net_a_payer, payment_method, ccp_number, ccp_key, bank_rib, nss, is_paid, paid_date, receipt_number, version'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('created_at', { ascending: false })

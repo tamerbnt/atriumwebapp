@@ -13,7 +13,18 @@ import {
   AlertTriangle,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  selectCurrentBranchFromState,
+  selectCurrentFreelanceClientsFromState,
+  selectCurrentFreelanceProjectsFromState,
+  selectCurrentTimeLogsFromState,
+  shallowEqualObjects,
+  showToast,
+  useAtriumActions,
+  useAtriumSelector,
+  useDashboardShellState,
+  useTimerState,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatDuration, formatCurrencyAmount } from '../../../utils/rules';
 import { TimeLogEntry } from '../../../types/index';
@@ -55,11 +66,8 @@ export const FreelanceTimeTrackerView: React.FC = () => {
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 
+  const activeTimer = useTimerState();
   const {
-    activeTimer,
-    timeLogs,
-    freelanceClients,
-    freelanceProjects,
     startTimer,
     pauseTimer,
     resumeTimer,
@@ -70,14 +78,20 @@ export const FreelanceTimeTrackerView: React.FC = () => {
     deleteTimeLog,
     billUnbilledHours,
     setScreen,
-    branches,
-    currentBranch,
-    isSyncing,
-    networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
-    retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumActions();
+  const { isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } =
+    useDashboardShellState();
+  const { timeLogs, freelanceClients, freelanceProjects, branches, currentBranch } =
+    useAtriumSelector(
+      (s) => ({
+        timeLogs: selectCurrentTimeLogsFromState(s),
+        freelanceClients: selectCurrentFreelanceClientsFromState(s),
+        freelanceProjects: selectCurrentFreelanceProjectsFromState(s),
+        branches: s.branches,
+        currentBranch: selectCurrentBranchFromState(s),
+      }),
+      shallowEqualObjects
+    );
 
   const [selectedClientId, setSelectedClientId] = useState(freelanceClients[0]?.id || '');
   const [selectedProjectId, setSelectedProjectId] = useState(freelanceProjects[0]?.id || '');

@@ -1,3 +1,4 @@
+import './charts.css';
 export * from './types';
 export {
   formatChartValue,

@@ -52,6 +52,7 @@ import {
   selectCurrentProductsFromState,
   setScreenAction,
   setActivePmSubScreenAction,
+  useTimerSelector,
   type ActiveScreen,
 } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -1078,7 +1079,6 @@ export const FreelanceHomeView: React.FC<HomeViewProps> = () => {
     invoices,
     proposals,
     expenses,
-    activeTimer,
   } = useAtriumSelector(
     (s) => ({
       currency: selectCurrentBusinessConfigFromState(s).currency || 'EUR',
@@ -1089,7 +1089,14 @@ export const FreelanceHomeView: React.FC<HomeViewProps> = () => {
       invoices: selectCurrentFreelanceInvoicesFromState(s),
       proposals: selectCurrentFreelanceProposalsFromState(s),
       expenses: selectCurrentFreelanceExpensesFromState(s),
-      activeTimer: s.activeTimer,
+    }),
+    shallowEqualObjects
+  );
+  const timerPreview = useTimerSelector(
+    (timer) => ({
+      isRunning: Boolean(timer?.isRunning),
+      projectTitle: timer?.projectTitle || '',
+      elapsedMinutes: Math.floor((timer?.elapsedSeconds || 0) / 60),
     }),
     shallowEqualObjects
   );
@@ -1185,7 +1192,7 @@ export const FreelanceHomeView: React.FC<HomeViewProps> = () => {
     },
   ];
 
-  const elapsedMinutes = Math.floor((activeTimer?.elapsedSeconds || 0) / 60);
+  const elapsedMinutes = timerPreview.elapsedMinutes;
 
   return (
     <HomeShell
@@ -1200,28 +1207,28 @@ export const FreelanceHomeView: React.FC<HomeViewProps> = () => {
         heroChildren={
           <HomeAnchorCard
             title={
-              activeTimer?.isRunning
+              timerPreview.isRunning
                 ? l3(language, 'Chronomètre En Cours', 'Active Timer Running', 'المؤقت يعمل حالياً')
                 : l3(language, 'Factures À Encaisser', 'Awaiting Settlement', 'فواتير قيد التحصيل')
             }
             value={
-              activeTimer?.isRunning
+              timerPreview.isRunning
                 ? `${elapsedMinutes} min`
                 : formatMoney(unpaidTotal, currency)
             }
             badgeText={
-              activeTimer?.isRunning
-                ? activeTimer.projectTitle
+              timerPreview.isRunning
+                ? timerPreview.projectTitle
                 : `${invoices.filter((i) => i.status === 'Overdue').length} ${l3(language, 'en retard', 'overdue', 'متأخرة')}`
             }
-            badgeVariant={activeTimer?.isRunning ? 'green' : 'orange'}
+            badgeVariant={timerPreview.isRunning ? 'green' : 'orange'}
             sublabel={l3(
               language,
               'Ouvrir le suivi du temps ou le tableau de bord financier',
               'Open live time tracker or studio revenue dashboard',
               'فتح متتبع الساعات أو لوحة قيادة الاستوديو'
             )}
-            targetScreen={activeTimer?.isRunning ? 'analytics' : 'dashboard'}
+            targetScreen={timerPreview.isRunning ? 'analytics' : 'dashboard'}
           />
         }
         priorityTitle={l3(language, 'Chronomètre & Feuilles de Temps', 'Recent Billable Hours', 'سجل الساعات')}

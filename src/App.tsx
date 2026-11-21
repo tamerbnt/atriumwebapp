@@ -13,10 +13,12 @@ import {
   loginWithPinAction,
 } from './services/store';
 import { Member } from './types/index';
-import { AppShell } from '@/atrium';
+import { AppShell } from '@/atrium/core';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
-import { LoginScreen } from './components/auth/LoginScreen';
+const LoginScreen = React.lazy(() =>
+  import('./components/auth/LoginScreen').then((m) => ({ default: m.LoginScreen }))
+);
 import { ScreenSuspenseFallback } from './components/ui/skeleton/ScreenSuspenseFallback';
 import { ScreenFocusProvider } from './components/ui/kinetic/ScreenFocusContext';
 
@@ -33,7 +35,9 @@ const CommandPaletteModal = React.lazy(() =>
 const VoucherModal = React.lazy(() =>
   import('./components/modals/VoucherModal').then((m) => ({ default: m.VoucherModal }))
 );
-import { MemberModal } from './components/modals/MemberModal';
+const MemberModal = React.lazy(() =>
+  import('./components/modals/MemberModal').then((m) => ({ default: m.MemberModal }))
+);
 import { triggerKineticMemberModal } from './components/modals/memberModalMotion';
 const LeadModal = React.lazy(() =>
   import('./components/modals/LeadModal').then((m) => ({ default: m.LeadModal }))
@@ -183,7 +187,9 @@ import {
 } from './components/screens/lazyScreens';
 import { ToastStack } from './components/ui/ToastStack';
 import { ScrollJumpPill } from './components/ui/ScrollJumpPill';
-import { AtriumIntroOverlay } from './components/ui/AtriumIntroOverlay';
+const AtriumIntroOverlay = React.lazy(() =>
+  import('./components/ui/AtriumIntroOverlay').then((m) => ({ default: m.AtriumIntroOverlay }))
+);
 import { AppleOverscrollProvider } from './components/common/AppleOverscrollProvider';
 import { ChevronDown } from 'lucide-react';
 import { useTranslation } from './utils/useTranslation';
@@ -265,6 +271,7 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [hasActivatedMemberModal, setHasActivatedMemberModal] = useState(false);
   const [memberToEdit, setMemberToEdit] = useState<Member | null>(null);
   const [memberPrefillName, setMemberPrefillName] = useState<string>('');
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
@@ -374,6 +381,7 @@ export default function App() {
     memberModalOriginRef.current = resolvedOrigin;
     setMemberToEdit(null);
     setMemberPrefillName(prefillName || '');
+    setHasActivatedMemberModal(true);
     setIsMemberModalOpen(true);
   }, []);
 
@@ -390,6 +398,7 @@ export default function App() {
     memberModalOriginRef.current = resolvedOrigin;
     setMemberToEdit(member);
     setMemberPrefillName('');
+    setHasActivatedMemberModal(true);
     setIsMemberModalOpen(true);
   }, []);
 
@@ -1499,7 +1508,9 @@ export default function App() {
     <AppleOverscrollProvider>
       {/* Self-contained 5-second Atrium Confluence Intro Overlay mounted once at app start above all other content */}
       {isIntroActive && (
-        <AtriumIntroOverlay forcePlay={true} onComplete={() => setIsIntroActive(false)} />
+        <React.Suspense fallback={null}>
+          <AtriumIntroOverlay forcePlay={true} onComplete={() => setIsIntroActive(false)} />
+        </React.Suspense>
       )}
 
       {showPowerOnboarding || isOnboardingOpen ? (
@@ -1511,7 +1522,9 @@ export default function App() {
         </React.Suspense>
       ) : !isAuthenticated ? (
         <div className="min-h-screen w-screen bg-[#121110]">
-          <LoginScreen onStartOnboarding={openOnboarding} />
+          <React.Suspense fallback={<ScreenSuspenseFallback />}>
+            <LoginScreen onStartOnboarding={openOnboarding} />
+          </React.Suspense>
         </div>
       ) : (
         <div className="h-screen w-screen overflow-hidden bg-[var(--color-window-bg)]">
@@ -1607,16 +1620,24 @@ export default function App() {
         </React.Suspense>
       )}
 
-      <MemberModal
-        isOpen={isMemberModalOpen}
-        onClose={handleCloseMemberModal}
-        memberToEdit={memberToEdit}
-        prefillName={memberPrefillName}
-        useKineticSpring={
-          currentBusiness?.category === 'membership_session' && activeScreen === 'members'
-        }
-        originElement={memberModalOriginRef.current}
-      />
+      {(hasActivatedMemberModal ||
+        isMemberModalOpen ||
+        (isAuthenticated &&
+          currentBusiness?.category === 'membership_session' &&
+          activeScreen === 'members')) && (
+        <React.Suspense fallback={null}>
+          <MemberModal
+            isOpen={isMemberModalOpen}
+            onClose={handleCloseMemberModal}
+            memberToEdit={memberToEdit}
+            prefillName={memberPrefillName}
+            useKineticSpring={
+              currentBusiness?.category === 'membership_session' && activeScreen === 'members'
+            }
+            originElement={memberModalOriginRef.current}
+          />
+        </React.Suspense>
+      )}
 
       {isLeadModalOpen && (
         <React.Suspense fallback={null}>

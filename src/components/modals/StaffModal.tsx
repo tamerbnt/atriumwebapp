@@ -20,7 +20,7 @@ import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect, SelectOption } from '../ui/LabelSelect';
 import { LiveSegmentedControl } from '../ui/live/LiveSegmentedControl';
-import { Button, LiquidButton } from '@/atrium';
+import { Button, LiquidButton } from '@/atrium/core';
 import {
   StaffMember,
   StaffRole,
@@ -29,7 +29,12 @@ import {
   StaffPaymentMethod,
   BusinessCategory,
 } from '../../types/index';
-import { useAtriumStore } from '../../services/store';
+import {
+  selectCurrentStaffFromState,
+  shallowEqualObjects,
+  useAtriumActions,
+  useAtriumSelector,
+} from '../../services/store';
 import { validateStaffCredentials, normalizePhone } from '../../utils/staffRules';
 import { calculateCcpKey } from '../../utils/logisticsRules';
 
@@ -46,7 +51,15 @@ export const StaffModal: React.FC<StaffModalProps> = ({
   staffToEdit,
   currentCategory,
 }) => {
-  const { createStaffMember, updateStaffMember, staff: existingStaff, language, currentUser } = useAtriumStore();
+  const { createStaffMember, updateStaffMember } = useAtriumActions();
+  const { existingStaff, language, currentUser } = useAtriumSelector(
+    (s) => ({
+      existingStaff: selectCurrentStaffFromState(s),
+      language: s.language,
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
   const isAr = language === 'ar';
   const isEn = language === 'en';
 

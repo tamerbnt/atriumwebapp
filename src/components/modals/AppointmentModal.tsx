@@ -16,12 +16,20 @@ import {
   X,
   UserPlus,
 } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
+import {
+  selectCurrentBranchFromState,
+  selectCurrentMembersFromState,
+  selectCurrentServicesFromState,
+  selectCurrentStaffFromState,
+  shallowEqualObjects,
+  useAtriumActions,
+  useAtriumSelector,
+} from '../../services/store';
 import { Appointment, AppointmentStatus, ServiceItem } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
-import { Button, LiquidButton } from '@/atrium';
+import { Button, LiquidButton } from '@/atrium/core';
 import { formatMoney, localizeStatus } from '../../utils/rules';
 import { t, getLocalizedService, getLocalizedServiceCategory } from '../../utils/i18n';
 
@@ -43,19 +51,31 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   initialStaffId,
 }) => {
   const {
-    members,
-    staff,
-    servicesCatalog,
-    currentBranch,
-    language,
     createAppointment,
     updateAppointmentStatus,
     rescheduleAppointment,
     deleteAppointment,
     checkoutAppointment,
     addMember,
+  } = useAtriumActions();
+  const {
+    members,
+    staff,
+    servicesCatalog,
+    currentBranch,
+    language,
     networkMode,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      members: selectCurrentMembersFromState(s),
+      staff: selectCurrentStaffFromState(s),
+      servicesCatalog: selectCurrentServicesFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      language: s.language,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
 
   const isEditing = !!appointment;
 

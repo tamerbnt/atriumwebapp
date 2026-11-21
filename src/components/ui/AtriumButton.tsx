@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Button as AtriumCoreButton, Tone as AtriumTone } from '@/atrium';
-import type { Size as AtriumSize } from '@/atrium';
+import { Button as AtriumCoreButton, Tone as AtriumTone } from '@/atrium/core';
+import type { Size as AtriumSize } from '@/atrium/core';
 
 export interface AtriumButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';

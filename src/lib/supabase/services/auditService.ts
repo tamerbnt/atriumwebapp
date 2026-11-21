@@ -84,7 +84,10 @@ export const auditService = {
     try {
       let query = (client as any)
         .from('immutable_audit_logs')
-        .select('*', { count: 'exact' })
+        .select(
+          'id, account_id, business_id, branch_id, actor_staff_id, device_id, table_name, record_id, action, old_data, new_data, occurred_at',
+          { count: 'exact' }
+        )
         .eq('account_id', accountUuid)
         .order('occurred_at', { ascending: false })
         .order('id', { ascending: false })

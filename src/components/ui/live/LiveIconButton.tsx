@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { IconButton as AtriumIconButton } from '@/atrium';
+import { IconButton as AtriumIconButton } from '@/atrium/core';
 import type { LiveButtonTone, LiveButtonSize } from './LiveButton';
 
 export interface LiveIconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'size'> {

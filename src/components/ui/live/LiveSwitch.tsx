@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
-import { Toggle as AtriumToggle } from '@/atrium';
-import type { ToggleProps, Size } from '@/atrium';
+import { Toggle as AtriumToggle } from '@/atrium/core';
+import type { ToggleProps, Size } from '@/atrium/core';
 
 export interface LiveSwitchProps extends ToggleProps {
   size?: Size;

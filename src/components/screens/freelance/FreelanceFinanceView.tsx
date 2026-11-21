@@ -9,7 +9,17 @@ import {
   CheckCircle2,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  useDashboardShellState,
+  shallowEqualObjects,
+  selectCurrentFreelanceInvoicesFromState,
+  selectCurrentFreelanceExpensesFromState,
+  selectCurrentTimeLogsFromState,
+  selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceExpense, ExpenseCategory, CurrencyCode } from '../../../types/index';
@@ -55,17 +65,23 @@ export const FreelanceFinanceView: React.FC = () => {
     freelanceInvoices,
     freelanceExpenses,
     timeLogs,
-    addFreelanceExpense,
-    deleteFreelanceExpense,
     branches,
     currentBranch,
     currentBusinessConfig,
-    isSyncing,
-    networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
-    retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      freelanceInvoices: selectCurrentFreelanceInvoicesFromState(s),
+      freelanceExpenses: selectCurrentFreelanceExpensesFromState(s),
+      timeLogs: selectCurrentTimeLogsFromState(s),
+      branches: s.branches,
+      currentBranch: selectCurrentBranchFromState(s),
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
+    }),
+    shallowEqualObjects
+  );
+  const { isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } =
+    useDashboardShellState();
+  const { addFreelanceExpense, deleteFreelanceExpense } = useAtriumActions();
 
   const defaultTaxReserve = currentBusinessConfig.categorySettings?.taxReservePercent ?? 20;
   const defaultCurrency = (currentBusinessConfig.currency as CurrencyCode) || 'EUR';

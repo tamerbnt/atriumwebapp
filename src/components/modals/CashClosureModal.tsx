@@ -9,9 +9,9 @@ import {
   ShieldCheck,
   Building2,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../services/store';
+import { shallowEqualObjects, useAtriumSelector, showToast } from '../../services/store';
 import { Modal } from '../ui/Modal';
-import { Button, LiquidButton } from '@/atrium';
+import { Button, LiquidButton } from '@/atrium/core';
 import { LabelInput } from '../ui/LabelInput';
 import { formatMoney } from '../../utils/rules';
 import { DailyCashClosure, CashReceipt } from '../../types';
@@ -31,7 +31,10 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
   cashReceipts,
   onSaveClosure,
 }) => {
-  const { language, networkMode } = useAtriumStore();
+  const { language, networkMode } = useAtriumSelector(
+    (s) => ({ language: s.language, networkMode: s.networkMode || 'online' }),
+    shallowEqualObjects
+  );
   const isAr = language === 'ar';
   const isEn = language === 'en';
 

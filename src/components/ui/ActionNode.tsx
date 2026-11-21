@@ -146,7 +146,14 @@ export const ActionNode: React.FC<ActionNodeProps> = ({
                 title={av.name}
               >
                 {av.avatarUrl ? (
-                  <img src={av.avatarUrl} alt={av.name || "avatar"} />
+                  <img
+                    src={av.avatarUrl}
+                    alt={av.name || "avatar"}
+                    width={32}
+                    height={32}
+                    loading="lazy"
+                    decoding="async"
+                  />
                 ) : (
                   <span>{(av.name || "?").charAt(0).toUpperCase()}</span>
                 )}

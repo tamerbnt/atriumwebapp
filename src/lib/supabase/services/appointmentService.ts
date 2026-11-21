@@ -72,7 +72,9 @@ export const appointmentService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('salon_appointments')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, stylist_id, staff_id, client_id, client_name, client_phone, staff_name, service_id, service_name, appointment_date, start_time, end_time, duration_minutes, price, status, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('appointment_date', { ascending: true })
@@ -167,7 +169,9 @@ export const appointmentService = {
     const data = await fetchAllPages<any>((from, to) => {
       let query = (client as any)
         .from('salon_services')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, name, category, duration_minutes, price_dzd, commission_percent, is_active, version'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('name', { ascending: true })
@@ -218,7 +222,9 @@ export const appointmentService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('salon_chair_stations')
-        .select('*')
+        .select(
+          'id, chair_number, stylist_name, current_client_name, current_service_name, status, started_at, version'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
@@ -269,7 +275,7 @@ export const appointmentService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('salon_workstations')
-        .select('*')
+        .select('id, name, zone, assigned_stylist_name, status, version')
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
@@ -285,7 +291,9 @@ export const appointmentService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('salon_stylist_payouts')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, stylist_id, stylist_name, period_label, services_count, gross_revenue_dzd, commission_rate, commission_amount_dzd, status, payment_method, paid_at, version'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('created_at', { ascending: false })

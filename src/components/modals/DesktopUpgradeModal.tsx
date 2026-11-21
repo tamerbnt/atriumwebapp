@@ -17,7 +17,17 @@ import {
 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { AtriumButton } from '../ui/AtriumButton';
-import { useAtriumStore } from '../../services/store';
+import {
+  selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
+  selectCurrentFreelanceClientsFromState,
+  selectCurrentFreelanceInvoicesFromState,
+  selectCurrentMembersFromState,
+  selectCurrentProductsFromState,
+  selectCurrentSalesFromState,
+  shallowEqualObjects,
+  useAtriumSelector,
+} from '../../services/store';
 import { t } from '../../utils/i18n';
 
 interface DesktopUpgradeModalProps {
@@ -33,7 +43,32 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
   onOpenVoucherModal,
   reason = 'general',
 }) => {
-  const { currentBusiness, currentBranch, currentUser, members, products, freelanceClients, freelanceInvoices, sales, language, networkMode } = useAtriumStore();
+  const {
+    currentBusiness,
+    currentBranch,
+    currentUser,
+    members,
+    products,
+    freelanceClients,
+    freelanceInvoices,
+    sales,
+    language,
+    networkMode,
+  } = useAtriumSelector(
+    (s) => ({
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      currentUser: s.currentUser,
+      members: selectCurrentMembersFromState(s),
+      products: selectCurrentProductsFromState(s),
+      freelanceClients: selectCurrentFreelanceClientsFromState(s),
+      freelanceInvoices: selectCurrentFreelanceInvoicesFromState(s),
+      sales: selectCurrentSalesFromState(s),
+      language: s.language,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
   const [downloadingPlatform, setDownloadingPlatform] = useState<string | null>(null);
   const [exportedStatus, setExportedStatus] = useState<string | null>(null);
 

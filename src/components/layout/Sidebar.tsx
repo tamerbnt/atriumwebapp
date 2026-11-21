@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sidebar as AtriumSidebar, AtriumLogo, SidebarItem } from '@/atrium';
+import { Sidebar as AtriumSidebar, AtriumLogo, SidebarItem } from '@/atrium/core';
 import {
   Home,
   BarChart2,

@@ -12,7 +12,11 @@ import {
 } from 'lucide-react';
 import { FreelanceInvoice } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+} from '../../../services/store';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 
@@ -30,7 +34,14 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
   onMarkPaid,
 }) => {
   const { t, language, isRtl } = useTranslation();
-  const { currentBusiness, currentUser, account } = useAtriumStore();
+  const { currentBusiness, currentUser, account } = useAtriumSelector(
+    (s) => ({
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentUser: s.currentUser,
+      account: s.account,
+    }),
+    shallowEqualObjects
+  );
   const [copied, setCopied] = useState(false);
 
   if (!isOpen || !invoice) return null;

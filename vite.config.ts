@@ -6,8 +6,12 @@ import { fileURLToPath } from 'url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
-export default defineConfig(() => {
+export default defineConfig(({ command, mode }) => {
   return {
+    define:
+      command === 'build' && mode === 'production'
+        ? { 'process.env.NODE_ENV': JSON.stringify('production') }
+        : undefined,
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
@@ -21,33 +25,26 @@ export default defineConfig(() => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              if (
+                id.includes('/react/') ||
+                id.includes('/react-dom/') ||
+                id.includes('/scheduler/') ||
+                id.includes('\\react\\') ||
+                id.includes('\\react-dom\\') ||
+                id.includes('\\scheduler\\')
+              ) {
                 return 'vendor-react';
               }
               if (id.includes('motion')) {
                 return 'vendor-motion';
               }
-              if (id.includes('lucide-react')) {
-                return 'vendor-icons';
-              }
               if (id.includes('@supabase') || id.includes('supabase')) {
                 return 'vendor-supabase';
               }
               return 'vendor-libs';
-            }
-            if (id.includes('/src/lib/supabase/')) {
-              return 'vendor-supabase';
-            }
-            if (id.includes('/src/components/ui/')) {
-              return 'ui-components';
-            }
-            if (id.includes('/src/utils/')) {
-              return 'app-utils';
-            }
-            // Category screens grouping
-            const screenMatch = id.match(/\/src\/components\/screens\/([a-z0-9_]+)\//);
-            if (screenMatch) {
-              return `category-${screenMatch[1]}`;
             }
           },
         },

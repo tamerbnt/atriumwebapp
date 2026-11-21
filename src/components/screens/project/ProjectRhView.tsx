@@ -443,6 +443,10 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             <img
               src={talent.portraitPhotoUrl}
               alt={talent.fullName}
+              width={40}
+              height={40}
+              loading="lazy"
+              decoding="async"
               referrerPolicy="no-referrer"
               className="w-10 h-10 rounded-full object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
             />
@@ -827,6 +831,10 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   <img
                     src={talent.portraitPhotoUrl}
                     alt={talent.fullName}
+                    width={96}
+                    height={96}
+                    loading="lazy"
+                    decoding="async"
                     referrerPolicy="no-referrer"
                     className="w-24 h-24 rounded-full object-cover shadow-md mb-4 bg-[#F3EDE7] dark:bg-[#2B2825]"
                   />
@@ -902,6 +910,10 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                         <img
                           src={selectedTalent.portraitPhotoUrl}
                           alt={selectedTalent.fullName}
+                          width={64}
+                          height={64}
+                          loading="lazy"
+                          decoding="async"
                           referrerPolicy="no-referrer"
                           className="w-full h-full object-cover"
                         />

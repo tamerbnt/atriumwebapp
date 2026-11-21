@@ -15,7 +15,16 @@ import {
   CheckCircle,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  useAtriumSelector,
+  useAtriumActions,
+  useDashboardShellState,
+  shallowEqualObjects,
+  selectCurrentFreelanceProjectsFromState,
+  selectCurrentFreelanceClientsFromState,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import {
   FreelanceProject,
@@ -107,6 +116,20 @@ export const FreelanceDeliverablesView: React.FC = () => {
   const {
     freelanceProjects,
     freelanceClients,
+    branches,
+    currentBranch,
+  } = useAtriumSelector(
+    (s) => ({
+      freelanceProjects: selectCurrentFreelanceProjectsFromState(s),
+      freelanceClients: selectCurrentFreelanceClientsFromState(s),
+      branches: s.branches,
+      currentBranch: selectCurrentBranchFromState(s),
+    }),
+    shallowEqualObjects
+  );
+  const { isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } =
+    useDashboardShellState();
+  const {
     updateDeliverableStage,
     addDeliverable,
     updateDeliverable,
@@ -114,15 +137,8 @@ export const FreelanceDeliverablesView: React.FC = () => {
     addFreelanceProject,
     deleteFreelanceProject,
     startTimer,
-    branches,
-    currentBranch,
     setScreen,
-    isSyncing,
-    networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
-    retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const [viewLayout, setViewLayout] = useState<'kanban' | 'collection'>('kanban');
   const [collectionViewMode, setCollectionViewMode] = useState<'list' | 'grid'>('list');

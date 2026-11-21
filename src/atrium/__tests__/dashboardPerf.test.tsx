@@ -32,7 +32,15 @@ import {
   selectCurrentSalesFromState,
   selectCurrentLeadsFromState,
   selectCurrentMemberCheckInsFromState,
+  startTimerAction,
+  pauseTimerAction,
+  resumeTimerAction,
+  resetTimerAction,
+  getTimerState,
+  subscribeAtriumStore,
+  subscribeTimerState,
 } from '../../services/store';
+import { vi } from 'vitest';
 
 const ANCHOR = new Date('2026-11-14T14:00:00');
 
@@ -457,5 +465,50 @@ describe('Dashboard performance foundations & isolation guarantees', () => {
 
     const totalMs = performance.now() - t0;
     expect(totalMs).toBeLessThan(120);
+  });
+
+  it('1 Hz active timer ticks notify timer micro-store subscribers without notifying main store subscribers', () => {
+    vi.useFakeTimers();
+    try {
+      let mainStoreCalls = 0;
+      let timerStoreCalls = 0;
+      const unsubMain = subscribeAtriumStore(() => {
+        mainStoreCalls += 1;
+      });
+      const unsubTimer = subscribeTimerState(() => {
+        timerStoreCalls += 1;
+      });
+
+      startTimerAction('cli_1', 'Client Test', 'prj_1', 'Projet Test', 'Task focus');
+      expect(mainStoreCalls).toBe(1);
+      expect(timerStoreCalls).toBe(1);
+      expect(getTimerState().elapsedSeconds).toBe(0);
+
+      // 60 seconds of 1 Hz ticks -> 0 main store notifications, 60 timer micro-store notifications
+      vi.advanceTimersByTime(60_000);
+      expect(mainStoreCalls).toBe(1);
+      expect(timerStoreCalls).toBe(61);
+      expect(getTimerState().elapsedSeconds).toBe(60);
+
+      pauseTimerAction();
+      expect(mainStoreCalls).toBe(2);
+      vi.advanceTimersByTime(10_000);
+      expect(getTimerState().elapsedSeconds).toBe(60);
+
+      resumeTimerAction();
+      expect(mainStoreCalls).toBe(3);
+      vi.advanceTimersByTime(5_000);
+      expect(getTimerState().elapsedSeconds).toBe(65);
+      expect(mainStoreCalls).toBe(3);
+
+      resetTimerAction();
+      expect(getTimerState().elapsedSeconds).toBe(0);
+      expect(getTimerState().isRunning).toBe(false);
+
+      unsubMain();
+      unsubTimer();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

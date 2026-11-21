@@ -12,7 +12,16 @@ import {
   Coins,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  selectCurrentBranchFromState,
+  selectCurrentParkedOrdersFromState,
+  selectCurrentSalesFromState,
+  shallowEqualObjects,
+  showToast,
+  useAtriumActions,
+  useAtriumSelector,
+  useDashboardShellState,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { Sale, ParkedOrder } from '../../../types/index';
 import { formatMoney } from '../../../utils/rules';
@@ -68,23 +77,32 @@ export const PosOrdersView: React.FC = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
   const {
-    sales,
-    parkedOrders,
-    currentBranch,
-    branches,
     setScreen,
     resumeParkedOrder,
     deleteParkedOrder,
     refundSale,
     batchDeleteSales,
+  } = useAtriumActions();
+  const { isSyncing, networkMode, retryCloudSync, lastSyncedAt, isSyncTimeout } =
+    useDashboardShellState();
+  const {
+    sales,
+    parkedOrders,
+    currentBranch,
+    branches,
     receiptConfig,
     currentUser,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  } = useAtriumSelector(
+    (s) => ({
+      sales: selectCurrentSalesFromState(s),
+      parkedOrders: selectCurrentParkedOrdersFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      receiptConfig: s.receiptConfig,
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
 
   const [activeSubTab, setActiveSubTab] = useState<'sales' | 'parked'>('sales');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | '7days' | 'month'>('all');
