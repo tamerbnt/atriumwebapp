@@ -15,6 +15,7 @@
   --atr-elev: #FFFFFF;
   --atr-pop: #FFFFFF;
   --atr-soft: #ede6e0;
+  --atr-ghost-hover: rgba(23, 19, 15, 0.055);
   --atr-line: rgba(23, 19, 15, 0.055);
   --atr-divider: rgba(23, 19, 15, 0.05);
   --pod: #F3EDE7;
@@ -259,6 +260,7 @@
   --atr-elev: #22201E;
   --atr-pop: #262422;
   --atr-soft: #2B2825;
+  --atr-ghost-hover: rgba(255, 255, 255, 0.085);
   --atr-line: rgba(255, 255, 255, 0.065);
   --atr-divider: rgba(255, 255, 255, 0.06);
   --pod: #191716;

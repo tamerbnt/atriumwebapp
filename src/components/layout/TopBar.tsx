@@ -364,7 +364,7 @@ export const TopBar: React.FC<TopBarProps> = ({
     return (
       <nav
         aria-label="Breadcrumb"
-        className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--top-ctl-h,40px)] px-[var(--s2,8px)] rounded-full bg-[#F3EDE7]/90 dark:bg-[#22201E] shadow-[0_1px_3px_rgba(23,19,15,0.04)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] max-w-full min-w-0"
+        className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--top-ctl-h,40px)] max-w-full min-w-0"
       >
         {nodes.map((node, idx) => {
           const isLast = idx === nodes.length - 1;
@@ -384,12 +384,12 @@ export const TopBar: React.FC<TopBarProps> = ({
                   aria-current="page"
                   className="inline-flex items-center gap-[var(--s2,8px)] h-[var(--btn-sm-h,32px)] t-small font-semibold text-[var(--text-1)] dark:text-white min-w-0 px-[var(--s2,8px)]"
                 >
-                  <span
+                  <CurrentIcon
+                    size={16}
+                    strokeWidth={1.5}
                     aria-hidden="true"
-                    className="w-[var(--s6,24px)] h-[var(--s6,24px)] rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center shrink-0"
-                  >
-                    <CurrentIcon size={16} strokeWidth={1.5} />
-                  </span>
+                    className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0"
+                  />
                   <span className="truncate max-w-[160px] sm:max-w-[240px]">{node.label}</span>
                 </span>
               ) : (
@@ -397,7 +397,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                   type="button"
                   data-no-liquid="true"
                   onClick={node.onClick}
-                  className="inline-flex items-center gap-[var(--s2,8px)] h-[var(--btn-sm-h,32px)] px-[var(--s2,8px)] rounded-full t-small text-[var(--text-2)] dark:text-[var(--text-dark-2)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] hover:bg-white/90 dark:hover:bg-[#2B2825] active:scale-[0.98] transition-all duration-150 cursor-pointer min-w-0 shrink-0"
+                  className="inline-flex items-center gap-[var(--s2,8px)] h-[var(--btn-sm-h,32px)] px-[var(--s2,8px)] rounded-full t-small text-[var(--text-2)] dark:text-[var(--text-dark-2)] hover:text-[var(--text-1)] dark:hover:text-white hover:bg-[var(--atr-ghost-hover)] active:scale-[0.98] transition-all duration-150 cursor-pointer min-w-0 shrink-0"
                 >
                   {node.isHome && <Home size={16} strokeWidth={1.5} className="shrink-0" />}
                   <span className="truncate max-w-[120px] sm:max-w-[160px]">{node.label}</span>
@@ -949,6 +949,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             placeholder={language === 'ar' ? 'بحث...' : language === 'fr' ? 'Rechercher...' : 'Search...'}
             openWidth={260}
             shutSize={40}
+            variant="ghost"
             onSearch={() => {
               onOpenCommandPalette();
             }}
@@ -959,13 +960,17 @@ export const TopBar: React.FC<TopBarProps> = ({
         {import.meta.env.DEV && (
           <LiveButton
             shape="capsule"
-            tone={activeScreen === 'chart_catalog' ? 'accent' : 'soft'}
+            tone={activeScreen === 'chart_catalog' ? 'accent' : 'ghost'}
             onClick={() =>
               setScreen(
                 activeScreen === 'chart_catalog' ? 'dashboard' : 'chart_catalog'
               )
             }
-            className="!rounded-full !px-[var(--btn-px,16px)] !h-[var(--top-ctl-h,40px)] t-btn cursor-pointer hidden sm:inline-flex items-center gap-[var(--btn-icon-gap,8px)] shadow-[0_1px_3px_rgba(23,19,15,0.04)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]"
+            className={`!rounded-full !px-[var(--btn-px,16px)] !h-[var(--top-ctl-h,40px)] t-btn cursor-pointer hidden sm:inline-flex items-center gap-[var(--btn-icon-gap,8px)] ${
+              activeScreen === 'chart_catalog'
+                ? 'shadow-[0_1px_3px_rgba(23,19,15,0.04)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]'
+                : ''
+            }`}
             title="Phase 1 Dashboard Component Catalog (Dev only)"
             aria-label="Toggle dashboard component catalog"
           >
@@ -977,9 +982,9 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Focus Mode / Collapse Header Button */}
         <LiveIconButton
           icon={<ChevronUp size={20} strokeWidth={1.5} />}
-          tone="soft"
+          tone="ghost"
           onClick={toggleTopBarCollapsed}
-          className="hidden sm:inline-flex !w-[var(--top-ctl-h,40px)] !h-[var(--top-ctl-h,40px)] !rounded-full text-[var(--text-2)] dark:text-[var(--text-dark-2)]"
+          className="hidden sm:inline-flex !w-[var(--top-ctl-h,40px)] !h-[var(--top-ctl-h,40px)] !rounded-full"
           title={language === 'ar' ? 'طي الشريط' : language === 'fr' ? 'Réduire' : 'Collapse'}
           aria-label="Collapse header"
         />
@@ -988,7 +993,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <LiveIconButton
           icon={<RotateCw size={16} strokeWidth={1.5} className={isSyncing ? 'animate-spin' : ''} />}
           kick="spin"
-          tone="soft"
+          tone="ghost"
           onClick={() => syncWithSupabase()}
           className="!w-[var(--top-ctl-h,40px)] !h-[var(--top-ctl-h,40px)] !rounded-full"
           title={
@@ -1012,7 +1017,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           <LiveIconButton
             icon={<Bell size={20} strokeWidth={1.5} />}
             badge={unreadNotificationCount > 0 ? (unreadNotificationCount > 9 ? '9+' : unreadNotificationCount) : null}
-            tone={notificationsOpen ? 'accent' : 'soft'}
+            tone={notificationsOpen ? 'accent' : 'ghost'}
             onClick={toggleNotifications}
             title={language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}
             aria-label="Open notifications menu"
@@ -1109,11 +1114,11 @@ export const TopBar: React.FC<TopBarProps> = ({
               <LiveButton
                 {...props}
                 shape="capsule"
-                tone="soft"
-                className={`!rounded-full !ps-[var(--s1,4px)] !pe-[var(--s3,12px)] !py-[var(--s1,4px)] !h-[var(--top-ctl-h,40px)] !max-h-[var(--top-ctl-h,40px)] gap-[var(--top-gap,8px)] cursor-pointer select-none transition-shadow ${
+                tone={open ? 'soft' : 'ghost'}
+                className={`!rounded-full !ps-[var(--s1,4px)] !pe-[var(--s2,8px)] !py-[var(--s1,4px)] !h-[var(--top-ctl-h,40px)] !max-h-[var(--top-ctl-h,40px)] gap-[var(--top-gap,8px)] cursor-pointer select-none transition-shadow ${
                   open
                     ? 'shadow-[0_2px_10px_rgba(23,19,15,0.09)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]'
-                    : 'shadow-[0_1px_3px_rgba(23,19,15,0.04)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]'
+                    : ''
                 }`}
                 aria-label={`Operator: ${currentUser.fullName} (${currentUser.role})`}
               >

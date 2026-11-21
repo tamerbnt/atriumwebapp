@@ -7,12 +7,12 @@ import { cx, sizeProps } from '../../hooks';
 import type { Size } from '../../hooks';
 import s from './Button.module.css';
 
-export type Tone = 'accent' | 'outline' | 'soft' | 'success';
+export type Tone = 'accent' | 'outline' | 'soft' | 'ghost' | 'success';
 
 export type ButtonShape = 'squircle' | 'capsule';
 
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
-  /** accent: brand orange · outline · soft: neutral · success: green */
+  /** accent: brand orange · outline · soft: neutral · ghost: chromeless · success: green */
   tone?: Tone;
   /** sm / md / lg = 28 / 34 / 44 px, a number of px, or omit to inherit --atr-h from the context */
   size?: Size;
@@ -52,6 +52,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       className={cx(s.root, s[tone], iconOnly && s.icon, isCapsule && s.capsule, className)}
       data-atr-liquid=""
+      data-atr-tone={tone}
       data-sq={sqToken}
       data-sq-border={sqBorder}
       {...sp}

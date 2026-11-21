@@ -25,6 +25,10 @@
   top: calc(var(--s1, 4px) * -1);
   right: calc(var(--s1, 4px) * -1);
 }
+.ghostFloating {
+  top: 2px;
+  right: 2px;
+}
 .inline {
   display: inline-block;
 }

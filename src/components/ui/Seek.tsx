@@ -29,6 +29,7 @@ export interface SeekProps {
   openWidth?: number;
   shutSize?: number;
   shape?: "capsule" | "squircle";
+  variant?: "pill" | "ghost";
   onSearch?: (val: string) => void;
   autoFocusOnOpen?: boolean;
 }
@@ -41,6 +42,7 @@ export const Seek: React.FC<SeekProps> = React.memo(({
   openWidth = 260,
   shutSize = 40,
   shape = "capsule",
+  variant = "pill",
   onSearch,
   autoFocusOnOpen = true,
 }) => {
@@ -178,6 +180,7 @@ export const Seek: React.FC<SeekProps> = React.memo(({
       data-press="false"
       data-busy="false"
       data-shape={shape}
+      data-variant={variant}
       style={
         {
           "--frame": `${isOpen ? openWidth : shutSize}px`,
@@ -221,7 +224,11 @@ export const Seek: React.FC<SeekProps> = React.memo(({
             e.stopPropagation();
             handleToggle();
           }}
-          className="sek-lens-btn absolute left-0 top-0 h-full flex items-center justify-center cursor-pointer z-10 text-black/65 hover:text-black dark:text-white/70 dark:hover:text-white transition-colors"
+          className={`sek-lens-btn absolute left-0 top-0 h-full flex items-center justify-center cursor-pointer z-10 transition-colors ${
+            variant === "ghost"
+              ? "text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-[var(--text-dark-2)] dark:hover:text-white"
+              : "text-black/65 hover:text-black dark:text-white/70 dark:hover:text-white"
+          }`}
           style={{
             width: `${shutSize}px`,
             background: 'none',

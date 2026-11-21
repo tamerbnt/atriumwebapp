@@ -83,7 +83,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
   return (
     <span className={s.wrap} {...sp}>
       <Button ref={ref} iconOnly tone={tone} onClick={handle} leading={icon} {...rest} />
-      <Badge value={badge} />
+      <Badge value={badge} className={tone === 'ghost' ? s.ghostFloating : undefined} />
     </span>
   );
 });
