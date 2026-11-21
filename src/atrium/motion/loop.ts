@@ -31,8 +31,10 @@ const MAX_DT = 1 / 20;
 const SLOW_FRAME = 0.034;
 /** Governor: look at this many consecutive active frames at a time. */
 const WINDOW = 45;
-/** Governor: lower the tier when at least this share of the window was slow. */
-const SLOW_SHARE = 0.8;
+/** Governor: lower the tier when at least this share of the window was slow.
+ *  0.5 → fires after ~50% slow frames (~750ms of bursty jank) instead of 80% (~1.5s).
+ */
+const SLOW_SHARE = 0.5;
 /** Gaps longer than this are tab switches, not slowness. */
 const GAP = 0.25;
 

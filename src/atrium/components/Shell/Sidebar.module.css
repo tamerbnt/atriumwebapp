@@ -83,7 +83,8 @@
 .magneticHl {
   position: absolute;
   left: var(--sb-pad, 12px);
-  width: calc(var(--sb-item, 44px) + var(--open) * 176px);
+  /* Static full width; parent clip-path controls visible area — no per-frame layout */
+  width: calc(var(--sb-item, 44px) + 176px);
   top: 0;
   height: var(--sb-item, 44px);
   border-radius: 22px;
@@ -100,7 +101,8 @@
 .activeBlob {
   position: absolute;
   left: var(--sb-pad, 12px);
-  width: calc(var(--sb-item, 44px) + var(--open) * 176px);
+  /* Static full width; parent clip-path controls visible area — no per-frame layout */
+  width: calc(var(--sb-item, 44px) + 176px);
   top: 0;
   height: var(--sb-item, 44px);
   border-radius: 22px;
@@ -118,7 +120,8 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
-  width: calc(var(--sb-item, 44px) + var(--open) * 176px);
+  /* Static full width; parent clip-path controls visible area — no per-frame layout */
+  width: calc(var(--sb-item, 44px) + 176px);
   height: var(--sb-item, 44px);
   margin: 0 var(--sb-pad, 12px);
   padding: 0;

@@ -11,6 +11,7 @@ import {
   toggleTopBarCollapsedAction,
   setTopBarCollapsedAction,
   loginWithPinAction,
+  shallowEqualObjects,
 } from './services/store';
 import { Member } from './types/index';
 import { AppShell } from '@/atrium/core';
@@ -201,42 +202,97 @@ import {
 
 export default function App() {
   useAtriumStoreLifecycle();
-  const currentBusiness = useAtriumSelector(selectCurrentBusinessFromState);
-  const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
-  const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
-  const activeScreen = useAtriumSelector((s) => s.activeScreen);
-  const theme = useAtriumSelector((s) => s.theme);
-  const density = useAtriumSelector((s) => s.density || 'default');
-  const language = useAtriumSelector((s) => s.language);
-  const isLanguageAuto = useAtriumSelector((s) => s.isLanguageAuto);
+
+  // ── Grouped selectors: 30 individual subscriptions → 3 (P0 perf fix) ──────
+  // Each group uses shallowEqualObjects so a render fires only when a value
+  // in that group actually changes (not on every notify() call).
+
+  // Group 1: Shell / routing state — changes on nav, theme, auth, layout prefs
+  const {
+    currentBusiness,
+    currentBusinessId,
+    currentBranchId,
+    activeScreen,
+    theme,
+    density,
+    language,
+    isLanguageAuto,
+    isAuthenticated,
+    isTopBarCollapsed,
+    isTopBarAutoHide,
+    isListPodExpanded,
+  } = useAtriumSelector(
+    (s) => ({
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBusinessId: s.currentBusinessId,
+      currentBranchId: s.currentBranchId,
+      activeScreen: s.activeScreen,
+      theme: s.theme,
+      density: s.density || 'default',
+      language: s.language,
+      isLanguageAuto: s.isLanguageAuto,
+      isAuthenticated: s.isAuthenticated,
+      isTopBarCollapsed: s.isTopBarCollapsed || false,
+      isTopBarAutoHide: s.isTopBarAutoHide ?? false,
+      isListPodExpanded: s.isListPodExpanded,
+    }),
+    shallowEqualObjects
+  );
+
+  // Group 2: Modal / overlay state — fires only on open/close events
+  const {
+    isOnboardingOpen,
+    isFastSwitchOpen,
+    isDesktopUpgradeModalOpen,
+    desktopUpgradeReason,
+    hasConcurrencyConflicts,
+  } = useAtriumSelector(
+    (s) => ({
+      isOnboardingOpen: s.isOnboardingOpen,
+      isFastSwitchOpen: s.isFastSwitchOpen,
+      isDesktopUpgradeModalOpen: s.isDesktopUpgradeModalOpen,
+      desktopUpgradeReason: s.desktopUpgradeReason,
+      hasConcurrencyConflicts: (s.concurrencyConflicts?.length || 0) > 0,
+    }),
+    shallowEqualObjects
+  );
+
+  // Group 3: Role state — changes only on facility switch
+  const {
+    activeGarageRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeAgriRole,
+    activePmRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
+  } = useAtriumSelector(
+    (s) => ({
+      activeGarageRole: s.activeGarageRole,
+      activeLegalRole: s.activeLegalRole,
+      activeLogisticsRole: s.activeLogisticsRole,
+      activeContractorRole: s.activeContractorRole,
+      activeRealEstateRole: s.activeRealEstateRole,
+      activeManufacturingRole: s.activeManufacturingRole,
+      activeAgriRole: s.activeAgriRole,
+      activePmRole: s.activePmRole,
+      activeMembershipRole: s.activeMembershipRole,
+      activeAppointmentRole: s.activeAppointmentRole,
+      activePosRole: s.activePosRole,
+      activeEducationRole: s.activeEducationRole,
+    }),
+    shallowEqualObjects
+  );
   const setSystemDefaultLanguage = setSystemDefaultLanguageAction;
-  const isAuthenticated = useAtriumSelector((s) => s.isAuthenticated);
-  const isOnboardingOpen = useAtriumSelector((s) => s.isOnboardingOpen);
-  const isFastSwitchOpen = useAtriumSelector((s) => s.isFastSwitchOpen);
-  const isDesktopUpgradeModalOpen = useAtriumSelector((s) => s.isDesktopUpgradeModalOpen);
-  const desktopUpgradeReason = useAtriumSelector((s) => s.desktopUpgradeReason);
   const openOnboarding = openOnboardingAction;
   const closeOnboarding = closeOnboardingAction;
   const closeFastSwitch = closeFastSwitchAction;
   const closeDesktopUpgradeModal = closeDesktopUpgradeModalAction;
-  const activeGarageRole = useAtriumSelector((s) => s.activeGarageRole);
-  const activeLegalRole = useAtriumSelector((s) => s.activeLegalRole);
-  const activeLogisticsRole = useAtriumSelector((s) => s.activeLogisticsRole);
-  const activeContractorRole = useAtriumSelector((s) => s.activeContractorRole);
-  const activeRealEstateRole = useAtriumSelector((s) => s.activeRealEstateRole);
-  const activeManufacturingRole = useAtriumSelector((s) => s.activeManufacturingRole);
-  const activeAgriRole = useAtriumSelector((s) => s.activeAgriRole);
-  const activePmRole = useAtriumSelector((s) => s.activePmRole);
-  const activeMembershipRole = useAtriumSelector((s) => s.activeMembershipRole);
-  const activeAppointmentRole = useAtriumSelector((s) => s.activeAppointmentRole);
-  const activePosRole = useAtriumSelector((s) => s.activePosRole);
-  const activeEducationRole = useAtriumSelector((s) => s.activeEducationRole);
-  const isTopBarCollapsed = useAtriumSelector((s) => s.isTopBarCollapsed || false);
-  const isTopBarAutoHide = useAtriumSelector((s) => s.isTopBarAutoHide ?? false);
-  const isListPodExpanded = useAtriumSelector((s) => s.isListPodExpanded);
-  const hasConcurrencyConflicts = useAtriumSelector(
-    (s) => (s.concurrencyConflicts?.length || 0) > 0
-  );
   const toggleTopBarCollapsed = toggleTopBarCollapsedAction;
   const setTopBarCollapsed = setTopBarCollapsedAction;
   const loginWithPin = loginWithPinAction;

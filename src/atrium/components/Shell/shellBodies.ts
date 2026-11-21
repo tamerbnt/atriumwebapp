@@ -16,7 +16,7 @@ export class SidebarBody implements Body {
   target: number;
   constructor(readonly root: HTMLElement, initial: boolean) {
     this.target = initial ? 1 : 0;
-    this.open = new Spring(this.target, 150);
+    this.open = new Spring(this.target, 280);
   }
   setOpen(v: boolean): void {
     this.target = v ? 1 : 0;
@@ -64,7 +64,7 @@ export class BarBody implements Body {
   H = 64;
   constructor(readonly bar: HTMLElement, readonly main: HTMLElement, readonly root: HTMLElement, hidden: boolean) {
     this.hidden = hidden;
-    this.p = new Spring(hidden ? 1 : 0, 140);
+    this.p = new Spring(hidden ? 1 : 0, 280);
   }
   /** Set before React re-renders the layout, so the transform cancels the jump from frame 0. */
   setHidden(v: boolean): void {
@@ -132,7 +132,7 @@ export class PushBody implements Body {
 
   constructor(readonly content: HTMLElement, readonly root: HTMLElement, initial: boolean) {
     this.target = initial ? 1 : 0;
-    this.p = new Spring(this.target, 150);
+    this.p = new Spring(this.target, 280);
   }
 
   measure(): void {
