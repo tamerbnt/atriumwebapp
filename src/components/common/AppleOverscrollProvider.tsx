@@ -218,7 +218,14 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
       const rawAxisDelta = axis === 'y' ? e.deltaY : e.deltaX;
       if (Math.abs(rawAxisDelta) < 0.1) return;
 
-      const resolved = resolveScrollContainer(targetEl, axis, rawAxisDelta);
+      const isAlreadyActive =
+        Boolean(activeRef.current &&
+        activeRef.current.direction === axis &&
+        Math.abs(activeRef.current.offset) > 0.05);
+
+      const resolved = isAlreadyActive
+        ? { container: activeRef.current!.container, canScrollNatively: false, edgeSign: activeRef.current!.edgeSign }
+        : resolveScrollContainer(targetEl, axis, rawAxisDelta);
       if (!resolved) return;
 
       const { container, canScrollNatively, edgeSign } = resolved;

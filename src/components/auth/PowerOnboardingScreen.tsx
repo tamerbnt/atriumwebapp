@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2,
@@ -269,6 +269,22 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
   // Stage 2: 10 Conversational Question Cards (Indices 0 to 9)
   const [currentStep, setCurrentStep] = useState<number>(0);
+  // Ref that collects every step-transition setTimeout handle so they can be
+  // cleared if the component unmounts before the 60-120 ms delay fires.
+  const stepTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const scheduleStep = (step: number, delay: number) => {
+    const id = setTimeout(() => {
+      stepTimers.current = stepTimers.current.filter((t) => t !== id);
+      setCurrentStep(step);
+    }, delay);
+    stepTimers.current.push(id);
+  };
+  useEffect(() => {
+    return () => {
+      stepTimers.current.forEach(clearTimeout);
+      stepTimers.current = [];
+    };
+  }, []);
   const [step9WideView, setStep9WideView] = useState<boolean>(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
@@ -320,10 +336,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     setIsGoogleLoading(true);
     setFullName('Mehdi Samih');
     setEmail('mehdisamih79@gmail.com');
-    setTimeout(() => {
-      setIsGoogleLoading(false);
-      setCurrentStep(1);
-    }, 350);
+    setIsGoogleLoading(false);
+    scheduleStep(1, 350);
   };
 
   // Step 1 State: Operational Challenge / Frustration
@@ -363,9 +377,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   // Auto-advancement transitions (Higgsfield single-selection UX: select & jump smoothly)
   const handleSelectFrustration = (id: typeof primaryFrustration) => {
     setPrimaryFrustration(id);
-    setTimeout(() => {
-      setCurrentStep(2);
-    }, 60);
+    scheduleStep(2, 60);
   };
 
   const handleOpenGoalModal = (goalId: UniversalStrategicGoalId) => {
@@ -376,30 +388,22 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   const handleConfirmGoalAndContinue = (goalId: UniversalStrategicGoalId) => {
     setSelectedGoalId(goalId);
     setActiveGoalModalId(null);
-    setTimeout(() => {
-      setCurrentStep(3);
-    }, 60);
+    scheduleStep(3, 60);
   };
 
   const handleSelectWorkflow = (id: typeof dailyWorkflow) => {
     setDailyWorkflow(id);
-    setTimeout(() => {
-      setCurrentStep(4);
-    }, 60);
+    scheduleStep(4, 60);
   };
 
   const handleSelectTeamScale = (id: typeof teamScale) => {
     setTeamScale(id);
-    setTimeout(() => {
-      setCurrentStep(5);
-    }, 60);
+    scheduleStep(5, 60);
   };
 
   const handleSelectSettlement = (id: typeof settlementStyle) => {
     setSettlementStyle(id);
-    setTimeout(() => {
-      setCurrentStep(6);
-    }, 60);
+    scheduleStep(6, 60);
   };
 
   const [customTradeObject, setCustomTradeObject] = useState<CatalogBusinessTrade | null>(null);
@@ -410,16 +414,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       setCustomTradeObject(trade);
     }
     setManualCategoryOverride(trade.category);
-    setTimeout(() => {
-      setCurrentStep(7);
-    }, 120);
+    scheduleStep(7, 120);
   };
 
   const handleSelectReferral = (sourceId: string) => {
     setReferralSource(sourceId);
-    setTimeout(() => {
-      setCurrentStep(8);
-    }, 60);
+    scheduleStep(8, 60);
   };
 
   // Find currently selected trade in catalog

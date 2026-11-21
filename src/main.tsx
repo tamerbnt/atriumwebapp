@@ -8,7 +8,7 @@ import { initSquircleEngine } from './utils/squircle';
 import { loadLocale } from './utils/i18n';
 import { getResolvedInitialLanguage } from './services/store';
 
-configureMotion({ tier: 'full' });
+configureMotion({ tier: 'auto' });
 initFluidScrollbar();
 initSquircleEngine();
 

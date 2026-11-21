@@ -440,6 +440,8 @@ function flushDirtyQueue(): void {
 
   const { smooth, tokens } = readRootTokens();
   const writes: PendingWrite[] = [];
+  const cleans: HTMLElement[] = [];
+  const posRelWrites: HTMLElement[] = [];
 
   // Phase A: Batch all DOM reads together before any writes (zero layout thrash)
   dirtyQueue.forEach((el) => {
@@ -450,10 +452,7 @@ function flushDirtyQueue(): void {
     }
     const attr = el.getAttribute('data-sq');
     if (!attr || attr === 'none') {
-      el.style.clipPath = '';
-      (el.style as any).webkitClipPath = '';
-      removeStrokeOverlay(el);
-      restoreOverflowStyle(el);
+      cleans.push(el);
       cachedEntries.delete(el);
       return;
     }
@@ -494,7 +493,7 @@ function flushDirtyQueue(): void {
       prev.overflowAdjusted === needsOverflowRelease
     ) {
       if (needsPosRelative) {
-        el.style.position = 'relative';
+        posRelWrites.push(el);
       }
       return;
     }
@@ -534,7 +533,17 @@ function flushDirtyQueue(): void {
 
   dirtyQueue.clear();
 
-  // Phase B: Batch all DOM writes together
+  // Phase B: Batch all DOM writes together (zero layout reads)
+  for (let i = 0; i < cleans.length; i++) {
+    const el = cleans[i];
+    el.style.clipPath = '';
+    (el.style as any).webkitClipPath = '';
+    removeStrokeOverlay(el);
+    restoreOverflowStyle(el);
+  }
+  for (let i = 0; i < posRelWrites.length; i++) {
+    posRelWrites[i].style.position = 'relative';
+  }
   for (let i = 0; i < writes.length; i++) {
     const item = writes[i];
     const {
@@ -744,7 +753,35 @@ function unregisterNode(el: HTMLElement): void {
   savedOverflowStyles.delete(el);
 }
 
+// Pending subtree roots queued from MutationObserver addedNodes callbacks.
+// Coalesced into a single idle/RAF scan to avoid flooding the main thread
+// when React mounts 100+ components simultaneously during a screen transition.
+let pendingScanRoots: HTMLElement[] = [];
+let scanCoalesceId: ReturnType<typeof setTimeout> | null = null;
+
+function flushPendingScanRoots(): void {
+  scanCoalesceId = null;
+  const roots = pendingScanRoots;
+  pendingScanRoots = [];
+  for (let i = 0; i < roots.length; i++) {
+    scanSubtree(roots[i]);
+  }
+}
+
+function enqueueScanRoot(el: HTMLElement): void {
+  pendingScanRoots.push(el);
+  if (scanCoalesceId === null) {
+    // Defer by one task (4 ms) to coalesce all MO callbacks from a single
+    // React commit before scanning the subtree. This prevents O(N²) behaviour
+    // when N elements are added in one React reconciliation pass.
+    scanCoalesceId = setTimeout(flushPendingScanRoots, 4);
+  }
+}
+
 function scanSubtree(root: ParentNode): void {
+  if (root instanceof Element && (root.tagName.toLowerCase() === 'svg' || root.hasAttribute('data-sq-stroke'))) {
+    return;
+  }
   if (root instanceof HTMLElement && root.hasAttribute('data-sq')) {
     registerNode(root);
   }
@@ -806,7 +843,7 @@ export function initSquircleEngine(): void {
         for (let j = 0; j < m.addedNodes.length; j++) {
           const node = m.addedNodes[j];
           if (node instanceof HTMLElement) {
-            scanSubtree(node);
+            enqueueScanRoot(node);
           }
         }
         for (let j = 0; j < m.removedNodes.length; j++) {

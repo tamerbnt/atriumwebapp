@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, startTransition } from 'react';
 import {
   Account,
   AccountSubscription,
@@ -1862,13 +1862,15 @@ export function setScreenAction(activeScreen: ActiveScreen) {
     }
   }
 
-  globalState = {
-    ...globalState,
-    activeScreen,
-    activePmRole: nextRole,
-    activePmSubScreen: nextSubScreen,
-  };
-  notify();
+  startTransition(() => {
+    globalState = {
+      ...globalState,
+      activeScreen,
+      activePmRole: nextRole,
+      activePmSubScreen: nextSubScreen,
+    };
+    notify();
+  });
 }
 
 export function openOnboardingAction() {
@@ -2078,17 +2080,19 @@ export function switchFacilityAction(businessId: string, branchId?: string) {
   const prevBusinessId = globalState.currentBusinessId;
   const prevBranchId = globalState.currentBranchId;
 
-  globalState = {
-    ...globalState,
-    currentBusinessId: businessId,
-    currentBranchId: targetBranchId,
-    activeScreen: nextScreen,
-    selectedMemberId: null,
-    isDetailOpen: false,
-  };
-  applyFacilityAccentCssVars(targetBusiness?.category, globalState.theme);
-  ensureBranchSubscription(targetBranchId);
-  notify();
+  startTransition(() => {
+    globalState = {
+      ...globalState,
+      currentBusinessId: businessId,
+      currentBranchId: targetBranchId,
+      activeScreen: nextScreen,
+      selectedMemberId: null,
+      isDetailOpen: false,
+    };
+    applyFacilityAccentCssVars(targetBusiness?.category, globalState.theme);
+    ensureBranchSubscription(targetBranchId);
+    notify();
+  });
 
   showToast({
     type: 'info',
@@ -2411,12 +2415,14 @@ export function setActivePmSubScreenAction(subScreen: string) {
     else if (subScreen === 'stock') nextScreen = 'pm_compta_stock';
   }
 
-  globalState = {
-    ...globalState,
-    activePmSubScreen: subScreen,
-    activeScreen: nextScreen,
-  };
-  notify();
+  startTransition(() => {
+    globalState = {
+      ...globalState,
+      activePmSubScreen: subScreen,
+      activeScreen: nextScreen,
+    };
+    notify();
+  });
 }
 
 export function addPmProjectAction(projectData: Omit<PMProject, 'id' | 'createdAt' | 'updatedAt'>) {

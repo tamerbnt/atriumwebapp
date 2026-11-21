@@ -891,6 +891,27 @@ div[tabindex],
   animation: specular-sweep 4s linear infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-terracotta-mesh,
+  .animate-terracotta-mesh-rev,
+  .animate-ambient-float,
+  .animate-heartbeat,
+  .shimmer-text-sweep {
+    animation: none !important;
+  }
+}
+
+[data-atr-motion='off'] .animate-terracotta-mesh,
+[data-atr-motion='off'] .animate-terracotta-mesh-rev,
+[data-atr-motion='off'] .animate-ambient-float,
+[data-atr-motion='off'] .animate-heartbeat,
+[data-atr-motion='off'] .shimmer-text-sweep,
+[data-atr-motion='lite'] .animate-terracotta-mesh,
+[data-atr-motion='lite'] .animate-terracotta-mesh-rev,
+[data-atr-motion='lite'] .animate-ambient-float {
+  animation: none !important;
+}
+
 /* ============================================================
    "ATRIUM Kinetic Typography & 5 Cubes Logo Intro"
    Side-to-Side Swell Wave Loop -> Authentic 5 Cubes Logo Lockup

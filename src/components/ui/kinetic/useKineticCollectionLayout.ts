@@ -264,9 +264,12 @@ function applyRowStyles<T>(r: ManagedRow<T>, viewMode: 'list' | 'grid', isRtl: b
     } else {
       if (d.display !== 'block') d.display = 'block';
       d.transform = `translate3d(${qHalf(geom.islandLeft)}px, ${qHalf(geom.islandTop)}px, 0)`;
-      d.width = `${qHalf(geom.islandWidth)}px`;
-      d.height = `${qHalf(geom.islandHeight)}px`;
-      d.borderRadius = `${qTenth(geom.islandRadius)}px`;
+      const nw = `${qHalf(geom.islandWidth)}px`;
+      if (d.width !== nw) d.width = nw;
+      const nh = `${qHalf(geom.islandHeight)}px`;
+      if (d.height !== nh) d.height = nh;
+      const nr = `${qTenth(geom.islandRadius)}px`;
+      if (d.borderRadius !== nr) d.borderRadius = nr;
     }
   }
 
