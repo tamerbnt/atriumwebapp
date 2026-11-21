@@ -369,7 +369,7 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         sortable: true,
         renderCell: (l) => (
           <div className="flex items-center gap-2 min-w-0">
-            <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0">
+            <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0">
               <Key size={16} />
             </div>
             <div className="min-w-0">
@@ -432,10 +432,10 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         sortable: true,
         renderCell: (l) => (
           <span
-            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold border ${
+            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold ${
               l.status === 'Active'
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                : 'bg-neutral-100 text-black/70 border-neutral-200 dark:bg-neutral-800 dark:text-white/75'
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : 'bg-[#EFE9E2] text-black/70 dark:bg-[#2B2825] dark:text-white/75'
             }`}
           >
             {l.status === 'Active' ? (isAr ? 'سارٍ' : 'Actif') : isAr ? 'منتهي' : 'Clôturé'}
@@ -676,8 +676,8 @@ export const RealEstateLeasesView: React.FC<any> = () => {
         statusLabel={activeLease?.status === 'Active' ? (isAr ? 'سارٍ' : 'Actif') : (isAr ? 'مغلق' : 'Clôturé')}
         statusClassName={
           activeLease?.status === 'Active'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
-            : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+            : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
         }
         tabs={[
           { id: 'bail', label: isAr ? 'العقد' : 'Dossier Bail' },

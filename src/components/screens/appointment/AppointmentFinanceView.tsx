@@ -691,10 +691,10 @@ export const AppointmentFinanceView: React.FC = React.memo(() => {
         statusLabel={inspectingPayout ? localizeStatus(inspectingPayout.status, language) : undefined}
         statusClassName={
           inspectingPayout?.status === 'Paid'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : inspectingPayout?.status === 'Approved'
-            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'overview', label: isAr ? 'العمولة' : isEn ? 'Overview' : 'Bordereau Net' },

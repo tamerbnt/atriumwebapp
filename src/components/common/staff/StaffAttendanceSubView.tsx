@@ -142,37 +142,37 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
     switch (status) {
       case 'present':
         return (
-          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-[var(--pill-px,10px)] rounded-full border border-emerald-200/60 dark:border-emerald-800/40">
+          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-500/12 dark:bg-emerald-500/18 px-[var(--pill-px,10px)] rounded-full">
             {getStatusText(status)}
           </span>
         );
       case 'late':
         return (
-          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-amber-700 bg-amber-50 dark:bg-amber-950/40 px-[var(--pill-px,10px)] rounded-full border border-amber-200/60 dark:border-amber-800/40">
+          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/12 dark:bg-amber-500/18 px-[var(--pill-px,10px)] rounded-full">
             {getStatusText(status)}
           </span>
         );
       case 'half_day':
         return (
-          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-blue-700 bg-blue-50 dark:bg-blue-950/40 px-[var(--pill-px,10px)] rounded-full border border-blue-200/60 dark:border-blue-800/40">
+          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-blue-700 dark:text-blue-300 bg-blue-500/12 dark:bg-blue-500/18 px-[var(--pill-px,10px)] rounded-full">
             {getStatusText(status)}
           </span>
         );
       case 'absent_justified':
         return (
-          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-purple-700 bg-purple-50 dark:bg-purple-950/40 px-[var(--pill-px,10px)] rounded-full border border-purple-200/60 dark:border-purple-800/40">
+          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-purple-700 dark:text-purple-300 bg-purple-500/12 dark:bg-purple-500/18 px-[var(--pill-px,10px)] rounded-full">
             {getStatusText(status)}
           </span>
         );
       case 'absent_unjustified':
         return (
-          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-red-700 bg-red-50 dark:bg-red-950/40 px-[var(--pill-px,10px)] rounded-full border border-red-200/60 dark:border-red-800/40">
+          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-red-700 dark:text-red-300 bg-red-500/12 dark:bg-red-500/18 px-[var(--pill-px,10px)] rounded-full">
             {getStatusText(status)}
           </span>
         );
       case 'vacation':
         return (
-          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-[var(--text-1)] dark:text-white/80 bg-[#F3EDE7] dark:bg-[#262422] px-[var(--pill-px,10px)] rounded-full">
+          <span className="inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] t-small font-semibold text-[var(--text-1)] dark:text-white/80 bg-[#F3EDE7] dark:bg-[#2B2825] px-[var(--pill-px,10px)] rounded-full">
             {getStatusText(status)}
           </span>
         );
@@ -388,20 +388,20 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
       <div className="sq-elev-card">
         <div
           data-sq="card"
-          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s3,12px)] p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#1C1B1A]"
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s3,12px)] p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E]"
         >
           <div className="flex items-center gap-[var(--s3,12px)]">
             <div
               data-sq="ctl"
-              style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
-              className="flex items-center gap-[var(--s1,4px)] bg-[#F3EDE7] dark:bg-[#262422] p-[var(--seg-l-pad,4px)] h-[var(--seg-l-h,40px)]"
+              data-sq-border="none"
+              className="flex items-center gap-[var(--s1,4px)] bg-[#F3EDE7] dark:bg-[#191716] p-[var(--seg-l-pad,4px)] h-[var(--seg-l-h,40px)]"
             >
               <button
                 type="button"
                 onClick={() => setCurrentWeekOffset((prev) => prev - 1)}
                 data-sq="thumb"
-                className="w-[var(--seg-thumb-h,32px)] h-[var(--seg-thumb-h,32px)] flex items-center justify-center hover:bg-white dark:hover:bg-[#1C1B1A] text-[var(--text-1)] dark:text-white/80 transition-colors cursor-pointer"
+                data-sq-border="none"
+                className="w-[var(--seg-thumb-h,32px)] h-[var(--seg-thumb-h,32px)] flex items-center justify-center hover:bg-white dark:hover:bg-[#2B2825] text-[var(--text-1)] dark:text-white/80 transition-colors cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
               </button>
@@ -412,7 +412,8 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                 type="button"
                 onClick={() => setCurrentWeekOffset((prev) => prev + 1)}
                 data-sq="thumb"
-                className="w-[var(--seg-thumb-h,32px)] h-[var(--seg-thumb-h,32px)] flex items-center justify-center hover:bg-white dark:hover:bg-[#1C1B1A] text-[var(--text-1)] dark:text-white/80 transition-colors cursor-pointer"
+                data-sq-border="none"
+                className="w-[var(--seg-thumb-h,32px)] h-[var(--seg-thumb-h,32px)] flex items-center justify-center hover:bg-white dark:hover:bg-[#2B2825] text-[var(--text-1)] dark:text-white/80 transition-colors cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
               </button>
@@ -455,8 +456,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
         <div className="sq-elev-card">
           <div
             data-sq="card"
-            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#22201E]"
           >
             <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'الحضور' : isEn ? 'Present' : 'Présents'}</p>
             <p className="t-kpi-m mt-auto text-emerald-600 dark:text-emerald-400 tabular-nums flex items-baseline gap-[var(--num-unit-gap,6px)]">
@@ -468,8 +468,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
         <div className="sq-elev-card">
           <div
             data-sq="card"
-            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#22201E]"
           >
             <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'التأخير' : isEn ? 'Late' : 'Retards'}</p>
             <p className="t-kpi-m mt-auto text-amber-600 dark:text-amber-400 tabular-nums">{lateCount}</p>
@@ -478,8 +477,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
         <div className="sq-elev-card">
           <div
             data-sq="card"
-            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#22201E]"
           >
             <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'العطل' : isEn ? 'On Leave' : 'En Congé'}</p>
             <p className="t-kpi-m mt-auto text-[var(--text-1)] dark:text-white tabular-nums">{onLeaveCount}</p>
@@ -488,8 +486,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
         <div className="sq-elev-card">
           <div
             data-sq="card"
-            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#22201E]"
           >
             <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'الالتزام' : isEn ? 'Rate' : 'Assiduité'}</p>
             <p className="t-kpi-m mt-auto text-[var(--brand-accent,#D9532B)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
@@ -548,8 +545,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                 <div key={member.id} className="sq-elev-card">
                   <div
                     data-sq="panel"
-                    style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-                    className="p-[var(--pod-pad,12px)] bg-white dark:bg-[#1C1B1A] flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--s3,12px)]"
+                    className="p-[var(--pod-pad,12px)] bg-white dark:bg-[#191716] flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--s3,12px)]"
                   >
                     <div className="min-w-[180px] px-[var(--s1,4px)] flex flex-col gap-[var(--title-cap-gap,2px)]">
                       <div className="t-label font-semibold text-[var(--text-1)] dark:text-white">{member.fullName}</div>
@@ -564,8 +560,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                             type="button"
                             onClick={() => cycleDayStatus(member.id, d.dateStr)}
                             data-sq="card"
-                            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-                            className="p-[var(--s2,8px)] bg-[#FBF8F5] dark:bg-[#262422] flex flex-col items-center gap-[var(--s1,4px)] cursor-pointer transition-colors"
+                            className="p-[var(--s2,8px)] bg-[#FBF8F5] dark:bg-[#22201E] flex flex-col items-center gap-[var(--s1,4px)] cursor-pointer transition-colors"
                           >
                             <span className="t-small text-[var(--text-2)] dark:text-white/65">
                               {isAr ? d.labelAR : isEn ? d.labelEN : d.labelFR}
@@ -643,8 +638,7 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                         type="button"
                         onClick={() => cycleDayStatus(m.id, d.dateStr)}
                         data-sq="card"
-                        style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-                        className="w-full p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex items-center justify-between cursor-pointer transition-colors"
+                        className="w-full p-[var(--s3,12px)] bg-white dark:bg-[#22201E] hover:dark:bg-[#282523] flex items-center justify-between cursor-pointer transition-colors"
                       >
                         <span className="t-label font-semibold text-[var(--text-1)] dark:text-white">
                           {isAr ? d.labelAR : isEn ? d.labelEN : d.labelFR} ({d.dateStr})
@@ -665,8 +659,8 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
           <div className="sq-elev-pop max-w-md w-full">
             <div
               data-sq="panel"
-              style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-              className="bg-white dark:bg-[#1C1B1A] w-full p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)]"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#262422] w-full p-[var(--modal-pad,24px)] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col gap-[var(--modal-gap,20px)]"
             >
               <h4 className="t-dialog text-[var(--text-1)] dark:text-white">
                 {isAr ? 'تسجيل يدوي' : isEn ? 'Manual Log' : 'Pointage Manuel'}
@@ -678,8 +672,8 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                   </label>
                   <div
                     data-sq="ctl"
-                    style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
-                    className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#FBF8F5] dark:bg-[#262422]"
+                    data-sq-border="none"
+                    className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
                   >
                     <select
                       value={manualStaffId}
@@ -702,8 +696,8 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                     </label>
                     <div
                       data-sq="ctl"
-                      style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
-                      className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#FBF8F5] dark:bg-[#262422]"
+                      data-sq-border="none"
+                      className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
                     >
                       <select
                         value={manualType}
@@ -721,8 +715,8 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                     </label>
                     <div
                       data-sq="ctl"
-                      style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
-                      className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#FBF8F5] dark:bg-[#262422]"
+                      data-sq-border="none"
+                      className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
                     >
                       <input
                         type="time"
@@ -740,7 +734,8 @@ export const StaffAttendanceSubView: React.FC<StaffAttendanceSubViewProps> = ({
                   </label>
                   <div
                     data-sq="ctl"
-                    className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#FBF8F5] dark:bg-[#262422]"
+                    data-sq-border="none"
+                    className="w-full h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
                   >
                     <input
                       type="text"

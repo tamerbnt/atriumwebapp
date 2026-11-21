@@ -48,11 +48,17 @@
   align-items: center;
   gap: var(--top-gap, 8px);
   padding: var(--top-pad-y, 8px) var(--s4, 16px);
-  background: var(--atr-card);
-  border: 1px solid var(--atr-line);
+  background: var(--atr-elev, var(--atr-card));
+  border: 0;
   border-radius: var(--atr-r-bar, 27px);
-  box-shadow: 0 1px 2px rgba(20, 16, 12, 0.03);
+  box-shadow: 0 1px 2px rgba(23, 19, 15, 0.03), 0 4px 12px rgba(23, 19, 15, 0.035);
   will-change: transform;
+}
+:global([data-atrium-theme='dark']) .bar,
+:global([data-theme='dark']) .bar,
+:global(.dark) .bar {
+  background: #1D1B19;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 14px rgba(0, 0, 0, 0.36);
 }
 .root[data-bar='hidden'][data-settled] .bar { visibility: hidden; will-change: auto; }
 
@@ -63,7 +69,7 @@
   position: relative;
   margin-top: var(--top-to-container, 16px);
   background: var(--atr-card);
-  --sq-stroke: var(--sq-stroke-app, var(--atr-line));
+  --sq-stroke: var(--sq-stroke-app, rgba(23, 19, 15, 0.04));
   will-change: transform;
 }
 .mainInner {

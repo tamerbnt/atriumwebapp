@@ -135,9 +135,9 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-800 w-full p-6 border border-neutral-200 dark:border-neutral-700 space-y-5 max-h-[90vh] overflow-y-auto"
+          className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto"
         >
-        <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-700">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
           <div className="flex items-center gap-2">
             <div
               data-sq="tile"
@@ -163,7 +163,7 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
             data-no-liquid="true"
             onClick={onClose}
             aria-label={isAr ? 'إغلاق' : 'Fermer'}
-            className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"
+            className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -210,9 +210,9 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
           </div>
 
           <div
-            data-sq="card"
-            data-sq-border="solid"
-            className="p-4 bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3"
+            data-sq="ctl"
+            data-sq-border="none"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-3"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <LabelInput
@@ -281,7 +281,7 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
             placeholder="Éléments clés, pièces manquantes..."
           />
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-700">
+          <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
             <AtriumButton variant="secondary" onClick={onClose} type="button">
               {isAr ? 'إلغاء' : 'Annuler'}
             </AtriumButton>

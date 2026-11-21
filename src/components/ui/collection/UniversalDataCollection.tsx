@@ -1326,8 +1326,8 @@ export function UniversalDataCollection<T>({
 
       {isLoadingMore && (
         <div className="w-full flex flex-col gap-[var(--row-gap,8px)]" aria-busy="true">
-          <div data-sq="row" data-sq-border="solid" className="h-[var(--row-h,64px)] w-full bg-[var(--atr-soft)] border border-black/[0.05] dark:border-white/[0.08] animate-pulse" />
-          <div data-sq="row" data-sq-border="solid" className="h-[var(--row-h,64px)] w-full bg-[var(--atr-soft)] border border-black/[0.05] dark:border-white/[0.08] animate-pulse" />
+          <div data-sq="row" data-sq-border="solid" className="h-[var(--row-h,64px)] w-full bg-[var(--atr-soft)] animate-pulse" />
+          <div data-sq="row" data-sq-border="solid" className="h-[var(--row-h,64px)] w-full bg-[var(--atr-soft)] animate-pulse" />
         </div>
       )}
 

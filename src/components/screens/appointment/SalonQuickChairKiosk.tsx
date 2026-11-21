@@ -351,12 +351,12 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 }
                 className={`border-0 transition-all p-5 flex flex-col justify-between min-h-[290px] ${
                   !isOccupied
-                    ? 'bg-[#FBF8F5] dark:bg-[#1C1B1A]'
+                    ? 'bg-[#FBF8F5] dark:bg-[#1D1B19]'
                     : active.stage === 'in_progress'
-                    ? 'bg-white dark:bg-[#1C1B1A]'
+                    ? 'bg-white dark:bg-[#22201E] sq-elev-card'
                     : active.stage === 'completed'
-                    ? 'bg-emerald-50/40 dark:bg-emerald-950/15'
-                    : 'bg-white dark:bg-[#1C1B1A]'
+                    ? 'bg-emerald-50/40 dark:bg-emerald-950/20'
+                    : 'bg-white dark:bg-[#22201E] sq-elev-card'
                 }`}
               >
                 <div>
@@ -368,10 +368,10 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                       <span
                         className={`t-small font-semibold px-2.5 py-1 rounded-full ${
                           active.stage === 'waiting'
-                            ? 'bg-amber-50 text-amber-700'
+                            ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300'
                             : active.stage === 'in_progress'
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'bg-emerald-50 text-emerald-700'
+                            ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300'
+                            : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300'
                         }`}
                       >
                         {active.stage === 'waiting'
@@ -406,7 +406,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                         <div
                           data-sq="ctl"
                           data-sq-border="none"
-                          className="bg-[#F3EDE7] dark:bg-[#262422] p-3"
+                          className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-3"
                         >
                           <span className="t-cap text-black/62 dark:text-white/65 block">
                             {isRtl ? 'الخدمة' : 'Prestation'}
@@ -476,8 +476,8 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                         setIsAddClientModalOpen(true);
                       }}
                       data-sq="ctl"
-                      data-sq-border="solid"
-                      className="w-full py-2 px-3 border-0 hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] t-small font-semibold text-black/75 dark:text-white/80 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      data-sq-border="none"
+                      className="w-full py-2 px-3 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] t-small font-semibold text-black/75 dark:text-white/80 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <Plus size={14} />
                       <span>{isRtl ? 'إسناد زبون' : 'Assigner'}</span>
@@ -518,9 +518,9 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
         statusClassName={
           inspectedStation && activeStations[inspectedStation.id]
             ? activeStations[inspectedStation.id].stage === 'completed'
-              ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
-              : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-[#F3EDE7] dark:bg-[#262422] text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09]'
+              ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+              : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+            : 'bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white'
         }
         tabs={[
           { id: 'overview', label: isRtl ? 'المحطة' : 'Poste & Statut' },
@@ -629,7 +629,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
+              className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
             >
               <h3 className="t-card font-semibold text-black dark:text-white mb-1">
                 {isRtl ? 'تحصيل فاتورة الصالون' : 'Encaissement Express Salon'}
@@ -639,8 +639,8 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
               </p>
               <div
                 data-sq="card"
-                data-sq-border="solid"
-                className="bg-[#FBF8F5] dark:bg-[#262422] border-0 p-4 t-cap space-y-2 mb-4"
+                data-sq-border="none"
+                className="bg-[#F5F1EC] dark:bg-[#1D1B19] border-0 p-4 t-cap space-y-2 mb-4"
               >
               <div className="flex justify-between">
                 <span>{isRtl ? 'سعر الخدمة' : 'Prestation'}</span>
@@ -693,7 +693,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 onClick={() => setCheckoutModalStationKey(null)}
                 data-sq="ctl"
                 data-sq-border="none"
-                className="flex-1 py-2 bg-[#F3EDE7] dark:bg-[#262422] t-small font-semibold cursor-pointer"
+                className="flex-1 py-2 bg-[#F3EDE7] dark:bg-[#2B2825] t-small font-semibold cursor-pointer"
               >
                 {isRtl ? 'إلغاء' : 'Annuler'}
               </button>
@@ -718,7 +718,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
+              className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="t-card font-semibold text-black dark:text-white">
@@ -727,7 +727,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 <button
                   type="button"
                   onClick={() => setIsAddClientModalOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/62 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/62 dark:text-white/65 cursor-pointer hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors"
                 >
                   ✕
                 </button>
@@ -737,8 +737,8 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   <label className="block t-small font-semibold mb-1">{isRtl ? 'محطة العمل' : 'Poste'}</label>
                   <div
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="w-full h-10 border-0 bg-[#FBF8F5] dark:bg-[#262422] focus-within:[--sq-stroke:#d4522f]"
+                    data-sq-border="none"
+                    className="w-full h-10 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30"
                   >
                     <select
                       value={targetStationId}
@@ -757,8 +757,8 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   <label className="block t-small font-semibold mb-1">{isRtl ? 'اسم الزبون' : 'Nom du client'}</label>
                   <div
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                    data-sq-border="none"
+                    className="w-full h-10 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30"
                   >
                     <input
                       type="text"
@@ -775,8 +775,8 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   <label className="block t-small font-semibold mb-1">{isRtl ? 'الخدمة' : 'Prestation'}</label>
                   <div
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                    data-sq-border="none"
+                    className="w-full h-10 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30"
                   >
                     <select
                       value={selectedServiceId}
@@ -795,8 +795,8 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   <label className="block t-small font-semibold mb-1">{isRtl ? 'المصففة' : 'Styliste'}</label>
                   <div
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="w-full h-10 border border-[#D4C8BC] dark:border-[#3A3734] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] bg-[#FBF8F5] dark:bg-[#262422]"
+                    data-sq-border="none"
+                    className="w-full h-10 border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30"
                   >
                     <select
                       value={selectedStylistId}
@@ -817,7 +817,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                     onClick={() => setIsAddClientModalOpen(false)}
                     data-sq="ctl"
                     data-sq-border="none"
-                    className="flex-1 py-2 bg-[#F3EDE7] dark:bg-[#262422] t-small font-semibold cursor-pointer"
+                    className="flex-1 py-2 bg-[#F3EDE7] dark:bg-[#2B2825] t-small font-semibold cursor-pointer"
                   >
                     {isRtl ? 'إلغاء' : 'Annuler'}
                   </button>
@@ -842,12 +842,12 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 text-center"
+              className="bg-white dark:bg-[#262422] border-0 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 text-center"
             >
               <div
                 data-sq="tile-lg"
                 data-sq-border="none"
-                className="w-12 h-12 bg-emerald-50 text-emerald-700 mx-auto flex items-center justify-center mb-3"
+                className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 mx-auto flex items-center justify-center mb-3"
               >
                 <CheckCircle2 size={24} />
               </div>
@@ -857,8 +857,8 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
               <p className="t-small mb-4 tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{lastReceipt.receiptNumber}</p>
               <div
                 data-sq="card"
-                data-sq-border="solid"
-                className="bg-[#FBF8F5] dark:bg-[#262422] border-0 p-4 t-cap space-y-2 text-left mb-5"
+                data-sq-border="none"
+                className="bg-[#F5F1EC] dark:bg-[#1D1B19] border-0 p-4 t-cap space-y-2 text-left mb-5"
               >
                 <div className="flex justify-between">
                   <span>Client :</span>
@@ -881,7 +881,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                   onClick={() => setLastReceipt(null)}
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="flex-1 py-2 bg-[#F3EDE7] dark:bg-[#262422] t-small font-semibold cursor-pointer"
+                  className="flex-1 py-2 bg-[#F3EDE7] dark:bg-[#2B2825] t-small font-semibold cursor-pointer"
                 >
                   Fermer
                 </button>

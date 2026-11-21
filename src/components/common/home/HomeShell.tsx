@@ -29,15 +29,15 @@ export function useHomeRole(): string {
 
 /** Warm Walnut/Sandstone Pod surface for Hero Pulse column */
 export const HOME_POD_PULSE_CLASS =
-  '!bg-[#F2E6DA] dark:!bg-[#191512] [--sq-stroke:rgba(107,65,34,0.09)] dark:[--sq-stroke:var(--sq-stroke-pod)] [&>div:first-child>div:first-child>h2]:!text-[#2C1E15] dark:[&>div:first-child>div:first-child>h2]:!text-white';
+  '!bg-[#F2E6DA] dark:!bg-[#1D1916] [&>div:first-child>div:first-child>h2]:!text-[#2C1E15] dark:[&>div:first-child>div:first-child>h2]:!text-white';
 
 /** Soft Complementary Lavender-Linen Pod surface for Priority & Modules Pods */
 export const HOME_POD_DIRECTORY_CLASS =
-  '!bg-[#EFEBF7] dark:!bg-[#171420] [--sq-stroke:rgba(91,65,161,0.10)] dark:[--sq-stroke:var(--sq-stroke-pod)] [&>div:first-child>div:first-child>h2]:!text-[#241B38] dark:[&>div:first-child>div:first-child>h2]:!text-white';
+  '!bg-[#EFEBF7] dark:!bg-[#1D1924] [&>div:first-child>div:first-child>h2]:!text-[#241B38] dark:[&>div:first-child>div:first-child>h2]:!text-white';
 
 /** Neutral Sandstone-Linen Pod surface for Live Daily Historique */
 export const HOME_POD_HISTORIQUE_CLASS =
-  '!bg-[#FAF6F1] dark:!bg-[#141312] [--sq-stroke:var(--sq-stroke-pod)] [&>div:first-child>div:first-child>h2]:!text-[#241913] dark:[&>div:first-child>div:first-child>h2]:!text-white';
+  '!bg-[#F5F1EC] dark:!bg-[#191716] [&>div:first-child>div:first-child>h2]:!text-[#241913] dark:[&>div:first-child>div:first-child>h2]:!text-white';
 
 export interface HomeShellProps {
   roleKey?: string;
@@ -136,8 +136,8 @@ export const HomeShell: React.FC<HomeShellProps> = ({
             <div
               aria-hidden="true"
               data-sq="tile-lg"
-              data-sq-border="solid"
-              className="relative w-[var(--tile-lg,48px)] h-[var(--tile-lg,48px)] bg-gradient-to-br from-[#F2E3D5] to-[#EAE3F7] dark:from-[#2B2019] dark:to-[#221C34] border border-black/[0.06] dark:border-white/[0.1] flex items-center justify-center text-[#5B41A1] dark:text-[#C4B5FD] shrink-0"
+              data-sq-border="none"
+              className="relative w-[var(--tile-lg,48px)] h-[var(--tile-lg,48px)] bg-gradient-to-br from-[#F2E3D5] to-[#EAE3F7] dark:from-[#2B2019] dark:to-[#221C34] flex items-center justify-center text-[#5B41A1] dark:text-[#C4B5FD] shrink-0"
             >
               <Compass size={24} strokeWidth={2} />
             </div>

@@ -38,11 +38,11 @@ import {
 } from '../../ui/kinetic';
 
 const STATUS_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const STATUS_PILL_WARN =
-  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
 const STATUS_PILL_INFO =
-  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
 
 type DrawerTab = 'session' | 'client' | 'finances';
 
@@ -427,7 +427,7 @@ export const VenueTimelineView: React.FC = () => {
         renderCell: (b) => {
           const bInfo = resolveRecordBranch(b, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -481,7 +481,7 @@ export const VenueTimelineView: React.FC = () => {
           <div
             data-sq="ctl"
             data-sq-border="solid"
-            className="flex items-center bg-white dark:bg-neutral-800 p-1 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]"
+            className="flex items-center bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] sq-elev-card p-1"
           >
             <button
               type="button"
@@ -489,7 +489,7 @@ export const VenueTimelineView: React.FC = () => {
               aria-label="Previous day"
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-2 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/70 dark:text-white/75 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
             >
               <ChevronLeft size={16} className="rtl:rotate-180" />
             </button>
@@ -498,7 +498,7 @@ export const VenueTimelineView: React.FC = () => {
               onClick={handleToday}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="px-3 py-1 t-small font-semibold text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="px-3 py-1 t-small font-semibold text-black dark:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
             >
               {t('venue_timeline_today')}
             </button>
@@ -515,7 +515,7 @@ export const VenueTimelineView: React.FC = () => {
               aria-label="Next day"
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-2 text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/70 dark:text-white/75 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
             >
               <ChevronRight size={16} className="rtl:rotate-180" />
             </button>
@@ -528,14 +528,14 @@ export const VenueTimelineView: React.FC = () => {
         <div
           data-sq="table"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] overflow-x-auto"
+          className="bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] sq-elev-card overflow-x-auto"
         >
           <div className="min-w-[920px]">
-            <div className="flex border-b border-[#E6DED6] dark:border-neutral-700/80 bg-neutral-50/80 dark:bg-neutral-800/80 sticky top-0 z-10 t-cap tabular-nums text-black/55 dark:text-white/55">
-              <div className="w-56 sm:w-64 p-3 font-semibold text-black/70 dark:text-white/75 border-r border-[#E6DED6] dark:border-neutral-700/80 shrink-0">
+            <div className="flex border-b border-[var(--atr-divider)] bg-[#F5F1EC] dark:bg-[#1D1B19] sticky top-0 z-10 t-cap tabular-nums text-black/55 dark:text-white/55">
+              <div className="w-56 sm:w-64 p-3 font-semibold text-black/70 dark:text-white/75 border-r border-[var(--atr-divider)] shrink-0">
                 {t('venue_space_asset_header', language, { count: filteredUnits.length })}
               </div>
-              <div className="flex-1 grid grid-cols-16 divide-x divide-neutral-200/50 dark:divide-neutral-700/50">
+              <div className="flex-1 grid grid-cols-16 divide-x divide-[var(--atr-divider)]">
                 {HOURS.map((hour) => (
                   <div key={hour} className="py-2 text-center truncate">
                     {hour}:00
@@ -544,7 +544,7 @@ export const VenueTimelineView: React.FC = () => {
               </div>
             </div>
 
-            <div className="divide-y divide-[#E6DED6] dark:divide-neutral-700/60">
+            <div className="divide-y divide-[var(--atr-divider)]">
               {filteredUnits.length === 0 ? (
                 <div className="p-8 text-center t-body text-black/55 dark:text-white/55">
                   {t('venue_no_spaces_filter')}
@@ -557,9 +557,9 @@ export const VenueTimelineView: React.FC = () => {
                   return (
                     <div
                       key={unit.id}
-                      className="flex min-h-[76px] relative group hover:bg-[#F3EDE7]/60 dark:hover:bg-neutral-700/20 transition-colors"
+                      className="flex min-h-[76px] relative group hover:bg-[#F3EDE7]/60 dark:hover:bg-[#2B2825]/40 transition-colors"
                     >
-                      <div className="w-56 sm:w-64 p-3 border-r border-[#E6DED6] dark:border-neutral-700/80 shrink-0 flex flex-col justify-center">
+                      <div className="w-56 sm:w-64 p-3 border-r border-[var(--atr-divider)] shrink-0 flex flex-col justify-center">
                         <div className="flex items-center gap-2">
                           <span
                             className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -591,13 +591,13 @@ export const VenueTimelineView: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="flex-1 relative grid grid-cols-16 divide-x divide-neutral-100 dark:divide-neutral-800/40">
+                      <div className="flex-1 relative grid grid-cols-16 divide-x divide-[var(--atr-divider)]">
                         {HOURS.map((hour) => (
                           <button
                             key={hour}
                             type="button"
                             onClick={() => handleSlotClick(unit.id, hour)}
-                            className="h-full cursor-pointer hover:bg-[#FCEEE8]/50 dark:hover:bg-neutral-700/30 transition-colors text-left"
+                            className="h-full cursor-pointer hover:bg-[#FCEEE8]/50 dark:hover:bg-[#2B2825]/40 transition-colors text-left"
                             aria-label={t('venue_slot_tooltip', language, {
                               name: unit.name,
                               time: `${hour}:00`,
@@ -632,7 +632,7 @@ export const VenueTimelineView: React.FC = () => {
                                   ? 'bg-[#d4522f]/95 hover:bg-[#d4522f] text-white [--sq-stroke:#b03b1b]'
                                   : isTentative
                                   ? 'bg-amber-500/95 hover:bg-amber-500 text-white [--sq-stroke:#fbbf24]'
-                                  : 'bg-neutral-700 hover:bg-neutral-800 text-white [--sq-stroke:#525252]'
+                                  : 'bg-[#2B2825] hover:bg-[#332F2B] text-white [--sq-stroke:rgba(255,255,255,0.20)]'
                               }`}
                             >
                               <div className="font-semibold t-small truncate leading-tight">
@@ -683,8 +683,8 @@ export const VenueTimelineView: React.FC = () => {
               type="button"
               onClick={() => setIsCloudSyncModalOpen(true)}
               data-sq="ctl"
-              data-sq-border="solid"
-              className="h-10 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
+              data-sq-border="none"
+              className="h-10 px-4 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer"
               title="Inspect Supabase live tables and row writes"
             >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />

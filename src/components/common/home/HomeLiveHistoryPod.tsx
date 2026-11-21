@@ -85,7 +85,7 @@ export const HomeLiveHistoryPod: React.FC<HomeLiveHistoryPodProps> = ({
       subtitle={subtitle || strings.historiqueSubtitle}
       icon={<History size={17} />}
       badge={
-        <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold tabular-nums bg-[#EFE7DF] dark:bg-[#262320] text-[#5B41A1] dark:text-[#C4B5FD] border border-black/[0.06] dark:border-white/[0.09]">
+        <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold tabular-nums bg-[#EFE7DF] dark:bg-[#2B2825] text-[#5B41A1] dark:text-[#C4B5FD]">
           {filteredEvents.length} {strings.historiqueEventsCount}
         </span>
       }
@@ -103,7 +103,7 @@ export const HomeLiveHistoryPod: React.FC<HomeLiveHistoryPodProps> = ({
               placeholder={strings.historiqueSearchPlaceholder}
               aria-label={strings.historiqueSearchPlaceholder}
               data-testid="home-historique-search"
-              className="w-full h-[36px] ps-8 pe-3 rounded-[var(--r-ctl,10px)] bg-white dark:bg-[#1E1C1A] border border-black/[0.08] dark:border-white/[0.1] t-small text-[var(--text-1)] dark:text-white placeholder:text-[var(--text-2)] focus:outline-none focus:border-[#d4522f] dark:focus:border-[#FB923C] focus:ring-2 focus:ring-[#d4522f]/15 dark:focus:ring-[#FB923C]/20"
+              className="w-full h-[36px] ps-8 pe-3 rounded-[var(--r-ctl,10px)] bg-[#F5F1EC] dark:bg-[#292624] border border-transparent t-small text-[var(--text-1)] dark:text-white placeholder:text-[var(--text-2)] focus:bg-white dark:focus:bg-[#2E2B28] focus:outline-none focus:border-[#d4522f] dark:focus:border-[#FB923C] focus:ring-2 focus:ring-[#d4522f]/15 dark:focus:ring-[#FB923C]/20 transition-colors"
             />
           </div>
 
@@ -138,8 +138,8 @@ export const HomeLiveHistoryPod: React.FC<HomeLiveHistoryPodProps> = ({
                   onClick={() => setActiveFilter(chip.id)}
                   className={`inline-flex items-center gap-[6px] h-[30px] px-3 rounded-full t-small font-medium transition-colors cursor-pointer whitespace-nowrap ${
                     isSelected
-                      ? 'bg-[#2B1F19] dark:bg-[#FB923C] text-white dark:text-[#151413] border border-transparent'
-                      : 'bg-white dark:bg-[#1E1C1A] text-[var(--text-2)] dark:text-[var(--text-dark-2)] border border-black/[0.07] dark:border-white/[0.09] hover:bg-[#FAF6F1] dark:hover:bg-white/[0.07] hover:text-[var(--text-1)] dark:hover:text-white'
+                      ? 'bg-[#2B1F19] dark:bg-[#FB923C] text-white dark:text-[#151413]'
+                      : 'bg-white/80 dark:bg-[#22201E] text-[var(--text-2)] dark:text-[var(--text-dark-2)] hover:bg-white dark:hover:bg-[#2B2825] hover:text-[var(--text-1)] dark:hover:text-white'
                   }`}
                 >
                   <span>{chip.label}</span>

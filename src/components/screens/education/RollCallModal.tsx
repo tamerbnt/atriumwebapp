@@ -156,10 +156,10 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[90vh] overflow-hidden"
+          className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[90vh] overflow-hidden"
         >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F3EDE7] dark:bg-neutral-900/60">
           <div>
             <h2 className="t-card font-semibold text-black dark:text-white">
               {t('edu_roll_call_title')}
@@ -178,7 +178,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
         </div>
 
         {/* Filters & Tally */}
-        <div className="px-6 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-wrap items-center justify-between gap-3 t-cap">
+        <div className="px-6 py-3 border-b border-[var(--atr-divider)] bg-white dark:bg-neutral-900 flex flex-wrap items-center justify-between gap-3 t-cap">
           <div className="flex items-center gap-3 flex-1 min-w-[240px]">
             <LabelSelect
               field="Cohort"
@@ -232,7 +232,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
               data-sq="ctl-sm"
               data-sq-border="solid"
               onClick={markAllPresent}
-              className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 font-semibold text-black dark:text-white cursor-pointer"
+              className="px-3 py-2 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 font-semibold text-black dark:text-white cursor-pointer"
             >
               {t('edu_mark_all_present')}
             </button>
@@ -249,13 +249,13 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
                 key={student.id}
                 data-sq="card"
                 data-sq-border="solid"
-                className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all"
+                className="flex items-center justify-between p-3 bg-white dark:bg-neutral-900 hover:[--sq-stroke:rgba(212,82,47,0.45)] transition-all"
               >
                 <div className="flex items-center gap-3">
                   <div
                     data-sq="ctl-sm"
                     data-sq-border="solid"
-                    className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0 border border-neutral-200 dark:border-neutral-700"
+                    className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
                   >
                     {student.fullName.charAt(0)}
                   </div>
@@ -306,7 +306,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
           )}
 
           {/* Action Footer */}
-          <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-end gap-3 sticky bottom-0 bg-white dark:bg-neutral-900 pb-2">
+          <div className="pt-4 border-t border-[var(--atr-divider)] flex items-center justify-end gap-3 sticky bottom-0 bg-white dark:bg-neutral-900 pb-2">
             <AtriumButton
               variant="outline"
               size="sm"

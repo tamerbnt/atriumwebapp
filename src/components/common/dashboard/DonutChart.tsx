@@ -95,8 +95,8 @@ export const DonutChart: React.FC<DonutChartProps> = ({
           {showFilter && (
             <div
               data-sq="ctl-sm"
-              data-sq-border="solid"
-              className="inline-flex items-center h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[#F3EDE7] dark:bg-neutral-800/80 border border-black/[0.06] dark:border-white/[0.09] self-start sm:self-auto"
+              data-sq-border="none"
+              className="inline-flex items-center h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[#F3EDE7] dark:bg-[#2B2825] self-start sm:self-auto"
               role="group"
             >
               {filterOptions.map((opt) => {
@@ -108,7 +108,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                     onClick={() => handlePeriodChange(opt.id)}
                     className={`px-[var(--seg-px,12px)] h-[calc(var(--seg-m-h,32px)-4px)] rounded-[var(--r-thumb,9px)] t-small transition-all duration-150 cursor-pointer select-none ${
                       isSelected
-                        ? 'bg-white dark:bg-neutral-700 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-xs'
+                        ? 'bg-white dark:bg-[#3A3632] text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-xs'
                         : 'text-[var(--text-2)] hover:text-[var(--text-1)]'
                     }`}
                   >

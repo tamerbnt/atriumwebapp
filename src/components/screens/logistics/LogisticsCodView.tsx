@@ -1247,8 +1247,8 @@ export const LogisticsCodView: React.FC<any> = () => {
           <div className="sq-elev-card">
           <div
             data-sq="card"
-            data-sq-border="solid"
-            className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
+            data-sq-border="none"
+            className="p-3 bg-white dark:bg-[#22201E] space-y-3"
           >
             <div className="flex items-center gap-2 px-2 pt-2">
               <div
@@ -1264,8 +1264,8 @@ export const LogisticsCodView: React.FC<any> = () => {
             </div>
             <div
               data-sq="ctl"
-              data-sq-border="solid"
-              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2 t-cap"
+              data-sq-border="none"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2 t-cap"
             >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Base Journalière (48 000 DZD / 26j):</span>
@@ -1279,7 +1279,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                 <span className="text-black/55 dark:text-white/55">Indemnité Carburant / Péage:</span>
                 <span className="tabular-nums font-semibold">+1 500 DZD</span>
               </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-semibold t-label">
+              <div className="pt-2 border-t border-[var(--atr-divider)] flex justify-between font-semibold t-label">
                 <span>Net Journalier à Payer:</span>
                 <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                   {formatMoney(salariedDriverPay.netPayoutDzd, language)}
@@ -1291,8 +1291,8 @@ export const LogisticsCodView: React.FC<any> = () => {
           <div className="sq-elev-card">
           <div
             data-sq="card"
-            data-sq-border="solid"
-            className="p-3 bg-white dark:bg-[#1C1B1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
+            data-sq-border="none"
+            className="p-3 bg-white dark:bg-[#22201E] space-y-3"
           >
             <div className="flex items-center gap-2 px-2 pt-2">
               <div
@@ -1310,8 +1310,8 @@ export const LogisticsCodView: React.FC<any> = () => {
             </div>
             <div
               data-sq="ctl"
-              data-sq-border="solid"
-              className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2 t-cap"
+              data-sq-border="none"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2 t-cap"
             >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Colis Livrés (26 × 220 DZD):</span>
@@ -1327,7 +1327,7 @@ export const LogisticsCodView: React.FC<any> = () => {
                   -{formatMoney(freelanceDriverPay.taxWithheldDzd, language)}
                 </span>
               </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-semibold t-label">
+              <div className="pt-2 border-t border-[var(--atr-divider)] flex justify-between font-semibold t-label">
                 <span>Net Viré au Chauffeur:</span>
                 <span className="tabular-nums text-emerald-600 dark:text-emerald-400">
                   {formatMoney(freelanceDriverPay.netPayoutDzd, language)}
@@ -1383,8 +1383,8 @@ export const LogisticsCodView: React.FC<any> = () => {
         }
         statusClassName={
           activeShipment && settledIds.includes(activeShipment.id)
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'summary', label: isAr ? 'كشف التسوية' : 'Décompte COD' },

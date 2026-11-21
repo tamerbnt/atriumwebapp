@@ -395,7 +395,7 @@ export const MedicalQueueView: React.FC<any> = () => {
               <div
                 data-sq="tile"
                 data-sq-border="solid"
-                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-orange-100 dark:border-neutral-800 [--sq-stroke:#ffedd5] dark:[--sq-stroke:#262626]"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 [--sq-stroke:rgba(212,82,47,0.22)] dark:[--sq-stroke:rgba(255,143,99,0.22)]"
               >
                 {c.patientName.charAt(0).toUpperCase()}
               </div>
@@ -527,7 +527,7 @@ export const MedicalQueueView: React.FC<any> = () => {
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="flex items-center bg-white/80 dark:bg-neutral-800 p-[3px] border border-[#E6DED6] dark:border-neutral-700/60"
+              className="flex items-center bg-white/80 dark:bg-neutral-800 p-[3px]"
             >
               <button
                 type="button"
@@ -666,7 +666,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="flex items-center bg-white dark:bg-neutral-800 p-[3px] border border-[#E6DED6] dark:border-neutral-700/60"
+                  className="flex items-center bg-white dark:bg-neutral-800 p-[3px]"
                 >
                   <button
                     type="button"
@@ -816,12 +816,12 @@ export const MedicalQueueView: React.FC<any> = () => {
                           ? 2
                           : 1
                       }
-                      className={`bg-white dark:bg-neutral-800 border p-5 space-y-4 transition-all ${
+                      className={`bg-white dark:bg-neutral-800 p-5 space-y-4 transition-all ${
                         activeConsultation?.id === cons.id
-                          ? 'border-[#d4522f] [--sq-stroke:#d4522f]'
+                          ? '[--sq-stroke:#d4522f]'
                           : cons.status === 'InConsultation'
-                          ? 'border-blue-400 [--sq-stroke:#60a5fa]'
-                          : 'border-[#E6DED6] dark:border-neutral-700/60 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)]'
+                          ? '[--sq-stroke:#60a5fa]'
+                          : ''
                       }`}
                     >
                     <button
@@ -860,7 +860,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                       <div
                         data-sq="ctl"
                         data-sq-border="solid"
-                        className="bg-neutral-50 dark:bg-neutral-900/60 p-3 grid grid-cols-3 gap-1 text-center t-cap tabular-nums border border-neutral-100 dark:border-neutral-700/40"
+                        className="bg-neutral-50 dark:bg-neutral-900/60 p-3 grid grid-cols-3 gap-1 text-center t-cap tabular-nums"
                       >
                         <div>
                           <div className="t-cap text-black/55 dark:text-white/55">TA</div>
@@ -890,7 +890,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                         {cons.chiefComplaint}
                       </div>
                     </button>
-                    <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
+                    <div className="pt-2 border-t border-[var(--atr-divider)] flex items-center justify-between">
                       <span className="t-small tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                         {formatMoney(cons.consultationFeeDzd, 'DZD')}
                       </span>

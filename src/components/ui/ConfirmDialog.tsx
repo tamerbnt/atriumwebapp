@@ -88,7 +88,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           data-sq="panel"
           data-sq-border="solid"
           style={{ contain: 'layout paint' }}
-          className="relative w-full overflow-hidden bg-white dark:bg-[#18181B] [--sq-stroke:var(--sq-stroke-pop)] transform-gpu animate-in fade-in zoom-in-95 duration-150 p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)]"
+          className="relative w-full overflow-hidden bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] transform-gpu animate-in fade-in zoom-in-95 duration-150 p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)]"
         >
           <div className="flex items-start gap-[var(--s4,16px)]">
             <div
@@ -111,7 +111,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               data-no-liquid="true"
               onClick={onClose}
               disabled={isLoading}
-              className="absolute top-[var(--s4,16px)] end-[var(--s4,16px)] w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              className="absolute top-[var(--s4,16px)] end-[var(--s4,16px)] w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/65 dark:hover:text-white bg-[#F3EDE7] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#36322E] transition-colors cursor-pointer"
             >
               <X size={16} strokeWidth={1.5} />
             </button>

@@ -18,9 +18,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md', l
       style={{
         backgroundColor: config.bg,
         color: config.color,
-        border: `1px solid ${config.color}25`,
       }}
-      className={`inline-flex items-center rounded-full whitespace-nowrap transition-colors shadow-2xs t-small ${
+      className={`inline-flex items-center rounded-full whitespace-nowrap transition-colors t-small ${
         size === 'sm'
           ? 'h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] gap-[var(--s1,4px)]'
           : 'h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] gap-[var(--pill-gap,6px)]'

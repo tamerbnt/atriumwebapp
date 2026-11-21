@@ -160,7 +160,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
   const licenseLabel = getDefaultFiscalLicenseLabel(category, language);
 
   const inputClass =
-    'w-full h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-black/[0.08] dark:border-white/[0.10] text-[var(--text-1)] dark:text-white t-small focus:outline-none focus:ring-2 focus:ring-[var(--brand-text)]/30 disabled:opacity-60 disabled:cursor-not-allowed';
+    'w-full h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 text-[var(--text-1)] dark:text-white t-small focus:outline-none focus:ring-2 focus:ring-[var(--brand-text)]/30 disabled:opacity-60 disabled:cursor-not-allowed';
 
   return (
     <div className="flex flex-col gap-[var(--pod-gap,16px)]">
@@ -189,7 +189,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
       >
         <div
           data-sq="panel"
-          className={`bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] transition-all ${
+          className={`bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] transition-all ${
             highlighted === 'business_identity' ? 'ring-2 ring-[var(--brand-text)]' : ''
           }`}
         >
@@ -225,7 +225,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
 
           <div
             data-sq="card"
-            className="p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 grid grid-cols-1 md:grid-cols-2 gap-[var(--s3,12px)]"
+            className="p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] grid grid-cols-1 md:grid-cols-2 gap-[var(--s3,12px)]"
           >
             <div className="flex flex-col gap-[var(--s1,4px)]">
               <label className="t-cap text-[var(--text-2)] font-medium">
@@ -297,7 +297,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
         <div ref={fiscalRef} className="sq-elev-card">
           <div
             data-sq="panel"
-            className={`bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] transition-all ${
+            className={`bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] transition-all ${
               highlighted === 'fiscal_profile' ? 'ring-2 ring-[var(--brand-text)]' : ''
             }`}
           >
@@ -333,7 +333,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
 
             <div
               data-sq="card"
-              className="p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s4,16px)]"
+              className="p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s4,16px)]"
             >
               {/* Currency + TVA + Timbre Fiscal row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--s3,12px)]">
@@ -395,7 +395,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F7F3EE] dark:bg-neutral-900 border-0" data-sq="ctl">
+                <div className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#1B1917] border-0" data-sq="ctl" data-sq-border="none">
                   <div className="flex flex-col">
                     <span className="t-small font-medium text-[var(--text-1)]">
                       {L('Timbre Fiscal (Cash)', 'Timbre Fiscal (Espèces)', 'الطابع الجبائي (نقداً)')}
@@ -545,7 +545,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
         <div ref={rulesRef} className="sq-elev-card">
           <div
             data-sq="panel"
-            className={`bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] transition-all ${
+            className={`bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] transition-all ${
               highlighted === 'category_rules' ? 'ring-2 ring-[var(--brand-text)]' : ''
             }`}
           >
@@ -581,7 +581,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
 
             <div
               data-sq="card"
-              className="p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 grid grid-cols-1 md:grid-cols-3 gap-[var(--s3,12px)]"
+              className="p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] grid grid-cols-1 md:grid-cols-3 gap-[var(--s3,12px)]"
             >
               {category === 'membership_session' && (
                 <>
@@ -699,7 +699,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
                       onChange={(e) => setPosReceipt((p) => ({ ...p, footerMessage: e.target.value }))}
                       className={inputClass} />
                   </div>
-                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F7F3EE] dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700" data-sq="ctl">
+                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#1B1917] border-0" data-sq="ctl" data-sq-border="none">
                     <span className="t-small text-[var(--text-1)]">
                       {L('Allow Negative Stock', 'Autoriser stock négatif', 'السماح بالمخزون السالب')}
                     </span>
@@ -734,7 +734,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
                       onChange={(e) => updateSetting('targetMarginPercent', Number(e.target.value))}
                       className={`${inputClass} tabular-nums`} />
                   </div>
-                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F7F3EE] dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700" data-sq="ctl">
+                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#1B1917] border-0" data-sq="ctl" data-sq-border="none">
                     <span className="t-small text-[var(--text-1)]">
                       {L('Require BAT Before Print', 'Exiger BAT avant impression', 'إلزامية BAT قبل الطباعة')}
                     </span>
@@ -865,7 +865,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
                       onChange={(e) => updateSetting('defaultNetDays', Number(e.target.value))}
                       className={`${inputClass} tabular-nums`} />
                   </div>
-                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F7F3EE] dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700" data-sq="ctl">
+                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#1B1917] border-0" data-sq="ctl" data-sq-border="none">
                     <span className="t-small text-[var(--text-1)]">
                       {L('Mandatory RC/NIF on Facture', 'RC/NIF obligatoires sur Facture', 'إلزامية RC/NIF في الفاتورة')}
                     </span>
@@ -882,7 +882,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
 
               {category === 'medical_clinic' && (
                 <>
-                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F7F3EE] dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700" data-sq="ctl">
+                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#1B1917] border-0" data-sq="ctl" data-sq-border="none">
                     <span className="t-small text-[var(--text-1)]">
                       {L('CNAS / Chifa Reimbursement Mode', 'Mode Tiers-Payant CNAS / Chifa', 'تفعيل تعويض بطاقة الشفاء')}
                     </span>
@@ -1153,7 +1153,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
             </div>
 
             {Object.keys(errors).length > 0 && (
-              <div className="px-[var(--s3,12px)] py-[var(--s2,8px)] bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 flex items-center gap-[var(--s2,8px)] t-small text-rose-700 dark:text-rose-300" data-sq="ctl">
+              <div className="px-[var(--s3,12px)] py-[var(--s2,8px)] bg-rose-50 dark:bg-rose-950/30 [--sq-stroke:#fecdd3] dark:[--sq-stroke:#9f1239] flex items-center gap-[var(--s2,8px)] t-small text-rose-700 dark:text-rose-300" data-sq="ctl">
                 <AlertTriangle size={15} strokeWidth={1.5} className="shrink-0" />
                 <span>{Object.values(errors)[0]}</span>
               </div>

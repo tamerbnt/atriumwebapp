@@ -79,7 +79,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
         </div>
 
         {/* Question 1: Is Google Auth Free? */}
-        <div data-sq="card" className="card-opt p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800/80 flex flex-col gap-[var(--s2,8px)]">
+        <div data-sq="card" className="card-opt p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s2,8px)]">
           <div className="flex items-center gap-[var(--s2,8px)]">
             <div className="w-[var(--badge-h,22px)] h-[var(--badge-h,22px)] rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center t-small shrink-0">
               ✓
@@ -94,7 +94,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
         </div>
 
         {/* Question 2: The First Field in Google Cloud Console */}
-        <div data-sq="card" className="card-opt p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800/80 flex flex-col gap-[var(--s3,12px)]">
+        <div data-sq="card" className="card-opt p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s3,12px)]">
           <div className="flex items-center gap-[var(--s2,8px)]">
             <div className="w-[var(--badge-h,22px)] h-[var(--badge-h,22px)] rounded-full bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center t-small shrink-0">
               ?
@@ -108,7 +108,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
           </p>
 
           <div className="flex flex-col gap-[var(--s2,8px)] ps-[var(--s7,32px)]">
-            <div data-sq="ctl" className="p-[var(--s3,12px)] bg-neutral-50 dark:bg-neutral-900 flex flex-col gap-[var(--s2,8px)]">
+            <div data-sq="ctl" data-sq-border="none" className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s2,8px)]">
               <div className="flex items-center justify-between gap-[var(--s2,8px)]">
                 <span className="t-small text-[var(--text-1,#17130F)] dark:text-white">
                   First field: &quot;Authorized JavaScript origins&quot;
@@ -121,13 +121,13 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
                 You can leave this completely <strong>blank</strong>, or copy your Supabase URL:
               </p>
               <div className="flex items-center gap-[var(--s2,8px)]">
-                <code className="t-cap font-sans text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-neutral-100 dark:bg-neutral-800 px-[var(--s2,8px)] py-[var(--s1,4px)] rounded-[var(--r-check,6px)] truncate flex-1">
+                <code className="t-cap font-sans text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-[#EFE9E2] dark:bg-[#2B2825] px-[var(--s2,8px)] py-[var(--s1,4px)] rounded-[var(--r-check,6px)] truncate flex-1">
                   {supabaseUrl}
                 </code>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(supabaseUrl, 'origin')}
-                  className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] grid place-items-center rounded-full border border-black/[0.08] dark:border-white/[0.12] hover:bg-neutral-200 dark:hover:bg-neutral-700 text-[var(--text-2,#5A5047)] dark:text-white/75 cursor-pointer"
+                  className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] grid place-items-center rounded-full bg-[#EFE9E2] dark:bg-[#2B2825] hover:bg-[#E7E0D7] dark:hover:bg-[#332F2B] text-[var(--text-2,#5A5047)] dark:text-white/75 cursor-pointer transition-colors"
                   title="Copy"
                 >
                   {copiedField === 'origin' ? <Check size={16} strokeWidth={1.5} className="text-emerald-500" /> : <Copy size={16} strokeWidth={1.5} />}
@@ -135,7 +135,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
               </div>
             </div>
 
-            <div data-sq="ctl" className="p-[var(--s3,12px)] bg-neutral-50 dark:bg-neutral-900 flex flex-col gap-[var(--s2,8px)]">
+            <div data-sq="ctl" data-sq-border="none" className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s2,8px)]">
               <div className="flex items-center justify-between gap-[var(--s2,8px)]">
                 <span className="t-small text-[var(--text-1,#17130F)] dark:text-white">
                   Second field: &quot;Authorized redirect URIs&quot;
@@ -148,13 +148,13 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
                 Paste this exact URL into Google Cloud Console:
               </p>
               <div className="flex items-center gap-[var(--s2,8px)]">
-                <code className="t-cap font-sans text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-neutral-100 dark:bg-neutral-800 px-[var(--s2,8px)] py-[var(--s1,4px)] rounded-[var(--r-check,6px)] truncate flex-1">
+                <code className="t-cap font-sans text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-[#EFE9E2] dark:bg-[#2B2825] px-[var(--s2,8px)] py-[var(--s1,4px)] rounded-[var(--r-check,6px)] truncate flex-1">
                   {redirectUri}
                 </code>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(redirectUri, 'redirect')}
-                  className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] grid place-items-center rounded-full border border-black/[0.08] dark:border-white/[0.12] hover:bg-neutral-200 dark:hover:bg-neutral-700 text-[var(--text-2,#5A5047)] dark:text-white/75 cursor-pointer"
+                  className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] grid place-items-center rounded-full bg-[#EFE9E2] dark:bg-[#2B2825] hover:bg-[#E7E0D7] dark:hover:bg-[#332F2B] text-[var(--text-2,#5A5047)] dark:text-white/75 cursor-pointer transition-colors"
                   title="Copy"
                 >
                   {copiedField === 'redirect' ? <Check size={16} strokeWidth={1.5} className="text-emerald-500" /> : <Copy size={16} strokeWidth={1.5} />}
@@ -182,7 +182,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
               When Google Cloud OAuth is set to <strong>Testing</strong> mode, Google blocks all logins with 403 unless you do one of these two fixes:
             </p>
 
-            <div data-sq="ctl" className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="ctl" className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
               <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white">
                 Fix A: Click &quot;Publish App&quot; (Best &amp; Easiest)
               </span>
@@ -191,7 +191,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
               </p>
             </div>
 
-            <div data-sq="ctl" className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="ctl" className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
               <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white">
                 Fix B: Verify User Type is &quot;External&quot;
               </span>

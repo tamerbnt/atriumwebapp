@@ -159,10 +159,10 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
             isSelected
               ? 'bg-gradient-to-br from-[#d4522f] to-[#a8583c]'
               : isHovered
-              ? 'bg-[#FFFCFA] dark:bg-[#22201E] [--sq-stroke:rgba(212,82,47,0.45)] dark:[--sq-stroke:rgba(232,100,63,0.5)]'
+              ? 'bg-[#FFFCFA] dark:bg-[#282523] [--sq-stroke:rgba(212,82,47,0.45)] dark:[--sq-stroke:rgba(232,100,63,0.5)]'
               : isPinned
-              ? 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:rgba(245,158,11,0.5)]'
-              : 'bg-white dark:bg-[#1C1B1A]'
+              ? 'bg-white dark:bg-[#22201E] [--sq-stroke:rgba(245,158,11,0.5)]'
+              : 'bg-white dark:bg-[#22201E]'
           }`}
         />
 
@@ -196,10 +196,10 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
                     : 'cubic-bezier(0.4, 0, 1, 1)',
                   transitionDelay: `${delay}ms`,
                 }}
-                className={`absolute -top-4 -right-4 w-9 h-9 rounded-full bg-white dark:bg-[#262422] border border-[var(--atr-line)] shadow-md flex items-center justify-center transition-transform hover:scale-115 active:scale-95 cursor-pointer z-50 ${
+                className={`absolute -top-4 -right-4 w-9 h-9 rounded-full bg-white dark:bg-[#2B2825] border-0 shadow-[0_4px_14px_rgba(23,19,15,0.1)] dark:shadow-[0_6px_16px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(255,255,255,0.08)] flex items-center justify-center transition-transform hover:scale-115 active:scale-95 cursor-pointer z-50 ${
                   btn.isSpecialDelete
-                    ? 'hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300'
-                    : 'hover:bg-[#F3EDE7] dark:hover:bg-[#3A3734]'
+                    ? 'hover:bg-red-50 dark:hover:bg-red-950/40'
+                    : 'hover:bg-[#F3EDE7] dark:hover:bg-[#3A3632]'
                 }`}
               >
                 {btn.icon}

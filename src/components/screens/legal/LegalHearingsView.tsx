@@ -291,8 +291,8 @@ export const LegalHearingsView: React.FC<any> = () => {
           <div className="flex items-center gap-3 min-w-0 pr-2">
             <div
               data-sq="tile"
-              data-sq-border="solid"
-              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+              data-sq-border="none"
+              className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0"
             >
               <Calendar size={18} />
             </div>
@@ -849,10 +849,10 @@ export const LegalHearingsView: React.FC<any> = () => {
                 <div
                   key={date}
                   data-sq="card"
-                  data-sq-border="solid"
-                  className="bg-white/80 dark:bg-neutral-900/40 p-3 border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-3"
+                  data-sq-border="none"
+                  className="bg-[#F5F1EC]/70 dark:bg-[#1D1B19] p-3 space-y-3"
                 >
-                  <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800 flex-wrap gap-2">
+                  <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)] flex-wrap gap-2">
                     <div className="flex items-center gap-2">
                       <Calendar size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                       <h3 className="t-label font-semibold text-black dark:text-white">
@@ -869,29 +869,28 @@ export const LegalHearingsView: React.FC<any> = () => {
 
                   <div className="grid grid-cols-1 gap-3">
                     {dateHearings.map((h) => (
-                      <button
-                        key={h.id}
-                        type="button"
-                        data-no-liquid="true"
-                        data-sq="ctl"
-                        data-sq-border="solid"
-                        data-sq-stroke-w={activeHearing?.id === h.id ? 2 : undefined}
-                        onClick={(e) => {
-                          setSelectedHearing(h);
-                          setDrawerOpenerEl(e.currentTarget);
-                        }}
-                        className={`w-full text-left rtl:text-right p-4 bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
-                          activeHearing?.id === h.id
-                            ? 'border-[#d4522f] [--sq-stroke:#d4522f]'
-                            : 'border-[#E6DED6] dark:border-neutral-700 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:border-[#d4522f]/50 hover:[--sq-stroke:rgba(212,82,47,0.5)]'
-                        }`}
-                      >
-                        <div className="flex items-start gap-3 min-w-0">
-                          <div
-                            data-sq="tile"
-                            data-sq-border="solid"
-                            className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-700 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-600 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#525252]"
-                          >
+                      <div key={h.id} className="sq-elev-card">
+                        <button
+                          type="button"
+                          data-no-liquid="true"
+                          data-sq="card"
+                          data-sq-border="none"
+                          onClick={(e) => {
+                            setSelectedHearing(h);
+                            setDrawerOpenerEl(e.currentTarget);
+                          }}
+                          className={`w-full text-left rtl:text-right p-4 transition-colors cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                            activeHearing?.id === h.id
+                              ? 'bg-[#FCEEE8] dark:bg-[#2B2825] ring-2 ring-[#d4522f]/60'
+                              : 'bg-white dark:bg-[#22201E] hover:bg-[#FBF8F5] dark:hover:bg-[#282523]'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3 min-w-0">
+                            <div
+                              data-sq="tile"
+                              data-sq-border="none"
+                              className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold flex items-center justify-center shrink-0"
+                            >
                             <span className="t-small tabular-nums font-semibold">
                               {h.hearingTime || '09:00'}
                             </span>
@@ -927,24 +926,25 @@ export const LegalHearingsView: React.FC<any> = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                          {h.postponementCode && (
-                            <span className="t-small tabular-nums font-semibold px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75">
-                              {h.postponementCode}
+                          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                            {h.postponementCode && (
+                              <span className="t-small tabular-nums font-semibold px-2 py-1 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75">
+                                {h.postponementCode}
+                              </span>
+                            )}
+                            <span
+                              className={`t-small font-semibold px-2 py-1 rounded-full ${
+                                h.isCompleted
+                                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                                  : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                              }`}
+                            >
+                              {h.isCompleted ? (isAr ? 'تمت' : 'Plaidée') : isAr ? 'مبرمجة' : 'Fixée'}
                             </span>
-                          )}
-                          <span
-                            className={`t-small font-semibold px-2 py-1 rounded-full ${
-                              h.isCompleted
-                                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
-                                : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
-                            }`}
-                          >
-                            {h.isCompleted ? (isAr ? 'تمت' : 'Plaidée') : isAr ? 'مبرمجة' : 'Fixée'}
-                          </span>
-                          <ArrowRight size={14} className="text-black/45 dark:text-white/45" />
-                        </div>
-                      </button>
+                            <ArrowRight size={14} className="text-black/45 dark:text-white/45" />
+                          </div>
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -1075,10 +1075,10 @@ export const LegalHearingsView: React.FC<any> = () => {
         }
         statusClassName={
           activeHearing?.isCompleted
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : activeHearing?.status === 'Postponed'
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
         }
         tabs={[
           { id: 'audience', label: isAr ? 'الجلسة' : 'Audience' },
@@ -1281,9 +1281,9 @@ export const LegalHearingsView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 w-full p-6 border border-[#E6DED6] dark:border-neutral-800 space-y-5"
+              className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div className="flex items-center gap-2">
                 <Gavel size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <h3 className="t-card font-semibold text-black dark:text-white">
@@ -1297,7 +1297,7 @@ export const LegalHearingsView: React.FC<any> = () => {
                 data-no-liquid="true"
                 aria-label={isAr ? 'إغلاق' : 'Fermer'}
                 onClick={() => setIsNewHearingModalOpen(false)}
-                className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-black/55 dark:text-white/55 cursor-pointer"
+                className="p-2 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-black/55 dark:text-white/55 cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -1380,7 +1380,7 @@ export const LegalHearingsView: React.FC<any> = () => {
                 ]}
               />
 
-              <div className="pt-4 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-end gap-3">
+              <div className="pt-4 border-t border-[var(--atr-divider)] flex items-center justify-end gap-3">
                 <AtriumButton
                   variant="outline"
                   type="button"

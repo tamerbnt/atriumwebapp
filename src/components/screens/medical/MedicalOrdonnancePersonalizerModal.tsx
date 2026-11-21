@@ -101,8 +101,8 @@ export const MedicalOrdonnancePersonalizerModal: React.FC<MedicalOrdonnancePerso
 	const currentAccentHex = getAccentColor(formData.themeAccent);
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
 <div className="sq-elev-pop w-full max-w-6xl max-h-[92vh] flex flex-col">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full max-h-[92vh] border border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden">
-<div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-[#141312]">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full max-h-[92vh] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden">
+<div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-[#141312]">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><Sliders size={20} /></div>
 <div>
@@ -123,11 +123,11 @@ Configurez l'en-tête, le papier pré-imprimé, le cachet officiel et les mentio
 <button type="button" onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 </div>
-<div className="px-6 py-2 bg-neutral-100/70 dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-2 overflow-x-auto shrink-0">
+<div className="px-6 py-2 bg-neutral-100/70 dark:bg-neutral-800/60 border-b border-[var(--atr-divider)] flex items-center gap-2 overflow-x-auto shrink-0">
 <span className="t-small font-semibold text-black/55 dark:text-white/75 shrink-0 mr-1">Médecin:</span>
 {practitioners.map((p: any) => {
 						const isSelected = p.id === selectedDoctorId;
-						return /* @__PURE__ */ <button key={p.id} type="button" data-no-liquid="true" data-sq="ctl-sm" data-sq-border={isSelected ? "solid" : "none"} onClick={() => setSelectedDoctorId(p.id)} className={`px-3 py-2 t-small font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${isSelected ? "bg-white dark:bg-neutral-700 text-black dark:text-white border border-neutral-300 dark:border-neutral-600" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
+						return /* @__PURE__ */ <button key={p.id} type="button" data-no-liquid="true" data-sq="ctl-sm" data-sq-border={isSelected ? "solid" : "none"} onClick={() => setSelectedDoctorId(p.id)} className={`px-3 py-2 t-small font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${isSelected ? "bg-white dark:bg-neutral-700 text-black dark:text-white" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
 <span>{p.fullName}</span>
 <span className="t-cap text-black/55 dark:text-white/55 font-normal">
@@ -139,8 +139,8 @@ Configurez l'en-tête, le papier pré-imprimé, le cachet officiel et les mentio
 					})}
 </div>
 <div className="flex-1 grid grid-cols-12 gap-0 overflow-hidden">
-<div className="col-span-12 lg:col-span-6 p-6 overflow-y-auto space-y-5 border-r border-neutral-200 dark:border-neutral-800">
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3">
+<div className="col-span-12 lg:col-span-6 p-6 overflow-y-auto space-y-5 border-r border-[var(--atr-divider)]">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/50 space-y-3">
 <span className="t-small font-semibold text-black/70 dark:text-white/75 flex items-center gap-2">
 <Printer size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
 Format de Papier & Mode d'Impression
@@ -148,7 +148,7 @@ Format de Papier & Mode d'Impression
 <div className="grid grid-cols-2 gap-3">
 <div>
 <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">Taille du Papier</label>
-<div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 gap-1 p-[3px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+<div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 gap-1 p-[3px] bg-white dark:bg-neutral-800">
 <button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setFormData({
 													...formData,
 													paperFormat: "A5"
@@ -161,7 +161,7 @@ Format de Papier & Mode d'Impression
 </div>
 <div>
 <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">Support Papier</label>
-<div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 gap-1 p-[3px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+<div data-sq="ctl" data-sq-border="solid" className="grid grid-cols-2 gap-1 p-[3px] bg-white dark:bg-neutral-800">
 <button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setFormData({
 													...formData,
 													printMode: "full_digital"
@@ -173,7 +173,7 @@ Format de Papier & Mode d'Impression
 </div>
 </div>
 </div>
-{formData.printMode === "preprinted_paper" && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-amber-500/10 border border-amber-500/30 [--sq-stroke:rgba(245,158,11,0.3)] text-amber-700 dark:text-amber-300 t-cap">
+{formData.printMode === "preprinted_paper" && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-amber-500/10 [--sq-stroke:rgba(245,158,11,0.3)] text-amber-700 dark:text-amber-300 t-cap">
 Mode Pré-imprimé actif: L'en-tête et le logo ne seront pas imprimés pour laisser la place à votre papier à en-tête physique. Seules les données patient et les médicaments seront imprimés avec marges calibrées.
 </div>}
 </div>
@@ -215,7 +215,7 @@ Identité & Titres Médicaux
 											})} />
 </div>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/50 space-y-3">
 <span className="t-small font-semibold text-black/70 dark:text-white/75 flex items-center gap-2">
 <Palette size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
 Palette de Style & Sécurité
@@ -238,7 +238,7 @@ Palette de Style & Sécurité
 								}
 								className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer ${
 									formData.themeAccent === accent
-										? "scale-110 border-neutral-900 dark:border-white shadow-xs"
+										? "scale-110 border-black dark:border-white shadow-xs"
 										: "border-transparent opacity-80 hover:opacity-100"
 								}`}
 								style={{ backgroundColor: getAccentColor(accent) }}
@@ -248,14 +248,14 @@ Palette de Style & Sécurité
 						))}
 					</div>
 </div>
-<div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700">
+<div className="flex items-center justify-between pt-2 border-t border-[var(--atr-divider)]">
 <span className="t-cap text-black/70 dark:text-white/75">Filigrane Caducée / Armoirie Médicale en arrière-plan</span>
 <input type="checkbox" checked={formData.showWatermark} onChange={(e) => setFormData({
 												...formData,
 												showWatermark: e.target.checked
 											})} className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] accent-[#d4522f] cursor-pointer" />
 </div>
-<div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700">
+<div className="flex items-center justify-between pt-2 border-t border-[var(--atr-divider)]">
 <span className="t-cap text-black/70 dark:text-white/75">Afficher le Cachet / Tampon Numérique Officiel</span>
 <input type="checkbox" checked={formData.isStampEnabled} onChange={(e) => setFormData({
 												...formData,
@@ -286,7 +286,7 @@ Aperçu Réel Ordonnance (
 {formData.printMode === "preprinted_paper" ? "Mode Papier Pré-imprimé" : "Mode Numérique Complet"}
 </span>
 </div>
-<div className={`printable-document w-full max-w-[430px] bg-white text-black rounded-[var(--r-card,16px)] shadow-xl border border-neutral-300 dark:border-neutral-700 p-6 flex flex-col justify-between relative overflow-hidden select-none transition-all ${formData.paperFormat === "A4" ? "min-h-[580px]" : "min-h-[460px]"}`}>
+<div className={`printable-document w-full max-w-[430px] bg-white text-black rounded-[var(--r-card,16px)] shadow-xl border border-black/[0.14] dark:border-white/[0.14] p-6 flex flex-col justify-between relative overflow-hidden select-none transition-all ${formData.paperFormat === "A4" ? "min-h-[580px]" : "min-h-[460px]"}`}>
 {formData.showWatermark && /* @__PURE__ */ <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none" style={{ color: currentAccentHex }}><FileText size={220} /></div>}
 {formData.printMode === "full_digital" ? /* @__PURE__ */ <div className="border-b-2 pb-3" style={{ borderColor: currentAccentHex }}>
 <div className="flex justify-between items-start">
@@ -303,8 +303,8 @@ Aperçu Réel Ordonnance (
 {formData.emergencyPhone && /* @__PURE__ */ <p className="text-red-600">{formData.emergencyPhone}</p>}
 </div>
 </div>
-</div> : /* @__PURE__ */ <div className="h-16 border-b border-dashed border-neutral-300 flex items-center justify-center t-cap text-black/55 tabular-nums">[ Espace réservé à votre en-tête physique pré-imprimé ]</div>}
-<div className="my-3 py-2 px-3 rounded-[var(--r-check,6px)] bg-neutral-50 border border-neutral-200 t-cap flex justify-between items-center tabular-nums">
+</div> : /* @__PURE__ */ <div className="h-16 border-b border-dashed border-black/[0.20] flex items-center justify-center t-cap text-black/55 tabular-nums">[ Espace réservé à votre en-tête physique pré-imprimé ]</div>}
+<div className="my-3 py-2 px-3 rounded-[var(--r-check,6px)] bg-neutral-50 border border-black/[0.12] t-cap flex justify-between items-center tabular-nums">
 <div>
 <span className="text-black/55">{"Patient: "}</span>
 <span className="font-semibold text-black">Meriem Haddad (31 ans)</span>
@@ -329,9 +329,9 @@ Aperçu Réel Ordonnance (
 </div>
 </div>
 </div>
-<div className="mt-4 pt-3 border-t border-neutral-200 flex justify-between items-end">
+<div className="mt-4 pt-3 border-t border-black/[0.12] flex justify-between items-end">
 <div className="flex items-center gap-2">
-<div className="w-10 h-10 border border-neutral-300 rounded-[var(--r-check,6px)] p-1 flex items-center justify-center bg-white"><QrCode size={34} className="text-black" /></div>
+<div className="w-10 h-10 border border-black/[0.18] rounded-[var(--r-check,6px)] p-1 flex items-center justify-center bg-white"><QrCode size={34} className="text-black" /></div>
 <div className="t-cap tabular-nums text-black/55">
 <span className="block font-semibold text-black/75">VÉRIFICATION CNAS</span>
 <span>SHA: CF-9921-DZ</span>
@@ -343,14 +343,14 @@ Aperçu Réel Ordonnance (
 <span className="t-cap tabular-nums mt-0.5">{formData.licenseNumber}</span>
 </div>}
 </div>
-{formData.printMode === "full_digital" && /* @__PURE__ */ <div className="mt-3 pt-2 border-t t-cap text-black/55 text-center tabular-nums space-y-0.5">
+{formData.printMode === "full_digital" && /* @__PURE__ */ <div className="mt-3 pt-2 border-t border-black/[0.12] t-cap text-black/55 text-center tabular-nums space-y-0.5">
 <p>{formData.footerConsultationHours}</p>
 <p className="font-semibold text-black/55">{formData.footerLegalNotice}</p>
 </div>}
 </div>
 </div>
 </div>
-<div className="px-6 py-4 border-t border-neutral-200 dark:border-[#33302D] flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-[#141312]">
+<div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between shrink-0 bg-[#F3EDE7] dark:bg-[#141312]">
 <AtriumButton variant="ghost" onClick={onClose}>Annuler</AtriumButton>
 <AtriumButton variant="primary" onClick={handleSave} icon={<Check size={16} />}>Enregistrer le Modèle d'Ordonnance</AtriumButton>
 </div>

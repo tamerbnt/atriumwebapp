@@ -216,53 +216,79 @@ interface SpecularGradientSpec {
   stops: ReadonlyArray<{ offset: string; opacity: number }>;
 }
 
-const DARK_SPECULAR_GRADIENTS: ReadonlyArray<SpecularGradientSpec> = [
+export function computeFlushStrokeInset(strokeWidth: number): number {
+  if (!Number.isFinite(strokeWidth) || strokeWidth <= 0) return 0;
+  return Math.round(strokeWidth * 0.5 * 100) / 100;
+}
+
+function getOpticalHairlinePx(el: HTMLElement, cs: CSSStyleDeclaration, strokeWidth: number): number {
+  const hasExplicitAttr = el.getAttribute('data-sq-stroke-w') !== null;
+  if (hasExplicitAttr || strokeWidth > 1) return strokeWidth;
+  const cssW = parseFloat(cs.getPropertyValue('--sq-stroke-w'));
+  if (Number.isFinite(cssW) && cssW > 0) return cssW;
+  const dpr = typeof window !== 'undefined' ? Number(window.devicePixelRatio) || 1 : 1;
+  return dpr >= 2 ? 0.65 : strokeWidth;
+}
+
+export const DARK_SPECULAR_GRADIENTS: ReadonlyArray<SpecularGradientSpec> = [
   {
     id: 'sq-spec-dark-pod',
     stops: [
-      { offset: '0%', opacity: 0.095 },
-      { offset: '48%', opacity: 0.055 },
-      { offset: '100%', opacity: 0.035 },
+      { offset: '0%', opacity: 0.045 },
+      { offset: '8%', opacity: 0.02 },
+      { offset: '24%', opacity: 0.005 },
+      { offset: '55%', opacity: 0 },
+      { offset: '100%', opacity: 0 },
     ],
   },
   {
     id: 'sq-spec-dark-card',
     stops: [
-      { offset: '0%', opacity: 0.145 },
-      { offset: '45%', opacity: 0.08 },
-      { offset: '100%', opacity: 0.04 },
+      { offset: '0%', opacity: 0.115 },
+      { offset: '8%', opacity: 0.055 },
+      { offset: '22%', opacity: 0.012 },
+      { offset: '50%', opacity: 0.002 },
+      { offset: '100%', opacity: 0 },
     ],
   },
   {
     id: 'sq-spec-dark-ctl',
     stops: [
-      { offset: '0%', opacity: 0.165 },
-      { offset: '45%', opacity: 0.095 },
-      { offset: '100%', opacity: 0.055 },
+      { offset: '0%', opacity: 0.135 },
+      { offset: '8%', opacity: 0.065 },
+      { offset: '24%', opacity: 0.015 },
+      { offset: '52%', opacity: 0.003 },
+      { offset: '100%', opacity: 0 },
     ],
   },
   {
     id: 'sq-spec-dark-ctl-hover',
     stops: [
-      { offset: '0%', opacity: 0.24 },
-      { offset: '45%', opacity: 0.14 },
-      { offset: '100%', opacity: 0.085 },
+      { offset: '0%', opacity: 0.21 },
+      { offset: '8%', opacity: 0.105 },
+      { offset: '26%', opacity: 0.025 },
+      { offset: '55%', opacity: 0.005 },
+      { offset: '100%', opacity: 0 },
     ],
   },
   {
     id: 'sq-spec-dark-pop',
     stops: [
-      { offset: '0%', opacity: 0.17 },
-      { offset: '42%', opacity: 0.095 },
-      { offset: '100%', opacity: 0.045 },
+      { offset: '0%', opacity: 0.15 },
+      { offset: '8%', opacity: 0.075 },
+      { offset: '24%', opacity: 0.018 },
+      { offset: '55%', opacity: 0.004 },
+      { offset: '100%', opacity: 0 },
     ],
   },
   {
     id: 'sq-spec-dark-app',
     stops: [
-      { offset: '0%', opacity: 0.11 },
-      { offset: '45%', opacity: 0.06 },
-      { offset: '100%', opacity: 0.03 },
+      { offset: '0%', opacity: 0.06 },
+      { offset: '8%', opacity: 0.025 },
+      { offset: '22%', opacity: 0.005 },
+      { offset: '50%', opacity: 0 },
+      { offset: '100%', opacity: 0 },
     ],
   },
 ];
@@ -437,7 +463,8 @@ function flushDirtyQueue(): void {
     if (w <= 0 || h <= 0) return;
 
     const r = resolveRadiusPx(el, tokens, cs);
-    const { needsStroke, strokeWidth } = resolveStrokeWidth(el, cs, bt, br, bb, bl);
+    const { needsStroke, strokeWidth: rawStrokeWidth } = resolveStrokeWidth(el, cs, bt, br, bb, bl);
+    const strokeWidth = needsStroke ? getOpticalHairlinePx(el, cs, rawStrokeWidth) : 0;
     const isVoid = VOID_TAGS.has(el.tagName);
     const needsPosRelative = needsStroke && !isVoid && cs.position === 'static';
     const hasNonZeroBorder = bt > 0 || br > 0 || bb > 0 || bl > 0;
@@ -477,7 +504,7 @@ function flushDirtyQueue(): void {
 
     let strokeD = '';
     if (needsStroke) {
-      const inset = strokeWidth <= 1 ? 0.65 : strokeWidth / 2 + 0.15;
+      const inset = computeFlushStrokeInset(strokeWidth);
       const sw = Math.max(1, w - inset * 2);
       const sh = Math.max(1, h - inset * 2);
       const sr = Math.max(0, r - inset);
@@ -605,7 +632,8 @@ export function syncSquircleNow(el: HTMLElement | null): void {
 
   const { smooth, tokens } = readRootTokens();
   const r = resolveRadiusPx(el, tokens, cs);
-  const { needsStroke, strokeWidth } = resolveStrokeWidth(el, cs, bt, br, bb, bl);
+  const { needsStroke, strokeWidth: rawStrokeWidth } = resolveStrokeWidth(el, cs, bt, br, bb, bl);
+  const strokeWidth = needsStroke ? getOpticalHairlinePx(el, cs, rawStrokeWidth) : 0;
   const isVoid = VOID_TAGS.has(el.tagName);
   const needsPosRelative = needsStroke && !isVoid && cs.position === 'static';
   const hasNonZeroBorder = bt > 0 || br > 0 || bb > 0 || bl > 0;
@@ -663,7 +691,7 @@ export function syncSquircleNow(el: HTMLElement | null): void {
   (el.style as any).webkitClipPath = clipStr;
 
   if (needsStroke) {
-    const inset = strokeWidth <= 1 ? 0.65 : strokeWidth / 2 + 0.15;
+    const inset = computeFlushStrokeInset(strokeWidth);
     const strokeD = squirclePath(
       inset,
       inset,
@@ -738,6 +766,11 @@ export function initSquircleEngine(): void {
   if (engineInstalled || typeof window === 'undefined' || typeof document === 'undefined') return;
   engineInstalled = true;
   ensureSharedSquircleDefs();
+
+  const dpr = Number(window.devicePixelRatio) || 1;
+  if (document.documentElement?.style?.setProperty) {
+    document.documentElement.style.setProperty('--sq-stroke-hairline', dpr >= 2 ? '0.65px' : '1px');
+  }
 
   if (typeof ResizeObserver !== 'undefined') {
     ro = new ResizeObserver((entries) => {

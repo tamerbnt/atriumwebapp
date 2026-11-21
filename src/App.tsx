@@ -1550,7 +1550,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setTopBarCollapsed(false)}
-                className="fixed top-[var(--s2)] left-1/2 -translate-x-1/2 z-50 h-[var(--btn-sm-h,32px)] flex items-center gap-[var(--btn-sm-gap,6px)] px-[var(--btn-sm-px,12px)] rounded-full bg-white dark:bg-[#18181B] border border-[#E6DED6] dark:border-neutral-700 text-[var(--text-1)] dark:text-white t-btn shadow-sm hover:shadow-md hover:border-[var(--brand-fill)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] transition-all duration-200 cursor-pointer group select-none backdrop-blur-md"
+                className="fixed top-[var(--s2)] left-1/2 -translate-x-1/2 z-50 h-[var(--btn-sm-h,32px)] flex items-center gap-[var(--btn-sm-gap,6px)] px-[var(--btn-sm-px,12px)] rounded-full bg-white/95 dark:bg-[#262422]/95 border-0 text-[var(--text-1)] dark:text-white t-btn shadow-[0_8px_24px_rgba(23,19,15,0.12)] dark:shadow-[0_12px_28px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.10)] hover:shadow-[0_10px_28px_rgba(23,19,15,0.16)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] transition-all duration-200 cursor-pointer group select-none backdrop-blur-md"
                 title={t('topbar_focus_restore', "Afficher l'en-tête")}
                 aria-label={t('topbar_focus_restore', "Afficher l'en-tête")}
               >

@@ -89,21 +89,21 @@ const getOrderStatusBadge = (
         label: isAr ? 'محال للتصميم' : isEn ? 'Sent to Crea' : 'Transmis Créa',
         variant: 'info',
         pillClass:
-          'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]',
+          'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC]',
       };
     case 'bat_in_progress':
       return {
         label: isAr ? 'BAT قيد الإنجاز' : isEn ? 'BAT Proofing' : 'BAT en cours',
         variant: 'warning',
         pillClass:
-          'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+          'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
       };
     case 'bat_approved':
       return {
         label: isAr ? 'BAT معتمد' : isEn ? 'BAT Approved' : 'BAT Validé',
         variant: 'active',
         pillClass:
-          'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+          'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
       };
     case 'in_print':
     case 'sent_to_printer':
@@ -111,7 +111,7 @@ const getOrderStatusBadge = (
         label: isAr ? 'قيد الطباعة' : isEn ? 'At Printer' : "Chez l'Imprimeur",
         variant: 'warning',
         pillClass:
-          'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
+          'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300',
       };
     case 'delivered':
     case 'printed':
@@ -119,14 +119,14 @@ const getOrderStatusBadge = (
         label: isAr ? 'مطبوع ومُسلم' : isEn ? 'Delivered' : 'Imprimé & Livré',
         variant: 'active',
         pillClass:
-          'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+          'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
       };
     default:
       return {
         label: status,
         variant: 'neutral',
         pillClass:
-          'bg-[#F3EDE7] dark:bg-neutral-800 text-black/75 dark:text-white/80 border border-[#E6DED6] dark:border-neutral-700',
+          'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/75 dark:text-white/80',
       };
   }
 };
@@ -142,7 +142,7 @@ const getBatStatusBadge = (
       label: isAr ? 'معتمد للطباعة' : isEn ? 'Approved' : 'Bon à Tirer Validé',
       variant: 'active',
       pillClass:
-        'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+        'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
     };
   }
   if (status === 'revision_requested') {
@@ -150,14 +150,14 @@ const getBatStatusBadge = (
       label: isAr ? 'تعديلات مطلوبة' : isEn ? 'Revision Requested' : 'Corrections Demandées',
       variant: 'blocked',
       pillClass:
-        'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
+        'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]',
     };
   }
   return {
     label: isAr ? 'بانتظار المراجعة' : isEn ? 'Pending Review' : 'En Attente de Revue',
     variant: 'warning',
     pillClass:
-      'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+      'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
   };
 };
 
@@ -688,8 +688,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           <div className="flex items-center gap-3">
             <div
               data-sq="ctl"
-              data-sq-border="solid"
-              className="w-10 h-10 shrink-0 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+              data-sq-border="none"
+              className="w-10 h-10 shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
             >
               <img
                 src={item.imageUrl}
@@ -859,8 +859,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           <div className="flex items-center gap-3">
             <div
               data-sq="ctl-sm"
-              data-sq-border="solid"
-              className="w-10 h-10 shrink-0 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+              data-sq-border="none"
+              className="w-10 h-10 shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
             >
               <img
                 src={bat.previewUrl}
@@ -1161,53 +1161,55 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 
           {activeTab === 'portfolio' && (
             <div className="space-y-5">
-              <div
-                data-sq="card"
-                data-sq-border="solid"
-                className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-              >
-                <div>
-                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
-                    {isAr
-                      ? 'مراقبة سقف المصاريف الميدانية'
-                      : isEn
-                      ? 'Field Expense Burn-Rate Control'
-                      : 'Contrôle des Plafonds Dépenses Terrain'}
-                  </span>
-                  <h3 className="t-pod font-semibold text-black dark:text-white mt-0.5">
-                    {selectedProject?.title}
-                  </h3>
-                  <div className="t-cap text-black/55 dark:text-white/55">
-                    {isAr ? 'العميل:' : isEn ? 'Client:' : 'Client :'}{' '}
-                    <span className="font-semibold text-black/70 dark:text-white/75">
-                      {selectedProject?.clientName}
-                    </span>{' '}
-                    · {isAr ? 'السقف المعتمد:' : isEn ? 'Cap:' : 'Plafond autorisé :'}{' '}
-                    <span className="tabular-nums font-semibold">
-                      {formatMoney(selectedProject?.maxFieldExpensesDzd || 0, 'DZD')}
+              <div className="sq-elev-card">
+                <div
+                  data-sq="card"
+                  data-sq-border="none"
+                  className="p-5 bg-white dark:bg-[#22201E] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  <div>
+                    <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
+                      {isAr
+                        ? 'مراقبة سقف المصاريف الميدانية'
+                        : isEn
+                        ? 'Field Expense Burn-Rate Control'
+                        : 'Contrôle des Plafonds Dépenses Terrain'}
                     </span>
+                    <h3 className="t-pod font-semibold text-black dark:text-white mt-0.5">
+                      {selectedProject?.title}
+                    </h3>
+                    <div className="t-cap text-black/55 dark:text-white/55">
+                      {isAr ? 'العميل:' : isEn ? 'Client:' : 'Client :'}{' '}
+                      <span className="font-semibold text-black/70 dark:text-white/75">
+                        {selectedProject?.clientName}
+                      </span>{' '}
+                      · {isAr ? 'السقف المعتمد:' : isEn ? 'Cap:' : 'Plafond autorisé :'}{' '}
+                      <span className="tabular-nums font-semibold">
+                        {formatMoney(selectedProject?.maxFieldExpensesDzd || 0, 'DZD')}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="w-full sm:w-64 space-y-2">
-                  <div className="flex justify-between t-small font-semibold">
-                    <span className="text-black/55 dark:text-white/55">
-                      {isAr ? 'المستهلك ميدانياً:' : isEn ? 'Consumed:' : 'Consommé Terrain :'}
-                    </span>
-                    <span
-                      className={`tabular-nums ${
-                        isOverThreshold ? 'text-red-600 font-semibold' : 'text-black dark:text-white'
-                      }`}
-                    >
-                      {formatMoney(totalExpensesSpent, 'DZD')} ({burnRatePercent}%)
-                    </span>
-                  </div>
-                  <div className="w-full h-2.5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden">
-                    <div
-                      className={`h-full transition-all ${
-                        isOverThreshold ? 'bg-red-500' : 'bg-emerald-500'
-                      }`}
-                      style={{ width: `${burnRatePercent}%` }}
-                    />
+                  <div className="w-full sm:w-64 space-y-2">
+                    <div className="flex justify-between t-small font-semibold">
+                      <span className="text-black/55 dark:text-white/55">
+                        {isAr ? 'المستهلك ميدانياً:' : isEn ? 'Consumed:' : 'Consommé Terrain :'}
+                      </span>
+                      <span
+                        className={`tabular-nums ${
+                          isOverThreshold ? 'text-red-600 font-semibold' : 'text-black dark:text-white'
+                        }`}
+                      >
+                        {formatMoney(totalExpensesSpent, 'DZD')} ({burnRatePercent}%)
+                      </span>
+                    </div>
+                    <div className="w-full h-2.5 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden">
+                      <div
+                        className={`h-full transition-all ${
+                          isOverThreshold ? 'bg-red-500' : 'bg-emerald-500'
+                        }`}
+                        style={{ width: `${burnRatePercent}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1221,50 +1223,51 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   const pct = Math.min(Math.round((spent / limit) * 100), 100);
                   const isSel = selectedProject?.id === p.id;
                   return (
-                    <button
-                      type="button"
-                      key={p.id}
-                      onClick={() => setSelectedProjectId(p.id)}
-                      data-sq="card"
-                      data-sq-border="solid"
-                      className={`p-5 text-left rtl:text-right transition-all cursor-pointer ${
-                        isSel
-                          ? '[--sq-stroke:#d4522f] bg-[#d4522f]/5 dark:bg-[#d4522f]/10'
-                          : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 hover:[--sq-stroke:#D5CBBF]'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] truncate">
-                          {p.clientName}
-                        </span>
-                        <span className="px-2 py-1 rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
-                          {p.status}
-                        </span>
-                      </div>
-                      <h4 className="t-label font-semibold text-black dark:text-white mb-2 truncate">
-                        {p.title}
-                      </h4>
-                      <div className="space-y-1 t-cap text-black/55 dark:text-white/55">
-                        <div className="flex justify-between">
-                          <span>{isAr ? 'الميزانية الإجمالية:' : isEn ? 'Global Cap:' : 'Plafond Global:'}</span>
-                          <span className="tabular-nums font-semibold text-black dark:text-white">
-                            {formatMoney(p.budgetCapDzd, 'DZD')}
+                    <div key={p.id} className="sq-elev-card">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProjectId(p.id)}
+                        data-sq="card"
+                        data-sq-border="none"
+                        className={`w-full p-5 text-left rtl:text-right transition-all cursor-pointer ${
+                          isSel
+                            ? 'bg-[#FCEEE8] dark:bg-[#2B2825] ring-2 ring-[#d4522f]/60'
+                            : 'bg-white dark:bg-[#22201E] hover:bg-[#FBF8F5] dark:hover:bg-[#282523]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] truncate">
+                            {p.clientName}
+                          </span>
+                          <span className="px-2 py-1 rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75">
+                            {p.status}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span>{isAr ? 'مصاريف الميدان:' : isEn ? 'Field Spend:' : 'Dépenses Terrain:'}</span>
-                          <span className="tabular-nums">
-                            {formatMoney(spent, 'DZD')} / {formatMoney(limit, 'DZD')}
-                          </span>
+                        <h4 className="t-label font-semibold text-black dark:text-white mb-2 truncate">
+                          {p.title}
+                        </h4>
+                        <div className="space-y-1 t-cap text-black/55 dark:text-white/55">
+                          <div className="flex justify-between">
+                            <span>{isAr ? 'الميزانية الإجمالية:' : isEn ? 'Global Cap:' : 'Plafond Global:'}</span>
+                            <span className="tabular-nums font-semibold text-black dark:text-white">
+                              {formatMoney(p.budgetCapDzd, 'DZD')}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>{isAr ? 'مصاريف الميدان:' : isEn ? 'Field Spend:' : 'Dépenses Terrain:'}</span>
+                            <span className="tabular-nums">
+                              {formatMoney(spent, 'DZD')} / {formatMoney(limit, 'DZD')}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="w-full h-1.5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden mt-3">
-                        <div
-                          className={`h-full ${pct >= 85 ? 'bg-red-500' : 'bg-[#d4522f]'}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </button>
+                        <div className="w-full h-1.5 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden mt-3">
+                          <div
+                            className={`h-full ${pct >= 85 ? 'bg-red-500' : 'bg-[#d4522f]'}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </button>
+                    </div>
                   );
                 })}
               </div>
@@ -1348,8 +1351,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       {item.imageUrl && (
                         <div
                           data-sq="ctl"
-                          data-sq-border="solid"
-                          className="w-full h-36 [--sq-stroke:rgba(230,222,214,0.6)] dark:[--sq-stroke:#262626]"
+                          data-sq-border="none"
+                          className="w-full h-36 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
                         >
                           <img
                             src={item.imageUrl}
@@ -1370,7 +1373,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         {item.dimensions}
                       </p>
                     </div>
-                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
+                    <div className="pt-3 border-t border-[var(--atr-divider)] flex items-center justify-between">
                       <span className="tabular-nums font-semibold t-label text-black dark:text-white">
                         {formatMoney(item.unitCostDzd, 'DZD')}
                       </span>
@@ -1525,7 +1528,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         ))}
                       </div>
                     </div>
-                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex justify-between items-center t-cap">
+                    <div className="pt-3 border-t border-[var(--atr-divider)] flex justify-between items-center t-cap">
                       <span className="text-black/55 dark:text-white/55">Total :</span>
                       <span className="tabular-nums font-semibold text-black dark:text-white">
                         {formatMoney(order.totalCostDzd, 'DZD')}
@@ -1667,8 +1670,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     <div className="space-y-3">
                       <div
                         data-sq="ctl"
-                        data-sq-border="solid"
-                        className="w-full h-44 [--sq-stroke:rgba(230,222,214,0.6)] dark:[--sq-stroke:#262626]"
+                        data-sq-border="none"
+                        className="w-full h-44 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
                       >
                         <img
                           src={bat.previewUrl}
@@ -1703,7 +1706,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                           Note CDP : {bat.revisionComments}
                         </div>
                       )}
-                      <div className="pt-2 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-end gap-2">
+                      <div className="pt-2 border-t border-[var(--atr-divider)] flex items-center justify-end gap-2">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -1712,8 +1715,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                             setIsCorrectionModalOpen(true);
                           }}
                           data-sq="ctl"
-                          data-sq-border="solid"
-                          className="px-3 py-2 t-small font-semibold text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                          data-sq-border="none"
+                          className="px-3 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
                         >
                           {isAr ? 'طلب تعديل' : isEn ? 'Revision' : 'Demander Révision'}
                         </button>
@@ -1823,35 +1826,36 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 />
               </div>
 
-              <div
-                data-sq="card"
-                data-sq-border="solid"
-                className="lg:col-span-5 p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4 self-start"
-              >
-                <div>
-                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
-                    {isAr ? 'التصريح بمشتريات الميدان' : isEn ? 'Field Purchase Declaration' : "Déclaration d'Achat Terrain"}
-                  </span>
-                  <h3 className="t-card font-semibold text-black dark:text-white mt-0.5">
-                    {isAr ? 'إدخال فوري وترميز المخزون' : isEn ? 'Quick Entry & Asset Coding' : 'Saisie Immédiate & Codage Stock'}
-                  </h3>
-                  <p className="t-cap text-black/55 dark:text-white/55">
-                    {isAr
-                      ? 'ينشئ تلقائياً مرجع أصل للوكالة عند المصادقة.'
-                      : isEn
-                      ? 'Automatically tracks indirect agency asset coding.'
-                      : "Génère automatiquement une référence d'immobilisation indirecte pour l'agence."}
-                  </p>
-                </div>
-                {purchaseSuccessMessage && (
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="solid"
-                    className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] t-cap text-emerald-800 dark:text-emerald-300"
-                  >
-                    {purchaseSuccessMessage}
+              <div className="lg:col-span-5 sq-elev-card self-start">
+                <div
+                  data-sq="card"
+                  data-sq-border="none"
+                  className="p-6 bg-white dark:bg-[#22201E] space-y-4"
+                >
+                  <div>
+                    <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
+                      {isAr ? 'التصريح بمشتريات الميدان' : isEn ? 'Field Purchase Declaration' : "Déclaration d'Achat Terrain"}
+                    </span>
+                    <h3 className="t-card font-semibold text-black dark:text-white mt-0.5">
+                      {isAr ? 'إدخال فوري وترميز المخزون' : isEn ? 'Quick Entry & Asset Coding' : 'Saisie Immédiate & Codage Stock'}
+                    </h3>
+                    <p className="t-cap text-black/55 dark:text-white/55">
+                      {isAr
+                        ? 'ينشئ تلقائياً مرجع أصل للوكالة عند المصادقة.'
+                        : isEn
+                        ? 'Automatically tracks indirect agency asset coding.'
+                        : "Génère automatiquement une référence d'immobilisation indirecte pour l'agence."}
+                    </p>
                   </div>
-                )}
+                  {purchaseSuccessMessage && (
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="p-3 bg-[#DDF5E8] dark:bg-[#143324] t-cap text-[#0B7A45] dark:text-[#4ADE80]"
+                    >
+                      {purchaseSuccessMessage}
+                    </div>
+                  )}
                 <form onSubmit={handleDeclarePurchase} className="space-y-4">
                   <LabelInput
                     field="PurchaseTitle"
@@ -1905,6 +1909,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     {isAr ? 'تصريح وتحميل على المشروع' : isEn ? 'Submit to Project' : 'Déclarer & Imputer au Projet'}
                   </AtriumButton>
                 </form>
+                </div>
               </div>
             </div>
           )}
@@ -2020,9 +2025,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             {item.imageUrl && (
               <InspectorSection index={0}>
                 <div
-                  data-sq="card"
-                  data-sq-border="solid"
-                  className="w-full h-48 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="w-full h-48 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
                 >
                   <img
                     src={item.imageUrl}
@@ -2153,9 +2158,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           <>
             <InspectorSection index={0}>
               <div
-                data-sq="card"
-                data-sq-border="solid"
-                className="w-full h-48 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+                data-sq="ctl"
+                data-sq-border="none"
+                className="w-full h-48 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
               >
                 <img
                   src={bat.previewUrl}
@@ -2260,9 +2265,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           aria-modal="true"
           className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs"
         >
-          <div className="w-full max-w-md bg-white dark:bg-neutral-900 h-full p-6 flex flex-col justify-between shadow-2xl border-l border-[#E6DED6] dark:border-neutral-800">
+          <div className="w-full max-w-md bg-white dark:bg-[#262422] h-full p-6 flex flex-col justify-between shadow-2xl border-l border-[var(--atr-divider)]">
             <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <h3 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
                   <ShoppingBag className="w-5 h-5 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   {isAr ? 'أمر طلب الطباعة' : isEn ? 'Print Order Cart' : 'Bon de Commande Impression'}
@@ -2272,7 +2277,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   aria-label="Fermer"
                   onClick={() => setIsCartOpen(false)}
                   data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -2307,7 +2312,8 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     <div
                       key={ci.item.id}
                       data-sq="ctl"
-                      className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 flex items-center justify-between gap-3 t-cap"
+                      data-sq-border="none"
+                      className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between gap-3 t-cap"
                     >
                       <div className="min-w-0">
                         <div className="font-semibold text-black dark:text-white truncate">
@@ -2322,7 +2328,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                           type="button"
                           onClick={() => handleUpdateQuantity(ci.item.id, -1)}
                           data-sq="check"
-                          className="w-6 h-6 bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-semibold cursor-pointer"
+                          className="w-6 h-6 bg-[#EAE1D8] dark:bg-[#2B2825] hover:dark:bg-[#332F2B] flex items-center justify-center font-semibold cursor-pointer"
                         >
                           -
                         </button>
@@ -2331,7 +2337,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                           type="button"
                           onClick={() => handleUpdateQuantity(ci.item.id, 1)}
                           data-sq="check"
-                          className="w-6 h-6 bg-[#EAE1D8] dark:bg-neutral-700 flex items-center justify-center font-semibold cursor-pointer"
+                          className="w-6 h-6 bg-[#EAE1D8] dark:bg-[#2B2825] hover:dark:bg-[#332F2B] flex items-center justify-center font-semibold cursor-pointer"
                         >
                           +
                         </button>
@@ -2349,7 +2355,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 )}
               </div>
             </div>
-            <div className="pt-4 border-t border-[#E6DED6] dark:border-neutral-800 space-y-3">
+            <div className="pt-4 border-t border-[var(--atr-divider)] space-y-3">
               <div className="flex justify-between items-center t-label font-semibold">
                 <span>{isAr ? 'الإجمالي التقديري:' : 'Total Estimé HT :'}</span>
                 <span className="tabular-nums t-body text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
@@ -2384,7 +2390,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
                 <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
@@ -2396,7 +2402,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   aria-label="Fermer"
                   onClick={() => setIsCorrectionModalOpen(false)}
                   data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -2410,7 +2416,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     ? 'اذكر التعديلات المطلوبة...'
                     : 'Indiquez les modifications requises (ex: logo client flou, fond perdu insuffisant, coquille texte)...'
                 }
-                className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+                className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow"
               />
               <div className="flex justify-end gap-2">
                 <AtriumButton
@@ -2441,7 +2447,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
                 <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
@@ -2453,7 +2459,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   aria-label="Fermer"
                   onClick={() => setSelectedReceiptUrl(null)}
                   data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -2471,7 +2477,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   type="button"
                   onClick={() => setSelectedReceiptUrl(null)}
                   data-sq="ctl"
-                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] cursor-pointer transition-colors"
                 >
                   {isAr ? 'إغلاق' : 'Fermer'}
                 </button>

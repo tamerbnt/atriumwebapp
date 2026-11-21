@@ -560,11 +560,11 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
   const renderTimetableView = () => (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
-        <div className="sq-elev-card max-w-full">
+        <div className="max-w-full">
           <div
             data-sq="ctl"
-            data-sq-border="solid"
-            className="flex items-center p-[3px] bg-white dark:bg-[#1C1B1A] gap-0.5 t-small font-semibold overflow-x-auto max-w-full"
+            data-sq-border="none"
+            className="flex items-center p-[3px] bg-[#EFE9E2] dark:bg-[#191716] gap-0.5 t-small font-semibold overflow-x-auto max-w-full"
           >
             {days.map((d) => {
               const isActive = selectedDay === d.id;
@@ -636,11 +636,11 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
                     setDrawerOpenerEl(e.currentTarget);
                     setSelectedEvent(event);
                   }}
-                  className="w-full text-left rtl:text-right p-5 bg-white dark:bg-[#1C1B1A] hover:bg-[#FCF9F6] dark:hover:bg-white/[0.04] transition-all cursor-pointer flex flex-col justify-between group"
+                  className="w-full text-left rtl:text-right p-5 bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] transition-all cursor-pointer flex flex-col justify-between group"
                 >
                   <div className="w-full">
                     <div className="flex items-center justify-between mb-3 gap-2">
-                      <span className="t-small font-semibold tracking-[0.04em] rtl:normal-case bg-[#F3EDE7] dark:bg-[#262422] text-black/72 dark:text-white/80 px-2.5 py-1 rounded-full">
+                      <span className="t-small font-semibold tracking-[0.04em] rtl:normal-case bg-[#F3EDE7] dark:bg-[#2B2825] text-black/72 dark:text-white/80 px-2.5 py-1 rounded-full">
                         {event.category}
                       </span>
                       <span className="t-small tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center gap-1">
@@ -763,7 +763,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="w-10 h-10 rounded-full bg-white dark:bg-[#262422] border border-black/[0.07] dark:border-white/[0.11] flex items-center justify-center text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white cursor-pointer transition-colors shadow-2xs"
+              className="w-10 h-10 rounded-full bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#36322E] flex items-center justify-center text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white cursor-pointer transition-colors"
               title="Toggle Fullscreen"
             >
               <Maximize2 size={15} />
@@ -875,8 +875,8 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
         }
         statusClassName={
           selectedEvent && selectedEvent.enrolledCount >= selectedEvent.capacity
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
-            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
         }
         tabs={[
           { id: 'overview', label: isAr ? 'الحصة والتوقيت' : isEn ? 'Overview' : 'Aperçu & Créneau' },

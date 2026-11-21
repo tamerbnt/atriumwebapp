@@ -195,8 +195,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
         {preview && (
           <div
             data-sq="panel"
-            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-[var(--pod-pad,12px)] bg-[#F3EDE7] dark:bg-neutral-800/60 flex flex-col gap-[var(--card-gap,12px)]"
+            className="p-[var(--pod-pad,12px)] bg-[#F3EDE7] dark:bg-[#191716] flex flex-col gap-[var(--card-gap,12px)]"
           >
             <div className="flex items-center justify-between px-[var(--s1,4px)] pt-[var(--s1,4px)]">
               <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white">
@@ -210,24 +209,21 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--s2,8px)]">
               <div
                 data-sq="card"
-                style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-                className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
+                className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]"
               >
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'المدة الأساسية' : isEn ? 'Base Days' : 'Délai Base'}</span>
                 <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white tabular-nums">{preview.baseDays} j</span>
               </div>
               <div
                 data-sq="card"
-                style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-                className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
+                className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]"
               >
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'تمديد المسافة' : isEn ? 'Extra Days' : 'Distance'}</span>
                 <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white tabular-nums">+{preview.distanceExtensionDays} j</span>
               </div>
               <div
                 data-sq="card"
-                style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-                className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 col-span-2 flex flex-col gap-[var(--s1,4px)]"
+                className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] col-span-2 flex flex-col gap-[var(--s1,4px)]"
               >
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'تاريخ الانتهاء' : isEn ? 'Final Due' : 'Expiration Finale'}</span>
                 <span className="t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">

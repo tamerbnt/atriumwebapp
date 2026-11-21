@@ -27,7 +27,7 @@ export const DashboardPod: React.FC<DashboardPodProps> = ({
     <section
       data-sq="panel"
       data-sq-border="solid"
-      className={`relative bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] border border-black/[0.05] dark:border-white/[0.08] flex flex-col justify-start min-w-0 ${className}`}
+      className={`relative bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col justify-start min-w-0 ${className}`}
     >
       <div
         className="flex items-start justify-between gap-[var(--card-head-gap,12px)] flex-wrap"
@@ -37,8 +37,8 @@ export const DashboardPod: React.FC<DashboardPodProps> = ({
           {icon && (
             <div
               data-sq="ctl-sm"
-              data-sq-border="solid"
-              className="relative w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] bg-[#FBF8F5] dark:bg-white/[0.06] border border-black/[0.06] dark:border-white/[0.1] flex items-center justify-center text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0"
+              data-sq-border="none"
+              className="relative w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] bg-[#FBF8F5] dark:bg-[#2B2825] flex items-center justify-center text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0"
             >
               {icon}
             </div>

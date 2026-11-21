@@ -60,8 +60,8 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
       <div className="sq-elev-pop max-w-lg w-full">
         <div
           data-sq="panel"
-          style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-          className="bg-white dark:bg-[#18181B] w-full p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] relative"
+          data-sq-border="solid"
+          className="bg-white dark:bg-[#262422] w-full p-[var(--modal-pad,24px)] flex flex-col gap-[var(--modal-gap,20px)] relative [--sq-stroke:var(--sq-stroke-pop)]"
         >
           <div className="flex items-center justify-between gap-[var(--s3,12px)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)] min-w-0">
@@ -84,7 +84,7 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] flex items-center justify-center rounded-full text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/65 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
+              className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] flex items-center justify-center rounded-full text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-white/65 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] transition-colors cursor-pointer shrink-0"
             >
               <X className="w-4 h-4" strokeWidth={1.5} />
             </button>
@@ -111,8 +111,8 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
               </label>
               <div
                 data-sq="ctl"
-                style={{ '--sq-stroke': 'var(--atr-border-strong, #D4D4D4)' } as React.CSSProperties}
-                className="relative h-[var(--btn-h,40px)] flex items-center bg-white dark:bg-[#202024]"
+                data-sq-border="none"
+                className="relative h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
               >
                 <input
                   type="number"
@@ -148,15 +148,11 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
                     type="button"
                     onClick={() => setPaymentMethod(m.id as any)}
                     data-sq="ctl"
-                    style={
-                      {
-                        '--sq-stroke': paymentMethod === m.id ? '#BF431F' : 'var(--atr-border, #E5E5E5)',
-                      } as React.CSSProperties
-                    }
+                    data-sq-border={paymentMethod === m.id ? 'solid' : 'none'}
                     className={`h-[var(--btn-h,40px)] px-[var(--s3,12px)] t-btn transition-all cursor-pointer ${
                       paymentMethod === m.id
-                        ? 'bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                        : 'text-[var(--text-2)] dark:text-white/75 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                        ? 'bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] [--sq-stroke:#d4522f]'
+                        : 'bg-[#F5F1EC] dark:bg-[#2B2825] text-[var(--text-2)] dark:text-white/75 hover:bg-[#EDE6DF] dark:hover:bg-[#332F2B]'
                     }`}
                   >
                     {m.label}
@@ -171,8 +167,8 @@ export const SalaryAdvanceModal: React.FC<SalaryAdvanceModalProps> = ({
               </label>
               <div
                 data-sq="ctl"
-                style={{ '--sq-stroke': 'var(--atr-border-strong, #D4D4D4)' } as React.CSSProperties}
-                className="h-[var(--btn-h,40px)] flex items-center bg-white dark:bg-[#202024]"
+                data-sq-border="none"
+                className="h-[var(--btn-h,40px)] flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-colors"
               >
                 <input
                   type="text"

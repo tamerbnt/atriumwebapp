@@ -123,7 +123,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           <button
             type="button"
             onClick={() => setLangMenuOpen(!langMenuOpen)}
-            className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-full bg-neutral-900/90 border border-neutral-700/80 text-white t-btn flex items-center gap-[var(--btn-sm-gap,6px)] hover:bg-neutral-800 transition-colors cursor-pointer shadow-lg backdrop-blur-md"
+            className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-full bg-[#22201E]/95 text-white t-btn flex items-center gap-[var(--btn-sm-gap,6px)] hover:bg-[#2B2825] transition-colors cursor-pointer shadow-lg backdrop-blur-md"
           >
             <Globe size={16} strokeWidth={1.5} className="text-[var(--brand-on-dark,#FF8F63)]" />
             <span>
@@ -139,7 +139,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               <div
                 data-sq="table"
                 data-sq-border="solid"
-                className="w-full rounded-[var(--r-table,20px)] bg-[#1E1B19] [--sq-stroke:#404040] p-[var(--s2,8px)] flex flex-col gap-[var(--s1,4px)]"
+                className="w-full rounded-[var(--r-table,20px)] bg-[#262422] [--sq-stroke:var(--sq-stroke-obsidian)] p-[var(--s2,8px)] flex flex-col gap-[var(--s1,4px)]"
               >
                 <button
                   type="button"
@@ -150,13 +150,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                     setLangMenuOpen(false);
                   }}
                   className={`w-full px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-row,12px)] t-label flex items-center justify-between cursor-pointer transition-colors ${
-                    isLanguageAuto ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                    isLanguageAuto ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-[#2B2825] hover:text-white'
                   }`}
                 >
                   <span>🌐 {t('settings_system_default', language)}</span>
                   {isLanguageAuto && <Check size={16} strokeWidth={1.5} />}
                 </button>
-                <div className="h-px bg-neutral-800" />
+                <div className="h-px bg-white/[0.08]" />
                 <button
                   type="button"
                   data-sq="row"
@@ -166,7 +166,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                     setLangMenuOpen(false);
                   }}
                   className={`w-full px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-row,12px)] t-label flex items-center justify-between cursor-pointer transition-colors ${
-                    !isLanguageAuto && language === 'en' ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                    !isLanguageAuto && language === 'en' ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-[#2B2825] hover:text-white'
                   }`}
                 >
                   <span>🇺🇸 English (US)</span>
@@ -181,7 +181,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                     setLangMenuOpen(false);
                   }}
                   className={`w-full px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-row,12px)] t-label flex items-center justify-between cursor-pointer transition-colors ${
-                    !isLanguageAuto && language === 'fr' ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                    !isLanguageAuto && language === 'fr' ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-[#2B2825] hover:text-white'
                   }`}
                 >
                   <span>🇫🇷 Français</span>
@@ -196,7 +196,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                     setLangMenuOpen(false);
                   }}
                   className={`w-full px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-row,12px)] t-label flex items-center justify-between cursor-pointer transition-colors ${
-                    !isLanguageAuto && language === 'ar' ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-neutral-800 hover:text-white'
+                    !isLanguageAuto && language === 'ar' ? 'bg-[#d4522f]/20 text-[var(--brand-on-dark,#FF8F63)] font-semibold' : 'text-white/85 hover:bg-[#2B2825] hover:text-white'
                   }`}
                 >
                   <span>🇩🇿 العربية (RTL)</span>
@@ -288,8 +288,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           {/* Auth Mode Toggle Pill */}
           <div
             data-sq="ctl"
-            data-sq-border="solid"
-            className="grid grid-cols-2 h-[var(--seg-l-h,40px)] p-[var(--seg-l-pad,4px)] rounded-[var(--r-ctl,12px)] bg-neutral-900/80 [--sq-stroke:url(#sq-spec-dark-ctl)] t-btn"
+            data-sq-border="none"
+            className="grid grid-cols-2 h-[var(--seg-l-h,40px)] p-[var(--seg-l-pad,4px)] rounded-[var(--r-ctl,12px)] bg-[#191716] t-btn"
           >
             <button
               type="button"
@@ -385,7 +385,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                     type="checkbox"
                     checked={rememberDevice}
                     onChange={(e) => setRememberDevice(e.target.checked)}
-                    className="rounded-[var(--r-check,6px)] border-neutral-700 text-[var(--brand-fill,#C9461F)] focus:ring-0"
+                    className="rounded-[var(--r-check,6px)] border-white/[0.16] text-[var(--brand-fill,#C9461F)] focus:ring-0"
                   />
                   <span>{language === 'ar' ? 'تذكر هذا الجهاز' : language === 'fr' ? 'Mémoriser ce terminal' : 'Remember this terminal'}</span>
                 </label>
@@ -423,7 +423,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                         className={`w-[var(--s4,16px)] h-[var(--s4,16px)] rounded-full transition-all ${
                           isFilled
                             ? 'bg-[var(--brand-fill,#C9461F)] scale-110 shadow-xs'
-                            : 'bg-neutral-800 border border-white/[0.12]'
+                            : 'bg-[#2B2825]'
                         }`}
                       />
                     );
@@ -446,10 +446,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                     }}
                     className={`h-[var(--tile-lg,48px)] rounded-[var(--r-ctl,12px)] t-card tabular-nums flex items-center justify-center transition-all cursor-pointer ${
                       btn === 'C'
-                        ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
+                        ? 'bg-[#2B2825] text-white/75 hover:bg-[#332F2B] hover:text-white'
                         : btn === '⌫'
-                        ? 'bg-neutral-800 text-white/75 hover:bg-neutral-700 hover:text-white'
-                        : 'bg-neutral-900 [--sq-stroke:url(#sq-spec-dark-ctl)] text-white hover:bg-neutral-800 hover:[--sq-stroke:url(#sq-spec-dark-ctl-hover)] active:scale-95'
+                        ? 'bg-[#2B2825] text-white/75 hover:bg-[#332F2B] hover:text-white'
+                        : 'bg-[#22201E] [--sq-stroke:url(#sq-spec-dark-ctl)] text-white hover:bg-[#2B2825] hover:[--sq-stroke:url(#sq-spec-dark-ctl-hover)] active:scale-95'
                     }`}
                   >
                     {btn}
@@ -495,7 +495,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="w-full rounded-[var(--r-panel,28px)] bg-[#1E1B19] [--sq-stroke:url(#sq-spec-dark-pop)] p-[var(--modal-pad,24px)] text-white flex flex-col gap-[var(--modal-gap,20px)]"
+              className="w-full rounded-[var(--r-panel,28px)] bg-[#262422] [--sq-stroke:url(#sq-spec-dark-pop)] p-[var(--modal-pad,24px)] text-white flex flex-col gap-[var(--modal-gap,20px)]"
             >
               <h3 className="t-dialog font-medium">
                 {language === 'ar' ? 'استرجاع كلمة المرور' : language === 'fr' ? 'Récupération du mot de passe' : 'Password Recovery'}
@@ -510,7 +510,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-[var(--s3,12px)] rounded-[var(--r-card,16px)] bg-neutral-900 [--sq-stroke:var(--sq-stroke-obsidian)] t-small text-white/75"
+                className="p-[var(--s3,12px)] rounded-[var(--r-card,16px)] bg-[#1D1B19] [--sq-stroke:var(--sq-stroke-obsidian)] t-small text-white/75"
               >
                 {language === 'ar'
                   ? <>تلميح: سجّل الدخول باستخدام عنوان بريدك الإلكتروني المعتمد أو رمز PIN المكون من 4 أرقام.</>

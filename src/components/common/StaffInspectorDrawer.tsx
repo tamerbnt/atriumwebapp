@@ -145,15 +145,15 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
   const getStatusClass = (status?: string) => {
     switch (status) {
       case 'frozen':
-        return 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+        return 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
       case 'vacation':
       case 'on_leave':
-        return 'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]';
+        return 'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC]';
       case 'terminated':
-        return 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+        return 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]';
       case 'active':
       default:
-        return 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+        return 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
     }
   };
 
@@ -222,11 +222,11 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = React.m
         headerPills={
           staff ? (
             <>
-              <span className="pill inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] border border-[#d4522f]/25 dark:border-[#52291F] truncate max-w-full">
+              <span className="pill inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2E1E19] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] truncate max-w-full">
                 {staff.role || 'Staff'}
               </span>
               {staff.status === 'active' && (
-                <span className="pill inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3] border border-[#B5E8CE] dark:border-[#1E4D36]">
+                <span className="pill inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[#DDF5E8] dark:bg-[#143324] text-[#096b40] dark:text-[#5BE3A3]">
                   <ShieldCheck className="w-4 h-4" strokeWidth={1.5} />
                   {isAr ? 'في الخدمة' : isEn ? 'In Service' : 'En Poste'}
                 </span>

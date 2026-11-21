@@ -265,8 +265,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         {/* Settings Card 1 */}
         <div
           data-sq="panel"
-          data-sq-border="solid"
-          className="p-[var(--card-pad,20px)] bg-[#F3EDE7] dark:bg-[#141312] flex flex-col gap-[var(--s4,16px)]"
+          className="p-[var(--card-pad,20px)] bg-[#F3EDE7] dark:bg-[#191716] flex flex-col gap-[var(--s4,16px)]"
         >
           <SkeletonText size="sm" width="200px" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--card-gap,12px)]">
@@ -277,8 +276,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         {/* Settings Card 2 */}
         <div
           data-sq="panel"
-          data-sq-border="solid"
-          className="p-[var(--card-pad,20px)] bg-white dark:bg-[#18181B] flex flex-col gap-[var(--s4,16px)]"
+          className="p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s4,16px)]"
         >
           <SkeletonText size="sm" width="180px" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--card-gap,12px)]">
@@ -326,7 +324,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             type="button"
             data-sq="ctl"
             onClick={handleExportDataBackup}
-            className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-[var(--text-1)] dark:text-white t-btn flex items-center gap-[var(--btn-icon-gap,8px)] transition-colors cursor-pointer"
+            className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] bg-[#EFE9E2] hover:bg-[#E7E0D7] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] text-[var(--text-1)] dark:text-white t-btn flex items-center gap-[var(--btn-icon-gap,8px)] transition-colors cursor-pointer"
             title="Download complete JSON database backup"
           >
             <FileDown size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
@@ -337,7 +335,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             type="button"
             data-sq="ctl"
             onClick={() => fileInputRef.current?.click()}
-            className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-[var(--text-1)] dark:text-white t-btn flex items-center gap-[var(--btn-icon-gap,8px)] transition-colors cursor-pointer"
+            className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] bg-[#EFE9E2] hover:bg-[#E7E0D7] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] text-[var(--text-1)] dark:text-white t-btn flex items-center gap-[var(--btn-icon-gap,8px)] transition-colors cursor-pointer"
             title="Restore database from a JSON backup file"
           >
             <FileUp size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
@@ -360,7 +358,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             type="button"
             data-sq="ctl"
             onClick={openOnboarding}
-            className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] bg-[#FDF4F0] dark:bg-neutral-800 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] t-btn flex items-center gap-[var(--btn-icon-gap,8px)] hover:bg-[#FBECE6] dark:hover:bg-neutral-700/80 transition-colors cursor-pointer"
+            className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] bg-[#FDF4F0] dark:bg-[#2B2825] text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] t-btn flex items-center gap-[var(--btn-icon-gap,8px)] hover:bg-[#FBECE6] dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
           >
             <Sparkles size={16} strokeWidth={1.5} />
             <span>{t('action_relaunch_wizard', language)}</span>
@@ -442,7 +440,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                   className={`h-[38px] px-[var(--s3,12px)] t-small font-semibold inline-flex items-center gap-[var(--s2,8px)] whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
                     isSelected
                       ? 'bg-[var(--brand-fill)] text-white'
-                      : 'bg-[#F3EDE7] dark:bg-neutral-800/80 text-[var(--text-2)] hover:text-[var(--text-1)] dark:hover:text-white'
+                      : 'bg-[#F3EDE7] dark:bg-[#191716] text-[var(--text-2)] hover:text-[var(--text-1)] dark:hover:text-white dark:hover:bg-[#2B2825]'
                   }`}
                 >
                   {tab.icon}
@@ -468,7 +466,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         <>
       {/* Row 1: Language & Regional Localization */}
       <div className="sq-elev-card">
-        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s4,16px)] pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)]">
               <div
@@ -502,7 +500,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
             <div className="flex items-center gap-[var(--s2,8px)] self-start sm:self-auto t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
               <span>{t('settings_system_detected_badge', language)}{language === 'fr' ? '\u00A0:' : ':'}</span>
-              <span className="t-small text-[var(--text-1)] dark:text-white bg-white dark:bg-neutral-800 px-[var(--s3,12px)] h-[var(--pill-h,24px)] inline-flex items-center rounded-full border border-black/[0.06] dark:border-white/[0.09]">
+              <span className="t-small text-[var(--text-1)] dark:text-white bg-white dark:bg-[#2B2825] px-[var(--s3,12px)] h-[var(--pill-h,24px)] inline-flex items-center rounded-full">
                 {getSystemDefaultLanguage() === 'ar' ? 'العربية (ar)' : getSystemDefaultLanguage() === 'fr' ? 'Français (fr)' : 'English (en)'}
               </span>
             </div>
@@ -516,14 +514,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 type="button"
                 data-sq="card"
                 data-sq-stroke-w={isLanguageAuto ? 2 : 1}
-                style={{ '--sq-stroke': isLanguageAuto ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
+                style={{ '--sq-stroke': isLanguageAuto ? '#C9461F' : 'var(--sq-stroke-card)' } as React.CSSProperties}
                 onClick={() => {
                   setSystemDefaultLanguage();
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] card-opt flex flex-col gap-[var(--s2,8px)] text-start transition-all cursor-pointer relative ${
                   isLanguageAuto
-                    ? 'bg-white dark:bg-neutral-800'
-                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                    ? 'bg-white dark:bg-[#22201E]'
+                    : 'bg-white/60 dark:bg-[#22201E]/60 hover:bg-white dark:hover:bg-[#282523]'
                 }`}
               >
                 <div className="flex items-center justify-between w-full">
@@ -549,14 +547,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 type="button"
                 data-sq="card"
                 data-sq-stroke-w={!isLanguageAuto && language === 'en' ? 2 : 1}
-                style={{ '--sq-stroke': !isLanguageAuto && language === 'en' ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
+                style={{ '--sq-stroke': !isLanguageAuto && language === 'en' ? '#C9461F' : 'var(--sq-stroke-card)' } as React.CSSProperties}
                 onClick={() => {
                   setLanguage('en', false);
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] card-opt flex flex-col gap-[var(--s2,8px)] text-start transition-all cursor-pointer relative ${
                   !isLanguageAuto && language === 'en'
-                    ? 'bg-white dark:bg-neutral-800'
-                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                    ? 'bg-white dark:bg-[#22201E]'
+                    : 'bg-white/60 dark:bg-[#22201E]/60 hover:bg-white dark:hover:bg-[#282523]'
                 }`}
               >
                 <div className="flex items-center justify-between w-full">
@@ -582,14 +580,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 type="button"
                 data-sq="card"
                 data-sq-stroke-w={!isLanguageAuto && language === 'fr' ? 2 : 1}
-                style={{ '--sq-stroke': !isLanguageAuto && language === 'fr' ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
+                style={{ '--sq-stroke': !isLanguageAuto && language === 'fr' ? '#C9461F' : 'var(--sq-stroke-card)' } as React.CSSProperties}
                 onClick={() => {
                   setLanguage('fr', false);
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] card-opt flex flex-col gap-[var(--s2,8px)] text-start transition-all cursor-pointer relative ${
                   !isLanguageAuto && language === 'fr'
-                    ? 'bg-white dark:bg-neutral-800'
-                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                    ? 'bg-white dark:bg-[#22201E]'
+                    : 'bg-white/60 dark:bg-[#22201E]/60 hover:bg-white dark:hover:bg-[#282523]'
                 }`}
               >
                 <div className="flex items-center justify-between w-full">
@@ -615,14 +613,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 type="button"
                 data-sq="card"
                 data-sq-stroke-w={!isLanguageAuto && language === 'ar' ? 2 : 1}
-                style={{ '--sq-stroke': !isLanguageAuto && language === 'ar' ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
+                style={{ '--sq-stroke': !isLanguageAuto && language === 'ar' ? '#C9461F' : 'var(--sq-stroke-card)' } as React.CSSProperties}
                 onClick={() => {
                   setLanguage('ar', false);
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] card-opt flex flex-col gap-[var(--s2,8px)] text-start transition-all cursor-pointer relative ${
                   !isLanguageAuto && language === 'ar'
-                    ? 'bg-white dark:bg-neutral-800'
-                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                    ? 'bg-white dark:bg-[#22201E]'
+                    : 'bg-white/60 dark:bg-[#22201E]/60 hover:bg-white dark:hover:bg-[#282523]'
                 }`}
               >
                 <div className="flex items-center justify-between w-full">
@@ -644,7 +642,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
 
           {/* RTL Information callout */}
-          <div data-sq="card" className="py-[var(--s3,12px)] px-[var(--s4,16px)] bg-white dark:bg-neutral-800/60 flex items-center gap-[var(--s3,12px)] t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
+          <div data-sq="card" className="py-[var(--s3,12px)] px-[var(--s4,16px)] bg-white dark:bg-[#1F1D1B] flex items-center gap-[var(--s3,12px)] t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
             <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
             <span>{t('settings_rtl_notice', language)}</span>
           </div>
@@ -653,7 +651,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
       {/* Row 1.1: Appearance & Theme Mode */}
       <div className="sq-elev-card">
-        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s4,16px)] pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)]">
               <div
@@ -688,7 +686,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           {/* Dynamic Theme Toggle */}
           <div className="sq-elev-card">
-            <div data-sq="card" className="flex items-center justify-between p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 card-opt">
+            <div data-sq="card" className="flex items-center justify-between p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] card-opt">
               <div className="flex items-center gap-[var(--card-head-gap,12px)]">
                 <div data-sq="ctl-sm" data-sq-border="none" className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center">
                   {theme === 'dark' ? <Moon size={16} strokeWidth={1.5} /> : <Sun size={16} strokeWidth={1.5} />}
@@ -722,14 +720,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 type="button"
                 data-sq="card"
                 data-sq-stroke-w={theme === 'light' ? 2 : 1}
-                style={{ '--sq-stroke': theme === 'light' ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
+                style={{ '--sq-stroke': theme === 'light' ? '#C9461F' : 'var(--sq-stroke-card)' } as React.CSSProperties}
                 onClick={() => {
                   setTheme('light');
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] text-start transition-all cursor-pointer relative flex flex-col gap-[var(--s2,8px)] card-opt ${
                   theme === 'light'
-                    ? 'bg-white dark:bg-neutral-800'
-                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                    ? 'bg-white dark:bg-[#22201E]'
+                    : 'bg-white/60 dark:bg-[#22201E]/60 hover:bg-white dark:hover:bg-[#282523]'
                 }`}
               >
                 <div className="flex items-center justify-between w-full">
@@ -757,14 +755,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 type="button"
                 data-sq="card"
                 data-sq-stroke-w={theme === 'dark' ? 2 : 1}
-                style={{ '--sq-stroke': theme === 'dark' ? '#C9461F' : 'var(--color-border)' } as React.CSSProperties}
+                style={{ '--sq-stroke': theme === 'dark' ? '#C9461F' : 'var(--sq-stroke-card)' } as React.CSSProperties}
                 onClick={() => {
                   setTheme('dark');
                 }}
                 className={`w-full h-full p-[var(--card-pad,20px)] text-start transition-all cursor-pointer relative flex flex-col gap-[var(--s2,8px)] card-opt ${
                   theme === 'dark'
-                    ? 'bg-white dark:bg-neutral-800'
-                    : 'bg-white/60 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-800'
+                    ? 'bg-white dark:bg-[#22201E]'
+                    : 'bg-white/60 dark:bg-[#22201E]/60 hover:bg-white dark:hover:bg-[#282523]'
                 }`}
               >
                 <div className="flex items-center justify-between w-full">
@@ -791,7 +789,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
       {/* Row 1.2: Layout, Compact Mode & Top Bar Settings */}
       <div className="sq-elev-card">
-        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s4,16px)] pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)]">
               <div
@@ -826,7 +824,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           {/* Compact Mode Toggle (Section 12) */}
           <div className="sq-elev-card">
-            <div data-sq="card" className="flex items-center justify-between p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 card-opt">
+            <div data-sq="card" className="flex items-center justify-between p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] card-opt">
               <div className="flex items-center gap-[var(--card-head-gap,12px)]">
                 <div data-sq="ctl-sm" data-sq-border="none" className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center">
                   <Layout size={16} strokeWidth={1.5} />
@@ -854,7 +852,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           {/* Auto-Hide Switch */}
           <div className="sq-elev-card">
-            <div data-sq="card" className="flex items-center justify-between p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 card-opt">
+            <div data-sq="card" className="flex items-center justify-between p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] card-opt">
               <div className="flex items-center gap-[var(--card-head-gap,12px)]">
                 <div data-sq="ctl-sm" data-sq-border="none" className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center">
                   <ChevronUp size={16} strokeWidth={1.5} />
@@ -882,7 +880,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           {/* Feature summary pills */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--card-gap,12px)]">
-            <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white/70 dark:bg-neutral-800/70 flex flex-col gap-[var(--s1,4px)] card-opt">
+            <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white/70 dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)] card-opt">
               <div className="t-small font-semibold text-[var(--text-1)] dark:text-white flex items-center gap-[var(--s2,8px)]">
                 <span className="w-[var(--s2,8px)] h-[var(--s2,8px)] rounded-full bg-[var(--brand-fill)]" />
                 <span>{language === 'ar' ? 'شريط جانبي' : language === 'fr' ? 'Menu latéral' : 'Sidebar Rail'}</span>
@@ -892,7 +890,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </p>
             </div>
 
-            <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white/70 dark:bg-neutral-800/70 flex flex-col gap-[var(--s1,4px)] card-opt">
+            <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white/70 dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)] card-opt">
               <div className="t-small font-semibold text-[var(--text-1)] dark:text-white flex items-center gap-[var(--s2,8px)]">
                 <span className="w-[var(--s2,8px)] h-[var(--s2,8px)] rounded-full bg-emerald-600" />
                 <span>{language === 'ar' ? 'أداء فوري' : language === 'fr' ? 'Zéro latence' : 'Fast Render'}</span>
@@ -902,7 +900,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </p>
             </div>
 
-            <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white/70 dark:bg-neutral-800/70 flex flex-col gap-[var(--s1,4px)] card-opt">
+            <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white/70 dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)] card-opt">
               <div className="t-small font-semibold text-[var(--text-1)] dark:text-white flex items-center gap-[var(--s2,8px)]">
                 <span className="w-[var(--s2,8px)] h-[var(--s2,8px)] rounded-full bg-amber-600" />
                 <span>{language === 'ar' ? 'خط واضح' : language === 'fr' ? 'Typographie' : 'Typography'}</span>
@@ -914,7 +912,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
 
           {currentBusinessConfig.setupState?.dismissed && (
-            <div data-sq="card" className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex items-center justify-between gap-[var(--s3,12px)]">
+            <div data-sq="card" className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex items-center justify-between gap-[var(--s3,12px)]">
               <div className="flex flex-col gap-[2px]">
                 <span className="t-small font-semibold text-[var(--text-1)]">
                   {language === 'ar'
@@ -950,7 +948,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       {settingsTab === 'license' && (
       /* Row 2: License Status Banner */
       <div className="sq-elev-card">
-        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] relative overflow-hidden">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-[var(--s4,16px)] pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
             <div className="flex flex-col gap-[var(--s1,4px)]">
               <div className="flex items-center gap-[var(--s2,8px)]">
@@ -991,7 +989,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                   type="button"
                   data-sq="ctl"
                   onClick={() => openDesktopUpgradeModal('general')}
-                  className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] t-btn text-[var(--text-1)] bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-[var(--btn-icon-gap,8px)] cursor-pointer transition-colors"
+                  className="h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] t-btn text-[var(--text-1)] bg-white dark:bg-[#22201E] hover:bg-[#FAF7F4] dark:hover:bg-[#2B2825] flex items-center gap-[var(--btn-icon-gap,8px)] cursor-pointer transition-colors"
                 >
                   <Download size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
                   <span>{t('settings_get_desktop', language)}</span>
@@ -1009,7 +1007,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
 
           {/* Free Web Edition Banner Notice */}
-          <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-gradient-to-r from-[#FDF4F0] via-[#FAF0EA] to-white dark:from-[#26211E] dark:via-[#1F1C1A] dark:to-[#18181B] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]">
+          <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-gradient-to-r from-[#FDF4F0] via-[#FAF0EA] to-white dark:from-[#26211E] dark:via-[#221E1C] dark:to-[#22201E] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)]">
               <Laptop size={20} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
               <div className="flex flex-col gap-[var(--s1,4px)]">
@@ -1035,7 +1033,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           {/* Quota gauges */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--card-gap,12px)]">
             <div className="sq-elev-card">
-              <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 h-full flex flex-col justify-between gap-[var(--s3,12px)]">
+              <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] h-full flex flex-col justify-between gap-[var(--s3,12px)]">
                 <span className="t-small text-[var(--text-2)] block">
                   {language === 'ar' ? 'المنشآت' : language === 'fr' ? 'Établissements' : 'Businesses'}
                 </span>
@@ -1045,7 +1043,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </div>
             </div>
             <div className="sq-elev-card">
-              <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 h-full flex flex-col justify-between gap-[var(--s3,12px)]">
+              <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] h-full flex flex-col justify-between gap-[var(--s3,12px)]">
                 <span className="t-small text-[var(--text-2)] block">
                   {language === 'ar' ? 'الفروع' : language === 'fr' ? 'Succursales' : 'Branches'}
                 </span>
@@ -1055,7 +1053,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </div>
             </div>
             <div className="sq-elev-card">
-              <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 h-full flex flex-col justify-between gap-[var(--s3,12px)]">
+              <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] h-full flex flex-col justify-between gap-[var(--s3,12px)]">
                 <span className="t-small text-[var(--text-2)] block">
                   {language === 'ar' ? 'نقاط البيع' : language === 'fr' ? 'Caisses' : 'Terminals'}
                 </span>
@@ -1065,7 +1063,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </div>
             </div>
             <div className="sq-elev-card">
-              <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 h-full flex flex-col justify-between gap-[var(--s3,12px)]">
+              <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] h-full flex flex-col justify-between gap-[var(--s3,12px)]">
                 <span className="t-small text-[var(--text-2)] block">
                   {language === 'ar' ? 'التقارير' : language === 'fr' ? 'Rapports' : 'Reports'}
                 </span>
@@ -1085,7 +1083,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         <>
       {/* Row 1.5: Cloud Sync */}
       <div className="sq-elev-card">
-        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s4,16px)] pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)]">
               <div
@@ -1140,7 +1138,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                   type="button"
                   data-sq="ctl-sm"
                   onClick={() => setIsAuditLogOpen(true)}
-                  className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-small font-semibold bg-white dark:bg-neutral-800 text-[var(--text-1)] hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-[var(--btn-sm-gap,6px)] cursor-pointer transition-colors whitespace-nowrap shrink-0"
+                  className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-small font-semibold bg-white dark:bg-[#22201E] text-[var(--text-1)] hover:bg-[#FAF7F4] dark:hover:bg-[#2B2825] flex items-center gap-[var(--btn-sm-gap,6px)] cursor-pointer transition-colors whitespace-nowrap shrink-0"
                 >
                   <History size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
                   <span>
@@ -1154,7 +1152,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                   data-sq="ctl-sm"
                   onClick={() => syncWithSupabase()}
                   disabled={isSyncing}
-                  className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-small font-semibold bg-white dark:bg-neutral-800 text-[var(--text-1)] hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-[var(--btn-sm-gap,6px)] cursor-pointer transition-colors disabled:opacity-60 whitespace-nowrap shrink-0"
+                  className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-small font-semibold bg-white dark:bg-[#22201E] text-[var(--text-1)] hover:bg-[#FAF7F4] dark:hover:bg-[#2B2825] flex items-center gap-[var(--btn-sm-gap,6px)] cursor-pointer transition-colors disabled:opacity-60 whitespace-nowrap shrink-0"
                 >
                   <RotateCw size={16} strokeWidth={1.5} className={isSyncing ? 'animate-spin text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]' : ''} />
                   <span>
@@ -1169,7 +1167,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           {/* Cloud Diagnostics */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--card-gap,12px)]">
-            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
               <span className="t-small text-[var(--text-2)] block">
                 {language === 'ar' ? 'قاعدة البيانات' : language === 'fr' ? 'Structure' : 'Database'}
               </span>
@@ -1181,7 +1179,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </span>
             </div>
 
-            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
               <span className="t-small text-[var(--text-2)] block">
                 {language === 'ar' ? 'التحديث المباشر' : language === 'fr' ? 'Temps Réel' : 'Live Updates'}
               </span>
@@ -1193,7 +1191,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </span>
             </div>
 
-            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
               <span className="t-small text-[var(--text-2)] block">
                 {language === 'ar' ? 'آخر مزامنة' : language === 'fr' ? 'Dernière Sync' : 'Last Sync'}
               </span>
@@ -1223,7 +1221,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
       {/* Row 1.8: Backup & Restore */}
       <div className="sq-elev-card">
-        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s4,16px)] pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)]">
               <div data-sq="tile" className="w-[var(--tile,40px)] h-[var(--tile,40px)] bg-[#FDF4F0] dark:bg-[#2A2420] text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center shrink-0">
@@ -1280,7 +1278,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           {/* Live Storage Breakdown */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-[var(--card-gap,12px)]">
-            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
               <span className="t-small text-[var(--text-2)] block">
                 {language === 'ar' ? 'المنشآت' : language === 'fr' ? 'Entités' : 'Tenants'}
               </span>
@@ -1292,7 +1290,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </span>
             </div>
 
-            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
               <span className="t-small text-[var(--text-2)] block">
                 {language === 'ar' ? 'عملاء CRM' : language === 'fr' ? 'Clients CRM' : 'CRM Clients'}
               </span>
@@ -1304,7 +1302,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </span>
             </div>
 
-            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
               <span className="t-small text-[var(--text-2)] block">
                 {language === 'ar' ? 'المخزون والمنتجات' : language === 'fr' ? 'Inventaire' : 'Inventory'}
               </span>
@@ -1316,7 +1314,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </span>
             </div>
 
-            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
               <span className="t-small text-[var(--text-2)] block">
                 {language === 'ar' ? 'المعاملات' : language === 'fr' ? 'Transactions' : 'Transactions'}
               </span>
@@ -1328,7 +1326,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </span>
             </div>
 
-            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 col-span-2 sm:col-span-1 flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] col-span-2 sm:col-span-1 flex flex-col gap-[var(--s1,4px)]">
               <span className="t-small text-[var(--text-2)] block">
                 {language === 'ar' ? 'محرك التخزين' : language === 'fr' ? 'Moteur stockage' : 'Storage Engine'}
               </span>
@@ -1358,7 +1356,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         <>
       {/* Row 2: Branches Management */}
       <div className="sq-elev-card">
-        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
           <div className="flex items-center justify-between gap-[var(--s4,16px)] pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
             <div className="flex flex-col gap-[var(--s1,4px)]">
               <h3 className="t-pod text-[var(--text-1)]">
@@ -1414,13 +1412,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           <div className="flex flex-col gap-[var(--row-gap,8px)]">
             {branches.map((b) => (
               <div key={b.id} className="sq-elev-card">
-                <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 flex items-center justify-between gap-[var(--s4,16px)] transition-all">
+                <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] flex items-center justify-between gap-[var(--s4,16px)] transition-all">
                   <div className="flex flex-col gap-[var(--s1,4px)]">
                     <div className="flex items-center gap-[var(--s2,8px)]">
                       <span className="t-card text-[var(--text-1)]">
                         {b.name}
                       </span>
-                      <span className="tabular-nums t-small bg-neutral-100 dark:bg-neutral-800 px-[var(--s2,8px)] h-[var(--badge-h,22px)] inline-flex items-center rounded-full text-[var(--text-2)]">
+                      <span className="tabular-nums t-small bg-[#EFE9E2] dark:bg-[#2B2825] px-[var(--s2,8px)] h-[var(--badge-h,22px)] inline-flex items-center rounded-full text-[var(--text-2)]">
                         {b.code}
                       </span>
                       {b.isMainBranch && (
@@ -1447,7 +1445,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
       {/* Row 3: Authorized Devices & Terminals */}
       <div className="sq-elev-card">
-        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
+        <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
           <div className="flex items-center justify-between gap-[var(--s4,16px)] pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
             <div className="flex flex-col gap-[var(--s1,4px)]">
               <h3 className="t-pod text-[var(--text-1)]">
@@ -1470,7 +1468,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
 
           {/* Hardware integration notice banner */}
-          <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-neutral-50 dark:bg-neutral-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]">
+          <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-[#F5F1EC] dark:bg-[#1F1D1B] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)]">
               <Printer size={20} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
               <div className="flex flex-col gap-[var(--s1,4px)]">
@@ -1493,7 +1491,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <button
               type="button"
               onClick={() => openDesktopUpgradeModal('general')}
-              className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-full border border-black/[0.10] dark:border-white/[0.14] text-[var(--text-1)] t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
+              className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-full bg-[#EFE9E2] dark:bg-[#2B2825] text-[var(--text-1)] t-small font-semibold hover:bg-[#E7E0D7] dark:hover:bg-[#332F2B] transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
             >
               {language === 'ar' ? 'المزيد' : language === 'fr' ? 'En savoir plus' : 'Learn More'}
             </button>
@@ -1502,9 +1500,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           <div className="flex flex-col gap-[var(--row-gap,8px)]">
             {devices.map((dev) => (
               <div key={dev.id} className="sq-elev-card">
-                <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 flex items-center justify-between gap-[var(--s4,16px)] transition-all">
+                <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] flex items-center justify-between gap-[var(--s4,16px)] transition-all">
                   <div className="flex items-center gap-[var(--card-head-gap,12px)]">
-                    <div data-sq="tile" className="w-[var(--tile,40px)] h-[var(--tile,40px)] bg-[#F3EDE7] dark:bg-neutral-700/80 flex items-center justify-center text-[var(--text-1)] shrink-0">
+                    <div data-sq="tile" className="w-[var(--tile,40px)] h-[var(--tile,40px)] bg-[#F3EDE7] dark:bg-[#2B2825] flex items-center justify-center text-[var(--text-1)] shrink-0">
                       <Monitor size={20} strokeWidth={1.5} />
                     </div>
                     <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
@@ -1722,7 +1720,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           {pendingBackupMeta && (
             <div className="flex flex-col gap-[var(--card-gap,12px)]">
-              <div data-sq="card" className="p-[var(--s4,16px)] bg-neutral-50 dark:bg-neutral-800 flex flex-col gap-[var(--s2,8px)] t-cap">
+              <div data-sq="card" className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s2,8px)] t-cap">
                 <div className="flex justify-between py-[var(--s1,4px)] border-b border-[var(--atr-divider)]">
                   <span className="text-[var(--text-2)]">
                     {language === 'ar' ? 'تاريخ تصدير النسخة:' : language === 'fr' ? 'Date de la sauvegarde :' : 'Backup Export Date:'}
@@ -1733,7 +1731,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                       : pendingBackupMeta.exportedAt}
                   </span>
                 </div>
-                <div className="flex justify-between py-[var(--s1,4px)] border-b border-neutral-200 dark:border-neutral-700">
+                <div className="flex justify-between py-[var(--s1,4px)] border-b border-[var(--atr-divider)]">
                   <span className="text-[var(--text-2)]">
                     {language === 'ar' ? 'المنشأة الرئيسية:' : language === 'fr' ? 'Entreprise principale :' : 'Primary Business:'}
                   </span>
@@ -1741,7 +1739,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                     {pendingBackupMeta.primaryBusiness}
                   </span>
                 </div>
-                <div className="flex justify-between py-[var(--s1,4px)] border-b border-neutral-200 dark:border-neutral-700">
+                <div className="flex justify-between py-[var(--s1,4px)] border-b border-[var(--atr-divider)]">
                   <span className="text-[var(--text-2)]">
                     {language === 'ar' ? 'نسخة المخطط / البصمة:' : language === 'fr' ? 'Schéma / Empreinte :' : 'Schema / Checksum:'}
                   </span>
@@ -1749,7 +1747,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                     v{String(pendingBackupMeta.validation.schemaVersion)} · {pendingBackupMeta.validation.checksum}
                   </span>
                 </div>
-                <div className="flex justify-between py-[var(--s1,4px)] border-b border-neutral-200 dark:border-neutral-700">
+                <div className="flex justify-between py-[var(--s1,4px)] border-b border-[var(--atr-divider)]">
                   <span className="text-[var(--text-2)]">
                     {language === 'ar' ? 'إجمالي السجلات:' : language === 'fr' ? 'Total des enregistrements :' : 'Total Records:'}
                   </span>

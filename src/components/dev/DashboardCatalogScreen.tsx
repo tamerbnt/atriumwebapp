@@ -92,7 +92,7 @@ export const DashboardCatalogScreen: React.FC = () => {
       <div
         data-sq="table"
         data-sq-border="solid"
-        className="border border-[var(--ax-bdr)] [--sq-stroke:var(--ax-bdr)] bg-[var(--ax-slab)] p-[var(--s4,16px)] flex flex-col gap-[var(--s3,12px)]"
+        className="border-0 [--sq-stroke:var(--ax-bdr)] bg-[var(--ax-slab)] p-[var(--s4,16px)] flex flex-col gap-[var(--s3,12px)]"
       >
         <div className="flex flex-wrap items-center justify-between gap-[var(--s3,12px)]">
           <div className="flex flex-col gap-[var(--s1,4px)]">

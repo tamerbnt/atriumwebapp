@@ -95,7 +95,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
       <div className="sq-elev-pop max-w-sm w-full">
         <div
           data-sq="panel"
-          className={`bg-white dark:bg-neutral-900 w-full p-[var(--s6)] flex flex-col gap-[var(--s4)] text-center transition-all ${
+          className={`bg-white dark:bg-[#262422] w-full p-[var(--s6)] flex flex-col gap-[var(--s4)] text-center transition-all ${
             shake ? 'animate-shake' : 'animate-in fade-in zoom-in-95 duration-150'
           }`}
           dir={isRtl ? 'rtl' : 'ltr'}
@@ -109,7 +109,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-[var(--seg-m-h,32px)] h-[var(--seg-m-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              className="w-[var(--seg-m-h,32px)] h-[var(--seg-m-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] bg-[#F3EDE7] hover:bg-[#EAE3DC] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
             >
               <X size={16} strokeWidth={1.5} />
             </button>
@@ -165,7 +165,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
                       ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600'
                       : hasDigit
                       ? 'bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]'
-                      : 'bg-neutral-50 dark:bg-neutral-800/50 text-[var(--text-3)]'
+                      : 'bg-[#F5F1EC] dark:bg-[#1D1B19] text-[var(--text-3)]'
                   }`}
                 >
                   {hasDigit ? '•' : ''}
@@ -193,7 +193,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
                 data-sq="ctl"
                 data-sq-border="none"
                 onClick={() => handleDigit(digit)}
-                className="h-[var(--tile-lg,48px)] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-[var(--text-1)] t-unit font-semibold tabular-nums transition-all flex items-center justify-center cursor-pointer"
+                className="h-[var(--tile-lg,48px)] bg-[#F3EDE7] hover:bg-[#EAE3DC] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] active:scale-95 text-[var(--text-1)] t-unit font-semibold tabular-nums transition-all flex items-center justify-center cursor-pointer"
               >
                 {digit}
               </button>
@@ -203,7 +203,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
               data-sq="ctl"
               data-sq-border="none"
               onClick={handleClear}
-              className="h-[var(--tile-lg,48px)] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-[var(--text-2)] t-small font-semibold transition-all flex items-center justify-center cursor-pointer"
+              className="h-[var(--tile-lg,48px)] bg-[#F3EDE7] hover:bg-[#EAE3DC] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] active:scale-95 text-[var(--text-2)] t-small font-semibold transition-all flex items-center justify-center cursor-pointer"
             >
               {isRtl ? 'مسح' : 'C'}
             </button>
@@ -212,7 +212,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
               data-sq="ctl"
               data-sq-border="none"
               onClick={() => handleDigit('0')}
-              className="h-[var(--tile-lg,48px)] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-[var(--text-1)] t-unit font-semibold tabular-nums transition-all flex items-center justify-center cursor-pointer"
+              className="h-[var(--tile-lg,48px)] bg-[#F3EDE7] hover:bg-[#EAE3DC] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] active:scale-95 text-[var(--text-1)] t-unit font-semibold tabular-nums transition-all flex items-center justify-center cursor-pointer"
             >
               0
             </button>
@@ -221,7 +221,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
               data-sq="ctl"
               data-sq-border="none"
               onClick={handleBackspace}
-              className="h-[var(--tile-lg,48px)] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-95 text-[var(--text-2)] t-btn transition-all flex items-center justify-center cursor-pointer"
+              className="h-[var(--tile-lg,48px)] bg-[#F3EDE7] hover:bg-[#EAE3DC] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] active:scale-95 text-[var(--text-2)] t-btn transition-all flex items-center justify-center cursor-pointer"
             >
               <Delete size={16} strokeWidth={1.5} />
             </button>

@@ -295,8 +295,8 @@ describe('EmptyState DOM, accessibility, tone, icon slot & palette checks', () =
     expect(cssSource).toContain('--accent: var(--brand-fill, #C9461F)');
     expect(cssSource).toContain('--panel: #FAFAFA');
     expect(cssSource).toContain('--pod: #F1F1F1');
-    expect(cssSource).toContain('--border: #E2E2E2');
-    expect(cssSource).toContain('--ghost-border: #D4D4D4');
+    expect(cssSource).toContain('--border: rgba(23, 19, 15, 0.06)');
+    expect(cssSource).toContain('--ghost-border: rgba(23, 19, 15, 0.16)');
     expect(cssSource).toContain('--skeleton-1: #E6E6E6');
     expect(cssSource).toContain('--skeleton-2: #EEEEEE');
   });

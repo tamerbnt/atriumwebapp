@@ -1252,8 +1252,8 @@ export const LegalTrustView: React.FC<any> = () => {
           statusLabel={activeEscrow?.isLocked ? 'Verrouillé' : 'Libéré'}
           statusClassName={
             activeEscrow?.isLocked
-              ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
-              : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+              ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+              : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
           }
           tabs={[
             { id: 'double_lock', label: isAr ? 'القفل المزدوج' : 'Double-Verrou' },
@@ -1369,8 +1369,8 @@ export const LegalTrustView: React.FC<any> = () => {
                   ) : (
                     <div
                       data-sq="card"
-                      data-sq-border="solid"
-                      className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2"
+                      data-sq-border="none"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
                     >
                       <div className="grid grid-cols-2 gap-2">
                         <LabelInput
@@ -1398,8 +1398,8 @@ export const LegalTrustView: React.FC<any> = () => {
                 <InspectorSection index={2} title={isAr ? 'الشرط الثاني: رمز الأمان PIN' : 'Verrou 2 : Code PIN Notaire'}>
                   <div
                     data-sq="card"
-                    data-sq-border="solid"
-                    className="p-4 bg-[#F3EDE7] dark:bg-[#262422] border border-[#E6DED6] dark:border-[#3A3734] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] space-y-2"
+                    data-sq-border="none"
+                    className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
                   >
                     <LabelInput
                       label={
@@ -1502,7 +1502,7 @@ export const LegalTrustView: React.FC<any> = () => {
         header: 'Jrn',
         width: '0.8*',
         renderCell: (e) => (
-          <span className="tabular-nums t-small font-semibold px-2 py-1 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-black/75 dark:text-white/80">
+          <span className="tabular-nums t-small font-semibold px-2 py-1 rounded-[var(--r-check,6px)] bg-[#F3EDE7] dark:bg-[#2B2825] text-black/75 dark:text-white/80">
             {e.journalCode}
           </span>
         ),
@@ -1742,7 +1742,7 @@ export const LegalTrustView: React.FC<any> = () => {
               : ''
           }
           statusLabel="Équilibré"
-          statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
+          statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]"
           tabs={[
             { id: 'lignes', label: isAr ? 'تفصيل الأسطر' : 'Ventilation SCF' },
             { id: 'justif', label: isAr ? 'المرجع' : 'Justificatif' },
@@ -1820,9 +1820,9 @@ export const LegalTrustView: React.FC<any> = () => {
               <div
                 data-sq="panel"
                 data-sq-border="solid"
-                className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4"
+                className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
               >
-              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+              <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
                 <div className="flex items-center gap-2">
                   <Scale size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   <h2 className="t-card font-semibold text-black dark:text-white">
@@ -1836,7 +1836,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   data-no-liquid="true"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsSCFModalOpen(false)}
-                  className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="p-2 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -1892,7 +1892,7 @@ export const LegalTrustView: React.FC<any> = () => {
                 <div
                   data-sq="card"
                   data-sq-border="none"
-                  className="p-3 bg-neutral-50 dark:bg-neutral-800/60 space-y-1 tabular-nums t-cap"
+                  className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-1 tabular-nums t-cap"
                 >
                   <div className="flex justify-between">
                     <span>Compte 706000 (Crédit HT):</span>
@@ -1904,7 +1904,7 @@ export const LegalTrustView: React.FC<any> = () => {
                       {formatMoney(Math.round(scfDebitAmount * (scfTvaRate / 100)), language)}
                     </span>
                   </div>
-                  <div className="flex justify-between border-t border-neutral-200 dark:border-neutral-700 pt-1 font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                  <div className="flex justify-between border-t border-[var(--atr-divider)] pt-1 font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     <span>Compte 411000 (Débit TTC):</span>
                     <span>
                       {formatMoney(
@@ -1914,7 +1914,7 @@ export const LegalTrustView: React.FC<any> = () => {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
                   <AtriumButton
                     variant="ghost"
                     size="sm"
@@ -2219,7 +2219,7 @@ export const LegalTrustView: React.FC<any> = () => {
               : ''
           }
           statusLabel="Encaissé"
-          statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
+          statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]"
           tabs={[
             { id: 'quittance', label: isAr ? 'الوصل الرسمي' : 'Quittance' },
             { id: 'timbre', label: isAr ? 'طابع م 317' : 'Timbre Art. 317' },
@@ -2308,9 +2308,9 @@ export const LegalTrustView: React.FC<any> = () => {
               <div
                 data-sq="panel"
                 data-sq-border="solid"
-                className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4"
+                className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
               >
-              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+              <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
                 <div className="flex items-center gap-2">
                   <CreditCard size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   <h2 className="t-card font-semibold text-black dark:text-white">
@@ -2324,7 +2324,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   data-no-liquid="true"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsNewReceiptModalOpen(false)}
-                  className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="p-2 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -2360,7 +2360,7 @@ export const LegalTrustView: React.FC<any> = () => {
                     <div
                       data-sq="card"
                       data-sq-border="none"
-                      className="p-3 bg-neutral-50 dark:bg-neutral-800/60 space-y-1 tabular-nums t-cap"
+                      className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-1 tabular-nums t-cap"
                     >
                       <div className="flex justify-between">
                         <span>Montant HT:</span>
@@ -2374,7 +2374,7 @@ export const LegalTrustView: React.FC<any> = () => {
                         <span>Timbre Fiscal Progressif (Art. 317):</span>
                         <span>+{formatMoney(stamp, language)}</span>
                       </div>
-                      <div className="flex justify-between border-t border-neutral-200 dark:border-neutral-700 pt-1 font-semibold t-label text-emerald-600">
+                      <div className="flex justify-between border-t border-[var(--atr-divider)] pt-1 font-semibold t-label text-emerald-600">
                         <span>Total Net à Encaisser en Espèces:</span>
                         <span>{formatMoney(netCollected, language)}</span>
                       </div>
@@ -2384,7 +2384,7 @@ export const LegalTrustView: React.FC<any> = () => {
                     </div>
                   );
                 })()}
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
                   <AtriumButton
                     variant="ghost"
                     size="sm"
@@ -2757,8 +2757,8 @@ export const LegalTrustView: React.FC<any> = () => {
         statusLabel={(activeCarpaMatter?.trustEscrowBalanceDzd || 0) > 0 ? 'Sous Séquestre' : 'Soldé'}
         statusClassName={
           (activeCarpaMatter?.trustEscrowBalanceDzd || 0) > 0
-            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
-            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
         }
         tabs={[
           { id: 'sequestre', label: isAr ? 'الودائع Séquestre' : 'Séquestre' },

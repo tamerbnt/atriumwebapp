@@ -254,10 +254,10 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
                 data-sq="ctl"
                 data-sq-border="solid"
                 onClick={onToggleFilterModal}
-                className={`relative h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] border flex items-center gap-[var(--btn-icon-gap,8px)] t-btn cursor-pointer transition-colors select-none ${
+                className={`relative h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] flex items-center gap-[var(--btn-icon-gap,8px)] t-btn cursor-pointer transition-colors select-none ${
                   hasActiveAdvancedFilters || isFilterModalOpen
                     ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/15 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] [--sq-stroke:rgba(201,70,31,0.5)]'
-                    : 'bg-white dark:bg-neutral-800 text-[var(--text-1)] dark:text-white hover:bg-[#FBF8F5] dark:hover:bg-neutral-700/50'
+                    : 'bg-white dark:bg-[#22201E] text-[var(--text-1)] dark:text-white hover:bg-[#FBF8F5] dark:hover:bg-[#2B2825]'
                 }`}
                 title={
                   language === 'ar'
@@ -345,7 +345,7 @@ export const ScreenCollectionToolbar: React.FC<ScreenCollectionToolbarProps> = R
             <span
               key={chip.key}
               title={chip.title || chip.label}
-              className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] border border-[#d4522f]/30 t-small"
+              className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-[#d4522f]/12 dark:bg-[#d4522f]/20 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] t-small"
             >
               <span>{chip.label}</span>
               <button

@@ -24,15 +24,15 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({ isOp
 	const sim = calculateNotaryClosingCosts(priceDzd, propertyType as any, deboursDzd);
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
 <div className="sq-elev-pop relative w-full max-w-2xl my-8">
-<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] p-6 md:p-8 text-black dark:text-[#FAFAFA]">
-<div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#27272A] mb-5">
+<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 md:p-8 text-black dark:text-white">
+<div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)] mb-5">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><Landmark className="w-5 h-5" /></div>
 <div>
 <h2 className="t-dialog font-semibold">Simulateur de Frais de Notaire & Enregistrement</h2>
 </div>
 </div>
-<button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
+<button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 <LabelInput type="number" label="Prix Déclaré du Bien (DZD)" value={priceDzd} onChange={(e) => setPriceDzd(Number(e.target.value))} required />
@@ -55,7 +55,7 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({ isOp
 							}
 						]} />
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-5 bg-[#F3EDE7] dark:bg-[#141416] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#232328] space-y-4">
+<div data-sq="card" data-sq-border="none" className="p-5 bg-[#F3EDE7] dark:bg-[#1D1B19] space-y-4">
 <div className="flex items-center justify-between">
 <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">Décomposition Détaillée de l'Acquisition</span>
 <span className="t-small font-semibold px-2 py-1 rounded-full bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
@@ -65,7 +65,7 @@ Taux Moyen: ~
 </span>
 </div>
 <div className="space-y-2 t-cap">
-<div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
+<div className="flex justify-between items-center py-2 border-b border-[var(--atr-divider)]">
 <div>
 <div className="font-semibold text-black dark:text-white">Droits d'Enregistrement (DGI / Trésor Public)</div>
 <div className="t-cap text-black/70 dark:text-white/75">
@@ -78,7 +78,7 @@ Taux Moyen: ~
 {" DZD"}
 </span>
 </div>
-<div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
+<div className="flex justify-between items-center py-2 border-b border-[var(--atr-divider)]">
 <div>
 <div className="font-semibold text-black dark:text-white">Taxe de Publicité Foncière (TPF)</div>
 <div className="t-cap text-black/70 dark:text-white/75">Taux uniforme 1.0% pour inscription à la Conservation Foncière (Livret foncier)</div>
@@ -88,7 +88,7 @@ Taux Moyen: ~
 {" DZD"}
 </span>
 </div>
-<div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
+<div className="flex justify-between items-center py-2 border-b border-[var(--atr-divider)]">
 <div>
 <div className="font-semibold text-black dark:text-white">Émoluments Officiels du Notaire (Décret 08-243)</div>
 <div className="t-cap text-black/70 dark:text-white/75">Barème dégressif par tranches (3% ≤500k, 2% ≤1M, 1% au-delà) + TVA 19%</div>
@@ -106,7 +106,7 @@ Taux Moyen: ~
 </div>
 </div>
 </div>
-<div className="flex justify-between items-center py-2 border-b border-[#E6DED6] dark:border-[#232328]">
+<div className="flex justify-between items-center py-2 border-b border-[var(--atr-divider)]">
 <div>
 <div className="font-semibold text-black dark:text-white">Timbres Fiscaux & Débours Administratifs</div>
 <div className="t-cap text-black/70 dark:text-white/75">Certificats d'urbanisme, extraits cadastraux, timbres de dimension</div>
@@ -123,7 +123,7 @@ Taux Moyen: ~
 {" DZD"}
 </span>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-3 bg-white dark:bg-[#18181B] [--sq-stroke:rgba(212,82,47,0.3)] flex justify-between items-center mt-2">
+<div data-sq="card" data-sq-border="none" className="p-3 bg-white dark:bg-[#22201E] flex justify-between items-center mt-2">
 <div>
 <span className="t-small font-semibold text-black/70 dark:text-white/75">Budget Global d'Acquisition (Prix + Frais)</span>
 <div className="t-cap text-black/70 dark:text-white/75">Montant total à mobiliser par l'acquéreur</div>
@@ -135,7 +135,7 @@ Taux Moyen: ~
 </div>
 </div>
 </div>
-<div className="flex items-center justify-between pt-5 border-t border-[#E6DED6] dark:border-[#27272A] mt-5">
+<div className="flex items-center justify-between pt-5 border-t border-[var(--atr-divider)] mt-5">
 <span className="t-cap text-black/70 dark:text-white/75">
 * Calcul indicatif soumis à la vérification finale de l'étude notariale instrumentante.
 </span>

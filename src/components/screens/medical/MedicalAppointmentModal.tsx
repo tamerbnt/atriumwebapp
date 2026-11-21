@@ -102,18 +102,18 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
 <div className="sq-elev-pop w-full max-w-lg">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full border border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden">
-<div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden">
+<div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC] dark:bg-[#1D1B19]">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-semibold"><Calendar size={20} /></div>
 <div>
 <h2 className="t-card font-semibold text-black dark:text-white">Nouveau Rendez-vous Médical</h2>
 </div>
 </div>
-<button type="button" onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"><X size={18} /></button>
 </div>
 <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
-{errorMsg && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-red-500/10 border border-red-500/30 [--sq-stroke:rgba(239,68,68,0.3)] text-red-600 dark:text-red-400 t-cap flex items-center gap-2">
+{errorMsg && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="none" className="p-3 bg-red-500/10 text-red-600 dark:text-red-400 t-cap flex items-center gap-2">
 <AlertTriangle size={16} />
 <span>{errorMsg}</span>
 </div>}
@@ -151,7 +151,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 								]} />
 </div>
 <LabelInput label="Motif du Rendez-vous" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="ex: Bilan annuel, Consultation cardiologique" required />
-<div data-sq="card" data-sq-border="solid" className="flex items-center justify-between p-3 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700">
+<div data-sq="card" data-sq-border="none" className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#1D1B19]">
 <div>
 <span className="t-small font-semibold text-black dark:text-white block">Niveau de Priorité</span>
 <span className="t-cap text-black/55 dark:text-white/55">Normal ou Prioritaire</span>
@@ -161,7 +161,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 <button type="button" data-no-liquid="true" data-sq="ctl-sm" data-sq-border="none" onClick={() => setUrgency("Prioritaire")} className={`px-3 py-2 t-small font-semibold transition-all cursor-pointer ${urgency === "Prioritaire" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75"}`}>Prioritaire</button>
 </div>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-3 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700 space-y-2">
+<div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2">
 <label className="flex items-center gap-2 cursor-pointer select-none">
 <input type="checkbox" checked={isEmergencyBypass} onChange={(e) => setIsEmergencyBypass(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] accent-[#d4522f] cursor-pointer" />
 <span className="t-small font-semibold text-amber-700 dark:text-amber-400">Sur-réservation d'urgence (Bypass de conflit)</span>
@@ -170,7 +170,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 <LabelInput label="Justification Clinique Obligatoire" value={emergencyBypassReason} onChange={(e) => setEmergencyBypassReason(e.target.value)} placeholder="ex: Détresse respiratoire aiguë, douleur thoracique suspecte..." required />
 </div>}
 </div>
-<div className="pt-3 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+<div className="pt-3 border-t border-[var(--atr-divider)] flex items-center justify-between">
 <AtriumButton variant="ghost" type="button" onClick={onClose}>Annuler</AtriumButton>
 <AtriumButton variant="primary" type="submit" icon={<Check size={16} />}>Confirmer le Rendez-vous</AtriumButton>
 </div>

@@ -443,7 +443,7 @@ export const EducationAdmissionsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 [--sq-stroke:rgba(212,82,47,0.22)] dark:[--sq-stroke:rgba(255,143,99,0.22)]"
             >
               {lead.studentName.charAt(0)}
             </div>
@@ -608,7 +608,7 @@ export const EducationAdmissionsView: React.FC = () => {
           <div
             data-sq="ctl"
             data-sq-border="solid"
-            className="flex items-center p-[3px] bg-[#F4EFEA] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700 [--sq-stroke:#E8DFD8] dark:[--sq-stroke:#404040]"
+            className="flex items-center p-[3px] bg-[#F4EFEA] dark:bg-neutral-800"
           >
             <button
               type="button"
@@ -651,7 +651,7 @@ export const EducationAdmissionsView: React.FC = () => {
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040] animate-in fade-in slide-in-from-top-2"
+          className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:rgba(212,82,47,0.24)] dark:[--sq-stroke:rgba(255,143,99,0.22)] animate-in fade-in slide-in-from-top-2"
         >
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
@@ -875,11 +875,11 @@ export const EducationAdmissionsView: React.FC = () => {
                   key={stage.id}
                   data-sq="card"
                   data-sq-border="solid"
-                  className="border border-neutral-200 dark:border-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900/60 p-3 flex flex-col space-y-3 min-h-[480px]"
+                  className="bg-white dark:bg-neutral-900/60 p-3 flex flex-col space-y-3 min-h-[480px]"
                 >
-                  <div className="flex items-center justify-between pb-2 border-b border-neutral-200/80 dark:border-neutral-800">
+                  <div className="flex items-center justify-between pb-2 border-b border-[var(--atr-divider)]">
                     <span className="t-small font-semibold text-black dark:text-white">{stage.title}</span>
-                    <span className="w-5 h-5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold flex items-center justify-center">
+                    <span className="w-5 h-5 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 border border-black/[0.06] dark:border-white/[0.09] text-black/70 dark:text-white/75 t-small font-semibold flex items-center justify-center">
                       {leadsInStage.length}
                     </span>
                   </div>
@@ -889,7 +889,7 @@ export const EducationAdmissionsView: React.FC = () => {
                         <div
                           data-sq="ctl"
                           data-sq-border="solid"
-                          className="p-4 border border-neutral-200 dark:border-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 hover:border-[#d4522f]/50 hover:[--sq-stroke:rgba(212,82,47,0.5)] transition-all space-y-2 group"
+                          className="p-4 bg-white dark:bg-neutral-900 hover:[--sq-stroke:rgba(212,82,47,0.5)] transition-all space-y-2 group"
                         >
                         <button
                           type="button"
@@ -929,7 +929,7 @@ export const EducationAdmissionsView: React.FC = () => {
                             )}
                           </div>
                         </button>
-                        <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between">
+                        <div className="pt-2 border-t border-[var(--atr-divider)] flex items-center justify-between">
                           {stage.id === 'Admitted' ? (
                             <button
                               type="button"
@@ -1068,10 +1068,10 @@ export const EducationAdmissionsView: React.FC = () => {
                         data-sq="ctl-sm"
                         data-sq-border="solid"
                         onClick={() => updateAdmissionStage(lead.id, st.id)}
-                        className={`px-3 py-2 t-small font-semibold border transition-colors cursor-pointer ${
+                        className={`px-3 py-2 t-small font-semibold transition-colors cursor-pointer ${
                           lead.stage === st.id
-                            ? 'bg-[var(--brand-fill,#C9461F)] text-white border-[#d4522f]'
-                            : 'bg-[#F3EDE7] dark:bg-[#262422] border-[#E6DED6] dark:border-[#3A3734] text-black/80 dark:text-white/80 hover:border-[#d4522f]/50'
+                            ? 'bg-[var(--brand-fill,#C9461F)] text-white [--sq-stroke:#d4522f]'
+                            : 'bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/80 hover:[--sq-stroke:rgba(212,82,47,0.5)]'
                         }`}
                       >
                         {st.title}
@@ -1172,9 +1172,9 @@ export const EducationAdmissionsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
+              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_lead_modal_title')}
               </h2>
@@ -1211,13 +1211,13 @@ export const EducationAdmissionsView: React.FC = () => {
                 placeholder="0 DZD (Optionnel - Règlement à l'inscription)"
                 onChange={(val) => setConversionDeposit(Math.max(0, Number(extractStr(val)) || 0))}
               />
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setConversionLead(null)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
                 </button>
@@ -1243,9 +1243,9 @@ export const EducationAdmissionsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
+              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6"
             >
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_btn_new_lead')}
               </h2>
@@ -1335,13 +1335,13 @@ export const EducationAdmissionsView: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsAddLeadModalOpen(false)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
                 </button>

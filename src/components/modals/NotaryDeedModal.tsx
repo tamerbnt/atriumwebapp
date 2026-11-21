@@ -155,7 +155,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
           />
 
           <div className="flex flex-col justify-end">
-            <div data-sq="ctl" className="p-[var(--s3,12px)] bg-neutral-100 dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="ctl" data-sq-border="none" className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s1,4px)]">
               <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'بالسنتيم' : isEn ? 'In Centimes' : 'En Centimes'}</span>
               <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white truncate tabular-nums">
                 {tariff.colloquialCentimesLabel}
@@ -182,7 +182,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
         </div>
 
         {/* Parties */}
-        <div data-sq="card" className="p-[var(--s4,16px)] bg-neutral-50 dark:bg-neutral-800/50 flex flex-col gap-[var(--s3,12px)]">
+        <div data-sq="card" data-sq-border="none" className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s3,12px)]">
           <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white">
             {isAr ? 'الأطراف والهوية' : isEn ? 'Contracting Parties' : 'Parties & Identité'}
           </span>
@@ -216,7 +216,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
 
         {/* Cadastre References */}
         {(actType === 'vente_immobiliere' || actType === 'donation') && (
-          <div data-sq="card" className="p-[var(--s4,16px)] bg-neutral-50 dark:bg-neutral-800/50 flex flex-col gap-[var(--s3,12px)]">
+          <div data-sq="card" data-sq-border="none" className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s3,12px)]">
             <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white">
               {isAr ? 'المراجع العقارية' : isEn ? 'Land Registry' : 'Cadastre'}
             </span>
@@ -233,7 +233,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
 
         {/* Fee Breakdown */}
         <div className="sq-elev-card">
-          <div data-sq="panel" className="p-[var(--pod-pad,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--card-gap,12px)]">
+          <div data-sq="panel" className="p-[var(--pod-pad,12px)] bg-[#F3EDE7] dark:bg-[#191716] flex flex-col gap-[var(--card-gap,12px)]">
             <div className="flex items-center justify-between pb-[var(--s2,8px)] border-b border-[var(--atr-divider)]">
               <div className="flex items-center gap-[var(--icon-text-gap,8px)]">
                 <Scale size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
@@ -247,19 +247,19 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--card-gap,12px)]">
-              <div data-sq="card" className="p-[var(--s3,12px)] bg-neutral-50 dark:bg-neutral-900/40 flex flex-col gap-[var(--s1,4px)]">
+              <div data-sq="card" className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'أتعاب الموثق' : isEn ? 'Notary Fee' : 'Honoraires'}</span>
                 <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white tabular-nums">{formatMoney(tariff.honorairesHtDzd, language)}</span>
               </div>
-              <div data-sq="card" className="p-[var(--s3,12px)] bg-neutral-50 dark:bg-neutral-900/40 flex flex-col gap-[var(--s1,4px)]">
+              <div data-sq="card" className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'الضريبة' : isEn ? 'VAT' : 'TVA'}</span>
                 <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white tabular-nums">{formatMoney(tariff.tvaAmountDzd, language)}</span>
               </div>
-              <div data-sq="card" className="p-[var(--s3,12px)] bg-neutral-50 dark:bg-neutral-900/40 flex flex-col gap-[var(--s1,4px)]">
+              <div data-sq="card" className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'التسجيل' : isEn ? 'Registration' : 'Enregistrement'}</span>
                 <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white tabular-nums">{formatMoney(tariff.droitsEnregistrementDzd, language)}</span>
               </div>
-              <div data-sq="card" className="p-[var(--s3,12px)] bg-neutral-50 dark:bg-neutral-900/40 flex flex-col gap-[var(--s1,4px)]">
+              <div data-sq="card" className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
                 <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'الشهر العقاري' : isEn ? 'Filing Fee' : 'Publicité'}</span>
                 <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white tabular-nums">{formatMoney(tariff.droitsPubliciteDzd, language)}</span>
               </div>

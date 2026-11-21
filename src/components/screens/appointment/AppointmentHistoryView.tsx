@@ -633,8 +633,8 @@ export const AppointmentHistoryView: React.FC = React.memo(() => {
         statusLabel={receiptAppointment ? localizeStatus(receiptAppointment.status, language) : undefined}
         statusClassName={
           receiptAppointment?.status === 'Completed'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'overview', label: isAr ? 'التفاصيل' : isEn ? 'Overview' : 'Prestation & Soin' },

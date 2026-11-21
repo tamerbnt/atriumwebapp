@@ -40,11 +40,11 @@ import {
 } from '../../ui/kinetic';
 
 const STATUS_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const STATUS_PILL_WARN =
-  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
 const STATUS_PILL_INFO =
-  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
 
 type InventoryViewTab = 'stock_state' | 'vouchers';
 type ProductDrawerTab = 'stock' | 'valorisation' | 'mouvements';
@@ -587,12 +587,12 @@ export const TradingInventoryView: React.FC = () => {
       />
 
       <ScreenPod>
-        <div className="flex items-center justify-between pb-3 border-b border-[#E6DED6] dark:border-neutral-800/60">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
           <div className="flex items-center gap-2">
             <div
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="w-8 h-8 bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]"
+              className="w-8 h-8 bg-[#FCEEE8] dark:bg-[#2B2825] flex items-center justify-center text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]"
             >
               <Warehouse size={16} />
             </div>
@@ -610,45 +610,47 @@ export const TradingInventoryView: React.FC = () => {
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3">
+          <div className="sq-elev-card">
           <button
             type="button"
             onClick={() => setSelectedDepotId('all')}
             data-sq="card"
-            data-sq-border="solid"
+            data-sq-border={selectedDepotId === 'all' ? 'solid' : 'solid'}
             data-sq-stroke-w={selectedDepotId === 'all' ? '2' : '1'}
-            className={`p-4 text-left rtl:text-right transition-all cursor-pointer ${
+            className={`w-full h-full p-4 text-left rtl:text-right transition-all cursor-pointer ${
               selectedDepotId === 'all'
-                ? '[--sq-stroke:#d4522f] bg-white dark:bg-neutral-800'
-                : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-800/80 hover:[--sq-stroke:#D4D4D4]'
+                ? '[--sq-stroke:#d4522f] bg-white dark:bg-[#22201E]'
+                : '[--sq-stroke:var(--sq-stroke-card)] bg-white dark:bg-[#22201E] hover:bg-[#FAF7F4] dark:hover:bg-[#282523]'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="font-semibold t-small text-black dark:text-white">
                 {t('trading_inventory_all_depots', 'Tous')}
               </span>
-              <span className="t-small tabular-nums px-2 py-1 rounded-[var(--r-check,6px)] bg-neutral-200 dark:bg-neutral-700 font-semibold">
+              <span className="t-small tabular-nums px-2 py-1 rounded-[var(--r-check,6px)] bg-[#EFE9E2] dark:bg-[#2B2825] text-black/75 dark:text-white/80 font-semibold">
                 GLOBAL
               </span>
             </div>
             <div className="t-small font-semibold tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(metrics.totalValuation)}</div>
           </button>
+          </div>
           {warehouses.map((w) => (
+            <div key={w.id} className="sq-elev-card">
             <button
-              key={w.id}
               type="button"
               onClick={() => setSelectedDepotId(w.id)}
               data-sq="card"
               data-sq-border="solid"
               data-sq-stroke-w={selectedDepotId === w.id ? '2' : '1'}
-              className={`p-4 text-left rtl:text-right transition-all cursor-pointer ${
+              className={`w-full h-full p-4 text-left rtl:text-right transition-all cursor-pointer ${
                 selectedDepotId === w.id
-                  ? '[--sq-stroke:#d4522f] bg-white dark:bg-neutral-800'
-                  : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-800/80 hover:[--sq-stroke:#D4D4D4]'
+                  ? '[--sq-stroke:#d4522f] bg-white dark:bg-[#22201E]'
+                  : '[--sq-stroke:var(--sq-stroke-card)] bg-white dark:bg-[#22201E] hover:bg-[#FAF7F4] dark:hover:bg-[#282523]'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-semibold t-small text-black dark:text-white truncate">{w.name}</span>
-                <span className="t-small tabular-nums px-2 py-1 rounded-[var(--r-check,6px)] bg-neutral-200 dark:bg-neutral-700 font-semibold">
+                <span className="t-small tabular-nums px-2 py-1 rounded-[var(--r-check,6px)] bg-[#EFE9E2] dark:bg-[#2B2825] text-black/75 dark:text-white/80 font-semibold">
                   {w.code}
                 </span>
               </div>
@@ -657,6 +659,7 @@ export const TradingInventoryView: React.FC = () => {
                 {formatMoney(w.totalValuationDzd || 0)}
               </div>
             </button>
+            </div>
           ))}
         </div>
       </ScreenPod>
@@ -1105,7 +1108,7 @@ export const TradingInventoryView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 space-y-4"
+              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
             >
             <h2 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
               <Building2 size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
@@ -1138,7 +1141,7 @@ export const TradingInventoryView: React.FC = () => {
                 value={depotCity}
                 onChange={(e) => setDepotCity(e.target.value)}
               />
-              <div className="flex justify-end gap-2 pt-3 border-t border-neutral-200 dark:border-neutral-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setNewDepotModalOpen(false)}>
                   Annuler
                 </AtriumButton>

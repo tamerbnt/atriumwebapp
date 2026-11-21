@@ -30,7 +30,7 @@ export const SkeletonBox: React.FC<SkeletonBoxProps> = ({
       style={style}
       data-sq={sq}
       data-sq-border={sq ? sqBorder : undefined}
-      className={`relative overflow-hidden bg-neutral-200/80 dark:bg-neutral-800/80 ${sq ? '' : rounded} ${className}`}
+      className={`relative overflow-hidden bg-neutral-200/80 dark:bg-[#2B2825]/80 ${sq ? '' : rounded} ${className}`}
     >
       {shimmer && (
         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 dark:via-neutral-700/30 to-transparent animate-shimmer pointer-events-none" />

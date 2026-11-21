@@ -221,8 +221,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           {/* Free Web Tier Card */}
           <div
             data-sq="card"
-            style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-            className="card-opt p-[var(--card-pad,20px)] bg-neutral-50 dark:bg-neutral-800/50 flex flex-col gap-[var(--s3,12px)]"
+            className="card-opt p-[var(--card-pad,20px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s3,12px)]"
           >
             <div className="flex items-center justify-between gap-[var(--s2,8px)]">
               <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white">{t('upgrade_free_badge', language)}</span>
@@ -261,8 +260,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           {/* Paid Desktop Lifetime Card */}
           <div
             data-sq="card"
-            style={{ '--sq-stroke': '#F5E2D8' } as React.CSSProperties}
-            className="card-opt p-[var(--card-pad,20px)] bg-[#FDF4F0] dark:bg-[#2A2420]/60 flex flex-col gap-[var(--s3,12px)]"
+            className="card-opt p-[var(--card-pad,20px)] bg-[#FDF4F0] dark:bg-[#2A2420]/60 [--sq-stroke:rgba(212,82,47,0.22)] dark:[--sq-stroke:rgba(255,143,99,0.22)] flex flex-col gap-[var(--s3,12px)]"
           >
             <div className="flex items-center justify-between gap-[var(--s2,8px)]">
               <span className="t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{t('upgrade_desktop_badge', language)}</span>
@@ -294,8 +292,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
         {/* The Seamless Data Sync Reassurance Box */}
         <div
           data-sq="card"
-          style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-          className="card-opt p-[var(--card-pad,20px)] bg-neutral-50 dark:bg-neutral-800/60 flex flex-col gap-[var(--s3,12px)]"
+          className="card-opt p-[var(--card-pad,20px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s3,12px)]"
         >
           <div className="flex items-center gap-[var(--icon-text-gap,8px)] text-[var(--text-1,#17130F)] dark:text-white t-label font-semibold">
             <Cloud size={16} strokeWidth={1.5} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />

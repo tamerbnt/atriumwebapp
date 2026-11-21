@@ -65,7 +65,8 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
         {/* Punch Type Selector */}
         <div
           data-sq="ctl"
-          className="grid grid-cols-2 gap-[var(--s1,4px)] p-[var(--seg-pad,2px)] bg-neutral-100 dark:bg-neutral-800 h-[var(--seg-s-h,32px)]"
+          data-sq-border="none"
+          className="grid grid-cols-2 gap-[var(--s1,4px)] p-[var(--seg-pad,2px)] bg-[#EFE9E2] dark:bg-[#191716] h-[var(--seg-s-h,32px)]"
         >
           <button
             type="button"
@@ -142,7 +143,7 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
                 key={member.id}
                 onClick={() => onPunch(member.id, punchType, 'manual')}
                 data-sq="row"
-                className="flex items-center justify-between px-[var(--row-inset,12px)] py-[var(--s2,8px)] bg-[#F3EDE7] dark:bg-[#1C1C1E] hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
+                className="flex items-center justify-between px-[var(--row-inset,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#22201E] hover:bg-[#EAE2D9] dark:hover:bg-[#2B2825] cursor-pointer transition-colors"
               >
                 <div className="flex items-center gap-[var(--s2,8px)] min-w-0">
                   <div className="w-[var(--av-list,32px)] h-[var(--av-list,32px)] rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center t-small font-semibold text-[var(--text-1)] dark:text-white shrink-0">

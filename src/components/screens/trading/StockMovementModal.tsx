@@ -166,9 +166,9 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
       <div className="sq-elev-pop relative w-full max-w-2xl my-auto">
-      <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-stone-900 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] flex flex-col max-h-[92vh] overflow-hidden">
+      <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/70 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/70 dark:bg-[#1D1B19] shrink-0">
           <div className="flex items-center gap-3">
             <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
               <Boxes size={20} />
@@ -183,7 +183,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
             onClick={onClose}
             data-sq="ctl-sm"
             data-sq-border="none"
-            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors"
           >
             <X size={20} />
           </button>
@@ -204,11 +204,11 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                   setReason('reception_achat');
                 }}
                 data-sq="ctl"
-                data-sq-border="solid"
+                data-sq-border={type === 'entree' ? 'solid' : 'none'}
                 className={`flex items-center justify-center gap-2 p-3 t-small font-semibold transition-all ${
                   type === 'entree'
                     ? '[--sq-stroke:#10B981] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold'
-                    : '[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] text-black/70 dark:text-white/75'
+                    : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE1D8] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75'
                 }`}
               >
                 <TrendingUp size={16} />
@@ -222,11 +222,11 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                   setReason('sortie_client');
                 }}
                 data-sq="ctl"
-                data-sq-border="solid"
+                data-sq-border={type === 'sortie' ? 'solid' : 'none'}
                 className={`flex items-center justify-center gap-2 p-3 t-small font-semibold transition-all ${
                   type === 'sortie'
                     ? '[--sq-stroke:#F43F5E] bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 font-semibold'
-                    : '[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] text-black/70 dark:text-white/75'
+                    : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE1D8] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75'
                 }`}
               >
                 <TrendingDown size={16} />
@@ -240,11 +240,11 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                   setReason('transfert');
                 }}
                 data-sq="ctl"
-                data-sq-border="solid"
+                data-sq-border={type === 'transfert' ? 'solid' : 'none'}
                 className={`flex items-center justify-center gap-2 p-3 t-small font-semibold transition-all ${
                   type === 'transfert'
                     ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
-                    : '[--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] text-black/70 dark:text-white/75'
+                    : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE1D8] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75'
                 }`}
               >
                 <ArrowRight size={16} />
@@ -254,7 +254,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           </div>
 
           {/* Depots & Reason */}
-          <div data-sq="card" data-sq-border="solid" className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-stone-50/50 dark:bg-stone-800/20">
+          <div data-sq="card" data-sq-border="none" className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-[#F5F1EC]/70 dark:bg-[#1D1B19]">
             <div>
               <LabelSelect
                 label={type === 'transfert' ? t('trading_stock_depot_source') : t('trading_stock_depot_concerned')}
@@ -346,8 +346,8 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 <div
                   key={idx}
                   data-sq="card"
-                  data-sq-border="solid"
-                  className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-3 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] bg-white dark:bg-stone-900"
+                  data-sq-border="none"
+                  className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-3 bg-[#F5F1EC]/60 dark:bg-[#22201E]"
                 >
                   <div className="sm:col-span-8">
                     <LabelSelect
@@ -397,7 +397,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           </div>
 
           {/* Total Valuation Footer */}
-          <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-stone-50 dark:bg-stone-800/40 [--sq-stroke:#E7E5E4] dark:[--sq-stroke:#292524] flex items-center justify-between t-cap tabular-nums">
+          <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F3EDE7] dark:bg-[#1D1B19] flex items-center justify-between t-cap tabular-nums">
             <span className="text-black/55 dark:text-white/55">{t('trading_stock_est_valuation')}</span>
             <span className="text-black dark:text-white font-semibold t-label">
               {formatMoney(totalValuation)}
@@ -405,7 +405,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-200 dark:border-stone-800">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
             <AtriumButton
               type="button"
               variant="ghost"

@@ -116,9 +116,9 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
+          className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
         >
-          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+          <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-2">
               <div
                 data-sq="tile"
@@ -168,7 +168,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/80 space-y-3"
+            className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/50 space-y-3"
           >
             <span className="t-small font-semibold text-black dark:text-white block rtl:normal-case rtl:tracking-normal">
               {isAr ? 'البيانات العقارية والمسح الفلاحي' : 'Régime Foncier & Concession (Loi 10-03)'}
@@ -289,7 +289,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
             <button
               type="button"
               onClick={onClose}

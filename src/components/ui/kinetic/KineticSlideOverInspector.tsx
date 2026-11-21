@@ -446,7 +446,7 @@ function KineticSlideOverInspectorInner<T>({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="relative w-full h-full bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden"
+          className="relative w-full h-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden"
         >
         {/* Header (.ph) */}
         <div className="ph flex gap-[var(--s4,16px)] items-start p-[var(--drawer-pad,24px)] pb-[var(--s4,16px)]">
@@ -476,7 +476,7 @@ function KineticSlideOverInspectorInner<T>({
                 <span
                   className={`pill inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small ${
                     statusClassName ||
-                    'bg-[#DDF5E8] text-[#0B7A45] border border-[#B5E8CE]'
+                    'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#5BE3A3]'
                   }`}
                 >
                   <i className="w-[var(--pill-dot,6px)] h-[var(--pill-dot,6px)] rounded-full bg-current" />
@@ -484,13 +484,13 @@ function KineticSlideOverInspectorInner<T>({
                 </span>
               )}
               {branchName && (
-                <span className="pill inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[#F3EDE7] dark:bg-[#262422] text-[var(--text-1)] border border-black/[0.06] dark:border-white/[0.1]">
+                <span className="pill inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[#F3EDE7] dark:bg-[#2B2825] text-[var(--text-1)]">
                   <span className="w-[var(--pill-dot,6px)] h-[var(--pill-dot,6px)] rounded-full bg-[var(--brand-accent,#D9532B)]" />
                   {branchName}
                 </span>
               )}
               {categoryLabel && (
-                <span className="pill inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] border border-[#d4522f]/25 dark:border-[#52291F]">
+                <span className="pill inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2E1E19] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)]">
                   {categoryLabel}
                 </span>
               )}
@@ -512,7 +512,7 @@ function KineticSlideOverInspectorInner<T>({
                   disabled={!hasPrev}
                   onClick={() => handleStep(-1)}
                   aria-label="Previous"
-                  className="w-8 h-8 rounded-full border border-black/[0.07] dark:border-white/[0.1] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full border-0 bg-[#F3EDE7] dark:bg-[#2B2825] grid place-items-center text-[var(--text-1)] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/14 transition-colors cursor-pointer"
                 >
                   <ChevronUp className="w-4 h-4" />
                 </button>
@@ -522,7 +522,7 @@ function KineticSlideOverInspectorInner<T>({
                   disabled={!hasNext}
                   onClick={() => handleStep(1)}
                   aria-label="Next"
-                  className="w-8 h-8 rounded-full border border-black/[0.07] dark:border-white/[0.1] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/12 transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full border-0 bg-[#F3EDE7] dark:bg-[#2B2825] grid place-items-center text-[var(--text-1)] disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:bg-[#d4522f]/14 transition-colors cursor-pointer"
                 >
                   <ChevronDown className="w-4 h-4" />
                 </button>
@@ -534,7 +534,7 @@ function KineticSlideOverInspectorInner<T>({
               data-no-liquid="true"
               onClick={onClose}
               aria-label={resolvedCloseLabel}
-              className="w-8 h-8 rounded-full border border-black/[0.07] dark:border-white/[0.1] bg-white dark:bg-[#262422] grid place-items-center text-[var(--text-1)] hover:bg-[#d4522f]/12 transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-full border-0 bg-[#F3EDE7] dark:bg-[#2B2825] grid place-items-center text-[var(--text-1)] hover:bg-[#d4522f]/14 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -548,7 +548,7 @@ function KineticSlideOverInspectorInner<T>({
             role="tablist"
             data-sq="ctl"
             data-sq-border="none"
-            className="ptabs relative flex mx-[var(--drawer-pad,24px)] p-[var(--seg-l-pad,4px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422]"
+            className="ptabs relative flex mx-[var(--drawer-pad,24px)] p-[var(--seg-l-pad,4px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1A18]"
           >
             <i
               ref={pindRef}
@@ -621,7 +621,7 @@ function KineticSlideOverInspectorInner<T>({
                   holdRef.current?.setTarget(0);
                   wake();
                 }}
-                className="relative overflow-hidden h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] [--sq-stroke:#F5BDB3] dark:[--sq-stroke:#5C2B24] bg-[#FDE4DF]/70 dark:bg-[#3D1E1A]/60 text-[#B8321C] dark:text-[#FF8D7A] t-btn font-semibold flex items-center gap-[var(--btn-icon-gap,8px)] cursor-pointer select-none"
+                className="relative overflow-hidden h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] [--sq-stroke:rgba(192,40,61,0.14)] dark:[--sq-stroke:rgba(255,141,122,0.16)] bg-[#FDE4DF]/75 dark:bg-[#3D1E1A]/65 text-[#B8321C] dark:text-[#FF8D7A] t-btn font-semibold flex items-center gap-[var(--btn-icon-gap,8px)] cursor-pointer select-none"
               >
                 <span
                   ref={holdFillRef}

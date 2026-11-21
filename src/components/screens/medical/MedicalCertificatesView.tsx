@@ -48,9 +48,9 @@ const getInitials2 = (name: string): string => {
 };
 
 const MEMBER_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const MEMBER_PILL_WARN =
-  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
 
 const extractStr = (val: any): string =>
   typeof val === 'string' ? val : val?.target?.value ?? String(val ?? '');
@@ -830,10 +830,10 @@ export const MedicalCertificatesView: React.FC<any> = () => {
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="sq-elev-pop w-full max-w-lg">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full border border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden">
-              <div className="px-6 py-4 border-b border-neutral-200 dark:border-[#33302D] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden">
+              <div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC] dark:bg-[#1D1B19]">
                 <div className="flex items-center gap-3">
-                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
                     <FileBadge size={20} />
                   </div>
                   <h2 className="t-card font-semibold text-black dark:text-white">
@@ -843,7 +843,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                   aria-label="Fermer"
                 >
                   <X size={18} />
@@ -931,7 +931,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                       ) + 1;
                     if (diffDays > 30) {
                       return (
-                        <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-amber-500/10 border border-amber-500/30 [--sq-stroke:rgba(245,158,11,0.3)] text-amber-800 dark:text-amber-300 t-cap space-y-1 animate-in fade-in">
+                        <div data-sq="ctl" data-sq-border="none" className="p-3 bg-amber-500/10 text-amber-800 dark:text-amber-300 t-cap space-y-1 animate-in fade-in">
                           <div className="flex items-center gap-2 font-semibold">
                             <AlertTriangle
                               size={14}
@@ -980,7 +980,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">
                   Constatations Cliniques &amp; Mentions Légales
                 </label>
-                <div data-sq="ctl" data-sq-border="solid" className="bg-[#F3EDE7] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+                <div data-sq="ctl" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow">
                   <textarea
                     value={clinicalFindings}
                     onChange={(e) => setClinicalFindings(e.target.value)}
@@ -991,7 +991,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800 flex justify-between items-center">
+              <div className="pt-3 border-t border-[var(--atr-divider)] flex justify-between items-center">
                 <AtriumButton
                   variant="ghost"
                   type="button"
@@ -1011,7 +1011,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
 
       {activePrintCert && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="printable-document bg-white text-black w-full max-w-xl rounded-[var(--r-panel,28px)] border border-neutral-300 shadow-2xl p-8 flex flex-col justify-between max-h-[90vh] overflow-y-auto">
+          <div className="printable-document bg-white text-black w-full max-w-xl rounded-[var(--r-panel,28px)] border border-black/[0.14] shadow-2xl p-8 flex flex-col justify-between max-h-[90vh] overflow-y-auto">
             <div className="border-b-2 border-[#d4522f] pb-4 flex justify-between items-start">
               <div>
                 <h2 className="t-pod font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
@@ -1031,7 +1031,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
             </div>
 
             <div className="text-center my-6">
-              <span className="t-label font-semibold px-4 py-2 border-2 border-neutral-800 rounded-[var(--r-ctl-sm,10px)] inline-block">
+              <span className="t-label font-semibold px-4 py-2 border-2 border-black/80 rounded-[var(--r-ctl-sm,10px)] inline-block">
                 {getCertTypeLabel(activePrintCert.certificateType)}
               </span>
             </div>
@@ -1041,7 +1041,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 Je soussigné, <strong>{activePrintCert.doctorName}</strong>, certifie avoir examiné
                 ce jour le/la nommé(e) :
               </p>
-              <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 space-y-1 tabular-nums">
+              <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-black/[0.12] space-y-1 tabular-nums">
                 <p>
                   <strong>Nom &amp; Prénom :</strong> {activePrintCert.patientName}
                 </p>
@@ -1057,7 +1057,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
                 )}
               </div>
               <p>Et déclare que son état de santé justifie les constatations suivantes :</p>
-              <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-neutral-200 italic">
+              <div className="p-3 bg-neutral-50 rounded-[var(--r-ctl,12px)] border border-black/[0.12] italic">
                 &ldquo;{activePrintCert.clinicalFindings}&rdquo;
               </div>
 
@@ -1090,7 +1090,7 @@ export const MedicalCertificatesView: React.FC<any> = () => {
               </p>
             </div>
 
-            <div className="mt-8 pt-4 border-t border-neutral-200 flex justify-between items-end">
+            <div className="mt-8 pt-4 border-t border-black/[0.12] flex justify-between items-end">
               <div className="flex items-center gap-3">
                 <QrCode size={40} className="text-black" />
                 <div className="t-cap tabular-nums text-black/55">

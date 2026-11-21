@@ -264,7 +264,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
           onRetry={retryCloudSync || retry}
         />
         <div className="sq-elev-card">
-          <div data-sq="panel" data-sq-border="solid" className="p-3 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+          <div data-sq="panel" data-sq-border="none" className="p-3 bg-white dark:bg-[#22201E]">
             <SkeletonKioskGrid count={6} />
           </div>
         </div>
@@ -285,7 +285,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
         icon={<Wrench size={22} />}
         title={isAr ? 'المحطة 03' : isEn ? 'Station 03' : 'Poste 03'}
         secondaryActions={
-          <div data-sq="ctl" data-sq-border="solid" className="min-w-[230px] h-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800">
+          <div data-sq="ctl" data-sq-border="none" className="min-w-[230px] h-10 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow">
             <select
               value={selectedOrderId}
               onChange={(e) => {
@@ -446,7 +446,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-5 space-y-5">
             <div className="sq-elev-card">
-              <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 space-y-3">
+              <div data-sq="card" data-sq-border="none" className="bg-white dark:bg-[#22201E] p-3 space-y-3">
                 <div className="flex items-center justify-between px-1 pt-1">
                   <span className="t-small font-semibold text-black/55 dark:text-white/55">
                     {isAr
@@ -461,7 +461,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 </div>
 
                 {currentOrder ? (
-                  <div data-sq="ctl" data-sq-border="solid" className="p-4 bg-[#F3EDE7]/65 dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3">
+                  <div data-sq="ctl" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="t-small font-semibold text-black/55 dark:text-white/55 tabular-nums">
                       Lot: {currentOrder.batchLotNumber || 'LOT-2026-05'}
@@ -472,7 +472,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                           : currentOrder.status === 'InProduction'
                           ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                          : 'bg-neutral-100 dark:bg-neutral-700 text-black/70 dark:text-white/75'
+                          : 'bg-[#E9E2DA] dark:bg-[#2B2825] text-black/70 dark:text-white/75'
                       }`}
                     >
                       {currentOrder.status}
@@ -484,7 +484,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   <div className="t-cap tabular-nums text-black/55 dark:text-white/55">
                     {currentOrder.orderNumber}
                   </div>
-                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#E6DED6] dark:border-neutral-700 t-cap">
+                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[var(--atr-divider)] t-cap">
                     <div>
                       <span className="text-black/55 dark:text-white/55 block t-cap">
                         {isAr ? 'الهدف' : isEn ? 'OF Target' : 'Cible OF'}
@@ -507,13 +507,13 @@ export const ManufacturingWorkstationView: React.FC = () => {
                         type="button"
                         data-no-liquid="true"
                         data-sq="ctl"
-                        data-sq-border="solid"
+                        data-sq-border="none"
                         onClick={(e) => {
                           setDrawerOpenerEl(e.currentTarget);
                           setInspectorTab('of');
                           setIsInspectorOpen(true);
                         }}
-                        className="w-full py-2 px-3 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 hover:border-[#d4522f] t-small font-semibold text-black dark:text-white flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                        className="w-full py-2 px-3 bg-white dark:bg-[#2B2825] hover:bg-[#F3EDE7] dark:hover:bg-[#332F2B] t-small font-semibold text-black dark:text-white flex items-center justify-center gap-2 transition-colors cursor-pointer"
                       >
                         <Eye size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                         <span>
@@ -523,7 +523,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div data-sq="ctl" data-sq-border="none" className="p-4 bg-[#F3EDE7]/50 dark:bg-neutral-800/40 t-cap text-black/55 dark:text-white/55">
+                  <div data-sq="ctl" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap text-black/55 dark:text-white/55">
                     {isAr ? 'لا يوجد أمر تصنيع محدد' : isEn ? 'No manufacturing order selected' : 'Aucun OF sélectionné'}
                   </div>
                 )}
@@ -531,7 +531,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
             </div>
 
             <div className="sq-elev-card">
-              <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 space-y-3">
+              <div data-sq="card" data-sq-border="none" className="bg-white dark:bg-[#22201E] p-3 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <ShieldCheck size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
@@ -598,20 +598,20 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     type="button"
                     data-no-liquid="true"
                     data-sq="ctl"
-                    data-sq-border="solid"
+                    data-sq-border="none"
                     aria-pressed={epi.active}
                     onClick={epi.toggle}
-                    className={`p-4 border text-left rtl:text-right flex items-center gap-3 transition-all cursor-pointer ${
+                    className={`p-4 text-left rtl:text-right flex items-center gap-3 transition-all cursor-pointer ${
                       epi.active
-                        ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 [--sq-stroke:#6ee7b7] dark:[--sq-stroke:#047857] text-emerald-800 dark:text-emerald-300 font-semibold'
-                        : 'bg-[#FBF8F5] dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040] text-black/70 dark:text-white/75'
+                        ? 'bg-emerald-50 dark:bg-[#143324] text-emerald-800 dark:text-emerald-300 font-semibold ring-2 ring-emerald-500/40'
+                        : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75'
                     }`}
                   >
                     <div
                       className={`w-6 h-6 rounded-[var(--r-check,6px)] flex items-center justify-center t-small font-semibold shrink-0 ${
                         epi.active
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-neutral-200 dark:bg-neutral-700 text-black/55 dark:text-white/55'
+                          : 'bg-[#E5DDD4] dark:bg-[#3A3531] text-black/55 dark:text-white/55'
                       }`}
                     >
                       ✓
@@ -626,7 +626,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
 
           <div className="lg:col-span-7 space-y-5">
             <div className="sq-elev-card">
-              <div data-sq="card" data-sq-border="solid" className="bg-white dark:bg-neutral-900 p-6 sm:p-8 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col items-center justify-center text-center space-y-6">
+              <div data-sq="card" data-sq-border="none" className="bg-white dark:bg-[#22201E] p-6 sm:p-8 flex flex-col items-center justify-center text-center space-y-6">
               <div className="flex items-center gap-2 t-small font-semibold text-black/55 dark:text-white/55">
                 <Clock size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>
@@ -660,7 +660,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     : 'Poste en pause / attente'}
                 </span>
               </div>
-              <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-800">
+              <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-[var(--atr-divider)]">
                 {!isRunning ? (
                   <div className="sq-elev-card w-full">
                     <button
@@ -703,7 +703,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     className={`w-full h-16 font-semibold t-card flex items-center justify-center gap-3 transition-all ${
                       elapsedSeconds > 0 || isRunning
                         ? 'bg-[#1F1D1B] hover:bg-black text-white active:scale-[0.98] cursor-pointer'
-                        : 'bg-neutral-200 dark:bg-neutral-800 text-black/45 dark:text-white/40 cursor-not-allowed'
+                        : 'bg-[#EFE9E2] dark:bg-[#2B2825] text-black/45 dark:text-white/40 cursor-not-allowed'
                     }`}
                   >
                     <CheckCircle2 size={22} />
@@ -722,7 +722,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
 
             <div className="grid grid-cols-3 gap-3">
               <div className="sq-elev-card">
-                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 text-center">
+                <div data-sq="card" data-sq-border="none" className="p-4 bg-white dark:bg-[#22201E] text-center">
                   <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                     {isAr ? 'الوقت المستهدف' : isEn ? 'Target Rate' : 'Cadence Prévue'}
                   </span>
@@ -732,7 +732,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 </div>
               </div>
               <div className="sq-elev-card">
-                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 text-center">
+                <div data-sq="card" data-sq-border="none" className="p-4 bg-white dark:bg-[#22201E] text-center">
                   <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                     {isAr ? 'معدل التوافر' : isEn ? 'Availability' : 'Disponibilité'}
                   </span>
@@ -742,7 +742,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 </div>
               </div>
               <div className="sq-elev-card">
-                <div data-sq="card" data-sq-border="solid" className="p-4 bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-800 text-center">
+                <div data-sq="card" data-sq-border="none" className="p-4 bg-white dark:bg-[#22201E] text-center">
                   <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                     {isAr ? 'الخردة المسجلة' : isEn ? 'Total Scrap' : 'Rebuts Cumulés'}
                   </span>
@@ -763,8 +763,8 @@ export const ManufacturingWorkstationView: React.FC = () => {
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
         >
           <div className="sq-elev-pop max-w-xl w-full animate-in zoom-in-95 duration-150">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-6">
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-3">
                   <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-semibold">
                     <CheckCircle2 size={22} />
@@ -786,7 +786,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : isEn ? 'Close' : 'Fermer'}
                   onClick={() => setIsFinishModalOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -797,13 +797,12 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   type="button"
                   data-no-liquid="true"
                   data-sq="card"
-                  data-sq-border="solid"
-                  data-sq-stroke-w={activeNumpadField === 'good' ? 2 : 1}
+                  data-sq-border="none"
                   onClick={() => setActiveNumpadField('good')}
-                  className={`p-4 border text-center transition-all cursor-pointer ${
+                  className={`p-4 text-center transition-all cursor-pointer ${
                     activeNumpadField === 'good'
-                      ? 'border-[#d4522f] bg-[#FCEEE8] dark:bg-neutral-800'
-                      : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40'
+                      ? 'bg-[#FCEEE8] dark:bg-[#2B2825] ring-2 ring-[#d4522f]/60'
+                      : 'bg-[#F5F1EC] dark:bg-[#1D1B19] hover:bg-[#EFE9E2] dark:hover:bg-[#282523]'
                   }`}
                 >
                   <span className="t-small font-semibold text-emerald-700 dark:text-emerald-400 block mb-1">
@@ -822,13 +821,12 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   type="button"
                   data-no-liquid="true"
                   data-sq="card"
-                  data-sq-border="solid"
-                  data-sq-stroke-w={activeNumpadField === 'scrap' ? 2 : 1}
+                  data-sq-border="none"
                   onClick={() => setActiveNumpadField('scrap')}
-                  className={`p-4 border text-center transition-all cursor-pointer ${
+                  className={`p-4 text-center transition-all cursor-pointer ${
                     activeNumpadField === 'scrap'
-                      ? 'border-red-500 bg-red-50 dark:bg-neutral-800'
-                      : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40'
+                      ? 'bg-red-50 dark:bg-red-950/35 ring-2 ring-red-500/60'
+                      : 'bg-[#F5F1EC] dark:bg-[#1D1B19] hover:bg-[#EFE9E2] dark:hover:bg-[#282523]'
                   }`}
                 >
                   <span className="t-small font-semibold text-red-600 dark:text-red-400 block mb-1">
@@ -860,12 +858,12 @@ export const ManufacturingWorkstationView: React.FC = () => {
                         type="button"
                         data-no-liquid="true"
                         data-sq="ctl"
-                        data-sq-border="solid"
+                        data-sq-border="none"
                         onClick={() => setSelectedScrapReason(code.id)}
-                        className={`p-3 border t-cap text-left rtl:text-right cursor-pointer transition-all ${
+                        className={`p-3 t-cap text-left rtl:text-right cursor-pointer transition-all ${
                           selectedScrapReason === code.id
-                            ? 'border-red-500 bg-red-50 dark:bg-neutral-800 text-red-700 dark:text-red-300 font-semibold'
-                            : 'border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
+                            ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 font-semibold ring-2 ring-red-500/60'
+                            : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75'
                         }`}
                       >
                         {isAr ? code.labelAr : isEn ? code.labelEn : code.labelFr}
@@ -886,8 +884,8 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     onClick={() => handleNumpadPress(digit)}
                     className={`h-14 tabular-nums t-dialog font-semibold flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
                       digit === 'C'
-                        ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 hover:bg-red-200'
-                        : 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                        ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-950/80'
+                        : 'bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white hover:bg-[#E7E0D8] dark:hover:bg-[#332F2B]'
                     }`}
                   >
                     {digit}
@@ -900,9 +898,9 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
-                  data-sq-border="solid"
+                  data-sq-border="none"
                   onClick={() => setIsFinishModalOpen(false)}
-                  className="flex-1 py-4 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 font-semibold t-label cursor-pointer"
+                  className="flex-1 py-4 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75 font-semibold t-label transition-colors cursor-pointer"
                 >
                   {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
                 </button>
@@ -951,10 +949,10 @@ export const ManufacturingWorkstationView: React.FC = () => {
         statusLabel={currentOrder?.status || ''}
         statusClassName={
           currentOrder?.status === 'Completed'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : currentOrder?.status === 'InProduction'
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-neutral-100 dark:bg-neutral-800 text-black/75 dark:text-white/75 border border-neutral-200 dark:border-neutral-700'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+            : 'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/75 dark:text-white/75'
         }
         tabs={[
           { id: 'of', label: isAr ? 'أمر التصنيع' : isEn ? 'MO & Specs' : 'Fiche OF' },

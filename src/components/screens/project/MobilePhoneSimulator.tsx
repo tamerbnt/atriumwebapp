@@ -27,9 +27,9 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
     <div className="space-y-4">
       {/* Viewport Control Bar */}
       <div
-        data-sq="panel"
-        data-sq-border="solid"
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-[#F3EDE7] dark:bg-neutral-800/80 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.8)]"
+        data-sq="pod"
+        data-sq-border="none"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-[#F3EDE7] dark:bg-[#191716]"
       >
         <div className="flex items-center gap-2">
           <div data-sq="ctl" className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small">
@@ -54,8 +54,8 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
         <div className="sq-elev-card self-start sm:self-auto">
           <div
             data-sq="ctl"
-            data-sq-border="solid"
-            className="flex items-center gap-1 p-1 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
+            data-sq-border="none"
+            className="flex items-center gap-1 p-1 bg-white dark:bg-[#22201E]"
           >
             <button
               type="button"
@@ -91,12 +91,12 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
       {/* Frame Container */}
       {mode === 'mobile' ? (
         <div
-          data-sq="panel"
-          data-sq-border="dashed"
-          className="flex justify-center py-4 px-2 bg-gradient-to-b from-[#F3EDE7]/60 to-[#EAE1D8]/60 dark:from-neutral-950/40 dark:to-neutral-900/40 [--sq-stroke:#D5CBBF] dark:[--sq-stroke:#262626]"
+          data-sq="pod"
+          data-sq-border="none"
+          className="flex justify-center py-4 px-2 bg-[#F3EDE7]/60 dark:bg-[#131211]"
         >
           {/* Realistic Smartphone Shell (390px wide) */}
-          <div className="w-[390px] max-w-full bg-white dark:bg-neutral-900 rounded-[48px] shadow-2xl border-[10px] border-neutral-800 dark:border-neutral-700 overflow-hidden relative flex flex-col min-h-[760px]">
+          <div className="w-[390px] max-w-full bg-white dark:bg-[#191716] rounded-[48px] shadow-2xl border-[10px] border-neutral-800 dark:border-neutral-700 overflow-hidden relative flex flex-col min-h-[760px]">
             {/* Status Bar */}
             <div className="bg-neutral-900 text-white px-6 pt-3 pb-2 flex items-center justify-between t-small font-semibold select-none z-10 shrink-0">
               <span>{currentTime}</span>
@@ -116,18 +116,20 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
             </div>
 
             {/* Home Indicator Bar */}
-            <div className="py-2 bg-white dark:bg-neutral-900 flex justify-center shrink-0">
-              <div className="w-32 h-1 bg-neutral-400 dark:bg-neutral-600 rounded-full" />
+            <div className="py-2 bg-white dark:bg-[#191716] flex justify-center shrink-0">
+              <div className="w-32 h-1 bg-neutral-400 dark:bg-white/25 rounded-full" />
             </div>
           </div>
         </div>
       ) : (
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="w-full bg-white dark:bg-neutral-900/60 p-4 sm:p-6 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
-        >
-          {children}
+        <div className="sq-elev-card w-full">
+          <div
+            data-sq="card"
+            data-sq-border="none"
+            className="w-full bg-white dark:bg-[#22201E] p-4 sm:p-6"
+          >
+            {children}
+          </div>
         </div>
       )}
     </div>

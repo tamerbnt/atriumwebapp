@@ -1618,9 +1618,9 @@ export const AgricultureLivestockView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 w-full p-6 space-y-4"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <h2 className="t-card font-semibold text-black dark:text-white">
                   {animalToEdit
                     ? isAr
@@ -1727,7 +1727,7 @@ export const AgricultureLivestockView: React.FC = () => {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
-              <div className="flex justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton
                   variant="ghost"
                   size="sm"

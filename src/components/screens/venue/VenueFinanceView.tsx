@@ -36,11 +36,11 @@ import {
 } from '../../ui/kinetic';
 
 const STATUS_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const STATUS_PILL_INFO =
-  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
 const STATUS_PILL_DANGER =
-  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]';
 
 type DrawerTab = 'caution' | 'degradations' | 'restitution';
 
@@ -356,7 +356,7 @@ export const VenueFinanceView: React.FC = () => {
         renderCell: (d) => {
           const bInfo = resolveRecordBranch(d, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -899,9 +899,9 @@ export const VenueFinanceView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 w-full space-y-5"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div className="flex items-center gap-2">
                 <AlertTriangle size={20} className="text-red-500" />
                 <h3 className="font-semibold t-card text-black dark:text-white">
@@ -920,7 +920,7 @@ export const VenueFinanceView: React.FC = () => {
               <div
                 data-sq="ctl"
                 data-sq-border="none"
-                className="p-3 bg-neutral-50 dark:bg-neutral-800/50 t-cap space-y-1"
+                className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap space-y-1"
               >
                 <div>
                   Locataire: <strong className="text-black dark:text-white">{deductionTarget.renterName}</strong>

@@ -406,9 +406,8 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
               </label>
               <div
                 data-sq="card"
-                data-sq-border="solid"
-                data-sq-stroke-w={2}
-                className="relative flex items-center h-14 bg-white dark:bg-[#262422] [--sq-stroke:rgba(212,82,47,0.4)] focus-within:[--sq-stroke:#d4522f] transition-all"
+                data-sq-border="none"
+                className="relative flex items-center h-14 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-all"
               >
                 <input
                   id="barcodeInput"
@@ -440,7 +439,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                   <div
                     data-sq="card"
                     data-sq-border="solid"
-                    className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden divide-y divide-[var(--atr-divider)]"
+                    className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden divide-y divide-black/[0.045] dark:divide-white/[0.06]"
                   >
                     {searchResults.map((m) => (
                       <button
@@ -450,7 +449,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                         className="w-full text-left rtl:text-right p-3 hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] flex items-center justify-between cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-[#262422] border border-black/[0.06] dark:border-white/[0.08] flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                          <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                             {m.fullName.charAt(0)}
                           </div>
                           <div>
@@ -612,7 +611,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       setDrawerOpenerEl(e.currentTarget);
                       setInspectedLogId(log.id);
                     }}
-                    className="w-full text-left rtl:text-right p-3 bg-white dark:bg-[#262422] hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] flex items-center justify-between t-cap transition-colors cursor-pointer"
+                    className="w-full text-left rtl:text-right p-3 bg-white dark:bg-[#22201E] hover:bg-[#FAF6F1] dark:hover:bg-[#282523] flex items-center justify-between t-cap transition-colors cursor-pointer"
                   >
                   <div className="flex items-center gap-2 min-w-0">
                     <span
@@ -693,10 +692,10 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
         }
         statusClassName={
           inspectedLog?.accessStatus === 'Granted'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : inspectedLog?.accessStatus === 'Warning_Expiring'
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+            : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
         }
         tabs={[
           { id: 'overview', label: isRtl ? 'المرور الحالي' : 'Passage & Accès' },
@@ -798,7 +797,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -833,8 +832,8 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                   </label>
                   <div
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="h-10 bg-[#FBF8F5] dark:bg-[#262422] focus-within:[--sq-stroke:#d4522f]"
+                    data-sq-border="none"
+                    className="h-10 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-all"
                   >
                     <input
                       type="text"
@@ -852,8 +851,8 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                   </label>
                   <div
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="h-10 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#d4522f]"
+                    data-sq-border="none"
+                    className="h-10 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-all"
                   >
                     <input
                       type="tel"
@@ -876,12 +875,12 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                         type="button"
                         data-no-liquid="true"
                         data-sq="ctl"
-                        data-sq-border="solid"
+                        data-sq-border={walkInAmount === amt ? 'solid' : 'none'}
                         onClick={() => setWalkInAmount(amt)}
                         className={`py-2 t-small font-semibold tabular-nums transition-all cursor-pointer ${
                           walkInAmount === amt
                             ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                            : 'hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] text-black/75 dark:text-white/80'
+                            : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-black/75 dark:text-white/80'
                         }`}
                       >
                         {amt} DA
@@ -890,8 +889,8 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                   </div>
                   <div
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="h-10 bg-[#FBF8F5] dark:bg-[#262422] [--sq-stroke:#D4C8BC] dark:[--sq-stroke:#3A3734] focus-within:[--sq-stroke:#d4522f]"
+                    data-sq-border="none"
+                    className="h-10 bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:bg-white dark:focus-within:bg-[#312D2A] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-all"
                   >
                     <input
                       type="number"
@@ -912,12 +911,12 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       type="button"
                       data-no-liquid="true"
                       data-sq="ctl"
-                      data-sq-border="solid"
+                      data-sq-border={walkInPaymentMethod === 'cash' ? 'solid' : 'none'}
                       onClick={() => setWalkInPaymentMethod('cash')}
                       className={`py-2 px-3 t-small font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                         walkInPaymentMethod === 'cash'
                           ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                          : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
+                          : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-black/75 dark:text-white/80'
                       }`}
                     >
                       <Banknote size={14} />
@@ -927,12 +926,12 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       type="button"
                       data-no-liquid="true"
                       data-sq="ctl"
-                      data-sq-border="solid"
+                      data-sq-border={walkInPaymentMethod === 'baridimob' ? 'solid' : 'none'}
                       onClick={() => setWalkInPaymentMethod('baridimob')}
                       className={`py-2 px-3 t-small font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                         walkInPaymentMethod === 'baridimob'
                           ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                          : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
+                          : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-black/75 dark:text-white/80'
                       }`}
                     >
                       <span>BaridiMob</span>
@@ -941,12 +940,12 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
                       type="button"
                       data-no-liquid="true"
                       data-sq="ctl"
-                      data-sq-border="solid"
+                      data-sq-border={walkInPaymentMethod === 'cib' ? 'solid' : 'none'}
                       onClick={() => setWalkInPaymentMethod('cib')}
                       className={`py-2 px-3 t-small font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                         walkInPaymentMethod === 'cib'
                           ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                          : '[--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734] text-black/75 dark:text-white/80'
+                          : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EAE2D9] dark:hover:bg-[#332F2B] text-black/75 dark:text-white/80'
                       }`}
                     >
                       <CreditCard size={14} />
@@ -988,7 +987,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 text-center"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 text-center"
             >
               <div
                 data-sq="tile-lg"
@@ -1005,8 +1004,8 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
               </p>
               <div
                 data-sq="card"
-                data-sq-border="solid"
-                className="bg-[#FBF8F5] dark:bg-[#262422] p-4 t-cap space-y-2 text-left mb-5"
+                data-sq-border="none"
+                className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 t-cap space-y-2 text-left mb-5"
               >
                 <div className="flex justify-between">
                   <span className="text-black/62 dark:text-white/65">{isRtl ? 'الزبون' : 'Client'}</span>

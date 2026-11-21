@@ -55,11 +55,11 @@ const getInitials2 = (name: string): string => {
 };
 
 const MEMBER_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const MEMBER_PILL_WARN =
-  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
 const MEMBER_PILL_DANGER =
-  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]';
 
 type SalesStatusFilter = 'all' | 'completed' | 'refunded';
 
@@ -422,7 +422,7 @@ export const PosOrdersView: React.FC = () => {
             {s.items.slice(0, 2).map((it, idx) => (
               <span
                 key={idx}
-                className="t-small text-black/70 dark:text-white/75 font-medium bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded-[var(--r-check,6px)]"
+                className="t-small text-black/70 dark:text-white/75 font-medium bg-[#EFE9E2] dark:bg-[#2B2825] px-2 py-1 rounded-[var(--r-check,6px)]"
               >
                 {it.quantity}x {it.productName.split('(')[0].trim()}
               </span>
@@ -518,7 +518,7 @@ export const PosOrdersView: React.FC = () => {
               }}
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="h-8 px-2.5 hover:bg-[#FAF6F1] dark:hover:bg-white/[0.06] t-small font-semibold text-black/70 dark:text-white flex items-center gap-1 cursor-pointer transition-colors"
+              className="h-8 px-2.5 hover:bg-[#FAF6F1] dark:hover:bg-[#2B2825] t-small font-semibold text-black/70 dark:text-white flex items-center gap-1 cursor-pointer transition-colors"
               title="Ticket Thermique 80mm"
             >
               <Printer size={13} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
@@ -573,7 +573,7 @@ export const PosOrdersView: React.FC = () => {
             {po.items.slice(0, 3).map((it, idx) => (
               <span
                 key={idx}
-                className="px-2 py-1 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 t-small font-medium text-black/70 dark:text-white/75"
+                className="px-2 py-1 rounded-[var(--r-check,6px)] bg-[#EFE9E2] dark:bg-[#2B2825] t-small font-medium text-black/70 dark:text-white/75"
               >
                 {it.quantity}x {it.productName}
               </span>
@@ -1370,9 +1370,9 @@ export const PosOrdersView: React.FC = () => {
                 id="pos-orders-thermal-receipt"
                 data-sq="card"
                 data-sq-border="solid"
-                className="bg-white text-black p-4 [--sq-stroke:#D4D4D4] tabular-nums t-cap leading-relaxed"
+                className="bg-white text-black p-4 [--sq-stroke:rgba(23,19,15,0.12)] tabular-nums t-cap leading-relaxed"
               >
-              <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-neutral-400">
+              <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-black/[0.22]">
                 <div className="t-label font-semibold">
                   {receiptConfig.headerTitle || currentBranch.name}
                 </div>
@@ -1390,7 +1390,7 @@ export const PosOrdersView: React.FC = () => {
                 )}
               </div>
 
-              <div className="py-2 t-cap border-b border-dashed border-neutral-400 space-y-0.5">
+              <div className="py-2 t-cap border-b border-dashed border-black/[0.22] space-y-0.5">
                 <div className="flex justify-between">
                   <span>TICKET: #{selectedSaleForReceipt.id.slice(-8).toUpperCase()}</span>
                   <span>{new Date(selectedSaleForReceipt.createdAt).toLocaleDateString()}</span>
@@ -1407,7 +1407,7 @@ export const PosOrdersView: React.FC = () => {
                 )}
               </div>
 
-              <div className="py-2 space-y-1 border-b border-dashed border-neutral-400 t-cap">
+              <div className="py-2 space-y-1 border-b border-dashed border-black/[0.22] t-cap">
                 {selectedSaleForReceipt.items.map((it, idx) => (
                   <div key={idx} className="flex justify-between">
                     <span>{it.quantity}x {it.productName}</span>
@@ -1416,7 +1416,7 @@ export const PosOrdersView: React.FC = () => {
                 ))}
               </div>
 
-              <div className="py-2 space-y-1 border-b border-dashed border-neutral-400">
+              <div className="py-2 space-y-1 border-b border-dashed border-black/[0.22]">
                 <div className="flex justify-between t-label font-semibold pt-1">
                   <span>TOTAL PAYÉ</span>
                   <span>{formatMoney(selectedSaleForReceipt.totalAmount)}</span>
@@ -1452,7 +1452,7 @@ export const PosOrdersView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedSaleForReceipt(null)}
-                className="h-10 px-4 t-small font-semibold text-black/70 dark:text-white/75 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                className="h-10 px-4 t-small font-semibold text-black/70 dark:text-white/75 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
               >
                 {t('action_cancel')}
               </button>

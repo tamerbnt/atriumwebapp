@@ -711,7 +711,7 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
         <div
           data-sq="panel"
           style={{ '--sq-stroke': 'rgba(212,82,47,0.4)' } as React.CSSProperties}
-          className="relative w-full bg-[#141416] overflow-hidden flex flex-col max-h-[90vh]"
+          className="relative w-full bg-[#262422] overflow-hidden flex flex-col max-h-[90vh]"
         >
         
         {/* Ambient Top Glow */}
@@ -724,11 +724,11 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
         <div className="relative z-10 px-[var(--modal-pad,24px)] pt-[var(--modal-pad,24px)] pb-[var(--s4,16px)] border-b border-white/10 flex items-start justify-between gap-[var(--s4,16px)]">
           <div className="flex flex-col gap-[var(--s2,8px)]">
             <div className="flex flex-wrap items-center gap-[var(--s2,8px)]">
-              <span className="t-small text-[var(--brand-on-dark,#FF8F63)] flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-[#d4522f]/15 border border-[#d4522f]/30">
+              <span className="t-small text-[var(--brand-on-dark,#FF8F63)] flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-[#d4522f]/15">
                 <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
                 {isAr ? 'ميزات حقيقية مثبتة' : isFr ? 'Fonctionnalités réelles & certifiées' : 'Verifiable Built-in Capabilities'}
               </span>
-              <span className="t-small h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] inline-flex items-center rounded-full bg-white/5 border border-white/10 text-white/85">
+              <span className="t-small h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] inline-flex items-center rounded-full bg-white/[0.08] text-white/85">
                 {data.screenBadge[language] || data.screenBadge.en}
               </span>
             </div>
@@ -752,8 +752,7 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
               <div
                 key={idx}
                 data-sq="card"
-                style={{ '--sq-stroke': 'rgba(255,255,255,0.08)' } as React.CSSProperties}
-                className="card-opt p-[var(--card-pad,20px)] bg-neutral-900/80 flex flex-col gap-[var(--s2,8px)] transition-colors"
+                className="card-opt p-[var(--card-pad,20px)] bg-[#22201E] flex flex-col gap-[var(--s2,8px)] transition-colors"
               >
                 <div className="flex items-center gap-[var(--s2,8px)]">
                   <div
@@ -778,7 +777,7 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
           <div
             data-sq="card"
             style={{ '--sq-stroke': 'rgba(212,82,47,0.3)' } as React.CSSProperties}
-            className="card-opt p-[var(--card-pad,20px)] bg-gradient-to-r from-[#1C1A18] to-neutral-900 flex items-center gap-[var(--s4,16px)]"
+            className="card-opt p-[var(--card-pad,20px)] bg-gradient-to-r from-[#22201E] to-[#1D1B19] flex items-center gap-[var(--s4,16px)]"
           >
             <div className="t-kpi-m text-[var(--brand-on-dark,#FF8F63)] uppercase tabular-nums shrink-0">
               {data.result.stat}
@@ -790,7 +789,7 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="relative z-10 px-[var(--modal-pad,24px)] py-[var(--s4,16px)] border-t border-white/10 flex items-center justify-between bg-neutral-950/60">
+        <div className="relative z-10 px-[var(--modal-pad,24px)] py-[var(--s4,16px)] border-t border-white/10 flex items-center justify-between bg-[#1E1C1A]">
           <button
             type="button"
             onClick={onClose}

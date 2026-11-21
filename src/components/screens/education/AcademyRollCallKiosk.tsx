@@ -268,7 +268,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+          className="p-5 bg-white dark:bg-neutral-900"
         >
           <SkeletonKioskGrid count={6} />
         </div>
@@ -293,7 +293,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="min-w-[230px] h-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+              className="min-w-[230px] h-10 bg-white dark:bg-neutral-800"
             >
               <select
                 value={selectedSessionId}
@@ -365,7 +365,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="bg-[#F3EDE7]/65 dark:bg-neutral-800/40 border border-[#E6DED6] dark:border-neutral-800 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap"
+              className="bg-[#F3EDE7]/65 dark:bg-neutral-800/40 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap"
             >
               <div className="flex items-center gap-2">
                 <BookOpen size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
@@ -417,7 +417,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3EDE7] dark:bg-[#141312] p-4 border border-neutral-200 dark:border-[#33302D] [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#33302D]"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3EDE7] dark:bg-[#141312] p-4"
       >
         <div className="flex items-center gap-2">
           <button
@@ -442,7 +442,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="relative h-10 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"
+              className="relative h-10 bg-white dark:bg-neutral-900"
             >
               <Search size={15} className="absolute left-3 top-3 text-black/55 dark:text-white/55 pointer-events-none" />
               <input
@@ -471,14 +471,14 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 data-sq="card"
                 data-sq-border="solid"
                 data-sq-stroke-w={status !== 'present' ? 2 : undefined}
-                className={`border p-4 transition-all h-full ${
+                className={`p-4 transition-all h-full ${
                   status === 'present'
-                    ? 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#262626]'
+                    ? 'bg-white dark:bg-neutral-900'
                     : status === 'absent'
-                    ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900/60 [--sq-stroke:#fda4af] dark:[--sq-stroke:rgba(136,19,55,0.6)]'
+                    ? 'bg-rose-50/50 dark:bg-rose-950/20 [--sq-stroke:#fda4af] dark:[--sq-stroke:rgba(136,19,55,0.6)]'
                     : status === 'late'
-                    ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-900/60 [--sq-stroke:#fcd34d] dark:[--sq-stroke:rgba(120,53,15,0.6)]'
-                    : 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-900/60 [--sq-stroke:#93c5fd] dark:[--sq-stroke:rgba(30,58,138,0.6)]'
+                    ? 'bg-amber-50/50 dark:bg-amber-950/20 [--sq-stroke:#fcd34d] dark:[--sq-stroke:rgba(120,53,15,0.6)]'
+                    : 'bg-blue-50/50 dark:bg-blue-950/20 [--sq-stroke:#93c5fd] dark:[--sq-stroke:rgba(30,58,138,0.6)]'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3 mb-3">
@@ -486,7 +486,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     <div
                       data-sq="tile"
                       data-sq-border="solid"
-                      className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-label shrink-0 border border-neutral-200 dark:border-neutral-700"
+                      className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-label shrink-0"
                     >
                       {student.fullName.charAt(0)}
                     </div>
@@ -602,7 +602,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 space-y-4"
+          className="bg-white dark:bg-neutral-900 p-5 space-y-4"
         >
         <h3 className="t-small font-semibold text-black/55 dark:text-white/55">
           {isRtl ? 'دفتر المتابعة البيداغوجية للحصة' : 'Cahier de Texte & Progression du Cours'}
@@ -615,7 +615,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="h-10 border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+              className="h-10 bg-neutral-50 dark:bg-neutral-800"
             >
               <input
                 type="text"
@@ -638,7 +638,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="h-10 border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+              className="h-10 bg-neutral-50 dark:bg-neutral-800"
             >
               <input
                 type="text"
@@ -664,7 +664,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 w-full p-6 animate-in fade-in zoom-in-95 duration-150"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 animate-in fade-in zoom-in-95 duration-150"
             >
             <div className="flex items-center gap-2 mb-4">
               <div

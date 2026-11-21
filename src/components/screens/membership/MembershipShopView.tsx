@@ -693,9 +693,9 @@ export const MembershipShopView: React.FC = React.memo(() => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="w-full bg-white dark:bg-[#1C1B1A] flex flex-col max-h-[640px] overflow-hidden"
+              className="w-full bg-white dark:bg-[#22201E] flex flex-col max-h-[640px] overflow-hidden"
             >
-            <div className="px-4 py-3 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#FBF8F5] dark:bg-[#151413]">
+            <div className="px-4 py-3 border-b border-black/[0.045] dark:border-white/[0.06] flex items-center justify-between bg-[#FBF8F5] dark:bg-[#1E1C1A]">
               <span className="t-small font-semibold text-black dark:text-white flex items-center gap-2">
                 <ShoppingBag size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>{isAr ? `السلة (${cart.length})` : `Panier (${cart.length})`}</span>
@@ -726,8 +726,8 @@ export const MembershipShopView: React.FC = React.memo(() => {
                   <div
                     key={item.product.id}
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="p-3 bg-[#FBF8F5] dark:bg-[#262422] flex items-center justify-between gap-2"
+                    data-sq-border="none"
+                    className="p-3 bg-[#F5F1EC] dark:bg-[#2B2825] flex items-center justify-between gap-2"
                   >
                     <div className="min-w-0 flex-1">
                       <span className="font-semibold t-small text-black dark:text-white truncate block">
@@ -742,8 +742,8 @@ export const MembershipShopView: React.FC = React.memo(() => {
                         type="button"
                         onClick={() => handleUpdateQty(item.product.id, -1)}
                         data-sq="check"
-                        data-sq-border="solid"
-                        className="w-6 h-6 bg-white dark:bg-[#1C1B1A] flex items-center justify-center cursor-pointer"
+                        data-sq-border="none"
+                        className="w-6 h-6 bg-white dark:bg-[#22201E] hover:dark:bg-[#332F2B] flex items-center justify-center cursor-pointer transition-colors"
                       >
                         <Minus size={10} />
                       </button>
@@ -754,8 +754,8 @@ export const MembershipShopView: React.FC = React.memo(() => {
                         type="button"
                         onClick={() => handleUpdateQty(item.product.id, 1)}
                         data-sq="check"
-                        data-sq-border="solid"
-                        className="w-6 h-6 bg-white dark:bg-[#1C1B1A] flex items-center justify-center cursor-pointer"
+                        data-sq-border="none"
+                        className="w-6 h-6 bg-white dark:bg-[#22201E] hover:dark:bg-[#332F2B] flex items-center justify-center cursor-pointer transition-colors"
                       >
                         <Plus size={10} />
                       </button>
@@ -772,7 +772,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
               )}
             </div>
 
-            <div className="p-4 border-t border-[var(--atr-divider)] bg-[#FBF8F5] dark:bg-[#151413] space-y-3">
+            <div className="p-4 border-t border-black/[0.045] dark:border-white/[0.06] bg-[#FBF8F5] dark:bg-[#1E1C1A] space-y-3">
               <div className="flex justify-between t-cap items-baseline">
                 <span className="text-black/62 dark:text-white/65">{isAr ? 'الإجمالي:' : 'Total à Payer:'}</span>
                 <span className="tabular-nums font-semibold t-card text-black dark:text-white">
@@ -784,12 +784,12 @@ export const MembershipShopView: React.FC = React.memo(() => {
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
-                  data-sq-border="solid"
+                  data-sq-border={paymentMethod === 'Cash' ? 'solid' : 'none'}
                   onClick={() => setPaymentMethod('Cash')}
                   className={`p-2 t-small font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors ${
                     paymentMethod === 'Cash'
                       ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                      : 'hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] text-black/72 dark:text-white/75'
+                      : 'bg-[#EFE9E2] dark:bg-[#2B2825] hover:bg-[#E7DFD6] dark:hover:bg-[#332F2B] text-black/72 dark:text-white/75'
                   }`}
                 >
                   <Banknote size={13} />
@@ -799,12 +799,12 @@ export const MembershipShopView: React.FC = React.memo(() => {
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
-                  data-sq-border="solid"
+                  data-sq-border={paymentMethod === 'Card' ? 'solid' : 'none'}
                   onClick={() => setPaymentMethod('Card')}
                   className={`p-2 t-small font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors ${
                     paymentMethod === 'Card'
                       ? '[--sq-stroke:#d4522f] bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
-                      : 'hover:bg-[#FAF6F1] dark:hover:bg-white/[0.04] text-black/72 dark:text-white/75'
+                      : 'bg-[#EFE9E2] dark:bg-[#2B2825] hover:bg-[#E7DFD6] dark:hover:bg-[#332F2B] text-black/72 dark:text-white/75'
                   }`}
                 >
                   <CreditCard size={13} />
@@ -866,10 +866,10 @@ export const MembershipShopView: React.FC = React.memo(() => {
         }
         statusClassName={
           selectedProduct && selectedProduct.stockQuantity <= 0
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
             : selectedProduct && selectedProduct.stockQuantity <= (selectedProduct.reorderLevel || 5)
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
         }
         tabs={[
           { id: 'overview', label: isAr ? 'المنتج والتسعير' : isEn ? 'Overview' : 'Fiche & Prix' },

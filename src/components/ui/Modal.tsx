@@ -69,7 +69,7 @@ export const Modal: React.FC<ModalProps> = ({
           data-sq="panel"
           data-sq-border="solid"
           style={{ contain: 'layout paint' }}
-          className="relative w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#18181B] [--sq-stroke:var(--sq-stroke-pop)] transform-gpu animate-in fade-in zoom-in-95 duration-200"
+          className="relative w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] transform-gpu animate-in fade-in zoom-in-95 duration-200"
           role="dialog"
           aria-modal="true"
         >
@@ -87,7 +87,7 @@ export const Modal: React.FC<ModalProps> = ({
               type="button"
               data-no-liquid="true"
               onClick={onClose}
-              className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-[var(--text-dark-2)] dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
+              className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] dark:text-[var(--text-dark-2)] dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] transition-colors cursor-pointer shrink-0"
               aria-label="Close modal"
             >
               <X size={16} strokeWidth={1.5} />

@@ -39,9 +39,9 @@ import {
 } from '../../ui/kinetic';
 
 const STATUS_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const STATUS_PILL_WARN =
-  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
 
 type PurchaseTab = 'all' | 'po' | 'br' | 'facture_fournisseur';
 type StatusFilter = 'all' | 'Ordered' | 'Received';
@@ -460,7 +460,7 @@ export const TradingPurchasesView: React.FC = () => {
               title={t('action_print', 'Imprimer')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-2 text-black/55 dark:text-white/55 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-[var(--brand-text,#BF431F)] dark:hover:text-[var(--brand-on-dark,#FF8F63)] hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
             >
               <Printer size={14} />
             </button>
@@ -844,9 +844,9 @@ export const TradingPurchasesView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 space-y-4"
+              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
             >
-            <div className="flex items-center justify-between border-b pb-3 border-neutral-200 dark:border-neutral-800">
+            <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
                 <Truck size={18} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>Nouvelle Commande d'Achat Fournisseur (PO)</span>
@@ -891,7 +891,7 @@ export const TradingPurchasesView: React.FC = () => {
                   onChange={(e) => setPoNotes(e.target.value)}
                 />
               </div>
-              <div className="space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
+              <div className="space-y-2 pt-2 border-t border-[var(--atr-divider)]">
                 <label className="font-semibold text-black/70 dark:text-white/75">Article Commandé :</label>
                 {poItems.map((it, idx) => (
                   <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
@@ -938,7 +938,7 @@ export const TradingPurchasesView: React.FC = () => {
                   </div>
                 ))}
               </div>
-              <div className="flex justify-end gap-2 pt-3 border-t border-neutral-200 dark:border-neutral-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton variant="ghost" size="sm" onClick={() => setIsPoModalOpen(false)}>
                   Annuler
                 </AtriumButton>

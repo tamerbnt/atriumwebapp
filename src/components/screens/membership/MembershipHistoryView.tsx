@@ -717,8 +717,8 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
         }
         statusClassName={
           selectedSale?.status === 'Refunded'
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
-            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
         }
         tabs={[
           { id: 'overview', label: language === 'ar' ? 'ملخص الوصل' : language === 'fr' ? 'Aperçu ticket' : 'Overview' },
@@ -873,7 +873,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] w-full p-6 space-y-5 [--sq-stroke:var(--sq-stroke-pop)]"
+              className="bg-white dark:bg-[#262422] w-full p-6 space-y-5 [--sq-stroke:var(--sq-stroke-pop)]"
             >
               <div className="flex items-center gap-3">
                 <div

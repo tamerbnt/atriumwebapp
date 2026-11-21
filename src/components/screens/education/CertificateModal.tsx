@@ -90,10 +90,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[92vh] overflow-hidden"
+          className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden"
         >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 print:hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F3EDE7] dark:bg-neutral-900/60 print:hidden">
           <div>
             <h2 className="t-card font-semibold text-black dark:text-white">
               {t(activeCert ? 'edu_cert_modal_title_view' : 'edu_cert_modal_title')}
@@ -205,7 +205,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 />
               </div>
 
-              <div className="pt-4 flex justify-end gap-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="pt-4 flex justify-end gap-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton
                   variant="outline"
                   size="sm"

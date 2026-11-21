@@ -481,7 +481,7 @@ export const EducationAttendanceView: React.FC = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="w-8 h-8 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-neutral-200 dark:border-neutral-700"
+              className="w-8 h-8 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 [--sq-stroke:rgba(212,82,47,0.22)] dark:[--sq-stroke:rgba(255,143,99,0.22)]"
             >
               {st.fullName.charAt(0)}
             </div>
@@ -697,7 +697,7 @@ export const EducationAttendanceView: React.FC = () => {
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040] flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-150"
+          className="p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:rgba(212,82,47,0.24)] dark:[--sq-stroke:rgba(255,143,99,0.22)] flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-150"
         >
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center justify-center">
@@ -744,7 +744,7 @@ export const EducationAttendanceView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="solid"
               onClick={() => setSelectedStudentIds(new Set<string>())}
-              className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white t-small font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="px-3 py-2 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white t-small font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               Deselect All
             </button>
@@ -1184,9 +1184,9 @@ export const EducationAttendanceView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
+              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6"
             >
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_grade_modal_title')}
               </h2>
@@ -1260,7 +1260,7 @@ export const EducationAttendanceView: React.FC = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                  className="bg-white dark:bg-neutral-900"
                 >
                   <textarea
                     rows={2}
@@ -1271,7 +1271,7 @@ export const EducationAttendanceView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
                 <AtriumButton variant="outline" size="sm" type="button" onClick={() => setIsGradeModalOpen(false)}>
                   {t('common_cancel')}
                 </AtriumButton>

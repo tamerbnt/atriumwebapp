@@ -387,7 +387,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
           </div>
 
           {/* Access Badge */}
-          <div data-sq="card" className="p-[var(--s4)] bg-neutral-50 dark:bg-neutral-800/50 flex flex-col gap-[var(--s1)]">
+          <div data-sq="card" data-sq-border="none" className="p-[var(--s4)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s1)]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-[var(--s3)]">
               <div className="flex items-center gap-[var(--s3)]">
                 <div data-sq="tile" data-sq-border="none" className="w-[var(--tile,40px)] h-[var(--tile,40px)] bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center shrink-0">
@@ -404,7 +404,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               </div>
 
               <div className="flex items-center gap-[var(--s2)] w-full sm:w-auto">
-                <div data-sq="ctl" className="w-full sm:w-36 bg-white dark:bg-neutral-900 focus-within:[--sq-stroke:var(--brand-fill)]">
+                <div data-sq="ctl" data-sq-border="none" className="w-full sm:w-36 bg-[#EFE9E2] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30">
                   <input
                     type="text"
                     value={cardId}
@@ -435,7 +435,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
             data-sq="ctl"
             data-sq-border="none"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-between p-[var(--s3)] bg-neutral-100/70 dark:bg-neutral-800/40 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-left rtl:text-right transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between p-[var(--s3)] bg-[#EFE9E2] dark:bg-[#1D1B19] hover:bg-[#E7E0D7] dark:hover:bg-[#2B2825] text-left rtl:text-right transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-[var(--s3)]">
               <FileText size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
@@ -543,7 +543,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               </div>
 
               {/* Multi-Credential Authentication Toggles */}
-              <div data-sq="panel" className="flex flex-col gap-[var(--s3)] p-[var(--s3)] bg-neutral-50 dark:bg-neutral-800/40">
+              <div data-sq="panel" data-sq-border="none" className="flex flex-col gap-[var(--s3)] p-[var(--s3)] bg-[#F5F1EC] dark:bg-[#1D1B19]">
                 <div className="flex items-center gap-[var(--s2)] t-small font-semibold text-[var(--text-1)]">
                   <KeyRound size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
                   <span>{isAr ? 'بيانات الدخول' : isEn ? 'Login Access' : 'Accès Connexion'}</span>
@@ -557,7 +557,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3)] pt-[var(--s2)]">
-                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-neutral-900 cursor-pointer t-cap text-[var(--text-1)]">
+                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-[#22201E] cursor-pointer t-cap text-[var(--text-1)]">
                     <input
                       type="checkbox"
                       checked={canLoginEmail}
@@ -567,7 +567,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                     <span>{isAr ? 'البريد' : isEn ? 'Email' : 'Email'}</span>
                   </label>
 
-                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-neutral-900 cursor-pointer t-cap text-[var(--text-1)]">
+                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-[#22201E] cursor-pointer t-cap text-[var(--text-1)]">
                     <input
                       type="checkbox"
                       checked={canLoginPhone}
@@ -577,7 +577,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                     <span>{isAr ? 'الهاتف' : isEn ? 'Phone' : 'Téléphone'}</span>
                   </label>
 
-                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-neutral-900 cursor-pointer t-cap text-[var(--text-1)]">
+                  <label data-sq="card" className="flex items-center gap-[var(--s2)] p-[var(--s3)] bg-white dark:bg-[#22201E] cursor-pointer t-cap text-[var(--text-1)]">
                     <input
                       type="checkbox"
                       checked={canLoginPin}
@@ -604,7 +604,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
                       data-sq="ctl"
                       data-sq-border="none"
                       onClick={handleGeneratePin}
-                      className="t-small h-[var(--btn-h,40px)] px-[var(--s3)] bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors text-[var(--text-1)] flex items-center gap-[var(--s2)] cursor-pointer"
+                      className="t-small h-[var(--btn-h,40px)] px-[var(--s3)] bg-[#EFE9E2] dark:bg-[#2B2825] hover:bg-[#E7E0D7] dark:hover:bg-[#332F2B] transition-colors text-[var(--text-1)] flex items-center gap-[var(--s2)] cursor-pointer"
                     >
                       <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
                       <span>{isAr ? 'توليد' : isEn ? 'Generate' : 'Générer'}</span>

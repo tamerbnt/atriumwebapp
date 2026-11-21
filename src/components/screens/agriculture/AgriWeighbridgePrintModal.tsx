@@ -33,10 +33,10 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[92vh] overflow-y-auto"
+          className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6 max-h-[92vh] overflow-y-auto"
         >
           {/* Modal Controls */}
-          <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
+          <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-3">
               <div
                 data-sq="tile"
@@ -72,9 +72,9 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
         </div>
 
         {/* Printable Ticket Voucher (A5 Format) */}
-        <div className="printable-document bg-white text-black p-6 rounded-[var(--r-card,16px)] border border-neutral-300 shadow-xs space-y-5 font-sans t-cap print:m-0 print:p-0 print:border-none print:shadow-none">
+        <div className="printable-document bg-white text-black p-6 rounded-[var(--r-card,16px)] border border-black/[0.14] shadow-xs space-y-5 font-sans t-cap print:m-0 print:p-0 print:border-none print:shadow-none">
           {/* Header */}
-          <div className="flex items-start justify-between border-b border-neutral-300 pb-4">
+          <div className="flex items-start justify-between border-b border-black/[0.14] pb-4">
             <div className="space-y-1">
               <h2 className="t-label font-semibold text-black rtl:normal-case rtl:tracking-normal">
                 {currentBusiness?.name || 'DOMAINE AGRICOLE & ÉLEVAGE EL BARAKA'}
@@ -100,7 +100,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
           </div>
 
           {/* Client / Destination Grid */}
-          <div className="grid grid-cols-2 gap-4 p-3 rounded-[var(--r-ctl,12px)] bg-neutral-50 border border-neutral-200">
+          <div className="grid grid-cols-2 gap-4 p-3 rounded-[var(--r-ctl,12px)] bg-neutral-50 border border-black/[0.09]">
             <div>
               <span className="t-small font-semibold text-black/75 block rtl:normal-case">
                 Acheteur / Mandataire de Gros
@@ -112,7 +112,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
                 Destination : {ticket.destinationWholesaleMarket}
               </p>
             </div>
-            <div className="border-l border-neutral-200 pl-3">
+            <div className="border-l border-black/[0.09] pl-3">
               <span className="t-small font-semibold text-black/75 block rtl:normal-case">
                 Véhicule & Chauffeur
               </span>
@@ -130,26 +130,26 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
             <span className="t-small font-semibold text-black block rtl:normal-case rtl:tracking-normal">
               Détail de la Double Pesée Pont-Bascule
             </span>
-            <table className="w-full text-left border-collapse border border-neutral-200 t-cap">
+            <table className="w-full text-left border-collapse border border-black/[0.14] t-cap">
               <tbody>
-                <tr className="border-b border-neutral-200">
+                <tr className="border-b border-black/[0.10]">
                   <td className="p-2 font-medium text-black/75">Désignation du Produit Récolté</td>
                   <td className="p-2 font-semibold text-black text-right">{ticket.cropDesignation}</td>
                 </tr>
-                <tr className="border-b border-neutral-200 bg-neutral-50/50">
+                <tr className="border-b border-black/[0.10] bg-neutral-50/50">
                   <td className="p-2 font-medium text-black/75">Pesée 1 : Poids Brut Véhicule Chargé</td>
                   <td className="p-2 tabular-nums font-semibold text-black text-right">
                     {ticket.grossWeightKg.toLocaleString()} kg
                   </td>
                 </tr>
-                <tr className="border-b border-neutral-200">
+                <tr className="border-b border-black/[0.10]">
                   <td className="p-2 font-medium text-black/75">Pesée 2 : Tare Véhicule à Vide</td>
                   <td className="p-2 tabular-nums text-black text-right">
                     -{ticket.truckTareKg.toLocaleString()} kg
                   </td>
                 </tr>
                 {ticket.crateCount > 0 && (
-                  <tr className="border-b border-neutral-200 bg-neutral-50/50">
+                  <tr className="border-b border-black/[0.10] bg-neutral-50/50">
                     <td className="p-2 font-medium text-black/75">
                       Déduction Tare Caisses ({ticket.crateCount} caisses × {ticket.crateUnitTareKg} kg)
                     </td>
@@ -158,7 +158,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
                     </td>
                   </tr>
                 )}
-                <tr className="bg-amber-50/60 font-semibold border-b border-neutral-200">
+                <tr className="bg-amber-50/60 font-semibold border-b border-black/[0.10]">
                   <td className="p-3 text-amber-900 rtl:normal-case">Poids Net Marchand Facturable</td>
                   <td className="p-3 tabular-nums text-amber-950 text-right t-label font-semibold">
                     {ticket.netWeightKg.toLocaleString()} kg ({ticket.netWeightQuintaux} Qtx)
@@ -169,7 +169,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
           </div>
 
           {/* Financial Settlement & Timbre Fiscal Art. 317 */}
-          <div className="p-4 rounded-[var(--r-ctl,12px)] bg-neutral-50 border border-neutral-200 space-y-2">
+          <div className="p-4 rounded-[var(--r-ctl,12px)] bg-neutral-50 border border-black/[0.09] space-y-2">
             <div className="flex justify-between items-center t-cap">
               <span className="text-black/75">
                 Prix Unitaire Convenu ({ticket.unitPriceDzdPerKg} DA/kg) :
@@ -197,7 +197,7 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
               </span>
             </div>
 
-            <div className="pt-2 border-t border-neutral-300 flex justify-between items-center">
+            <div className="pt-2 border-t border-black/[0.14] flex justify-between items-center">
               <span className="font-semibold text-black t-small rtl:normal-case">
                 Total Net Reçu / À Régler :
               </span>
@@ -208,14 +208,14 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
           </div>
 
           {/* Legal Signatures */}
-          <div className="grid grid-cols-2 gap-4 pt-3 border-t border-neutral-300 text-center">
+          <div className="grid grid-cols-2 gap-4 pt-3 border-t border-black/[0.14] text-center">
             <div className="space-y-8">
               <p className="font-semibold t-small text-black rtl:normal-case">
                 Le Magasinier Peseur (Pont-Bascule)
               </p>
               <p className="t-cap text-black/55">(Visa & Signature)</p>
             </div>
-            <div className="space-y-8 border-l border-neutral-200">
+            <div className="space-y-8 border-l border-black/[0.09]">
               <p className="font-semibold t-small text-black rtl:normal-case">
                 Le Chauffeur / Acheteur
               </p>

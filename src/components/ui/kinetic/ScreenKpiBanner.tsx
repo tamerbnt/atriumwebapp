@@ -55,11 +55,11 @@ const WhiteKpiCard: React.FC<{
     (language === 'ar' ? 'مُصفّى' : language === 'fr' ? 'Filtré' : 'Filtered');
 
   const activeStrokeVars = isEmerald
-    ? '[--sq-stroke:rgba(16,185,129,0.75)] dark:[--sq-stroke:rgba(52,211,153,0.75)]'
-    : '[--sq-stroke:rgba(212,82,47,0.78)] dark:[--sq-stroke:rgba(232,100,63,0.78)]';
+    ? '[--sq-stroke:rgba(16,185,129,0.55)] dark:[--sq-stroke:rgba(52,211,153,0.65)]'
+    : '[--sq-stroke:rgba(212,82,47,0.60)] dark:[--sq-stroke:rgba(232,100,63,0.68)]';
 
   const inactiveStrokeVars =
-    '[--sq-stroke:var(--sq-stroke-card,rgba(23,19,15,0.06))] group-hover:[--sq-stroke:var(--sq-stroke-card,rgba(23,19,15,0.09))] dark:group-hover:[--sq-stroke:var(--sq-stroke-ctl-hover,url(#sq-spec-dark-ctl-hover))]';
+    '[--sq-stroke:var(--sq-stroke-card,transparent)] dark:[--sq-stroke:var(--sq-stroke-card)] dark:group-hover:[--sq-stroke:var(--sq-stroke-ctl-hover,url(#sq-spec-dark-ctl-hover))]';
 
   const glowGradient = isEmerald
     ? 'bg-[radial-gradient(240px_circle_at_90%_10%,rgba(16,185,129,0.09),transparent_70%)] dark:bg-[radial-gradient(240px_circle_at_90%_10%,rgba(16,185,129,0.14),transparent_70%)]'
@@ -119,7 +119,7 @@ const WhiteKpiCard: React.FC<{
     </>
   );
 
-  const sharedClass = `relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-white dark:bg-neutral-800/90 text-left rtl:text-right flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full w-full select-none focus:outline-none ${
+  const sharedClass = `relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-white dark:bg-[#22201E] text-left rtl:text-right flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full w-full select-none focus:outline-none ${
     card.onToggle ? 'cursor-pointer' : ''
   } ${card.isActive ? activeStrokeVars : inactiveStrokeVars}`;
 
@@ -204,7 +204,7 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
       ref={bannerRef}
       data-sq="panel"
       data-sq-border="solid"
-      className={`bg-[#F3EDE7] dark:bg-[#141312] rounded-[var(--r-panel,28px)] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] ${className}`}
+      className={`bg-[#F3EDE7] dark:bg-[#191716] rounded-[var(--r-panel,28px)] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] ${className}`}
     >
       <div className="pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s3,12px)]">
         <h2 className="t-pod text-[var(--text-1)] dark:text-white">
@@ -215,20 +215,20 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
         <WhiteKpiCard card={primaryCard} defaultTone="emerald" language={language} />
         <WhiteKpiCard card={secondaryCard} defaultTone="terracotta" language={language} />
 
-        {/* 3rd Dark #1F1D1B Card with #FF8F63 orange figure */}
+        {/* 3rd Dark Espresso Card with #FF8F63 orange figure */}
         <div className="group sq-elev-card-hover h-full transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] motion-reduce:transition-none motion-reduce:hover:transform-none">
           <div
             data-surface="dark"
             data-sq="card"
             data-sq-border="solid"
-            className="relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-[#1F1D1B] [--sq-stroke:var(--sq-stroke-obsidian,url(#sq-spec-dark-card))] group-hover:[--sq-stroke:rgba(255,143,99,0.45)] text-white flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full"
+            className="relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-gradient-to-br from-[#282523] to-[#22201E] [--sq-stroke:var(--sq-stroke-obsidian,url(#sq-spec-dark-card))] group-hover:[--sq-stroke:rgba(255,143,99,0.45)] text-white flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full"
           >
             <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(260px_circle_at_88%_12%,rgba(255,143,99,0.14),transparent_70%)]" />
             <div className="relative z-10 flex items-center justify-between gap-[var(--s2,8px)]">
               <span className="t-small text-[var(--text-dark-2)] truncate">
                 {darkCard.label}
               </span>
-              <span className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--badge-h,22px)] px-[var(--s2,8px)] rounded-full t-small bg-[#3D2817] text-[var(--brand-on-dark)] border border-[#FF8F63]/25 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5 shrink-0">
+              <span className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--badge-h,22px)] px-[var(--s2,8px)] rounded-full t-small bg-[#3D2817] text-[var(--brand-on-dark)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5 shrink-0">
                 <span ref={darkChipCountRef}>
                   {darkCard.formatBadgeValue
                     ? darkCard.formatBadgeValue(darkCard.badgeCount)

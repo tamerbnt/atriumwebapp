@@ -245,10 +245,10 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
             isSelected
               ? 'bg-[#FCEEE8]/70 [--sq-stroke:rgba(212,82,47,0.5)] dark:bg-[#d4522f]/15 dark:[--sq-stroke:rgba(232,100,63,0.55)]'
               : isHovered
-              ? 'bg-[#FBF8F5] dark:bg-[#22201E]'
+              ? 'bg-[#FBF8F5] dark:bg-[#282523]'
               : isPinned
-              ? 'bg-white dark:bg-[#18181B] [--sq-stroke:rgba(245,158,11,0.45)] dark:[--sq-stroke:rgba(251,191,36,0.38)]'
-              : 'bg-white dark:bg-[#18181B]'
+              ? 'bg-white dark:bg-[#22201E] [--sq-stroke:rgba(245,158,11,0.45)] dark:[--sq-stroke:rgba(251,191,36,0.38)]'
+              : 'bg-white dark:bg-[#22201E]'
           }`}
         />
 
@@ -265,7 +265,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
               e.stopPropagation();
               setIsKebabOpen((prev) => !prev);
             }}
-            className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
+            className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
             title="Options"
           >
             <MoreVertical className="w-4 h-4" strokeWidth={1.5} />
@@ -317,10 +317,10 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
                     : 'cubic-bezier(0.4, 0, 1, 1)',
                   transitionDelay: `${isHovered ? enterDelay : exitDelay}ms`,
                 }}
-                className={`w-[var(--btn-h,40px)] h-[var(--btn-h,40px)] rounded-full bg-white dark:bg-[#1E1E22] border border-[var(--atr-line)] shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                className={`w-[var(--btn-h,40px)] h-[var(--btn-h,40px)] rounded-full bg-white dark:bg-[#2B2825] border-0 shadow-[0_4px_14px_rgba(23,19,15,0.09)] dark:shadow-[0_6px_16px_rgba(0,0,0,0.48),inset_0_1px_0_rgba(255,255,255,0.08)] flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                   action.isSpecialDelete
-                    ? 'hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300'
-                    : 'hover:bg-[#FDF4F0] dark:hover:bg-neutral-700/60 hover:border-[#d4522f]/40'
+                    ? 'hover:bg-red-50 dark:hover:bg-red-950/40'
+                    : 'hover:bg-[#FDF4F0] dark:hover:bg-[#3A3632]'
                 }`}
               >
                 {action.icon}

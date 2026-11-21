@@ -138,10 +138,10 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
       <div className="sq-elev-pop max-w-lg w-full">
-        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5">
-          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+        <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
+          <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-2">
-              <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
+              <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
                 <Stethoscope size={16} />
               </div>
               <h3 className="font-semibold t-label text-black dark:text-white">
@@ -151,7 +151,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
             >
               <X size={16} />
             </button>
@@ -159,7 +159,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {errorMessage && (
-              <div data-sq="ctl" data-sq-border="solid" className="p-3 bg-red-500/10 border border-red-500/30 [--sq-stroke:rgba(239,68,68,0.3)] text-red-600 dark:text-red-400 t-cap flex items-center gap-2 animate-in fade-in">
+              <div data-sq="ctl" data-sq-border="none" className="p-3 bg-red-500/10 text-red-600 dark:text-red-400 t-cap flex items-center gap-2 animate-in fade-in">
                 <AlertTriangle size={16} className="shrink-0" />
                 <span>{errorMessage}</span>
               </div>
@@ -187,7 +187,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
             />
 
             {/* Urgency Level Triage */}
-            <div data-sq="card" data-sq-border="solid" className="flex items-center justify-between p-3 bg-[#F3EDE7] dark:bg-[#141312] border border-neutral-200 dark:border-neutral-700">
+            <div data-sq="card" data-sq-border="none" className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#1D1B19]">
               <span className="t-small font-semibold text-black dark:text-white">
                 {language === 'ar' ? 'درجة الإلحاح / الفرز' : 'Priorité Triage'}
               </span>
@@ -275,7 +275,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
             <AtriumButton variant="secondary" onClick={onClose}>
               {language === 'ar' ? 'إلغاء' : 'Annuler'}
             </AtriumButton>

@@ -334,7 +334,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       header: language === 'ar' ? 'الباقة المفضلة' : language === 'fr' ? 'Formule souhaitée' : `Preferred ${terminology.plan}`,
       sortable: true,
       renderCell: (lead) => (
-        <span className="inline-block px-2 py-1 rounded-full bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] t-small font-semibold border border-[#d4522f]/20 truncate max-w-full">
+        <span className="inline-block px-2 py-1 rounded-full bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] t-small font-semibold truncate max-w-full">
           {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
         </span>
       ),
@@ -804,10 +804,10 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
         statusLabel={selectedLead ? localizeStatus(selectedLead.status, language) : undefined}
         statusClassName={
           selectedLead?.status === 'Approved'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : selectedLead?.status === 'Declined'
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'overview', label: language === 'ar' ? 'المرشح' : language === 'fr' ? 'Aperçu candidat' : 'Overview' },

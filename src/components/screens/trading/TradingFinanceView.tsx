@@ -38,9 +38,9 @@ import {
 } from '../../ui/kinetic';
 
 const STATUS_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const STATUS_PILL_DANGER =
-  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]';
 
 type FinanceFilter = 'all' | 'unpaid' | 'paid';
 type AgingBucketFilter = 'all' | '0_30' | '31_60' | '61_90' | '90_plus';
@@ -476,6 +476,7 @@ export const TradingFinanceView: React.FC = () => {
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+          <div className="sq-elev-card">
           <button
             type="button"
             onClick={() => {
@@ -485,8 +486,8 @@ export const TradingFinanceView: React.FC = () => {
             data-sq="card"
             data-sq-border="solid"
             data-sq-stroke-w={agingBucketFilter === '0_30' ? '2' : '1'}
-            className={`p-4 text-left rtl:text-right bg-white dark:bg-neutral-800 transition-all cursor-pointer ${
-              agingBucketFilter === '0_30' ? '[--sq-stroke:#10B981]' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'
+            className={`w-full h-full p-4 text-left rtl:text-right bg-white dark:bg-[#22201E] hover:bg-[#FAF7F4] dark:hover:bg-[#282523] transition-all cursor-pointer ${
+              agingBucketFilter === '0_30' ? '[--sq-stroke:#10B981]' : '[--sq-stroke:var(--sq-stroke-card)]'
             }`}
           >
             <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
@@ -497,7 +498,9 @@ export const TradingFinanceView: React.FC = () => {
             </div>
             <span className="t-cap text-black/55 dark:text-white/55 mt-1 block">Créances normales</span>
           </button>
+          </div>
 
+          <div className="sq-elev-card">
           <button
             type="button"
             onClick={() => {
@@ -507,8 +510,8 @@ export const TradingFinanceView: React.FC = () => {
             data-sq="card"
             data-sq-border="solid"
             data-sq-stroke-w={agingBucketFilter === '31_60' ? '2' : '1'}
-            className={`p-4 text-left rtl:text-right bg-white dark:bg-neutral-800 transition-all cursor-pointer ${
-              agingBucketFilter === '31_60' ? '[--sq-stroke:#F59E0B]' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'
+            className={`w-full h-full p-4 text-left rtl:text-right bg-white dark:bg-[#22201E] hover:bg-[#FAF7F4] dark:hover:bg-[#282523] transition-all cursor-pointer ${
+              agingBucketFilter === '31_60' ? '[--sq-stroke:#F59E0B]' : '[--sq-stroke:var(--sq-stroke-card)]'
             }`}
           >
             <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
@@ -519,7 +522,9 @@ export const TradingFinanceView: React.FC = () => {
             </div>
             <span className="t-cap text-amber-600/80 mt-1 block">Relance commerciale</span>
           </button>
+          </div>
 
+          <div className="sq-elev-card">
           <button
             type="button"
             onClick={() => {
@@ -529,8 +534,8 @@ export const TradingFinanceView: React.FC = () => {
             data-sq="card"
             data-sq-border="solid"
             data-sq-stroke-w={agingBucketFilter === '61_90' ? '2' : '1'}
-            className={`p-4 text-left rtl:text-right bg-white dark:bg-neutral-800 transition-all cursor-pointer ${
-              agingBucketFilter === '61_90' ? '[--sq-stroke:#F97316]' : '[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040]'
+            className={`w-full h-full p-4 text-left rtl:text-right bg-white dark:bg-[#22201E] hover:bg-[#FAF7F4] dark:hover:bg-[#282523] transition-all cursor-pointer ${
+              agingBucketFilter === '61_90' ? '[--sq-stroke:#F97316]' : '[--sq-stroke:var(--sq-stroke-card)]'
             }`}
           >
             <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
@@ -541,7 +546,9 @@ export const TradingFinanceView: React.FC = () => {
             </div>
             <span className="t-cap text-orange-600/80 mt-1 block">Mise en demeure requise</span>
           </button>
+          </div>
 
+          <div className="sq-elev-card">
           <button
             type="button"
             onClick={() => {
@@ -551,8 +558,8 @@ export const TradingFinanceView: React.FC = () => {
             data-sq="card"
             data-sq-border="solid"
             data-sq-stroke-w={agingBucketFilter === '90_plus' ? '2' : '1'}
-            className={`p-4 text-left rtl:text-right bg-rose-50/50 dark:bg-rose-950/20 transition-all cursor-pointer ${
-              agingBucketFilter === '90_plus' ? '[--sq-stroke:#F43F5E]' : '[--sq-stroke:#FDA4AF] dark:[--sq-stroke:rgba(136,19,55,0.6)]'
+            className={`w-full h-full p-4 text-left rtl:text-right bg-rose-50/70 dark:bg-rose-950/25 transition-all cursor-pointer ${
+              agingBucketFilter === '90_plus' ? '[--sq-stroke:#F43F5E]' : '[--sq-stroke:rgba(244,63,94,0.3)]'
             }`}
           >
             <span className="t-small font-semibold text-rose-700 dark:text-rose-400 block mb-1">
@@ -563,6 +570,7 @@ export const TradingFinanceView: React.FC = () => {
             </div>
             <span className="t-cap text-rose-500 mt-1 block">Recouvrement forcé</span>
           </button>
+          </div>
         </div>
       </ScreenPod>
 
@@ -826,8 +834,8 @@ export const TradingFinanceView: React.FC = () => {
       {settlementDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="sq-elev-pop relative w-full max-w-md">
-          <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-6 space-y-4">
-            <div className="flex items-center justify-between border-b pb-3 border-neutral-200 dark:border-neutral-800">
+          <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4">
+            <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white flex items-center gap-2">
                 <CheckCircle size={18} className="text-emerald-600" />
                 <span>Enregistrer le Règlement Client</span>
@@ -843,7 +851,7 @@ export const TradingFinanceView: React.FC = () => {
                 <X size={18} />
               </button>
             </div>
-            <div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] t-cap space-y-2 tabular-nums">
+            <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap space-y-2 tabular-nums">
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55 font-sans">Facture :</span>
                 <span className="font-semibold text-black dark:text-white">{settlementDoc.docNumber}</span>
@@ -852,7 +860,7 @@ export const TradingFinanceView: React.FC = () => {
                 <span className="text-black/55 dark:text-white/55 font-sans">Client :</span>
                 <span className="text-black dark:text-white">{settlementDoc.clientName}</span>
               </div>
-              <div className="flex justify-between text-emerald-600 font-semibold t-label pt-2 border-t border-neutral-200 dark:border-neutral-700">
+              <div className="flex justify-between text-emerald-600 font-semibold t-label pt-2 border-t border-[var(--atr-divider)]">
                 <span className="font-sans">Montant Net :</span>
                 <span>{formatMoney(settlementDoc.netToPay)}</span>
               </div>
@@ -883,7 +891,7 @@ export const TradingFinanceView: React.FC = () => {
                 onChange={(e) => setSettleDate(e.target.value)}
                 required
               />
-              <div className="flex justify-end gap-2 pt-3 border-t border-neutral-200 dark:border-neutral-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setSettlementDoc(null)}>
                   Annuler
                 </AtriumButton>

@@ -75,7 +75,7 @@ const getTalentStatusBadge = (
       label: isAr ? 'نشط' : 'Actif',
       variant: 'active',
       pillClass:
-        'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+        'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
     };
   }
   if (status === 'paused') {
@@ -83,7 +83,7 @@ const getTalentStatusBadge = (
       label: isAr ? 'موقوف مؤقتاً' : 'En pause',
       variant: 'warning',
       pillClass:
-        'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+        'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
     };
   }
   if (status === 'blacklisted') {
@@ -91,14 +91,14 @@ const getTalentStatusBadge = (
       label: isAr ? 'محظور' : 'Bloqué',
       variant: 'blocked',
       pillClass:
-        'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
+        'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]',
     };
   }
   return {
     label: isAr ? 'قيد المراجعة' : 'En révision',
     variant: 'info',
     pillClass:
-      'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]',
+      'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC]',
   };
 };
 
@@ -444,7 +444,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               src={talent.portraitPhotoUrl}
               alt={talent.fullName}
               referrerPolicy="no-referrer"
-              className="w-10 h-10 rounded-full object-cover border border-[#E6DED6] shrink-0 bg-neutral-100"
+              className="w-10 h-10 rounded-full object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
             />
             <div className="min-w-0">
               <div className="font-semibold text-black dark:text-white truncate">{talent.fullName}</div>
@@ -505,7 +505,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         renderCell: (talent) => (
           <div className="space-y-0.5">
             {talent.hasDriverLicense && (
-              <span className="inline-block px-2 py-1 rounded-[var(--r-check,6px)] bg-[#F3EDE7] dark:bg-neutral-800 t-small font-semibold text-black/70 dark:text-white/75 mr-1">
+              <span className="inline-block px-2 py-1 rounded-[var(--r-check,6px)] bg-[#F3EDE7] dark:bg-[#2B2825] t-small font-semibold text-black/70 dark:text-white/75 mr-1">
                 Permis B
               </span>
             )}
@@ -670,7 +670,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         }}
       />
 
-      <div className="flex border-b border-[#E6DED6] dark:border-neutral-800 gap-1 overflow-x-auto">
+      <div className="flex border-b border-[var(--atr-divider)] gap-1 overflow-x-auto">
         {[
           { id: 'talents', label: isAr ? 'دليل الفريق' : isEn ? 'Team Pool' : 'Répertoire Équipe', icon: Users, count: pmTalents.length },
           {
@@ -697,7 +697,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
-                <span className="px-2 py-1 rounded-full t-small tabular-nums font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
+                <span className="px-2 py-1 rounded-full t-small tabular-nums font-semibold bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75">
                   {tab.count}
                 </span>
               )}
@@ -828,12 +828,12 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     src={talent.portraitPhotoUrl}
                     alt={talent.fullName}
                     referrerPolicy="no-referrer"
-                    className="w-24 h-24 rounded-full object-cover border-2 border-[#d4522f] shadow-md mb-4 bg-neutral-100"
+                    className="w-24 h-24 rounded-full object-cover shadow-md mb-4 bg-[#F3EDE7] dark:bg-[#2B2825]"
                   />
                   <h3 className="t-card font-semibold text-black dark:text-white truncate max-w-[210px] mb-1">
                     {talent.fullName}
                   </h3>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 mb-2 truncate max-w-[200px]">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75 mb-2 truncate max-w-[200px]">
                     {talent.wilayaName} ({talent.commune})
                   </span>
                   <div className="flex items-center gap-1 font-semibold text-amber-500 tabular-nums t-label mb-3">
@@ -843,13 +843,13 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                       · {talent.completedMissionsCount} missions
                     </span>
                   </div>
-                  <div className="w-full pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 t-cap space-y-2 text-center">
+                  <div className="w-full pt-3 border-t border-[var(--atr-divider)] t-cap space-y-2 text-center">
                     <div className="tabular-nums text-black/70 dark:text-white/75 t-cap">
                       CCP: {talent.ccpNumber} (Clé: {talent.ccpKey})
                     </div>
                     <div className="flex items-center justify-center gap-2 pt-1">
                       {talent.hasDriverLicense && (
-                        <span className="px-2 py-1 rounded-[var(--r-check,6px)] bg-[#F3EDE7] dark:bg-neutral-800 t-small font-semibold text-black/70 dark:text-white/75">
+                        <span className="px-2 py-1 rounded-[var(--r-check,6px)] bg-[#F3EDE7] dark:bg-[#2B2825] t-small font-semibold text-black/70 dark:text-white/75">
                           Permis B
                         </span>
                       )}
@@ -884,183 +884,184 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
           <div className="flex items-center justify-end px-1">
             <ListAdvancedMenuButton language={language} />
           </div>
-          <div
-            data-sq="card"
-            data-sq-border="solid"
-            className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-4xl mx-auto space-y-6"
-          >
-            {selectedTalent ? (
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E6DED6] dark:border-neutral-800">
-                  <div className="flex items-center gap-4">
+          <div className="sq-elev-card max-w-4xl mx-auto">
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="p-6 bg-white dark:bg-[#22201E] space-y-6"
+            >
+              {selectedTalent ? (
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--atr-divider)]">
+                    <div className="flex items-center gap-4">
+                      <div
+                        data-sq="card"
+                        data-sq-border="none"
+                        className="w-16 h-16 shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
+                      >
+                        <img
+                          src={selectedTalent.portraitPhotoUrl}
+                          alt={selectedTalent.fullName}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="t-dialog font-semibold text-black dark:text-white">
+                            {selectedTalent.fullName}
+                          </h2>
+                          {selectedTalent.isHrVerified && (
+                            <span className="px-2 py-1 rounded-full bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] t-small font-semibold flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3" /> Vérifié par RH
+                            </span>
+                          )}
+                        </div>
+                        <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
+                          {selectedTalent.age} ans · Wilaya de {selectedTalent.wilayaName} ({selectedTalent.commune}) · {selectedTalent.phone}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="t-cap text-black/55 dark:text-white/55 block">
+                        {t('pm_rh_col_consolidated_score')}
+                      </span>
+                      <div className="flex items-center gap-2 t-dialog font-semibold tabular-nums text-amber-500 justify-end">
+                        <Star className="w-5 h-5 fill-amber-400" />
+                        <span>{selectedTalent.consolidatedScore} / 5.0</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div
-                      data-sq="card"
-                      data-sq-border="solid"
-                      data-sq-stroke-w="2"
-                      className="w-16 h-16 shrink-0 [--sq-stroke:#d4522f] bg-neutral-100"
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
                     >
-                      <img
-                        src={selectedTalent.portraitPhotoUrl}
-                        alt={selectedTalent.fullName}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
-                      />
+                      <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
+                        <Users className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
+                        {t('pm_rh_pillar1_title')}
+                      </h3>
+                      <div className="t-cap space-y-1 text-black/70 dark:text-white/75">
+                        <p>
+                          <strong>{t('pm_rh_pillar1_roles')}</strong>{' '}
+                          {selectedTalent.desiredRoles.join(', ')}
+                        </p>
+                        <p>
+                          <strong>{t('pm_rh_pillar1_langs')}</strong>{' '}
+                          {selectedTalent.languages?.join(', ') || 'Arabe, Français'}
+                        </p>
+                        <p>
+                          <strong>{t('pm_rh_pillar1_mobility')}</strong>{' '}
+                          {selectedTalent.hasDriverLicense ? 'Permis B Oui' : 'Non'} ·{' '}
+                          {selectedTalent.isVehicleOwner ? 'Véhiculé Oui' : 'Non véhicule'}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="t-dialog font-semibold text-black dark:text-white">
-                          {selectedTalent.fullName}
-                        </h2>
-                        {selectedTalent.isHrVerified && (
-                          <span className="px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 t-small font-semibold flex items-center gap-1">
-                            <CheckCircle className="w-3 h-3" /> Vérifié par RH
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                    >
+                      <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-emerald-600" />
+                        {t('pm_rh_pillar2_title')}
+                      </h3>
+                      <div className="t-cap space-y-1 tabular-nums text-black dark:text-white">
+                        <p>
+                          <strong>{t('pm_rh_pillar2_ccp')}</strong> {selectedTalent.ccpNumber}
+                        </p>
+                        <p>
+                          <strong>{t('pm_rh_pillar2_key')}</strong> {selectedTalent.ccpKey}
+                        </p>
+                        <p className="t-small text-emerald-600 font-sans font-medium">
+                          {t('pm_rh_pillar2_verified')}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                    >
+                      <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        {t('pm_rh_pillar3_title')}
+                      </h3>
+                      <div className="t-cap space-y-2">
+                        <div
+                          data-sq="ctl-sm"
+                          data-sq-border="none"
+                          className="flex items-center justify-between p-2 bg-white dark:bg-[#2B2825]"
+                        >
+                          <span>{t('pm_rh_doc_cni')}</span>
+                          <span className="text-emerald-600 font-semibold t-small">
+                            {t('pm_rh_doc_verified')}
                           </span>
-                        )}
+                        </div>
+                        <div
+                          data-sq="ctl-sm"
+                          data-sq-border="none"
+                          className="flex items-center justify-between p-2 bg-white dark:bg-[#2B2825]"
+                        >
+                          <span>{t('pm_rh_doc_license')}</span>
+                          <span className="text-emerald-600 font-semibold t-small">
+                            {t('pm_rh_doc_compliant')}
+                          </span>
+                        </div>
                       </div>
-                      <p className="t-cap text-black/55 dark:text-white/55 mt-0.5">
-                        {selectedTalent.age} ans · Wilaya de {selectedTalent.wilayaName} ({selectedTalent.commune}) · {selectedTalent.phone}
-                      </p>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="t-cap text-black/55 dark:text-white/55 block">
-                      {t('pm_rh_col_consolidated_score')}
-                    </span>
-                    <div className="flex items-center gap-2 t-dialog font-semibold tabular-nums text-amber-500 justify-end">
-                      <Star className="w-5 h-5 fill-amber-400" />
-                      <span>{selectedTalent.consolidatedScore} / 5.0</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="solid"
-                    className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
-                  >
-                    <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
-                      <Users className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
-                      {t('pm_rh_pillar1_title')}
-                    </h3>
-                    <div className="t-cap space-y-1 text-black/70 dark:text-white/75">
-                      <p>
-                        <strong>{t('pm_rh_pillar1_roles')}</strong>{' '}
-                        {selectedTalent.desiredRoles.join(', ')}
-                      </p>
-                      <p>
-                        <strong>{t('pm_rh_pillar1_langs')}</strong>{' '}
-                        {selectedTalent.languages?.join(', ') || 'Arabe, Français'}
-                      </p>
-                      <p>
-                        <strong>{t('pm_rh_pillar1_mobility')}</strong>{' '}
-                        {selectedTalent.hasDriverLicense ? 'Permis B Oui' : 'Non'} ·{' '}
-                        {selectedTalent.isVehicleOwner ? 'Véhiculé Oui' : 'Non véhicule'}
-                      </p>
-                    </div>
-                  </div>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="solid"
-                    className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
-                  >
-                    <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 text-emerald-600" />
-                      {t('pm_rh_pillar2_title')}
-                    </h3>
-                    <div className="t-cap space-y-1 tabular-nums text-black dark:text-white">
-                      <p>
-                        <strong>{t('pm_rh_pillar2_ccp')}</strong> {selectedTalent.ccpNumber}
-                      </p>
-                      <p>
-                        <strong>{t('pm_rh_pillar2_key')}</strong> {selectedTalent.ccpKey}
-                      </p>
-                      <p className="t-small text-emerald-600 font-sans font-medium">
-                        {t('pm_rh_pillar2_verified')}
-                      </p>
-                    </div>
-                  </div>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="solid"
-                    className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
-                  >
-                    <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-blue-600" />
-                      {t('pm_rh_pillar3_title')}
-                    </h3>
-                    <div className="t-cap space-y-2">
-                      <div
-                        data-sq="ctl-sm"
-                        data-sq-border="solid"
-                        className="flex items-center justify-between p-2 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
-                      >
-                        <span>{t('pm_rh_doc_cni')}</span>
-                        <span className="text-emerald-600 font-semibold t-small">
-                          {t('pm_rh_doc_verified')}
-                        </span>
-                      </div>
-                      <div
-                        data-sq="ctl-sm"
-                        data-sq-border="solid"
-                        className="flex items-center justify-between p-2 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
-                      >
-                        <span>{t('pm_rh_doc_license')}</span>
-                        <span className="text-emerald-600 font-semibold t-small">
-                          {t('pm_rh_doc_compliant')}
-                        </span>
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                    >
+                      <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
+                        <Star className="w-4 h-4 text-amber-500" />
+                        {t('pm_rh_pillar4_title')}
+                      </h3>
+                      <div className="t-cap text-black/70 dark:text-white/75 space-y-1">
+                        <p>
+                          <strong>{t('pm_rh_history_completed')}</strong>{' '}
+                          {selectedTalent.completedMissionsCount}
+                        </p>
+                        <p>
+                          <strong>{t('pm_rh_history_absences')}</strong>{' '}
+                          {t('pm_rh_history_reliability')}
+                        </p>
+                        <p>
+                          <strong>{t('pm_rh_history_hr_notes')}</strong>{' '}
+                          {selectedTalent.hrNotes || 'Profil sérieux et ponctuel.'}
+                        </p>
                       </div>
                     </div>
                   </div>
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="solid"
-                    className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
-                  >
-                    <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
-                      <Star className="w-4 h-4 text-amber-500" />
-                      {t('pm_rh_pillar4_title')}
-                    </h3>
-                    <div className="t-cap text-black/70 dark:text-white/75 space-y-1">
-                      <p>
-                        <strong>{t('pm_rh_history_completed')}</strong>{' '}
-                        {selectedTalent.completedMissionsCount}
-                      </p>
-                      <p>
-                        <strong>{t('pm_rh_history_absences')}</strong>{' '}
-                        {t('pm_rh_history_reliability')}
-                      </p>
-                      <p>
-                        <strong>{t('pm_rh_history_hr_notes')}</strong>{' '}
-                        {selectedTalent.hrNotes || 'Profil sérieux et ponctuel.'}
-                      </p>
-                    </div>
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('talents')}
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
+                    >
+                      {t('pm_rh_btn_back_pool')}
+                    </button>
                   </div>
                 </div>
-                <div className="pt-2 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('talents')}
-                    data-sq="ctl"
-                    data-sq-border="solid"
-                    className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] cursor-pointer"
-                  >
-                    {t('pm_rh_btn_back_pool')}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <KineticEmptyStateMotion motionKey="pm-rh-no-talent">
-                <EmptyState
-                  variant="island"
-                  icon={<Users />}
-                  title={t('pm_rh_no_talent_selected')}
-                  primaryAction={{
-                    label: t('pm_rh_btn_back_pool'),
-                    onClick: () => setActiveTab('talents'),
-                  }}
-                />
-              </KineticEmptyStateMotion>
-            )}
+              ) : (
+                <KineticEmptyStateMotion motionKey="pm-rh-no-talent">
+                  <EmptyState
+                    variant="island"
+                    icon={<Users />}
+                    title={t('pm_rh_no_talent_selected')}
+                    primaryAction={{
+                      label: t('pm_rh_btn_back_pool'),
+                      onClick: () => setActiveTab('talents'),
+                    }}
+                  />
+                </KineticEmptyStateMotion>
+              )}
+            </div>
           </div>
         </ScreenPod>
       )}
@@ -1079,7 +1080,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             defaultMode="mobile"
           >
             <div className="space-y-4">
-              <div className="text-center pb-2 border-b border-[#E6DED6] dark:border-neutral-700">
+              <div className="text-center pb-2 border-b border-[var(--atr-divider)]">
                 <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
                   {t('pm_rh_portal_join_title')}
                 </span>
@@ -1093,8 +1094,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               {formSubmittedSuccess && (
                 <div
                   data-sq="ctl"
-                  data-sq-border="solid"
-                  className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 t-small font-semibold text-center"
+                  data-sq-border="none"
+                  className="p-3 bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] t-small font-semibold text-center"
                 >
                   {t('pm_rh_portal_success')}
                 </div>
@@ -1163,8 +1164,8 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 </div>
                 <div
                   data-sq="ctl"
-                  data-sq-border="solid"
-                  className="p-3 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-2"
+                  data-sq-border="none"
+                  className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2"
                 >
                   <span className="t-small font-semibold text-black dark:text-white block">
                     {t('pm_compta_tab_ccp')}
@@ -1217,93 +1218,95 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 
       {activeTab === 'walkin' && (
         <ScreenPod>
-          <div
-            data-sq="card"
-            data-sq-border="solid"
-            className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-2xl mx-auto space-y-6"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
-                  Saisie Express Agence
-                </span>
-                <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
-                  Enregistrement Direct d&apos;un Candidat Présent en Agence
-                </h2>
+          <div className="sq-elev-card max-w-2xl mx-auto">
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="p-6 bg-white dark:bg-[#22201E] space-y-6"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
+                    Saisie Express Agence
+                  </span>
+                  <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
+                    Enregistrement Direct d&apos;un Candidat Présent en Agence
+                  </h2>
+                </div>
+                <ListAdvancedMenuButton language={language} />
               </div>
-              <ListAdvancedMenuButton language={language} />
-            </div>
-            <form onSubmit={(e) => handleCreateTalent(e, 'walkin')} className="space-y-4">
-              <div className="space-y-3">
-                <LabelInput
-                  field="Nom"
-                  label={t('pm_rh_field_candidate_name')}
-                  required
-                  placeholder={t('pm_rh_field_fullname_ph')}
-                  value={fullName}
-                  onChange={setFullName}
-                  width="100%"
-                  height={46}
-                  corner={14}
-                />
-                <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={(e) => handleCreateTalent(e, 'walkin')} className="space-y-4">
+                <div className="space-y-3">
                   <LabelInput
-                    field="Telephone"
-                    label={t('pm_rh_field_phone')}
-                    type="tel"
+                    field="Nom"
+                    label={t('pm_rh_field_candidate_name')}
                     required
-                    placeholder="+213 550 ..."
-                    value={phone}
-                    onChange={setPhone}
+                    placeholder={t('pm_rh_field_fullname_ph')}
+                    value={fullName}
+                    onChange={setFullName}
                     width="100%"
                     height={46}
                     corner={14}
                   />
-                  <LabelSelect
-                    field="Wilaya"
-                    label={t('pm_rh_field_wilaya')}
-                    value={wilayaCode}
-                    onChange={(val) =>
-                      setWilayaCode(typeof val === 'string' ? val : val.target?.value || val)
-                    }
-                    options={ALGERIAN_WILAYAS.map((w) => ({
-                      value: w.code,
-                      label: `${w.code} - ${w.nameFr}`,
-                    }))}
-                    height={46}
-                    corner={14}
-                    searchable
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="col-span-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <LabelInput
-                      field="CCP"
-                      label={t('pm_rh_field_ccp_hint')}
+                      field="Telephone"
+                      label={t('pm_rh_field_phone')}
+                      type="tel"
                       required
-                      value={ccpNumber}
-                      onChange={setCcpNumber}
+                      placeholder="+213 550 ..."
+                      value={phone}
+                      onChange={setPhone}
+                      width="100%"
+                      height={46}
+                      corner={14}
+                    />
+                    <LabelSelect
+                      field="Wilaya"
+                      label={t('pm_rh_field_wilaya')}
+                      value={wilayaCode}
+                      onChange={(val) =>
+                        setWilayaCode(typeof val === 'string' ? val : val.target?.value || val)
+                      }
+                      options={ALGERIAN_WILAYAS.map((w) => ({
+                        value: w.code,
+                        label: `${w.code} - ${w.nameFr}`,
+                      }))}
+                      height={46}
+                      corner={14}
+                      searchable
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-2">
+                      <LabelInput
+                        field="CCP"
+                        label={t('pm_rh_field_ccp_hint')}
+                        required
+                        value={ccpNumber}
+                        onChange={setCcpNumber}
+                        width="100%"
+                        height={46}
+                        corner={14}
+                      />
+                    </div>
+                    <LabelInput
+                      field="Cle"
+                      label={t('pm_rh_field_key_hint')}
+                      required
+                      value={ccpKey}
+                      onChange={setCcpKey}
                       width="100%"
                       height={46}
                       corner={14}
                     />
                   </div>
-                  <LabelInput
-                    field="Cle"
-                    label={t('pm_rh_field_key_hint')}
-                    required
-                    value={ccpKey}
-                    onChange={setCcpKey}
-                    width="100%"
-                    height={46}
-                    corner={14}
-                  />
                 </div>
-              </div>
-              <AtriumButton type="submit" variant="primary" className="w-full">
-                Enregistrer dans le Répertoire
-              </AtriumButton>
-            </form>
+                <AtriumButton type="submit" variant="primary" className="w-full">
+                  Enregistrer dans le Répertoire
+                </AtriumButton>
+              </form>
+            </div>
           </div>
         </ScreenPod>
       )}

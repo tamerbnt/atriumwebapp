@@ -192,15 +192,15 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
       <div
         data-sq="panel"
         data-sq-border="solid"
-        className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] flex flex-col"
+        className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 shrink-0">
+        <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3 shrink-0">
           <div className="flex items-center gap-2">
             <div
               data-sq="tile"
               data-sq-border="none"
-              className="w-9 h-9 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
+              className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
             >
               <MapPin size={18} />
             </div>
@@ -214,7 +214,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
             type="button"
             aria-label={isAr ? 'إغلاق' : 'Fermer'}
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -228,8 +228,8 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
               <div
                 key={z.id}
                 data-sq="card"
-                data-sq-border="solid"
-                className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3"
+                data-sq-border="none"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-3"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <div>
@@ -252,8 +252,8 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                     </label>
                     <div
                       data-sq="ctl"
-                      data-sq-border="solid"
-                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                      data-sq-border="none"
+                      className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                     >
                       <input
                         type="number"
@@ -272,8 +272,8 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                     </label>
                     <div
                       data-sq="ctl"
-                      data-sq-border="solid"
-                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                      data-sq-border="none"
+                      className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                     >
                       <input
                         type="number"
@@ -292,8 +292,8 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                     </label>
                     <div
                       data-sq="ctl"
-                      data-sq-border="solid"
-                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                      data-sq-border="none"
+                      className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                     >
                       <input
                         type="number"
@@ -312,8 +312,8 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                     </label>
                     <div
                       data-sq="ctl"
-                      data-sq-border="solid"
-                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                      data-sq-border="none"
+                      className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                     >
                       <input
                         type="number"
@@ -332,7 +332,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800 shrink-0">
+        <div className="flex items-center justify-between pt-3 border-t border-[var(--atr-divider)] shrink-0">
           <AtriumButton variant="ghost" size="sm" onClick={handleReset} icon={<RotateCcw size={14} />}>
             {isAr ? 'إعادة ضبط افتراضي' : 'Réinitialiser'}
           </AtriumButton>

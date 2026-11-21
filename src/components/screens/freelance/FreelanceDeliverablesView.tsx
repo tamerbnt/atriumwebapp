@@ -512,11 +512,11 @@ export const FreelanceDeliverablesView: React.FC = () => {
           <div className="flex items-center gap-3">
             <div
               data-sq="tile"
-              data-sq-border="solid"
+              data-sq-border="none"
               className={`w-9 h-9 flex items-center justify-center font-semibold t-small shrink-0 ${
                 item.isCompleted
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 [--sq-stroke:rgba(16,185,129,0.22)] dark:[--sq-stroke:rgba(52,211,153,0.26)]'
-                  : 'bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white'
               }`}
             >
               {item.isCompleted ? <CheckCircle2 size={16} /> : <FileCheck size={16} />}
@@ -543,7 +543,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
         renderCell: (item) => {
           const bInfo = resolveRecordBranch(item.project, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09] truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -560,12 +560,12 @@ export const FreelanceDeliverablesView: React.FC = () => {
           <span
             className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold ${
               item.stage === 'Approved'
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
                 : item.stage === 'InProgress'
-                ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300'
                 : item.stage === 'ClientReview'
-                ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-                : 'bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75'
+                ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300'
+                : 'bg-[#EFE9E2] dark:bg-[#2B2825] text-black/70 dark:text-white/75'
             }`}
           >
             {t(STAGE_KEYS[item.stage], language)}
@@ -595,7 +595,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   {pct}%
                 </span>
               </div>
-              <div className="w-full h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+              <div className="w-full h-1.5 rounded-full bg-[#EFE9E2] dark:bg-[#2B2825] overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
                     isCreep ? 'bg-rose-500' : pct >= 100 ? 'bg-emerald-500' : 'bg-[#d4522f]'
@@ -985,12 +985,12 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
-                  data-sq-border="solid"
+                  data-sq-border="none"
                   onClick={() => {
                     const targetProj = freelanceProjects.find((p) => p.id === selectedProjectId);
                     if (targetProj) setProjectToDelete(targetProj);
                   }}
-                  className="h-10 px-3 border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 t-small font-semibold flex items-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0"
+                  className="h-10 px-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 t-small font-semibold flex items-center gap-1 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-colors cursor-pointer shrink-0"
                   title={t('common_delete', language)}
                 >
                   <Trash2 size={13} />
@@ -1011,8 +1011,8 @@ export const FreelanceDeliverablesView: React.FC = () => {
         {selectedDeliverableIds.size > 0 && (
           <div
             data-sq="card"
-            data-sq-border="solid"
-            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:rgba(191,67,31,0.18)] dark:[--sq-stroke:rgba(255,143,99,0.22)] animate-in fade-in slide-in-from-top-2"
+            data-sq-border="none"
+            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-[#2B2825] animate-in fade-in slide-in-from-top-2"
           >
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
@@ -1189,8 +1189,8 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <div
                   key={stage.id}
                   data-sq="card"
-                  data-sq-border="solid"
-                  className="bg-white/75 dark:bg-neutral-900/40 [--sq-stroke:var(--sq-stroke-pod)] p-3 min-h-[480px] flex flex-col"
+                  data-sq-border="none"
+                  className="bg-[#F3EDE7]/70 dark:bg-[#191716] p-3 min-h-[480px] flex flex-col"
                 >
                   <div className="flex items-center justify-between pb-3 mb-3 border-b border-[var(--atr-divider)]">
                     <span className="t-small font-semibold text-black dark:text-white">
@@ -1212,7 +1212,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                           <div
                             data-sq="ctl"
                             data-sq-border="solid"
-                            className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-card)] hover:bg-[#FCF9F6] dark:hover:bg-white/[0.04] transition-colors flex flex-col justify-between gap-2 group"
+                            className="p-4 bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] transition-colors flex flex-col justify-between gap-2 group"
                           >
                           <div>
                             <div className="flex items-center justify-between t-cap text-black/55 dark:text-white/55 mb-1 gap-1">
@@ -1286,7 +1286,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                                 onClick={() =>
                                   handleStartTimerForDeliverable(item.project, item.deliverable)
                                 }
-                                className="h-7 px-2 bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-[#d4522f] hover:text-white t-small font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                                className="h-7 px-2 bg-[#F5F1EC] dark:bg-[#2B2825] text-black/70 dark:text-white/75 hover:bg-[#d4522f] hover:text-white t-small font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                                 title={t('free_btn_log_time', language)}
                               >
                                 <Play size={10} />
@@ -1306,7 +1306,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                                     dueDate: item.dueDate,
                                   });
                                 }}
-                                className="h-7 w-7 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer"
+                                className="h-7 w-7 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] flex items-center justify-center transition-colors cursor-pointer"
                                 aria-label={t('free_deliv_edit', language)}
                               >
                                 <Edit2 size={12} />
@@ -1403,12 +1403,12 @@ export const FreelanceDeliverablesView: React.FC = () => {
         }
         statusClassName={
           activeInspectorItem?.stage === 'Approved'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : activeInspectorItem && activeInspectorItem.loggedHours > activeInspectorItem.estimatedHours
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
             : activeInspectorItem?.stage === 'InProgress'
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
         }
         tabs={[
           { id: 'details', label: isAr ? 'التفاصيل' : isFr ? 'Détails' : 'Details' },
@@ -1481,12 +1481,12 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         type="button"
                         data-no-liquid="true"
                         data-sq="ctl"
-                        data-sq-border="solid"
+                        data-sq-border={active ? 'solid' : 'none'}
                         onClick={() => updateDeliverableStage(item.projectId, item.id, st.id)}
                         className={`px-3 py-2 t-small font-semibold cursor-pointer transition-colors ${
                           active
                             ? 'bg-[var(--brand-fill,#C9461F)] text-white [--sq-stroke:rgba(201,70,31,0.5)]'
-                            : 'bg-[#F3EDE7] dark:bg-neutral-900 text-black/75 dark:text-white/75 hover:bg-[#EAE1D8] dark:hover:bg-white/[0.05]'
+                            : 'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/75 dark:text-white/75 hover:bg-[#EAE1D8] dark:hover:bg-[#332F2B]'
                         }`}
                       >
                         {t(STAGE_KEYS[st.id], language)}
@@ -1553,7 +1553,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
@@ -1593,8 +1593,8 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 </label>
                 <div
                   data-sq="ctl"
-                  data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900"
+                  data-sq-border="none"
+                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <textarea
                     rows={2}
@@ -1629,9 +1629,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
-                  data-sq-border="solid"
+                  data-sq-border="none"
                   onClick={() => setIsAddDeliverableModalOpen(false)}
-                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
+                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
@@ -1657,7 +1657,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
@@ -1716,8 +1716,8 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 </label>
                 <div
                   data-sq="ctl"
-                  data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900"
+                  data-sq-border="none"
+                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <textarea
                     rows={2}
@@ -1780,9 +1780,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
-                  data-sq-border="solid"
+                  data-sq-border="none"
                   onClick={() => setIsAddProjectModalOpen(false)}
-                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
+                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   {t('free_clients_cancel', language)}
                 </button>
@@ -1808,7 +1808,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div>
@@ -1844,8 +1844,8 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 </label>
                 <div
                   data-sq="ctl"
-                  data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900"
+                  data-sq-border="none"
+                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <textarea
                     rows={2}
@@ -1888,9 +1888,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
-                  data-sq-border="solid"
+                  data-sq-border="none"
                   onClick={() => setDeliverableToEdit(null)}
-                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
+                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   {t('common_cancel', language)}
                 </button>
@@ -1916,13 +1916,13 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                 <div
                   data-sq="tile"
-                  data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 [--sq-stroke:rgba(225,29,72,0.20)] dark:[--sq-stroke:rgba(251,113,133,0.28)]"
+                  data-sq-border="none"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
                 >
                   <AlertTriangle size={20} />
                 </div>
@@ -1947,9 +1947,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
-                  data-sq-border="solid"
+                  data-sq-border="none"
                   onClick={() => setDeliverableToDelete(null)}
-                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
+                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   {t('common_cancel', language)}
                 </button>
@@ -1985,13 +1985,13 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                 <div
                   data-sq="tile"
-                  data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 [--sq-stroke:rgba(225,29,72,0.20)] dark:[--sq-stroke:rgba(251,113,133,0.28)]"
+                  data-sq-border="none"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
                 >
                   <AlertTriangle size={20} />
                 </div>
@@ -2016,9 +2016,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   type="button"
                   data-no-liquid="true"
                   data-sq="ctl"
-                  data-sq-border="solid"
+                  data-sq-border="none"
                   onClick={() => setProjectToDelete(null)}
-                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-black/[0.04] dark:hover:bg-white/[0.06] cursor-pointer"
+                  className="px-4 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   {t('common_cancel', language)}
                 </button>

@@ -190,9 +190,9 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 w-full max-h-[90vh] overflow-y-auto p-6"
+          className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] overflow-y-auto p-6"
         >
-          <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
             <div className="flex items-center gap-3">
               <div
                 data-sq="tile"
@@ -223,7 +223,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800"
+            className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40"
           >
             <div className="flex items-center justify-between mb-2">
               <span className="t-small font-semibold text-black/70 dark:text-white flex items-center gap-2">
@@ -240,10 +240,10 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
                   data-sq="ctl-sm"
                   data-sq-border="solid"
                   style={productName === p.name ? ({ '--sq-stroke': '#d4522f' } as React.CSSProperties) : undefined}
-                  className={`t-small px-2.5 py-1 border transition font-medium cursor-pointer ${
+                  className={`t-small px-2.5 py-1 transition font-medium cursor-pointer ${
                     productName === p.name
-                      ? 'bg-[var(--brand-fill,#C9461F)] text-white border-[#d4522f]'
-                      : 'bg-white dark:bg-neutral-800 text-black dark:text-white border-neutral-200 dark:border-neutral-700 hover:[--sq-stroke:#d4522f]'
+                      ? 'bg-[var(--brand-fill,#C9461F)] text-white'
+                      : 'bg-white dark:bg-neutral-800 text-black dark:text-white hover:[--sq-stroke:#d4522f]'
                   }`}
                 >
                   {p.name} <span className="opacity-70 t-cap">({p.darDays}j DAR)</span>
@@ -383,7 +383,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
             onChange={(e) => setNotes(e.target.value)}
           />
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
             <AtriumButton variant="ghost" size="sm" onClick={onClose} type="button">
               {isAr ? 'إلغاء' : 'Annuler'}
             </AtriumButton>

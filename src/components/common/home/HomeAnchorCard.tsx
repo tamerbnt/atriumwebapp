@@ -20,13 +20,13 @@ const BADGE_CLASSES: Record<
   NonNullable<HomeAnchorCardProps['badgeVariant']>,
   string
 > = {
-  amber: 'bg-amber-500/20 text-amber-300 border border-amber-400/25',
-  orange: 'bg-[#FB923C]/20 text-[#FDBA74] border border-[#FB923C]/30',
-  green: 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/25',
-  success: 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/25',
-  warning: 'bg-amber-500/20 text-amber-300 border border-amber-400/25',
-  red: 'bg-rose-500/25 text-rose-300 border border-rose-400/30',
-  neutral: 'bg-[#A78BFA]/20 text-[#DDD6FE] border border-[#A78BFA]/30',
+  amber: 'bg-amber-500/20 text-amber-300',
+  orange: 'bg-[#FB923C]/20 text-[#FDBA74]',
+  green: 'bg-emerald-500/20 text-emerald-300',
+  success: 'bg-emerald-500/20 text-emerald-300',
+  warning: 'bg-amber-500/20 text-amber-300',
+  red: 'bg-rose-500/25 text-rose-300',
+  neutral: 'bg-[#A78BFA]/20 text-[#DDD6FE]',
 };
 
 export const HomeAnchorCard: React.FC<HomeAnchorCardProps> = ({
@@ -143,7 +143,7 @@ export const HomeAnchorCard: React.FC<HomeAnchorCardProps> = ({
       {cardBody}
       <span
         aria-hidden="true"
-        className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full bg-white/[0.1] border border-white/[0.16] text-white/85 group-hover/anchor:bg-[#FB923C] group-hover/anchor:text-[#151413] group-hover/anchor:border-[#FB923C] flex items-center justify-center absolute top-[var(--card-pad,20px)] end-[var(--card-pad,20px)] transition-colors duration-150"
+        className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full bg-white/[0.1] text-white/85 group-hover/anchor:bg-[#FB923C] group-hover/anchor:text-[#151413] flex items-center justify-center absolute top-[var(--card-pad,20px)] end-[var(--card-pad,20px)] transition-colors duration-150"
       >
         <ArrowUpRight
           size={16}

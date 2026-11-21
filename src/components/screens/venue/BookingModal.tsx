@@ -343,10 +343,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full max-h-[92vh] flex flex-col overflow-hidden"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] flex flex-col overflow-hidden"
         >
         {/* Header */}
-        <div className="px-6 py-5 border-b border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between shrink-0">
+        <div className="px-6 py-5 border-b border-[var(--atr-divider)] flex items-center justify-between shrink-0">
           <div>
             <h2 className="t-dialog font-semibold text-black dark:text-white">
               {bookingToEdit ? t('venue_modal_edit_title') : t('venue_modal_new_title')}
@@ -356,7 +356,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             onClick={onClose}
             data-sq="ctl"
             data-sq-border="none"
-            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -420,7 +420,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
 
           {/* Section 2: Renter & Event Details */}
-          <div className="space-y-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-800">
+          <div className="space-y-4 pt-4 border-t border-[var(--atr-divider)]">
             <h3 className="t-small font-semibold text-black/55 dark:text-white/55">
               {t('venue_modal_sec_renter')}
             </h3>
@@ -546,7 +546,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
 
           {/* Section 3: Add-on Equipment & Services */}
-          <div className="space-y-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-800">
+          <div className="space-y-4 pt-4 border-t border-[var(--atr-divider)]">
             <h3 className="t-small font-semibold text-black/55 dark:text-white/55">
               {t('venue_modal_sec_addons')}
             </h3>
@@ -557,8 +557,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <div
                     key={a.id}
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800/50 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] t-cap"
+                    data-sq-border="none"
+                    className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap"
                   >
                     <div>
                       <span className="font-medium text-black dark:text-white">{a.name}</span>
@@ -614,7 +614,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 onClick={handleAddAddon}
                 data-sq="ctl"
                 data-sq-border="none"
-                className="w-full sm:w-auto h-[42px] px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 t-small font-medium text-black dark:text-white transition-colors flex items-center justify-center gap-2 shrink-0 mt-3 sm:mt-0 cursor-pointer"
+                className="w-full sm:w-auto h-[42px] px-4 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-medium text-black dark:text-white transition-colors flex items-center justify-center gap-2 shrink-0 mt-3 sm:mt-0 cursor-pointer"
               >
                 <Plus size={14} /> {t('venue_modal_btn_add_addon')}
               </button>
@@ -622,7 +622,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
 
           {/* Section 4: Caution, Security Deposit & Financials */}
-          <div className="space-y-4 pt-4 border-t border-[#E6DED6] dark:border-neutral-800">
+          <div className="space-y-4 pt-4 border-t border-[var(--atr-divider)]">
             <h3 className="t-small font-semibold text-black/55 dark:text-white/55">
               {t('venue_modal_sec_financials')}
             </h3>
@@ -670,8 +670,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             {/* Financial Summary Card */}
             <div
               data-sq="card"
-              data-sq-border="solid"
-              className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] space-y-2 t-cap"
+              data-sq-border="none"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2 t-cap"
             >
               <div className="flex justify-between text-black/70 dark:text-white/75">
                 <span>{t('venue_modal_calc_space_base', { hours: durationHours })}</span>
@@ -687,7 +687,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </span>
                 </div>
               )}
-              <div className="flex justify-between font-semibold text-black dark:text-white pt-2 border-t border-neutral-200 dark:border-neutral-700">
+              <div className="flex justify-between font-semibold text-black dark:text-white pt-2 border-t border-[var(--atr-divider)]">
                 <span>{t('venue_modal_calc_total')}</span>
                 <span className="t-body tabular-nums">
                   {formatCurrencyAmount(totalAmount, selectedUnit?.currency)}
@@ -707,7 +707,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 type="checkbox"
                 checked={contractSigned}
                 onChange={(e) => setContractSigned(e.target.checked)}
-                className="w-4 h-4 rounded-[var(--r-check,6px)] border-neutral-300 text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
+                className="w-4 h-4 rounded-[var(--r-check,6px)] border-black/[0.16] dark:border-white/[0.18] text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
               />
               <span>{t('venue_modal_field_contract_signed')}</span>
             </label>
@@ -715,7 +715,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         </form>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between shrink-0 bg-neutral-50/50 dark:bg-neutral-800/30">
+        <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between shrink-0 bg-[#F5F1EC]/60 dark:bg-[#1D1B19]">
           <AtriumButton
             type="button"
             variant="ghost"

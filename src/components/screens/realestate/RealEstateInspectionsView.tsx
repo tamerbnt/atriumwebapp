@@ -848,7 +848,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         avatarColor="#d4522f"
         branchName={activeInspBranch?.name}
         statusLabel={selectedInspection?.generalCondition || 'Conforme'}
-        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
+        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]"
         tabs={[
           { id: 'constat', label: isAr ? 'المحضر والمفاتيح' : 'Constat & Clés' },
           { id: 'compteurs', label: isAr ? 'العدادات' : 'Compteurs' },
@@ -963,7 +963,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
         avatarColor="#d4522f"
         branchName={activeVisitBranch?.name}
         statusLabel={selectedVisit?.clientImpression || 'Interested'}
-        statusClassName="bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]"
+        statusClassName="bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]"
         tabs={[
           { id: 'visite', label: 'Bon de Visite' },
           { id: 'offre', label: 'Offre & Feedback' },
@@ -1034,7 +1034,7 @@ export const RealEstateInspectionsView: React.FC<any> = () => {
                   <InspectorKeyValue label="Horodatage" value={new Date(v.visitTimestamp).toLocaleString()} isLast />
                 </InspectorCard>
                 {v.signatureSvgData && (
-                  <div data-sq="card" data-sq-border="solid" className="mt-3 p-3 bg-white dark:bg-[#1C1B1A] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#3A3734]">
+                  <div data-sq="card" data-sq-border="none" className="mt-3 p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
                     <div className="t-small font-semibold text-black/60 dark:text-white/60 mb-2">Signature Certifiée</div>
                     <img src={v.signatureSvgData} alt="Signature acquéreur" className="h-24 mx-auto object-contain" />
                   </div>

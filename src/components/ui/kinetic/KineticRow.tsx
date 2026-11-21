@@ -70,17 +70,17 @@ export interface KineticRowProps {
 
 export const KINETIC_STATUS_PILLS: Record<KineticStatusVariant, string> = {
   blocked:
-    'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
+    'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]',
   expired:
-    'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+    'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
   warning:
-    'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+    'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
   active:
-    'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+    'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
   info:
-    'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]',
+    'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC]',
   neutral:
-    'bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85 border border-[#E6DED6] dark:border-[#3A3734]',
+    'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/80 dark:text-white/85',
 };
 
 const AVATAR_PALETTE = ['#D946EF', '#2563EB', '#d4522f', '#10B981', '#06B6D4', '#8B5CF6'];
@@ -258,8 +258,8 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
           isOpen
             ? '!bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:!bg-[#2A1D18] [--sq-stroke:var(--atr-acc,#d4522f)]'
             : isSelected
-            ? 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--atr-acc,#d4522f)]'
-            : 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-row)]'
+            ? 'bg-white dark:bg-[#22201E] [--sq-stroke:var(--atr-acc,#d4522f)]'
+            : 'bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-row)]'
         }`}
       />
 
@@ -297,7 +297,7 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
           className={`cb c-cb relative w-[var(--check,20px)] h-[var(--check,20px)] grid place-items-center p-0 cursor-pointer ${
             isSelected
               ? 'bg-[var(--atr-acc,#d4522f)] [--sq-stroke:var(--atr-acc,#d4522f)] text-white'
-              : 'bg-white dark:bg-[#262422] [--sq-stroke:rgba(23,19,15,0.16)] dark:[--sq-stroke:rgba(255,255,255,0.20)] hover:[--sq-stroke:var(--atr-acc,#d4522f)] text-transparent'
+              : 'bg-white dark:bg-[#2B2825] [--sq-stroke:rgba(23,19,15,0.12)] dark:[--sq-stroke:rgba(255,255,255,0.16)] hover:[--sq-stroke:var(--atr-acc,#d4522f)] text-transparent'
           }`}
         >
           <Check
@@ -356,7 +356,7 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
           ) : (
             <span
               title={row.categoryLabel}
-              className="pill inline-flex items-center h-[var(--pill-h,24px)] max-w-full px-[var(--pill-px,10px)] rounded-full t-small bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] border border-[#d4522f]/25 dark:border-[#52291F] truncate"
+              className="pill inline-flex items-center h-[var(--pill-h,24px)] max-w-full px-[var(--pill-px,10px)] rounded-full t-small bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2E1E19] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] truncate"
             >
               {row.categoryLabel}
             </span>
@@ -425,7 +425,7 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
         ref={rbRef}
         type="button"
         data-no-liquid="true"
-        className="rb border-0 bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2927] text-[var(--atr-ink,#000000)] dark:text-white cursor-pointer"
+        className="rb border-0 bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#2B2825] text-[var(--atr-ink,#000000)] dark:text-white cursor-pointer"
         aria-expanded={isExpanded}
         aria-label={`Aperçu rapide de ${row.title}`}
         onClick={(e) => {

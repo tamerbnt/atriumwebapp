@@ -14,15 +14,15 @@ import type { HomeDailyEvent, HomeHistoriqueTone } from './homeTypes';
 
 const STATUS_BADGE_CLASSES: Record<HomeHistoriqueTone, string> = {
   positive:
-    'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+    'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
   warning:
-    'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+    'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
   danger:
-    'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
+    'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]',
   info:
-    'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]',
+    'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC]',
   neutral:
-    'bg-[#F3EDE7] dark:bg-[#262422] text-black/80 dark:text-white/85 border border-black/[0.06] dark:border-white/[0.1]',
+    'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/80 dark:text-white/85',
 };
 
 export interface HomeKineticEventRowProps {
@@ -145,7 +145,7 @@ export const HomeKineticEventRow: React.FC<HomeKineticEventRowProps> = React.mem
         role="listitem"
         data-testid={`historique-row-${event.id}`}
         data-expanded={isExpanded ? 'true' : undefined}
-        className="group/hrow relative bg-white dark:bg-[#1A1816] border border-black/[0.06] dark:border-white/[0.08] hover:bg-[#FCF9F6] dark:hover:bg-[#221F1D] transition-colors duration-150 overflow-hidden"
+        className="group/hrow relative bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] transition-colors duration-150 overflow-hidden"
         data-sq="row"
         data-sq-border="solid"
       >
@@ -167,7 +167,7 @@ export const HomeKineticEventRow: React.FC<HomeKineticEventRowProps> = React.mem
                 <span className="t-label font-semibold text-[var(--text-1)] dark:text-white truncate">
                   {event.title}
                 </span>
-                <span className="inline-flex items-center h-[var(--pill-h,22px)] px-[var(--pill-px,8px)] rounded-full t-small bg-[var(--atr-hl,rgba(212,82,47,0.1))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] border border-[#d4522f]/20 dark:border-[#52291F] whitespace-nowrap shrink-0">
+                <span className="inline-flex items-center h-[var(--pill-h,22px)] px-[var(--pill-px,8px)] rounded-full t-small bg-[var(--atr-hl,rgba(212,82,47,0.1))] dark:bg-[#2E1E19] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)] whitespace-nowrap shrink-0">
                   {event.categoryBadge}
                 </span>
               </div>
@@ -225,10 +225,10 @@ export const HomeKineticEventRow: React.FC<HomeKineticEventRowProps> = React.mem
                       style={{
                         transitionDelay: `${staggerIdx * 28}ms`,
                       }}
-                      className={`w-[30px] h-[30px] rounded-full border flex items-center justify-center cursor-pointer transition-all duration-150 opacity-0 translate-x-2 rtl:-translate-x-2 group-hover/hrow:opacity-100 group-hover/hrow:translate-x-0 focus-visible:opacity-100 focus-visible:translate-x-0 motion-reduce:opacity-100 motion-reduce:translate-x-0 ${
+                      className={`w-[30px] h-[30px] rounded-full flex items-center justify-center cursor-pointer transition-all duration-150 opacity-0 translate-x-2 rtl:-translate-x-2 group-hover/hrow:opacity-100 group-hover/hrow:translate-x-0 focus-visible:opacity-100 focus-visible:translate-x-0 motion-reduce:opacity-100 motion-reduce:translate-x-0 ${
                         act.isDanger
-                          ? 'bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-300 hover:bg-rose-600 hover:text-white'
-                          : 'bg-[#F5EDE4] dark:bg-[#2A2521] border-[#E0D4C8] dark:border-[#3E3730] text-[var(--text-1)] dark:text-white hover:bg-[#d4522f] hover:border-[#d4522f] hover:text-white dark:hover:bg-[#FB923C] dark:hover:text-[#151413]'
+                          ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 hover:bg-rose-600 hover:text-white'
+                          : 'bg-[#F5EDE4] dark:bg-[#2B2825] text-[var(--text-1)] dark:text-white hover:bg-[#d4522f] hover:text-white dark:hover:bg-[#FB923C] dark:hover:text-[#151413]'
                       }`}
                     >
                       {act.icon}
@@ -247,7 +247,7 @@ export const HomeKineticEventRow: React.FC<HomeKineticEventRowProps> = React.mem
               }}
               aria-expanded={isExpanded}
               aria-label={event.title}
-              className="w-[32px] h-[32px] rounded-full bg-[#F3EDE7] dark:bg-[#262320] border border-black/[0.06] dark:border-white/[0.1] flex items-center justify-center text-[var(--text-1)] dark:text-white hover:bg-[#EADFD4] dark:hover:bg-white/[0.14] transition-colors cursor-pointer shrink-0"
+              className="w-[32px] h-[32px] rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] flex items-center justify-center text-[var(--text-1)] dark:text-white hover:bg-[#EADFD4] dark:hover:bg-white/[0.14] transition-colors cursor-pointer shrink-0"
             >
               <ChevronDown
                 size={15}
@@ -268,7 +268,7 @@ export const HomeKineticEventRow: React.FC<HomeKineticEventRowProps> = React.mem
                 ? { maxHeight: isExpanded ? '280px' : '0px', opacity: isExpanded ? 1 : 0 }
                 : undefined
             }
-            className="overflow-hidden border-t border-black/[0.055] dark:border-white/[0.07] bg-[#FCF9F6] dark:bg-[#141312]"
+            className="overflow-hidden border-t border-black/[0.04] dark:border-white/[0.055] bg-[#FBF8F5] dark:bg-[#1B1917]"
           >
             <div className="px-[var(--s4,16px)] py-[var(--s3,12px)] flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--s3,12px)]">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3,12px)] flex-1 min-w-0">

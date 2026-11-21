@@ -556,7 +556,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               <div
                 data-sq="tile"
                 data-sq-border="solid"
-                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-orange-100 dark:border-neutral-800 [--sq-stroke:#ffedd5] dark:[--sq-stroke:#262626]"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 [--sq-stroke:rgba(212,82,47,0.22)] dark:[--sq-stroke:rgba(255,143,99,0.22)]"
               >
                 <Pill size={16} />
               </div>
@@ -693,7 +693,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               data-sq="ctl"
               data-sq-border="solid"
               onClick={() => setIsPersonalizerOpen(true)}
-              className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black/70 dark:text-white hover:border-[#d4522f] t-small font-semibold flex items-center gap-2 transition-colors cursor-pointer"
+              className="px-4 py-2 bg-white dark:bg-neutral-800 text-black/70 dark:text-white hover:[--sq-stroke:#d4522f] t-small font-semibold flex items-center gap-2 transition-colors cursor-pointer"
             >
               <Settings size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>{isAr ? 'تخصيص الأوردونونس' : 'Studio Ordonnance'}</span>
@@ -1202,7 +1202,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       className={`printable-document mt-3 p-4 rounded-[var(--r-card,16px)] border bg-white text-black shadow-sm relative overflow-hidden t-cap font-sans ${
                         currentDoctorConfig.usePreprintedStationery
                           ? 'border-dashed border-amber-300'
-                          : 'border-neutral-200'
+                          : 'border-black/[0.12]'
                       }`}
                       style={{ minHeight: '340px' }}
                     >
@@ -1235,7 +1235,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                           </div>
                         </div>
                       )}
-                      <div className="flex justify-between items-baseline mb-4 t-cap bg-neutral-50 p-2 rounded-[var(--r-ctl-sm,10px)] border border-neutral-100">
+                      <div className="flex justify-between items-baseline mb-4 t-cap bg-neutral-50 p-2 rounded-[var(--r-ctl-sm,10px)] border border-black/[0.08]">
                         <div>
                           Patient(e):{' '}
                           <strong className="t-cap">{rx.patientName}</strong>
@@ -1247,7 +1247,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                           Ordonnance :
                         </div>
                         {rx.items.map((it, idx) => (
-                          <div key={idx} className="pl-2 border-l-2 border-neutral-200 t-cap">
+                          <div key={idx} className="pl-2 border-l-2 border-black/[0.14] t-cap">
                             <div className="font-semibold text-black">
                               - {it.drugName} ({it.dosage})
                             </div>
@@ -1257,7 +1257,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                           </div>
                         ))}
                       </div>
-                      <div className="flex justify-between items-end pt-4 border-t border-neutral-100 mt-6">
+                      <div className="flex justify-between items-end pt-4 border-t border-black/[0.10] mt-6">
                         <div className="flex items-center gap-2">
                           <QrCode size={36} className="text-black/75" />
                           <div className="t-cap tabular-nums text-black/55 leading-tight">
@@ -1293,7 +1293,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         data-sq="empty"
                         data-sq-border="dashed"
                         data-sq-stroke-w={2}
-                        className="p-5 bg-white dark:bg-neutral-800 border-2 border-dashed border-[#d4522f]/40 [--sq-stroke:rgba(212,82,47,0.4)] flex flex-col items-center justify-center space-y-2 text-center mb-3"
+                        className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:rgba(212,82,47,0.4)] flex flex-col items-center justify-center space-y-2 text-center mb-3"
                       >
                         <QrCode size={72} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                         <div>
@@ -1375,9 +1375,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[90vh] overflow-hidden"
+              className="w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
+              <div className="p-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
                 <div className="flex items-center gap-2">
                   <div
                     data-sq="tile"
@@ -1413,7 +1413,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     <div
                       data-sq="ctl"
                       data-sq-border="solid"
-                      className="border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                      className="bg-neutral-50 dark:bg-neutral-800"
                     >
                       <select
                         value={compDoctorId}
@@ -1435,7 +1435,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     <div
                       data-sq="ctl"
                       data-sq-border="solid"
-                      className="border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                      className="bg-neutral-50 dark:bg-neutral-800"
                     >
                       <select
                         value={compPatientId}
@@ -1459,7 +1459,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 <div
                   data-sq="card"
                   data-sq-border="solid"
-                  className="p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between"
+                  className="p-3 bg-neutral-50 dark:bg-neutral-800 flex items-center justify-between"
                 >
                   <div className="space-y-0.5">
                     <span className="t-small text-black/55 dark:text-white/55 font-semibold">
@@ -1491,7 +1491,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   data-sq-stroke-w={2}
-                  className="p-4 bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-500/80 [--sq-stroke:rgba(244,63,94,0.8)] text-rose-800 dark:text-rose-300 space-y-2"
+                  className="p-4 bg-rose-50 dark:bg-rose-950/40 [--sq-stroke:rgba(244,63,94,0.8)] text-rose-800 dark:text-rose-300 space-y-2"
                 >
                   <div className="flex items-center gap-2 font-semibold t-small">
                     <ShieldAlert size={16} className="text-rose-600 animate-pulse" />
@@ -1554,7 +1554,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     key={idx}
                     data-sq="card"
                     data-sq-border="solid"
-                    className="p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2"
+                    className="p-3 bg-neutral-50 dark:bg-neutral-800 space-y-2"
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-black/55 dark:text-white/55 t-small w-4">
@@ -1563,7 +1563,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       <div
                         data-sq="ctl-sm"
                         data-sq-border="solid"
-                        className="flex-1 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900"
+                        className="flex-1 bg-white dark:bg-neutral-900"
                       >
                         <input
                           type="text"
@@ -1596,7 +1596,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         <div
                           data-sq="ctl-sm"
                           data-sq-border="solid"
-                          className="border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900"
+                          className="bg-white dark:bg-neutral-900"
                         >
                           <input
                             type="text"
@@ -1617,7 +1617,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         <div
                           data-sq="ctl-sm"
                           data-sq-border="solid"
-                          className="border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900"
+                          className="bg-white dark:bg-neutral-900"
                         >
                           <input
                             type="text"
@@ -1638,7 +1638,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         <div
                           data-sq="ctl-sm"
                           data-sq-border="solid"
-                          className="border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900"
+                          className="bg-white dark:bg-neutral-900"
                         >
                           <input
                             type="number"
@@ -1667,7 +1667,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
+                  className="bg-neutral-50 dark:bg-neutral-800"
                 >
                   <textarea
                     value={compNotes}
@@ -1680,7 +1680,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               </div>
             </div>
 
-            <div className="p-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
+            <div className="p-4 border-t border-[var(--atr-divider)] flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
               <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                 Code QR sécurisé généré automatiquement
               </span>
@@ -1691,7 +1691,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   data-sq="ctl-sm"
                   data-sq-border="solid"
                   onClick={() => setIsComposerOpen(false)}
-                  className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold cursor-pointer"
+                  className="px-3 py-2 text-black/70 dark:text-white/75 t-small font-semibold cursor-pointer"
                 >
                   Annuler
                 </button>

@@ -109,10 +109,10 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
       <div
         data-sq="panel"
         data-sq-border="solid"
-        className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] flex flex-col"
+        className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 shrink-0">
+        <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3 shrink-0">
           <div className="flex items-center gap-2">
             <div
               data-sq="tile"
@@ -134,7 +134,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             type="button"
             aria-label={isAr ? 'إغلاق' : 'Fermer'}
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -146,8 +146,8 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div
               data-sq="card"
-              data-sq-border="solid"
-              className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60"
+              data-sq-border="none"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
             >
               <span className="t-small font-medium text-black/55 dark:text-white/55 block">
                 {isAr ? 'المبلغ النظري المتوقع' : 'Montant Théorique Attendu'}
@@ -159,8 +159,8 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
 
             <div
               data-sq="card"
-              data-sq-border="solid"
-              className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60"
+              data-sq-border="none"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
             >
               <span className="t-small font-medium text-black/55 dark:text-white/55 block">
                 {isAr ? 'المبلغ الفعلي المعدود' : 'Total Physique Compté'}
@@ -172,13 +172,13 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
 
             <div
               data-sq="card"
-              data-sq-border="solid"
-              className={`p-4 border ${
+              data-sq-border="none"
+              className={`p-4 ${
                 balance.status === 'Balanced'
-                  ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-700 dark:text-emerald-300'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300'
                   : balance.status === 'Shortage'
-                  ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 [--sq-stroke:#fde68a] dark:[--sq-stroke:#92400e] text-amber-700 dark:text-amber-300'
-                  : 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 [--sq-stroke:#bfdbfe] dark:[--sq-stroke:#1e40af] text-blue-700 dark:text-blue-300'
+                  ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300'
+                  : 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300'
               }`}
             >
               <span className="t-small font-medium block">
@@ -193,8 +193,8 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
           {/* Banknote Denominations Counter */}
           <div
             data-sq="card"
-            data-sq-border="solid"
-            className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3"
+            data-sq-border="none"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-3"
           >
             <div className="flex items-center justify-between">
               <h4 className="font-semibold t-small text-black dark:text-white">
@@ -217,8 +217,8 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                 <div className="flex items-center gap-2">
                   <div
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                    data-sq-border="none"
+                    className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                   >
                     <input
                       type="number"
@@ -241,8 +241,8 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                 <div className="flex items-center gap-2">
                   <div
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                    data-sq-border="none"
+                    className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                   >
                     <input
                       type="number"
@@ -265,8 +265,8 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                 <div className="flex items-center gap-2">
                   <div
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                    data-sq-border="none"
+                    className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                   >
                     <input
                       type="number"
@@ -289,8 +289,8 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                 <div className="flex items-center gap-2">
                   <div
                     data-sq="ctl"
-                    data-sq-border="solid"
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                    data-sq-border="none"
+                    className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                   >
                     <input
                       type="number"
@@ -312,8 +312,8 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
                 </label>
                 <div
                   data-sq="ctl"
-                  data-sq-border="solid"
-                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                  data-sq-border="none"
+                  className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <input
                     type="number"
@@ -330,8 +330,8 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
           {/* Signature & Confirmation Interlock */}
           <div
             data-sq="card"
-            data-sq-border="solid"
-            className="p-4 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2"
+            data-sq-border="none"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
           >
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -354,7 +354,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800 shrink-0">
+          <div className="flex items-center justify-between pt-3 border-t border-[var(--atr-divider)] shrink-0">
             <AtriumButton
               variant="outline"
               size="sm"

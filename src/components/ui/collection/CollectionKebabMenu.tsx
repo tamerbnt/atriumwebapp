@@ -66,7 +66,7 @@ export const CollectionKebabMenu: React.FC<CollectionKebabMenuProps> = ({
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="relative p-[var(--s2,8px)] bg-white dark:bg-[#18181B] [--sq-stroke:var(--sq-stroke-pop)] text-[var(--text-1)] t-label"
+        className="relative p-[var(--s2,8px)] bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] text-[var(--text-1)] t-label"
       >
         <div className="flex flex-col gap-[var(--s1,4px)]">
           {items.map((item, idx) => (
@@ -87,7 +87,7 @@ export const CollectionKebabMenu: React.FC<CollectionKebabMenuProps> = ({
                 className={`relative w-full h-[var(--btn-sm-h,32px)] flex items-center gap-[var(--s2,8px)] px-[var(--s3,12px)] text-left transition-colors cursor-pointer ${
                   item.isSpecialDelete
                     ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10'
-                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/70 text-[var(--text-1)]'
+                    : 'hover:bg-[#F5F1EC] dark:hover:bg-[#2B2825] text-[var(--text-1)]'
                 }`}
               >
                 <span

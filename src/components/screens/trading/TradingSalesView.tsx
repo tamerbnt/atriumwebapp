@@ -43,11 +43,11 @@ import {
 } from '../../ui/kinetic';
 
 const STATUS_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const STATUS_PILL_WARN =
-  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
 const STATUS_PILL_INFO =
-  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
 
 type TabKey = 'all' | 'devis' | 'commande' | 'bl' | 'facture' | 'avoir';
 type StatusFilterKey = 'all' | 'Draft' | 'Validated' | 'Delivered' | 'Paid';
@@ -398,7 +398,7 @@ export const TradingSalesView: React.FC = () => {
                   ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
                   : isValidated
                   ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
-                  : 'bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75'
+                  : 'bg-[#EFE9E2] text-black/70 dark:bg-[#2B2825] dark:text-white/75'
               }`}
             >
               {localizeStatus(doc.status, language)}
@@ -422,7 +422,7 @@ export const TradingSalesView: React.FC = () => {
               title={t('action_print', 'Imprimer')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
             >
               <Printer size={14} />
             </button>
@@ -436,7 +436,7 @@ export const TradingSalesView: React.FC = () => {
               title={t('action_edit', 'Modifier')}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="p-2 text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
             >
               <Edit size={14} />
             </button>

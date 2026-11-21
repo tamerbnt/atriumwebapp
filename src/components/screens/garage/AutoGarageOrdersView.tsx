@@ -250,21 +250,21 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
       const label = getStatusLabel(status);
       switch (status) {
         case 'Intake':
-          return <span className="t-small font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full border border-blue-200 dark:border-blue-800">{label}</span>;
+          return <span className="t-small font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-full">{label}</span>;
         case 'Diagnostic':
-          return <span className="t-small font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800">{label}</span>;
+          return <span className="t-small font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full">{label}</span>;
         case 'WaitingApproval':
-          return <span className="t-small font-semibold text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-1 rounded-full border border-purple-200 dark:border-purple-800">{label}</span>;
+          return <span className="t-small font-semibold text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-1 rounded-full">{label}</span>;
         case 'WaitingParts':
-          return <span className="t-small font-semibold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 rounded-full border border-rose-200 dark:border-rose-800">{label}</span>;
+          return <span className="t-small font-semibold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 rounded-full">{label}</span>;
         case 'InRepair':
-          return <span className="t-small font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">{label}</span>;
+          return <span className="t-small font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-full">{label}</span>;
         case 'Testing':
-          return <span className="t-small font-semibold text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 px-2.5 py-1 rounded-full border border-cyan-200 dark:border-cyan-800">{label}</span>;
+          return <span className="t-small font-semibold text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 px-2.5 py-1 rounded-full">{label}</span>;
         case 'ReadyForPickup':
-          return <span className="t-small font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">{label}</span>;
+          return <span className="t-small font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full">{label}</span>;
         case 'Delivered':
-          return <span className="t-small font-semibold text-black/70 dark:text-white/75 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-full">{label}</span>;
+          return <span className="t-small font-semibold text-black/70 dark:text-white/75 bg-[#EFE9E2] dark:bg-[#2B2825] px-2.5 py-1 rounded-full">{label}</span>;
         default:
           return null;
       }
@@ -748,17 +748,17 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                   disabled={!bayOrder}
                   data-no-liquid="true"
                   data-sq="card"
-                  data-sq-border="solid"
+                  data-sq-border={bay.isOccupied ? 'solid' : 'none'}
                   onClick={(e) => {
                     if (bayOrder) {
                       setDrawerOpenerEl(e.currentTarget);
                       setInspectedOrder(bayOrder);
                     }
                   }}
-                  className={`w-full h-full p-3 border text-left rtl:text-right transition-all t-cap ${
+                  className={`w-full h-full p-3 text-left rtl:text-right transition-all t-cap ${
                     bay.isOccupied
-                      ? 'bg-amber-50/70 dark:bg-amber-950/25 border-amber-300 dark:border-amber-800/60 cursor-pointer hover:border-[#d4522f]'
-                      : 'bg-white dark:bg-neutral-900 border-[#E6DED6] dark:border-neutral-800 opacity-85 cursor-default'
+                      ? 'bg-amber-50/70 dark:bg-amber-950/25 [--sq-stroke:#fcd34d] dark:[--sq-stroke:rgba(217,119,6,0.4)] cursor-pointer hover:[--sq-stroke:#d4522f]'
+                      : 'bg-white dark:bg-[#22201E] opacity-85 cursor-default'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -832,19 +832,19 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
               const colOrders = sortedOrders.filter((o) => o.status === col.id);
               const colLabel = isAr ? col.ar : isEn ? col.en : col.fr;
               return (
-                <div key={col.id} className="sq-elev-card">
                 <div
+                  key={col.id}
                   data-sq="card"
-                  data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900 p-3 border border-[#E6DED6] dark:border-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col space-y-3 min-h-[380px]"
+                  data-sq-border="none"
+                  className="bg-[#EFE9E2]/60 dark:bg-[#191716] p-3 flex flex-col space-y-3 min-h-[380px]"
                 >
                   <div className={`flex items-center justify-between pb-2 border-b-2 ${col.color}`}>
                     <span className="font-semibold t-small text-black dark:text-white">{colLabel}</span>
-                    <span className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 t-small tabular-nums flex items-center justify-center font-semibold">
+                    <span className="w-5 h-5 rounded-full bg-white/80 dark:bg-[#2B2825] text-black/70 dark:text-white/75 t-small tabular-nums flex items-center justify-center font-semibold">
                       {colOrders.length}
                     </span>
                   </div>
-                  <div className="space-y-2 flex-1 overflow-y-auto max-h-[550px] pr-1">
+                  <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[550px] pr-1">
                     {colOrders.length === 0 ? (
                       <KineticEmptyStateMotion motionKey={`garage-col-${col.id}`}>
                         <EmptyState
@@ -855,14 +855,14 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                       </KineticEmptyStateMotion>
                     ) : (
                       colOrders.map((order) => (
+                        <div key={order.id} className="sq-elev-card">
                         <div
-                          key={order.id}
                           data-sq="ctl"
-                          data-sq-border="solid"
-                          className={`p-3 border transition-all space-y-2 ${
+                          data-sq-border={activeOrder?.id === order.id ? 'solid' : 'solid'}
+                          className={`p-3 transition-all space-y-2 ${
                             activeOrder?.id === order.id
-                              ? 'bg-[#FDF4F0] dark:bg-neutral-800 border-[#d4522f] [--sq-stroke:#d4522f]'
-                              : 'bg-[#F3EDE7] dark:bg-[#141312] border-neutral-200/60 dark:border-neutral-700/60 [--sq-stroke:rgba(229,229,229,0.6)] dark:[--sq-stroke:rgba(64,64,64,0.6)] hover:border-neutral-400 hover:[--sq-stroke:#a3a3a3]'
+                              ? 'bg-[#FDF4F0] dark:bg-[#2B2825] [--sq-stroke:#d4522f]'
+                              : 'bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] hover:[--sq-stroke:rgba(212,82,47,0.45)]'
                           }`}
                         >
                           <button
@@ -887,7 +887,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                                 {order.vehicleModel}
                               </span>
                             </div>
-                            <div className="t-cap text-black/55 dark:text-white/55 flex items-center justify-between pt-1 border-t border-neutral-200/40 dark:border-neutral-700/40">
+                            <div className="t-cap text-black/55 dark:text-white/55 flex items-center justify-between pt-1 border-t border-[var(--atr-divider)]">
                               <span className="truncate">{order.technicianName}</span>
                               {!isMechanicRole && (
                                 <span className="tabular-nums font-semibold text-black/70 dark:text-white/75 shrink-0">
@@ -900,18 +900,18 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                             type="button"
                             data-no-liquid="true"
                             data-sq="ctl-sm"
-                            data-sq-border="solid"
+                            data-sq-border="none"
                             onClick={() => handleNextStatus(order)}
-                            className="w-full py-2 bg-white dark:bg-neutral-700 hover:bg-[#d4522f] hover:text-white text-black/75 dark:text-white t-small font-semibold flex items-center justify-center gap-1 border border-neutral-200 dark:border-neutral-600 transition-colors cursor-pointer"
+                            className="w-full py-2 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#d4522f] hover:text-white text-black/75 dark:text-white t-small font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
                           >
                             <span>{isAr ? 'تقديم المرحلة' : 'Avancer étape'}</span>
                             <ArrowRight size={10} />
                           </button>
                         </div>
+                        </div>
                       ))
                     )}
                   </div>
-                </div>
                 </div>
               );
             })}
@@ -1053,10 +1053,10 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
         statusLabel={activeOrder ? getStatusLabel(activeOrder.status) : ''}
         statusClassName={
           activeOrder?.status === 'ReadyForPickup' || activeOrder?.status === 'Delivered'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : activeOrder?.status === 'WaitingParts'
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'ordre', label: isAr ? 'تفاصيل الأمر' : 'Détails OR' },
@@ -1142,8 +1142,8 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                       <label
                         key={item.id}
                         data-sq="ctl"
-                        data-sq-border="solid"
-                        className="flex items-center gap-2 p-3 bg-[#F3EDE7] dark:bg-[#1E1C1A] border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] cursor-pointer t-cap"
+                        data-sq-border="none"
+                        className="flex items-center gap-2 p-3 bg-[#F3EDE7] dark:bg-[#1D1B19] cursor-pointer t-cap"
                       >
                         <input
                           type="checkbox"
@@ -1260,9 +1260,9 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
           <div
             data-sq="panel"
             data-sq-border="solid"
-            className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4"
+            className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
           >
-            <div className="flex items-center justify-between border-b pb-3 border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between border-b pb-3 border-[var(--atr-divider)]">
               <h3 className="font-semibold t-label text-black dark:text-white flex items-center gap-2">
                 <Boxes size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>{isAr ? 'صرف قطعة غيار لأمر التصليح' : 'Sortie Pièce Magasin (Réquisition)'}</span>
@@ -1271,7 +1271,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 type="button"
                 onClick={() => setIsRequisitionModalOpen(false)}
                 aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -1283,13 +1283,13 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 </label>
                 <div
                   data-sq="ctl"
-                  data-sq-border="solid"
-                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+                  data-sq-border="none"
+                  className="w-full bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <select
                     value={selectedPartId}
                     onChange={(e) => setSelectedPartId(e.target.value)}
-                    className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white"
+                    className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white focus:outline-none"
                     required
                   >
                     <option value="">-- Choisir une pièce disponible --</option>
@@ -1307,20 +1307,20 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                 </label>
                 <div
                   data-sq="ctl"
-                  data-sq-border="solid"
-                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+                  data-sq-border="none"
+                  className="w-full bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <input
                     type="number"
                     min="1"
                     value={selectedPartQty}
                     onChange={(e) => setSelectedPartQty(e.target.value)}
-                    className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white tabular-nums"
+                    className="lbi-field w-full h-full bg-transparent border-0 t-cap p-3 text-black dark:text-white tabular-nums focus:outline-none"
                     required
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
                 <AtriumButton variant="secondary" onClick={() => setIsRequisitionModalOpen(false)}>
                   {isAr ? 'إلغاء' : 'Annuler'}
                 </AtriumButton>

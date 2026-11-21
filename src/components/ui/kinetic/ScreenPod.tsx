@@ -146,7 +146,7 @@ export const ScreenPod: React.FC<ScreenPodProps> = React.memo(
           <div
             data-sq="panel"
             data-sq-border="solid"
-            className={`relative bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] ${
+            className={`relative bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)] ${
               isExpandedActive ? 'flex-1 min-h-0' : ''
             } ${className}`}
           >

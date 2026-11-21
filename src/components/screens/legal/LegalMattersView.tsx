@@ -250,8 +250,8 @@ export const LegalMattersView: React.FC<any> = () => {
           <div className="flex items-center gap-3 min-w-0 pr-2">
             <div
               data-sq="tile"
-              data-sq-border="solid"
-              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+              data-sq-border="none"
+              className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0"
             >
               <BookOpen size={18} />
             </div>
@@ -357,8 +357,8 @@ export const LegalMattersView: React.FC<any> = () => {
           <div className="flex items-center gap-3 min-w-0 pr-2">
             <div
               data-sq="tile"
-              data-sq-border="solid"
-              className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+              data-sq-border="none"
+              className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0"
             >
               <Gavel size={18} />
             </div>
@@ -1266,8 +1266,8 @@ export const LegalMattersView: React.FC<any> = () => {
           }
           statusClassName={
             activeDeed?.status === 'publie_conservation'
-              ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
-              : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+              ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+              : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
           }
           tabs={[
             { id: 'decompte', label: isAr ? 'التعريفة 08-243' : 'Décompte 08-243' },
@@ -1414,10 +1414,10 @@ export const LegalMattersView: React.FC<any> = () => {
           }
           statusClassName={
             activeMatter?.status === 'Active'
-              ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+              ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
               : activeMatter?.status === 'PendingHearing'
-              ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-              : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+              ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+              : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
           }
           tabs={[
             { id: 'fiche', label: isAr ? 'الملف' : 'Dossier' },

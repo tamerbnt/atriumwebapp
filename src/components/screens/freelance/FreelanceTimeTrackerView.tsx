@@ -604,7 +604,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         renderCell: (entry) => {
           const bInfo = resolveRecordBranch(entry, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09] truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -662,7 +662,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         renderCell: (entry) => {
           if (entry.isInvoiced) {
             return (
-              <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+              <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 {t('free_kanban_invoiced', language)}
               </span>
@@ -670,14 +670,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
           }
           if (entry.isBillable) {
             return (
-              <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+              <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 {t('free_time_unbilled_badge', language)}
               </span>
             );
           }
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/55 dark:text-white/55">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold bg-[#EFE9E2] dark:bg-[#2B2825] text-black/55 dark:text-white/55">
               {t('free_time_non_billable', language)}
             </span>
           );
@@ -846,7 +846,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-6 sm:p-8 bg-neutral-900 dark:bg-black text-white [--sq-stroke:var(--sq-stroke-obsidian)] relative overflow-hidden"
+            className="p-6 sm:p-8 bg-[#191716] dark:bg-[#131211] text-white [--sq-stroke:var(--sq-stroke-obsidian)] relative overflow-hidden"
           >
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#d4522f]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
@@ -945,7 +945,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   data-sq="ctl"
                   data-sq-border="none"
                   onClick={resetTimer}
-                  className="h-12 w-12 bg-neutral-800 text-white/75 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                  className="h-12 w-12 bg-[#2B2825] hover:bg-[#332F2B] text-white/75 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
                   title={t('free_time_discard_tt', language)}
                   aria-label={t('free_time_discard_tt', language)}
                 >
@@ -1118,7 +1118,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <div
               data-sq="card"
               data-sq-border="none"
-              className="flex items-center justify-between p-3 px-4 bg-neutral-900 text-white"
+              className="flex items-center justify-between p-3 px-4 bg-[#191716] text-white"
             >
               <div className="flex items-center gap-3 t-small font-semibold">
                 <span className="px-2 py-1 rounded-full bg-[var(--brand-fill,#C9461F)] text-white font-semibold t-small">
@@ -1264,10 +1264,10 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         }
         statusClassName={
           activeLog?.isInvoiced
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : activeLog?.isBillable
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
         }
         tabs={[
           { id: 'session', label: isAr ? 'الجلسة' : isFr ? 'Session' : 'Session' },
@@ -1413,7 +1413,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
@@ -1564,7 +1564,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div>
@@ -1674,13 +1674,13 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                 <div
                   data-sq="tile"
-                  data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 [--sq-stroke:rgba(225,29,72,0.20)] dark:[--sq-stroke:rgba(251,113,133,0.28)]"
+                  data-sq-border="none"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
                 >
                   <AlertTriangle size={20} />
                 </div>

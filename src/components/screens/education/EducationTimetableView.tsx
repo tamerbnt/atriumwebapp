@@ -501,9 +501,9 @@ export const EducationTimetableView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="bg-white dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-700/80 p-4 space-y-3 h-full"
+                className="bg-white dark:bg-neutral-850 p-4 space-y-3 h-full"
               >
-              <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-between pb-2 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-[#d4522f]" />
                   <span className="tabular-nums t-small font-semibold text-black dark:text-white">{dateStr}</span>
@@ -526,10 +526,10 @@ export const EducationTimetableView: React.FC = () => {
                         setDrawerOpenerEl(e.currentTarget);
                         setSelectedSession(s);
                       }}
-                      className={`w-full text-left rtl:text-right p-3 border transition-all cursor-pointer ${
+                      className={`w-full text-left rtl:text-right p-3 transition-all cursor-pointer ${
                         isSelected
-                          ? 'border-[#d4522f] bg-[#FCEEE8]/40 dark:bg-neutral-800'
-                          : 'border-neutral-200/70 dark:border-neutral-700/60 hover:border-[#d4522f]/60 bg-neutral-50/50 dark:bg-neutral-800/40'
+                          ? '[--sq-stroke:#d4522f] bg-[#FCEEE8]/40 dark:bg-neutral-800'
+                          : 'hover:[--sq-stroke:rgba(212,82,47,0.6)] bg-neutral-50/50 dark:bg-neutral-800/40'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-1 mb-2">
@@ -549,7 +549,7 @@ export const EducationTimetableView: React.FC = () => {
                           {s.topic}
                         </div>
                       )}
-                      <div className="mt-2 pt-2 border-t border-neutral-200/50 dark:border-neutral-700/50 flex items-center justify-between t-cap text-black/55 dark:text-white/55">
+                      <div className="mt-2 pt-2 border-t border-[var(--atr-divider)] flex items-center justify-between t-cap text-black/55 dark:text-white/55">
                         <span className="flex items-center gap-1 truncate max-w-[110px]">
                           <MapPin size={10} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                           {s.classroomName || 'Salle'}
@@ -946,9 +946,9 @@ export const EducationTimetableView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 w-full space-y-5"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-2">
                   <CalendarIcon size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   <h3 className="font-semibold t-card text-black dark:text-white">{t('edu_btn_add_session')}</h3>

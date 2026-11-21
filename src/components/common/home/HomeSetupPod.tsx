@@ -54,13 +54,13 @@ export const HomeSetupPod: React.FC<HomeSetupPodProps> = ({
         data-sq="panel"
         data-sq-border="solid"
         data-testid="home-setup-banner-complete"
-        className={`relative bg-[#EFF7F1] dark:bg-[#121D16] border border-emerald-700/15 dark:border-emerald-400/20 [--sq-stroke:rgba(16,122,69,0.16)] dark:[--sq-stroke:rgba(74,222,128,0.2)] px-[var(--s4,16px)] py-[var(--s3,12px)] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)] ${className}`}
+        className={`relative bg-[#EFF7F1] dark:bg-[#19231D] px-[var(--s4,16px)] py-[var(--s3,12px)] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)] ${className}`}
       >
         <div className="flex items-center gap-[var(--s3,12px)] min-w-0">
           <div
             data-sq="ctl-sm"
-            data-sq-border="solid"
-            className="w-[34px] h-[34px] bg-[#DDF5E8] dark:bg-[#1A3826] border border-emerald-700/15 dark:border-emerald-400/20 [--sq-stroke:rgba(16,122,69,0.18)] dark:[--sq-stroke:rgba(74,222,128,0.22)] flex items-center justify-center text-[#0B7A45] dark:text-[#4ADE80] shrink-0"
+            data-sq-border="none"
+            className="w-[34px] h-[34px] bg-[#DDF5E8] dark:bg-[#1A3826] flex items-center justify-center text-[#0B7A45] dark:text-[#4ADE80] shrink-0"
           >
             <CheckCircle2 size={18} />
           </div>
@@ -104,7 +104,7 @@ export const HomeSetupPod: React.FC<HomeSetupPodProps> = ({
       subtitle={strings.setupPodSubtitle}
       icon={<Sparkles size={17} />}
       badge={
-        <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold tabular-nums bg-[#FCEEE9] dark:bg-[#2B1B17] text-[#B83B1B] dark:text-[#FB923C] border border-[#F3D5CA] dark:border-[#492A20]">
+        <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold tabular-nums bg-[#FCEEE9] dark:bg-[#2E1E19] text-[#B83B1B] dark:text-[#FB923C]">
           {progress.completedCount}/{progress.totalCount} ({progress.percent}%)
         </span>
       }
@@ -119,7 +119,7 @@ export const HomeSetupPod: React.FC<HomeSetupPodProps> = ({
           {strings.setupEditInSettings}
         </AtriumButton>
       }
-      className={`!bg-[#F7F2EC] dark:!bg-[#161311] ${className}`}
+      className={`!bg-[#F3EDE7] dark:!bg-[#191716] ${className}`}
     >
       <div data-testid="home-row-setup" className="flex flex-col gap-[var(--s3,12px)] min-w-0">
         {/* Linear Setup Completion Bar */}
@@ -146,10 +146,10 @@ export const HomeSetupPod: React.FC<HomeSetupPodProps> = ({
                 }
                 openSettingsTabAction(step.targetTab, step.targetSection ?? null);
               }}
-              className={`group/step relative sq-elev-card sq-elev-card-hover text-start p-[var(--s3,14px)] border flex flex-col justify-between gap-[var(--s2,8px)] transition-colors duration-150 cursor-pointer min-w-0 ${
+              className={`group/step relative sq-elev-card sq-elev-card-hover text-start p-[var(--s3,14px)] flex flex-col justify-between gap-[var(--s2,8px)] transition-colors duration-150 cursor-pointer min-w-0 ${
                 step.completed
-                  ? 'bg-[#FBFDFB] dark:bg-[#141D17] border-emerald-700/15 dark:border-emerald-400/20 [--sq-stroke:rgba(16,122,69,0.16)] dark:[--sq-stroke:rgba(74,222,128,0.2)]'
-                  : 'bg-white dark:bg-[#1C1917] border-black/[0.06] dark:border-white/[0.09] hover:bg-[#FCF9F6] dark:hover:bg-[#231F1C]'
+                  ? 'bg-[#FBFDFB] dark:bg-[#1D2520] hover:bg-[#F5FAF7] dark:hover:bg-[#222B25]'
+                  : 'bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523]'
               }`}
             >
               <div className="flex flex-col gap-[var(--s1,6px)]">

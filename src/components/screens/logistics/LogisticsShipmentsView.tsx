@@ -484,8 +484,8 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
             <div className="flex items-center gap-3 min-w-0 pr-2">
               <div
                 data-sq="tile"
-                data-sq-border="solid"
-                className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+                data-sq-border="none"
+                className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0"
               >
                 <Package size={18} />
               </div>
@@ -561,12 +561,12 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
           const isOut = s.status === 'OutForDelivery';
           return (
             <span
-              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold border ${
+              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold ${
                 isDelivered
-                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200/60'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
                   : isOut
-                  ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200/60'
-                  : 'bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 border-neutral-200/60'
+                  ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
+                  : 'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75'
               }`}
             >
               <span
@@ -844,10 +844,10 @@ export const LogisticsShipmentsView: React.FC<any> = () => {
         }
         statusClassName={
           activeShipment?.status === 'Delivered'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : activeShipment?.status === 'OutForDelivery'
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
         }
         tabs={[
           { id: 'fiche', label: isAr ? 'بيانات الطرد' : 'Bordereau' },

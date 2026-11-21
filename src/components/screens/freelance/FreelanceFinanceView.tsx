@@ -398,7 +398,7 @@ export const FreelanceFinanceView: React.FC = () => {
               <div
                 data-sq="ctl-sm"
                 data-sq-border="none"
-                className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 font-semibold t-small shrink-0"
+                className="w-8 h-8 bg-[#F5F1EC] dark:bg-[#2B2825] flex items-center justify-center text-black/70 dark:text-white/75 font-semibold t-small shrink-0"
               >
                 {exp.vendor.charAt(0).toUpperCase()}
               </div>
@@ -424,7 +424,7 @@ export const FreelanceFinanceView: React.FC = () => {
         renderCell: (exp) => {
           const bInfo = resolveRecordBranch(exp, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09] truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -438,7 +438,7 @@ export const FreelanceFinanceView: React.FC = () => {
         minWidth: '120px',
         sortable: true,
         renderCell: (exp) => (
-          <span className="inline-block px-2.5 py-1 rounded-full t-small font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
+          <span className="inline-block px-2.5 py-1 rounded-full t-small font-semibold bg-[#EFE9E2] dark:bg-[#2B2825] text-black/70 dark:text-white/75">
             {exp.category}
           </span>
         ),
@@ -721,11 +721,12 @@ export const FreelanceFinanceView: React.FC = () => {
             </div>
           </div>
 
-          <div
-            data-sq="card"
-            data-sq-border="solid"
-            className="bg-white dark:bg-neutral-800 p-4 lg:p-5 space-y-3"
-          >
+          <div className="sq-elev-card">
+            <div
+              data-sq="card"
+              data-sq-border="solid"
+              className="bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] p-4 lg:p-5 space-y-3"
+            >
             <div className="flex items-center justify-between t-cap text-black/70 dark:text-white/75">
               <span className="font-medium">
                 {isAr
@@ -746,7 +747,7 @@ export const FreelanceFinanceView: React.FC = () => {
               value={taxRate}
               onChange={(e) => setTaxRate(Number(e.target.value))}
               aria-label="Tax Rate Slider"
-              className="w-full accent-[#d4522f] h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full cursor-pointer"
+              className="w-full accent-[#d4522f] h-2 bg-[#EFE9E2] dark:bg-[#2B2825] rounded-full cursor-pointer"
             />
             <div className="flex justify-between t-cap text-black/55 dark:text-white/55 tabular-nums">
               <span>0% ({t('free_fin_tax_exempt_label', language)})</span>
@@ -786,6 +787,7 @@ export const FreelanceFinanceView: React.FC = () => {
                 </span>
               </div>
             </div>
+            </div>
           </div>
         </div>
       </ScreenPod>
@@ -823,7 +825,7 @@ export const FreelanceFinanceView: React.FC = () => {
             <div
               data-sq="card"
               data-sq-border="none"
-              className="flex items-center justify-between p-3 px-4 bg-neutral-900 text-white"
+              className="flex items-center justify-between p-3 px-4 bg-[#191716] text-white"
             >
             <div className="flex items-center gap-3 t-small font-semibold">
               <span className="px-2 py-1 rounded-full bg-[var(--brand-fill,#C9461F)] text-white font-semibold t-small">
@@ -961,8 +963,8 @@ export const FreelanceFinanceView: React.FC = () => {
         }
         statusClassName={
           activeExpense?.isTaxDeductible
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'overview', label: isAr ? 'نظرة عامة' : isFr ? 'Aperçu' : 'Overview' },
@@ -1123,7 +1125,7 @@ export const FreelanceFinanceView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">

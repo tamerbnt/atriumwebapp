@@ -116,7 +116,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
         header: isAr ? 'الطريقة' : isEn ? 'Method' : 'Méthode',
         sortable: true,
         renderCell: (log) => (
-          <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-[#F3EDE7] dark:bg-[#262422] text-[var(--text-1)] dark:text-white/85 t-small font-semibold">
+          <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] text-[var(--text-1)] dark:text-white/85 t-small font-semibold">
             {log.method}
           </span>
         ),
@@ -247,8 +247,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
       <div className="sq-elev-card">
         <div
           data-sq="card"
-          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s3,12px)] p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#1C1B1A]"
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s3,12px)] p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E]"
         >
         <LiveSegmentedControl
           size="md"
@@ -330,7 +329,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                 <div key={run.id} className="sq-elev-card">
                   <div
                     data-sq="panel"
-                    className="bg-white dark:bg-[#1C1B1A] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]"
+                    className="bg-white dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]"
                   >
                     <div
                       className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)] border-b border-[var(--atr-divider)]"
@@ -377,8 +376,7 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                         <div
                           key={slip.id}
                           data-sq="card"
-                          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-                          className="p-[var(--card-pad,20px)] card-opt bg-[#FBF8F5] dark:bg-[#262422] flex items-center justify-between gap-[var(--s3,12px)]"
+                          className="p-[var(--card-pad,20px)] card-opt bg-[#FBF8F5] dark:bg-[#22201E] flex items-center justify-between gap-[var(--s3,12px)]"
                         >
                           <div className="flex flex-col gap-[var(--title-cap-gap,2px)] min-w-0">
                             <div className="t-label font-semibold text-[var(--text-1)] dark:text-white truncate">{slip.staffFullName}</div>
@@ -389,8 +387,8 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
                             type="button"
                             onClick={() => setActiveSlipForPrint(slip)}
                             data-sq="ctl-sm"
-                            style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
-                            className="flex items-center h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] gap-[var(--btn-sm-gap,6px)] t-btn bg-white dark:bg-[#1C1B1A] text-[var(--text-1)] dark:text-white/85 hover:text-[var(--brand-text,#BF431F)] transition-all cursor-pointer shrink-0"
+                            data-sq-border="none"
+                            className="flex items-center h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] gap-[var(--btn-sm-gap,6px)] t-btn bg-[#F3EDE7] dark:bg-[#2B2825] hover:bg-[#EDE6DF] dark:hover:bg-[#332F2B] text-[var(--text-1)] dark:text-white/85 hover:text-[var(--brand-text,#BF431F)] transition-all cursor-pointer shrink-0"
                           >
                             <Printer className="w-4 h-4" strokeWidth={1.5} />
                             <span>{isAr ? 'قسيمة' : isEn ? 'Slip' : 'Fiche'}</span>
@@ -421,8 +419,8 @@ export const StaffHistorySubView: React.FC<StaffHistorySubViewProps> = ({
           headerActions={
             <div
               data-sq="ctl"
-              style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
-              className="h-[var(--btn-h,40px)] bg-[#FBF8F5] dark:bg-[#262422] flex items-center"
+              data-sq-border="none"
+              className="h-[var(--btn-h,40px)] bg-[#F5F1EC] dark:bg-[#2B2825] flex items-center"
             >
               <select
                 value={selectedStaffFilter}

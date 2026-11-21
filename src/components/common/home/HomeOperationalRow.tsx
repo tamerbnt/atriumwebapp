@@ -58,7 +58,7 @@ export const HomeOperationalRow: React.FC<HomeOperationalRowProps> = ({
       icon={icon}
       badge={badge}
       rightControls={rightControls}
-      className={`!bg-[#F5F1EC] dark:!bg-[#161413] ${className}`}
+      className={`!bg-[#F3EDE7] dark:!bg-[#191716] ${className}`}
     >
       <div
         data-testid="home-row-operations"

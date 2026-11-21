@@ -128,7 +128,7 @@ const getProjectStatusBadge = (
         label: isAr ? 'دفتر الشروط' : isEn ? 'Scoping' : 'Cahier des charges',
         variant: 'neutral',
         pillClass:
-          'bg-[#F3EDE7] dark:bg-neutral-800 text-black/75 dark:text-white/80 border border-[#E6DED6] dark:border-neutral-700',
+          'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/75 dark:text-white/80',
       };
     case 'creative_kv':
     case 'crea_active':
@@ -136,7 +136,7 @@ const getProjectStatusBadge = (
         label: isAr ? 'التصميم الإبداعي' : isEn ? 'Creative KV' : 'KV Créa',
         variant: 'warning',
         pillClass:
-          'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+          'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
       };
     case 'client_validated':
     case 'print_ready':
@@ -144,14 +144,14 @@ const getProjectStatusBadge = (
         label: isAr ? 'مُصدّق من العميل' : isEn ? 'Client Validated' : 'Validé Client',
         variant: 'info',
         pillClass:
-          'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]',
+          'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC]',
       };
     case 'production':
       return {
         label: isAr ? 'قيد الإنتاج' : isEn ? 'Production' : 'En Production',
         variant: 'info',
         pillClass:
-          'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]',
+          'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC]',
       };
     case 'field_execution':
     case 'field_active':
@@ -159,7 +159,7 @@ const getProjectStatusBadge = (
         label: isAr ? 'الميدان الحي' : isEn ? 'Live Field' : 'Terrain Live',
         variant: 'blocked',
         pillClass:
-          'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
+          'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]',
       };
     case 'completed':
     case 'closed':
@@ -167,14 +167,14 @@ const getProjectStatusBadge = (
         label: isAr ? 'مغلق' : isEn ? 'Completed' : 'Clôturé',
         variant: 'active',
         pillClass:
-          'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+          'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
       };
     default:
       return {
         label: status,
         variant: 'neutral',
         pillClass:
-          'bg-[#F3EDE7] dark:bg-neutral-800 text-black/75 dark:text-white/80 border border-[#E6DED6] dark:border-neutral-700',
+          'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/75 dark:text-white/80',
       };
   }
 };
@@ -1010,7 +1010,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
         />
       )}
 
-      <div className="flex border-b border-[#E6DED6] dark:border-neutral-800 gap-1 overflow-x-auto">
+      <div className="flex border-b border-[var(--atr-divider)] gap-1 overflow-x-auto">
         {[
           {
             id: 'dashboard',
@@ -1060,7 +1060,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   className={`px-2 py-1 rounded-full t-small tabular-nums font-semibold ${
                     tab.id === 'approvals'
                       ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300'
-                      : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75'
+                      : 'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75'
                   }`}
                 >
                   {tab.count}
@@ -1516,7 +1516,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                       {proj.scopeOfWork}
                     </p>
                   </div>
-                  <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 space-y-2 t-cap">
+                  <div className="pt-3 border-t border-[var(--atr-divider)] space-y-2 t-cap">
                     <div className="flex justify-between items-center">
                       <span className="text-black/55 dark:text-white/55">Plafond Budget:</span>
                       <span className="tabular-nums font-semibold text-black dark:text-white">
@@ -1818,32 +1818,33 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
       {currentScreen === 'new_project' && (
         <ScreenPod>
-          <div
-            data-sq="card"
-            data-sq-border="solid"
-            className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] max-w-4xl mx-auto space-y-6"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
-                  {t('pm_dir_screen_new_badge')}
-                </span>
-                <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
-                  {t('pm_dir_screen_new_title')}
-                </h2>
+          <div className="sq-elev-card max-w-4xl mx-auto">
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="p-6 bg-white dark:bg-[#22201E] space-y-6"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
+                    {t('pm_dir_screen_new_badge')}
+                  </span>
+                  <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
+                    {t('pm_dir_screen_new_title')}
+                  </h2>
+                </div>
+                <ListAdvancedMenuButton language={language} />
               </div>
-              <ListAdvancedMenuButton language={language} />
-            </div>
-            {projectCreatedSuccess && (
-              <div
-                data-sq="ctl"
-                data-sq-border="solid"
-                className="p-4 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 flex items-center gap-3 t-small font-semibold animate-in fade-in"
-              >
-                <CheckCircle className="w-5 h-5 text-emerald-600" />
-                {t('pm_dir_screen_new_success')}
-              </div>
-            )}
+              {projectCreatedSuccess && (
+                <div
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="p-4 bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] flex items-center gap-3 t-small font-semibold animate-in fade-in"
+                >
+                  <CheckCircle className="w-5 h-5 text-emerald-600" />
+                  {t('pm_dir_screen_new_success')}
+                </div>
+              )}
             <form onSubmit={handleCreateProject} className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
@@ -1913,7 +1914,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                     placeholder={t('pm_dir_field_scope_ph')}
                     value={newProjectScope}
                     onChange={(e) => setNewProjectScope(e.target.value)}
-                    className="w-full px-4 py-2 t-cap rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+                    className="w-full px-4 py-2 t-cap rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow"
                   />
                 </div>
                 <LabelInput
@@ -1965,7 +1966,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   corner={14}
                 />
               </div>
-              <div className="pt-4 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-end gap-3">
+              <div className="pt-4 border-t border-[var(--atr-divider)] flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => {
@@ -1981,56 +1982,58 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 </AtriumButton>
               </div>
             </form>
+            </div>
           </div>
         </ScreenPod>
       )}
 
       {currentScreen === 'approvals' && (
         <ScreenPod>
-          <div
-            data-sq="card"
-            data-sq-border="solid"
-            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626]"
-          >
-            <div>
-              <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
-                {t('pm_dir_approvals_badge')}
-              </span>
-              <h2 className="t-dialog font-semibold text-black dark:text-white mt-0.5">
-                {t('pm_dir_approvals_title')}
-              </h2>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Seek
-                value={approvalSearch}
-                onChange={setApprovalSearch}
-                placeholder={t('common_search')}
-                openWidth={260}
-                shutSize={38}
-              />
-              <div data-sq="ctl" className="flex items-center gap-2 p-1 bg-[#F3EDE7] dark:bg-neutral-800 t-cap">
-                {(
-                  [
-                    { id: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous' },
-                    { id: 'payroll', label: isAr ? 'الرواتب' : isEn ? 'Payroll' : 'Paie' },
-                    { id: 'expenses', label: isAr ? 'المصاريف' : isEn ? 'Expenses' : 'Frais' },
-                  ] as const
-                ).map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setApprovalsTab(item.id)}
-                    data-sq="ctl-sm"
-                    className={`px-3 py-2 font-semibold transition-colors cursor-pointer ${
-                      approvalsTab === item.id
-                        ? 'bg-white dark:bg-neutral-700 text-black dark:text-white'
-                        : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+          <div className="sq-elev-card">
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white dark:bg-[#22201E]"
+            >
+              <div>
+                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
+                  {t('pm_dir_approvals_badge')}
+                </span>
+                <h2 className="t-dialog font-semibold text-black dark:text-white mt-0.5">
+                  {t('pm_dir_approvals_title')}
+                </h2>
               </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Seek
+                  value={approvalSearch}
+                  onChange={setApprovalSearch}
+                  placeholder={t('common_search')}
+                  openWidth={260}
+                  shutSize={38}
+                />
+                <div data-sq="ctl" className="flex items-center gap-2 p-1 bg-[#F3EDE7] dark:bg-[#1D1B19] t-cap">
+                  {(
+                    [
+                      { id: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous' },
+                      { id: 'payroll', label: isAr ? 'الرواتب' : isEn ? 'Payroll' : 'Paie' },
+                      { id: 'expenses', label: isAr ? 'المصاريف' : isEn ? 'Expenses' : 'Frais' },
+                    ] as const
+                  ).map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setApprovalsTab(item.id)}
+                      data-sq="ctl-sm"
+                      className={`px-3 py-2 font-semibold transition-colors cursor-pointer ${
+                        approvalsTab === item.id
+                          ? 'bg-white dark:bg-[#2B2825] text-black dark:text-white'
+                          : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               <ListAdvancedMenuButton
                 language={language}
                 canResetFilters={approvalSearch.trim().length > 0 || approvalsTab !== 'all'}
@@ -2039,6 +2042,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   setApprovalsTab('all');
                 }}
               />
+              </div>
             </div>
           </div>
 
@@ -2069,48 +2073,49 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 </KineticEmptyStateMotion>
               ) : (
                 pendingPayrollBatches.map((batch) => (
-                  <div
-                    key={batch.id}
-                    data-sq="card"
-                    data-sq-border="solid"
-                    className="p-5 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
-                          Lot de Paie
-                        </span>
-                        <span className="tabular-nums t-small font-semibold text-black dark:text-white">
-                          {batch.batchNumber}
-                        </span>
-                        <span className="text-black/55 dark:text-white/55">·</span>
-                        <span className="t-small text-black/70 dark:text-white/75 font-medium">
-                          {batch.projectTitle}
-                        </span>
+                  <div key={batch.id} className="sq-elev-card">
+                    <div
+                      data-sq="card"
+                      data-sq-border="none"
+                      className="p-5 bg-white dark:bg-[#22201E] flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
+                            Lot de Paie
+                          </span>
+                          <span className="tabular-nums t-small font-semibold text-black dark:text-white">
+                            {batch.batchNumber}
+                          </span>
+                          <span className="text-black/55 dark:text-white/55">·</span>
+                          <span className="t-small text-black/70 dark:text-white/75 font-medium">
+                            {batch.projectTitle}
+                          </span>
+                        </div>
+                        <p className="t-cap text-black/55 dark:text-white/55">
+                          Mission <span className="tabular-nums font-semibold">{batch.missionCode}</span> ·{' '}
+                          {batch.totalBeneficiaries} animateurs pointés et vérifiés par le Superviseur.
+                        </p>
                       </div>
-                      <p className="t-cap text-black/55 dark:text-white/55">
-                        Mission <span className="tabular-nums font-semibold">{batch.missionCode}</span> ·{' '}
-                        {batch.totalBeneficiaries} animateurs pointés et vérifiés par le Superviseur.
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4 shrink-0">
-                      <div className="text-right">
-                        <span className="t-small text-black/55 dark:text-white/55 block font-medium">
-                          {t('common_amount')}
-                        </span>
-                        <span className="font-semibold t-pod text-black dark:text-white tabular-nums">
-                          {formatMoney(batch.totalAmountDzd, 'DZD')}
-                        </span>
+                      <div className="flex items-center gap-4 shrink-0">
+                        <div className="text-right">
+                          <span className="t-small text-black/55 dark:text-white/55 block font-medium">
+                            {t('common_amount')}
+                          </span>
+                          <span className="font-semibold t-pod text-black dark:text-white tabular-nums">
+                            {formatMoney(batch.totalAmountDzd, 'DZD')}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => approvePmPayrollBatch(batch.id)}
+                          data-sq="ctl"
+                          className="px-4 py-2 t-small font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          {t('pm_dir_btn_validate_ccp')}
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => approvePmPayrollBatch(batch.id)}
-                        data-sq="ctl"
-                        className="px-4 py-2 t-small font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-2 cursor-pointer"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        {t('pm_dir_btn_validate_ccp')}
-                      </button>
                     </div>
                   </div>
                 ))
@@ -2143,70 +2148,71 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 </KineticEmptyStateMotion>
               ) : (
                 pendingExpenses.map((expense) => (
-                  <div
-                    key={expense.id}
-                    data-sq="card"
-                    data-sq-border="solid"
-                    className="p-5 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-white dark:bg-neutral-900 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
-                          {expense.category}
-                        </span>
-                        <span className="t-small font-semibold text-black dark:text-white">
-                          {expense.title}
-                        </span>
-                        {expense.hasFiscalInvoice && (
-                          <span className="px-2 py-1 rounded-[var(--r-check,6px)] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 t-small font-semibold">
-                            Facture Fiscale
+                  <div key={expense.id} className="sq-elev-card">
+                    <div
+                      data-sq="card"
+                      data-sq-border="none"
+                      className="p-5 bg-white dark:bg-[#22201E] flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                            {expense.category}
                           </span>
-                        )}
+                          <span className="t-small font-semibold text-black dark:text-white">
+                            {expense.title}
+                          </span>
+                          {expense.hasFiscalInvoice && (
+                            <span className="px-2 py-1 rounded-[var(--r-check,6px)] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 t-small font-semibold">
+                              Facture Fiscale
+                            </span>
+                          )}
+                        </div>
+                        <p className="t-cap text-black/55 dark:text-white/55">
+                          Déclaré par {expense.declaredByUserName} ({expense.declaredByRole}) ·{' '}
+                          {expense.projectTitle}
+                        </p>
                       </div>
-                      <p className="t-cap text-black/55 dark:text-white/55">
-                        Déclaré par {expense.declaredByUserName} ({expense.declaredByRole}) ·{' '}
-                        {expense.projectTitle}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      {expense.receiptPhotoUrl && (
+                      <div className="flex items-center gap-3 shrink-0">
+                        {expense.receiptPhotoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)}
+                            data-sq="ctl"
+                            data-sq-border="none"
+                            className="px-3 py-2 t-cap text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors flex items-center gap-2 cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            Justificatif
+                          </button>
+                        )}
+                        <div className="text-right">
+                          <span className="t-small text-black/55 dark:text-white/55 block font-medium">
+                            {t('common_amount')}
+                          </span>
+                          <span className="font-semibold t-card text-black dark:text-white tabular-nums">
+                            {formatMoney(expense.amountDzd, 'DZD')}
+                          </span>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)}
+                          onClick={() => approvePmExpense(expense.id)}
                           data-sq="ctl"
-                          data-sq-border="solid"
-                          className="px-3 py-2 t-cap text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 transition-colors flex items-center gap-2 cursor-pointer"
+                          className="px-4 py-2 t-small font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-1 cursor-pointer"
                         >
-                          <Eye className="w-3.5 h-3.5" />
-                          Justificatif
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          Valider
                         </button>
-                      )}
-                      <div className="text-right">
-                        <span className="t-small text-black/55 dark:text-white/55 block font-medium">
-                          {t('common_amount')}
-                        </span>
-                        <span className="font-semibold t-card text-black dark:text-white tabular-nums">
-                          {formatMoney(expense.amountDzd, 'DZD')}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setRejectionModalId(expense.id)}
+                          data-sq="ctl"
+                          data-sq-border="none"
+                          className="px-3 py-2 t-small font-semibold text-red-600 dark:text-red-400 bg-[#FDE4DF]/70 dark:bg-[#3D1E1A]/80 hover:bg-[#FDE4DF] dark:hover:bg-[#3D1E1A] transition-colors cursor-pointer"
+                        >
+                          Refuser
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => approvePmExpense(expense.id)}
-                        data-sq="ctl"
-                        className="px-4 py-2 t-small font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        Valider
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setRejectionModalId(expense.id)}
-                        data-sq="ctl"
-                        data-sq-border="solid"
-                        className="px-3 py-2 t-small font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 [--sq-stroke:#fecaca] dark:[--sq-stroke:#991b1b] transition-colors cursor-pointer"
-                      >
-                        Refuser
-                      </button>
                     </div>
                   </div>
                 ))
@@ -2218,162 +2224,168 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
       {currentScreen === 'reports' && (
         <ScreenPod>
-          <div
-            data-sq="card"
-            data-sq-border="solid"
-            className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
-                  Rapports d'Activité & Marges
-                </span>
-                <h2 className="t-dialog font-semibold text-black dark:text-white">
-                  Audit Financier Consolidé — Année 2026
-                </h2>
+          <div className="sq-elev-card">
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="p-6 bg-white dark:bg-[#22201E] space-y-4"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
+                    Rapports d'Activité & Marges
+                  </span>
+                  <h2 className="t-dialog font-semibold text-black dark:text-white">
+                    Audit Financier Consolidé — Année 2026
+                  </h2>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <AtriumButton
+                    variant="primary"
+                    size="md"
+                    icon={<Download size={15} />}
+                    onClick={handleExportAuditCsv}
+                  >
+                    {isAr
+                      ? 'تحميل التدقيق المالي'
+                      : isEn
+                      ? 'Download Audit (CSV)'
+                      : 'Télécharger Audit (CSV)'}
+                  </AtriumButton>
+                  <ListAdvancedMenuButton language={language} />
+                </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <AtriumButton
-                  variant="primary"
-                  size="md"
-                  icon={<Download size={15} />}
-                  onClick={handleExportAuditCsv}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                <div
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
                 >
-                  {isAr
-                    ? 'تحميل التدقيق المالي'
-                    : isEn
-                    ? 'Download Audit (CSV)'
-                    : 'Télécharger Audit (CSV)'}
-                </AtriumButton>
-                <ListAdvancedMenuButton language={language} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-              <div
-                data-sq="ctl"
-                data-sq-border="solid"
-                className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
-              >
-                <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
-                  {t('pm_dir_kpi_cumul_ca')}
-                </span>
-                <div className="t-dialog font-semibold text-black dark:text-white tabular-nums">
-                  58,4 M DA
+                  <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
+                    {t('pm_dir_kpi_cumul_ca')}
+                  </span>
+                  <div className="t-dialog font-semibold text-black dark:text-white tabular-nums">
+                    58,4 M DA
+                  </div>
+                  <span className="t-small text-emerald-600 font-semibold">
+                    {t('pm_dir_vs_2025')}
+                  </span>
                 </div>
-                <span className="t-small text-emerald-600 font-semibold">
-                  {t('pm_dir_vs_2025')}
-                </span>
-              </div>
-              <div
-                data-sq="ctl"
-                data-sq-border="solid"
-                className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
-              >
-                <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
-                  {t('pm_dir_kpi_avg_margin')}
-                </span>
-                <div className="t-dialog font-semibold text-emerald-600 tabular-nums">
-                  31,4 %
+                <div
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                >
+                  <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
+                    {t('pm_dir_kpi_avg_margin')}
+                  </span>
+                  <div className="t-dialog font-semibold text-emerald-600 tabular-nums">
+                    31,4 %
+                  </div>
+                  <span className="t-cap text-black/55 dark:text-white/55">
+                    {t('pm_dir_target_objective')}
+                  </span>
                 </div>
-                <span className="t-cap text-black/55 dark:text-white/55">
-                  {t('pm_dir_target_objective')}
-                </span>
-              </div>
-              <div
-                data-sq="ctl"
-                data-sq-border="solid"
-                className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
-              >
-                <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
-                  {t('pm_dir_kpi_closed_missions')}
-                </span>
-                <div className="t-dialog font-semibold text-black dark:text-white tabular-nums">
-                  48
+                <div
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                >
+                  <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
+                    {t('pm_dir_kpi_closed_missions')}
+                  </span>
+                  <div className="t-dialog font-semibold text-black dark:text-white tabular-nums">
+                    48
+                  </div>
+                  <span className="t-cap text-black/55 dark:text-white/55">
+                    {t('pm_dir_coverage_wilayas')}
+                  </span>
                 </div>
-                <span className="t-cap text-black/55 dark:text-white/55">
-                  {t('pm_dir_coverage_wilayas')}
-                </span>
-              </div>
-              <div
-                data-sq="ctl"
-                data-sq-border="solid"
-                className="p-4 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-[#FBF8F5]/80 dark:bg-neutral-800/40"
-              >
-                <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
-                  {t('pm_dir_kpi_attendance_rate')}
-                </span>
-                <div className="t-dialog font-semibold text-blue-600 tabular-nums">
-                  98,2 %
+                <div
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                >
+                  <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
+                    {t('pm_dir_kpi_attendance_rate')}
+                  </span>
+                  <div className="t-dialog font-semibold text-blue-600 tabular-nums">
+                    98,2 %
+                  </div>
+                  <span className="t-cap text-black/55 dark:text-white/55">
+                    {t('pm_dir_rating_avg')}
+                  </span>
                 </div>
-                <span className="t-cap text-black/55 dark:text-white/55">
-                  {t('pm_dir_rating_avg')}
-                </span>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div
-              data-sq="card"
-              data-sq-border="solid"
-              className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
-            >
-              <h3 className="t-label font-semibold text-black dark:text-white flex items-center justify-between">
-                <span>{t('pm_dir_client_profitability')}</span>
-                <span className="t-cap text-black/55 dark:text-white/55 font-normal">
-                  {t('pm_dir_turnover_share')}
-                </span>
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { name: 'Ooredoo Algérie', ca: '24,5 M DA', pct: 42, margin: '32%', color: 'bg-red-500' },
-                  { name: t('pm_dir_client_danone'), ca: '16,3 M DA', pct: 28, margin: '30%', color: 'bg-blue-500' },
-                  { name: t('pm_dir_client_cevital'), ca: '10,5 M DA', pct: 18, margin: '34%', color: 'bg-emerald-500' },
-                  { name: t('pm_dir_client_others'), ca: '7,1 M DA', pct: 12, margin: '28%', color: 'bg-amber-500' },
-                ].map((cli) => (
-                  <div key={cli.name} className="space-y-1 t-cap">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-black dark:text-white">{cli.name}</span>
-                      <span className="tabular-nums text-black/55 dark:text-white/55">
-                        {cli.ca} · Marge {cli.margin}
-                      </span>
+            <div className="sq-elev-card">
+              <div
+                data-sq="card"
+                data-sq-border="none"
+                className="p-6 bg-white dark:bg-[#22201E] space-y-4"
+              >
+                <h3 className="t-label font-semibold text-black dark:text-white flex items-center justify-between">
+                  <span>{t('pm_dir_client_profitability')}</span>
+                  <span className="t-cap text-black/55 dark:text-white/55 font-normal">
+                    {t('pm_dir_turnover_share')}
+                  </span>
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { name: 'Ooredoo Algérie', ca: '24,5 M DA', pct: 42, margin: '32%', color: 'bg-red-500' },
+                    { name: t('pm_dir_client_danone'), ca: '16,3 M DA', pct: 28, margin: '30%', color: 'bg-blue-500' },
+                    { name: t('pm_dir_client_cevital'), ca: '10,5 M DA', pct: 18, margin: '34%', color: 'bg-emerald-500' },
+                    { name: t('pm_dir_client_others'), ca: '7,1 M DA', pct: 12, margin: '28%', color: 'bg-amber-500' },
+                  ].map((cli) => (
+                    <div key={cli.name} className="space-y-1 t-cap">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-black dark:text-white">{cli.name}</span>
+                        <span className="tabular-nums text-black/55 dark:text-white/55">
+                          {cli.ca} · Marge {cli.margin}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden">
+                        <div className={`h-full ${cli.color}`} style={{ width: `${cli.pct}%` }} />
+                      </div>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden">
-                      <div className={`h-full ${cli.color}`} style={{ width: `${cli.pct}%` }} />
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div
-              data-sq="card"
-              data-sq-border="solid"
-              className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-4"
-            >
-              <h3 className="t-label font-semibold text-black dark:text-white flex items-center justify-between">
-                <span>Ventilation des Dépenses par Poste</span>
-                <span className="t-cap text-black/55 dark:text-white/55 font-normal">
-                  Terrain & Logistique
-                </span>
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { label: 'Indemnités & Paies Animateurs (CCP)', amount: '34,2 M DA', pct: 58, color: 'bg-[#DC2626]' },
-                  { label: 'Production POSM & Impression Imprimeur', amount: '14,8 M DA', pct: 25, color: 'bg-purple-500' },
-                  { label: 'Transport, Carburant & Hébergement', amount: '6,5 M DA', pct: 11, color: 'bg-amber-500' },
-                  { label: 'Frais de Régie & Autorisations APC', amount: '2,9 M DA', pct: 6, color: 'bg-blue-500' },
-                ].map((item) => (
-                  <div key={item.label} className="space-y-1 t-cap">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-black dark:text-white">{item.label}</span>
-                      <span className="tabular-nums text-black/55 dark:text-white/55">{item.amount}</span>
+            <div className="sq-elev-card">
+              <div
+                data-sq="card"
+                data-sq-border="none"
+                className="p-6 bg-white dark:bg-[#22201E] space-y-4"
+              >
+                <h3 className="t-label font-semibold text-black dark:text-white flex items-center justify-between">
+                  <span>Ventilation des Dépenses par Poste</span>
+                  <span className="t-cap text-black/55 dark:text-white/55 font-normal">
+                    Terrain & Logistique
+                  </span>
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { label: 'Indemnités & Paies Animateurs (CCP)', amount: '34,2 M DA', pct: 58, color: 'bg-[#DC2626]' },
+                    { label: 'Production POSM & Impression Imprimeur', amount: '14,8 M DA', pct: 25, color: 'bg-purple-500' },
+                    { label: 'Transport, Carburant & Hébergement', amount: '6,5 M DA', pct: 11, color: 'bg-amber-500' },
+                    { label: 'Frais de Régie & Autorisations APC', amount: '2,9 M DA', pct: 6, color: 'bg-blue-500' },
+                  ].map((item) => (
+                    <div key={item.label} className="space-y-1 t-cap">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-black dark:text-white">{item.label}</span>
+                        <span className="tabular-nums text-black/55 dark:text-white/55">{item.amount}</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden">
+                        <div className={`h-full ${item.color}`} style={{ width: `${item.pct}%` }} />
+                      </div>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 overflow-hidden">
-                      <div className={`h-full ${item.color}`} style={{ width: `${item.pct}%` }} />
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -2386,7 +2398,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
                 <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
@@ -2397,15 +2409,15 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   type="button"
                   onClick={() => setSelectedReceiptUrl(null)}
                   data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
+                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <div
                 data-sq="ctl"
-                data-sq-border="solid"
-                className="w-full h-72 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] bg-neutral-100 dark:bg-neutral-800"
+                data-sq-border="none"
+                className="w-full h-72 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
               >
                 <img
                   src={selectedReceiptUrl}
@@ -2419,7 +2431,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   type="button"
                   onClick={() => setSelectedReceiptUrl(null)}
                   data-sq="ctl"
-                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 hover:bg-[#EAE1D8] cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] cursor-pointer transition-colors"
                 >
                   Fermer
                 </button>
@@ -2435,7 +2447,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
                 <h3 className="t-label font-semibold text-red-600 flex items-center gap-2">
@@ -2446,7 +2458,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   type="button"
                   onClick={() => setRejectionModalId(null)}
                   data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
+                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-black/55 dark:text-white/55 hover:text-black/80 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -2459,7 +2471,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..."
-                className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 t-cap rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/40 transition-shadow"
               />
               <div className="flex justify-end gap-2">
                 <button

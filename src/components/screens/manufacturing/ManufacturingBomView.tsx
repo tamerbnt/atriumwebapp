@@ -451,10 +451,10 @@ export const ManufacturingBomView: React.FC<any> = () => {
         width: '1.2*',
         renderCell: (b) => (
           <span
-            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold border ${
+            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold ${
               b.isActive
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                : 'bg-neutral-100 text-black/70 border-neutral-200 dark:bg-neutral-800 dark:text-white/75'
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
+                : 'bg-[#F3EDE7] text-black/70 dark:bg-[#2B2825] dark:text-white/75'
             }`}
           >
             {b.isActive ? 'Active' : 'Inactif'}
@@ -694,14 +694,14 @@ export const ManufacturingBomView: React.FC<any> = () => {
           renderCard={(b) => (
             <div className="space-y-3 w-full">
               <div className="flex items-center justify-between">
-                <span className="tabular-nums font-semibold t-small bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] px-2.5 py-1 rounded-full border border-[#d4522f]/20">
+                <span className="tabular-nums font-semibold t-small bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] px-2.5 py-1 rounded-full">
                   {b.bomCode}
                 </span>
                 <span
                   className={`t-small font-semibold px-2 py-1 rounded-full ${
                     b.isActive
                       ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                      : 'bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75'
+                      : 'bg-[#F3EDE7] text-black/70 dark:bg-[#2B2825] dark:text-white/75'
                   }`}
                 >
                   {b.isActive ? 'Active' : 'Inactif'}
@@ -713,7 +713,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                   {b.components?.length || 0} matières & pièces associées
                 </div>
               </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between t-cap">
+              <div className="pt-2 border-t border-[var(--atr-divider)] flex items-center justify-between t-cap">
                 <div>
                   <div className="t-cap text-black/55 dark:text-white/55">Coût Estimé</div>
                   <div className="tabular-nums font-semibold text-black dark:text-white mt-0.5">{formatMoney(b.estimatedCostDzd, language)}</div>
@@ -767,8 +767,8 @@ export const ManufacturingBomView: React.FC<any> = () => {
         statusLabel={activeBom?.isActive ? (isAr ? 'سارية' : 'Active') : isAr ? 'معطلة' : 'Inactif'}
         statusClassName={
           activeBom?.isActive
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300'
-            : 'bg-neutral-100 text-neutral-700 border border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300'
+            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
+            : 'bg-[#F3EDE7] text-black/70 dark:bg-[#2B2825] dark:text-white/75'
         }
         tabs={[
           { id: 'fiche', label: isAr ? 'البطاقة' : 'Fiche BOM' },
@@ -816,16 +816,16 @@ export const ManufacturingBomView: React.FC<any> = () => {
 
             {tab === 'fiche' && (
               <div className="space-y-4 t-cap">
-                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-4 space-y-2 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
+                  <div className="flex justify-between items-center py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">Code Formule:</span>
                     <span className="tabular-nums font-semibold text-black dark:text-white">{bom.bomCode}</span>
                   </div>
-                  <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                  <div className="flex justify-between items-center py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">Produit Cible:</span>
                     <span className="font-semibold text-black dark:text-white truncate max-w-[200px]">{bom.finishedProductName}</span>
                   </div>
-                  <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                  <div className="flex justify-between items-center py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">Rendement de lot:</span>
                     <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                       {bom.batchYield} {bom.unit}
@@ -836,7 +836,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                     <span className="tabular-nums text-black dark:text-white">{bom.standardLaborHours} heures MO</span>
                   </div>
                 </div>
-                <div data-sq="card" data-sq-border="solid" className="p-4 bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 [--sq-stroke:#ffedd5] dark:[--sq-stroke:rgba(124,45,18,0.3)]">
+                <div data-sq="card" data-sq-border="none" className="p-4 bg-[#FCEEE8]/75 dark:bg-[#2B2825]">
                   <div className="flex justify-between items-center">
                     <span className="text-black/70 dark:text-white/75">Coût Standard Unitaire:</span>
                     <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(bom.estimatedCostDzd, language)}</span>
@@ -851,8 +851,8 @@ export const ManufacturingBomView: React.FC<any> = () => {
                   <div
                     key={i}
                     data-sq="card"
-                    data-sq-border="solid"
-                    className="p-3 border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1"
+                    data-sq-border="none"
+                    className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-1"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-black dark:text-white t-small">{c.rawProductName}</span>
@@ -873,8 +873,8 @@ export const ManufacturingBomView: React.FC<any> = () => {
 
             {tab === 'costs' && (
               <div className="space-y-4 t-cap">
-                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-4 space-y-2 border border-neutral-100 dark:border-neutral-800">
-                  <div className="flex justify-between items-center py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
+                  <div className="flex justify-between items-center py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">Matières Premières:</span>
                     <span className="tabular-nums font-semibold text-black dark:text-white">
                       {formatMoney(
@@ -898,7 +898,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                 <p className="text-black/55 dark:text-white/55 t-cap">
                   Directives techniques d'usinage, tolérances et normes d'assemblage :
                 </p>
-                <div data-sq="card" data-sq-border="solid" className="border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800">
+                <div data-sq="ctl" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow">
                   <textarea
                     rows={6}
                     value={inspectorNotes}
@@ -926,10 +926,10 @@ export const ManufacturingBomView: React.FC<any> = () => {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="sq-elev-pop max-w-lg w-full">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
                 <div className="flex items-center gap-2">
-                  <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
+                  <div data-sq="tile" data-sq-border="none" className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
                     <Layers size={20} />
                   </div>
                   <div>
@@ -947,7 +947,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -995,7 +995,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                   onChange={(e) => setEstimatedCost(e.target.value)}
                 />
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton type="button" variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
                   {isAr ? 'إلغاء' : 'Annuler'}
                 </AtriumButton>

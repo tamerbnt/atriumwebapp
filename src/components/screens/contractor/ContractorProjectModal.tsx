@@ -108,9 +108,9 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
+          className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
         >
-          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+          <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-2">
               <div
                 data-sq="tile"
@@ -225,7 +225,7 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
             onChange={(e) => setProgressPercent(e.target.value)}
           />
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
             <AtriumButton variant="ghost" size="sm" onClick={onClose}>
               {isAr ? 'إلغاء' : 'Annuler'}
             </AtriumButton>

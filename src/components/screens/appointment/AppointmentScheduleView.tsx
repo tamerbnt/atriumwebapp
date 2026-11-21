@@ -695,11 +695,11 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
               <div
                 data-sq="table"
                 data-sq-border="solid"
-                className="bg-white dark:bg-[#1C1B1A] border-0 overflow-hidden"
+                className="bg-white dark:bg-[#22201E] border-0 overflow-hidden"
               >
               <div className="overflow-x-auto">
                 <div className="min-w-[760px]">
-                  <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-[var(--atr-divider)] bg-[#FBF8F5] dark:bg-[#262422]">
+                  <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-[var(--atr-divider)] bg-[#FBF8F5] dark:bg-[#1D1B19]">
                     <div className="p-4 text-center t-small font-semibold text-black/62 dark:text-white/65 border-r border-[var(--atr-divider)] flex items-center justify-center">
                       <Clock size={14} className="mr-1" />
                       {t('salon_timeline', language)}
@@ -728,7 +728,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                                 </p>
                               </div>
                             </div>
-                            <span className="px-2 py-1 t-small font-semibold rounded-full bg-[#F3EDE7] dark:bg-[#1C1B1A] text-black/75 dark:text-white/80">
+                            <span className="px-2 py-1 t-small font-semibold rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] text-black/75 dark:text-white/80">
                               {count} RDV
                             </span>
                           </div>
@@ -760,17 +760,17 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
                                 <button
                                   type="button"
                                   data-sq="card"
-                                  data-sq-border="solid"
+                                  data-sq-border={apt.status === 'InChair' || apt.status === 'Completed' ? 'none' : 'solid'}
                                   onClick={(e) => {
                                     setDrawerOpenerEl(e.currentTarget);
                                     setInspectingApt(apt);
                                   }}
                                   className={`w-full h-full text-left p-3 cursor-pointer transition-all border-0 ${
                                     apt.status === 'InChair'
-                                      ? 'bg-amber-50 dark:bg-amber-950/35 [--sq-stroke:rgba(245,158,11,0.35)] dark:[--sq-stroke:rgba(245,158,11,0.35)] hover:bg-amber-100/60 dark:hover:bg-amber-950/50'
+                                      ? 'bg-amber-50 dark:bg-amber-950/35 hover:bg-amber-100/60 dark:hover:bg-amber-950/50'
                                       : apt.status === 'Completed'
-                                      ? 'bg-emerald-50/70 dark:bg-emerald-950/30 [--sq-stroke:rgba(16,185,129,0.3)] dark:[--sq-stroke:rgba(16,185,129,0.3)] hover:bg-emerald-100/50 dark:hover:bg-emerald-950/45'
-                                      : 'bg-[#FBF8F5] dark:bg-[#262422] hover:bg-[#FAF6F1] dark:hover:bg-white/[0.05]'
+                                      ? 'bg-emerald-50/70 dark:bg-emerald-950/30 hover:bg-emerald-100/50 dark:hover:bg-emerald-950/45'
+                                      : 'bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B]'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between gap-1 mb-1">
@@ -919,10 +919,10 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
         statusLabel={inspectingApt ? localizeStatus(inspectingApt.status, language) : undefined}
         statusClassName={
           inspectingApt?.status === 'Completed'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : inspectingApt?.status === 'Cancelled'
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'overview', label: isAr ? 'الموعد' : isEn ? 'Overview' : 'Rendez-vous' },

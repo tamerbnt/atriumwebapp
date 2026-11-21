@@ -68,8 +68,8 @@ export const InspectorQuickActions: React.FC<{
           onClick={act.onClick}
           className={`flex flex-col items-center gap-[var(--s2,8px)] p-[var(--s3,12px)] rounded-[var(--r-card,16px)] t-small text-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
             act.primary
-              ? '[--sq-stroke:rgba(212,82,47,0.25)] dark:[--sq-stroke:#52291F] bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)]'
-              : '[--sq-stroke:var(--sq-stroke-card)] bg-white dark:bg-[#262422] text-[var(--text-1)] hover:bg-[#FAF6F1] dark:hover:bg-[#2D2A27]'
+              ? '[--sq-stroke:rgba(212,82,47,0.18)] dark:[--sq-stroke:rgba(232,100,63,0.22)] bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2E1E19] text-[var(--atr-acc-text,#ab391a)] dark:text-[var(--brand-on-dark)]'
+              : '[--sq-stroke:var(--sq-stroke-card)] bg-white dark:bg-[#2B2825] text-[var(--text-1)] hover:bg-[#FAF6F1] dark:hover:bg-[#332F2B]'
           }`}
         >
           <span
@@ -77,8 +77,8 @@ export const InspectorQuickActions: React.FC<{
             data-sq-border="none"
             className={`ic w-[var(--tile,40px)] h-[var(--tile,40px)] rounded-[var(--r-tile,12px)] grid place-items-center shrink-0 ${
               act.primary
-                ? 'bg-white dark:bg-[#1C1B1A]'
-                : 'bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1B1A]'
+                ? 'bg-white dark:bg-[#22201E]'
+                : 'bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E]'
             }`}
           >
             {act.icon}
@@ -97,7 +97,7 @@ export const InspectorCard: React.FC<{
   <div
     data-sq="card"
     data-sq-border="solid"
-    className={`card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] px-[var(--s4,16px)] py-[var(--s2,8px)] ${className}`}
+    className={`card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[var(--s4,16px)] py-[var(--s2,8px)] ${className}`}
   >
     {children}
   </div>
@@ -255,7 +255,7 @@ export const InspectorBigStat: React.FC<{
     <div
       data-sq="card"
       data-sq-border="solid"
-      className="card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] p-[var(--card-pad,20px)] card-opt flex flex-col gap-[var(--s3,12px)]"
+      className="card rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] p-[var(--card-pad,20px)] card-opt flex flex-col gap-[var(--s3,12px)]"
     >
       <div className={`big t-kpi-m rtl:font-sans rtl:text-2xl ${colorClass}`}>
         {value}
@@ -302,7 +302,7 @@ const BADGE_CLASSES: Record<'ok' | 'danger' | 'warn' | 'accent' | 'neutral', str
   danger: 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#c0283d] dark:text-[#FF8D7A]',
   warn: 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
   accent: 'bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A]',
-  neutral: 'bg-white dark:bg-[#1C1B1A] text-[var(--text-1)] border border-black/[0.07] dark:border-white/[0.1]',
+  neutral: 'bg-white dark:bg-[#2B2825] text-[var(--text-1)]',
 };
 
 export const InspectorListItem: React.FC<InspectorListItemProps> = ({
@@ -366,7 +366,7 @@ export const InspectorNotesField: React.FC<{
     <div
       data-sq="card"
       data-sq-border="solid"
-      className="relative rounded-[var(--r-card,16px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-ctl)] focus-within:[--sq-stroke:var(--brand-accent)]"
+      className="relative rounded-[var(--r-card,16px)] bg-[#F5F1EC] dark:bg-[#22201E] [--sq-stroke:rgba(23,19,15,0.06)] dark:[--sq-stroke:rgba(255,255,255,0.075)] focus-within:bg-white dark:focus-within:bg-[#2B2825] focus-within:[--sq-stroke:var(--brand-accent)] transition-colors"
     >
       <textarea
         aria-label={ariaLabel}
@@ -397,14 +397,14 @@ export const InspectorWideButton: React.FC<{
     type="button"
     data-no-liquid="true"
     data-sq="ctl"
-    data-sq-border={tone === 'neutral' ? 'solid' : 'none'}
+    data-sq-border="none"
     disabled={disabled}
     onClick={onClick}
-    className={`wide w-full h-[var(--btn-h,40px)] rounded-[var(--r-ctl,12px)] t-btn font-semibold flex items-center justify-center gap-[var(--btn-icon-gap,8px)] cursor-pointer transition-opacity hover:opacity-92 disabled:opacity-40 disabled:cursor-not-allowed ${
+    className={`wide w-full h-[var(--btn-h,40px)] rounded-[var(--r-ctl,12px)] t-btn font-semibold flex items-center justify-center gap-[var(--btn-icon-gap,8px)] cursor-pointer transition-colors hover:opacity-92 disabled:opacity-40 disabled:cursor-not-allowed ${
       tone === 'dark'
         ? 'border-0 bg-[#1F1D1B] dark:bg-white text-white dark:text-black'
         : tone === 'neutral'
-        ? 'bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-ctl)] text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-[#2D2A27]'
+        ? 'border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-[var(--text-1)] hover:bg-[#EDE6DF] dark:hover:bg-[#332F2B]'
         : 'border-0 bg-[var(--brand-fill)] text-white'
     }`}
   >

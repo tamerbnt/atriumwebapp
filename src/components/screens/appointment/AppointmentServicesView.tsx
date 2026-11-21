@@ -718,7 +718,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
             : undefined
         }
         statusLabel={`${inspectingService?.commissionRate || 40}% comm.`}
-        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
+        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]"
         tabs={[
           { id: 'overview', label: isAr ? 'التسعيرة' : isEn ? 'Pricing' : 'Tarif & Cabine' },
           { id: 'economics', label: isAr ? 'الربحية' : isEn ? 'Margins' : 'Marges & Coûts' },
@@ -836,7 +836,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1B1A] w-full p-6 border-0 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
+              className="bg-white dark:bg-[#262422] w-full p-6 border-0 [--sq-stroke:var(--sq-stroke-pop)] space-y-4"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <h3 className="t-card font-semibold text-black dark:text-white">
@@ -845,7 +845,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                 <button
                   type="button"
                   onClick={() => setIsServiceModalOpen(false)}
-                  className="p-2 rounded-full text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  className="p-2 rounded-full text-black/62 dark:text-white/65 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
                 >
                   <X size={18} />
                 </button>

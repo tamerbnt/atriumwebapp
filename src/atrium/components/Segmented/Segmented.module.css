@@ -2,16 +2,16 @@
   --h: var(--seg-l-h, 40px);
   --seg-inset: var(--seg-l-pad, 4px);
   --r: var(--r-ctl, 12px);
-  --sq-stroke: var(--sq-stroke-ctl, rgba(23, 19, 15, 0.09));
+  --sq-stroke: var(--sq-stroke-ctl, rgba(23, 19, 15, 0.055));
 
   position: relative;
   display: inline-flex;
   box-sizing: border-box;
   isolation: isolate;
   padding: var(--seg-inset);
-  border: 1px solid var(--atr-line);
+  border: 0;
   border-radius: var(--r);
-  background: #FFFFFF;
+  background: #F4EFEA;
 }
 
 .root[data-atr-size='sm'],
@@ -25,15 +25,13 @@
 :global([data-theme='dark']) .root,
 :global(.dark) .root,
 :global([data-surface='dark']) .root {
-  background: #202022;
-  border-color: rgba(255, 255, 255, 0.11);
+  background: #242220;
   --sq-stroke: var(--sq-stroke-ctl, url(#sq-spec-dark-ctl));
 }
 
 :global([data-surface='light']) .root {
-  background: #FFFFFF;
-  border-color: rgba(23, 19, 15, 0.09);
-  --sq-stroke: rgba(23, 19, 15, 0.09);
+  background: #F4EFEA;
+  --sq-stroke: rgba(23, 19, 15, 0.055);
 }
 
 .bl {

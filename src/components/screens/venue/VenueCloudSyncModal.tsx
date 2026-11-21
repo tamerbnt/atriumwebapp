@@ -287,15 +287,15 @@ ON CONFLICT (id) DO NOTHING;
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full max-h-[90vh] flex flex-col overflow-hidden"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] flex flex-col overflow-hidden"
         >
         {/* Header */}
-        <div className="px-6 py-5 border-b border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between shrink-0">
+        <div className="px-6 py-5 border-b border-[var(--atr-divider)] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div
               data-sq="tile"
-              data-sq-border="solid"
-              className="w-10 h-10 bg-purple-50 dark:bg-purple-950/50 [--sq-stroke:#E9D5FF] dark:[--sq-stroke:#6B21A8] flex items-center justify-center text-purple-600 dark:text-purple-400"
+              data-sq-border="none"
+              className="w-10 h-10 bg-purple-50 dark:bg-purple-950/50 flex items-center justify-center text-purple-600 dark:text-purple-400"
             >
               <Cloud size={20} />
             </div>
@@ -309,7 +309,7 @@ ON CONFLICT (id) DO NOTHING;
             onClick={onClose}
             data-sq="ctl-sm"
             data-sq-border="none"
-            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="p-2 text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -320,8 +320,8 @@ ON CONFLICT (id) DO NOTHING;
           {/* Status banner */}
           <div
             data-sq="card"
-            data-sq-border="solid"
-            className="p-4 bg-neutral-50 dark:bg-neutral-800/50 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            data-sq-border="none"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
           >
             <div>
               <div className="flex items-center gap-2">
@@ -342,8 +342,8 @@ ON CONFLICT (id) DO NOTHING;
               onClick={refreshCloudCounts}
               disabled={isLoading}
               data-sq="ctl"
-              data-sq-border="solid"
-              className="px-3 py-2 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#525252] t-small font-medium text-black/70 dark:text-white flex items-center gap-2 transition-colors self-start sm:self-auto cursor-pointer"
+              data-sq-border="none"
+              className="px-3 py-2 bg-white dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] t-small font-medium text-black/70 dark:text-white flex items-center gap-2 transition-colors self-start sm:self-auto cursor-pointer"
             >
               <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
               Refresh Status
@@ -369,8 +369,8 @@ ON CONFLICT (id) DO NOTHING;
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div
                 data-sq="card"
-                data-sq-border="solid"
-                className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+                data-sq-border="none"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
               >
                 <span className="t-small font-medium text-black/55 dark:text-white/55">Rentable Spaces</span>
                 <div className="flex items-baseline gap-2 mt-1">
@@ -386,8 +386,8 @@ ON CONFLICT (id) DO NOTHING;
 
               <div
                 data-sq="card"
-                data-sq-border="solid"
-                className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+                data-sq-border="none"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
               >
                 <span className="t-small font-medium text-black/55 dark:text-white/55">Reservations</span>
                 <div className="flex items-baseline gap-2 mt-1">
@@ -403,8 +403,8 @@ ON CONFLICT (id) DO NOTHING;
 
               <div
                 data-sq="card"
-                data-sq-border="solid"
-                className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+                data-sq-border="none"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
               >
                 <span className="t-small font-medium text-black/55 dark:text-white/55">Renters & Clients</span>
                 <div className="flex items-baseline gap-2 mt-1">
@@ -420,8 +420,8 @@ ON CONFLICT (id) DO NOTHING;
 
               <div
                 data-sq="card"
-                data-sq-border="solid"
-                className="p-4 bg-neutral-50 dark:bg-neutral-800/40 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626]"
+                data-sq-border="none"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
               >
                 <span className="t-small font-medium text-black/55 dark:text-white/55">Caution Escrow</span>
                 <div className="flex items-baseline gap-2 mt-1">
@@ -441,8 +441,8 @@ ON CONFLICT (id) DO NOTHING;
           {latestBooking && (
             <div
               data-sq="card"
-              data-sq-border="solid"
-              className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 [--sq-stroke:#A7F3D0] dark:[--sq-stroke:#065F46]"
+              data-sq-border="none"
+              className="p-4 bg-emerald-50/70 dark:bg-emerald-950/25"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -475,8 +475,8 @@ ON CONFLICT (id) DO NOTHING;
           {/* Live Action Test */}
           <div
             data-sq="card"
-            data-sq-border="solid"
-            className="p-4 bg-purple-50/50 dark:bg-purple-950/20 [--sq-stroke:#E9D5FF] dark:[--sq-stroke:#581C87]"
+            data-sq-border="none"
+            className="p-4 bg-purple-50/60 dark:bg-purple-950/25"
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
@@ -514,11 +514,11 @@ ON CONFLICT (id) DO NOTHING;
             {testResult.tested && (
               <div
                 data-sq="ctl"
-                data-sq-border="solid"
+                data-sq-border="none"
                 className={`mt-4 p-4 t-cap flex items-start gap-2 ${
                   testResult.success
-                    ? 'bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#A7F3D0] dark:[--sq-stroke:#065F46] text-emerald-800 dark:text-emerald-200'
-                    : 'bg-rose-50 dark:bg-rose-950/40 [--sq-stroke:#FECDD3] dark:[--sq-stroke:#881337] text-rose-800 dark:text-rose-200'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200'
+                    : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200'
                 }`}
               >
                 {testResult.success ? (
@@ -539,8 +539,8 @@ ON CONFLICT (id) DO NOTHING;
           {/* Quick Repair Query Section */}
           <div
             data-sq="card"
-            data-sq-border="solid"
-            className="[--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] p-4 bg-neutral-50 dark:bg-neutral-800/30"
+            data-sq-border="none"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -552,8 +552,8 @@ ON CONFLICT (id) DO NOTHING;
               <button
                 onClick={handleCopySql}
                 data-sq="ctl-sm"
-                data-sq-border="solid"
-                className="px-3 py-1 bg-white dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-600 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#525252] t-small font-medium text-black dark:text-white flex items-center gap-2 transition-colors cursor-pointer"
+                data-sq-border="none"
+                className="px-3 py-1 bg-white dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] t-small font-medium text-black dark:text-white flex items-center gap-2 transition-colors cursor-pointer"
               >
                 {copied ? (
                   <>
@@ -576,7 +576,7 @@ ON CONFLICT (id) DO NOTHING;
             <pre
               data-sq="ctl"
               data-sq-border="solid"
-              className="p-3 bg-neutral-900 text-white t-cap tabular-nums overflow-x-auto max-h-40 [--sq-stroke:#262626]"
+              className="p-3 bg-[#191716] dark:bg-[#131211] text-white t-cap tabular-nums overflow-x-auto max-h-40 [--sq-stroke:var(--sq-stroke-obsidian)]"
             >
               {sqlRepairScript}
             </pre>
@@ -584,7 +584,7 @@ ON CONFLICT (id) DO NOTHING;
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#E6DED6] dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-800/30">
+        <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC]/60 dark:bg-[#1D1B19]">
           <span className="t-cap text-black/55 dark:text-white/75">
             All app reservations are saved both locally in browser storage & synced to Supabase
           </span>
@@ -592,7 +592,7 @@ ON CONFLICT (id) DO NOTHING;
             onClick={onClose}
             data-sq="ctl"
             data-sq-border="none"
-            className="px-4 py-2 bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-black t-small font-semibold transition-colors cursor-pointer"
+            className="px-4 py-2 bg-[#191716] hover:bg-black dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-black t-small font-semibold transition-colors cursor-pointer"
           >
             Close
           </button>

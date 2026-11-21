@@ -466,7 +466,7 @@ export const EducationFinanceView: React.FC = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0 border border-neutral-200 dark:border-neutral-700"
+              className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
             >
               {enr.studentName.charAt(0)}
             </div>
@@ -607,7 +607,7 @@ export const EducationFinanceView: React.FC = () => {
                     receiptNumber: `REC-${enr.id.slice(-6)}`,
                   });
                 }}
-                className="px-2.5 py-2 border border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer flex items-center gap-1"
+                className="px-2.5 py-2 text-black/70 dark:text-white/75 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer flex items-center gap-1"
               >
                 <Receipt size={12} />
                 <span>Reçu</span>
@@ -669,7 +669,7 @@ export const EducationFinanceView: React.FC = () => {
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="p-3 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040] flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150"
+          className="p-3 bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:rgba(212,82,47,0.24)] dark:[--sq-stroke:rgba(255,143,99,0.22)] flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150"
         >
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[var(--brand-fill,#C9461F)] text-white flex items-center justify-center t-small font-semibold">
@@ -1010,9 +1010,9 @@ export const EducationFinanceView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 space-y-4"
+              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_payment_modal_title')}
               </h2>
@@ -1028,7 +1028,7 @@ export const EducationFinanceView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-4 bg-[#F3EDE7] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-1"
+                className="p-4 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-1"
               >
                 <div className="font-semibold text-black dark:text-white">{selectedEnrollmentForPayment.studentName}</div>
                 <div className="text-black/55 dark:text-white/55">
@@ -1054,10 +1054,10 @@ export const EducationFinanceView: React.FC = () => {
                           setSelectedInstallmentIndex(idx);
                           setPaymentAmount(inst.isPaid ? 0 : inst.amount);
                         }}
-                        className={`p-2 border text-left rtl:text-right transition-colors cursor-pointer ${
+                        className={`p-2 text-left rtl:text-right transition-colors cursor-pointer ${
                           selectedInstallmentIndex === idx
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-800 border-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
-                            : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-black/70 dark:text-white/75'
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
+                            : 'bg-white dark:bg-neutral-900 text-black/70 dark:text-white/75'
                         }`}
                       >
                         <div className="t-cap text-black/55 dark:text-white/55">Échéance #{idx + 1}</div>
@@ -1094,7 +1094,7 @@ export const EducationFinanceView: React.FC = () => {
                 height={44}
                 corner={12}
               />
-              <div className="pt-2 flex justify-end gap-2 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="pt-2 flex justify-end gap-2 border-t border-[var(--atr-divider)]">
                 <AtriumButton
                   variant="outline"
                   size="sm"
@@ -1119,9 +1119,9 @@ export const EducationFinanceView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 space-y-4"
+              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
             >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 Official Tuition Receipt
               </div>
@@ -1144,7 +1144,7 @@ export const EducationFinanceView: React.FC = () => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-4 bg-[#F3EDE7] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-2 t-cap"
+              className="p-4 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-2 t-cap"
             >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">
@@ -1162,14 +1162,14 @@ export const EducationFinanceView: React.FC = () => {
                 <span className="text-black/55 dark:text-white/55">{t('edu_field_pay_method')}:</span>
                 <span className="font-semibold">{receiptToPrint.method}</span>
               </div>
-              <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-800 font-semibold t-label">
+              <div className="flex justify-between pt-2 border-t border-[var(--atr-divider)] font-semibold t-label">
                 <span>{isAr ? 'المبلغ المسدد:' : isEn ? 'Amount Paid:' : 'Montant payé :'}</span>
                 <span className="text-emerald-600 dark:text-emerald-400">
                   {formatMoney(receiptToPrint.amount)}
                 </span>
               </div>
             </div>
-            <div className="pt-2 flex justify-end gap-2 border-t border-neutral-100 dark:border-neutral-800">
+            <div className="pt-2 flex justify-end gap-2 border-t border-[var(--atr-divider)]">
               <AtriumButton
                 variant="primary"
                 size="md"

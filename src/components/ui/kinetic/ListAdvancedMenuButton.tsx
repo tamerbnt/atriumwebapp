@@ -144,7 +144,7 @@ export const ListAdvancedMenuButton: React.FC<ListAdvancedMenuButtonProps> =
                 className={
                   open || isExpanded
                     ? 'bg-[#d4522f]/12 dark:bg-[#d4522f]/18 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] [--sq-stroke:rgba(201,70,31,0.5)]'
-                    : 'bg-white dark:bg-neutral-800 hover:bg-[#FBF8F5] dark:hover:bg-neutral-700/50'
+                    : 'bg-white dark:bg-[#22201E] hover:bg-[#FBF8F5] dark:hover:bg-[#2B2825]'
                 }
                 icon={<MoreHorizontal size={18} strokeWidth={1.75} />}
               />

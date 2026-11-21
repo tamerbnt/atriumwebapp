@@ -50,7 +50,7 @@ const getInitials2 = (name: string): string => {
 };
 
 const MEMBER_PILL_DANGER =
-  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]';
 
 interface PosExpense {
   id: string;
@@ -422,7 +422,7 @@ export const PosFinanceView: React.FC = () => {
         width: '120px',
         sortable: true,
         renderCell: (e) => (
-          <span className="t-small font-semibold px-2 py-1 rounded-[var(--r-check,6px)] bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75">
+          <span className="t-small font-semibold px-2 py-1 rounded-[var(--r-check,6px)] bg-[#EFE9E2] dark:bg-[#2B2825] text-black/70 dark:text-white/75">
             {e.category}
           </span>
         ),
@@ -578,7 +578,7 @@ export const PosFinanceView: React.FC = () => {
                 type="number"
                 value={openingFloat}
                 onChange={(e) => setOpeningFloat(parseFloat(e.target.value) || 0)}
-                className="w-24 h-8 px-2 t-small tabular-nums font-semibold rounded-[var(--r-ctl-sm,10px)] border border-black/[0.08] dark:border-white/[0.10] bg-white dark:bg-neutral-900 text-black dark:text-white"
+                className="w-24 h-8 px-2.5 t-small tabular-nums font-semibold rounded-[var(--r-ctl-sm,10px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
               />
             </label>
             <label className="flex items-center gap-2 t-small font-semibold text-black/65 dark:text-white/70">
@@ -588,7 +588,7 @@ export const PosFinanceView: React.FC = () => {
                 placeholder="DA réel"
                 value={actualCashInput}
                 onChange={(e) => setActualCashInput(e.target.value)}
-                className="w-28 h-8 px-2 t-small tabular-nums font-semibold rounded-[var(--r-ctl-sm,10px)] border border-black/[0.08] dark:border-white/[0.10] bg-white dark:bg-neutral-900 text-black dark:text-white"
+                className="w-28 h-8 px-2.5 t-small tabular-nums font-semibold rounded-[var(--r-ctl-sm,10px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
               />
             </label>
           </div>
@@ -598,7 +598,7 @@ export const PosFinanceView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-4 bg-white dark:bg-neutral-800 sq-elev-card space-y-2"
+            className="p-4 bg-white dark:bg-[#22201E] sq-elev-card space-y-2"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -619,7 +619,7 @@ export const PosFinanceView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-4 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] space-y-2"
+            className="p-4 bg-white dark:bg-[#22201E] sq-elev-card space-y-2"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -640,7 +640,7 @@ export const PosFinanceView: React.FC = () => {
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-4 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] space-y-2"
+            className="p-4 bg-white dark:bg-[#22201E] sq-elev-card space-y-2"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -997,7 +997,7 @@ export const PosFinanceView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsExpenseModalOpen(false)}
-              className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-neutral-100 cursor-pointer"
+              className="h-10 px-4 t-small font-semibold text-black/55 dark:text-white/55 rounded-full hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
             >
               {t('action_cancel')}
             </button>
@@ -1022,15 +1022,15 @@ export const PosFinanceView: React.FC = () => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-4 bg-white text-black [--sq-stroke:#D4D4D4] space-y-2"
+              className="p-4 bg-white text-black [--sq-stroke:rgba(23,19,15,0.12)] space-y-2"
             >
-              <div className="text-center font-semibold pb-2 border-b border-dashed border-neutral-400">
+              <div className="text-center font-semibold pb-2 border-b border-dashed border-black/[0.22]">
                 <div className="t-label font-semibold">RAPPORT Z - CLÔTURE DE CAISSE</div>
                 <div className="t-cap text-black/75">{currentBranch.name}</div>
                 <div className="t-cap text-black/55">{new Date().toLocaleString()}</div>
                 <div className="t-cap text-black/55">CAISSIER : {currentUser?.fullName || 'Amine Bentouati'}</div>
               </div>
-              <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 t-cap">
+              <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
                 <div className="flex justify-between">
                   <span>FOND DE CAISSE INITIAL :</span>
                   <span className="font-semibold">{formatMoney(openingFloat)}</span>
@@ -1048,7 +1048,7 @@ export const PosFinanceView: React.FC = () => {
                   <span>{formatMoney(financeTotals.expectedCashInDrawer)}</span>
                 </div>
               </div>
-              <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 t-cap">
+              <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
                 <div className="font-semibold t-small text-black/55">VENTILATION PAR MODE DE PAIEMENT :</div>
                 <div className="flex justify-between">
                   <span>ESPÈCES :</span>
@@ -1064,7 +1064,7 @@ export const PosFinanceView: React.FC = () => {
                 </div>
               </div>
               {financeTotals.hasCounted && (
-                <div className="space-y-1 py-1 border-b border-dashed border-neutral-400 t-cap">
+                <div className="space-y-1 py-1 border-b border-dashed border-black/[0.22] t-cap">
                   <div className="flex justify-between font-semibold">
                     <span>ESPÈCES PHYSICOMPTÉES :</span>
                     <span>{formatMoney(financeTotals.actualCounted)}</span>
@@ -1093,7 +1093,7 @@ export const PosFinanceView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsZReportOpen(false)}
-                className="h-10 px-4 rounded-full text-black/55 dark:text-white/55 hover:bg-neutral-100 t-small font-semibold cursor-pointer"
+                className="h-10 px-4 rounded-full text-black/55 dark:text-white/55 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] t-small font-semibold cursor-pointer"
               >
                 Fermer
               </button>

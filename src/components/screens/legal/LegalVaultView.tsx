@@ -642,14 +642,14 @@ export const LegalVaultView: React.FC<any> = () => {
         width: '1.6*',
         renderCell: (i) => (
           <span
-            className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold border ${
+            className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold ${
               i.status === 'MinuteOfficielle'
-                ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300'
                 : i.status === 'DossierAudit'
-                ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
                 : i.status === 'Confidential'
-                ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300'
-                : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300'
+                : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
             }`}
           >
             {i.status === 'MinuteOfficielle'
@@ -991,10 +991,10 @@ export const LegalVaultView: React.FC<any> = () => {
         statusLabel={activeItem ? localizeStatus(activeItem.status, language) : undefined}
         statusClassName={
           activeItem?.status === 'Confidential'
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
             : activeItem?.status === 'DossierAudit'
-            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
-            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
         }
         tabs={[
           { id: 'piece', label: isAr ? 'الوثيقة' : 'Fiche' },
@@ -1169,14 +1169,14 @@ export const LegalVaultView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 max-h-[90vh] overflow-y-auto"
             >
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+            <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
               <div className="flex items-center gap-2">
                 <div
                   data-sq="tile"
                   data-sq-border="none"
-                  className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
+                  className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
                 >
                   {targetScope === 'notaire' ? <Scroll size={20} /> : <Lock size={20} />}
                 </div>
@@ -1195,7 +1195,7 @@ export const LegalVaultView: React.FC<any> = () => {
                 data-no-liquid="true"
                 aria-label={isAr ? 'إغلاق' : 'Fermer'}
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                className="p-2 rounded-full text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -1249,7 +1249,7 @@ export const LegalVaultView: React.FC<any> = () => {
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton
                   variant="ghost"
                   size="sm"

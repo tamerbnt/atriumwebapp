@@ -203,15 +203,15 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
       <div
         data-sq="panel"
         data-sq-border="solid"
-        className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4 max-h-[92vh] flex flex-col"
+        className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4 max-h-[92vh] flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3 shrink-0">
+        <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3 shrink-0">
           <div className="flex items-center gap-2">
             <div
               data-sq="tile"
               data-sq-border="none"
-              className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
+              className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"
             >
               <Package size={20} />
             </div>
@@ -225,7 +225,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
             type="button"
             aria-label={isAr ? 'إغلاق' : 'Fermer'}
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -248,8 +248,8 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               </label>
               <div
                 data-sq="ctl"
-                data-sq-border="solid"
-                className="flex bg-neutral-100 dark:bg-neutral-800 p-[3px] border border-neutral-200 dark:border-neutral-700"
+                data-sq-border="none"
+                className="flex bg-[#F5F1EC] dark:bg-[#1D1B19] p-[3px]"
               >
                 <button
                   type="button"
@@ -259,7 +259,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                   onClick={() => setDeliveryMode('HomeDelivery')}
                   className={`flex-1 py-2 t-small font-semibold transition-all cursor-pointer ${
                     deliveryMode === 'HomeDelivery'
-                      ? 'bg-white dark:bg-neutral-900 text-black dark:text-white'
+                      ? 'bg-white dark:bg-[#2B2825] text-black dark:text-white'
                       : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
@@ -273,7 +273,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                   onClick={() => setDeliveryMode('StopDesk')}
                   className={`flex-1 py-2 t-small font-semibold transition-all cursor-pointer ${
                     deliveryMode === 'StopDesk'
-                      ? 'bg-white dark:bg-neutral-900 text-[var(--brand-on-dark,#FF8F63)]'
+                      ? 'bg-white dark:bg-[#2B2825] text-[var(--brand-on-dark,#FF8F63)]'
                       : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
                   }`}
                 >
@@ -318,8 +318,8 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               </div>
               <div
                 data-sq="ctl"
-                data-sq-border="solid"
-                className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 [--sq-stroke:#e5e5e5] dark:[--sq-stroke:#404040] focus-within:border-[#d4522f] focus-within:[--sq-stroke:#d4522f]"
+                data-sq-border="none"
+                className="w-full bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
               >
                 <input
                   type="text"
@@ -353,8 +353,8 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
           {/* Weight & Volumetric Dimensions */}
           <div
             data-sq="card"
-            data-sq-border="solid"
-            className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 space-y-3"
+            data-sq-border="none"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-3"
           >
             <div className="flex items-center justify-between">
               <span className="t-small font-semibold text-black dark:text-white">
@@ -370,8 +370,8 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                 <label className="t-cap text-black/55 dark:text-white/55 block">Poids Réel (kg)</label>
                 <div
                   data-sq="ctl-sm"
-                  data-sq-border="solid"
-                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                  data-sq-border="none"
+                  className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <input
                     type="number"
@@ -388,8 +388,8 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                 <label className="t-cap text-black/55 dark:text-white/55 block">Longueur (cm)</label>
                 <div
                   data-sq="ctl-sm"
-                  data-sq-border="solid"
-                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                  data-sq-border="none"
+                  className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <input
                     type="number"
@@ -404,8 +404,8 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                 <label className="t-cap text-black/55 dark:text-white/55 block">Largeur (cm)</label>
                 <div
                   data-sq="ctl-sm"
-                  data-sq-border="solid"
-                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                  data-sq-border="none"
+                  className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <input
                     type="number"
@@ -420,8 +420,8 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                 <label className="t-cap text-black/55 dark:text-white/55 block">Hauteur (cm)</label>
                 <div
                   data-sq="ctl-sm"
-                  data-sq-border="solid"
-                  className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
+                  data-sq-border="none"
+                  className="w-full bg-white dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <input
                     type="number"
@@ -435,16 +435,17 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
           </div>
 
           {/* Pricing & Fiscal Stamp Breakdown Card */}
-          <div data-sq="card" data-sq-border="none" className="p-4 bg-[#1F1D1B] text-white space-y-2">
-            <div className="flex items-center justify-between t-cap border-b border-neutral-800 pb-2">
+          <div data-sq="card" data-sq-border="none" data-surface="dark" className="p-4 bg-[#191716] text-white space-y-2">
+            <div className="flex items-center justify-between t-cap border-b border-white/[0.12] pb-2">
               <span className="text-white/80">
                 {isAr ? 'مبلغ السلعة COD' : 'Montant à Encaisser (COD)'}
               </span>
               <div className="flex items-center gap-1">
                 <div
                   data-sq="ctl-sm"
-                  data-sq-border="solid"
-                  className="w-28 bg-neutral-800 border border-neutral-700"
+                  data-sq-border="none"
+                  data-surface="dark"
+                  className="w-28 bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/40 transition-shadow"
                 >
                   <input
                     type="number"
@@ -474,7 +475,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800 shrink-0">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)] shrink-0">
             <AtriumButton variant="ghost" size="sm" type="button" onClick={onClose}>
               {isAr ? 'إلغاء' : 'Annuler'}
             </AtriumButton>

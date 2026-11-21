@@ -52,7 +52,7 @@ export const DarkEspressoCard: React.FC<DarkEspressoCardProps> = ({
       data-surface="dark"
       data-sq="card"
       data-sq-border="solid"
-      className={`sq-elev-card bg-[#1F1D1B] p-[var(--card-pad,20px)] card-opt border-0 [--sq-stroke:var(--sq-stroke-obsidian)] text-white relative overflow-hidden min-h-[var(--kpi-min-h,168px)] flex flex-col gap-[var(--s3,12px)] group select-none ${className}`}
+      className={`sq-elev-card bg-[#22201E] p-[var(--card-pad,20px)] card-opt border-0 [--sq-stroke:var(--sq-stroke-obsidian)] text-white relative overflow-hidden min-h-[var(--kpi-min-h,168px)] flex flex-col gap-[var(--s3,12px)] group select-none ${className}`}
     >
       {showSparkline && (
         <div className="absolute -right-3 -bottom-4 opacity-25 group-hover:opacity-40 transition-opacity pointer-events-none">

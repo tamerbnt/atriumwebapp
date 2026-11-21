@@ -381,7 +381,7 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
           const isPinned = pinnedIds.has(p.id);
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div data-sq="tile" data-sq-border="solid" className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]">
+              <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0">
                 <Building2 size={18} />
               </div>
               <div className="min-w-0">
@@ -451,10 +451,10 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
           return (
             <div className="text-center">
               <span
-                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold border ${
+                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold ${
                   isRented
-                    ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200/60'
-                    : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200/60'
+                    ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400'
+                    : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${isRented ? 'bg-blue-500' : 'bg-emerald-500'}`} />
@@ -702,8 +702,8 @@ export const RealEstatePropertiesView: React.FC<any> = () => {
         }
         statusClassName={
           activeProperty?.status === 'Rented'
-            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
-            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
         }
         tabs={[
           { id: 'fiche', label: isAr ? 'بيانات العقار' : 'Fiche & Cadastre' },

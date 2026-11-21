@@ -24,7 +24,7 @@ export const StatTile: React.FC<StatTileProps> = ({
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="relative p-[var(--card-pad,20px)] card-opt bg-white dark:bg-neutral-800 hover:bg-[#FCF9F6] dark:hover:bg-neutral-800/95 flex flex-col gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] transition-colors duration-200"
+        className="relative p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] flex flex-col gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] transition-colors duration-200"
       >
         <div className="flex items-center justify-between gap-[var(--s3,12px)]">
           <span className="t-small text-[var(--text-2)] dark:text-[var(--text-dark-2)]">

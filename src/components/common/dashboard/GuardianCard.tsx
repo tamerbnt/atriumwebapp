@@ -53,15 +53,15 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
         data-surface="dark"
         data-sq="card"
         data-sq-border="solid"
-        className="bg-[#1F1D1B] rounded-[var(--r-card,16px)] p-[var(--card-pad,20px)] card-opt [--sq-stroke:var(--sq-stroke-obsidian)] text-white relative overflow-hidden flex flex-col justify-between gap-[var(--card-body-gap,20px)] h-full"
+        className="bg-[#22201E] rounded-[var(--r-card,16px)] p-[var(--card-pad,20px)] card-opt [--sq-stroke:var(--sq-stroke-obsidian)] text-white relative overflow-hidden flex flex-col justify-between gap-[var(--card-body-gap,20px)] h-full"
       >
         {/* Top row: Title and Toggle */}
         <div className="flex items-center justify-between gap-[var(--card-head-gap,12px)]">
           <div className="flex items-center gap-[var(--card-head-gap,12px)]">
             <div
               data-sq="tile"
-              data-sq-border="solid"
-              className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-white/[0.08] [--sq-stroke:var(--sq-stroke-ctl)] text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0"
+              data-sq-border="none"
+              className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-white/[0.08] text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center shrink-0"
             >
               <Shield size={16} strokeWidth={1.5} />
             </div>
@@ -75,7 +75,7 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
             type="button"
             onClick={handleToggle}
             className={`w-12 h-6 rounded-full transition-colors p-1 relative cursor-pointer flex items-center ${
-              isEnabled ? 'bg-white/20' : 'bg-neutral-800'
+              isEnabled ? 'bg-white/20' : 'bg-[#2B2825]'
             }`}
             title={isEnabled ? 'Active' : 'Disabled'}
           >
@@ -134,7 +134,7 @@ export const GuardianCard: React.FC<GuardianCardProps> = ({
         </div>
 
         {/* Bottom status indicator */}
-        <div className="flex items-center justify-between pt-[var(--footer-gap,16px)] border-t border-white/10 text-[var(--text-dark-2,#A99E92)]">
+        <div className="flex items-center justify-between pt-[var(--footer-gap,16px)] border-t border-white/[0.06] text-[var(--text-dark-2,#A99E92)]">
           <span className="t-small text-emerald-400">
             {statusText || 'Active'}
           </span>

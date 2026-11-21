@@ -45,9 +45,9 @@ import {
 } from '../../ui/kinetic';
 
 const STATUS_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const STATUS_PILL_INFO =
-  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
 
 type DrawerTab = 'dossier' | 'bookings' | 'finances';
 
@@ -388,7 +388,7 @@ export const VenueRentersView: React.FC = () => {
         sortable: true,
         renderCell: (renter) => (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
+            <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0">
               {renter.fullName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
@@ -416,7 +416,7 @@ export const VenueRentersView: React.FC = () => {
         renderCell: (renter) => {
           const bInfo = resolveRecordBranch(renter, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -448,7 +448,7 @@ export const VenueRentersView: React.FC = () => {
         minWidth: '110px',
         sortable: true,
         renderCell: (renter) => (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold bg-[#EFE9E2] dark:bg-[#2B2825] text-black/70 dark:text-white/75 tabular-nums">
             {renter.totalBookings} {isAr ? 'حجز' : isFr ? 'réservations' : 'bookings'}
           </span>
         ),
@@ -948,9 +948,9 @@ export const VenueRentersView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-800 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] w-full overflow-hidden animate-in zoom-in-95 duration-200"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full overflow-hidden animate-in zoom-in-95 duration-200"
             >
-            <div className="p-6 border-b border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
+            <div className="p-6 border-b border-[var(--atr-divider)] flex items-center justify-between">
               <div>
                 <h3 className="t-pod font-semibold text-black dark:text-white">
                   {renterToEdit ? t('venue_renters_btn_edit') : t('venue_renters_btn_add')}
@@ -966,7 +966,7 @@ export const VenueRentersView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
               >
                 <X size={15} />
               </button>
@@ -1042,16 +1042,16 @@ export const VenueRentersView: React.FC = () => {
                       ? 'Exigences techniques, historique...'
                       : 'Technical needs, catering...'
                   }
-                  className="w-full px-4 py-2 rounded-[var(--r-ctl,12px)] border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 t-cap text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]"
+                  className="w-full px-4 py-2 rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] t-cap text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow"
                 />
               </div>
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-700/60">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
                 >
                   {isAr ? 'إلغاء' : isFr ? 'Annuler' : 'Cancel'}
                 </button>

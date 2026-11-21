@@ -94,9 +94,9 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5"
+          className="bg-white dark:bg-neutral-900 w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5"
         >
-          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+          <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-2">
               <div
                 data-sq="ctl-sm"
@@ -210,7 +210,7 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
             <AtriumButton variant="secondary" onClick={onClose}>
               {language === 'ar' ? 'إلغاء' : 'Annuler'}
             </AtriumButton>

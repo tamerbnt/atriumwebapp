@@ -42,13 +42,13 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen w-screen flex items-center justify-center bg-[#121110] text-white p-[var(--s6,24px)] font-sans">
+        <div className="min-h-screen w-screen flex items-center justify-center bg-[#0E0D0C] text-white p-[var(--s6,24px)] font-sans">
           <div className="max-w-md w-full sq-elev-pop">
             <div
               data-sq="panel"
               data-sq-border="solid"
               data-surface="dark"
-              className="w-full bg-[#1C1A18] [--sq-stroke:url(#sq-spec-dark-pop)] rounded-[var(--r-panel,28px)] p-[var(--s7,32px)] text-center flex flex-col items-center gap-[var(--s6,24px)]"
+              className="w-full bg-[#262422] [--sq-stroke:url(#sq-spec-dark-pop)] rounded-[var(--r-panel,28px)] p-[var(--s7,32px)] text-center flex flex-col items-center gap-[var(--s6,24px)]"
             >
               <div
                 data-sq="tile-lg"
@@ -71,7 +71,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <div
                   data-sq="card"
                   data-sq-border="solid"
-                  className="w-full p-[var(--s3,12px)] bg-neutral-900/80 rounded-[var(--r-card,16px)] text-left [--sq-stroke:var(--sq-stroke-obsidian)] t-cap tabular-nums text-white/90 max-h-32 overflow-y-auto"
+                  className="w-full p-[var(--s3,12px)] bg-[#1D1B19] rounded-[var(--r-card,16px)] text-left [--sq-stroke:var(--sq-stroke-obsidian)] t-cap tabular-nums text-white/90 max-h-32 overflow-y-auto"
                 >
                   {this.state.error.message}
                 </div>

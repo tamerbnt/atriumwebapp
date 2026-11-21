@@ -259,7 +259,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
         width: '1.4*',
         sortable: true,
         renderCell: (o) => (
-          <span className="tabular-nums font-semibold t-small bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] px-2 py-1 rounded-[var(--r-check,6px)] border border-[#d4522f]/20">
+          <span className="tabular-nums font-semibold t-small bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] px-2 py-1 rounded-[var(--r-check,6px)]">
             {o.orderNumber}
           </span>
         ),
@@ -625,7 +625,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
                     Lot: {o.batchLotNumber || 'LOT-2026-STD'} · {qty} pcs
                   </p>
                 </div>
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between t-cap">
+                <div className="pt-2 border-t border-[var(--atr-divider)] flex items-center justify-between t-cap">
                   <div>
                     <span className="t-cap text-black/55 dark:text-white/55 block">Coût Unitaire</span>
                     <span className="tabular-nums font-semibold text-black/70 dark:text-white/75">{formatMoney(unitCost, language)}</span>
@@ -677,8 +677,8 @@ export const ManufacturingQcView: React.FC<any> = () => {
         }
         statusClassName={
           activeOrder?.status === 'Completed'
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300'
-            : 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300'
+            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
+            : 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
         }
         tabs={[
           { id: 'cq', label: isAr ? 'فحص الجودة' : 'Contrôle CQ' },
@@ -715,7 +715,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
             {tab === 'cq' && (
               <div className="space-y-4">
                 <div className="sq-elev-card">
-                  <div data-sq="card" data-sq-border="none" className="p-4 bg-[#1F1D1B] text-white space-y-2">
+                  <div data-sq="card" data-sq-border="none" data-surface="dark" className="p-4 bg-[#191716] text-white space-y-2">
                     <div className="flex items-center justify-between text-white/80 t-cap">
                       <span>Statut Libération du Lot</span>
                       <span className="bg-[#3D2817] text-[#FB923C] t-small font-semibold px-2 py-1 rounded-full">ISO 9001</span>
@@ -728,7 +728,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
                     </p>
                   </div>
                 </div>
-                <div data-sq="card" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2">
+                <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2">
                   <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                     Spécifications de Fabrication
                   </span>
@@ -751,20 +751,20 @@ export const ManufacturingQcView: React.FC<any> = () => {
             )}
 
             {tab === 'metrologie' && (
-              <div data-sq="card" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2">
+              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2">
                 <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                   Rapport Dimensionnel & Tolérances
                 </span>
                 <div className="space-y-2">
-                  <div data-sq="ctl" data-sq-border="solid" className="flex justify-between p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                  <div data-sq="ctl" data-sq-border="none" className="flex justify-between p-2 bg-white dark:bg-[#22201E]">
                     <span>Cote Critique Longueur (±0.5mm):</span>
                     <span className="tabular-nums font-semibold text-emerald-600">+0.12mm (OK)</span>
                   </div>
-                  <div data-sq="ctl" data-sq-border="solid" className="flex justify-between p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                  <div data-sq="ctl" data-sq-border="none" className="flex justify-between p-2 bg-white dark:bg-[#22201E]">
                     <span>Épaisseur & Planéité (±0.2mm):</span>
                     <span className="tabular-nums font-semibold text-emerald-600">-0.05mm (OK)</span>
                   </div>
-                  <div data-sq="ctl" data-sq-border="solid" className="flex justify-between p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                  <div data-sq="ctl" data-sq-border="none" className="flex justify-between p-2 bg-white dark:bg-[#22201E]">
                     <span>Adhérence Finition / Revêtement:</span>
                     <span className="tabular-nums font-semibold text-emerald-600">Grade 5B (Parfait)</span>
                   </div>
@@ -773,7 +773,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
             )}
 
             {tab === 'couts' && (
-              <div data-sq="card" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2">
+              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2">
                 <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                   Décomposition Coût de Revient
                 </span>
@@ -789,7 +789,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
                     {formatMoney(ord.totalLaborCostDzd, language)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between pt-1 border-t border-neutral-200 dark:border-neutral-800">
+                <div className="flex items-center justify-between pt-1 border-t border-[var(--atr-divider)]">
                   <span className="font-semibold text-black dark:text-white">Coût Total Lot:</span>
                   <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(ord.totalCostDzd, language)}</span>
                 </div>
@@ -802,10 +802,10 @@ export const ManufacturingQcView: React.FC<any> = () => {
       {orderForCertificate && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="sq-elev-pop max-w-xl w-full animate-in zoom-in-95 duration-150">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 sm:p-8 border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-3">
-                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 text-emerald-800 flex items-center justify-center font-semibold">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-semibold">
                     <ShieldCheck size={22} />
                   </div>
                   <div>
@@ -831,7 +831,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
                     type="button"
                     aria-label={isAr ? 'إغلاق' : 'Fermer'}
                     onClick={() => setOrderForCertificate(null)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                   >
                     <X size={18} />
                   </button>
@@ -855,7 +855,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
                     <div className="t-cap text-black/55 mt-0.5">Date : {new Date().toISOString().split('T')[0]}</div>
                   </div>
                 </div>
-                <div className="bg-neutral-50 p-4 rounded-[var(--r-ctl,12px)] border border-neutral-200 t-cap space-y-2">
+                <div className="bg-neutral-50 p-4 rounded-[var(--r-ctl,12px)] border border-black/[0.12] t-cap space-y-2">
                 <div className="flex justify-between">
                   <span className="text-black/55">Article inspecté :</span>
                   <span className="font-semibold text-black">{orderForCertificate.productName}</span>
@@ -902,7 +902,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
               <div className="p-3 bg-neutral-100 rounded-[var(--r-ctl,12px)] t-small text-black/75 font-medium">
                 Le Responsable Assurance Qualité atteste que le lot ci-dessus référencé répond strictement aux spécifications techniques du cahier des charges et est libéré pour livraison client.
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t text-center t-cap">
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-black/[0.12] text-center t-cap">
                 <div>
                   <span className="text-black/55 t-cap block">Ingénieur Métrologie & CQ</span>
                   <div className="h-10 flex items-center justify-center text-black italic">Ing. Sofiane Mokrani</div>

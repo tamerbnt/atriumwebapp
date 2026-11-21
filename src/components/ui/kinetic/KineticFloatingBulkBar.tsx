@@ -100,7 +100,7 @@ export const KineticFloatingBulkBar: React.FC<KineticFloatingBulkBarProps> = ({
       role="toolbar"
       aria-label={language === 'ar' ? 'إجراءات جماعية' : language === 'fr' ? 'Actions groupées' : 'Bulk actions'}
       aria-hidden={selectedCount === 0}
-      className={`bar fixed left-1/2 top-[var(--inset,12px)] flex items-center gap-[var(--s2,8px)] h-14 max-w-[calc(100vw-24px)] overflow-x-auto pl-[var(--s5,20px)] pr-[var(--s2,8px)] rounded-full bg-[#1F1D1B] text-[#F4EDE6] z-[45] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-white/[0.1] ${className}`}
+      className={`bar fixed left-1/2 top-[var(--inset,12px)] flex items-center gap-[var(--s2,8px)] h-14 max-w-[calc(100vw-24px)] overflow-x-auto pl-[var(--s5,20px)] pr-[var(--s2,8px)] rounded-full bg-[#262422] text-[#F4EDE6] z-[45] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none ${className}`}
       style={{
         visibility: selectedCount > 0 ? 'visible' : 'hidden',
         pointerEvents: selectedCount > 0 ? 'auto' : 'none',

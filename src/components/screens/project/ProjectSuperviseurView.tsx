@@ -73,7 +73,7 @@ const getMissionStatusBadge = (
         label: isAr ? 'مباشر اليوم' : isEn ? 'Live Today' : 'En direct',
         variant: 'blocked',
         pillClass:
-          'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
+          'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]',
       };
     case 'upcoming':
     case 'scheduled':
@@ -81,21 +81,21 @@ const getMissionStatusBadge = (
         label: isAr ? 'مجدولة' : isEn ? 'Scheduled' : 'Planifiée',
         variant: 'info',
         pillClass:
-          'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]',
+          'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC]',
       };
     case 'completed':
       return {
         label: isAr ? 'منتهية' : isEn ? 'Completed' : 'Terminée',
         variant: 'active',
         pillClass:
-          'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+          'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
       };
     default:
       return {
         label: status,
         variant: 'neutral',
         pillClass:
-          'bg-[#F3EDE7] dark:bg-neutral-800 text-black/75 dark:text-white/80 border border-[#E6DED6] dark:border-neutral-700',
+          'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/75 dark:text-white/80',
       };
   }
 };
@@ -111,7 +111,7 @@ const getAttendanceBadge = (
       label: isAr ? 'حاضر' : isEn ? 'Present' : 'Présent',
       variant: 'active',
       pillClass:
-        'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+        'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
     };
   }
   if (status === 'late') {
@@ -119,14 +119,14 @@ const getAttendanceBadge = (
       label: isAr ? 'متأخر' : isEn ? 'Late' : 'Retard',
       variant: 'warning',
       pillClass:
-        'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+        'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
     };
   }
   return {
     label: isAr ? 'غائب' : isEn ? 'Absent' : 'Absent',
     variant: 'blocked',
     pillClass:
-      'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
+      'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]',
   };
 };
 
@@ -588,7 +588,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         minWidth: '220px',
         renderCell: (att) => (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
               {att.talentName.substring(0, 2).toUpperCase()}
             </div>
             <div>
@@ -635,7 +635,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 className={`px-2 py-1 t-small font-semibold cursor-pointer ${
                   att.status === 'present'
                     ? 'bg-emerald-600 text-white'
-                    : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-emerald-50'
+                    : 'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75 hover:bg-emerald-50 dark:hover:bg-[#143324]'
                 }`}
               >
                 {isAr ? 'حاضر' : isEn ? 'Present' : 'Présent'}
@@ -647,7 +647,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 className={`px-2 py-1 t-small font-semibold cursor-pointer ${
                   att.status === 'late'
                     ? 'bg-amber-500 text-white'
-                    : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-amber-50'
+                    : 'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75 hover:bg-amber-50 dark:hover:bg-[#3A2E14]'
                 }`}
               >
                 {isAr ? 'متأخر' : isEn ? 'Late' : 'Retard'}
@@ -659,7 +659,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 className={`px-2 py-1 t-small font-semibold cursor-pointer ${
                   att.status === 'absent'
                     ? 'bg-red-600 text-white'
-                    : 'bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 hover:bg-red-50'
+                    : 'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75 hover:bg-red-50 dark:hover:bg-[#3D1E1A]'
                 }`}
               >
                 {isAr ? 'غائب' : isEn ? 'Absent' : 'Absent'}
@@ -686,10 +686,10 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 src={tal.portraitPhotoUrl}
                 alt={tal.fullName}
                 referrerPolicy="no-referrer"
-                className="w-9 h-9 rounded-full object-cover border border-[#d4522f] shrink-0"
+                className="w-9 h-9 rounded-full object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
+              <div className="w-9 h-9 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
                 {tal.fullName.slice(0, 2).toUpperCase()}
               </div>
             )}
@@ -815,11 +815,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             type="button"
             onClick={() => setShowPhoneSimulator((prev) => !prev)}
             data-sq="ctl"
-            data-sq-border={showPhoneSimulator ? 'none' : 'solid'}
+            data-sq-border="none"
             className={`h-10 px-4 t-small font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
               showPhoneSimulator
                 ? 'bg-[var(--brand-fill,#C9461F)] text-white'
-                : 'bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#FBF8F5]'
+                : 'bg-[#F5F1EC] dark:bg-[#2B2825] text-black/70 dark:text-white/75 hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B]'
             }`}
           >
             <Smartphone className="w-4 h-4" />
@@ -1058,7 +1058,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                         </div>
                       </div>
                     </div>
-                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex justify-between items-center t-cap">
+                    <div className="pt-3 border-t border-[var(--atr-divider)] flex justify-between items-center t-cap">
                       <span className="tabular-nums text-black/55 dark:text-white/55">
                         {mission.startDate}
                       </span>
@@ -1082,78 +1082,81 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 
           {activeTab === 'attendance' && (
             <div className="space-y-4">
-              <div
-                data-sq="card"
-                data-sq-border="solid"
-                className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col md:flex-row md:items-center justify-between gap-4"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                      {isAr
-                        ? 'ورقة الحضور والتنقيط الحي'
-                        : isEn
-                        ? 'Live Roll Call & Payroll Sheet'
-                        : 'Feuille de Présence & Pointage'}
-                    </span>
-                    {isMissionLocked && (
-                      <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75 flex items-center gap-1">
-                        <Lock className="w-3 h-3" />
-                        {isAr ? 'مغلق' : isEn ? 'Locked' : 'Verrouillé'}
+              <div className="sq-elev-card">
+                <div
+                  data-sq="card"
+                  data-sq-border="none"
+                  className="p-5 bg-white dark:bg-[#22201E] flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                        {isAr
+                          ? 'ورقة الحضور والتنقيط الحي'
+                          : isEn
+                          ? 'Live Roll Call & Payroll Sheet'
+                          : 'Feuille de Présence & Pointage'}
                       </span>
+                      {isMissionLocked && (
+                        <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75 flex items-center gap-1">
+                          <Lock className="w-3 h-3" />
+                          {isAr ? 'مغلق' : isEn ? 'Locked' : 'Verrouillé'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <select
+                        value={selectedMission?.id || ''}
+                        onChange={(e) => setSelectedMissionId(e.target.value)}
+                        aria-label={isAr ? 'اختيار المهمة' : 'Sélectionner la mission'}
+                        className="h-9 px-3 rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] t-small font-semibold text-black dark:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow"
+                      >
+                        {pmMissions.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.code} · {m.title} ({m.wilayaName})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="t-cap text-black/55 dark:text-white/55">
+                      {selectedMission?.venueName} · {selectedMission?.startDate} (
+                      {selectedMission?.dailyStartHour} - {selectedMission?.dailyEndHour})
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="flex items-center gap-3 t-small font-semibold tabular-nums px-4 py-2 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                    >
+                      <span className="text-emerald-600">
+                        {presentCount} {isAr ? 'حاضر' : isEn ? 'Present' : 'Présents'}
+                      </span>
+                      <span>·</span>
+                      <span className="text-amber-500">
+                        {lateCount} {isAr ? 'تأخر' : isEn ? 'Late' : 'Retards'}
+                      </span>
+                      <span>·</span>
+                      <span className="text-red-500">
+                        {absentCount} {isAr ? 'غائب' : isEn ? 'Absent' : 'Absents'}
+                      </span>
+                    </div>
+                    {!isMissionLocked && selectedMission && (
+                      <button
+                        type="button"
+                        onClick={handleCloseShift}
+                        data-sq="ctl"
+                        className="px-4 py-2 t-small font-semibold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer"
+                      >
+                        <Lock className="w-3.5 h-3.5" />
+                        {isAr
+                          ? 'غلق وإحالة للأجور'
+                          : isEn
+                          ? 'Lock & Send Payroll'
+                          : 'Clôturer & Transmettre Paie DG'}
+                      </button>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <select
-                      value={selectedMission?.id || ''}
-                      onChange={(e) => setSelectedMissionId(e.target.value)}
-                      aria-label={isAr ? 'اختيار المهمة' : 'Sélectionner la mission'}
-                      className="h-9 px-3 rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-700 bg-[#FBF8F5] dark:bg-neutral-800 t-small font-semibold text-black dark:text-white cursor-pointer"
-                    >
-                      {pmMissions.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.code} · {m.title} ({m.wilayaName})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="t-cap text-black/55 dark:text-white/55">
-                    {selectedMission?.venueName} · {selectedMission?.startDate} (
-                    {selectedMission?.dailyStartHour} - {selectedMission?.dailyEndHour})
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div
-                    data-sq="ctl"
-                    className="flex items-center gap-3 t-small font-semibold tabular-nums px-4 py-2 bg-[#FBF8F5] dark:bg-neutral-800"
-                  >
-                    <span className="text-emerald-600">
-                      {presentCount} {isAr ? 'حاضر' : isEn ? 'Present' : 'Présents'}
-                    </span>
-                    <span>·</span>
-                    <span className="text-amber-500">
-                      {lateCount} {isAr ? 'تأخر' : isEn ? 'Late' : 'Retards'}
-                    </span>
-                    <span>·</span>
-                    <span className="text-red-500">
-                      {absentCount} {isAr ? 'غائب' : isEn ? 'Absent' : 'Absents'}
-                    </span>
-                  </div>
-                  {!isMissionLocked && selectedMission && (
-                    <button
-                      type="button"
-                      onClick={handleCloseShift}
-                      data-sq="ctl"
-                      className="px-4 py-2 t-small font-semibold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer"
-                    >
-                      <Lock className="w-3.5 h-3.5" />
-                      {isAr
-                        ? 'غلق وإحالة للأجور'
-                        : isEn
-                        ? 'Lock & Send Payroll'
-                        : 'Clôturer & Transmettre Paie DG'}
-                    </button>
-                  )}
                 </div>
               </div>
 
@@ -1271,7 +1274,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 renderCard={(att) => (
                   <div className="flex flex-col justify-between h-full space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] flex items-center justify-center font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
                         {att.talentName.substring(0, 2).toUpperCase()}
                       </div>
                       <div>
@@ -1283,7 +1286,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                         </p>
                       </div>
                     </div>
-                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
+                    <div className="pt-3 border-t border-[var(--atr-divider)] flex items-center justify-between">
                       <span className="tabular-nums font-semibold t-label text-black dark:text-white">
                         {formatMoney(att.grossPayableDzd, 'DZD')}
                       </span>
@@ -1365,10 +1368,10 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                         src={talent.portraitPhotoUrl}
                         alt={talent.fullName}
                         referrerPolicy="no-referrer"
-                        className="w-12 h-12 rounded-full object-cover border border-[#d4522f] shrink-0"
+                        className="w-12 h-12 rounded-full object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-[#F3EDE7] dark:bg-neutral-800 flex items-center justify-center font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] flex items-center justify-center font-semibold t-label text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0">
                         {talent.fullName.slice(0, 2).toUpperCase()}
                       </div>
                     )}
@@ -1391,30 +1394,31 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
           )}
 
           {activeTab === 'expense' && (
-            <div
-              data-sq="card"
-              data-sq-border="solid"
-              className="p-6 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] max-w-xl mx-auto space-y-4"
-            >
-              <div>
-                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
-                  {isAr ? 'مصاريف الميدان الطارئة' : isEn ? 'Emergency Field Expense' : "Dépense d'Urgence Terrain"}
-                </span>
-                <h3 className="t-pod font-semibold text-black dark:text-white mt-0.5">
-                  {isAr ? 'مصاريف التسيير والمستهلكات' : isEn ? 'Site Petty Cash & Consumables' : 'Frais de Régie & Consommables'}
-                </h3>
-              </div>
-              {expenseSubmitted && (
-                <div
-                  data-sq="ctl"
-                  data-sq-border="solid"
-                  className="p-3 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] t-cap text-emerald-800 dark:text-emerald-300"
-                >
-                  {isAr
-                    ? 'تم إرسال النفقة إلى الإدارة للمصادقة!'
-                    : 'Dépense transmise à la Direction pour arbitrage !'}
+            <div className="sq-elev-card max-w-xl mx-auto">
+              <div
+                data-sq="card"
+                data-sq-border="none"
+                className="p-6 bg-white dark:bg-[#22201E] space-y-4"
+              >
+                <div>
+                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
+                    {isAr ? 'مصاريف الميدان الطارئة' : isEn ? 'Emergency Field Expense' : "Dépense d'Urgence Terrain"}
+                  </span>
+                  <h3 className="t-pod font-semibold text-black dark:text-white mt-0.5">
+                    {isAr ? 'مصاريف التسيير والمستهلكات' : isEn ? 'Site Petty Cash & Consumables' : 'Frais de Régie & Consommables'}
+                  </h3>
                 </div>
-              )}
+                {expenseSubmitted && (
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    className="p-3 bg-[#DDF5E8] dark:bg-[#143324] t-cap text-[#0B7A45] dark:text-[#4ADE80] font-semibold"
+                  >
+                    {isAr
+                      ? 'تم إرسال النفقة إلى الإدارة للمصادقة!'
+                      : 'Dépense transmise à la Direction pour arbitrage !'}
+                  </div>
+                )}
               <form onSubmit={handleExpenseSubmit} className="space-y-4">
                 <LabelInput
                   field="ExpTitle"
@@ -1472,6 +1476,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                     : 'Soumettre le Reçu à la Direction'}
                 </AtriumButton>
               </form>
+              </div>
             </div>
           )}
         </div>
@@ -1718,7 +1723,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             <button
               type="button"
               onClick={() => setShowPhoneSimulator(false)}
-              className="absolute -top-10 right-0 text-white font-semibold t-small bg-neutral-800 hover:bg-neutral-700 px-3 py-2 rounded-full cursor-pointer flex items-center gap-2"
+              className="absolute -top-10 right-0 text-white font-semibold t-small bg-[#262422] hover:bg-[#332F2B] px-3 py-2 rounded-full cursor-pointer flex items-center gap-2 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
               <span>{isAr ? 'إغلاق المحاكي' : 'Fermer le Simulateur'}</span>
@@ -1727,8 +1732,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               <div className="p-4 space-y-4">
                 <div
                   data-sq="ctl"
-                  data-sq-border="solid"
-                  className="p-3 bg-[#FBF8F5] dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
+                  data-sq-border="none"
+                  className="p-3 bg-[#F5F1EC] dark:bg-[#22201E]"
                 >
                   <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                     {selectedMission?.code || 'MIS-104'}
@@ -1748,8 +1753,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                     <div
                       key={att.id}
                       data-sq="ctl"
-                      data-sq-border="solid"
-                      className="p-3 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] flex items-center justify-between t-cap"
+                      data-sq-border="none"
+                      className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-cap"
                     >
                       <div>
                         <div className="font-semibold text-black dark:text-white">

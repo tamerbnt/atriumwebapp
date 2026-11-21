@@ -430,17 +430,17 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
               ref={popoverRef}
               data-sq="card"
               data-sq-border="solid"
-              className="relative bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+              className="relative bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
               style={{
                 maxHeight: '230px',
               }}
             >
               {(searchable || normalizedOptions.length >= 6) && (
-                <div className="p-2 border-b border-[var(--atr-divider)] bg-neutral-50/50 dark:bg-neutral-900/50">
+                <div className="p-2 border-b border-[var(--atr-divider)] bg-[#FBF8F5] dark:bg-[#1E1C1A]">
                   <div
                     data-sq="ctl-sm"
-                    data-sq-border="solid"
-                    className="relative flex items-center bg-white dark:bg-neutral-800"
+                    data-sq-border="none"
+                    className="relative flex items-center bg-[#F5F1EC] dark:bg-[#2B2825]"
                   >
                     <Search
                       size={16}
@@ -503,7 +503,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                             : isSelected
                             ? 'bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] font-semibold'
                             : isHighlighted
-                            ? 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-1)] dark:text-white'
+                            ? 'bg-[#F3EDE7] dark:bg-[#2B2825] text-[var(--text-1)] dark:text-white'
                             : 'text-[var(--text-1)] dark:text-white/90'
                         }`}
                       >

@@ -569,7 +569,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
         sortable: true,
         renderCell: (m) => (
           <div className="flex items-center gap-3 min-w-0">
-            <div data-sq="tile" data-sq-border="solid" className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]">
+            <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0">
               <Boxes size={18} />
             </div>
             <div className="min-w-0">
@@ -647,7 +647,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
         header: isAr ? 'الصنف' : 'Catégorie',
         width: '1.6*',
         renderCell: (m) => (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 border border-neutral-200 dark:border-neutral-700">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75">
             {m.category}
           </span>
         ),
@@ -715,10 +715,10 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
           <span
             className={`t-small font-semibold px-2 py-1 rounded-full ${
               v.voucherType === 'BonDeSortie'
-                ? 'bg-amber-100 text-amber-800'
+                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                 : v.voucherType === 'BonDeReception'
-                ? 'bg-emerald-100 text-emerald-800'
-                : 'bg-blue-100 text-blue-800'
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
             }`}
           >
             {v.voucherType === 'BonDeSortie' ? 'BSM (Sortie)' : v.voucherType === 'BonDeReception' ? 'BR (Réception)' : 'BT (Transfert)'}
@@ -1009,12 +1009,12 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
             ]}
             renderCard={(m) => (
               <div className="flex flex-col items-center justify-center w-full">
-                <div data-sq="tile-lg" data-sq-border="solid" className="w-16 h-16 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center t-dialog font-semibold mb-3 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]">
+                <div data-sq="tile-lg" data-sq-border="none" className="w-16 h-16 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center t-dialog font-semibold mb-3">
                   <Boxes size={28} />
                 </div>
                 <h3 className="t-label font-semibold text-black dark:text-white text-center truncate max-w-[200px]">{m.name}</h3>
                 <span className="t-small tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold mt-0.5">{m.sku}</span>
-                <div className="w-full pt-3 mt-3 border-t border-neutral-100 dark:border-neutral-800 t-cap flex justify-between">
+                <div className="w-full pt-3 mt-3 border-t border-[var(--atr-divider)] t-cap flex justify-between">
                   <span className="text-black/55 dark:text-white/55">Stock :</span>
                   <span className="tabular-nums font-semibold text-black dark:text-white">
                     {m.currentStock} {m.unit}
@@ -1130,10 +1130,10 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                   <span
                     className={`t-small font-semibold px-2 py-1 rounded-full ${
                       v.voucherType === 'BonDeSortie'
-                        ? 'bg-amber-100 text-amber-800'
+                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                         : v.voucherType === 'BonDeReception'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-blue-100 text-blue-800'
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                        : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
                     }`}
                   >
                     {v.voucherType === 'BonDeSortie' ? 'BSM' : v.voucherType === 'BonDeReception' ? 'BR' : 'BT'}
@@ -1191,8 +1191,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
           }
           statusClassName={
             activeMaterial && activeMaterial.currentStock <= activeMaterial.reorderThreshold
-              ? 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/50 dark:text-red-300'
-              : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300'
+              ? 'bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300'
+              : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
           }
           tabs={[
             { id: 'fiche', label: isAr ? 'بيانات المخزون' : 'Stock & Casier' },
@@ -1223,27 +1223,27 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
               </div>
 
               {tab === 'fiche' && (
-                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-4 border border-neutral-100 dark:border-neutral-800 space-y-2">
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
                   <span className="t-small font-semibold text-black/55 dark:text-white/55 block">
                     Données d'Emplacement & Seuil
                   </span>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                  <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">Emplacement Rack :</span>
                     <span className="font-semibold text-black dark:text-white">{mat.warehouseLocation || 'Allée A-01'}</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                  <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">Stock Physique Total :</span>
                     <span className="tabular-nums font-semibold text-black dark:text-white">
                       {mat.currentStock} {mat.unit}
                     </span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                  <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">Stock Réservé (OFs) :</span>
                     <span className="tabular-nums text-amber-600 font-semibold">
                       {mat.allocatedStock} {mat.unit}
                     </span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                  <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">Stock Net Disponible :</span>
                     <span className="tabular-nums text-emerald-600 font-semibold">
                       {mat.availableStock} {mat.unit}
@@ -1259,11 +1259,11 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
               )}
 
               {tab === 'valuation' && (
-                <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-4 border border-neutral-100 dark:border-neutral-800 space-y-2">
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
                   <span className="t-small font-semibold text-black/55 dark:text-white/55 block">
                     Valorisation Comptable PMP
                   </span>
-                  <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                  <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">Coût Unitaire PMP :</span>
                     <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                       {formatMoney(mat.unitCostPmpDzd, language)} / {mat.unit}
@@ -1297,16 +1297,16 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
           onClose={() => setSelectedVoucher(null)}
           renderBody={(v) => (
             <div className="space-y-4 t-cap">
-              <div data-sq="card" data-sq-border="solid" className="bg-neutral-50 dark:bg-neutral-800/40 p-4 border border-neutral-100 dark:border-neutral-800 space-y-2">
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+              <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
+                <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
                   <span className="text-black/55 dark:text-white/55">Date Mouvement :</span>
                   <span className="tabular-nums font-semibold text-black dark:text-white">{v.transferDate?.split('T')[0]}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
                   <span className="text-black/55 dark:text-white/55">Matière :</span>
                   <span className="font-semibold text-black dark:text-white">{v.items[0]?.materialName}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
                   <span className="text-black/55 dark:text-white/55">Quantité :</span>
                   <span className="tabular-nums font-semibold text-black dark:text-white">
                     {v.items[0]?.quantity} {v.items[0]?.unit}
@@ -1318,7 +1318,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                 </div>
               </div>
               {v.notes && (
-                <div data-sq="card" data-sq-border="solid" className="p-3 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 text-black/70 dark:text-white/75">
+                <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] text-black/70 dark:text-white/75">
                   {v.notes}
                 </div>
               )}
@@ -1340,8 +1340,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
       {isMaterialModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="sq-elev-pop max-w-lg w-full animate-in zoom-in-95 duration-150">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 sm:p-7 border border-neutral-200 dark:border-neutral-800 space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-7 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <h3 className="font-semibold t-card text-black dark:text-white">
                   {materialToEdit
                     ? isAr ? 'تعديل المادة الأولية' : 'Modifier la Matière Première'
@@ -1351,7 +1351,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsMaterialModalOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -1421,7 +1421,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                   required
                 />
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton type="button" variant="secondary" onClick={() => setIsMaterialModalOpen(false)}>
                   {isAr ? 'إلغاء' : 'Annuler'}
                 </AtriumButton>
@@ -1438,8 +1438,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
       {isVoucherModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="sq-elev-pop max-w-lg w-full animate-in zoom-in-95 duration-150">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 sm:p-7 border border-neutral-200 dark:border-neutral-800 space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-7 [--sq-stroke:var(--sq-stroke-pop)] space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <h3 className="font-semibold t-card text-black dark:text-white">
                   {isAr ? 'إصدار سند حركة مخزون (مرسوم 05-468)' : "Émission d'un Bon de Mouvement (Décret 05-468)"}
                 </h3>
@@ -1447,7 +1447,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                   type="button"
                   aria-label={isAr ? 'إغلاق' : 'Fermer'}
                   onClick={() => setIsVoucherModalOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -1494,7 +1494,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                 onChange={(e) => setVoucherNotes(e.target.value)}
                 placeholder="Ex: Sortie pour OF-2026-0089..."
               />
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton type="button" variant="secondary" onClick={() => setIsVoucherModalOpen(false)}>
                   {isAr ? 'إلغاء' : 'Annuler'}
                 </AtriumButton>
@@ -1511,10 +1511,10 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
       {printableVoucher && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="sq-elev-pop max-w-xl w-full animate-in zoom-in-95 duration-150">
-            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 sm:p-8 border border-neutral-200 dark:border-neutral-800 space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
+            <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 sm:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-3">
-                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
+                  <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
                     <Printer size={20} />
                   </div>
                   <div>
@@ -1540,14 +1540,14 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                     type="button"
                     aria-label={isAr ? 'إغلاق' : 'Fermer'}
                     onClick={() => setPrintableVoucher(null)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white/80 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer"
                   >
                     <X size={18} />
                   </button>
                 </div>
               </div>
-              <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-dashed border-neutral-300 text-black space-y-5 font-sans">
-                <div className="flex justify-between items-start border-b pb-4">
+              <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-dashed border-black/[0.18] text-black space-y-5 font-sans">
+                <div className="flex justify-between items-start border-b border-black/[0.12] pb-4">
                   <div>
                     <div className="font-semibold t-label text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
                     <div className="t-small text-black/55 font-medium">RC: 16/00-0988421 • NIF: 001916010044589 • Alger</div>
@@ -1564,7 +1564,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                     <div className="t-cap text-black/55 mt-0.5">Date : {printableVoucher.transferDate?.split('T')[0]}</div>
                   </div>
                 </div>
-                <div className="bg-neutral-50 p-3 rounded-[var(--r-ctl,12px)] border border-neutral-200 t-cap space-y-1">
+                <div className="bg-neutral-50 p-3 rounded-[var(--r-ctl,12px)] border border-black/[0.12] t-cap space-y-1">
                   <div className="flex justify-between">
                     <span className="text-black/55">Demandeur / Bénéficiaire :</span>
                     <span className="font-semibold text-black">{printableVoucher.recipientStaffName}</span>
@@ -1574,8 +1574,8 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                     <span className="font-semibold text-black">{printableVoucher.notes || 'Ordre de fabrication'}</span>
                   </div>
                 </div>
-                <table className="w-full t-cap border border-neutral-200 rounded-[var(--r-ctl-sm,10px)] overflow-hidden">
-                <thead className="bg-neutral-100 text-black/75 font-semibold border-b border-neutral-200">
+                <table className="w-full t-cap border border-black/[0.12] rounded-[var(--r-ctl-sm,10px)] overflow-hidden">
+                <thead className="bg-neutral-100 text-black/75 font-semibold border-b border-black/[0.12]">
                   <tr>
                     <th className="p-2 text-left">Désignation Matière</th>
                     <th className="p-2 text-center w-24">Quantité</th>
@@ -1583,7 +1583,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                     <th className="p-2 text-right w-28">Total DZD</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-200">
+                <tbody className="divide-y divide-black/[0.10]">
                   {printableVoucher.items.map((item, idx) => (
                     <tr key={idx}>
                       <td className="p-2 font-medium">{item.materialName}</td>
@@ -1602,7 +1602,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                 <span>Total Mouvement : </span>
                 <span className="tabular-nums text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{formatMoney(printableVoucher.totalValueDzd, language)}</span>
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t text-center t-cap">
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-black/[0.12] text-center t-cap">
                 <div>
                   <span className="text-black/55 t-cap block">Visa Magasinier (Émetteur)</span>
                   <div className="h-10 flex items-center justify-center text-black/75 italic">M. Amine T.</div>

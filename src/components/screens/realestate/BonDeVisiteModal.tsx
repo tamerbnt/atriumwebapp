@@ -69,7 +69,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 		ctx.lineWidth = 2.5;
 		ctx.lineCap = "round";
 		ctx.lineJoin = "round";
-		ctx.strokeStyle = "#18181B";
+		ctx.strokeStyle = typeof document !== "undefined" && document.documentElement.classList.contains("dark") ? "#FAFAFA" : "#18181B";
 		ctx.beginPath();
 		ctx.moveTo(x, y);
 	};
@@ -130,17 +130,17 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
 <div className="sq-elev-pop relative w-full max-w-2xl my-8">
-<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#18181B] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] p-6 md:p-8 text-black dark:text-[#FAFAFA]">
-<div className="flex items-center justify-between pb-4 border-b border-[#E6DED6] dark:border-[#27272A] mb-5">
+<div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 md:p-8 text-black dark:text-white">
+<div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)] mb-5">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><Shield className="w-5 h-5" /></div>
 <div>
 <h2 className="t-dialog font-semibold">Bon de Visite Numérique Certifié</h2>
 </div>
 </div>
-<button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
+<button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141416] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#232328] mb-5 flex items-center justify-between">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#1D1B19] mb-5 flex items-center justify-between">
 <div>
 <div className="t-small text-black/70 dark:text-white/75 font-semibold">Bien Visité</div>
 <div className="t-label font-semibold text-black dark:text-white truncate max-w-md">{activeProp?.title}</div>
@@ -165,7 +165,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 <LabelInput label="Téléphone Portable" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="Ex: 0550 49 11 22" required />
 <LabelInput label="N° CNI (18 Chiffres)" value={clientNationalId} onChange={(e) => setClientNationalId(e.target.value)} placeholder="Ex: 109823487192837461" required />
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-3 bg-[#FDF4F0] dark:bg-[#1C1816] [--sq-stroke:rgba(212,82,47,0.3)] flex items-center justify-between">
+<div data-sq="card" data-sq-border="none" className="p-3 bg-[#FDF4F0] dark:bg-[#2B2825] flex items-center justify-between">
 <div className="flex items-center gap-2">
 <MapPin className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
 <div className="t-cap">
@@ -191,7 +191,7 @@ m)
 <span>Effacer</span>
 </button>
 </div>
-<div data-sq="card" data-sq-border="dashed" data-sq-stroke-w="2" className="relative [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] bg-white dark:bg-[#141416] overflow-hidden">
+<div data-sq="card" data-sq-border="dashed" data-sq-stroke-w="2" className="relative bg-white dark:bg-[#1D1B19] overflow-hidden">
 <canvas ref={canvasRef} width={560} height={140} className="w-full h-[140px] touch-none cursor-crosshair" onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={startDrawing} onTouchMove={draw} onTouchEnd={stopDrawing} />
 {!hasSignature && /* @__PURE__ */ <div className="absolute inset-0 pointer-events-none flex items-center justify-center t-cap text-black/55 dark:text-white/55">Signez avec le doigt ou le stylet ici</div>}
 </div>
@@ -202,7 +202,7 @@ m)
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 <div>
 <label className="block t-small font-semibold text-black dark:text-white mb-2">Impression de Visite</label>
-<select value={clientImpression} onChange={(e) => setClientImpression(e.target.value as 'Interested' | 'NeedsNegotiation' | 'OfferSubmitted' | 'PriceTooHigh' | 'Unfavorable')} className="w-full px-4 py-2 rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-[#27272A] bg-white dark:bg-[#141416] t-small font-medium focus:ring-2 focus:ring-[#d4522f]">
+<select value={clientImpression} onChange={(e) => setClientImpression(e.target.value as 'Interested' | 'NeedsNegotiation' | 'OfferSubmitted' | 'PriceTooHigh' | 'Unfavorable')} className="w-full px-4 py-2 rounded-[var(--r-ctl,12px)] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white t-small font-medium focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30 transition-shadow">
 <option value="Interested">Très Intéressé (Candidat Solide)</option>
 <option value="NeedsNegotiation">Intéressé sous réserve de négociation</option>
 <option value="OfferSubmitted">Offre Ferme Soumise</option>
@@ -213,7 +213,7 @@ m)
 <LabelInput type="number" label="Proposition de Prix Client (DZD)" value={counterOfferDzd} onChange={(e) => setCounterOfferDzd(Number(e.target.value))} />
 </div>
 <LabelInput label="Notes de Visite & Remarques du Négociateur" value={feedbackNotes} onChange={(e) => setFeedbackNotes(e.target.value)} placeholder="Ex: Travaux peinture à prévoir, visite seconde fois avec son conjoint..." />
-<div className="flex items-center justify-between pt-4 border-t border-[#E6DED6] dark:border-[#27272A]">
+<div className="flex items-center justify-between pt-4 border-t border-[var(--atr-divider)]">
 <div className="flex items-center gap-2 t-small text-emerald-600 font-semibold">
 <CheckCircle className="w-4 h-4" />
 <span>Copie WhatsApp générée automatiquement</span>

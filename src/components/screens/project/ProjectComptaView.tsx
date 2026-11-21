@@ -70,7 +70,7 @@ const getEquipmentStatusBadge = (
       label: isAr ? 'في المخزن' : isEn ? 'In Stock' : 'En Stock Agence',
       variant: 'active',
       pillClass:
-        'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+        'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
     };
   }
   if (status === 'deployed_on_mission') {
@@ -78,7 +78,7 @@ const getEquipmentStatusBadge = (
       label: isAr ? 'مُنشر ميدانياً' : isEn ? 'Deployed' : 'Déployé sur Terrain',
       variant: 'info',
       pillClass:
-        'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC] border border-[#BAE6FD] dark:border-[#164E63]',
+        'bg-[#E0F2FE] dark:bg-[#0C2D48] text-[#0369A1] dark:text-[#7DD3FC]',
     };
   }
   if (status === 'in_maintenance' || status === 'under_repair') {
@@ -86,7 +86,7 @@ const getEquipmentStatusBadge = (
       label: isAr ? 'قيد الصيانة' : isEn ? 'Maintenance' : 'En Maintenance',
       variant: 'warning',
       pillClass:
-        'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+        'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
     };
   }
   if (status === 'decommissioned' || status === 'retired_scrapped') {
@@ -94,14 +94,14 @@ const getEquipmentStatusBadge = (
       label: isAr ? 'مُستبعد / مُهتلك' : isEn ? 'Decommissioned' : 'Réformé / Amorti',
       variant: 'blocked',
       pillClass:
-        'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
+        'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]',
     };
   }
   return {
     label: status,
     variant: 'neutral',
     pillClass:
-      'bg-[#F3EDE7] dark:bg-neutral-800 text-black/75 dark:text-white/80 border border-[#E6DED6] dark:border-neutral-700',
+      'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/75 dark:text-white/80',
   };
 };
 
@@ -641,7 +641,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         width: '1.4*',
         minWidth: '130px',
         renderCell: (exp) => (
-          <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-[#F3EDE7] dark:bg-neutral-800 text-black/70 dark:text-white/75">
+          <span className="px-2 py-1 rounded-[var(--r-check,6px)] t-small font-semibold bg-[#F3EDE7] dark:bg-[#2B2825] text-black/70 dark:text-white/75">
             {exp.category}
           </span>
         ),
@@ -823,8 +823,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               type="button"
               onClick={handleExportCcpCsv}
               data-sq="ctl"
-              data-sq-border="solid"
-              className="h-10 px-4 t-small font-semibold text-black/75 dark:text-white/80 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040] hover:bg-[#FBF8F5] flex items-center gap-2 transition-colors cursor-pointer"
+              data-sq-border="none"
+              className="h-10 px-4 t-small font-semibold text-black/75 dark:text-white/80 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] flex items-center gap-2 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
@@ -949,94 +949,97 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
           {activeTab === 'payroll' && (
             <div className="space-y-4">
-              <div
-                data-sq="card"
-                data-sq-border="solid"
-                className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-              >
-                <div>
-                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
-                    {isAr
-                      ? 'إصدار الحوالات البريدية (SFP 01)'
-                      : isEn
-                      ? 'Postal Mandate Generation'
-                      : 'Génération des Mandats Postaux (SFP 01)'}
-                  </span>
-                  <h3 className="t-pod font-semibold text-black dark:text-white mt-0.5">
-                    {isAr ? 'صرف الخزينة البريدية' : isEn ? 'Treasury Release' : 'Déblocage Trésorerie Postale'}
-                  </h3>
+              <div className="sq-elev-card">
+                <div
+                  data-sq="card"
+                  data-sq-border="none"
+                  className="p-5 bg-white dark:bg-[#22201E] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  <div>
+                    <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
+                      {isAr
+                        ? 'إصدار الحوالات البريدية (SFP 01)'
+                        : isEn
+                        ? 'Postal Mandate Generation'
+                        : 'Génération des Mandats Postaux (SFP 01)'}
+                    </span>
+                    <h3 className="t-pod font-semibold text-black dark:text-white mt-0.5">
+                      {isAr ? 'صرف الخزينة البريدية' : isEn ? 'Treasury Release' : 'Déblocage Trésorerie Postale'}
+                    </h3>
+                  </div>
+                  {pmPayrollBatches.some((b) => b.status === 'approved_by_direction') && (
+                    <button
+                      type="button"
+                      onClick={handleGenerateAllCcpBatch}
+                      data-sq="ctl"
+                      className="px-4 py-2 t-small font-semibold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer shrink-0"
+                    >
+                      <Printer className="w-4 h-4" />
+                      {isAr
+                        ? 'إصدار جميع الصكوك ➔'
+                        : isEn
+                        ? 'Generate All Slips ➔'
+                        : 'Générer Tous les Bordereaux CCP ➔'}
+                    </button>
+                  )}
                 </div>
-                {pmPayrollBatches.some((b) => b.status === 'approved_by_direction') && (
-                  <button
-                    type="button"
-                    onClick={handleGenerateAllCcpBatch}
-                    data-sq="ctl"
-                    className="px-4 py-2 t-small font-semibold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer shrink-0"
-                  >
-                    <Printer className="w-4 h-4" />
-                    {isAr
-                      ? 'إصدار جميع الصكوك ➔'
-                      : isEn
-                      ? 'Generate All Slips ➔'
-                      : 'Générer Tous les Bordereaux CCP ➔'}
-                  </button>
-                )}
               </div>
 
               <div className="space-y-3">
                 {pmPayrollBatches.map((batch) => (
-                  <div
-                    key={batch.id}
-                    data-sq="card"
-                    data-sq-border="solid"
-                    className="p-5 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex flex-col md:flex-row md:items-center justify-between gap-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="tabular-nums font-semibold t-small text-black dark:text-white">
-                          {batch.batchNumber}
-                        </span>
-                        <span className="text-black/55 dark:text-white/55">·</span>
-                        <span className="t-small text-black/70 dark:text-white/75 font-semibold">
-                          {batch.projectTitle}
-                        </span>
-                        <span
-                          className={`px-2 py-1 rounded-full t-small font-semibold ${
-                            batch.status === 'ccp_generated'
-                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                              : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
-                          }`}
-                        >
-                          {batch.status === 'ccp_generated'
-                            ? 'Bordereaux CCP Prêts'
-                            : 'Validé DG — Prêt CCP'}
-                        </span>
+                  <div key={batch.id} className="sq-elev-card">
+                    <div
+                      data-sq="card"
+                      data-sq-border="none"
+                      className="p-5 bg-white dark:bg-[#22201E] flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="tabular-nums font-semibold t-small text-black dark:text-white">
+                            {batch.batchNumber}
+                          </span>
+                          <span className="text-black/55 dark:text-white/55">·</span>
+                          <span className="t-small text-black/70 dark:text-white/75 font-semibold">
+                            {batch.projectTitle}
+                          </span>
+                          <span
+                            className={`px-2 py-1 rounded-full t-small font-semibold ${
+                              batch.status === 'ccp_generated'
+                                ? 'bg-[#DDF5E8] text-[#0B7A45] dark:bg-[#143324] dark:text-[#4ADE80]'
+                                : 'bg-[#E0F2FE] text-[#0369A1] dark:bg-[#0C2D48] dark:text-[#7DD3FC]'
+                            }`}
+                          >
+                            {batch.status === 'ccp_generated'
+                              ? 'Bordereaux CCP Prêts'
+                              : 'Validé DG — Prêt CCP'}
+                          </span>
+                        </div>
+                        <p className="t-cap text-black/55 dark:text-white/55">
+                          Mission {batch.missionCode} · {batch.totalBeneficiaries} animateurs avec
+                          numéros CCP et clés vérifiés.
+                        </p>
                       </div>
-                      <p className="t-cap text-black/55 dark:text-white/55">
-                        Mission {batch.missionCode} · {batch.totalBeneficiaries} animateurs avec
-                        numéros CCP et clés vérifiés.
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4 shrink-0">
-                      <div className="text-right rtl:text-left">
-                        <span className="t-small text-black/55 dark:text-white/55 block font-medium">
-                          Montant Global
-                        </span>
-                        <span className="tabular-nums font-semibold t-pod text-black dark:text-white">
-                          {formatMoney(batch.totalAmountDzd, 'DZD')}
-                        </span>
+                      <div className="flex items-center gap-4 shrink-0">
+                        <div className="text-right rtl:text-left">
+                          <span className="t-small text-black/55 dark:text-white/55 block font-medium">
+                            Montant Global
+                          </span>
+                          <span className="tabular-nums font-semibold t-pod text-black dark:text-white">
+                            {formatMoney(batch.totalAmountDzd, 'DZD')}
+                          </span>
+                        </div>
+                        {batch.status !== 'ccp_generated' && (
+                          <button
+                            type="button"
+                            onClick={() => generatePmCcpSlipsForBatch(batch.id)}
+                            data-sq="ctl"
+                            className="px-4 py-2 t-small font-semibold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer"
+                          >
+                            <Printer className="w-4 h-4" />
+                            <span>Générer CCP</span>
+                          </button>
+                        )}
                       </div>
-                      {batch.status !== 'ccp_generated' && (
-                        <button
-                          type="button"
-                          onClick={() => generatePmCcpSlipsForBatch(batch.id)}
-                          data-sq="ctl"
-                          className="px-4 py-2 t-small font-semibold text-white bg-[#DC2626] hover:bg-red-700 transition-colors flex items-center gap-2 cursor-pointer"
-                        >
-                          <Printer className="w-4 h-4" />
-                          <span>Générer CCP</span>
-                        </button>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -1164,7 +1167,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                         {slip.transactionReference}
                       </p>
                     </div>
-                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
+                    <div className="pt-3 border-t border-[var(--atr-divider)] flex items-center justify-between">
                       <span className="tabular-nums font-semibold t-label text-[#DC2626]">
                         {formatMoney(slip.amountDzd, 'DZD')}
                       </span>
@@ -1328,7 +1331,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                         Par {exp.declaredByUserName}
                       </p>
                     </div>
-                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
+                    <div className="pt-3 border-t border-[var(--atr-divider)] flex items-center justify-between">
                       <span className="tabular-nums font-semibold t-label text-[#DC2626]">
                         {formatMoney(exp.amountDzd, 'DZD')}
                       </span>
@@ -1454,7 +1457,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                         État : {eq.conditionReport}
                       </p>
                     </div>
-                    <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between">
+                    <div className="pt-3 border-t border-[var(--atr-divider)] flex items-center justify-between">
                       <span className="tabular-nums font-semibold t-label text-black dark:text-white">
                         {formatMoney(eq.acquisitionCostDzd, 'DZD')}
                       </span>
@@ -1774,7 +1777,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
                 <h3 className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
@@ -1786,7 +1789,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   aria-label="Fermer"
                   onClick={() => setSelectedReceiptUrl(null)}
                   data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1797,14 +1800,14 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 referrerPolicy="no-referrer"
                 data-sq="ctl"
                 data-sq-border="none"
-                className="w-full h-72 object-cover"
+                className="w-full h-72 object-cover bg-[#F3EDE7] dark:bg-[#2B2825]"
               />
               <div className="flex justify-end">
                 <button
                   type="button"
                   onClick={() => setSelectedReceiptUrl(null)}
                   data-sq="ctl"
-                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
                 >
                   {isAr ? 'إغلاق' : 'Fermer'}
                 </button>

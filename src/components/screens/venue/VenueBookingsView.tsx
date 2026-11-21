@@ -47,11 +47,11 @@ import {
 } from '../../ui/kinetic';
 
 const STATUS_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const STATUS_PILL_WARN =
-  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+  'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
 const STATUS_PILL_INFO =
-  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+  'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
 
 type DrawerTab = 'overview' | 'financials' | 'addons';
 
@@ -408,7 +408,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
         renderCell: (b) => {
           const bInfo = resolveRecordBranch(b, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-[#E6DED6] dark:border-neutral-700 truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[var(--r-check,6px)] t-small font-medium bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -490,7 +490,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                   : isTentative
                   ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
                   : isCompleted
-                  ? 'bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75'
+                  ? 'bg-[#EFE9E2] text-black/70 dark:bg-[#2B2825] dark:text-white/75'
                   : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
               }`}
             >
@@ -551,8 +551,8 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               type="button"
               onClick={() => setIsCloudSyncModalOpen(true)}
               data-sq="ctl"
-              data-sq-border="solid"
-              className="h-10 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer [--sq-stroke:#E6DED6] dark:[--sq-stroke:#404040]"
+              data-sq-border="none"
+              className="h-10 px-4 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer"
               title="Inspect Supabase live tables and row writes"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -1137,9 +1137,9 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#262626] w-full p-6 space-y-6"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6"
             >
-            <div className="flex justify-between items-center border-b border-neutral-200 dark:border-neutral-800 pb-4">
+            <div className="flex justify-between items-center border-b border-[var(--atr-divider)] pb-4">
               <div>
                 <h3 className="t-pod font-semibold text-black dark:text-white">
                   {t('venue_voucher_title')}
@@ -1161,8 +1161,8 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
             <div className="space-y-4 t-cap">
               <div
                 data-sq="card"
-                data-sq-border="solid"
-                className="p-4 bg-neutral-50 dark:bg-neutral-800/50 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] space-y-2"
+                data-sq-border="none"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
               >
                 <div className="flex justify-between">
                   <span className="text-black/55 dark:text-white/55">
@@ -1210,8 +1210,8 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               </div>
               <div
                 data-sq="card"
-                data-sq-border="solid"
-                className="p-4 bg-neutral-50 dark:bg-neutral-800/50 [--sq-stroke:#E5E5E5] dark:[--sq-stroke:#404040] space-y-2"
+                data-sq-border="none"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
               >
                 <div className="flex justify-between font-semibold text-black dark:text-white">
                   <span>{t('venue_voucher_total_hire')}</span>
@@ -1241,12 +1241,12 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               <div
                 data-sq="ctl"
                 data-sq-border="none"
-                className="p-3 bg-neutral-100 dark:bg-neutral-800 t-cap text-black/55 dark:text-white/75 leading-relaxed"
+                className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap text-black/55 dark:text-white/75 leading-relaxed"
               >
                 {t('venue_voucher_disclaimer')}
               </div>
             </div>
-            <div className="flex justify-end rtl:justify-start gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
+            <div className="flex justify-end rtl:justify-start gap-2 pt-2 border-t border-[var(--atr-divider)]">
               <button
                 type="button"
                 onClick={() => window.print()}

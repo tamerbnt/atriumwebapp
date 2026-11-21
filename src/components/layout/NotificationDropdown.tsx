@@ -139,10 +139,10 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
       <div
         data-sq="panel"
         data-sq-border="solid"
-        className="rounded-[var(--r-panel,28px)] bg-white dark:bg-[#1C1C20] [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden flex flex-col"
+        className="rounded-[var(--r-panel,28px)] bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] overflow-hidden flex flex-col"
       >
       {/* Unified Panel Header */}
-      <div className="flex items-center justify-between px-[var(--s4,16px)] py-[var(--s3,12px)] border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#1C1C20] t-cap text-[var(--text-2)]">
+      <div className="flex items-center justify-between px-[var(--s4,16px)] py-[var(--s3,12px)] border-b border-black/[0.045] dark:border-white/[0.06] bg-white dark:bg-[#262422] t-cap text-[var(--text-2)]">
         <div className="flex items-center gap-[var(--s2,8px)] t-card text-[var(--text-1)]">
           <Bell size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
           <span>{language === 'ar' ? 'الإشعارات' : language === 'fr' ? 'Notifications' : 'Notifications'}</span>
@@ -189,7 +189,7 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
             type="button"
             data-no-liquid=""
             onClick={onClose}
-            className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors cursor-pointer"
+            className="w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors cursor-pointer"
             aria-label="Close notifications"
           >
             <X size={16} strokeWidth={1.5} />
@@ -310,7 +310,7 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
       </div>
 
       {/* Unified Panel Footer */}
-      <div className="flex items-center justify-between px-[var(--s4,16px)] py-[var(--s3,12px)] border-t border-black/[0.06] dark:border-white/[0.08] bg-neutral-50/70 dark:bg-white/[0.02] t-cap text-[var(--text-2)]">
+      <div className="flex items-center justify-between px-[var(--s4,16px)] py-[var(--s3,12px)] border-t border-black/[0.045] dark:border-white/[0.06] bg-[#FBF8F5] dark:bg-[#1E1C1A] t-cap text-[var(--text-2)]">
         <div className="flex items-center gap-[var(--s2,8px)] t-small">
           <span className="w-[var(--s2,8px)] h-[var(--s2,8px)] rounded-full bg-emerald-500 shrink-0" />
           <span>

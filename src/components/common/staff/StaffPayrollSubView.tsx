@@ -153,7 +153,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         header: isAr ? 'طريقة الدفع' : isEn ? 'Method' : 'Mode',
         sortable: true,
         renderCell: (slip) => (
-          <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-[#262422] text-[var(--text-1)] dark:text-white/85">
+          <span className="inline-flex items-center h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold bg-[#F3EDE7] dark:bg-[#2B2825] text-[var(--text-1)] dark:text-white/85">
             {slip.paymentMethod}
           </span>
         ),
@@ -294,14 +294,13 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
       <div className="sq-elev-card">
         <div
           data-sq="card"
-          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s3,12px)] p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#1C1B1A]"
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s3,12px)] p-[var(--card-pad,20px)] card-opt bg-white dark:bg-[#22201E]"
         >
           <div className="flex items-center gap-[var(--s3,12px)]">
             <div
               data-sq="ctl"
-              style={{ '--sq-stroke': 'var(--atr-border-strong, #D4C8BC)' } as React.CSSProperties}
-              className="flex items-center gap-[var(--s2,8px)] bg-[#F3EDE7] dark:bg-[#262422] px-[var(--s3,12px)] h-[var(--btn-h,40px)]"
+              data-sq-border="none"
+              className="flex items-center gap-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#2B2825] px-[var(--s3,12px)] h-[var(--btn-h,40px)]"
             >
               <Calendar className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
               <select
@@ -329,8 +328,8 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
               <span
                 className={`inline-flex items-center h-[var(--pill-h,24px)] gap-[var(--pill-gap,6px)] px-[var(--pill-px,10px)] rounded-full t-small font-semibold ${
                   activeRun.status === 'paid'
-                    ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/60'
-                    : 'bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/60'
+                    ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
+                    : 'bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300'
                 }`}
               >
                 {activeRun.status === 'paid'
@@ -386,8 +385,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         <div className="sq-elev-card">
           <div
             data-sq="card"
-            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#22201E]"
           >
             <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'صافي الأجور' : isEn ? 'Net Pay' : 'Net à Payer'}</p>
             <p className="t-kpi-m mt-auto text-[var(--brand-accent,#D9532B)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums flex items-baseline gap-[var(--num-unit-gap,6px)]">
@@ -401,8 +399,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         <div className="sq-elev-card">
           <div
             data-sq="card"
-            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#22201E]"
           >
             <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'الضمان الاجتماعي' : isEn ? 'Social Security' : 'Cotisations'}</p>
             <p className="t-kpi-m mt-auto text-emerald-600 dark:text-emerald-400 tabular-nums flex items-baseline gap-[var(--num-unit-gap,6px)]">
@@ -416,8 +413,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         <div className="sq-elev-card">
           <div
             data-sq="card"
-            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#22201E]"
           >
             <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'ضريبة الدخل' : isEn ? 'Income Tax' : 'Impôt'}</p>
             <p className="t-kpi-m mt-auto text-[var(--text-1)] dark:text-white tabular-nums flex items-baseline gap-[var(--num-unit-gap,6px)]">
@@ -431,8 +427,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
         <div className="sq-elev-card">
           <div
             data-sq="card"
-            style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#1C1B1A]"
+            className="p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col justify-between gap-[var(--kpi-gap,12px)] bg-white dark:bg-[#22201E]"
           >
             <p className="t-label text-[var(--text-2)] dark:text-white/75">{isAr ? 'السلفيات' : isEn ? 'Advances' : 'Acomptes'}</p>
             <p className="t-kpi-m mt-auto text-amber-600 dark:text-amber-400 tabular-nums flex items-baseline gap-[var(--num-unit-gap,6px)]">
@@ -493,7 +488,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
       <div className="sq-elev-card">
         <div
           data-sq="panel"
-          className="bg-white dark:bg-[#1C1B1A] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]"
+          className="bg-white dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]"
         >
           <div
             className="flex items-center justify-between border-b border-[var(--atr-divider)]"
@@ -506,6 +501,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
               type="button"
               onClick={() => setIsAdvanceModalOpen(true)}
               data-sq="ctl-sm"
+              data-sq-border="none"
               className="flex items-center h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] gap-[var(--btn-sm-gap,6px)] t-btn text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] bg-[#d4522f]/10 hover:bg-[#d4522f]/20 transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" strokeWidth={1.5} />
@@ -540,8 +536,7 @@ export const StaffPayrollSubView: React.FC<StaffPayrollSubViewProps> = ({
                 <div
                   key={adv.id}
                   data-sq="card"
-                  style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-                  className="p-[var(--card-pad,20px)] card-opt bg-[#FBF8F5] dark:bg-[#262422] flex items-center justify-between gap-[var(--s3,12px)]"
+                  className="p-[var(--card-pad,20px)] card-opt bg-[#FBF8F5] dark:bg-[#22201E] flex items-center justify-between gap-[var(--s3,12px)]"
                 >
                   <div className="flex flex-col gap-[var(--title-cap-gap,2px)] min-w-0">
                     <div className="t-label font-semibold text-[var(--text-1)] dark:text-white truncate">{adv.staffName}</div>

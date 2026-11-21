@@ -112,7 +112,7 @@ const TopBarTimerWidget: React.FC<{ isFreelance: boolean; language: string }> = 
     if (!activeTimer.isRunning && !isFreelance) return null;
 
     return (
-      <div className="flex items-center h-[var(--top-ctl-h,40px)] gap-[var(--s2,8px)] px-[var(--s3,12px)] rounded-full bg-[#F3EDE7]/90 dark:bg-neutral-800/90 border border-black/[0.07] dark:border-white/[0.11] t-small shadow-2xs">
+      <div className="flex items-center h-[var(--top-ctl-h,40px)] gap-[var(--s2,8px)] px-[var(--s3,12px)] rounded-full bg-[#F3EDE7]/95 dark:bg-[#22201E] t-small shadow-[0_1px_4px_rgba(23,19,15,0.04)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
         {activeTimer.isRunning ? (
           <>
             <span className={`w-[var(--s2,8px)] h-[var(--s2,8px)] rounded-full ${activeTimer.isPaused ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
@@ -364,7 +364,7 @@ export const TopBar: React.FC<TopBarProps> = ({
     return (
       <nav
         aria-label="Breadcrumb"
-        className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--top-ctl-h,40px)] px-[var(--s2,8px)] rounded-full bg-[#F3EDE7]/85 dark:bg-neutral-800/80 border border-black/[0.07] dark:border-white/[0.10] shadow-2xs max-w-full min-w-0"
+        className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--top-ctl-h,40px)] px-[var(--s2,8px)] rounded-full bg-[#F3EDE7]/90 dark:bg-[#22201E] shadow-[0_1px_3px_rgba(23,19,15,0.04)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] max-w-full min-w-0"
       >
         {nodes.map((node, idx) => {
           const isLast = idx === nodes.length - 1;
@@ -397,7 +397,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                   type="button"
                   data-no-liquid="true"
                   onClick={node.onClick}
-                  className="inline-flex items-center gap-[var(--s2,8px)] h-[var(--btn-sm-h,32px)] px-[var(--s2,8px)] rounded-full t-small text-[var(--text-2)] dark:text-[var(--text-dark-2)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] hover:bg-white/85 dark:hover:bg-neutral-700/75 active:scale-[0.98] transition-all duration-150 cursor-pointer min-w-0 shrink-0"
+                  className="inline-flex items-center gap-[var(--s2,8px)] h-[var(--btn-sm-h,32px)] px-[var(--s2,8px)] rounded-full t-small text-[var(--text-2)] dark:text-[var(--text-dark-2)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] hover:bg-white/90 dark:hover:bg-[#2B2825] active:scale-[0.98] transition-all duration-150 cursor-pointer min-w-0 shrink-0"
                 >
                   {node.isHome && <Home size={16} strokeWidth={1.5} className="shrink-0" />}
                   <span className="truncate max-w-[120px] sm:max-w-[160px]">{node.label}</span>
@@ -925,7 +925,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           type="button"
           data-no-liquid="true"
           onClick={onToggleMobileMenu}
-          className="lg:hidden w-[var(--top-ctl-h,40px)] h-[var(--top-ctl-h,40px)] rounded-full flex items-center justify-center text-[var(--text-1)] dark:text-white hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer shrink-0"
+          className="lg:hidden w-[var(--top-ctl-h,40px)] h-[var(--top-ctl-h,40px)] rounded-full flex items-center justify-center text-[var(--text-1)] dark:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] cursor-pointer shrink-0"
           aria-label="Toggle mobile navigation menu"
         >
           <MenuIcon size={20} strokeWidth={1.5} />
@@ -965,7 +965,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 activeScreen === 'chart_catalog' ? 'dashboard' : 'chart_catalog'
               )
             }
-            className="!rounded-full !px-[var(--btn-px,16px)] !h-[var(--top-ctl-h,40px)] border border-black/[0.07] dark:border-white/[0.11] t-btn cursor-pointer hidden sm:inline-flex items-center gap-[var(--btn-icon-gap,8px)]"
+            className="!rounded-full !px-[var(--btn-px,16px)] !h-[var(--top-ctl-h,40px)] t-btn cursor-pointer hidden sm:inline-flex items-center gap-[var(--btn-icon-gap,8px)] shadow-[0_1px_3px_rgba(23,19,15,0.04)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]"
             title="Phase 1 Dashboard Component Catalog (Dev only)"
             aria-label="Toggle dashboard component catalog"
           >
@@ -1110,10 +1110,10 @@ export const TopBar: React.FC<TopBarProps> = ({
                 {...props}
                 shape="capsule"
                 tone="soft"
-                className={`!rounded-full !ps-[var(--s1,4px)] !pe-[var(--s3,12px)] !py-[var(--s1,4px)] !h-[var(--top-ctl-h,40px)] !max-h-[var(--top-ctl-h,40px)] gap-[var(--top-gap,8px)] border cursor-pointer select-none ${
+                className={`!rounded-full !ps-[var(--s1,4px)] !pe-[var(--s3,12px)] !py-[var(--s1,4px)] !h-[var(--top-ctl-h,40px)] !max-h-[var(--top-ctl-h,40px)] gap-[var(--top-gap,8px)] cursor-pointer select-none transition-shadow ${
                   open
-                    ? '!border-black/[0.14] dark:!border-white/[0.22] shadow-xs'
-                    : 'border-black/[0.07] dark:border-white/[0.11]'
+                    ? 'shadow-[0_2px_10px_rgba(23,19,15,0.09)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]'
+                    : 'shadow-[0_1px_3px_rgba(23,19,15,0.04)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]'
                 }`}
                 aria-label={`Operator: ${currentUser.fullName} (${currentUser.role})`}
               >

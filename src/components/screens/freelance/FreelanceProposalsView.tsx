@@ -467,8 +467,8 @@ export const FreelanceProposalsView: React.FC = () => {
           <div className="flex items-center gap-3">
             <div
               data-sq="tile"
-              data-sq-border="solid"
-              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
+              data-sq-border="none"
+              className="w-9 h-9 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
             >
               <FileText size={16} />
             </div>
@@ -498,7 +498,7 @@ export const FreelanceProposalsView: React.FC = () => {
         renderCell: (proposal) => {
           const bInfo = resolveRecordBranch(proposal, branchesById, currentBranch, language);
           return (
-            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-neutral-800 text-black dark:text-white border border-black/[0.06] dark:border-white/[0.09] truncate">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-medium bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4522f] shrink-0" />
               {bInfo.name}
             </span>
@@ -537,10 +537,10 @@ export const FreelanceProposalsView: React.FC = () => {
           <span
             className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold ${
               proposal.status === 'Accepted'
-                ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400'
                 : proposal.status === 'Declined'
-                ? 'text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
-                : 'text-amber-700 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                ? 'text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400'
+                : 'text-amber-700 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-400'
             }`}
           >
             {proposal.status === 'Accepted'
@@ -881,8 +881,8 @@ export const FreelanceProposalsView: React.FC = () => {
         {selectedProposalIds.size > 0 && (
           <div
             data-sq="card"
-            data-sq-border="solid"
-            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:rgba(191,67,31,0.18)] dark:[--sq-stroke:rgba(255,143,99,0.22)] animate-in fade-in slide-in-from-top-2"
+            data-sq-border="none"
+            className="flex items-center justify-between p-3 px-4 bg-[#FCEEE8] dark:bg-[#2B2825] animate-in fade-in slide-in-from-top-2"
           >
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#d4522f] animate-pulse" />
@@ -1081,10 +1081,10 @@ export const FreelanceProposalsView: React.FC = () => {
         }
         statusClassName={
           activeProposal?.status === 'Accepted'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : activeProposal?.status === 'Declined'
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'summary', label: isAr ? 'الملخص' : isFr ? 'Synthèse' : 'Summary' },
@@ -1253,7 +1253,7 @@ export const FreelanceProposalsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
             >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
@@ -1309,8 +1309,8 @@ export const FreelanceProposalsView: React.FC = () => {
                 </label>
                 <div
                   data-sq="ctl"
-                  data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900"
+                  data-sq-border="none"
+                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <textarea
                     rows={2}
@@ -1434,7 +1434,7 @@ export const FreelanceProposalsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto"
             >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h3 className="t-card font-semibold text-black dark:text-white">
@@ -1496,8 +1496,8 @@ export const FreelanceProposalsView: React.FC = () => {
                 </label>
                 <div
                   data-sq="ctl"
-                  data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900"
+                  data-sq-border="none"
+                  className="bg-[#F5F1EC] dark:bg-[#2B2825] focus-within:ring-2 focus-within:ring-[#d4522f]/30 transition-shadow"
                 >
                   <textarea
                     rows={2}
@@ -1640,13 +1640,13 @@ export const FreelanceProposalsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-[#1C1C1E] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                 <div
                   data-sq="tile"
-                  data-sq-border="solid"
-                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 [--sq-stroke:rgba(225,29,72,0.20)] dark:[--sq-stroke:rgba(251,113,133,0.28)]"
+                  data-sq-border="none"
+                  className="w-10 h-10 bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0"
                 >
                   <AlertTriangle size={20} />
                 </div>

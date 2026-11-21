@@ -12,21 +12,23 @@
   /* surfaces */
   --atr-bg: #F3EDE7;
   --atr-card: #FBF8F5;
+  --atr-elev: #FFFFFF;
+  --atr-pop: #FFFFFF;
   --atr-soft: #ede6e0;
-  --atr-line: rgba(23, 19, 15, 0.075);
-  --atr-divider: rgba(23, 19, 15, 0.065);
+  --atr-line: rgba(23, 19, 15, 0.055);
+  --atr-divider: rgba(23, 19, 15, 0.05);
   --pod: #F3EDE7;
-  --line: rgba(23, 19, 15, 0.055);
-  /* Apple surface-edge hairline tokens (Light Mode) */
-  --sq-stroke-app: rgba(23, 19, 15, 0.065);
-  --sq-stroke-pod: rgba(23, 19, 15, 0.05);
-  --sq-stroke-card: rgba(23, 19, 15, 0.06);
-  --sq-stroke-row: rgba(23, 19, 15, 0.06);
-  --sq-stroke-ctl: rgba(23, 19, 15, 0.09);
-  --sq-stroke-ctl-hover: rgba(23, 19, 15, 0.15);
-  --sq-stroke-pop: rgba(23, 19, 15, 0.08);
+  --line: rgba(23, 19, 15, 0.045);
+  /* Apple surface-edge hairline tokens (Light Mode: shadow & contrast first) */
+  --sq-stroke-app: rgba(23, 19, 15, 0.04);
+  --sq-stroke-pod: transparent;
+  --sq-stroke-card: transparent;
+  --sq-stroke-row: rgba(23, 19, 15, 0.035);
+  --sq-stroke-ctl: rgba(23, 19, 15, 0.065);
+  --sq-stroke-ctl-hover: rgba(23, 19, 15, 0.12);
+  --sq-stroke-pop: rgba(23, 19, 15, 0.055);
   --sq-stroke-obsidian: url(#sq-spec-dark-card);
-  --sq-stroke-dashed: rgba(23, 19, 15, 0.16);
+  --sq-stroke-dashed: rgba(23, 19, 15, 0.14);
   /* text: calibrated warm-ink contrast ramp (>= 4.5:1) */
   --atr-ink: #17130F;
   --atr-ink-2: rgba(23, 19, 15, 0.88);
@@ -54,7 +56,7 @@
   --atr-lb-liq: #f4ede6;
   --atr-lb-t1: #ffffff;
   /* elevation */
-  --atr-shadow-pop: 0 14px 34px rgba(0, 0, 0, 0.22);
+  --atr-shadow-pop: 0 4px 12px rgba(23, 19, 15, 0.06), 0 18px 42px rgba(23, 19, 15, 0.12);
   color-scheme: light;
 }
 
@@ -252,13 +254,15 @@
 [data-atrium-theme='dark'],
 [data-theme='dark'],
 .dark {
-  --atr-bg: #1c1b1a;
-  --atr-card: #262422;
-  --atr-soft: #2d2b29;
-  --atr-line: rgba(255, 255, 255, 0.09);
-  --atr-divider: rgba(255, 255, 255, 0.08);
-  --pod: #141312;
-  --line: rgba(255, 255, 255, 0.06);
+  --atr-bg: #0E0D0C;
+  --atr-card: #131211;
+  --atr-elev: #22201E;
+  --atr-pop: #262422;
+  --atr-soft: #2B2825;
+  --atr-line: rgba(255, 255, 255, 0.065);
+  --atr-divider: rgba(255, 255, 255, 0.06);
+  --pod: #191716;
+  --line: rgba(255, 255, 255, 0.055);
   /* Apple top-lit white specular edge tokens (Dark Mode) */
   --sq-stroke-app: url(#sq-spec-dark-app);
   --sq-stroke-pod: url(#sq-spec-dark-pod);
@@ -268,7 +272,7 @@
   --sq-stroke-ctl-hover: url(#sq-spec-dark-ctl-hover);
   --sq-stroke-pop: url(#sq-spec-dark-pop);
   --sq-stroke-obsidian: url(#sq-spec-dark-card);
-  --sq-stroke-dashed: rgba(255, 255, 255, 0.18);
+  --sq-stroke-dashed: rgba(255, 255, 255, 0.16);
   --atr-ink: #ffffff;
   --atr-ink-2: rgba(255, 255, 255, 0.88);
   --atr-ink-3: #A99E92;
@@ -290,7 +294,7 @@
   --atr-lb-body: #ffffff;
   --atr-lb-liq: #e8643f;
   --atr-lb-t1: #000000;
-  --atr-shadow-pop: 0 14px 34px rgba(0, 0, 0, 0.5);
+  --atr-shadow-pop: 0 18px 44px rgba(0, 0, 0, 0.58), 0 4px 12px rgba(0, 0, 0, 0.32);
   color-scheme: dark;
 }
 

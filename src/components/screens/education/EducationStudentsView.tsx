@@ -494,7 +494,7 @@ export const EducationStudentsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0 border border-neutral-200 dark:border-neutral-700"
+              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
             >
               {student.fullName.charAt(0)}
             </div>
@@ -1206,9 +1206,9 @@ export const EducationStudentsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 max-h-[90vh] overflow-y-auto"
+              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 max-h-[90vh] overflow-y-auto"
             >
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
                 {studentToEdit ? t('edu_modal_edit_student') : t('edu_modal_add_student')}
               </h2>
@@ -1287,7 +1287,7 @@ export const EducationStudentsView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-4 border border-neutral-200 dark:border-neutral-800 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3"
+                className="p-4 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3"
               >
                 <label className="flex items-center gap-2 font-semibold text-black dark:text-white cursor-pointer">
                   <input
@@ -1333,13 +1333,13 @@ export const EducationStudentsView: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
                 </button>

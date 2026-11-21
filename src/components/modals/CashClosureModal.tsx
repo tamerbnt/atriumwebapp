@@ -92,8 +92,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
         {/* Top Summary Card */}
         <div
           data-sq="panel"
-          style={{ '--sq-stroke': 'var(--atr-border, #E6DED6)' } as React.CSSProperties}
-          className="p-[var(--pod-pad,12px)] bg-[#F3EDE7] dark:bg-neutral-800/60 flex flex-col gap-[var(--card-gap,12px)]"
+          className="p-[var(--pod-pad,12px)] bg-[#F3EDE7] dark:bg-[#191716] flex flex-col gap-[var(--card-gap,12px)]"
         >
           <div className="flex items-center justify-between px-[var(--s1,4px)] pt-[var(--s1,4px)]">
             <span className="t-small text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">
@@ -107,32 +106,28 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--s2,8px)]">
             <div
               data-sq="card"
-              style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-              className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
+              className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]"
             >
               <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'الافتتاح' : isEn ? 'Opening' : 'Fond Initial'}</span>
               <span className="t-label font-semibold text-[var(--text-1,#17130F)] dark:text-white tabular-nums">{formatMoney(closure.openingFloatDzd || 0, language)}</span>
             </div>
             <div
               data-sq="card"
-              style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-              className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
+              className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]"
             >
               <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'المقبوضات' : isEn ? 'Cash In' : 'Encaissements'}</span>
               <span className="t-label font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">+{formatMoney(closure.totalCashReceivedDzd || 0, language)}</span>
             </div>
             <div
               data-sq="card"
-              style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-              className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
+              className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]"
             >
               <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'رسوم الطابع' : isEn ? 'Stamp Tax' : 'Timbre Fiscal'}</span>
               <span className="t-label font-semibold text-amber-600 dark:text-amber-400 tabular-nums">{formatMoney(closure.totalTimbreAccruedDzd || 0, language)}</span>
             </div>
             <div
               data-sq="card"
-              style={{ '--sq-stroke': 'var(--atr-border, #E5E5E5)' } as React.CSSProperties}
-              className="p-[var(--s3,12px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s1,4px)]"
+              className="p-[var(--s3,12px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]"
             >
               <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'المتوقع' : isEn ? 'Expected' : 'Théorique'}</span>
               <span className="t-label font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">{formatMoney(closure.theoreticalCashDzd || 0, language)}</span>
@@ -144,7 +139,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
         <div className="sq-elev-card">
           <div
             data-sq="card"
-            className="card-opt p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 flex flex-col gap-[var(--s4,16px)]"
+            className="card-opt p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] flex flex-col gap-[var(--s4,16px)]"
           >
             <div className="flex items-center justify-between pb-[var(--s2,8px)] border-b border-[var(--atr-divider)]">
               <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white flex items-center gap-[var(--icon-text-gap,8px)]">
@@ -218,7 +213,8 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
 
             <div
               data-sq="ctl"
-              className="flex items-center justify-between p-[var(--s3,12px)] bg-neutral-50 dark:bg-neutral-900/50"
+              data-sq-border="none"
+              className="flex items-center justify-between p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#1D1B19]"
             >
               <span className="t-label text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">
                 {isAr ? 'العد الفعلي' : isEn ? 'Counted Total' : 'Total Compté'}

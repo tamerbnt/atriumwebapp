@@ -35,15 +35,15 @@ export const ToastContainer: React.FC = () => {
               aria-live="polite"
               data-sq="card"
               data-sq-border="solid"
-              className="bg-white/95 dark:bg-[#1E1E22]/95 backdrop-blur-md rounded-[var(--r-card,16px)] p-[var(--s4,16px)] [--sq-stroke:var(--sq-stroke-pop)] flex items-start gap-[var(--s3,12px)] transition-all duration-300 animate-in slide-in-from-bottom-3"
+              className="bg-white/95 dark:bg-[#262422]/95 backdrop-blur-md rounded-[var(--r-card,16px)] p-[var(--s4,16px)] [--sq-stroke:var(--sq-stroke-pop)] flex items-start gap-[var(--s3,12px)] transition-all duration-300 animate-in slide-in-from-bottom-3"
             >
               {/* Status Icon */}
               <div className="shrink-0">
                 {isSuccess && (
                   <div
                     data-sq="tile"
-                    data-sq-border="solid"
-                    className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-emerald-50 dark:bg-emerald-950/60 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] flex items-center justify-center text-emerald-600 dark:text-emerald-400"
+                    data-sq-border="none"
+                    className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400"
                   >
                     <CheckCircle2 size={16} strokeWidth={1.5} />
                   </div>
@@ -51,8 +51,8 @@ export const ToastContainer: React.FC = () => {
                 {isError && (
                   <div
                     data-sq="tile"
-                    data-sq-border="solid"
-                    className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-rose-50 dark:bg-rose-950/60 [--sq-stroke:#fecdd3] dark:[--sq-stroke:#9f1239] flex items-center justify-center text-rose-600 dark:text-rose-400"
+                    data-sq-border="none"
+                    className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center text-rose-600 dark:text-rose-400"
                   >
                     <AlertCircle size={16} strokeWidth={1.5} />
                   </div>
@@ -60,8 +60,8 @@ export const ToastContainer: React.FC = () => {
                 {isWarning && (
                   <div
                     data-sq="tile"
-                    data-sq-border="solid"
-                    className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-amber-50 dark:bg-amber-950/60 [--sq-stroke:#fde68a] dark:[--sq-stroke:#92400e] flex items-center justify-center text-amber-600 dark:text-amber-400"
+                    data-sq-border="none"
+                    className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center text-amber-600 dark:text-amber-400"
                   >
                     <AlertTriangle size={16} strokeWidth={1.5} />
                   </div>
@@ -69,8 +69,8 @@ export const ToastContainer: React.FC = () => {
                 {isInfo && (
                   <div
                     data-sq="tile"
-                    data-sq-border="solid"
-                    className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-sky-50 dark:bg-sky-950/60 [--sq-stroke:#bae6fd] dark:[--sq-stroke:#075985] flex items-center justify-center text-sky-600 dark:text-sky-400"
+                    data-sq-border="none"
+                    className="w-[var(--tile-sm,32px)] h-[var(--tile-sm,32px)] rounded-[var(--r-tile,12px)] bg-sky-50 dark:bg-sky-950/60 flex items-center justify-center text-sky-600 dark:text-sky-400"
                   >
                     <Info size={16} strokeWidth={1.5} />
                   </div>
@@ -86,19 +86,19 @@ export const ToastContainer: React.FC = () => {
 
                   {/* Cloud Sync Status Badge */}
                   {toast.syncStatus === 'synced' && (
-                    <span className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-emerald-100/70 dark:bg-emerald-900/40 t-small text-emerald-700 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-700/60">
+                    <span className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-emerald-100/75 dark:bg-emerald-900/40 t-small text-emerald-700 dark:text-emerald-300">
                       <Cloud size={12} strokeWidth={1.5} className="text-emerald-600 dark:text-emerald-400" />
                       Supabase Synced
                     </span>
                   )}
                   {toast.syncStatus === 'local' && (
-                    <span className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-neutral-100 dark:bg-neutral-800 t-small text-[var(--text-2)] border border-black/[0.06] dark:border-white/[0.10]">
+                    <span className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] t-small text-[var(--text-2)]">
                       <Database size={12} strokeWidth={1.5} />
                       Saved to Local Storage
                     </span>
                   )}
                   {toast.syncStatus === 'error' && (
-                    <span className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-amber-100/70 dark:bg-amber-900/40 t-small text-amber-700 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/60">
+                    <span className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-amber-100/75 dark:bg-amber-900/40 t-small text-amber-700 dark:text-amber-300">
                       <AlertCircle size={12} strokeWidth={1.5} />
                       Sync Notice
                     </span>
@@ -114,7 +114,7 @@ export const ToastContainer: React.FC = () => {
               <button
                 type="button"
                 onClick={() => dismissToast(toast.id)}
-                className="shrink-0 w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                className="shrink-0 w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
                 title="Dismiss notification"
                 aria-label="Dismiss notification"
               >

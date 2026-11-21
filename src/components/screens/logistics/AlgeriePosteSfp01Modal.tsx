@@ -67,10 +67,10 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
       <div
         data-sq="panel"
         data-sq-border="solid"
-        className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-4 max-h-[90vh] flex flex-col"
+        className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-4 max-h-[90vh] flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3 shrink-0">
+        <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3 shrink-0">
           <div className="flex items-center gap-2">
             <div
               data-sq="tile"
@@ -89,7 +89,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
             type="button"
             aria-label={isAr ? 'إغلاق' : 'Fermer'}
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -98,8 +98,8 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
         {/* Batch Overview Banner */}
         <div
           data-sq="card"
-          data-sq-border="solid"
-          className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/60 border border-[#E6DED6] dark:border-neutral-700/60 flex items-center justify-between"
+          data-sq-border="none"
+          className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between"
         >
           <div>
             <span className="t-cap text-black/55 dark:text-white/55 block">
@@ -127,15 +127,16 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
           </div>
           <pre
             data-sq="card"
-            data-sq-border="solid"
-            className="p-4 bg-neutral-950 text-emerald-400 tabular-nums t-cap overflow-x-auto whitespace-pre selection:bg-emerald-900 border border-neutral-800 leading-relaxed"
+            data-sq-border="none"
+            data-surface="dark"
+            className="p-4 bg-[#191716] text-emerald-400 tabular-nums t-cap overflow-x-auto whitespace-pre selection:bg-emerald-900 leading-relaxed"
           >
             {fullText}
           </pre>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-neutral-200 dark:border-neutral-800 shrink-0">
+        <div className="flex items-center justify-between pt-3 border-t border-[var(--atr-divider)] shrink-0">
           <AtriumButton
             variant="outline"
             size="sm"

@@ -417,7 +417,7 @@ export const EducationCohortsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 [--sq-stroke:rgba(212,82,47,0.22)] dark:[--sq-stroke:rgba(255,143,99,0.22)]"
             >
               <BookOpen size={16} />
             </div>
@@ -813,17 +813,17 @@ export const EducationCohortsView: React.FC = () => {
                         data-sq="card"
                         data-sq-border="solid"
                         onClick={() => handleToggleMilestone(cohort.id, idx)}
-                        className={`w-full text-left rtl:text-right flex items-start gap-3 p-3 border transition-all cursor-pointer ${
+                        className={`w-full text-left rtl:text-right flex items-start gap-3 p-3 transition-all cursor-pointer ${
                           milestone.completed
-                            ? 'border-emerald-200 dark:border-emerald-900/50 bg-[#DDF5E8]/40 dark:bg-emerald-950/20'
-                            : 'border-[#E6DED6] dark:border-[#3A3734] bg-[#F3EDE7] dark:bg-[#262422]'
+                            ? '[--sq-stroke:#a7f3d0] dark:[--sq-stroke:rgba(6,78,59,0.5)] bg-[#DDF5E8]/40 dark:bg-emerald-950/20'
+                            : 'bg-[#F3EDE7] dark:bg-[#262422]'
                         }`}
                       >
                         <span
                           data-sq="check"
                           data-sq-border={milestone.completed ? 'none' : 'solid'}
                           className={`w-5 h-5 flex items-center justify-center shrink-0 mt-0.5 ${
-                            milestone.completed ? 'bg-emerald-600 text-white' : 'border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900'
+                            milestone.completed ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-neutral-900'
                           }`}
                         >
                           {milestone.completed && <Check size={12} />}
@@ -975,9 +975,9 @@ export const EducationCohortsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6"
+              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6"
             >
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
                 {t('edu_modal_add_cohort')}
               </h2>
@@ -1095,13 +1095,13 @@ export const EducationCohortsView: React.FC = () => {
                 height={40}
                 corner={12}
               />
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsAddCohortModalOpen(false)}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
                 </button>

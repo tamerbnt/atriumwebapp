@@ -70,7 +70,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
       <div className="flex flex-col gap-[var(--s5)]">
         {/* Active Entitlement Status */}
         <div className="sq-elev-card">
-          <div data-sq="card" className="p-[var(--s4)] bg-[#F3EDE7] dark:bg-neutral-800/60 flex items-center justify-between gap-[var(--s3)]">
+          <div data-sq="card" className="p-[var(--s4)] bg-[#F3EDE7] dark:bg-[#191716] flex items-center justify-between gap-[var(--s3)]">
             <div className="flex flex-col gap-[var(--s1)]">
               <span className="t-cap font-medium text-[var(--text-2)]">
                 {t('settings_license_entitlement', language)}
@@ -153,7 +153,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
                   type="button"
                   data-sq="card"
                   onClick={() => handleApplyPreset(v.code)}
-                  className="w-full text-left rtl:text-right p-[var(--s3)] bg-white dark:bg-neutral-800/50 flex items-center justify-between gap-[var(--s3)] group cursor-pointer transition-colors"
+                  className="w-full text-left rtl:text-right p-[var(--s3)] bg-white dark:bg-[#22201E] hover:dark:bg-[#282523] flex items-center justify-between gap-[var(--s3)] group cursor-pointer transition-colors"
                 >
                   <div className="flex flex-col gap-[var(--s1)]">
                     <div className="t-small font-semibold text-[var(--text-1)]">

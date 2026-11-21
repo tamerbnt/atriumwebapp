@@ -17,11 +17,12 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: var(--s2, 8px);
-  background: var(--atr-card);
+  background: var(--atr-pop, var(--atr-card));
   color: var(--text-1, var(--atr-ink));
-  border: 1px solid var(--atr-line);
+  border: 0;
   border-radius: var(--r-table, 20px);
   box-shadow: var(--atr-shadow-pop);
+  --sq-stroke: var(--sq-stroke-pop, rgba(23, 19, 15, 0.055));
   font: var(--t-body);
   letter-spacing: var(--tr-13);
   outline: none;

@@ -125,8 +125,8 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
 <div className="sq-elev-pop max-w-2xl w-full my-8">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#18181B] w-full p-6 md:p-8 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#27272A] space-y-5 text-black dark:text-[#FAFAFA]">
-<div className="flex items-center justify-between border-b border-[#E6DED6] dark:border-[#27272A] pb-4">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 md:p-8 [--sq-stroke:var(--sq-stroke-pop)] space-y-5 text-black dark:text-white">
+<div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-4">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><Building2 className="w-5 h-5" /></div>
 <div>
@@ -135,14 +135,14 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 </h3>
 </div>
 </div>
-<button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 flex items-center justify-center text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white cursor-pointer"><X className="w-5 h-5" /></button>
+<button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 flex items-center justify-center text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
-<div className="flex items-center gap-2 border-b border-[#E6DED6] dark:border-[#27272A] pb-1">
-<button type="button" onClick={() => setActiveTab("general")} data-sq="ctl-sm" data-sq-border="none" className={`px-4 py-2 t-small font-semibold transition-colors ${activeTab === "general" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>1. Descriptif & Mandant</button>
-<button type="button" onClick={() => setActiveTab("cadastre")} data-sq="ctl-sm" data-sq-border="none" className={`px-4 py-2 t-small font-semibold flex items-center gap-2 transition-colors ${activeTab === "cadastre" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white"}`}>
+<div className="flex items-center gap-2 border-b border-[var(--atr-divider)] pb-2">
+<button type="button" onClick={() => setActiveTab("general")} data-sq="ctl-sm" data-sq-border="none" className={`px-4 py-2 t-small font-semibold transition-colors cursor-pointer ${activeTab === "general" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825]"}`}>1. Descriptif & Mandant</button>
+<button type="button" onClick={() => setActiveTab("cadastre")} data-sq="ctl-sm" data-sq-border="none" className={`px-4 py-2 t-small font-semibold flex items-center gap-2 transition-colors cursor-pointer ${activeTab === "cadastre" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825]"}`}>
 <ShieldCheck className="w-3.5 h-3.5" />
 <span>2. Passeport Foncier & Titre Légal</span>
-<span className={`t-small px-2 py-0.2 rounded-full font-semibold ${titleStrength.score >= 80 ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-200"}`}>
+<span className={`t-small px-2 py-0.5 rounded-full font-semibold tabular-nums ${activeTab === "cadastre" ? "bg-white/20 text-white" : titleStrength.score >= 80 ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300" : "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300"}`}>
 {titleStrength.score}
 /100
 </span>
@@ -195,7 +195,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 <LabelInput label="Adresse Exacte" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Ex: Résidence Les Pins, Djenane El Malik" required />
 <LabelInput label="Commune, Wilaya" value={cityWilaya} onChange={(e) => setCityWilaya(e.target.value)} placeholder="Ex: Hydra, Alger" required />
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141416] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#232328] space-y-3">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#1D1B19] space-y-3">
 <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">Coordonnées Propriétaire Mandant</div>
 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 <LabelInput label="Nom du Propriétaire" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} required />
@@ -204,7 +204,7 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 </div>
 </div>
 </> : /* @__PURE__ */ <>
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#FDF4F0] dark:bg-[#1C1816] [--sq-stroke:rgba(212,82,47,0.3)] flex items-center justify-between">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#FDF4F0] dark:bg-[#2B2825] flex items-center justify-between">
 <div>
 <div className="t-cap text-black/70 dark:text-white/75">Niveau de Sécurité Juridique</div>
 <div className="t-label font-semibold text-black dark:text-white flex items-center gap-2">
@@ -247,11 +247,11 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 								]} />
 <div className="flex items-center gap-4 pt-5">
 <label className="flex items-center gap-2 cursor-pointer t-small font-medium">
-<input type="checkbox" checked={hasLivretFoncier} onChange={(e) => setHasLivretFoncier(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] border-[#E6DED6] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={hasLivretFoncier} onChange={(e) => setHasLivretFoncier(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] accent-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
 <span>Livret Foncier Délivré</span>
 </label>
 <label className="flex items-center gap-2 cursor-pointer t-small font-medium">
-<input type="checkbox" checked={hasNegativeCertificate} onChange={(e) => setHasNegativeCertificate(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] border-[#E6DED6] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={hasNegativeCertificate} onChange={(e) => setHasNegativeCertificate(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] accent-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
 <span>Certificat Négatif Valide</span>
 </label>
 </div>
@@ -266,22 +266,22 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 <LabelInput label="Numéro d'Îlot" value={cadastralIlot} onChange={(e) => setCadastralIlot(e.target.value)} placeholder="Ex: Îlot 22" />
 <LabelInput label="Numéro de Lot" value={cadastralLot} onChange={(e) => setCadastralLot(e.target.value)} placeholder="Ex: Lot 14" />
 </div>
-{isIndivision && /* @__PURE__ */ <div data-sq="card" data-sq-border="solid" className="p-3 bg-amber-50 dark:bg-amber-950/30 [--sq-stroke:#FDE68A] dark:[--sq-stroke:#92400E] space-y-2">
+{isIndivision && /* @__PURE__ */ <div data-sq="card" data-sq-border="none" className="p-3 bg-amber-50 dark:bg-amber-950/30 space-y-2">
 <div className="t-small font-semibold text-amber-800 dark:text-amber-300">Spécificités Indivision & Héritage</div>
 <LabelInput label="Numéro d'Enregistrement de la Fridha Notariée" value={fridhaNumber} onChange={(e) => setFridhaNumber(e.target.value)} placeholder="Ex: FRIDHA-NOT-2025-0819" />
 </div>}
 <div className="flex items-center gap-4 pt-2">
 <label className="flex items-center gap-2 cursor-pointer t-small font-medium">
-<input type="checkbox" checked={hasCertificatConformite} onChange={(e) => setHasCertificatConformite(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] border-[#E6DED6] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={hasCertificatConformite} onChange={(e) => setHasCertificatConformite(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] accent-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
 <span>Certificat de Conformité (Loi 08-15)</span>
 </label>
 <label className="flex items-center gap-2 cursor-pointer t-small font-medium">
-<input type="checkbox" checked={isEligibleBankMortgage} onChange={(e) => setIsEligibleBankMortgage(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] border-[#E6DED6] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
+<input type="checkbox" checked={isEligibleBankMortgage} onChange={(e) => setIsEligibleBankMortgage(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] accent-[#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]" />
 <span>Dossier Éligible Crédit Bancaire</span>
 </label>
 </div>
 </>}
-<div className="flex items-center justify-between pt-4 border-t border-[#E6DED6] dark:border-[#27272A]">
+<div className="flex items-center justify-between pt-4 border-t border-[var(--atr-divider)]">
 {activeTab === "general" ? /* @__PURE__ */ <button type="button" onClick={() => setActiveTab("cadastre")} className="t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold hover:underline">Passer au Passeport Foncier →</button> : /* @__PURE__ */ <button type="button" onClick={() => setActiveTab("general")} className="t-small text-black/70 dark:text-white/75 font-semibold hover:underline">← Retour au Descriptif</button>}
 <div className="flex items-center gap-2">
 <AtriumButton variant="secondary" onClick={onClose} type="button">Annuler</AtriumButton>

@@ -102,7 +102,7 @@ export const LogisticsStaffView: React.FC = () => {
       header: isAr ? 'صنف الرخصة' : isEn ? 'License Class' : 'Permis de Conduire',
       accessorKey: 'drivingLicenseCategory',
       cell: (member) => (
-        <span className="px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 t-small tabular-nums font-semibold text-black dark:text-white">
+        <span className="px-2 py-1 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] t-small tabular-nums font-semibold text-black dark:text-white">
           {member.drivingLicenseCategory || 'B'}
         </span>
       ),

@@ -379,8 +379,8 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
             <div className="flex items-center gap-3 min-w-0 pr-2">
               <div
                 data-sq="tile"
-                data-sq-border="solid"
-                className="w-10 h-10 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 [--sq-stroke:#F5E2D8] dark:[--sq-stroke:#404040]"
+                data-sq-border="none"
+                className="w-10 h-10 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0"
               >
                 <Car size={18} />
               </div>
@@ -391,7 +391,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
                   </span>
                   {isPinned && <span className="t-small text-amber-500 font-semibold">VIP</span>}
                   {v.isFleet && (
-                    <span className="t-small px-2 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200/50">
+                    <span className="t-small px-2 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-semibold">
                       Flotte B2B
                     </span>
                   )}
@@ -403,7 +403,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 t-cap text-black/55 dark:text-white/55 tabular-nums">
-                  <span className="px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white font-semibold">
+                  <span className="px-2 py-1 rounded-full bg-[#EFE9E2] dark:bg-[#2B2825] text-black dark:text-white font-semibold">
                     {v.plateNumber}
                   </span>
                   <span>·</span>
@@ -488,7 +488,7 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
           const vehOrders = vehicleOrdersMap.get(v.plateNumber) || [];
           return (
             <div className="text-center">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 {vehOrders.length} {isAr ? 'أوامر' : 'ORs'}
               </span>
@@ -832,8 +832,8 @@ export const AutoGarageVehiclesView: React.FC<any> = () => {
         }
         statusClassName={
           activeVehicle?.isFleet
-            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
-            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
         }
         tabs={[
           { id: 'fiche', label: isAr ? 'البطاقة' : 'Fiche & Client' },

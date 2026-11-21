@@ -135,8 +135,8 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
           {showPeriodFilter && (
             <div
               data-sq="ctl-sm"
-              data-sq-border="solid"
-              className="inline-flex items-center h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[#F4EFEA] dark:bg-neutral-800/80 border border-black/[0.06] dark:border-white/[0.09] self-start sm:self-auto"
+              data-sq-border="none"
+              className="inline-flex items-center h-[var(--seg-m-h,32px)] p-[var(--seg-m-pad,2px)] bg-[#F4EFEA] dark:bg-[#191716] border-0 self-start sm:self-auto"
               role="group"
               aria-label="Hourly Filter"
             >
@@ -149,7 +149,7 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
                     onClick={() => handlePeriodChange(opt.id)}
                     className={`px-[var(--seg-px,12px)] h-[calc(var(--seg-m-h,32px)-4px)] rounded-[var(--r-thumb,9px)] t-small transition-all duration-150 cursor-pointer select-none ${
                       isSelected
-                        ? 'bg-white dark:bg-neutral-700 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-xs'
+                        ? 'bg-white dark:bg-[#2B2825] text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shadow-[0_1px_3px_rgba(23,19,15,0.08)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
                         : 'text-[var(--text-2)] hover:text-[var(--text-1)]'
                     }`}
                   >
@@ -250,7 +250,7 @@ export const HourlyCurveChart: React.FC<HourlyCurveChartProps> = ({
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="bg-neutral-900/95 dark:bg-neutral-800/95 text-white backdrop-blur-md px-3 py-2 border-0 [--sq-stroke:var(--sq-stroke-obsidian)] flex items-center gap-2 whitespace-nowrap text-left rtl:text-right"
+              className="bg-[#262422]/95 text-white backdrop-blur-md px-3 py-2 border-0 [--sq-stroke:url(#sq-spec-dark-pop)] flex items-center gap-2 whitespace-nowrap text-left rtl:text-right"
             >
               <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
                 <div className="t-small text-[var(--text-dark-2,#A99E92)]">

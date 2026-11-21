@@ -861,8 +861,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
         }
         statusClassName={
           activePart && activePart.stockQuantity <= activePart.minThreshold
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
         }
         tabs={[
           { id: 'fiche', label: isAr ? 'المواصفات' : 'Fiche Pièce' },
@@ -989,9 +989,9 @@ export const AutoGaragePartsView: React.FC<any> = () => {
           <div
             data-sq="panel"
             data-sq-border="solid"
-            className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
           >
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+            <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
               <div className="flex items-center gap-2">
                 <div
                   data-sq="tile"
@@ -1019,7 +1019,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 type="button"
                 onClick={() => setIsModalOpen(false)}
                 aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -1093,7 +1093,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                   onChange={(e) => setCompatibility(e.target.value)}
                 />
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
                   {isAr ? 'إلغاء' : 'Annuler'}
                 </AtriumButton>
@@ -1113,9 +1113,9 @@ export const AutoGaragePartsView: React.FC<any> = () => {
           <div
             data-sq="panel"
             data-sq-border="solid"
-            className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5"
+            className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
           >
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+            <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
               <div className="flex items-center gap-2">
                 <div
                   data-sq="tile"
@@ -1134,7 +1134,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 type="button"
                 onClick={() => setIsPoModalOpen(false)}
                 aria-label={isAr ? 'إغلاق' : 'Fermer'}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -1201,8 +1201,8 @@ export const AutoGaragePartsView: React.FC<any> = () => {
               </div>
               <div
                 data-sq="card"
-                data-sq-border="solid"
-                className="p-4 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between t-cap"
+                data-sq-border="none"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between t-cap"
               >
                 <span className="text-black/55 dark:text-white/55">
                   {isAr ? 'إجمالي قيمة الطلبية HT:' : 'Montant Total Commande HT:'}
@@ -1211,7 +1211,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                   {formatMoney((parseInt(poQuantity, 10) || 0) * (parseFloat(poUnitCost) || 0), language)}
                 </span>
               </div>
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
                 <AtriumButton variant="ghost" size="sm" onClick={() => setIsPoModalOpen(false)}>
                   {isAr ? 'إلغاء' : 'Annuler'}
                 </AtriumButton>

@@ -49,14 +49,14 @@ const getAptStatusClassName = (status: string): string => {
   switch (status) {
     case 'InRoom':
     case 'Completed':
-      return 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+      return 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
     case 'Arrived':
-      return 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+      return 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
     case 'Cancelled':
     case 'NoShow':
-      return 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+      return 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]';
     default:
-      return 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+      return 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
   }
 };
 
@@ -421,16 +421,16 @@ export const MedicalAgendaView: React.FC<any> = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'InRoom':
-        return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
+        return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300';
       case 'Arrived':
-        return 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30';
+        return 'bg-amber-500/15 text-amber-700 dark:text-amber-300';
       case 'Completed':
-        return 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30';
+        return 'bg-blue-500/15 text-blue-700 dark:text-blue-300';
       case 'Cancelled':
       case 'NoShow':
-        return 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30';
+        return 'bg-red-500/15 text-red-700 dark:text-red-300';
       default:
-        return 'bg-neutral-500/15 text-black/75 dark:text-white/80 border-neutral-500/30';
+        return 'bg-[#F3EDE7] dark:bg-[#2B2825] text-black/75 dark:text-white/80';
     }
   };
 
@@ -500,7 +500,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
         sortable: true,
         renderCell: (a) => (
           <span
-            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold border ${getStatusBadge(
+            className={`inline-flex items-center px-2.5 py-1 rounded-full t-small font-semibold ${getStatusBadge(
               a.status
             )}`}
           >
@@ -538,14 +538,14 @@ export const MedicalAgendaView: React.FC<any> = () => {
         title={isAr ? 'الأجندة' : 'Agenda'}
         secondaryActions={
           <div className="flex flex-wrap items-center gap-2">
-            <div data-sq="ctl" data-sq-border="solid" className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-[3px]">
+            <div data-sq="ctl" data-sq-border="none" className="flex items-center bg-[#F5F1EC] dark:bg-[#2B2825] p-[3px]">
               <button
                 type="button"
                 data-no-liquid="true"
                 data-sq="thumb"
                 data-sq-border="none"
                 onClick={() => shiftDate(-1)}
-                className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 cursor-pointer"
+                className="p-2 hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75 cursor-pointer"
                 title={isAr ? 'اليوم السابق' : 'Jour précédent'}
                 aria-label={isAr ? 'اليوم السابق' : 'Jour précédent'}
               >
@@ -564,14 +564,14 @@ export const MedicalAgendaView: React.FC<any> = () => {
                 data-sq="thumb"
                 data-sq-border="none"
                 onClick={() => shiftDate(1)}
-                className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-black/70 dark:text-white/75 cursor-pointer"
+                className="p-2 hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] text-black/70 dark:text-white/75 cursor-pointer"
                 title={isAr ? 'اليوم التالي' : 'Jour suivant'}
                 aria-label={isAr ? 'اليوم التالي' : 'Jour suivant'}
               >
                 <ChevronRight size={16} />
               </button>
             </div>
-            <div data-sq="ctl" data-sq-border="solid" className="flex items-center gap-1 bg-white dark:bg-neutral-800 p-[3px] border border-neutral-200 dark:border-neutral-700 t-cap">
+            <div data-sq="ctl" data-sq-border="none" className="flex items-center gap-1 bg-[#F5F1EC] dark:bg-[#1D1B19] p-[3px] t-cap">
               {[15, 30, 45].map((interval) => (
                 <button
                   key={interval}
@@ -761,9 +761,9 @@ export const MedicalAgendaView: React.FC<any> = () => {
           }}
           renderCalendarView={() => (
             <div className="sq-elev-card">
-              <div data-sq="table" data-sq-border="solid" className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden">
-              <div className="grid grid-cols-12 bg-[#F3EDE7] dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-800">
-                <div className="col-span-2 sm:col-span-1 p-4 text-center t-small tabular-nums font-semibold text-black/55 dark:text-white/55 border-r border-neutral-200 dark:border-neutral-800">
+              <div data-sq="table" data-sq-border="none" className="bg-white dark:bg-[#22201E] overflow-hidden">
+              <div className="grid grid-cols-12 bg-[#F5F1EC] dark:bg-[#1D1B19] border-b border-[var(--atr-divider)]">
+                <div className="col-span-2 sm:col-span-1 p-4 text-center t-small tabular-nums font-semibold text-black/55 dark:text-white/55 border-r border-[var(--atr-divider)]">
                   {isAr ? 'الوقت' : 'Heure'}
                 </div>
                 <div
@@ -779,7 +779,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                     return (
                       <div
                         key={doc.id}
-                        className="p-4 border-r last:border-r-0 border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2 min-w-0"
+                        className="p-4 border-r last:border-r-0 border-[var(--atr-divider)] flex items-center justify-between gap-2 min-w-0"
                       >
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
@@ -801,7 +801,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                         {waitingCount > 0 && (
                           <span
                             title={`File d'attente active : ${waitingCount} patient(s)`}
-                            className="t-small font-semibold px-2 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 shrink-0"
+                            className="t-small font-semibold px-2 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 shrink-0"
                           >
                             +{waitingCount * 15}m
                           </span>
@@ -812,13 +812,13 @@ export const MedicalAgendaView: React.FC<any> = () => {
                 </div>
               </div>
 
-              <div className="divide-y divide-neutral-200 dark:divide-neutral-800 max-h-[600px] overflow-y-auto">
+              <div className="divide-y divide-[var(--atr-divider)] max-h-[600px] overflow-y-auto">
                 {timeSlots.map((time) => (
                   <div
                     key={time}
-                    className="grid grid-cols-12 min-h-[58px] hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20 transition-colors"
+                    className="grid grid-cols-12 min-h-[58px] hover:bg-[#F5F1EC]/50 dark:hover:bg-[#282523]/40 transition-colors"
                   >
-                    <div className="col-span-2 sm:col-span-1 p-2 text-center t-small tabular-nums font-semibold text-black/55 dark:text-white/55 border-r border-neutral-200 dark:border-neutral-800 flex items-center justify-center">
+                    <div className="col-span-2 sm:col-span-1 p-2 text-center t-small tabular-nums font-semibold text-black/55 dark:text-white/55 border-r border-[var(--atr-divider)] flex items-center justify-center">
                       {time}
                     </div>
                     <div
@@ -835,13 +835,13 @@ export const MedicalAgendaView: React.FC<any> = () => {
                         return (
                           <div
                             key={doc.id}
-                            className="p-2 border-r last:border-r-0 border-neutral-200 dark:border-neutral-800 relative group min-w-0"
+                            className="p-2 border-r last:border-r-0 border-[var(--atr-divider)] relative group min-w-0"
                           >
                             {matchApt ? (
                               <div
                                 data-sq="ctl"
-                                data-sq-border="solid"
-                                className={`h-full p-2 border flex flex-col justify-between transition-all ${getStatusBadge(
+                                data-sq-border="none"
+                                className={`h-full p-2 flex flex-col justify-between transition-all ${getStatusBadge(
                                   matchApt.status
                                 )}`}
                               >

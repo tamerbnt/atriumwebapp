@@ -69,7 +69,7 @@ const getBatStatusBadge = (
       label: isAr ? 'معتمد للطباعة' : 'Validé BAT',
       variant: 'active',
       pillClass:
-        'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+        'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
     };
   }
   if (status === 'revision_requested') {
@@ -77,14 +77,14 @@ const getBatStatusBadge = (
       label: isAr ? 'مطلوب تعديل' : 'Corrections',
       variant: 'blocked',
       pillClass:
-        'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
+        'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]',
     };
   }
   return {
     label: isAr ? 'قيد المراجعة' : 'En Revue CDP',
     variant: 'warning',
     pillClass:
-      'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
+      'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
   };
 };
 
@@ -379,7 +379,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 src={bat.previewUrl}
                 alt={bat.title}
                 referrerPolicy="no-referrer"
-                className="w-9 h-9 rounded-[var(--r-ctl-sm,10px)] object-cover shrink-0 border border-[#E6DED6] dark:border-neutral-800 bg-neutral-100"
+                className="w-9 h-9 rounded-[var(--r-ctl-sm,10px)] object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
               />
               <div className="min-w-0">
                 <div className="font-semibold t-small text-black dark:text-white truncate max-w-[190px] flex items-center gap-1">
@@ -733,134 +733,137 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
             </h2>
             <ListAdvancedMenuButton language={language} />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div data-sq="pod" data-sq-border="none" className="p-3 bg-[#EFE9E2]/70 dark:bg-[#191716] space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[var(--atr-divider)]">
                 <span className="t-small font-semibold text-black/70 dark:text-white/75">
                   1. Reçus du Chef de Projet
                 </span>
-                <span className="w-5 h-5 rounded-full bg-white dark:bg-neutral-800 text-black/70 dark:text-white/75 tabular-nums t-small flex items-center justify-center font-semibold">
+                <span className="w-5 h-5 rounded-full bg-white dark:bg-[#2B2825] text-black/70 dark:text-white/75 tabular-nums t-small flex items-center justify-center font-semibold">
                   {pmPrintOrders.filter((o) => o.status === 'sent_to_crea').length}
                 </span>
               </div>
               {pmPrintOrders
                 .filter((o) => o.status === 'sent_to_crea')
                 .map((order) => (
-                  <div
-                    key={order.id}
-                    data-sq="card"
-                    data-sq-border="solid"
-                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2"
-                  >
-                    <div className="flex items-center justify-between t-cap">
-                      <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                        {order.orderNumber}
-                      </span>
-                      <span className="text-black/55 dark:text-white/55">
-                        {order.items.length} support(s)
-                      </span>
-                    </div>
-                    <h4 className="t-small font-semibold text-black dark:text-white">
-                      {order.projectTitle}
-                    </h4>
-                    <div className="t-cap text-black/55 dark:text-white/55">
-                      {order.items.map((i) => i.itemTitle).join(', ')}
-                    </div>
-                    <AtriumButton
-                      type="button"
-                      size="xs"
-                      variant="primary"
-                      className="w-full"
-                      icon={<UploadCloud className="w-3.5 h-3.5" />}
-                      onClick={() => {
-                        setSelectedOrderId(order.id);
-                        setSelectedProjectId(order.projectId);
-                        setActiveTab('upload');
-                      }}
+                  <div key={order.id} className="sq-elev-card">
+                    <div
+                      data-sq="card"
+                      data-sq-border="none"
+                      className="p-4 bg-white dark:bg-[#22201E] space-y-2"
                     >
-                      Créer le BAT →
-                    </AtriumButton>
+                      <div className="flex items-center justify-between t-cap">
+                        <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                          {order.orderNumber}
+                        </span>
+                        <span className="text-black/55 dark:text-white/55">
+                          {order.items.length} support(s)
+                        </span>
+                      </div>
+                      <h4 className="t-small font-semibold text-black dark:text-white">
+                        {order.projectTitle}
+                      </h4>
+                      <div className="t-cap text-black/55 dark:text-white/55">
+                        {order.items.map((i) => i.itemTitle).join(', ')}
+                      </div>
+                      <AtriumButton
+                        type="button"
+                        size="xs"
+                        variant="primary"
+                        className="w-full"
+                        icon={<UploadCloud className="w-3.5 h-3.5" />}
+                        onClick={() => {
+                          setSelectedOrderId(order.id);
+                          setSelectedProjectId(order.projectId);
+                          setActiveTab('upload');
+                        }}
+                      >
+                        Créer le BAT →
+                      </AtriumButton>
+                    </div>
                   </div>
                 ))}
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
-                <span className="t-small font-semibold text-amber-600">
+            <div data-sq="pod" data-sq-border="none" className="p-3 bg-[#EFE9E2]/70 dark:bg-[#191716] space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[var(--atr-divider)]">
+                <span className="t-small font-semibold text-amber-600 dark:text-[#FFD166]">
                   2. En Revue CDP & Client
                 </span>
-                <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 tabular-nums t-small flex items-center justify-center font-semibold">
+                <span className="w-5 h-5 rounded-full bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] tabular-nums t-small flex items-center justify-center font-semibold">
                   {pmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length}
                 </span>
               </div>
               {pmBatDeliverables
                 .filter((b) => b.approvalStatus === 'pending_review')
                 .map((bat) => (
-                  <div
-                    key={bat.id}
-                    onClick={(e) => handleSelectBat(bat, e.currentTarget)}
-                    data-sq="card"
-                    data-sq-border="solid"
-                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] space-y-2 cursor-pointer hover:[--sq-stroke:rgba(212,82,47,0.6)] transition-colors"
-                  >
-                    <img
-                      src={bat.previewUrl}
-                      alt={bat.title}
-                      referrerPolicy="no-referrer"
-                      data-sq="ctl"
+                  <div key={bat.id} className="sq-elev-card">
+                    <div
+                      onClick={(e) => handleSelectBat(bat, e.currentTarget)}
+                      data-sq="card"
                       data-sq-border="none"
-                      className="w-full h-28 object-cover bg-neutral-100"
-                    />
-                    <div className="flex items-center justify-between t-cap">
-                      <span className="font-semibold text-black dark:text-white truncate">
-                        {bat.title}
-                      </span>
-                      <span className="tabular-nums text-black/55 dark:text-white/55">
-                        {bat.versionCode}
-                      </span>
+                      className="p-4 bg-white dark:bg-[#22201E] hover:bg-[#FBF8F5] dark:hover:bg-[#282523] space-y-2 cursor-pointer transition-colors"
+                    >
+                      <img
+                        src={bat.previewUrl}
+                        alt={bat.title}
+                        referrerPolicy="no-referrer"
+                        data-sq="ctl"
+                        data-sq-border="none"
+                        className="w-full h-28 object-cover bg-[#F3EDE7] dark:bg-[#2B2825]"
+                      />
+                      <div className="flex items-center justify-between t-cap">
+                        <span className="font-semibold text-black dark:text-white truncate">
+                          {bat.title}
+                        </span>
+                        <span className="tabular-nums text-black/55 dark:text-white/55">
+                          {bat.versionCode}
+                        </span>
+                      </div>
+                      <p className="t-cap text-black/55 dark:text-white/55">
+                        {bat.projectTitle}
+                      </p>
                     </div>
-                    <p className="t-cap text-black/55 dark:text-white/55">
-                      {bat.projectTitle}
-                    </p>
                   </div>
                 ))}
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#E6DED6] dark:border-neutral-800">
-                <span className="t-small font-semibold text-emerald-600">
+            <div data-sq="pod" data-sq-border="none" className="p-3 bg-[#EFE9E2]/70 dark:bg-[#191716] space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[var(--atr-divider)]">
+                <span className="t-small font-semibold text-emerald-600 dark:text-[#4ADE80]">
                   3. BAT Prêt Imprimeur
                 </span>
-                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 tabular-nums t-small flex items-center justify-center font-semibold">
+                <span className="w-5 h-5 rounded-full bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] tabular-nums t-small flex items-center justify-center font-semibold">
                   {pmBatDeliverables.filter((b) => b.approvalStatus === 'approved').length}
                 </span>
               </div>
               {pmBatDeliverables
                 .filter((b) => b.approvalStatus === 'approved')
                 .map((bat) => (
-                  <div
-                    key={bat.id}
-                    onClick={(e) => handleSelectBat(bat, e.currentTarget)}
-                    data-sq="card"
-                    data-sq-border="solid"
-                    className="p-4 bg-white dark:bg-neutral-900 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:rgba(6,78,59,0.4)] space-y-2 cursor-pointer hover:[--sq-stroke:#34d399] transition-colors"
-                  >
-                    <img
-                      src={bat.previewUrl}
-                      alt={bat.title}
-                      referrerPolicy="no-referrer"
-                      data-sq="ctl"
+                  <div key={bat.id} className="sq-elev-card">
+                    <div
+                      onClick={(e) => handleSelectBat(bat, e.currentTarget)}
+                      data-sq="card"
                       data-sq-border="none"
-                      className="w-full h-28 object-cover bg-neutral-100"
-                    />
-                    <div className="flex items-center justify-between t-cap">
-                      <span className="font-semibold text-emerald-700 dark:text-emerald-400 truncate">
-                        {bat.title}
-                      </span>
-                      <span className="tabular-nums text-emerald-600">{bat.versionCode}</span>
-                    </div>
-                    <div className="t-cap text-black/55 dark:text-white/55">
-                      Conforme CMJN 300 DPI · Prêt pour déblocage imprimeur.
+                      className="p-4 bg-white dark:bg-[#22201E] hover:bg-[#FBF8F5] dark:hover:bg-[#282523] space-y-2 cursor-pointer transition-colors"
+                    >
+                      <img
+                        src={bat.previewUrl}
+                        alt={bat.title}
+                        referrerPolicy="no-referrer"
+                        data-sq="ctl"
+                        data-sq-border="none"
+                        className="w-full h-28 object-cover bg-[#F3EDE7] dark:bg-[#2B2825]"
+                      />
+                      <div className="flex items-center justify-between t-cap">
+                        <span className="font-semibold text-emerald-700 dark:text-[#4ADE80] truncate">
+                          {bat.title}
+                        </span>
+                        <span className="tabular-nums text-emerald-600 dark:text-[#4ADE80]">{bat.versionCode}</span>
+                      </div>
+                      <div className="t-cap text-black/55 dark:text-white/55">
+                        Conforme CMJN 300 DPI · Prêt pour déblocage imprimeur.
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -960,8 +963,8 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   <div className="space-y-2">
                     <div
                       data-sq="ctl"
-                      data-sq-border="solid"
-                      className="w-full h-36 [--sq-stroke:rgba(230,222,214,0.6)] dark:[--sq-stroke:#262626] bg-neutral-100"
+                      data-sq-border="none"
+                      className="w-full h-36 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
                     >
                       <img
                         src={bat.previewUrl}
@@ -983,7 +986,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       {bat.projectTitle}
                     </p>
                   </div>
-                  <div className="pt-3 border-t border-[#E6DED6]/60 dark:border-neutral-800 flex items-center justify-between t-cap tabular-nums">
+                  <div className="pt-3 border-t border-[var(--atr-divider)] flex items-center justify-between t-cap tabular-nums">
                     <span>
                       {bat.colorSpace} · {bat.resolutionDpi} DPI
                     </span>
@@ -1019,32 +1022,33 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
       {activeTab === 'upload' && (
         <ScreenPod>
-          <div
-            data-sq="card"
-            data-sq-border="solid"
-            className="p-6 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] max-w-3xl mx-auto space-y-6"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
-                  Dépôt & Conformité Pré-Presse
-                </span>
-                <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
-                  Validation Technique des Fichiers Imprimeur
-                </h2>
+          <div className="sq-elev-card max-w-3xl mx-auto">
+            <div
+              data-sq="card"
+              data-sq-border="none"
+              className="p-6 bg-white dark:bg-[#22201E] space-y-6"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
+                    Dépôt & Conformité Pré-Presse
+                  </span>
+                  <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
+                    Validation Technique des Fichiers Imprimeur
+                  </h2>
+                </div>
+                <ListAdvancedMenuButton language={language} />
               </div>
-              <ListAdvancedMenuButton language={language} />
-            </div>
-            {uploadSuccess && (
-              <div
-                data-sq="ctl"
-                data-sq-border="solid"
-                className="p-4 bg-emerald-50 dark:bg-emerald-950/40 [--sq-stroke:#a7f3d0] dark:[--sq-stroke:#065f46] text-emerald-800 dark:text-emerald-300 flex items-center gap-3 t-small font-semibold"
-              >
-                <CheckCircle className="w-5 h-5 text-emerald-600" />
-                Livrable BAT enregistré et transmis au Chef de Projet !
-              </div>
-            )}
+              {uploadSuccess && (
+                <div
+                  data-sq="ctl"
+                  data-sq-border="none"
+                  className="p-4 bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] flex items-center gap-3 t-small font-semibold"
+                >
+                  <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-[#4ADE80]" />
+                  Livrable BAT enregistré et transmis au Chef de Projet !
+                </div>
+              )}
             <form onSubmit={handleUploadSubmit} className="space-y-4">
               <LabelSelect
                 field="Project"
@@ -1108,8 +1112,8 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               </div>
               <div
                 data-sq="ctl"
-                data-sq-border="solid"
-                className="p-4 bg-[#FBF8F5] dark:bg-neutral-800/40 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] flex items-center justify-between t-cap"
+                data-sq-border="none"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between t-cap"
               >
                 <div className="space-y-0.5">
                   <span className="font-semibold text-black dark:text-white">
@@ -1123,7 +1127,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   type="checkbox"
                   checked={hasBleedIncluded}
                   onChange={(e) => setHasBleedIncluded(e.target.checked)}
-                  className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] focus:ring-[#d4522f]"
+                  className="w-4 h-4 rounded-[var(--r-check,6px)] accent-[#d4522f] cursor-pointer"
                 />
               </div>
               <AtriumButton
@@ -1137,6 +1141,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 Valider la Conformité & Déposer le BAT
               </AtriumButton>
             </form>
+            </div>
           </div>
         </ScreenPod>
       )}
@@ -1151,22 +1156,23 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pmProjects.map((p) => (
-              <div
-                key={p.id}
-                data-sq="card"
-                data-sq-border="solid"
-                className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:#E6DED6] dark:[--sq-stroke:rgba(64,64,64,0.6)] space-y-3"
-              >
-                <div className="flex items-center justify-between t-cap">
-                  <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{p.clientName}</span>
-                  <span className="tabular-nums text-black/55 dark:text-white/55">
-                    Échéance KV: {p.kvDeadline}
-                  </span>
+              <div key={p.id} className="sq-elev-card">
+                <div
+                  data-sq="card"
+                  data-sq-border="none"
+                  className="p-5 bg-white dark:bg-[#22201E] space-y-3 h-full"
+                >
+                  <div className="flex items-center justify-between t-cap">
+                    <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{p.clientName}</span>
+                    <span className="tabular-nums text-black/55 dark:text-white/55">
+                      Échéance KV: {p.kvDeadline}
+                    </span>
+                  </div>
+                  <h3 className="t-label font-semibold text-black dark:text-white">{p.title}</h3>
+                  <p className="t-cap text-black/70 dark:text-white/75 line-clamp-3">
+                    {p.scopeOfWork}
+                  </p>
                 </div>
-                <h3 className="t-label font-semibold text-black dark:text-white">{p.title}</h3>
-                <p className="t-cap text-black/70 dark:text-white/75 line-clamp-3">
-                  {p.scopeOfWork}
-                </p>
               </div>
             ))}
           </div>
@@ -1214,7 +1220,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 src={bat.previewUrl}
                 alt={bat.title}
                 referrerPolicy="no-referrer"
-                className="w-full h-44 object-cover rounded-[var(--r-card,16px)] border border-[var(--atr-line,#E6DED6)] dark:border-[#3A3734] bg-neutral-100"
+                className="w-full h-44 object-cover rounded-[var(--r-card,16px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
               />
             </InspectorSection>
 
@@ -1289,7 +1295,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:#E6DED6] dark:[--sq-stroke:#262626] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -1304,7 +1310,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   type="button"
                   onClick={() => setSelectedPreviewBat(null)}
                   data-sq="ctl-sm"
-                  className="p-1 hover:bg-[#F3EDE7] dark:hover:bg-neutral-800 cursor-pointer"
+                  className="p-1 hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] cursor-pointer transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1313,7 +1319,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 src={selectedPreviewBat.previewUrl}
                 alt={selectedPreviewBat.title}
                 referrerPolicy="no-referrer"
-                className="w-full h-80 object-cover rounded-[var(--r-ctl,12px)] border border-[#E6DED6] dark:border-neutral-800 bg-neutral-100"
+                className="w-full h-80 object-cover rounded-[var(--r-ctl,12px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
               />
               <div className="flex justify-between items-center t-cap tabular-nums text-black/55 dark:text-white/55">
                 <span>
@@ -1321,12 +1327,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 </span>
                 <span>Fond perdu : +{selectedPreviewBat.bleedMm}mm</span>
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-[#E6DED6]/60 dark:border-neutral-800">
+              <div className="flex justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
                 <button
                   type="button"
                   onClick={() => setSelectedPreviewBat(null)}
                   data-sq="ctl"
-                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F3EDE7] dark:bg-neutral-800 cursor-pointer"
+                  className="px-4 py-2 t-small font-semibold text-black/70 dark:text-white/75 bg-[#F5F1EC] dark:bg-[#2B2825] hover:bg-[#EFE9E2] dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
                 >
                   Fermer
                 </button>

@@ -520,7 +520,7 @@ export const ContractorBillingView: React.FC<any> = () => {
               <div
                 data-sq="ctl-sm"
                 data-sq-border="solid"
-                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 border border-orange-100 dark:border-neutral-800 [--sq-stroke:#ffedd5] dark:[--sq-stroke:#262626]"
+                className="w-9 h-9 bg-orange-50 dark:bg-orange-950/40 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 [--sq-stroke:rgba(212,82,47,0.22)] dark:[--sq-stroke:rgba(255,143,99,0.22)]"
               >
                 <Building2 size={16} />
               </div>
@@ -942,9 +942,9 @@ export const ContractorBillingView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
             >
-              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+              <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
                 <div className="flex items-center gap-2">
                   <div
                     data-sq="ctl-sm"
@@ -998,7 +998,7 @@ export const ContractorBillingView: React.FC<any> = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between"
+                className="p-3 bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between"
               >
                 <div>
                   <div className="t-small font-semibold text-black dark:text-white">
@@ -1034,7 +1034,7 @@ export const ContractorBillingView: React.FC<any> = () => {
                   ]}
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton
                   type="button"
                   variant="outline"

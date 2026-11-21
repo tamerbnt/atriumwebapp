@@ -1134,7 +1134,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   key={p.id}
                   data-sq="card"
                   data-sq-border="solid"
-                  className="p-4 bg-white dark:bg-neutral-850 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3 flex flex-col justify-between"
+                  className="p-4 bg-white dark:bg-neutral-850 space-y-3 flex flex-col justify-between"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -1159,7 +1159,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="p-3 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 space-y-2"
+                    className="p-3 bg-neutral-50 dark:bg-neutral-900/60 space-y-2"
                   >
                     <div className="flex items-center justify-between t-cap">
                       <span className="text-black/55 dark:text-white/55 font-medium">
@@ -1178,7 +1178,7 @@ export const AgricultureHarvestView: React.FC = () => {
                         onClick={() => handleIncrementCrates(p, -1)}
                         data-sq="ctl-sm"
                         data-sq-border="solid"
-                        className="py-2 px-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center gap-1 text-black/70 dark:text-white/75 transition-colors cursor-pointer"
+                        className="py-2 px-2 bg-white dark:bg-neutral-800 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center gap-1 text-black/70 dark:text-white/75 transition-colors cursor-pointer"
                       >
                         <Minus size={12} /> 1
                       </button>
@@ -1230,7 +1230,7 @@ export const AgricultureHarvestView: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                    <div className="flex justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 font-semibold text-black dark:text-white">
+                    <div className="flex justify-between pt-1 border-t border-[var(--atr-divider)] font-semibold text-black dark:text-white">
                       <span>Net à verser:</span>
                       <span className="tabular-nums t-body text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                         {formatMoney(p.netDueDzd, language)}
@@ -1460,9 +1460,9 @@ export const AgricultureHarvestView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+              <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
                 <div className="flex items-center gap-2">
                   <div
                     data-sq="tile"
@@ -1562,7 +1562,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   required
                 />
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)} type="button">
                   {isAr ? 'إلغاء' : 'Annuler'}
                 </AtriumButton>
@@ -1588,9 +1588,9 @@ export const AgricultureHarvestView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
             >
-              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+              <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
                 <div className="flex items-center gap-2">
                   <div
                     data-sq="tile"
@@ -1651,7 +1651,7 @@ export const AgricultureHarvestView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 t-cap space-y-1"
+                className="p-3 bg-neutral-50 dark:bg-neutral-800/60 t-cap space-y-1"
               >
                 <div className="flex justify-between">
                   <span className="text-black/55 dark:text-white/55">Rémunération calculée :</span>
@@ -1665,7 +1665,7 @@ export const AgricultureHarvestView: React.FC = () => {
                     -{formatMoney(parseFloat(pointageAdvance) || 0, language)}
                   </span>
                 </div>
-                <div className="flex justify-between font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] pt-1 border-t border-neutral-200 dark:border-neutral-700">
+                <div className="flex justify-between font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] pt-1 border-t border-[var(--atr-divider)]">
                   <span>Solde net dû :</span>
                   <span className="tabular-nums">
                     {formatMoney(
@@ -1679,7 +1679,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
                 <AtriumButton
                   variant="ghost"
                   size="sm"

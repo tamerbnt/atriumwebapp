@@ -822,7 +822,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
       <div
         data-sq="ctl"
         data-sq-border="solid"
-        className="flex items-center gap-1 p-[3px] bg-neutral-100 dark:bg-neutral-850 w-fit border border-neutral-200/80 dark:border-neutral-800"
+        className="flex items-center gap-1 p-[3px] bg-neutral-100 dark:bg-neutral-850 w-fit"
       >
         <button
           type="button"
@@ -1000,11 +1000,10 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
       )}
 
       {activeSection === 'concrete' && (
-        <div className="sq-elev-card">
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-[#F3EDE7] dark:bg-[#141312] p-3 border border-[#E6DED6] dark:border-[#33302D] [--sq-stroke:#E6DED6] dark:[--sq-stroke:#33302D] space-y-4"
+          className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h2 className="t-label font-semibold text-black dark:text-white">
@@ -1043,7 +1042,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   key={pour.id}
                   data-sq="card"
                   data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-850 p-4 border border-[#E6DED6] dark:border-neutral-800 flex flex-col justify-between space-y-3"
+                  className="bg-white dark:bg-neutral-850 p-4 flex flex-col justify-between space-y-3"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -1063,7 +1062,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                       <span className="tabular-nums font-semibold">{pour.deliverySlipNumber}</span>
                     </p>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 py-2 border-y border-neutral-100 dark:border-neutral-800 text-center">
+                  <div className="grid grid-cols-3 gap-2 py-2 border-y border-[var(--atr-divider)] text-center">
                     <div>
                       <span className="t-cap text-black/55 dark:text-white/55 block">
                         Volume
@@ -1134,7 +1133,6 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
               );
             })}
           </div>
-        </div>
         </div>
       )}
 
@@ -1525,9 +1523,9 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 w-full space-y-5 max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5 max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-2">
                   <Calendar size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   <h3 className="font-semibold t-card text-black dark:text-white">
@@ -1567,7 +1565,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-4 bg-neutral-50 dark:bg-neutral-850 border border-neutral-200 dark:border-neutral-800 space-y-3"
+                className="p-4 bg-neutral-50 dark:bg-neutral-850 space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -1594,7 +1592,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                       key={c.label}
                       data-sq="ctl"
                       data-sq-border="solid"
-                      className="p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between"
+                      className="p-2 bg-white dark:bg-neutral-900 flex items-center justify-between"
                     >
                       <div>
                         <span className="t-small font-medium block">{c.label}</span>
@@ -1673,9 +1671,9 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 w-full space-y-4"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-4"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-2">
                   <Layers size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   <h3 className="font-semibold t-card text-black dark:text-white">
@@ -1787,9 +1785,9 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 w-full space-y-4"
+              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-4"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-2">
                   <Fuel size={20} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                   <h3 className="font-semibold t-card text-black dark:text-white">

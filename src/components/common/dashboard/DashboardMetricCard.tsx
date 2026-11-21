@@ -50,7 +50,7 @@ export const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
       title={tooltip}
       data-sq="card"
       data-sq-border="solid"
-      className={`relative sq-elev-card bg-white dark:bg-neutral-800/90 p-[var(--card-pad,20px)] card-opt border border-black/[0.06] dark:border-white/[0.09] min-h-[var(--kpi-min-h,168px)] flex flex-col gap-[var(--s3,12px)] ${className}`}
+      className={`relative sq-elev-card bg-white dark:bg-[#22201E] p-[var(--card-pad,20px)] card-opt min-h-[var(--kpi-min-h,168px)] flex flex-col gap-[var(--s3,12px)] ${className}`}
     >
       <div className="flex flex-col gap-[var(--s2,8px)]">
         <div className="flex items-center justify-between gap-[var(--s2,8px)]">

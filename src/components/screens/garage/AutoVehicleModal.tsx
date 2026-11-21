@@ -149,9 +149,9 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
       <div
         data-sq="panel"
         data-sq-border="solid"
-        className="bg-white dark:bg-neutral-900 w-full p-6 border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
       >
-        <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+        <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
           <div className="flex items-center gap-2">
             <div
               data-sq="tile"
@@ -172,7 +172,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label={isAr ? 'إغلاق' : 'Fermer'}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -182,18 +182,18 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
           {/* Client Type Switcher (Particulier vs Flotte B2B) */}
           <div
             data-sq="ctl"
-            data-sq-border="solid"
-            className="flex items-center gap-1 p-[3px] bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700"
+            data-sq-border="none"
+            className="flex items-center gap-1 p-[3px] bg-[#F3EDE7] dark:bg-[#191716]"
           >
             <button
               type="button"
               data-no-liquid="true"
               data-sq="thumb"
-              data-sq-border={!isFleet ? 'solid' : 'none'}
+              data-sq-border="none"
               onClick={() => handleFleetToggle(false)}
               className={`flex-1 py-2 px-3 t-small font-semibold transition-all cursor-pointer ${
                 !isFleet
-                  ? 'bg-white dark:bg-neutral-900 text-black dark:text-white border border-neutral-200 dark:border-neutral-700'
+                  ? 'bg-white dark:bg-[#2B2825] text-black dark:text-white'
                   : 'text-black/55 dark:text-white/55 hover:text-black dark:hover:text-white'
               }`}
             >
@@ -219,8 +219,8 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
           {isFleet && (
             <div
               data-sq="card"
-              data-sq-border="solid"
-              className="p-4 bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-800/40 [--sq-stroke:rgba(254,215,170,0.7)] dark:[--sq-stroke:rgba(154,52,18,0.4)] space-y-2"
+              data-sq-border="none"
+              className="p-4 bg-orange-50/70 dark:bg-orange-950/30 space-y-2"
             >
               <div className="flex items-center gap-2 t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 <Building2 size={15} />
@@ -331,7 +331,7 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">
             <AtriumButton variant="ghost" onClick={onClose}>
               {isAr ? 'إلغاء' : 'Annuler'}
             </AtriumButton>

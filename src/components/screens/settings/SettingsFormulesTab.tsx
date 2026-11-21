@@ -395,7 +395,7 @@ export const SettingsFormulesTab: React.FC = () => {
       <div className="sq-elev-card">
         <div
           data-sq="panel"
-          className="bg-[#F3EDE7] dark:bg-[#141312] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]"
+          className="bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]"
         >
           {/* Pod Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-[var(--s3,12px)] pt-[var(--s1,4px)] px-[var(--s3,12px)]">
@@ -420,7 +420,7 @@ export const SettingsFormulesTab: React.FC = () => {
                   type="button"
                   data-sq="ctl-sm"
                   onClick={() => setScreen('shop')}
-                  className="h-[var(--btn-sm-h,34px)] px-[var(--s3,12px)] bg-white dark:bg-neutral-800 text-[var(--text-1)] t-small font-medium cursor-pointer"
+                  className="h-[var(--btn-sm-h,34px)] px-[var(--s3,12px)] bg-white dark:bg-[#22201E] hover:bg-[#FAF7F4] dark:hover:bg-[#2B2825] text-[var(--text-1)] t-small font-medium cursor-pointer transition-colors"
                 >
                   {L(`Spaces (${rentableUnits.length})`, `Gérer Salles (${rentableUnits.length})`, `القاعات (${rentableUnits.length})`)}
                 </button>
@@ -430,7 +430,7 @@ export const SettingsFormulesTab: React.FC = () => {
                   type="button"
                   data-sq="ctl-sm"
                   onClick={() => setScreen('shop')}
-                  className="h-[var(--btn-sm-h,34px)] px-[var(--s3,12px)] bg-white dark:bg-neutral-800 text-[var(--text-1)] t-small font-medium cursor-pointer"
+                  className="h-[var(--btn-sm-h,34px)] px-[var(--s3,12px)] bg-white dark:bg-[#22201E] hover:bg-[#FAF7F4] dark:hover:bg-[#2B2825] text-[var(--text-1)] t-small font-medium cursor-pointer transition-colors"
                 >
                   {L(`Courses (${eduCourses.length})`, `Catalogue Cours (${eduCourses.length})`, `البرامج (${eduCourses.length})`)}
                 </button>
@@ -457,12 +457,12 @@ export const SettingsFormulesTab: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={L('Search by name or code...', 'Rechercher par nom ou code...', 'ابحث بالاسم أو الرمز...')}
-                className="w-full h-[38px] ps-[36px] pe-[12px] bg-white dark:bg-neutral-900 text-[var(--text-1)] t-small focus:outline-none"
+                className="w-full h-[38px] ps-[36px] pe-[12px] bg-[#FAF7F4] dark:bg-[#2B2825] border-0 text-[var(--text-1)] t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
               />
             </div>
 
             {descriptor.mode !== 'salon_services' && (
-              <div className="flex items-center gap-[var(--s1,4px)] bg-white dark:bg-neutral-900 p-[3px]" data-sq="ctl">
+              <div className="flex items-center gap-[var(--s1,4px)] bg-[#EFE9E2] dark:bg-[#191716] p-[3px]" data-sq="ctl" data-sq-border="none">
                 {(['all', 'active', 'archived'] as const).map((status) => {
                   const active = statusFilter === status;
                   const lbl =
@@ -479,7 +479,7 @@ export const SettingsFormulesTab: React.FC = () => {
                       className={`h-[30px] px-[12px] t-small font-medium transition-colors cursor-pointer whitespace-nowrap ${
                         active
                           ? 'bg-[var(--brand-fill)] text-white'
-                          : 'text-[var(--text-2)] hover:text-[var(--text-1)]'
+                          : 'text-[var(--text-2)] hover:text-[var(--text-1)] dark:hover:text-white'
                       }`}
                     >
                       {lbl}
@@ -494,7 +494,7 @@ export const SettingsFormulesTab: React.FC = () => {
           <div className="flex flex-col gap-[var(--row-gap,8px)]">
             {descriptor.mode === 'gym_plans' &&
               (filteredPlans.length === 0 ? (
-                <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 text-center t-small text-[var(--text-2)]">
+                <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] text-center t-small text-[var(--text-2)]">
                   {L('No membership formules match this filter.', 'Aucune formule ne correspond à ce filtre.', 'لا توجد باقات مطابقة.')}
                 </div>
               ) : (
@@ -502,7 +502,7 @@ export const SettingsFormulesTab: React.FC = () => {
                   <div key={plan.id} className="sq-elev-card">
                     <div
                       data-sq="card"
-                      className="p-[var(--s4,16px)] bg-white dark:bg-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]"
+                      className="p-[var(--s4,16px)] bg-white dark:bg-[#22201E] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]"
                     >
                       <div className="flex flex-col gap-[var(--s1,4px)] min-w-0">
                         <div className="flex flex-wrap items-center gap-[var(--s2,8px)]">
@@ -536,7 +536,7 @@ export const SettingsFormulesTab: React.FC = () => {
                               type="button"
                               onClick={() => openEditPlan(plan)}
                               title={L('Edit', 'Modifier', 'تعديل')}
-                              className="w-[34px] h-[34px] flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer"
+                              className="w-[34px] h-[34px] rounded-full flex items-center justify-center hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer transition-colors"
                             >
                               <Edit2 size={15} strokeWidth={1.5} />
                             </button>
@@ -544,7 +544,7 @@ export const SettingsFormulesTab: React.FC = () => {
                               type="button"
                               onClick={() => toggleMembershipPlanActive(plan.id)}
                               title={plan.isActive ? L('Archive', 'Archiver', 'أرشفة') : L('Restore', 'Réactiver', 'استعادة')}
-                              className="w-[34px] h-[34px] flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer"
+                              className="w-[34px] h-[34px] rounded-full flex items-center justify-center hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer transition-colors"
                             >
                               {plan.isActive ? <Archive size={15} strokeWidth={1.5} /> : <RotateCcw size={15} strokeWidth={1.5} />}
                             </button>
@@ -552,7 +552,7 @@ export const SettingsFormulesTab: React.FC = () => {
                               type="button"
                               onClick={() => handleDeletePlan(plan)}
                               title={L('Delete', 'Supprimer', 'حذف')}
-                              className="w-[34px] h-[34px] flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 cursor-pointer"
+                              className="w-[34px] h-[34px] rounded-full flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 cursor-pointer transition-colors"
                             >
                               <Trash2 size={15} strokeWidth={1.5} />
                             </button>
@@ -566,7 +566,7 @@ export const SettingsFormulesTab: React.FC = () => {
 
             {descriptor.mode === 'salon_services' &&
               (filteredServices.length === 0 ? (
-                <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 text-center t-small text-[var(--text-2)]">
+                <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] text-center t-small text-[var(--text-2)]">
                   {L('No salon service formules found.', 'Aucune prestation trouvée.', 'لا توجد خدمات مطابقة.')}
                 </div>
               ) : (
@@ -574,7 +574,7 @@ export const SettingsFormulesTab: React.FC = () => {
                   <div key={srv.id} className="sq-elev-card">
                     <div
                       data-sq="card"
-                      className="p-[var(--s4,16px)] bg-white dark:bg-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]"
+                      className="p-[var(--s4,16px)] bg-white dark:bg-[#22201E] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]"
                     >
                       <div className="flex flex-col gap-[var(--s1,4px)] min-w-0">
                         <div className="flex items-center gap-[var(--s2,8px)]">
@@ -595,7 +595,7 @@ export const SettingsFormulesTab: React.FC = () => {
                               type="button"
                               onClick={() => openEditService(srv)}
                               title={L('Edit', 'Modifier', 'تعديل')}
-                              className="w-[34px] h-[34px] flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[var(--text-2)] cursor-pointer"
+                              className="w-[34px] h-[34px] rounded-full flex items-center justify-center hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-[var(--text-2)] cursor-pointer transition-colors"
                             >
                               <Edit2 size={15} strokeWidth={1.5} />
                             </button>
@@ -603,7 +603,7 @@ export const SettingsFormulesTab: React.FC = () => {
                               type="button"
                               onClick={() => deleteServiceItem(srv.id)}
                               title={L('Delete', 'Supprimer', 'حذف')}
-                              className="w-[34px] h-[34px] flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 cursor-pointer"
+                              className="w-[34px] h-[34px] rounded-full flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 cursor-pointer transition-colors"
                             >
                               <Trash2 size={15} strokeWidth={1.5} />
                             </button>
@@ -618,7 +618,7 @@ export const SettingsFormulesTab: React.FC = () => {
             {descriptor.mode !== 'gym_plans' &&
               descriptor.mode !== 'salon_services' &&
               (filteredFormules.length === 0 ? (
-                <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white dark:bg-neutral-800 text-center t-small text-[var(--text-2)]">
+                <div data-sq="card" className="p-[var(--card-pad,20px)] bg-white dark:bg-[#22201E] text-center t-small text-[var(--text-2)]">
                   {L('No formules match this filter yet.', 'Aucune formule enregistrée pour ce filtre.', 'لا توجد صيغ مسجلة حالياً.')}
                 </div>
               ) : (
@@ -626,7 +626,7 @@ export const SettingsFormulesTab: React.FC = () => {
                   <div key={frm.id} className="sq-elev-card">
                     <div
                       data-sq="card"
-                      className="p-[var(--s4,16px)] bg-white dark:bg-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]"
+                      className="p-[var(--s4,16px)] bg-white dark:bg-[#22201E] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]"
                     >
                       <div className="flex flex-col gap-[var(--s1,4px)] min-w-0">
                         <div className="flex flex-wrap items-center gap-[var(--s2,8px)]">
@@ -666,7 +666,7 @@ export const SettingsFormulesTab: React.FC = () => {
                               type="button"
                               onClick={() => openEditFormule(frm)}
                               title={L('Edit', 'Modifier', 'تعديل')}
-                              className="w-[34px] h-[34px] flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer"
+                              className="w-[34px] h-[34px] rounded-full flex items-center justify-center hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer transition-colors"
                             >
                               <Edit2 size={15} strokeWidth={1.5} />
                             </button>
@@ -674,7 +674,7 @@ export const SettingsFormulesTab: React.FC = () => {
                               type="button"
                               onClick={() => duplicateCategoryFormule(frm.id)}
                               title={L('Duplicate', 'Dupliquer', 'نسخ')}
-                              className="w-[34px] h-[34px] flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer"
+                              className="w-[34px] h-[34px] rounded-full flex items-center justify-center hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer transition-colors"
                             >
                               <Copy size={15} strokeWidth={1.5} />
                             </button>
@@ -682,7 +682,7 @@ export const SettingsFormulesTab: React.FC = () => {
                               type="button"
                               onClick={() => toggleCategoryFormuleActive(frm.id)}
                               title={frm.isActive ? L('Archive', 'Archiver', 'أرشفة') : L('Restore', 'Réactiver', 'استعادة')}
-                              className="w-[34px] h-[34px] flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer"
+                              className="w-[34px] h-[34px] rounded-full flex items-center justify-center hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] text-[var(--text-2)] hover:text-[var(--text-1)] cursor-pointer transition-colors"
                             >
                               {frm.isActive ? <Archive size={15} strokeWidth={1.5} /> : <RotateCcw size={15} strokeWidth={1.5} />}
                             </button>
@@ -690,7 +690,7 @@ export const SettingsFormulesTab: React.FC = () => {
                               type="button"
                               onClick={() => handleDeleteFormule(frm)}
                               title={L('Delete', 'Supprimer', 'حذف')}
-                              className="w-[34px] h-[34px] flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 cursor-pointer"
+                              className="w-[34px] h-[34px] rounded-full flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 cursor-pointer transition-colors"
                             >
                               <Trash2 size={15} strokeWidth={1.5} />
                             </button>
@@ -729,7 +729,7 @@ export const SettingsFormulesTab: React.FC = () => {
                   value={formCode}
                   onChange={(e) => setFormCode(e.target.value)}
                   placeholder="FRM-01"
-                  className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-black/[0.08] dark:border-white/[0.10] t-small uppercase"
+                  className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small uppercase focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
                 />
               </div>
               <div className="flex flex-col gap-[var(--s1,4px)] sm:col-span-2">
@@ -741,7 +741,7 @@ export const SettingsFormulesTab: React.FC = () => {
                   data-sq="ctl"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small"
+                  className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
                   required
                 />
               </div>
@@ -758,7 +758,7 @@ export const SettingsFormulesTab: React.FC = () => {
                 data-sq="ctl"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small"
+                className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
                 required
               />
             </div>
@@ -773,7 +773,7 @@ export const SettingsFormulesTab: React.FC = () => {
                 data-sq="ctl"
                 value={serviceCategory}
                 onChange={(e) => setServiceCategory(e.target.value as ServiceItem['category'])}
-                className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small"
+                className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
               >
                 <option value="Hair">{L('Hair', 'Coiffure', 'شعر')}</option>
                 <option value="Barber">{L('Barber', 'Barbier', 'حلاقة')}</option>
@@ -793,7 +793,7 @@ export const SettingsFormulesTab: React.FC = () => {
                 data-sq="ctl"
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
-                className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small"
+                className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
               />
             </div>
           )}
@@ -810,7 +810,7 @@ export const SettingsFormulesTab: React.FC = () => {
                 data-sq="ctl"
                 value={formPrice}
                 onChange={(e) => setFormPrice(Number(e.target.value))}
-                className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small tabular-nums"
+                className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
               />
             </div>
 
@@ -826,7 +826,7 @@ export const SettingsFormulesTab: React.FC = () => {
                     data-sq="ctl"
                     value={formDurationValue}
                     onChange={(e) => setFormDurationValue(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small tabular-nums"
+                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
                   />
                 </div>
                 <div className="flex flex-col gap-[var(--s1,4px)]">
@@ -839,7 +839,7 @@ export const SettingsFormulesTab: React.FC = () => {
                     data-sq="ctl"
                     value={planSessionsPerWeek}
                     onChange={(e) => setPlanSessionsPerWeek(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small tabular-nums"
+                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
                   />
                 </div>
               </>
@@ -856,7 +856,7 @@ export const SettingsFormulesTab: React.FC = () => {
                     data-sq="ctl"
                     value={formDurationValue}
                     onChange={(e) => setFormDurationValue(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small tabular-nums"
+                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
                   />
                 </div>
                 <div className="flex flex-col gap-[var(--s1,4px)]">
@@ -870,7 +870,7 @@ export const SettingsFormulesTab: React.FC = () => {
                     data-sq="ctl"
                     value={formRatePercent}
                     onChange={(e) => setFormRatePercent(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small tabular-nums"
+                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
                   />
                 </div>
               </>
@@ -886,7 +886,7 @@ export const SettingsFormulesTab: React.FC = () => {
                     data-sq="ctl"
                     value={formRatePercent}
                     onChange={(e) => setFormRatePercent(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small tabular-nums"
+                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
                   />
                 </div>
                 <div className="flex flex-col gap-[var(--s1,4px)]">
@@ -899,7 +899,7 @@ export const SettingsFormulesTab: React.FC = () => {
                     data-sq="ctl"
                     value={formTaxRate}
                     onChange={(e) => setFormTaxRate(Number(e.target.value))}
-                    className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small tabular-nums"
+                    className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
                   />
                 </div>
               </>
@@ -918,7 +918,7 @@ export const SettingsFormulesTab: React.FC = () => {
                   data-sq="ctl"
                   value={formDurationValue}
                   onChange={(e) => setFormDurationValue(Number(e.target.value))}
-                  className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small tabular-nums"
+                  className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small tabular-nums focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
                 />
               </div>
               <div className="flex flex-col gap-[var(--s1,4px)]">
@@ -929,7 +929,7 @@ export const SettingsFormulesTab: React.FC = () => {
                   data-sq="ctl"
                   value={formDurationUnit}
                   onChange={(e) => setFormDurationUnit(e.target.value as FormuleDurationUnit)}
-                  className="h-[40px] px-[var(--s3,12px)] bg-white dark:bg-neutral-900 border border-[#E6DED6] dark:border-neutral-700 t-small"
+                  className="h-[40px] px-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0 t-small focus:outline-none focus:ring-2 focus:ring-[#d4522f]/30"
                 >
                   <option value="unit">{L('Per Unit', 'Unité / Acte', 'وحدة')}</option>
                   <option value="minutes">Minutes</option>
