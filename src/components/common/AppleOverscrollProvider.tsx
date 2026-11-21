@@ -40,6 +40,12 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
       { overflowY: string; overflowX: string; obY: string; obX: string; ts: number }
     >();
 
+    // Fast-path gesture cache: avoids walking DOM ancestors on every wheel tick during native scrolling
+    let lastWheelTarget: HTMLElement | null = null;
+    let lastWheelContainer: HTMLElement | null = null;
+    let lastWheelAxis: 'y' | 'x' = 'y';
+    let lastWheelTimestamp = 0;
+
     // Helper: Find the scrollable container that should either scroll natively or rubber-band
     // deltaSign: < 0 means scrolling toward start (top/left), > 0 means scrolling toward end (bottom/right)
     const resolveScrollContainer = (
@@ -218,10 +224,33 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
       const rawAxisDelta = axis === 'y' ? e.deltaY : e.deltaX;
       if (Math.abs(rawAxisDelta) < 0.1) return;
 
+      const now = performance.now();
       const isAlreadyActive =
         Boolean(activeRef.current &&
         activeRef.current.direction === axis &&
         Math.abs(activeRef.current.offset) > 0.05);
+
+      // Fast-path: if wheel is continuing on the same container during in-bounds scroll, bypass DOM traversal
+      if (
+        !isAlreadyActive &&
+        lastWheelTarget &&
+        lastWheelContainer &&
+        lastWheelAxis === axis &&
+        now - lastWheelTimestamp < 150 &&
+        (targetEl === lastWheelTarget || lastWheelContainer.contains(targetEl))
+      ) {
+        const isY = axis === 'y';
+        const pos = isY ? lastWheelContainer.scrollTop : lastWheelContainer.scrollLeft;
+        const max = isY
+          ? lastWheelContainer.scrollHeight - lastWheelContainer.clientHeight
+          : lastWheelContainer.scrollWidth - lastWheelContainer.clientWidth;
+        const deltaSign = rawAxisDelta > 0 ? 1 : -1;
+        const atEdge = (deltaSign < 0 && pos <= 1) || (deltaSign > 0 && pos >= max - 1);
+        if (!atEdge) {
+          lastWheelTimestamp = now;
+          return; // Native in-bounds scrolling with 0 DOM reads & 0 layout reflows
+        }
+      }
 
       const resolved = isAlreadyActive
         ? { container: activeRef.current!.container, canScrollNatively: false, edgeSign: activeRef.current!.edgeSign }
@@ -229,6 +258,16 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
       if (!resolved) return;
 
       const { container, canScrollNatively, edgeSign } = resolved;
+
+      if (canScrollNatively) {
+        lastWheelTarget = targetEl;
+        lastWheelContainer = container;
+        lastWheelAxis = axis;
+        lastWheelTimestamp = now;
+      } else {
+        lastWheelTarget = null;
+        lastWheelContainer = null;
+      }
 
       let delta = rawAxisDelta;
       if (e.deltaMode === 1) delta *= 18;

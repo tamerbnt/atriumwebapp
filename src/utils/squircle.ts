@@ -457,6 +457,21 @@ function flushDirtyQueue(): void {
       return;
     }
 
+    const prev = cachedEntries.get(el);
+    const offW = el.offsetWidth;
+    const offH = el.offsetHeight;
+    if (offW <= 0 || offH <= 0) return;
+
+    // Fast-path: if border-box dimensions and smoothing match cache, skip expensive getComputedStyle
+    if (
+      prev &&
+      prev.w === offW &&
+      prev.h === offH &&
+      prev.s === smooth
+    ) {
+      return;
+    }
+
     const cs = getComputedStyle(el);
     const { w, h, bt, br, bb, bl } = measureBorderBox(el, cs);
     if (w <= 0 || h <= 0) return;
@@ -467,7 +482,6 @@ function flushDirtyQueue(): void {
     const isVoid = VOID_TAGS.has(el.tagName);
     const needsPosRelative = needsStroke && !isVoid && cs.position === 'static';
     const hasNonZeroBorder = bt > 0 || br > 0 || bb > 0 || bl > 0;
-    const prev = cachedEntries.get(el);
     const wasOverflowAdjusted = Boolean(prev?.overflowAdjusted);
     // When overflow:hidden is set on a bordered [data-sq] host, CSS clips children to the padding box,
     // which would slice away the outer border-box stroke; clip-path already clips at the squircle border-box.
@@ -763,12 +777,37 @@ function flushPendingScanRoots(): void {
   scanCoalesceId = null;
   const roots = pendingScanRoots;
   pendingScanRoots = [];
+
+  // De-duplicate roots: if root A contains root B, scanSubtree(A) already covers B
+  const uniqueRoots: HTMLElement[] = [];
   for (let i = 0; i < roots.length; i++) {
-    scanSubtree(roots[i]);
+    const r = roots[i];
+    let isContained = false;
+    for (let j = 0; j < roots.length; j++) {
+      if (i !== j && roots[j].contains(r)) {
+        isContained = true;
+        break;
+      }
+    }
+    if (!isContained) {
+      uniqueRoots.push(r);
+    }
+  }
+
+  for (let i = 0; i < uniqueRoots.length; i++) {
+    scanSubtree(uniqueRoots[i]);
   }
 }
 
 function enqueueScanRoot(el: HTMLElement): void {
+  // Never queue squircle internal stroke SVGs or their contents
+  if (
+    el.tagName.toLowerCase() === 'svg' ||
+    el.hasAttribute('data-sq-stroke') ||
+    Boolean(el.closest?.('[data-sq-stroke]'))
+  ) {
+    return;
+  }
   pendingScanRoots.push(el);
   if (scanCoalesceId === null) {
     // Defer by one task (4 ms) to coalesce all MO callbacks from a single

@@ -13,6 +13,9 @@ export default defineConfig(({ command, mode }) => {
         ? { 'process.env.NODE_ENV': JSON.stringify('production') }
         : undefined,
     plugins: [react(), tailwindcss()],
+    optimizeDeps: {
+      include: ['lucide-react', 'react', 'react-dom'],
+    },
     resolve: {
       alias: {
         '@/atrium': path.resolve(__dirname, './src/atrium'),
