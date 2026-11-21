@@ -2675,11 +2675,25 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
    never draw 90-degree corners or rectangular shadow boxes.
    Branded liquid/accent/ink buttons keep their own styling untouched.
    ============================================================ */
+/* Suppress border decorations — clip-path provides the shape.
+   Each token type gets its matching border-radius so the initial
+   paint already looks rounded before the squircle clip-path arrives
+   (avoids the 2-frame rectangle flash on every screen mount). */
 [data-sq]:not([data-sq="none"]) {
-  border-radius: 0 !important;
   border-color: transparent !important;
   box-shadow: none !important;
 }
+[data-sq="app"]:not([data-sq="none"])     { border-radius: 40px; }
+[data-sq="panel"]:not([data-sq="none"])   { border-radius: 28px; }
+[data-sq="card"]:not([data-sq="none"])    { border-radius: 16px; }
+[data-sq="table"]:not([data-sq="none"])   { border-radius: 20px; }
+[data-sq="row"]:not([data-sq="none"])     { border-radius: 12px; }
+[data-sq="ctl"]:not([data-sq="none"])     { border-radius: 12px; }
+[data-sq="ctl-sm"]:not([data-sq="none"])  { border-radius: 10px; }
+[data-sq="tile"]:not([data-sq="none"])    { border-radius: 12px; }
+[data-sq="tile-lg"]:not([data-sq="none"]) { border-radius: 15px; }
+[data-sq="check"]:not([data-sq="none"])   { border-radius: 6px; }
+[data-sq="empty"]:not([data-sq="none"])   { border-radius: 12px; }
 
 [data-sq]:not([data-sq="none"]) > svg[data-sq-stroke] {
   position: absolute !important;

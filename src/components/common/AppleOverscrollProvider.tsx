@@ -279,6 +279,18 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
         activeRef.current.direction === axis &&
         Math.abs(activeRef.current.offset) > 0.05;
 
+      // If already rubber-banding but user scrolls the OPPOSITE direction,
+      // immediately release and let native scroll take over — prevents the
+      // "stuck at top/bottom" lockout feeling.
+      if (isAlreadyOverscrolling && canScrollNatively) {
+        const activeEdgeSign = activeRef.current!.edgeSign;
+        const inputEdgeSign = rawAxisDelta > 0 ? 1 : -1;
+        if (activeEdgeSign !== inputEdgeSign) {
+          clearActive(); // Drop rubber-band immediately
+          return;        // Native scroll handles the rest
+        }
+      }
+
       if (canScrollNatively && !isAlreadyOverscrolling) {
         return; // Allow native in-bounds scrolling
       }
