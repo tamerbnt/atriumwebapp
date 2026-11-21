@@ -395,7 +395,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#1B1917] border-0" data-sq="ctl" data-sq-border="none">
+                <div className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0" data-sq="ctl" data-sq-border="none">
                   <div className="flex flex-col">
                     <span className="t-small font-medium text-[var(--text-1)]">
                       {L('Timbre Fiscal (Cash)', 'Timbre Fiscal (Espèces)', 'الطابع الجبائي (نقداً)')}
@@ -699,7 +699,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
                       onChange={(e) => setPosReceipt((p) => ({ ...p, footerMessage: e.target.value }))}
                       className={inputClass} />
                   </div>
-                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#1B1917] border-0" data-sq="ctl" data-sq-border="none">
+                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0" data-sq="ctl" data-sq-border="none">
                     <span className="t-small text-[var(--text-1)]">
                       {L('Allow Negative Stock', 'Autoriser stock négatif', 'السماح بالمخزون السالب')}
                     </span>
@@ -734,7 +734,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
                       onChange={(e) => updateSetting('targetMarginPercent', Number(e.target.value))}
                       className={`${inputClass} tabular-nums`} />
                   </div>
-                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#1B1917] border-0" data-sq="ctl" data-sq-border="none">
+                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0" data-sq="ctl" data-sq-border="none">
                     <span className="t-small text-[var(--text-1)]">
                       {L('Require BAT Before Print', 'Exiger BAT avant impression', 'إلزامية BAT قبل الطباعة')}
                     </span>
@@ -865,7 +865,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
                       onChange={(e) => updateSetting('defaultNetDays', Number(e.target.value))}
                       className={`${inputClass} tabular-nums`} />
                   </div>
-                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#1B1917] border-0" data-sq="ctl" data-sq-border="none">
+                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0" data-sq="ctl" data-sq-border="none">
                     <span className="t-small text-[var(--text-1)]">
                       {L('Mandatory RC/NIF on Facture', 'RC/NIF obligatoires sur Facture', 'إلزامية RC/NIF في الفاتورة')}
                     </span>
@@ -882,7 +882,7 @@ export const SettingsBusinessFiscalTab: React.FC<SettingsBusinessFiscalTabProps>
 
               {category === 'medical_clinic' && (
                 <>
-                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#1B1917] border-0" data-sq="ctl" data-sq-border="none">
+                  <div className="flex items-center justify-between px-[var(--s3,12px)] py-[var(--s2,8px)] bg-[#F5F1EC] dark:bg-[#2B2825] border-0" data-sq="ctl" data-sq-border="none">
                     <span className="t-small text-[var(--text-1)]">
                       {L('CNAS / Chifa Reimbursement Mode', 'Mode Tiers-Payant CNAS / Chifa', 'تفعيل تعويض بطاقة الشفاء')}
                     </span>

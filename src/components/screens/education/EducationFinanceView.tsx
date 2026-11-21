@@ -466,7 +466,7 @@ export const EducationFinanceView: React.FC = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
+              className="w-8 h-8 bg-neutral-100 dark:bg-[#2B2825] text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
             >
               {enr.studentName.charAt(0)}
             </div>
@@ -535,7 +535,7 @@ export const EducationFinanceView: React.FC = () => {
                   {formatMoney(enr.balanceDue)}
                 </span>
               </div>
-              <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+              <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-[#2B2825] overflow-hidden">
                 <div
                   className={`h-full rounded-full ${
                     percent >= 100 ? 'bg-emerald-500' : percent > 0 ? 'bg-amber-500' : 'bg-neutral-300'
@@ -557,10 +557,10 @@ export const EducationFinanceView: React.FC = () => {
           <span
             className={`px-2 py-1 rounded-full t-small font-semibold ${
               enr.paymentStatus === 'Paid'
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                 : enr.paymentStatus === 'Overdue'
-                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
-                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
             }`}
           >
             {enr.paymentStatus === 'Paid'
@@ -669,7 +669,7 @@ export const EducationFinanceView: React.FC = () => {
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="p-3 bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:rgba(212,82,47,0.24)] dark:[--sq-stroke:rgba(255,143,99,0.22)] flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150"
+          className="p-3 bg-[#FCEEE8] dark:bg-[#22201E] [--sq-stroke:rgba(212,82,47,0.24)] dark:[--sq-stroke:rgba(255,143,99,0.22)] flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150"
         >
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[var(--brand-fill,#C9461F)] text-white flex items-center justify-center t-small font-semibold">
@@ -872,10 +872,10 @@ export const EducationFinanceView: React.FC = () => {
         }
         statusClassName={
           activeEnrollment?.paymentStatus === 'Paid'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : activeEnrollment?.paymentStatus === 'Overdue'
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'summary', label: isAr ? 'الملخص' : isEn ? 'Summary' : 'Synthèse' },
@@ -1010,7 +1010,7 @@ export const EducationFinanceView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
+              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
             >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
@@ -1028,7 +1028,7 @@ export const EducationFinanceView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-4 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-1"
+                className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-1"
               >
                 <div className="font-semibold text-black dark:text-white">{selectedEnrollmentForPayment.studentName}</div>
                 <div className="text-black/55 dark:text-white/55">
@@ -1056,8 +1056,8 @@ export const EducationFinanceView: React.FC = () => {
                         }}
                         className={`p-2 text-left rtl:text-right transition-colors cursor-pointer ${
                           selectedInstallmentIndex === idx
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
-                            : 'bg-white dark:bg-neutral-900 text-black/70 dark:text-white/75'
+                            ? 'bg-[#FCEEE8] dark:bg-[#2B2825] [--sq-stroke:#d4522f] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
+                            : 'bg-white dark:bg-[#22201E] text-black/70 dark:text-white/75'
                         }`}
                       >
                         <div className="t-cap text-black/55 dark:text-white/55">Échéance #{idx + 1}</div>
@@ -1119,7 +1119,7 @@ export const EducationFinanceView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
+              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 space-y-4"
             >
             <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
               <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
@@ -1144,7 +1144,7 @@ export const EducationFinanceView: React.FC = () => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="p-4 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-2 t-cap"
+              className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-2 t-cap"
             >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">

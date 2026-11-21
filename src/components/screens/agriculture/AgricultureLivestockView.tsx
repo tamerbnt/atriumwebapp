@@ -1012,7 +1012,7 @@ export const AgricultureLivestockView: React.FC = () => {
           data-sq="card"
           data-sq-border="solid"
           style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
-          className="flex items-center gap-3 px-4 py-3 bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 t-cap"
+          className="flex items-center gap-3 px-4 py-3 bg-amber-500/10 text-amber-800 dark:text-amber-300 t-cap"
         >
           <AlertTriangle size={18} className="shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="flex-1">
@@ -1362,10 +1362,10 @@ export const AgricultureLivestockView: React.FC = () => {
         }
         statusClassName={
           activeAnimal?.isInWithholdingLockout || activeAnimal?.healthStatus === 'InTreatment'
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
             : activeAnimal?.healthStatus === 'Quarantine' || activeAnimal?.healthStatus === 'Sick'
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
-            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
         }
         tabs={[
           { id: 'overview', label: isAr ? 'نظرة عامة' : isEn ? 'Overview' : 'Fiche Bovine' },
@@ -1521,7 +1521,7 @@ export const AgricultureLivestockView: React.FC = () => {
         statusLabel={
           activeMilking ? `+${formatMoney(activeMilking.onilTotalSubsidyDzd, language)}` : undefined
         }
-        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
+        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]"
         tabs={[
           { id: 'overview', label: isAr ? 'نظرة عامة' : isEn ? 'Overview' : 'Traite' },
           { id: 'tank', label: isAr ? 'خزان التبريد' : isEn ? 'Cooling Tank' : 'Tank & Qualité' },
@@ -1618,7 +1618,7 @@ export const AgricultureLivestockView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-4"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <h2 className="t-card font-semibold text-black dark:text-white">

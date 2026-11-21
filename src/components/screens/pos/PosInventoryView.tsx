@@ -1360,7 +1360,7 @@ export const PosInventoryView: React.FC<any> = () => {
                     key={sup.id}
                     data-sq="card"
                     data-sq-border="none"
-                    className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                    className="p-4 bg-[#F5F1EC] dark:bg-[#191716] space-y-2"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-semibold t-small text-black dark:text-white truncate">{sup.supplierName}</span>
@@ -2038,7 +2038,7 @@ export const PosInventoryView: React.FC<any> = () => {
                   key={idx}
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] grid grid-cols-1 sm:grid-cols-12 gap-2 items-center"
+                  className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] grid grid-cols-1 sm:grid-cols-12 gap-2 items-center"
                 >
                   <div className="sm:col-span-6">
                     <LabelSelect
@@ -2127,7 +2127,7 @@ export const PosInventoryView: React.FC<any> = () => {
           <div
             data-sq="ctl"
             data-sq-border="none"
-            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between t-cap"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-cap"
           >
             <span className="font-semibold text-black/70 dark:text-white/75">
               {isAr ? 'المجموع المقدر (TTC شامل 19% رسم)' : 'Total Estimé TTC (TVA 19% incluse) :'}

@@ -571,7 +571,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
                 <ChevronRight size={16} />
               </button>
             </div>
-            <div data-sq="ctl" data-sq-border="none" className="flex items-center gap-1 bg-[#F5F1EC] dark:bg-[#1D1B19] p-[3px] t-cap">
+            <div data-sq="ctl" data-sq-border="none" className="flex items-center gap-1 bg-[#F5F1EC] dark:bg-[#191716] p-[3px] t-cap">
               {[15, 30, 45].map((interval) => (
                 <button
                   key={interval}
@@ -762,7 +762,7 @@ export const MedicalAgendaView: React.FC<any> = () => {
           renderCalendarView={() => (
             <div className="sq-elev-card">
               <div data-sq="table" data-sq-border="none" className="bg-white dark:bg-[#22201E] overflow-hidden">
-              <div className="grid grid-cols-12 bg-[#F5F1EC] dark:bg-[#1D1B19] border-b border-[var(--atr-divider)]">
+              <div className="grid grid-cols-12 bg-[#F5F1EC] dark:bg-[#191716] border-b border-[var(--atr-divider)]">
                 <div className="col-span-2 sm:col-span-1 p-4 text-center t-small tabular-nums font-semibold text-black/55 dark:text-white/55 border-r border-[var(--atr-divider)]">
                   {isAr ? 'الوقت' : 'Heure'}
                 </div>

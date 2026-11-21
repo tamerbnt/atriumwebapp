@@ -165,7 +165,7 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
                       ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600'
                       : hasDigit
                       ? 'bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]'
-                      : 'bg-[#F5F1EC] dark:bg-[#1D1B19] text-[var(--text-3)]'
+                      : 'bg-[#F5F1EC] dark:bg-[#22201E] text-[var(--text-3)]'
                   }`}
                 >
                   {hasDigit ? '•' : ''}

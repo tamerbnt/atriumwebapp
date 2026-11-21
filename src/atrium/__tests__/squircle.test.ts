@@ -62,7 +62,11 @@ describe('60% squircle geometry kernel', () => {
   });
 });
 
-import { syncSquircleNow } from '../../utils/squircle';
+import {
+  syncSquircleNow,
+  computeFlushStrokeInset,
+  DARK_SPECULAR_GRADIENTS,
+} from '../../utils/squircle';
 
 describe('60% squircle DOM overlay engine (syncSquircleNow)', () => {
   const installDomStub = (opts: {
@@ -266,6 +270,68 @@ describe('60% squircle DOM overlay engine (syncSquircleNow)', () => {
       syncSquircleNow(host);
 
       expect(host.style.overflow).toBe('');
+    } finally {
+      cleanup();
+    }
+  });
+
+  it('computes flush stroke inset for 1px, 0.65px optical hairlines, and non-positive inputs', () => {
+    expect(computeFlushStrokeInset(1)).toBe(0.5);
+    expect(computeFlushStrokeInset(0.65)).toBe(0.33);
+    expect(computeFlushStrokeInset(0)).toBe(0);
+    expect(computeFlushStrokeInset(-2)).toBe(0);
+    expect(computeFlushStrokeInset(Number.NaN)).toBe(0);
+    expect(computeFlushStrokeInset(Number.POSITIVE_INFINITY)).toBe(0);
+  });
+
+  it('defines 6 dark specular gradients that peak at 0%, attenuate steeply by 50-55%, and end at 0', () => {
+    expect(DARK_SPECULAR_GRADIENTS).toHaveLength(6);
+    for (const grad of DARK_SPECULAR_GRADIENTS) {
+      expect(grad.stops[0].offset).toBe('0%');
+      const peak = grad.stops[0].opacity;
+      expect(peak).toBeGreaterThan(0);
+
+      for (let i = 1; i < grad.stops.length; i++) {
+        expect(grad.stops[i].opacity).toBeLessThanOrEqual(grad.stops[i - 1].opacity);
+      }
+
+      const midStop = grad.stops.find((s) => s.offset === '50%' || s.offset === '52%' || s.offset === '55%');
+      expect(midStop).toBeDefined();
+      expect(midStop!.opacity).toBeLessThanOrEqual(0.005);
+
+      const last = grad.stops[grad.stops.length - 1];
+      expect(last.offset).toBe('100%');
+      expect(last.opacity).toBe(0);
+    }
+  });
+
+  it('uses DPR-aware optical hairline inset (0.33 at dpr>=2 vs 0.5 at dpr=1) unless data-sq-stroke-w overrides', () => {
+    const { host, attrs, pathAttrs, cleanup } = installDomStub({
+      width: '200px',
+      height: '80px',
+      offsetWidth: 200,
+      offsetHeight: 80,
+      borderWidth: 0,
+    });
+    try {
+      attrs.set('data-sq', 'card');
+      attrs.set('data-sq-border', 'solid');
+
+      (globalThis as any).window.devicePixelRatio = 2;
+      syncSquircleNow(host);
+      const dRetina = pathAttrs.get('d');
+      expect(dRetina).toBe(squirclePath(0.33, 0.33, 200 - 0.66, 80 - 0.66, 16 - 0.33, 0.6));
+
+      (globalThis as any).window.devicePixelRatio = 1;
+      syncSquircleNow(host);
+      const dStandard = pathAttrs.get('d');
+      expect(dStandard).toBe(squirclePath(0.5, 0.5, 200 - 1, 80 - 1, 16 - 0.5, 0.6));
+      expect(dRetina).not.toBe(dStandard);
+
+      (globalThis as any).window.devicePixelRatio = 2;
+      attrs.set('data-sq-stroke-w', '2');
+      syncSquircleNow(host);
+      expect(pathAttrs.get('d')).toBe(squirclePath(1, 1, 200 - 2, 80 - 2, 16 - 1, 0.6));
     } finally {
       cleanup();
     }

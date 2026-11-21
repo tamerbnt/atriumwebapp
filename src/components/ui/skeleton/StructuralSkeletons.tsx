@@ -101,7 +101,7 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({
         className="w-full p-[var(--table-pad,8px)] bg-white dark:bg-[#22201E]"
       >
         {/* Table Header Row */}
-        <div className="h-[var(--head-h,36px)] flex items-center px-[var(--row-inset,12px)] border-b border-[var(--atr-divider)] bg-[#F3EDE7]/80 dark:bg-[#1D1B19]/70 gap-[var(--col-gap,16px)]">
+        <div className="h-[var(--head-h,36px)] flex items-center px-[var(--row-inset,12px)] border-b border-[var(--atr-divider)] bg-[#F3EDE7]/80 dark:bg-[#191716]/70 gap-[var(--col-gap,16px)]">
           <SkeletonBox width={20} height={20} rounded="rounded-[var(--r-check,6px)]" className="shrink-0" />
           {columns.map((col, idx) => (
             <div

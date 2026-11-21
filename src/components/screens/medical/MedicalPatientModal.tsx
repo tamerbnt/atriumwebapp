@@ -94,7 +94,7 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5"
+          className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-5"
         >
           <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-2">

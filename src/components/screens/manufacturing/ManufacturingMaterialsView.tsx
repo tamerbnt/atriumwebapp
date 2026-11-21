@@ -1223,7 +1223,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
               </div>
 
               {tab === 'fiche' && (
-                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 space-y-2">
                   <span className="t-small font-semibold text-black/55 dark:text-white/55 block">
                     Données d'Emplacement & Seuil
                   </span>
@@ -1259,7 +1259,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
               )}
 
               {tab === 'valuation' && (
-                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 space-y-2">
                   <span className="t-small font-semibold text-black/55 dark:text-white/55 block">
                     Valorisation Comptable PMP
                   </span>
@@ -1297,7 +1297,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
           onClose={() => setSelectedVoucher(null)}
           renderBody={(v) => (
             <div className="space-y-4 t-cap">
-              <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
+              <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 space-y-2">
                 <div className="flex justify-between py-1 border-b border-[var(--atr-divider)]">
                   <span className="text-black/55 dark:text-white/55">Date Mouvement :</span>
                   <span className="tabular-nums font-semibold text-black dark:text-white">{v.transferDate?.split('T')[0]}</span>
@@ -1318,7 +1318,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                 </div>
               </div>
               {v.notes && (
-                <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] text-black/70 dark:text-white/75">
+                <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] text-black/70 dark:text-white/75">
                   {v.notes}
                 </div>
               )}

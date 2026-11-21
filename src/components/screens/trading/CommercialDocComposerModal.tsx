@@ -225,7 +225,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs overflow-y-auto">
 <div className="sq-elev-pop relative w-full max-w-5xl my-auto">
 <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden">
-<div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/70 dark:bg-[#1D1B19] shrink-0">
+<div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/70 dark:bg-[#22201E] shrink-0">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold"><FileText size={20} /></div>
 <div>
@@ -277,7 +277,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 							})}
 </div>
 </div>
-<div data-sq="card" data-sq-border="none" className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-[#F5F1EC]/70 dark:bg-[#1D1B19]">
+<div data-sq="card" data-sq-border="none" className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-[#F5F1EC]/70 dark:bg-[#22201E]">
 <div className="md:col-span-1">
 <LabelSelect label={t("trading_composer_client_label")} value={clientId} onChange={(val) => setClientId(typeof val === "string" ? val : val?.target?.value || val)} options={b2bClients.map((c) => ({
 											value: c.id,
@@ -392,7 +392,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </div>
 <div data-sq="table" data-sq-border="solid" className="overflow-x-auto bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)]">
 <table className="w-full text-left t-cap">
-<thead className="bg-[#F5F1EC] dark:bg-[#1D1B19] border-b border-[var(--atr-divider)] text-black/55 dark:text-white/55">
+<thead className="bg-[#F5F1EC] dark:bg-[#191716] border-b border-[var(--atr-divider)] text-black/55 dark:text-white/55">
 <tr>
 <th className="py-2 px-3 w-[260px]">Article / Service</th>
 <th className="py-2 px-2 w-[80px]">Unité</th>
@@ -459,8 +459,8 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </table>
 </div>
 </div>
-<div data-sq="card" data-sq-border="none" className="overflow-hidden bg-[#F5F1EC]/70 dark:bg-[#1D1B19]">
-<button type="button" onClick={() => setShowAdvancedOptions(!showAdvancedOptions)} className="w-full px-4 py-3 bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between t-small font-semibold text-black/70 dark:text-white/75 hover:bg-[#EAE1D8]/70 dark:hover:bg-[#282523] transition-colors cursor-pointer">
+<div data-sq="card" data-sq-border="none" className="overflow-hidden bg-[#F5F1EC]/70 dark:bg-[#22201E]">
+<button type="button" onClick={() => setShowAdvancedOptions(!showAdvancedOptions)} className="w-full px-4 py-3 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-small font-semibold text-black/70 dark:text-white/75 hover:bg-[#EAE1D8]/70 dark:hover:bg-[#282523] transition-colors cursor-pointer">
 <div className="flex items-center gap-2">
 <span>{t("trading_composer_advanced_accordion")}</span>
 {(generalDiscountPercent > 0 || guaranteeRetentionPercent > 0 || isCashFiscalStampEnabled) && /* @__PURE__ */ <span className="px-2 py-1 rounded-full t-cap bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">{t("trading_composer_options_active")}</span>}
@@ -496,7 +496,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </div>
 </div>}
 </div>
-<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC]/80 dark:bg-[#1D1B19] space-y-2">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC]/80 dark:bg-[#22201E] space-y-2">
 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 t-cap tabular-nums">
 <div>
 <span className="text-black/55 dark:text-white/55 block t-cap">{t("trading_composer_total_raw_ht")}</span>
@@ -548,7 +548,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 </div>
 </div>
 </div>
-<div className="flex items-center justify-between px-6 py-4 border-t border-[var(--atr-divider)] bg-[#F5F1EC]/70 dark:bg-[#1D1B19] shrink-0">
+<div className="flex items-center justify-between px-6 py-4 border-t border-[var(--atr-divider)] bg-[#F5F1EC]/70 dark:bg-[#22201E] shrink-0">
 <AtriumButton type="button" variant="ghost" onClick={onClose}>{t("trading_composer_btn_cancel")}</AtriumButton>
 <div className="flex items-center gap-2">
 <AtriumButton type="button" variant="secondary" onClick={() => handleSubmit("Draft")}>{t("trading_composer_save_draft")}</AtriumButton>

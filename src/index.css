@@ -2991,9 +2991,26 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
 
 /* End Atrium Pod Container Architecture */
 
-:root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.lbi-field):not(.sek-field) {
-  background-color: #F5F1EC;
-  border-color: rgba(23, 19, 15, 0.055);
+@layer base {
+  :root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.lbi-field):not(.sek-field):not(.bg-transparent),
+  :root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) select:not(.lbi-field):not(.sek-field):not(.bg-transparent),
+  :root:not(.dark):not([data-theme="dark"]):not([data-atrium-theme="dark"]) textarea:not(.lbi-field):not(.sek-field):not(.bg-transparent) {
+    background-color: #F5F1EC;
+    border-color: rgba(23, 19, 15, 0.055);
+  }
+
+  .dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.lbi-field):not(.sek-field):not(.bg-transparent),
+  [data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.lbi-field):not(.sek-field):not(.bg-transparent),
+  [data-atrium-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.lbi-field):not(.sek-field):not(.bg-transparent),
+  .dark select:not(.lbi-field):not(.sek-field):not(.bg-transparent),
+  [data-theme="dark"] select:not(.lbi-field):not(.sek-field):not(.bg-transparent),
+  [data-atrium-theme="dark"] select:not(.lbi-field):not(.sek-field):not(.bg-transparent),
+  .dark textarea:not(.lbi-field):not(.sek-field):not(.bg-transparent),
+  [data-theme="dark"] textarea:not(.lbi-field):not(.sek-field):not(.bg-transparent),
+  [data-atrium-theme="dark"] textarea:not(.lbi-field):not(.sek-field):not(.bg-transparent) {
+    background-color: #292624;
+    border-color: rgba(255, 255, 255, 0.075);
+  }
 }
 
 /* Browser-native offscreen layout & paint skipping for long UniversalDataCollection lists/grids */

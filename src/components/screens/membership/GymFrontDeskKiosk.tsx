@@ -1005,7 +1005,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 t-cap space-y-2 text-left mb-5"
+                className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 t-cap space-y-2 text-left mb-5"
               >
                 <div className="flex justify-between">
                   <span className="text-black/62 dark:text-white/65">{isRtl ? 'الزبون' : 'Client'}</span>

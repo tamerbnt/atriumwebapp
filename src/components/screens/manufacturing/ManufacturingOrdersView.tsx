@@ -854,7 +854,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
 
             {tab === 'details' && (
               <div className="space-y-3 t-cap">
-                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 space-y-2">
                   <div className="t-small font-semibold text-black/55 dark:text-white/55">
                     {isAr ? 'معلومات الدفعة' : 'Paramètres de Fabrication'}
                   </div>
@@ -888,7 +888,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
 
             {tab === 'costing' && (
               <div className="space-y-3 t-cap">
-                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 space-y-2">
                   <div className="t-small font-semibold text-black/55 dark:text-white/55">
                     {isAr ? 'تفكيك التكاليف الصناعية' : 'Décomposition Coût de Revient'}
                   </div>
@@ -929,7 +929,7 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
                               key={i}
                               data-sq="ctl"
                               data-sq-border="none"
-                              className="p-2 bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between"
+                              className="p-2 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between"
                             >
                               <span className="text-black/70 dark:text-white/75 truncate max-w-[190px]">{c.rawProductName}</span>
                               <span className="tabular-nums text-black/55 dark:text-white/55">

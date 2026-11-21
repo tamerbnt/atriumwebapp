@@ -851,7 +851,7 @@ export const TradingFinanceView: React.FC = () => {
                 <X size={18} />
               </button>
             </div>
-            <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap space-y-2 tabular-nums">
+            <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] t-cap space-y-2 tabular-nums">
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55 font-sans">Facture :</span>
                 <span className="font-semibold text-black dark:text-white">{settlementDoc.docNumber}</span>

@@ -171,7 +171,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
       <div className="sq-elev-pop relative w-full max-w-3xl my-auto">
       <div data-sq="panel" data-sq-border="solid" className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/70 dark:bg-[#1D1B19] shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/70 dark:bg-[#22201E] shrink-0">
           <div className="flex items-center gap-3">
             <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold">
               <Building2 size={20} />
@@ -272,7 +272,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           </div>
 
           {/* Legal & Fiscal Algerian Prerequisite Fields */}
-          <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC]/70 dark:bg-[#1D1B19] space-y-4">
+          <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC]/70 dark:bg-[#22201E] space-y-4">
             <h3 className="t-small font-semibold text-black/70 dark:text-white/75 flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <FileText size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
@@ -380,7 +380,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           </div>
 
           {/* Commercial & Financial Conditions */}
-          <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC]/70 dark:bg-[#1D1B19] space-y-4">
+          <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC]/70 dark:bg-[#22201E] space-y-4">
             <h3 className="t-small font-semibold text-black/70 dark:text-white/75 flex items-center gap-2">
               <CreditCard size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>{t('trading_entity_commercial_terms')}</span>

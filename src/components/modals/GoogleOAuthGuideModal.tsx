@@ -108,7 +108,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
           </p>
 
           <div className="flex flex-col gap-[var(--s2,8px)] ps-[var(--s7,32px)]">
-            <div data-sq="ctl" data-sq-border="none" className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s2,8px)]">
+            <div data-sq="ctl" data-sq-border="none" className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#22201E] flex flex-col gap-[var(--s2,8px)]">
               <div className="flex items-center justify-between gap-[var(--s2,8px)]">
                 <span className="t-small text-[var(--text-1,#17130F)] dark:text-white">
                   First field: &quot;Authorized JavaScript origins&quot;
@@ -135,7 +135,7 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
               </div>
             </div>
 
-            <div data-sq="ctl" data-sq-border="none" className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s2,8px)]">
+            <div data-sq="ctl" data-sq-border="none" className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#22201E] flex flex-col gap-[var(--s2,8px)]">
               <div className="flex items-center justify-between gap-[var(--s2,8px)]">
                 <span className="t-small text-[var(--text-1,#17130F)] dark:text-white">
                   Second field: &quot;Authorized redirect URIs&quot;

@@ -556,20 +556,20 @@ export const AgricultureParcelsView: React.FC = () => {
         sortable: true,
         renderCell: (p) => {
           let badgeColor =
-            'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300';
+            'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300';
           let label = isAr ? 'نمو' : isEn ? 'Growing' : 'En Végétation';
           if (p.status === 'Harvesting') {
             badgeColor =
-              'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300';
+              'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300';
             label = isAr ? 'في الحصاد' : isEn ? 'Harvesting' : 'En Récolte';
           } else if (p.status === 'Fallow') {
             badgeColor =
-              'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300';
+              'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300';
             label = isAr ? 'راحة' : isEn ? 'Fallow' : 'Jachère';
           }
           return (
             <span
-              className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold border ${badgeColor}`}
+              className={`inline-flex items-center px-2 py-1 rounded-full t-small font-semibold ${badgeColor}`}
             >
               {label}
             </span>
@@ -940,10 +940,10 @@ export const AgricultureParcelsView: React.FC = () => {
         }
         statusClassName={
           activeParcel?.status === 'Harvesting'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : activeParcel?.status === 'Growing'
-            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'agronomy', label: isAr ? 'الزراعة' : isEn ? 'Agronomy' : 'Agronomie' },

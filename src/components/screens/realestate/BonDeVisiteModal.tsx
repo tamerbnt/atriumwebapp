@@ -140,7 +140,7 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 </div>
 <button type="button" onClick={onClose} aria-label="Fermer" data-sq="ctl-sm" data-sq-border="none" className="p-2 text-black/70 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-[#EFE9E2] dark:hover:bg-[#2B2825] transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
 </div>
-<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#1D1B19] mb-5 flex items-center justify-between">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] mb-5 flex items-center justify-between">
 <div>
 <div className="t-small text-black/70 dark:text-white/75 font-semibold">Bien Visité</div>
 <div className="t-label font-semibold text-black dark:text-white truncate max-w-md">{activeProp?.title}</div>
@@ -191,7 +191,7 @@ m)
 <span>Effacer</span>
 </button>
 </div>
-<div data-sq="card" data-sq-border="dashed" data-sq-stroke-w="2" className="relative bg-white dark:bg-[#1D1B19] overflow-hidden">
+<div data-sq="card" data-sq-border="dashed" data-sq-stroke-w="2" className="relative bg-white dark:bg-[#22201E] overflow-hidden">
 <canvas ref={canvasRef} width={560} height={140} className="w-full h-[140px] touch-none cursor-crosshair" onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={startDrawing} onTouchMove={draw} onTouchEnd={stopDrawing} />
 {!hasSignature && /* @__PURE__ */ <div className="absolute inset-0 pointer-events-none flex items-center justify-center t-cap text-black/55 dark:text-white/55">Signez avec le doigt ou le stylet ici</div>}
 </div>

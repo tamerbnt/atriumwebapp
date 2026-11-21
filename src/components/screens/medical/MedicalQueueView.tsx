@@ -54,12 +54,12 @@ const getInitials2 = (name: string): string => {
 
 const getQueueStatusClassName = (status: MedicalConsultation['status']): string => {
   if (status === 'InWaitingQueue') {
-    return 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]';
+    return 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
   }
   if (status === 'InConsultation') {
-    return 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]';
+    return 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]';
   }
-  return 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  return 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 };
 
 export const MedicalQueueView: React.FC<any> = () => {
@@ -429,7 +429,7 @@ export const MedicalQueueView: React.FC<any> = () => {
         minWidth: '170px',
         renderCell: (c) => (
           <div className="flex items-center gap-2">
-            <span className="px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white tabular-nums t-small font-semibold">
+            <span className="px-2 py-1 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] text-black dark:text-white tabular-nums t-small font-semibold">
               {c.vitals?.bloodPressure || '120/80'}
             </span>
             <span className="px-2 py-1 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 tabular-nums t-cap">
@@ -450,12 +450,12 @@ export const MedicalQueueView: React.FC<any> = () => {
         minWidth: '130px',
         renderCell: (c) => (
           <span
-            className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold border ${
+            className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full t-small font-semibold ${
               c.status === 'InWaitingQueue'
-                ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
                 : c.status === 'InConsultation'
-                ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
-                : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+                : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
             }`}
           >
             {c.status === 'InConsultation' && (
@@ -527,7 +527,7 @@ export const MedicalQueueView: React.FC<any> = () => {
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="flex items-center bg-white/80 dark:bg-neutral-800 p-[3px]"
+              className="flex items-center bg-white/80 dark:bg-[#191716] p-[3px]"
             >
               <button
                 type="button"
@@ -666,7 +666,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="flex items-center bg-white dark:bg-neutral-800 p-[3px]"
+                  className="flex items-center bg-white dark:bg-[#191716] p-[3px]"
                 >
                   <button
                     type="button"
@@ -816,7 +816,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                           ? 2
                           : 1
                       }
-                      className={`bg-white dark:bg-neutral-800 p-5 space-y-4 transition-all ${
+                      className={`bg-white dark:bg-[#22201E] p-5 space-y-4 transition-all ${
                         activeConsultation?.id === cons.id
                           ? '[--sq-stroke:#d4522f]'
                           : cons.status === 'InConsultation'
@@ -834,7 +834,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-700 t-small font-semibold flex items-center justify-center text-black/70 dark:text-white/75">
+                          <span className="w-6 h-6 rounded-full bg-neutral-100 dark:bg-[#2B2825] t-small font-semibold flex items-center justify-center text-black/70 dark:text-white/75">
                             #{index + 1}
                           </span>
                           <span className="t-small font-semibold text-black dark:text-white truncate max-w-[140px]">
@@ -860,7 +860,7 @@ export const MedicalQueueView: React.FC<any> = () => {
                       <div
                         data-sq="ctl"
                         data-sq-border="solid"
-                        className="bg-neutral-50 dark:bg-neutral-900/60 p-3 grid grid-cols-3 gap-1 text-center t-cap tabular-nums"
+                        className="bg-neutral-50 dark:bg-[#191716] p-3 grid grid-cols-3 gap-1 text-center t-cap tabular-nums"
                       >
                         <div>
                           <div className="t-cap text-black/55 dark:text-white/55">TA</div>

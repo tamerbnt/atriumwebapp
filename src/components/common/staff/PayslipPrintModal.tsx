@@ -82,7 +82,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
           </div>
 
           {/* Employee & Administrative Information */}
-          <div data-sq="card" data-sq-border="solid" style={{ '--sq-stroke': 'rgba(23,19,15,0.08)' } as React.CSSProperties} className="grid grid-cols-2 gap-[var(--s4,16px)] p-[var(--s3,12px)] bg-neutral-50 border-0">
+          <div data-sq="card" data-sq-border="none" className="grid grid-cols-2 gap-[var(--s4,16px)] p-[var(--s3,12px)] bg-neutral-50 border-0">
             <div className="flex flex-col gap-[var(--s1,4px)]">
               <p><span className="font-semibold text-[var(--text-2)]">Collaborateur :</span> <strong className="font-semibold text-[var(--text-1)] t-card">{slip.staffFullName}</strong></p>
               <p><span className="font-semibold text-[var(--text-2)]">Matricule :</span> <span className="font-semibold tabular-nums">{slip.matricule}</span></p>
@@ -191,7 +191,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
           </table>
 
           {/* Employer Contributions (Quote-part patronale) */}
-          <div data-sq="card" data-sq-border="solid" style={{ '--sq-stroke': 'rgba(23,19,15,0.08)' } as React.CSSProperties} className="p-[var(--s3,12px)] bg-neutral-50 border-0 t-cap text-[var(--text-2)] flex justify-between items-center tabular-nums">
+          <div data-sq="card" data-sq-border="none" className="p-[var(--s3,12px)] bg-neutral-50 border-0 t-cap text-[var(--text-2)] flex justify-between items-center tabular-nums">
             <span><strong className="font-semibold text-[var(--text-1)]">Quote-part patronale Sécurité Sociale (26 %) :</strong> {slip.cnasPatronal.toLocaleString()} DZD</span>
             <span><strong className="font-semibold text-[var(--text-1)]">Coût global du poste pour l'employeur :</strong> <span className="font-semibold text-[var(--text-1)]">{(slip.salaireBrutCotisable + slip.cnasPatronal + (slip.primesNonImposables?.reduce((s, p) => s + p.amount, 0) || 0)).toLocaleString()} DZD</span></span>
           </div>

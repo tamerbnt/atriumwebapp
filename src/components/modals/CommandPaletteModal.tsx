@@ -605,7 +605,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         </div>
 
         {/* Footer Shortcut Hints */}
-        <div className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#1E1C1A] border-t border-[var(--atr-divider)] flex items-center justify-between t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">
+        <div className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#22201E] border-t border-[var(--atr-divider)] flex items-center justify-between t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">
           <div className="flex items-center gap-[var(--s3,12px)]">
             <span className="flex items-center gap-[var(--s1,4px)]">
               <kbd className="h-[var(--badge-h,22px)] px-[var(--badge-px,6px)] inline-flex items-center bg-white dark:bg-[#2B2825] rounded-[var(--r-check,6px)] t-small tabular-nums text-[var(--text-1,#17130F)] dark:text-white shadow-2xs">

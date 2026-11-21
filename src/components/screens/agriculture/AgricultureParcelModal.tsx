@@ -116,7 +116,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
         >
           <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
             <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-4 bg-[#F3EDE7] dark:bg-neutral-800/50 space-y-3"
+            className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-3"
           >
             <span className="t-small font-semibold text-black dark:text-white block rtl:normal-case rtl:tracking-normal">
               {isAr ? 'البيانات العقارية والمسح الفلاحي' : 'Régime Foncier & Concession (Loi 10-03)'}
@@ -295,7 +295,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
               onClick={onClose}
               data-sq="ctl-sm"
               data-sq-border="none"
-              className="px-4 py-2 t-small font-semibold bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-black dark:text-white cursor-pointer"
+              className="px-4 py-2 t-small font-semibold bg-neutral-100 hover:bg-neutral-200 dark:bg-[#2B2825] dark:hover:bg-[#332F2B] text-black dark:text-white cursor-pointer"
             >
               {isAr ? 'إلغاء' : 'Annuler'}
             </button>

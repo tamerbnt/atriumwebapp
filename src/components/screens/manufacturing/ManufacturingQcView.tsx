@@ -728,7 +728,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
                     </p>
                   </div>
                 </div>
-                <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2">
+                <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2">
                   <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                     Spécifications de Fabrication
                   </span>
@@ -751,20 +751,20 @@ export const ManufacturingQcView: React.FC<any> = () => {
             )}
 
             {tab === 'metrologie' && (
-              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2">
+              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2">
                 <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                   Rapport Dimensionnel & Tolérances
                 </span>
                 <div className="space-y-2">
-                  <div data-sq="ctl" data-sq-border="none" className="flex justify-between p-2 bg-white dark:bg-[#22201E]">
+                  <div data-sq="ctl" data-sq-border="none" className="flex justify-between p-2 bg-white dark:bg-[#191716]">
                     <span>Cote Critique Longueur (±0.5mm):</span>
                     <span className="tabular-nums font-semibold text-emerald-600">+0.12mm (OK)</span>
                   </div>
-                  <div data-sq="ctl" data-sq-border="none" className="flex justify-between p-2 bg-white dark:bg-[#22201E]">
+                  <div data-sq="ctl" data-sq-border="none" className="flex justify-between p-2 bg-white dark:bg-[#191716]">
                     <span>Épaisseur & Planéité (±0.2mm):</span>
                     <span className="tabular-nums font-semibold text-emerald-600">-0.05mm (OK)</span>
                   </div>
-                  <div data-sq="ctl" data-sq-border="none" className="flex justify-between p-2 bg-white dark:bg-[#22201E]">
+                  <div data-sq="ctl" data-sq-border="none" className="flex justify-between p-2 bg-white dark:bg-[#191716]">
                     <span>Adhérence Finition / Revêtement:</span>
                     <span className="tabular-nums font-semibold text-emerald-600">Grade 5B (Parfait)</span>
                   </div>
@@ -773,7 +773,7 @@ export const ManufacturingQcView: React.FC<any> = () => {
             )}
 
             {tab === 'couts' && (
-              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2">
+              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2">
                 <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                   Décomposition Coût de Revient
                 </span>

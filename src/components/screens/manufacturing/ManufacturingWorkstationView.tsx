@@ -461,7 +461,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                 </div>
 
                 {currentOrder ? (
-                  <div data-sq="ctl" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-3">
+                  <div data-sq="ctl" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#191716] space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="t-small font-semibold text-black/55 dark:text-white/55 tabular-nums">
                       Lot: {currentOrder.batchLotNumber || 'LOT-2026-05'}
@@ -523,7 +523,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div data-sq="ctl" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap text-black/55 dark:text-white/55">
+                  <div data-sq="ctl" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#191716] t-cap text-black/55 dark:text-white/55">
                     {isAr ? 'لا يوجد أمر تصنيع محدد' : isEn ? 'No manufacturing order selected' : 'Aucun OF sélectionné'}
                   </div>
                 )}
@@ -802,7 +802,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   className={`p-4 text-center transition-all cursor-pointer ${
                     activeNumpadField === 'good'
                       ? 'bg-[#FCEEE8] dark:bg-[#2B2825] ring-2 ring-[#d4522f]/60'
-                      : 'bg-[#F5F1EC] dark:bg-[#1D1B19] hover:bg-[#EFE9E2] dark:hover:bg-[#282523]'
+                      : 'bg-[#F5F1EC] dark:bg-[#22201E] hover:bg-[#EFE9E2] dark:hover:bg-[#282523]'
                   }`}
                 >
                   <span className="t-small font-semibold text-emerald-700 dark:text-emerald-400 block mb-1">
@@ -826,7 +826,7 @@ export const ManufacturingWorkstationView: React.FC = () => {
                   className={`p-4 text-center transition-all cursor-pointer ${
                     activeNumpadField === 'scrap'
                       ? 'bg-red-50 dark:bg-red-950/35 ring-2 ring-red-500/60'
-                      : 'bg-[#F5F1EC] dark:bg-[#1D1B19] hover:bg-[#EFE9E2] dark:hover:bg-[#282523]'
+                      : 'bg-[#F5F1EC] dark:bg-[#22201E] hover:bg-[#EFE9E2] dark:hover:bg-[#282523]'
                   }`}
                 >
                   <span className="t-small font-semibold text-red-600 dark:text-red-400 block mb-1">

@@ -494,7 +494,7 @@ export const EducationStudentsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
+              className="w-9 h-9 bg-neutral-100 dark:bg-[#2B2825] text-black dark:text-white flex items-center justify-center font-semibold t-small shrink-0"
             >
               {student.fullName.charAt(0)}
             </div>
@@ -551,7 +551,7 @@ export const EducationStudentsView: React.FC = () => {
           const rate = student.attendanceRatePercent ?? 100;
           return (
             <div className="flex items-center gap-2">
-              <div className="w-12 h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+              <div className="w-12 h-1.5 rounded-full bg-neutral-100 dark:bg-[#2B2825] overflow-hidden">
                 <div className={`h-full rounded-full ${rate >= 85 ? 'bg-emerald-500' : 'bg-rose-500'}`} style={{ width: `${rate}%` }} />
               </div>
               <span className="font-semibold text-black/70 dark:text-white/75 tabular-nums">{rate}%</span>
@@ -875,12 +875,12 @@ export const EducationStudentsView: React.FC = () => {
         statusLabel={activeStudent ? localizeStatus(activeStudent.status, language) : undefined}
         statusClassName={
           activeStudent?.status === 'Active'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : activeStudent?.status === 'Graduated'
-            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
             : activeStudent?.status === 'Applicant'
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+            : 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
         }
         tabs={[
           { id: 'academic', label: t('edu_drawer_academic') },
@@ -1206,7 +1206,7 @@ export const EducationStudentsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 max-h-[90vh] overflow-y-auto"
+              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 max-h-[90vh] overflow-y-auto"
             >
             <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
@@ -1287,7 +1287,7 @@ export const EducationStudentsView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-4 bg-[#F3EDE7] dark:bg-neutral-900/60 space-y-3"
+                className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-3"
               >
                 <label className="flex items-center gap-2 font-semibold text-black dark:text-white cursor-pointer">
                   <input
@@ -1339,7 +1339,7 @@ export const EducationStudentsView: React.FC = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 bg-white dark:bg-[#2B2825] text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
                 </button>

@@ -199,7 +199,7 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
           </div>
 
           {/* Fiscal Calculation Breakdown Pod */}
-          <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#1D1B19] space-y-3">
+          <div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-3">
             <div className="flex items-center justify-between t-small font-semibold text-black/70 dark:text-white/75">
               <span>Décompte Légal de la Quittance</span>
               <span className="flex items-center gap-1 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">

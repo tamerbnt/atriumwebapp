@@ -121,7 +121,7 @@ function KineticCollectionStageInner<T>({
     <div
       data-sq="row"
       data-sq-border="solid"
-      className="th th-adherents relative shrink-0 bg-white dark:bg-[#1D1B19] text-black dark:text-white box-border select-none"
+      className="th th-adherents relative shrink-0 bg-white dark:bg-[#22201E] text-black dark:text-white box-border select-none"
       data-v={viewMode === 'grid' ? 'g' : 'l'}
       aria-hidden={viewMode === 'grid'}
     >
@@ -151,7 +151,7 @@ function KineticCollectionStageInner<T>({
         className={`cb relative w-[var(--check,20px)] h-[var(--check,20px)] grid place-items-center p-0 cursor-pointer ${
           selectedCount === totalCount && totalCount > 0
             ? 'bg-[var(--brand-fill)] [--sq-stroke:var(--brand-fill)] text-white'
-            : 'bg-white dark:bg-[#2B2825] [--sq-stroke:rgba(23,19,15,0.18)] dark:[--sq-stroke:rgba(255,255,255,0.22)] hover:[--sq-stroke:var(--brand-text)] text-transparent'
+            : 'bg-white dark:bg-[#2B2825] [--sq-stroke:rgba(23,19,15,0.12)] dark:[--sq-stroke:rgba(255,255,255,0.16)] hover:[--sq-stroke:var(--brand-text)] text-transparent'
         }`}
       >
         <Check

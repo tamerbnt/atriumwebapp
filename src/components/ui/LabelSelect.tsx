@@ -436,7 +436,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
               }}
             >
               {(searchable || normalizedOptions.length >= 6) && (
-                <div className="p-2 border-b border-[var(--atr-divider)] bg-[#FBF8F5] dark:bg-[#1E1C1A]">
+                <div className="p-2 border-b border-[var(--atr-divider)] bg-[#FBF8F5] dark:bg-[#22201E]">
                   <div
                     data-sq="ctl-sm"
                     data-sq-border="none"

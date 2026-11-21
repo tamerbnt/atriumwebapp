@@ -99,7 +99,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
         <div
           data-sq="card"
           data-sq-border="none"
-          className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between"
+          className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between"
         >
           <div>
             <span className="t-cap text-black/55 dark:text-white/55 block">

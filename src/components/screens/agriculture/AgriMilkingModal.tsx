@@ -86,7 +86,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] overflow-y-auto p-6"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] overflow-y-auto p-6"
         >
           <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
             <div className="flex items-center gap-3">
@@ -157,7 +157,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               data-sq="card"
               data-sq-border="solid"
               style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
-              className="p-3 bg-amber-500/10 border border-amber-500/25 flex items-center gap-2 t-cap text-amber-800 dark:text-amber-300"
+              className="p-3 bg-amber-500/10 flex items-center gap-2 t-cap text-amber-800 dark:text-amber-300"
             >
               <Thermometer size={16} className="text-amber-600 shrink-0" />
               <div>
@@ -178,7 +178,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-4 bg-neutral-50 dark:bg-neutral-800/40 space-y-3"
+            className="p-4 bg-neutral-50 dark:bg-[#22201E] space-y-3"
           >
             <div className="flex items-center justify-between">
               <span className="t-small font-semibold text-black dark:text-white">
@@ -239,7 +239,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
             data-sq="card"
             data-sq-border="solid"
             style={{ '--sq-stroke': 'rgba(16, 185, 129, 0.3)' } as React.CSSProperties}
-            className="p-4 bg-emerald-500/10 border border-emerald-500/25 t-cap space-y-2 text-emerald-900 dark:text-emerald-300"
+            className="p-4 bg-emerald-500/10 t-cap space-y-2 text-emerald-900 dark:text-emerald-300"
           >
             <div className="flex justify-between items-center">
               <span className="font-medium">Volume Conforme Éligible :</span>

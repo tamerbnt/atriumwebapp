@@ -129,7 +129,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] overflow-y-auto p-6"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] overflow-y-auto p-6"
         >
           <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
             <div className="flex items-center gap-3">
@@ -242,7 +242,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="p-4 bg-neutral-50 dark:bg-neutral-800/40 space-y-3"
+            className="p-4 bg-neutral-50 dark:bg-[#22201E] space-y-3"
           >
             <span className="t-small font-semibold text-black dark:text-white">
               {isAr ? 'أهداف الإنتاج والتكاليف التقديرية' : 'Objectifs de Rendement & Budget'}

@@ -501,14 +501,14 @@ export const EducationTimetableView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="bg-white dark:bg-neutral-850 p-4 space-y-3 h-full"
+                className="bg-white dark:bg-[#22201E] p-4 space-y-3 h-full"
               >
               <div className="flex items-center justify-between pb-2 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-[#d4522f]" />
                   <span className="tabular-nums t-small font-semibold text-black dark:text-white">{dateStr}</span>
                 </div>
-                <span className="t-small font-semibold text-black/55 dark:text-white/55 px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded-full">
+                <span className="t-small font-semibold text-black/55 dark:text-white/55 px-2 py-1 bg-neutral-100 dark:bg-[#2B2825] rounded-full">
                   {daySessions.length} {isAr ? 'حصص' : 'séances'}
                 </span>
               </div>
@@ -528,8 +528,8 @@ export const EducationTimetableView: React.FC = () => {
                       }}
                       className={`w-full text-left rtl:text-right p-3 transition-all cursor-pointer ${
                         isSelected
-                          ? '[--sq-stroke:#d4522f] bg-[#FCEEE8]/40 dark:bg-neutral-800'
-                          : 'hover:[--sq-stroke:rgba(212,82,47,0.6)] bg-neutral-50/50 dark:bg-neutral-800/40'
+                          ? '[--sq-stroke:#d4522f] bg-[#FCEEE8]/40 dark:bg-[#2B2825]'
+                          : 'hover:[--sq-stroke:rgba(212,82,47,0.6)] bg-neutral-50/50 dark:bg-[#191716]'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-1 mb-2">
@@ -814,8 +814,8 @@ export const EducationTimetableView: React.FC = () => {
         statusLabel={activeSession && conflicts.has(activeSession.id) ? 'Conflit' : 'Planifiée'}
         statusClassName={
           activeSession && conflicts.has(activeSession.id)
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
-            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
         }
         tabs={[
           { id: 'seance', label: isAr ? 'تفاصيل الحصة' : 'Séance & Cours' },
@@ -946,7 +946,7 @@ export const EducationTimetableView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-2">

@@ -90,10 +90,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden"
+          className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[92vh] overflow-hidden"
         >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F3EDE7] dark:bg-neutral-900/60 print:hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F3EDE7] dark:bg-[#22201E] print:hidden">
           <div>
             <h2 className="t-card font-semibold text-black dark:text-white">
               {t(activeCert ? 'edu_cert_modal_title_view' : 'edu_cert_modal_title')}
@@ -227,14 +227,14 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             </form>
           ) : (
             /* Printable Preview */
-            <div className="printable-document preserve-border max-w-2xl mx-auto p-8 rounded-[var(--r-card,16px)] border-4 border-double border-[#d4522f]/40 bg-gradient-to-br from-[#FDF4F0]/40 via-white to-[#FDF4F0]/20 dark:from-neutral-900 dark:via-[#18181B] dark:to-neutral-900 shadow-xl relative overflow-hidden">
+            <div className="printable-document preserve-border max-w-2xl mx-auto p-8 rounded-[var(--r-card,16px)] border-4 border-double border-[#d4522f]/40 bg-gradient-to-br from-[#FDF4F0]/40 via-white to-[#FDF4F0]/20 shadow-xl relative overflow-hidden">
               {/* Watermark in BG */}
               <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                 <GraduationCap size={240} />
               </div>
 
               <div className="text-center space-y-4 relative z-10">
-                <div className="inline-flex items-center justify-center p-3 rounded-full bg-[#FCEEE8] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] dark:bg-neutral-800 mb-1">
+                <div className="inline-flex items-center justify-center p-3 rounded-full bg-[#FCEEE8] text-[var(--brand-text,#BF431F)] mb-1">
                   <ShieldCheck size={36} />
                 </div>
 
@@ -265,7 +265,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 </div>
 
                 {activeCert.honors && (
-                  <div className="inline-block t-small font-semibold px-3 py-1 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                  <div className="inline-block t-small font-semibold px-3 py-1 rounded-full bg-[#FCEEE8] text-[var(--brand-text,#BF431F)]">
                     {activeCert.honors} · {t('edu_cert_final_score')} {activeCert.averageGradeScore}%
                   </div>
                 )}

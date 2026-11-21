@@ -212,7 +212,7 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
           <div
             data-sq="ctl"
             data-sq-border="none"
-            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-3"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <LabelInput

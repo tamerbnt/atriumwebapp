@@ -273,8 +273,8 @@ export const StackedBarChart: React.FC<StackedBarChartProps> = React.memo(
             </button>
           ))}
           {hasAnyCancelled && (
-            <span className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full border border-[var(--ax-bdr)] t-small text-[var(--ax-sub)]">
-              <span className="w-2.5 h-2.5 rounded-[3px] ax-es border border-[var(--ax-bdr)] shrink-0" />
+            <span className="inline-flex items-center gap-[var(--pill-gap,6px)] h-[var(--pill-h,24px)] px-[var(--pill-px,10px)] rounded-full bg-[var(--ax-soft)] t-small text-[var(--ax-sub)]">
+              <span className="w-2.5 h-2.5 rounded-[3px] ax-es shrink-0" />
               <span>{cancelledLabel || strings.cancelledLabel}</span>
             </span>
           )}

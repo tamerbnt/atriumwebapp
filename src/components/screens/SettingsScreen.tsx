@@ -642,7 +642,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
 
           {/* RTL Information callout */}
-          <div data-sq="card" className="py-[var(--s3,12px)] px-[var(--s4,16px)] bg-white dark:bg-[#1F1D1B] flex items-center gap-[var(--s3,12px)] t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
+          <div data-sq="card" className="py-[var(--s3,12px)] px-[var(--s4,16px)] bg-white dark:bg-[#22201E] flex items-center gap-[var(--s3,12px)] t-cap text-[var(--text-2)] dark:text-[var(--text-dark-2)]">
             <Sparkles size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
             <span>{t('settings_rtl_notice', language)}</span>
           </div>
@@ -1468,7 +1468,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
 
           {/* Hardware integration notice banner */}
-          <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-[#F5F1EC] dark:bg-[#1F1D1B] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]">
+          <div data-sq="card" className="p-[var(--card-pad,20px)] card-opt bg-[#FBF8F5] dark:bg-[#22201E] flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)]">
             <div className="flex items-center gap-[var(--card-head-gap,12px)]">
               <Printer size={20} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] shrink-0" />
               <div className="flex flex-col gap-[var(--s1,4px)]">
@@ -1720,7 +1720,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           {pendingBackupMeta && (
             <div className="flex flex-col gap-[var(--card-gap,12px)]">
-              <div data-sq="card" className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s2,8px)] t-cap">
+              <div data-sq="card" className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#22201E] flex flex-col gap-[var(--s2,8px)] t-cap">
                 <div className="flex justify-between py-[var(--s1,4px)] border-b border-[var(--atr-divider)]">
                   <span className="text-[var(--text-2)]">
                     {language === 'ar' ? 'تاريخ تصدير النسخة:' : language === 'fr' ? 'Date de la sauvegarde :' : 'Backup Export Date:'}

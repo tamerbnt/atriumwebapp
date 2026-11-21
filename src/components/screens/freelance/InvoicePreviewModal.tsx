@@ -291,7 +291,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC]/60 dark:bg-[#1D1B19] no-print">
+        <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC]/60 dark:bg-[#22201E] no-print">
           <span className="t-cap text-black/55 dark:text-white/55">
             {t('free_inv_doc_invoice', language)} #{invoice.invoiceNumber}
           </span>

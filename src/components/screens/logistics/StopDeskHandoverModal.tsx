@@ -78,7 +78,7 @@ export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ is
 </div>
 </div>
 <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 space-y-4 pr-1">
-<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-1">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-1">
 <div className="t-label font-semibold text-black dark:text-white">{shipment.recipientName}</div>
 <div className="t-cap text-black/55 dark:text-white/55">
 {shipment.recipientPhone}

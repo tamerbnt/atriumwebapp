@@ -268,7 +268,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="p-5 bg-white dark:bg-neutral-900"
+          className="p-5 bg-white dark:bg-[#22201E]"
         >
           <SkeletonKioskGrid count={6} />
         </div>
@@ -293,7 +293,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="min-w-[230px] h-10 bg-white dark:bg-neutral-800"
+              className="min-w-[230px] h-10 bg-white dark:bg-[#2B2825]"
             >
               <select
                 value={selectedSessionId}
@@ -314,7 +314,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 data-sq="ctl"
                 data-sq-border="solid"
                 onClick={() => setIsPinModalOpen(true)}
-                className="h-10 px-4 border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 t-small font-semibold flex items-center gap-2 hover:bg-amber-100 cursor-pointer"
+                className="h-10 px-4 [--sq-stroke:#fcd34d] dark:[--sq-stroke:#b45309] bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 t-small font-semibold flex items-center gap-2 hover:bg-amber-100 cursor-pointer"
               >
                 <Unlock size={14} />
                 <span>{isRtl ? 'إلغاء القفل (PIN)' : 'Déverrouiller (PIN)'}</span>
@@ -365,7 +365,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="card"
               data-sq-border="solid"
-              className="bg-[#F3EDE7]/65 dark:bg-neutral-800/40 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap"
+              className="bg-[#F3EDE7]/65 dark:bg-[#191716] p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap"
             >
               <div className="flex items-center gap-2">
                 <BookOpen size={16} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] shrink-0" />
@@ -417,7 +417,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3EDE7] dark:bg-[#141312] p-4"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F3EDE7] dark:bg-[#191716] p-4"
       >
         <div className="flex items-center gap-2">
           <button
@@ -442,7 +442,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="relative h-10 bg-white dark:bg-neutral-900"
+              className="relative h-10 bg-white dark:bg-[#292624]"
             >
               <Search size={15} className="absolute left-3 top-3 text-black/55 dark:text-white/55 pointer-events-none" />
               <input
@@ -473,7 +473,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 data-sq-stroke-w={status !== 'present' ? 2 : undefined}
                 className={`p-4 transition-all h-full ${
                   status === 'present'
-                    ? 'bg-white dark:bg-neutral-900'
+                    ? 'bg-white dark:bg-[#22201E]'
                     : status === 'absent'
                     ? 'bg-rose-50/50 dark:bg-rose-950/20 [--sq-stroke:#fda4af] dark:[--sq-stroke:rgba(136,19,55,0.6)]'
                     : status === 'late'
@@ -486,7 +486,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                     <div
                       data-sq="tile"
                       data-sq-border="solid"
-                      className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-semibold t-label shrink-0"
+                      className="w-10 h-10 bg-neutral-100 dark:bg-[#2B2825] text-black dark:text-white flex items-center justify-center font-semibold t-label shrink-0"
                     >
                       {student.fullName.charAt(0)}
                     </div>
@@ -497,7 +497,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <span className="t-small font-semibold px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-black/70 dark:text-white/75 shrink-0">
+                  <span className="t-small font-semibold px-2 py-1 rounded-full bg-neutral-100 dark:bg-[#2B2825] text-black/70 dark:text-white/75 shrink-0">
                     {student.attendanceRatePercent ?? 95}% {isRtl ? 'حضور' : 'assiduité'}
                   </span>
                 </div>
@@ -505,7 +505,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="grid grid-cols-4 gap-2 p-[3px] bg-neutral-100 dark:bg-neutral-800"
+                  className="grid grid-cols-4 gap-2 p-[3px] bg-neutral-100 dark:bg-[#191716]"
                 >
                   <button
                     type="button"
@@ -602,7 +602,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 p-5 space-y-4"
+          className="bg-white dark:bg-[#22201E] p-5 space-y-4"
         >
         <h3 className="t-small font-semibold text-black/55 dark:text-white/55">
           {isRtl ? 'دفتر المتابعة البيداغوجية للحصة' : 'Cahier de Texte & Progression du Cours'}
@@ -615,7 +615,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="h-10 bg-neutral-50 dark:bg-neutral-800"
+              className="h-10 bg-[#F5F1EC] dark:bg-[#292624]"
             >
               <input
                 type="text"
@@ -638,7 +638,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="ctl"
               data-sq-border="solid"
-              className="h-10 bg-neutral-50 dark:bg-neutral-800"
+              className="h-10 bg-[#F5F1EC] dark:bg-[#292624]"
             >
               <input
                 type="text"
@@ -664,7 +664,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 animate-in fade-in zoom-in-95 duration-150"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 animate-in fade-in zoom-in-95 duration-150"
             >
             <div className="flex items-center gap-2 mb-4">
               <div
@@ -686,7 +686,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
             <div
               data-sq="card"
               data-sq-border="none"
-              className="bg-neutral-50 dark:bg-neutral-800/60 p-4 t-cap space-y-2 mb-4"
+              className="bg-neutral-50 dark:bg-[#22201E] p-4 t-cap space-y-2 mb-4"
             >
               <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                 {isRtl ? 'نص الرسالة الموجهة للولي' : 'Aperçu du Message WhatsApp'}
@@ -707,7 +707,7 @@ export const AcademyRollCallKiosk: React.FC = () => {
                 data-sq="ctl"
                 data-sq-border="none"
                 onClick={() => setNotifyingStudent(null)}
-                className="flex-1 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 t-small font-semibold text-black/70 dark:text-white/75 cursor-pointer"
+                className="flex-1 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-semibold text-black/70 dark:text-white/75 cursor-pointer"
               >
                 {isRtl ? 'إلغاء' : 'Annuler'}
               </button>

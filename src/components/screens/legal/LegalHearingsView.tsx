@@ -850,7 +850,7 @@ export const LegalHearingsView: React.FC<any> = () => {
                   key={date}
                   data-sq="card"
                   data-sq-border="none"
-                  className="bg-[#F5F1EC]/70 dark:bg-[#1D1B19] p-3 space-y-3"
+                  className="bg-[#F3EDE7] dark:bg-[#191716] p-3 space-y-3"
                 >
                   <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)] flex-wrap gap-2">
                     <div className="flex items-center gap-2">

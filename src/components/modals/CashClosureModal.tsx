@@ -214,7 +214,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
             <div
               data-sq="ctl"
               data-sq-border="none"
-              className="flex items-center justify-between p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#1D1B19]"
+              className="flex items-center justify-between p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#22201E]"
             >
               <span className="t-label text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">
                 {isAr ? 'العد الفعلي' : isEn ? 'Counted Total' : 'Total Compté'}

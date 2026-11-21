@@ -114,10 +114,10 @@ export const UndoHistoryPopover: React.FC<UndoHistoryPopoverProps> = ({
     <div
       role="dialog"
       aria-label={l3('سجل التراجع والعمليات', "Historique d'annulation", 'Undo History')}
-      className="absolute top-[calc(100%+8px)] right-0 rtl:right-auto rtl:left-0 w-[min(420px,calc(100vw-24px))] bg-[var(--atr-card,#FBF8F5)] border border-[var(--atr-line,#E6DED6)] rounded-[20px] shadow-[var(--atr-shadow-pop)] z-[120] overflow-hidden flex flex-col max-h-[min(78vh,560px)]"
+      className="sq-elev-pop absolute top-[calc(100%+8px)] right-0 rtl:right-auto rtl:left-0 w-[min(420px,calc(100vw-24px))] bg-white dark:bg-[#262422] border border-black/[0.05] dark:border-white/[0.08] rounded-[20px] z-[120] overflow-hidden flex flex-col max-h-[min(78vh,560px)]"
     >
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[var(--atr-line,#E6DED6)]">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-black/[0.05] dark:border-white/[0.07]">
         <div className="flex items-center gap-2.5 min-w-0">
           <div
             className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0"
@@ -163,7 +163,7 @@ export const UndoHistoryPopover: React.FC<UndoHistoryPopoverProps> = ({
       </div>
 
       {/* Filters Toolbar */}
-      <div className="px-4 py-3 border-b border-[var(--atr-line,#E6DED6)] flex flex-col gap-2.5 bg-[var(--atr-soft,#ede6e0)]/45">
+      <div className="px-4 py-3 border-b border-black/[0.05] dark:border-white/[0.07] flex flex-col gap-2.5 bg-[#FBF8F5] dark:bg-[#191716]">
         {/* Search + Vertical Select */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1 min-w-0">
@@ -177,7 +177,7 @@ export const UndoHistoryPopover: React.FC<UndoHistoryPopoverProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={l3('بحث في العمليات...', 'Filtrer les actions...', 'Filter actions...')}
-              className="w-full h-8 ps-8 pe-7 rounded-[10px] bg-[var(--atr-card,#FBF8F5)] border border-[var(--atr-line,#E6DED6)] t-small text-[var(--text-1)] placeholder:text-[var(--text-3)] focus:outline-none focus:border-[var(--facility-accent,var(--brand-fill))]"
+              className="w-full h-8 ps-8 pe-7 rounded-[10px] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus:bg-white dark:focus:bg-[#312D2A] t-small text-[var(--text-1)] dark:text-white placeholder:text-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-[var(--facility-accent,var(--brand-fill))]/30 transition-colors"
             />
             {searchQuery && (
               <button
@@ -195,7 +195,7 @@ export const UndoHistoryPopover: React.FC<UndoHistoryPopoverProps> = ({
             aria-label={l3('تصفية حسب النشاط', 'Filtrer par module', 'Filter by vertical')}
             value={verticalFilter}
             onChange={(e) => setVerticalFilter(e.target.value as 'all' | UndoVerticalKey)}
-            className="h-8 px-2.5 rounded-[10px] bg-[var(--atr-card,#FBF8F5)] border border-[var(--atr-line,#E6DED6)] t-small text-[var(--text-1)] max-w-[148px] truncate cursor-pointer focus:outline-none focus:border-[var(--facility-accent,var(--brand-fill))]"
+            className="h-8 px-2.5 rounded-[10px] border-0 bg-[#F5F1EC] dark:bg-[#2B2825] focus:bg-white dark:focus:bg-[#312D2A] t-small text-[var(--text-1)] dark:text-white max-w-[148px] truncate cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--facility-accent,var(--brand-fill))]/30 transition-colors"
           >
             <option value="all">{l3('كل القطاعات', 'Tous modules', 'All modules')}</option>
             {presentVerticals.map((v) => (
@@ -217,7 +217,7 @@ export const UndoHistoryPopover: React.FC<UndoHistoryPopoverProps> = ({
                 onClick={() => setOpFilter(op)}
                 className={`h-7 px-2.5 rounded-[8px] t-small whitespace-nowrap shrink-0 cursor-pointer transition-colors ${
                   active
-                    ? 'bg-[var(--atr-card,#FBF8F5)] text-[var(--text-1)] font-semibold border border-[var(--atr-line,#E6DED6)] shadow-2xs'
+                    ? 'bg-white dark:bg-[#2B2825] text-[var(--text-1)] dark:text-white font-semibold shadow-2xs'
                     : 'text-[var(--text-2)] hover:text-[var(--text-1)]'
                 }`}
               >

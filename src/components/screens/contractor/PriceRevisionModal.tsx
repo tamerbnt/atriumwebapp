@@ -66,7 +66,7 @@ export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, 
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
 <div className="sq-elev-pop w-full max-w-2xl">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5 max-h-[90vh] overflow-y-auto">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5 max-h-[90vh] overflow-y-auto">
 <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
 <div className="flex items-center gap-2">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0"><Calculator size={20} /></div>
@@ -83,7 +83,7 @@ export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, 
 </div>
 <button type="button" aria-label={isAr ? "إغلاق" : "Fermer"} onClick={onClose} className="text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"><X size={18} /></button>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-850 space-y-1">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-[#22201E] space-y-1">
 <div className="flex items-center gap-2 t-small font-semibold text-black dark:text-white">
 <Info size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
 <span>Formule Paramétrique Réglementaire Algérienne</span>
@@ -94,7 +94,7 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </p>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-850 space-y-3">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3">
 <span className="t-small font-semibold text-black dark:text-white block">Main d'Œuvre & Salaires (S)</span>
 <div className="grid grid-cols-2 gap-2">
 <LabelInput label="Indice Base S0" type="number" value={baseLaborS0} onChange={setBaseLaborS0} />
@@ -110,7 +110,7 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </span>
 </div>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-850 space-y-3">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3">
 <span className="t-small font-semibold text-black dark:text-white block">Matériaux & Carburant (M)</span>
 <div className="grid grid-cols-2 gap-2">
 <LabelInput label="Indice Base M0" type="number" value={baseMaterialM0} onChange={setBaseMaterialM0} />
@@ -127,7 +127,7 @@ Indices officiels de l’Office National des Statistiques (ONS) et mercuriale du
 </div>
 </div>
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-neutral-50 dark:bg-neutral-850 space-y-2">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2">
 <div className="flex justify-between items-center t-cap">
 <span className="font-semibold text-black dark:text-white">Pondération Contractuelle du Marché</span>
 <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">

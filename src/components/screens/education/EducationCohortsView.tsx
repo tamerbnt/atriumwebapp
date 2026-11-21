@@ -417,7 +417,7 @@ export const EducationCohortsView: React.FC = () => {
             <div
               data-sq="tile"
               data-sq-border="solid"
-              className="w-9 h-9 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 [--sq-stroke:rgba(212,82,47,0.22)] dark:[--sq-stroke:rgba(255,143,99,0.22)]"
+              className="w-9 h-9 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 [--sq-stroke:rgba(212,82,47,0.22)] dark:[--sq-stroke:rgba(255,143,99,0.22)]"
             >
               <BookOpen size={16} />
             </div>
@@ -471,7 +471,7 @@ export const EducationCohortsView: React.FC = () => {
                 </span>
                 <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tabular-nums">{pct}%</span>
               </div>
-              <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+              <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-[#2B2825] overflow-hidden">
                 <div className="h-full bg-[#d4522f] rounded-full transition-all" style={{ width: `${pct}%` }} />
               </div>
             </div>
@@ -503,7 +503,7 @@ export const EducationCohortsView: React.FC = () => {
                   : isRunning
                   ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                   : isCompleted
-                  ? 'bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75'
+                  ? 'bg-neutral-100 text-black/70 dark:bg-[#2B2825] dark:text-white/75'
                   : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
               }`}
             >
@@ -765,10 +765,10 @@ export const EducationCohortsView: React.FC = () => {
         statusLabel={activeCohort ? localizeStatus(activeCohort.status, language) : undefined}
         statusClassName={
           activeCohort?.status === 'InProgress'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
             : activeCohort?.status === 'Enrolling'
-            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'overview', label: isAr ? 'البرنامج' : isEn ? 'Overview' : 'Programme' },
@@ -823,7 +823,7 @@ export const EducationCohortsView: React.FC = () => {
                           data-sq="check"
                           data-sq-border={milestone.completed ? 'none' : 'solid'}
                           className={`w-5 h-5 flex items-center justify-center shrink-0 mt-0.5 ${
-                            milestone.completed ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-neutral-900'
+                            milestone.completed ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-[#22201E]'
                           }`}
                         >
                           {milestone.completed && <Check size={12} />}
@@ -975,7 +975,7 @@ export const EducationCohortsView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6"
+              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6"
             >
             <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
@@ -1101,7 +1101,7 @@ export const EducationCohortsView: React.FC = () => {
                   data-sq="ctl"
                   data-sq-border="solid"
                   onClick={() => setIsAddCohortModalOpen(false)}
-                  className="px-4 py-2 bg-white dark:bg-neutral-800 text-black dark:text-white font-semibold cursor-pointer"
+                  className="px-4 py-2 bg-white dark:bg-[#2B2825] text-black dark:text-white font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
                 </button>

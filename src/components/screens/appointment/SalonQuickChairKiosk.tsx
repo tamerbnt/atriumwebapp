@@ -351,7 +351,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                 }
                 className={`border-0 transition-all p-5 flex flex-col justify-between min-h-[290px] ${
                   !isOccupied
-                    ? 'bg-[#FBF8F5] dark:bg-[#1D1B19]'
+                    ? 'bg-[#FBF8F5] dark:bg-[#191716]'
                     : active.stage === 'in_progress'
                     ? 'bg-white dark:bg-[#22201E] sq-elev-card'
                     : active.stage === 'completed'
@@ -406,7 +406,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                         <div
                           data-sq="ctl"
                           data-sq-border="none"
-                          className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-3"
+                          className="bg-[#F5F1EC] dark:bg-[#191716] p-3"
                         >
                           <span className="t-cap text-black/62 dark:text-white/65 block">
                             {isRtl ? 'الخدمة' : 'Prestation'}
@@ -640,7 +640,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="bg-[#F5F1EC] dark:bg-[#1D1B19] border-0 p-4 t-cap space-y-2 mb-4"
+                className="bg-[#F5F1EC] dark:bg-[#22201E] border-0 p-4 t-cap space-y-2 mb-4"
               >
               <div className="flex justify-between">
                 <span>{isRtl ? 'سعر الخدمة' : 'Prestation'}</span>
@@ -858,7 +858,7 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="bg-[#F5F1EC] dark:bg-[#1D1B19] border-0 p-4 t-cap space-y-2 text-left mb-5"
+                className="bg-[#F5F1EC] dark:bg-[#22201E] border-0 p-4 t-cap space-y-2 text-left mb-5"
               >
                 <div className="flex justify-between">
                   <span>Client :</span>

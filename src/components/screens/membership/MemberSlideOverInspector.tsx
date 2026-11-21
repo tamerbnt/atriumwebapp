@@ -785,7 +785,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   </section>
 
                   <section style={{ '--k': 1 } as React.CSSProperties}>
-                    <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1D1B19] px-[18px] py-2 border-0">
+                    <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-2 border-0">
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-divider)] t-body">
                         <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Formule d’abonnement</span>
                         <b className="tabular-nums t-body text-right">{planName}</b>
@@ -828,7 +828,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
 
                   <section style={{ '--k': 2 } as React.CSSProperties}>
                     <h3>Contact &amp; accès</h3>
-                    <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1D1B19] px-[18px] py-2 border-0">
+                    <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-2 border-0">
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-divider)] t-body">
                         <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75 flex items-center gap-2">
                           <Phone className="w-[15px] h-[15px]" />
@@ -896,7 +896,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                 <>
                   <section style={{ '--k': 0 } as React.CSSProperties}>
                     <h3>Badge &amp; portique</h3>
-                    <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1D1B19] px-[18px] py-2 border-0">
+                    <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-2 border-0">
                       <div className="kv flex justify-between items-center gap-3 py-[11px] border-b border-[var(--atr-divider)] t-body">
                         <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">Badge</span>
                         <b className="tabular-nums t-body">RFID-{activeMember.id.slice(0, 8).toUpperCase()}</b>
@@ -928,7 +928,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                   <section style={{ '--k': 1 } as React.CSSProperties}>
                     <h3>Passages récents</h3>
                     {memberCheckInHistory.length > 0 ? (
-                      <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1D1B19] px-[18px] py-2 border-0">
+                      <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-2 border-0">
                         {memberCheckInHistory.slice(0, 8).map((log) => {
                           const ok =
                             log.accessStatus === 'Granted' ||
@@ -1006,7 +1006,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                 <>
                   <section style={{ '--k': 0 } as React.CSSProperties}>
                     <h3>Solde à régler</h3>
-                    <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1D1B19] px-[18px] py-4 border-0">
+                    <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-4 border-0">
                       <div
                         className="big tabular-nums t-kpi-m uppercase my-1"
                         style={{
@@ -1046,7 +1046,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       )}
                     </div>
                     {memberInvoiceHistory.length > 0 ? (
-                      <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1D1B19] px-[18px] py-2 border-0">
+                      <div data-sq="card" data-sq-border="none" className="card bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#22201E] px-[18px] py-2 border-0">
                         {memberInvoiceHistory.slice(0, 8).map((inv) => {
                           const paid = inv.status !== 'Voided' && inv.paymentMethod !== 'Credit';
                           const label =

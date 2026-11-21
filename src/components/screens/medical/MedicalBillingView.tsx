@@ -602,7 +602,7 @@ export const MedicalBillingView: React.FC<any> = () => {
         icon={<CreditCard size={22} />}
         title={isAr ? 'الفوترة' : language === 'en' ? 'Billing' : 'Facturation'}
         secondaryActions={
-          <div data-sq="ctl" data-sq-border="none" className="flex flex-wrap items-center p-[3px] bg-[#F3EDE7] dark:bg-[#1D1B19] gap-1">
+          <div data-sq="ctl" data-sq-border="none" className="flex flex-wrap items-center p-[3px] bg-[#F3EDE7] dark:bg-[#191716] gap-1">
             {(
               [
                 { id: 'invoices', label: isAr ? 'الفواتير والتحصيل' : 'Factures & Tiers-Payant' },
@@ -1179,7 +1179,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                           {docShare}% Rétrocession
                         </span>
                       </div>
-                      <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2 t-cap tabular-nums">
+                      <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2 t-cap tabular-nums">
                         <div className="flex justify-between text-black/55 dark:text-white/55">
                           <span>Chiffre d&apos;affaires brut:</span>
                           <span className="font-semibold text-black dark:text-white">
@@ -1245,7 +1245,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                     Comptage Physique du Tiroir Caisse (Aujourd&apos;hui)
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
-                    <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19]">
+                    <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
                       <span className="t-small text-black/55 dark:text-white/55 font-semibold">
                         Espèces Attendues (Système)
                       </span>
@@ -1256,7 +1256,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                         Base tickets modérateurs encaissés
                       </span>
                     </div>
-                    <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19]">
+                    <div data-sq="ctl" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
                       <label className="t-small text-black/55 dark:text-white/55 font-semibold block mb-1">
                         Espèces Comptées Physiquement (DZD)
                       </label>
@@ -1328,7 +1328,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                         key={cl.id}
                         data-sq="ctl"
                         data-sq-border="none"
-                        className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-1 t-cap"
+                        className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-1 t-cap"
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-black dark:text-white tabular-nums">
@@ -1433,7 +1433,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                           </span>
                         )}
                       </div>
-                      <div data-sq="ctl" data-sq-border="none" className="grid grid-cols-2 gap-2 p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap">
+                      <div data-sq="ctl" data-sq-border="none" className="grid grid-cols-2 gap-2 p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap">
                         <div>
                           <span className="t-small text-black/55 dark:text-white/55 font-semibold block">
                             Stock Actuel

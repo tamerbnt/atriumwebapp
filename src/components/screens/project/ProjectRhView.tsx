@@ -936,7 +936,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     <div
                       data-sq="ctl"
                       data-sq-border="none"
-                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#191716] space-y-2"
                     >
                       <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
                         <Users className="w-4 h-4 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
@@ -961,7 +961,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     <div
                       data-sq="ctl"
                       data-sq-border="none"
-                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#191716] space-y-2"
                     >
                       <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
                         <CreditCard className="w-4 h-4 text-emerald-600" />
@@ -982,7 +982,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     <div
                       data-sq="ctl"
                       data-sq-border="none"
-                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#191716] space-y-2"
                     >
                       <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
                         <FileText className="w-4 h-4 text-blue-600" />
@@ -1014,7 +1014,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     <div
                       data-sq="ctl"
                       data-sq-border="none"
-                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#191716] space-y-2"
                     >
                       <h3 className="t-small font-semibold text-black dark:text-white tracking-wide flex items-center gap-2">
                         <Star className="w-4 h-4 text-amber-500" />

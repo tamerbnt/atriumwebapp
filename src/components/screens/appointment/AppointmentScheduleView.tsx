@@ -699,7 +699,7 @@ export const AppointmentScheduleView: React.FC = React.memo(() => {
               >
               <div className="overflow-x-auto">
                 <div className="min-w-[760px]">
-                  <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-[var(--atr-divider)] bg-[#FBF8F5] dark:bg-[#1D1B19]">
+                  <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-[var(--atr-divider)] bg-[#FBF8F5] dark:bg-[#191716]">
                     <div className="p-4 text-center t-small font-semibold text-black/62 dark:text-white/65 border-r border-[var(--atr-divider)] flex items-center justify-center">
                       <Clock size={14} className="mr-1" />
                       {t('salon_timeline', language)}

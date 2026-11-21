@@ -229,7 +229,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
                 key={z.id}
                 data-sq="card"
                 data-sq-border="none"
-                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-3"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <div>

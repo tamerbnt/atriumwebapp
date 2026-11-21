@@ -816,7 +816,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
 
             {tab === 'fiche' && (
               <div className="space-y-4 t-cap">
-                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 space-y-2">
                   <div className="flex justify-between items-center py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">Code Formule:</span>
                     <span className="tabular-nums font-semibold text-black dark:text-white">{bom.bomCode}</span>
@@ -852,7 +852,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                     key={i}
                     data-sq="card"
                     data-sq-border="none"
-                    className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-1"
+                    className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-1"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-black dark:text-white t-small">{c.rawProductName}</span>
@@ -873,7 +873,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
 
             {tab === 'costs' && (
               <div className="space-y-4 t-cap">
-                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#1D1B19] p-4 space-y-2">
+                <div data-sq="card" data-sq-border="none" className="bg-[#F5F1EC] dark:bg-[#22201E] p-4 space-y-2">
                   <div className="flex justify-between items-center py-1 border-b border-[var(--atr-divider)]">
                     <span className="text-black/55 dark:text-white/55">Matières Premières:</span>
                     <span className="tabular-nums font-semibold text-black dark:text-white">

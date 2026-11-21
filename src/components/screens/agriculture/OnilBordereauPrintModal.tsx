@@ -27,7 +27,7 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
 <div className="sq-elev-pop max-w-3xl w-full">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6 max-h-[92vh] overflow-y-auto">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6 max-h-[92vh] overflow-y-auto">
 <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-semibold shrink-0"><Milk size={22} /></div>

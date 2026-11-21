@@ -249,7 +249,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               <div
                 data-sq="ctl"
                 data-sq-border="none"
-                className="flex bg-[#F5F1EC] dark:bg-[#1D1B19] p-[3px]"
+                className="flex bg-[#F5F1EC] dark:bg-[#191716] p-[3px]"
               >
                 <button
                   type="button"
@@ -354,7 +354,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="none"
-            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-3"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3"
           >
             <div className="flex items-center justify-between">
               <span className="t-small font-semibold text-black dark:text-white">

@@ -190,7 +190,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] overflow-y-auto p-6"
+          className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[90vh] overflow-y-auto p-6"
         >
           <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
             <div className="flex items-center gap-3">
@@ -223,7 +223,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="solid"
-            className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40"
+            className="mt-4 p-3 bg-neutral-50 dark:bg-[#22201E]"
           >
             <div className="flex items-center justify-between mb-2">
               <span className="t-small font-semibold text-black/70 dark:text-white flex items-center gap-2">
@@ -243,7 +243,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
                   className={`t-small px-2.5 py-1 transition font-medium cursor-pointer ${
                     productName === p.name
                       ? 'bg-[var(--brand-fill,#C9461F)] text-white'
-                      : 'bg-white dark:bg-neutral-800 text-black dark:text-white hover:[--sq-stroke:#d4522f]'
+                      : 'bg-white dark:bg-[#2B2825] text-black dark:text-white hover:[--sq-stroke:#d4522f]'
                   }`}
                 >
                   {p.name} <span className="opacity-70 t-cap">({p.darDays}j DAR)</span>
@@ -336,7 +336,7 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
             data-sq="card"
             data-sq-border="solid"
             style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
-            className="p-3 bg-amber-500/10 border border-amber-500/25 flex items-start gap-2 t-cap text-amber-800 dark:text-amber-300"
+            className="p-3 bg-amber-500/10 flex items-start gap-2 t-cap text-amber-800 dark:text-amber-300"
           >
             <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
             <div>

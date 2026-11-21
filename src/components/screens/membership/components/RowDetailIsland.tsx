@@ -167,7 +167,7 @@ export const RowDetailIsland: React.FC<RowDetailIslandProps> = React.memo(({
       {/* 1. Morphing Island Slab (.det) - z-index: 0, driven by rAF refs */}
       <div
         ref={detRef}
-        className="det absolute bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] border border-[#d4522f]/25 dark:border-[#52291F] rounded-[var(--r-card,16px)] box-border z-0 pointer-events-none"
+        className="det absolute bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] rounded-[var(--r-card,16px)] box-border z-0 pointer-events-none"
         style={
           detRef
             ? DET_CONTROLLED_BASE_STYLE

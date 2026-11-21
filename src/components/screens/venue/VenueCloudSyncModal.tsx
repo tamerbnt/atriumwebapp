@@ -321,7 +321,7 @@ ON CONFLICT (id) DO NOTHING;
           <div
             data-sq="card"
             data-sq-border="none"
-            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
           >
             <div>
               <div className="flex items-center gap-2">
@@ -370,7 +370,7 @@ ON CONFLICT (id) DO NOTHING;
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#22201E]"
               >
                 <span className="t-small font-medium text-black/55 dark:text-white/55">Rentable Spaces</span>
                 <div className="flex items-baseline gap-2 mt-1">
@@ -387,7 +387,7 @@ ON CONFLICT (id) DO NOTHING;
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#22201E]"
               >
                 <span className="t-small font-medium text-black/55 dark:text-white/55">Reservations</span>
                 <div className="flex items-baseline gap-2 mt-1">
@@ -404,7 +404,7 @@ ON CONFLICT (id) DO NOTHING;
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#22201E]"
               >
                 <span className="t-small font-medium text-black/55 dark:text-white/55">Renters & Clients</span>
                 <div className="flex items-baseline gap-2 mt-1">
@@ -421,7 +421,7 @@ ON CONFLICT (id) DO NOTHING;
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#22201E]"
               >
                 <span className="t-small font-medium text-black/55 dark:text-white/55">Caution Escrow</span>
                 <div className="flex items-baseline gap-2 mt-1">
@@ -540,7 +540,7 @@ ON CONFLICT (id) DO NOTHING;
           <div
             data-sq="card"
             data-sq-border="none"
-            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#22201E]"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -584,7 +584,7 @@ ON CONFLICT (id) DO NOTHING;
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC]/60 dark:bg-[#1D1B19]">
+        <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC]/60 dark:bg-[#22201E]">
           <span className="t-cap text-black/55 dark:text-white/75">
             All app reservations are saved both locally in browser storage & synced to Supabase
           </span>

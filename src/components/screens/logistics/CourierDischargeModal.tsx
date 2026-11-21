@@ -147,7 +147,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             <div
               data-sq="card"
               data-sq-border="none"
-              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#22201E]"
             >
               <span className="t-small font-medium text-black/55 dark:text-white/55 block">
                 {isAr ? 'المبلغ النظري المتوقع' : 'Montant Théorique Attendu'}
@@ -160,7 +160,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
             <div
               data-sq="card"
               data-sq-border="none"
-              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#22201E]"
             >
               <span className="t-small font-medium text-black/55 dark:text-white/55 block">
                 {isAr ? 'المبلغ الفعلي المعدود' : 'Total Physique Compté'}
@@ -194,7 +194,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="none"
-            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-3"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3"
           >
             <div className="flex items-center justify-between">
               <h4 className="font-semibold t-small text-black dark:text-white">
@@ -331,7 +331,7 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
           <div
             data-sq="card"
             data-sq-border="none"
-            className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+            className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2"
           >
             <label className="flex items-center gap-3 cursor-pointer">
               <input

@@ -48,9 +48,9 @@ export interface MemberRowProps {
 }
 
 const STATUS_PILLS = {
-  blocked: 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]',
-  expired: 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]',
-  active: 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]',
+  blocked: 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]',
+  expired: 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]',
+  active: 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]',
 } as const;
 
 const MemberRowInner: React.FC<MemberRowProps> = ({
@@ -182,8 +182,8 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
           isOpen
             ? '!bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:!bg-[#2A1D18] [--sq-stroke:var(--atr-acc,#d4522f)]'
             : isSelected
-            ? 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--atr-acc,#d4522f)]'
-            : 'bg-white dark:bg-[#1C1B1A] [--sq-stroke:var(--sq-stroke-row)]'
+            ? 'bg-white dark:bg-[#22201E] [--sq-stroke:var(--atr-acc,#d4522f)]'
+            : 'bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-row)]'
         }`}
       />
 
@@ -224,7 +224,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
           className={`cb c-cb relative w-5 h-5 grid place-items-center p-0 cursor-pointer ${
             isSelected
               ? 'bg-[var(--atr-acc,#d4522f)] [--sq-stroke:var(--atr-acc,#d4522f)] text-white'
-              : 'bg-white dark:bg-[#262422] [--sq-stroke:rgba(23,19,15,0.16)] dark:[--sq-stroke:rgba(255,255,255,0.20)] text-transparent hover:[--sq-stroke:var(--atr-acc,#d4522f)]'
+              : 'bg-white dark:bg-[#2B2825] [--sq-stroke:rgba(23,19,15,0.12)] dark:[--sq-stroke:rgba(255,255,255,0.16)] text-transparent hover:[--sq-stroke:var(--atr-acc,#d4522f)]'
           }`}
         >
           <Check
@@ -273,7 +273,7 @@ const MemberRowInner: React.FC<MemberRowProps> = ({
         <span className="c-fm min-w-0">
           <span
             title={member.planName}
-            className="pill inline-flex items-center max-w-full px-2.5 py-[3px] rounded-full t-small font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] border border-[#d4522f]/25 dark:border-[#52291F] truncate"
+            className="pill inline-flex items-center max-w-full px-2.5 py-[3px] rounded-full t-small font-medium bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:bg-[#2C1D18] text-[var(--atr-acc-text,#ab391a)] dark:text-[#FF8D7A] truncate"
           >
             {member.planName}
           </span>

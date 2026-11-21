@@ -531,7 +531,7 @@ export const VenueTimelineView: React.FC = () => {
           className="bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] sq-elev-card overflow-x-auto"
         >
           <div className="min-w-[920px]">
-            <div className="flex border-b border-[var(--atr-divider)] bg-[#F5F1EC] dark:bg-[#1D1B19] sticky top-0 z-10 t-cap tabular-nums text-black/55 dark:text-white/55">
+            <div className="flex border-b border-[var(--atr-divider)] bg-[#F5F1EC] dark:bg-[#191716] sticky top-0 z-10 t-cap tabular-nums text-black/55 dark:text-white/55">
               <div className="w-56 sm:w-64 p-3 font-semibold text-black/70 dark:text-white/75 border-r border-[var(--atr-divider)] shrink-0">
                 {t('venue_space_asset_header', language, { count: filteredUnits.length })}
               </div>

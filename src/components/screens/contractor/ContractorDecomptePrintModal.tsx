@@ -25,7 +25,7 @@ export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModal
 	const netPayableWords = numberToAlgerianWords(dgp.netPayableDzd);
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in overflow-y-auto">
 <div className="sq-elev-pop max-w-3xl w-full my-8">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-6">
 <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3 print:hidden">
 <div className="flex items-center gap-2">
 <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold shrink-0"><FileText size={18} /></div>

@@ -2011,7 +2011,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   openWidth={260}
                   shutSize={38}
                 />
-                <div data-sq="ctl" className="flex items-center gap-2 p-1 bg-[#F3EDE7] dark:bg-[#1D1B19] t-cap">
+                <div data-sq="ctl" className="flex items-center gap-2 p-1 bg-[#F3EDE7] dark:bg-[#191716] t-cap">
                   {(
                     [
                       { id: 'all', label: isAr ? 'الكل' : isEn ? 'All' : 'Tous' },
@@ -2259,7 +2259,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 <div
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                  className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
                 >
                   <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
                     {t('pm_dir_kpi_cumul_ca')}
@@ -2274,7 +2274,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 <div
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                  className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
                 >
                   <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
                     {t('pm_dir_kpi_avg_margin')}
@@ -2289,7 +2289,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 <div
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                  className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
                 >
                   <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
                     {t('pm_dir_kpi_closed_missions')}
@@ -2304,7 +2304,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 <div
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                  className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
                 >
                   <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
                     {t('pm_dir_kpi_attendance_rate')}

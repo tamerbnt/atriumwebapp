@@ -36,7 +36,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
           className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full overflow-hidden flex flex-col max-h-[90vh]"
         >
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#FBF8F5] dark:bg-[#1D1B19]">
+        <div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#FBF8F5] dark:bg-[#22201E]">
           <div className="flex items-center gap-3">
             <div data-sq="ctl-sm" className="w-8 h-8 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small">
               SFP01
@@ -212,7 +212,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-[var(--atr-divider)] flex items-center justify-between t-cap text-black/55 dark:text-white/55 bg-[#FBF8F5] dark:bg-[#1D1B19]">
+        <div className="px-6 py-3 border-t border-[var(--atr-divider)] flex items-center justify-between t-cap text-black/55 dark:text-white/55 bg-[#FBF8F5] dark:bg-[#22201E]">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
             <span>{t('pm_ccp_compliance_footer')}</span>

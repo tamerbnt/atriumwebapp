@@ -981,7 +981,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="relative w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-[#1A1A1A] [--sq-stroke:var(--sq-stroke-pop)]"
+          className="relative w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)]"
         >
           <div className="p-[var(--s6)] flex flex-col gap-[var(--s4)] overflow-y-auto max-h-[90vh]">
         {/* Header */}
@@ -1057,10 +1057,10 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                     data-sq="ctl"
                     data-sq-border="solid"
                     data-sq-stroke-w={errors.fullName ? '1.5' : undefined}
-                    className={`relative bg-white dark:bg-[#262422] transition-colors ${
+                    className={`relative bg-[#F5F1EC] dark:bg-[#292624] focus-within:bg-white dark:focus-within:bg-[#2E2B28] transition-colors ${
                       errors.fullName
                         ? '[--sq-stroke:#B8321C]'
-                        : '[--sq-stroke:var(--sq-stroke-ctl)] focus-within:[--sq-stroke:#C9441F]'
+                        : '[--sq-stroke:rgba(23,19,15,0.055)] dark:[--sq-stroke:rgba(255,255,255,0.075)] focus-within:[--sq-stroke:#C9441F]'
                     }`}
                   >
                     <input
@@ -1130,10 +1130,10 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                     data-sq="ctl"
                     data-sq-border="solid"
                     data-sq-stroke-w={errors.email ? '1.5' : undefined}
-                    className={`relative bg-white dark:bg-[#262422] transition-colors ${
+                    className={`relative bg-[#F5F1EC] dark:bg-[#292624] focus-within:bg-white dark:focus-within:bg-[#2E2B28] transition-colors ${
                       errors.email
                         ? '[--sq-stroke:#B8321C]'
-                        : '[--sq-stroke:var(--sq-stroke-ctl)] focus-within:[--sq-stroke:#C9441F]'
+                        : '[--sq-stroke:rgba(23,19,15,0.055)] dark:[--sq-stroke:rgba(255,255,255,0.075)] focus-within:[--sq-stroke:#C9441F]'
                     }`}
                   >
                     <input
@@ -1343,7 +1343,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="relative bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-ctl)] focus-within:[--sq-stroke:#C9441F]"
+                  className="relative bg-[#F5F1EC] dark:bg-[#292624] focus-within:bg-white dark:focus-within:bg-[#2E2B28] transition-colors [--sq-stroke:rgba(23,19,15,0.055)] dark:[--sq-stroke:rgba(255,255,255,0.075)] focus-within:[--sq-stroke:#C9441F]"
                 >
                   <textarea
                     rows={2}

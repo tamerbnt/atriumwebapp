@@ -558,7 +558,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     key={a.id}
                     data-sq="ctl"
                     data-sq-border="none"
-                    className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap"
+                    className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap"
                   >
                     <div>
                       <span className="font-medium text-black dark:text-white">{a.name}</span>
@@ -671,7 +671,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <div
               data-sq="card"
               data-sq-border="none"
-              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2 t-cap"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2 t-cap"
             >
               <div className="flex justify-between text-black/70 dark:text-white/75">
                 <span>{t('venue_modal_calc_space_base', { hours: durationHours })}</span>
@@ -715,7 +715,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         </form>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between shrink-0 bg-[#F5F1EC]/60 dark:bg-[#1D1B19]">
+        <div className="px-6 py-4 border-t border-[var(--atr-divider)] flex items-center justify-between shrink-0 bg-[#F5F1EC]/60 dark:bg-[#22201E]">
           <AtriumButton
             type="button"
             variant="ghost"

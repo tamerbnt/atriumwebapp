@@ -1370,7 +1370,7 @@ export const LegalTrustView: React.FC<any> = () => {
                     <div
                       data-sq="card"
                       data-sq-border="none"
-                      className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                      className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2"
                     >
                       <div className="grid grid-cols-2 gap-2">
                         <LabelInput
@@ -1399,7 +1399,7 @@ export const LegalTrustView: React.FC<any> = () => {
                   <div
                     data-sq="card"
                     data-sq-border="none"
-                    className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                    className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2"
                   >
                     <LabelInput
                       label={
@@ -1892,7 +1892,7 @@ export const LegalTrustView: React.FC<any> = () => {
                 <div
                   data-sq="card"
                   data-sq-border="none"
-                  className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-1 tabular-nums t-cap"
+                  className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-1 tabular-nums t-cap"
                 >
                   <div className="flex justify-between">
                     <span>Compte 706000 (Crédit HT):</span>
@@ -2360,7 +2360,7 @@ export const LegalTrustView: React.FC<any> = () => {
                     <div
                       data-sq="card"
                       data-sq-border="none"
-                      className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-1 tabular-nums t-cap"
+                      className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-1 tabular-nums t-cap"
                     >
                       <div className="flex justify-between">
                         <span>Montant HT:</span>

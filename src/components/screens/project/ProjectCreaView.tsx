@@ -1113,7 +1113,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <div
                 data-sq="ctl"
                 data-sq-border="none"
-                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between t-cap"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-cap"
               >
                 <div className="space-y-0.5">
                   <span className="font-semibold text-black dark:text-white">

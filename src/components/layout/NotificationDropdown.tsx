@@ -310,7 +310,7 @@ const NotificationDropdownBody: React.FC<NotificationDropdownProps> = ({
       </div>
 
       {/* Unified Panel Footer */}
-      <div className="flex items-center justify-between px-[var(--s4,16px)] py-[var(--s3,12px)] border-t border-black/[0.045] dark:border-white/[0.06] bg-[#FBF8F5] dark:bg-[#1E1C1A] t-cap text-[var(--text-2)]">
+      <div className="flex items-center justify-between px-[var(--s4,16px)] py-[var(--s3,12px)] border-t border-black/[0.045] dark:border-white/[0.06] bg-[#FBF8F5] dark:bg-[#22201E] t-cap text-[var(--text-2)]">
         <div className="flex items-center gap-[var(--s2,8px)] t-small">
           <span className="w-[var(--s2,8px)] h-[var(--s2,8px)] rounded-full bg-emerald-500 shrink-0" />
           <span>

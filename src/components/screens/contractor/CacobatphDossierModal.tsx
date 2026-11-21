@@ -37,7 +37,7 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ is
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in overflow-y-auto">
 <div className="sq-elev-pop max-w-2xl w-full my-8">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-6">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full p-6 [--sq-stroke:var(--sq-stroke-pop)] space-y-6">
 <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3 print:hidden">
 <div className="flex items-center gap-2">
 <div data-sq="ctl-sm" data-sq-border="none" className="w-8 h-8 bg-blue-500/15 text-blue-600 flex items-center justify-center font-semibold shrink-0"><Cloud size={18} /></div>

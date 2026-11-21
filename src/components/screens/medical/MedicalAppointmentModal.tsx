@@ -103,7 +103,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
 <div className="sq-elev-pop w-full max-w-lg">
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col overflow-hidden">
-<div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC] dark:bg-[#1D1B19]">
+<div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#F5F1EC] dark:bg-[#22201E]">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-semibold"><Calendar size={20} /></div>
 <div>
@@ -151,7 +151,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 								]} />
 </div>
 <LabelInput label="Motif du Rendez-vous" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="ex: Bilan annuel, Consultation cardiologique" required />
-<div data-sq="card" data-sq-border="none" className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#1D1B19]">
+<div data-sq="card" data-sq-border="none" className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
 <div>
 <span className="t-small font-semibold text-black dark:text-white block">Niveau de Priorité</span>
 <span className="t-cap text-black/55 dark:text-white/55">Normal ou Prioritaire</span>
@@ -161,7 +161,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
 <button type="button" data-no-liquid="true" data-sq="ctl-sm" data-sq-border="none" onClick={() => setUrgency("Prioritaire")} className={`px-3 py-2 t-small font-semibold transition-all cursor-pointer ${urgency === "Prioritaire" ? "bg-[#d4522f] text-white" : "text-black/70 dark:text-white/75"}`}>Prioritaire</button>
 </div>
 </div>
-<div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2">
+<div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2">
 <label className="flex items-center gap-2 cursor-pointer select-none">
 <input type="checkbox" checked={isEmergencyBypass} onChange={(e) => setIsEmergencyBypass(e.target.checked)} className="w-4 h-4 rounded-[var(--r-check,6px)] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] accent-[#d4522f] cursor-pointer" />
 <span className="t-small font-semibold text-amber-700 dark:text-amber-400">Sur-réservation d'urgence (Bypass de conflit)</span>

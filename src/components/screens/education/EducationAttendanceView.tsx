@@ -481,7 +481,7 @@ export const EducationAttendanceView: React.FC = () => {
             <div
               data-sq="ctl-sm"
               data-sq-border="solid"
-              className="w-8 h-8 bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 [--sq-stroke:rgba(212,82,47,0.22)] dark:[--sq-stroke:rgba(255,143,99,0.22)]"
+              className="w-8 h-8 bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center font-semibold t-small shrink-0 [--sq-stroke:rgba(212,82,47,0.22)] dark:[--sq-stroke:rgba(255,143,99,0.22)]"
             >
               {st.fullName.charAt(0)}
             </div>
@@ -539,7 +539,7 @@ export const EducationAttendanceView: React.FC = () => {
           const rate = total > 0 ? Math.round((presents / total) * 100) : st.attendanceRatePercent ?? 95;
           return (
             <div className="flex items-center gap-2">
-              <div className="w-20 h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+              <div className="w-20 h-2 rounded-full bg-neutral-100 dark:bg-[#2B2825] overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
                     rate >= 85 ? 'bg-emerald-500' : rate >= 70 ? 'bg-amber-500' : 'bg-rose-500'
@@ -602,7 +602,7 @@ export const EducationAttendanceView: React.FC = () => {
               e.stopPropagation();
               setIsRollCallOpen(true);
             }}
-            className="px-2.5 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white t-small font-semibold transition-colors cursor-pointer"
+            className="px-2.5 py-2 bg-neutral-100 dark:bg-[#2B2825] hover:bg-[#d4522f] hover:text-white text-black dark:text-white t-small font-semibold transition-colors cursor-pointer"
           >
             {t('edu_btn_roll_call')}
           </button>
@@ -697,7 +697,7 @@ export const EducationAttendanceView: React.FC = () => {
         <div
           data-sq="card"
           data-sq-border="solid"
-          className="p-3 px-4 bg-[#FCEEE8] dark:bg-neutral-800 [--sq-stroke:rgba(212,82,47,0.24)] dark:[--sq-stroke:rgba(255,143,99,0.22)] flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-150"
+          className="p-3 px-4 bg-[#FCEEE8] dark:bg-[#22201E] [--sq-stroke:rgba(212,82,47,0.24)] dark:[--sq-stroke:rgba(255,143,99,0.22)] flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-150"
         >
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-[var(--brand-fill,#C9461F)] text-white t-small font-semibold flex items-center justify-center">
@@ -744,7 +744,7 @@ export const EducationAttendanceView: React.FC = () => {
               data-sq="ctl-sm"
               data-sq-border="solid"
               onClick={() => setSelectedStudentIds(new Set<string>())}
-              className="px-3 py-2 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white t-small font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="px-3 py-2 bg-neutral-100 dark:bg-[#2B2825] text-black dark:text-white t-small font-semibold hover:bg-neutral-200 dark:hover:bg-[#332F2B] transition-colors cursor-pointer"
             >
               Deselect All
             </button>
@@ -950,7 +950,7 @@ export const EducationAttendanceView: React.FC = () => {
                     }}
                     data-sq="ctl-sm"
                     data-sq-border="none"
-                    className="px-2.5 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-[#d4522f] hover:text-white text-black dark:text-white t-small font-semibold transition-colors cursor-pointer"
+                    className="px-2.5 py-2 bg-neutral-100 dark:bg-[#2B2825] hover:bg-[#d4522f] hover:text-white text-black dark:text-white t-small font-semibold transition-colors cursor-pointer"
                   >
                     {t('edu_btn_record_grade')}
                   </button>
@@ -1039,8 +1039,8 @@ export const EducationAttendanceView: React.FC = () => {
         statusLabel={activeStudent ? localizeStatus(activeStudent.status, language) : undefined}
         statusClassName={
           activeStudent?.status === 'Active'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'overview', label: isAr ? 'الملخص' : isEn ? 'Summary' : 'Synthèse' },
@@ -1184,7 +1184,7 @@ export const EducationAttendanceView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="relative w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6"
+              className="relative w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6"
             >
             <div className="flex items-center justify-between pb-4 border-b border-[var(--atr-divider)]">
               <h2 className="t-card font-semibold text-black dark:text-white">
@@ -1260,7 +1260,7 @@ export const EducationAttendanceView: React.FC = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-900"
+                  className="bg-[#F5F1EC] dark:bg-[#292624]"
                 >
                   <textarea
                     rows={2}

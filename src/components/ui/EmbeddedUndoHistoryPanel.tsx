@@ -124,7 +124,7 @@ export const EmbeddedUndoHistoryPanel: React.FC<EmbeddedUndoHistoryPanelProps> =
       {/* Sub-toolbar: Scope toggle + Op filters + Availability + Clear */}
       <div
         data-sq="card"
-        className="p-3.5 bg-[#FBF8F5] dark:bg-[#262422] flex flex-col gap-3"
+        className="p-3.5 bg-[#FBF8F5] dark:bg-[#22201E] flex flex-col gap-3"
       >
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -412,7 +412,7 @@ export const EmbeddedUndoHistoryPanel: React.FC<EmbeddedUndoHistoryPanelProps> =
                           setBusyId(null);
                         }
                       }}
-                      className="h-8 px-3 rounded-[8px] flex items-center gap-1.5 t-small font-medium text-[var(--text-2)] hover:text-[var(--text-1)] dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#262422] cursor-pointer transition-colors disabled:opacity-50 whitespace-nowrap"
+                      className="h-8 px-3 rounded-[8px] flex items-center gap-1.5 t-small font-medium text-[var(--text-2)] hover:text-[var(--text-1)] dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] cursor-pointer transition-colors disabled:opacity-50 whitespace-nowrap"
                     >
                       <Redo2 size={13} strokeWidth={1.8} />
                       <span>{getRedoButtonLabel(language)}</span>

@@ -155,7 +155,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
           />
 
           <div className="flex flex-col justify-end">
-            <div data-sq="ctl" data-sq-border="none" className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s1,4px)]">
+            <div data-sq="ctl" data-sq-border="none" className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#22201E] flex flex-col gap-[var(--s1,4px)]">
               <span className="t-cap text-[var(--text-3,#766C62)] dark:text-[var(--text-dark-2,#A99E92)]">{isAr ? 'بالسنتيم' : isEn ? 'In Centimes' : 'En Centimes'}</span>
               <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white truncate tabular-nums">
                 {tariff.colloquialCentimesLabel}
@@ -182,7 +182,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
         </div>
 
         {/* Parties */}
-        <div data-sq="card" data-sq-border="none" className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s3,12px)]">
+        <div data-sq="card" data-sq-border="none" className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#22201E] flex flex-col gap-[var(--s3,12px)]">
           <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white">
             {isAr ? 'الأطراف والهوية' : isEn ? 'Contracting Parties' : 'Parties & Identité'}
           </span>
@@ -216,7 +216,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
 
         {/* Cadastre References */}
         {(actType === 'vente_immobiliere' || actType === 'donation') && (
-          <div data-sq="card" data-sq-border="none" className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s3,12px)]">
+          <div data-sq="card" data-sq-border="none" className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#22201E] flex flex-col gap-[var(--s3,12px)]">
             <span className="t-small font-semibold text-[var(--text-1,#17130F)] dark:text-white">
               {isAr ? 'المراجع العقارية' : isEn ? 'Land Registry' : 'Cadastre'}
             </span>

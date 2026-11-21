@@ -158,10 +158,10 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             isSelected
               ? 'bg-[#E8643F]/10 [--sq-stroke:#E8643F] dark:bg-[#E8643F]/15'
               : isPinned
-              ? 'bg-white dark:bg-[#1A1A1A] [--sq-stroke:#fbbf24] dark:[--sq-stroke:#f59e0b]'
+              ? 'bg-white dark:bg-[#22201E] [--sq-stroke:#fbbf24] dark:[--sq-stroke:#f59e0b]'
               : isHovered
-              ? 'bg-[#FAF6F1] dark:bg-[#22201E]'
-              : 'bg-white dark:bg-[#1A1A1A]'
+              ? 'bg-[#FAF6F1] dark:bg-[#282523]'
+              : 'bg-white dark:bg-[#22201E]'
           }`}
         />
 
@@ -188,7 +188,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             className={`relative w-[22px] h-[22px] grid place-items-center transition-colors cursor-pointer ${
               isSelected
                 ? 'bg-[var(--brand-fill,#C9461F)] [--sq-stroke:#E8643F] text-white'
-                : 'bg-transparent [--sq-stroke:rgba(23,19,15,0.22)] dark:[--sq-stroke:rgba(255,255,255,0.26)] hover:[--sq-stroke:#E8643F]'
+                : 'bg-transparent [--sq-stroke:rgba(23,19,15,0.12)] dark:[--sq-stroke:rgba(255,255,255,0.16)] hover:[--sq-stroke:#E8643F]'
             }`}
           >
             {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -279,7 +279,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             visibility: isHovered || isExpanded ? 'visible' : 'hidden',
             transition: 'transform 260ms cubic-bezier(.24,1.34,.38,1) 90ms, opacity 140ms 90ms, scale 160ms',
           }}
-          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:bg-[#E8643F] hover:text-white grid place-items-center transition-colors cursor-pointer border-0"
+          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 bg-[#F6F3F0] dark:bg-[#2B2825] text-black/70 dark:text-white hover:bg-[#E8643F] hover:text-white grid place-items-center transition-colors cursor-pointer border-0"
           title="Modifier l'adhérent"
         >
           <Pencil className="w-4 h-4" />
@@ -303,7 +303,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             visibility: isHovered || isExpanded ? 'visible' : 'hidden',
             transition: 'transform 260ms cubic-bezier(.24,1.34,.38,1) 45ms, opacity 140ms 45ms, scale 160ms',
           }}
-          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:bg-[#E8643F] hover:text-white grid place-items-center transition-colors cursor-pointer border-0"
+          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 bg-[#F6F3F0] dark:bg-[#2B2825] text-black/70 dark:text-white hover:bg-[#E8643F] hover:text-white grid place-items-center transition-colors cursor-pointer border-0"
           title="Écrire à l'adhérent"
         >
           <Mail className="w-4 h-4" />
@@ -327,7 +327,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             visibility: isHovered || isExpanded ? 'visible' : 'hidden',
             transition: 'transform 260ms cubic-bezier(.24,1.34,.38,1) 0ms, opacity 140ms 0ms, scale 160ms',
           }}
-          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:bg-[#C0283D] hover:text-white grid place-items-center transition-colors cursor-pointer border-0"
+          className="absolute top-[18px] right-[18px] z-[2] w-9 h-9 bg-[#F6F3F0] dark:bg-[#2B2825] text-black/70 dark:text-white hover:bg-[#C0283D] hover:text-white grid place-items-center transition-colors cursor-pointer border-0"
           title="Supprimer l'adhérent"
         >
           <Trash2 className="w-4 h-4" />
@@ -354,7 +354,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
             transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
             transition: 'transform 240ms cubic-bezier(.2,0,.2,1)',
           }}
-          className="rb absolute top-[18px] right-[14px] z-10 w-9 h-9 bg-[#F6F3F0] dark:bg-[#2A2A2A] text-black/70 dark:text-white hover:text-black dark:hover:text-white grid place-items-center transition-colors cursor-pointer border-0"
+          className="rb absolute top-[18px] right-[14px] z-10 w-9 h-9 bg-[#F6F3F0] dark:bg-[#2B2825] text-black/70 dark:text-white hover:text-black dark:hover:text-white grid place-items-center transition-colors cursor-pointer border-0"
           title="Aperçu rapide"
         >
           <ChevronDown className="w-4 h-4" />
@@ -365,7 +365,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
       <div
         data-sq="card"
         data-sq-border="solid"
-        className="kinetic-dt absolute left-0 right-0 top-[80px] h-[150px] bg-white dark:bg-[#1B1917] border-0 grid gap-6 p-4 px-6 box-border opacity-0 select-text"
+        className="kinetic-dt absolute left-0 right-0 top-[80px] h-[150px] bg-white dark:bg-[#22201E] border-0 grid gap-6 p-4 px-6 box-border opacity-0 select-text"
         style={{
           gridTemplateColumns: '1fr 1.2fr 1.2fr auto',
         }}

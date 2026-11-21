@@ -590,10 +590,10 @@ export const ContractorBillingView: React.FC<any> = () => {
         width: '1.2*',
         renderCell: (d) => (
           <span
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full t-small font-semibold border ${
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full t-small font-semibold ${
               d.status === 'Paid'
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
             }`}
           >
             {d.status === 'Paid' ? (isAr ? 'مدفوع' : 'Réglé') : isAr ? 'معتمد BET' : 'Approuvé BET'}
@@ -806,8 +806,8 @@ export const ContractorBillingView: React.FC<any> = () => {
         }
         statusClassName={
           activeDgp?.status === 'Paid'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
-            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
         }
         tabs={[
           { id: 'decompte', label: isAr ? 'البيان المالي' : isEn ? 'Breakdown' : 'Décompte' },
@@ -942,7 +942,7 @@ export const ContractorBillingView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
             >
               <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
                 <div className="flex items-center gap-2">
@@ -998,7 +998,7 @@ export const ContractorBillingView: React.FC<any> = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3 bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between"
+                className="p-3 bg-neutral-50 dark:bg-[#22201E] flex items-center justify-between"
               >
                 <div>
                   <div className="t-small font-semibold text-black dark:text-white">

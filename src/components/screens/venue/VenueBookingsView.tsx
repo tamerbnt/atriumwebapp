@@ -1162,7 +1162,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2"
               >
                 <div className="flex justify-between">
                   <span className="text-black/55 dark:text-white/55">
@@ -1211,7 +1211,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2"
               >
                 <div className="flex justify-between font-semibold text-black dark:text-white">
                   <span>{t('venue_voucher_total_hire')}</span>
@@ -1241,7 +1241,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
               <div
                 data-sq="ctl"
                 data-sq-border="none"
-                className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap text-black/55 dark:text-white/75 leading-relaxed"
+                className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap text-black/55 dark:text-white/75 leading-relaxed"
               >
                 {t('venue_voucher_disclaimer')}
               </div>

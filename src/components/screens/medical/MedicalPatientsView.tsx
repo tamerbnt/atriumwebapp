@@ -55,9 +55,9 @@ const getInitials2 = (name: string): string => {
 };
 
 const MEMBER_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 const MEMBER_PILL_DANGER =
-  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]';
+  'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]';
 
 export const MedicalPatientsView: React.FC<any> = () => {
   const {
@@ -420,7 +420,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
             (p.chronicConditions && p.chronicConditions.length > 0);
           return (
             <div className="flex items-center gap-3 min-w-0 pr-2">
-              <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0 border border-[#d4522f]/20 dark:border-white/[0.10] shadow-2xs">
+              <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold t-small flex items-center justify-center shrink-0">
                 {p.fullName.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
@@ -516,7 +516,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
         renderCell: (p) => {
           const patientCons = consultations.filter((c) => c.patientId === p.id);
           return (
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               {patientCons.length} {isAr ? 'فحوصات' : 'visites'}
             </span>
@@ -1035,7 +1035,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                         <div
                           data-sq="card"
                           data-sq-border="solid"
-                          className="p-3 bg-white dark:bg-neutral-800/60"
+                          className="p-3 bg-white dark:bg-[#22201E]"
                         >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
@@ -1058,7 +1058,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                         <div
                           data-sq="ctl"
                           data-sq-border="solid"
-                          className="w-full h-32 relative bg-neutral-50/70 dark:bg-neutral-900/40 p-2"
+                          className="w-full h-32 relative bg-neutral-50/70 dark:bg-[#191716] p-2"
                         >
                           <svg viewBox="0 0 320 100" className="w-full h-full overflow-visible">
                             <rect x="0" y="30" width="320" height="45" fill="rgba(16, 185, 129, 0.08)" />
@@ -1169,7 +1169,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                         <div
                           data-sq="card"
                           data-sq-border="solid"
-                          className="mt-3 p-3 bg-[#F3EDE7] dark:bg-neutral-800/80 space-y-2 t-cap"
+                          className="mt-3 p-3 bg-[#F3EDE7] dark:bg-[#191716] space-y-2 t-cap"
                         >
                           <div className="t-small font-semibold text-black/70 dark:text-white/75">
                             Nouvelle Prise de Constantes
@@ -1177,7 +1177,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                           <div className="grid grid-cols-3 gap-2">
                             <div>
                               <label className="t-cap text-black/55 dark:text-white/55">Sys (mmHg)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900">
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
                                 <input
                                   type="number"
                                   value={newSys}
@@ -1188,7 +1188,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                             </div>
                             <div>
                               <label className="t-cap text-black/55 dark:text-white/55">Dia (mmHg)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900">
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
                                 <input
                                   type="number"
                                   value={newDia}
@@ -1199,7 +1199,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                             </div>
                             <div>
                               <label className="t-cap text-black/55 dark:text-white/55">Pouls (bpm)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900">
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
                                 <input
                                   type="number"
                                   value={newHr}
@@ -1212,7 +1212,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                           <div className="grid grid-cols-3 gap-2">
                             <div>
                               <label className="t-cap text-black/55 dark:text-white/55">Poids (kg)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900">
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
                                 <input
                                   type="number"
                                   value={newWeight}
@@ -1223,7 +1223,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                             </div>
                             <div>
                               <label className="t-cap text-black/55 dark:text-white/55">Glycémie (mg/dL)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900">
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
                                 <input
                                   type="number"
                                   step="1"
@@ -1235,7 +1235,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                             </div>
                             <div>
                               <label className="t-cap text-black/55 dark:text-white/55">SpO₂ (%)</label>
-                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-white dark:bg-neutral-900">
+                              <div data-sq="ctl-sm" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
                                 <input
                                   type="number"
                                   value={newSpo2}

@@ -152,7 +152,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs animate-in fade-in">
 <div className="sq-elev-pop max-w-4xl w-full">
 <div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full max-h-[92vh] flex flex-col overflow-hidden">
-<div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/60 dark:bg-[#1D1B19]">
+<div className="flex items-center justify-between px-6 py-4 border-b border-[var(--atr-divider)] bg-[#F5F1EC]/60 dark:bg-[#22201E]">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] flex items-center justify-center"><Car size={20} /></div>
 <div>
@@ -193,9 +193,9 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 <div className="flex-1 overflow-y-auto p-6 space-y-6">
 {activeTab === "intake" && /* @__PURE__ */ <div className="space-y-5 animate-in fade-in">
-<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#1D1B19] space-y-4">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-4">
 <LabelSelect label={language === "ar" ? "المركبة والماتريكيل" : "Véhicule & Matricule"} value={selectedVehicleId} onChange={(v) => setSelectedVehicleId(extractStr(v))} options={vehicleOptions} />
-{activeVehicle && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="none" className="grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap bg-white dark:bg-[#22201E] p-3">
+{activeVehicle && /* @__PURE__ */ <div data-sq="ctl" data-sq-border="none" className="grid grid-cols-2 sm:grid-cols-4 gap-3 t-cap bg-white dark:bg-[#191716] p-3">
 <div>
 <span className="text-black/55 dark:text-white/55 block">{language === "ar" ? "المالك" : "Propriétaire"}</span>
 <span className="font-semibold text-black dark:text-white">{activeVehicle.ownerName}</span>
@@ -249,7 +249,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 </div>
 </div>
-<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-3">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-3">
 <div className="flex items-center justify-between">
 <span className="t-small font-semibold text-black dark:text-white">
 {language === "ar" ? "الملحقات والأغراض المسلمة في المركبة" : "Accessoires & Objets à Bord"}
@@ -294,7 +294,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 </div>}
 {activeTab === "walkaround" && /* @__PURE__ */ <div className="space-y-4 animate-in fade-in">
-<div data-sq="card" data-sq-border="none" className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#F5F1EC] dark:bg-[#1D1B19]">
+<div data-sq="card" data-sq-border="none" className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
 <div className="flex items-center gap-2">
 {[
 											"front",
@@ -414,7 +414,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 												}
 											]} />
 </div>
-<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2 t-cap">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2 t-cap">
 <span className="font-semibold text-black dark:text-white block">
 {language === "ar" ? "معايير الفحص الأولي للورشة" : "Protocole d'admission & sécurité atelier"}
 </span>
@@ -443,7 +443,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 {language === "ar" ? "يصرح الزبون ومسؤول الاستقبال بصحة فحص الهيكل، مستوى الوقود والعداد المدونين أعلاه. الورشة مسؤولة عن حراسة المركبة طيلة فترة التصليح ضمن حدود الأضرار المبينة في هذا الأمر." : "Le propriétaire et le chef d'atelier attestent de l'exactitude de l'état descriptif, du kilométrage et de la jauge carburant consignés ci-dessus. L'atelier assume la garde juridique du véhicule dans les strictes limites de la présente fiche d'entrée."}
 </p>
 </div>
-<div data-sq="card" data-sq-border="none" className="p-5 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-4">
+<div data-sq="card" data-sq-border="none" className="p-5 bg-[#F5F1EC] dark:bg-[#22201E] space-y-4">
 <div className="flex items-center justify-between">
 <span className="t-small font-semibold text-black dark:text-white flex items-center gap-2">
 <PenTool size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
@@ -454,7 +454,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 {language === "ar" ? "تم توثيق التوقيع" : "Signé & certifié"}
 </span>}
 </div>
-<button type="button" data-no-liquid="true" data-sq="empty" data-sq-border="dashed" data-sq-stroke-w={2} onClick={() => setIsClientSigned(true)} className={`w-full h-28 flex items-center justify-center cursor-pointer transition-colors ${isClientSigned ? "bg-emerald-50/50 dark:bg-emerald-950/20 [--sq-stroke:#34d399]" : "bg-white dark:bg-[#22201E] hover:[--sq-stroke:#d4522f]"}`}>
+<button type="button" data-no-liquid="true" data-sq="empty" data-sq-border="dashed" data-sq-stroke-w={2} onClick={() => setIsClientSigned(true)} className={`w-full h-28 flex items-center justify-center cursor-pointer transition-colors ${isClientSigned ? "bg-emerald-50/50 dark:bg-emerald-950/20 [--sq-stroke:#34d399]" : "bg-white dark:bg-[#191716] hover:[--sq-stroke:#d4522f]"}`}>
 {isClientSigned ? /* @__PURE__ */ <span className="text-center space-y-1 block">
 <span className="italic t-dialog text-black dark:text-white font-semibold block">{activeVehicle?.ownerName || 'Client'}</span>
 <span className="t-cap text-black/55 dark:text-white/55 tabular-nums block">
@@ -471,7 +471,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 </div>
 </div>}
 </div>
-<div className="flex items-center justify-between px-6 py-4 border-t border-[var(--atr-divider)] bg-[#F5F1EC]/60 dark:bg-[#1D1B19]">
+<div className="flex items-center justify-between px-6 py-4 border-t border-[var(--atr-divider)] bg-[#F5F1EC]/60 dark:bg-[#22201E]">
 <div className="flex items-center gap-2">
 {activeTab !== "intake" && /* @__PURE__ */ <AtriumButton variant="secondary" onClick={() => {
 								if (activeTab === "walkaround") setActiveTab("intake");

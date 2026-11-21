@@ -2313,7 +2313,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       key={ci.item.id}
                       data-sq="ctl"
                       data-sq-border="none"
-                      className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between gap-3 t-cap"
+                      className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between gap-3 t-cap"
                     >
                       <div className="min-w-0">
                         <div className="font-semibold text-black dark:text-white truncate">

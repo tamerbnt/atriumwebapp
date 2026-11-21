@@ -87,7 +87,7 @@ export const FloatingBulkBar: React.FC<FloatingBulkBarProps> = ({
       role="toolbar"
       aria-label="Actions groupées"
       aria-hidden={selectedCount === 0}
-      className={`bar fixed left-1/2 top-[14px] flex items-center gap-2 h-[56px] max-w-[calc(100vw-24px)] overflow-x-auto pl-[22px] pr-[10px] rounded-full bg-[#1F1D1B] text-[#F4EDE6] z-[45] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none border border-white/[0.1] ${className}`}
+      className={`bar fixed left-1/2 top-[14px] flex items-center gap-2 h-[56px] max-w-[calc(100vw-24px)] overflow-x-auto pl-[22px] pr-[10px] rounded-full bg-[#262422] text-[#F4EDE6] z-[45] shadow-[0_12px_32px_rgba(27,25,23,0.3)] select-none ${className}`}
       style={{
         visibility: selectedCount > 0 ? 'visible' : 'hidden',
         pointerEvents: selectedCount > 0 ? 'auto' : 'none',

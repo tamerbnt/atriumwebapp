@@ -187,7 +187,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
             />
 
             {/* Urgency Level Triage */}
-            <div data-sq="card" data-sq-border="none" className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#1D1B19]">
+            <div data-sq="card" data-sq-border="none" className="flex items-center justify-between p-3 bg-[#F5F1EC] dark:bg-[#22201E]">
               <span className="t-small font-semibold text-black dark:text-white">
                 {language === 'ar' ? 'درجة الإلحاح / الفرز' : 'Priorité Triage'}
               </span>

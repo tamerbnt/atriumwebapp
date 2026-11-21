@@ -695,7 +695,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
               data-sq-border="solid"
               className="w-full bg-white dark:bg-[#22201E] flex flex-col max-h-[640px] overflow-hidden"
             >
-            <div className="px-4 py-3 border-b border-black/[0.045] dark:border-white/[0.06] flex items-center justify-between bg-[#FBF8F5] dark:bg-[#1E1C1A]">
+            <div className="px-4 py-3 border-b border-black/[0.045] dark:border-white/[0.06] flex items-center justify-between bg-[#FBF8F5] dark:bg-[#191716]">
               <span className="t-small font-semibold text-black dark:text-white flex items-center gap-2">
                 <ShoppingBag size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                 <span>{isAr ? `السلة (${cart.length})` : `Panier (${cart.length})`}</span>
@@ -772,7 +772,7 @@ export const MembershipShopView: React.FC = React.memo(() => {
               )}
             </div>
 
-            <div className="p-4 border-t border-black/[0.045] dark:border-white/[0.06] bg-[#FBF8F5] dark:bg-[#1E1C1A] space-y-3">
+            <div className="p-4 border-t border-black/[0.045] dark:border-white/[0.06] bg-[#FBF8F5] dark:bg-[#191716] space-y-3">
               <div className="flex justify-between t-cap items-baseline">
                 <span className="text-black/62 dark:text-white/65">{isAr ? 'الإجمالي:' : 'Total à Payer:'}</span>
                 <span className="tabular-nums font-semibold t-card text-black dark:text-white">

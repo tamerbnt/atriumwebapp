@@ -1265,7 +1265,7 @@ export const LogisticsCodView: React.FC<any> = () => {
             <div
               data-sq="ctl"
               data-sq-border="none"
-              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2 t-cap"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#191716] space-y-2 t-cap"
             >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Base Journalière (48 000 DZD / 26j):</span>
@@ -1311,7 +1311,7 @@ export const LogisticsCodView: React.FC<any> = () => {
             <div
               data-sq="ctl"
               data-sq-border="none"
-              className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2 t-cap"
+              className="p-4 bg-[#F5F1EC] dark:bg-[#191716] space-y-2 t-cap"
             >
               <div className="flex justify-between">
                 <span className="text-black/55 dark:text-white/55">Colis Livrés (26 × 220 DZD):</span>

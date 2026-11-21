@@ -652,7 +652,7 @@ export const ContractorBoqView: React.FC<any> = () => {
                   {pct}%
                 </span>
               </div>
-              <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+              <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-[#2B2825] overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-300 ${
                     isOverrun ? 'bg-rose-500' : 'bg-[#d4522f]'
@@ -917,10 +917,10 @@ export const ContractorBoqView: React.FC<any> = () => {
         }
         statusClassName={
           activeItem && activeItem.executedQty > activeItem.plannedQty
-            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A] border border-[#F5BDB3] dark:border-[#5C2B24]'
+            ? 'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]'
             : activeItem && activeItem.executedQty >= activeItem.plannedQty
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'poste', label: isAr ? 'البند' : 'Fiche Poste' },
@@ -1042,7 +1042,7 @@ export const ContractorBoqView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
                 <div className="flex items-center gap-2">

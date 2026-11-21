@@ -335,7 +335,7 @@ export const SlideInPanel: React.FC<SlideInPanelProps> = ({
         </div>
 
         {/* Panel Footer (.pf) */}
-        <div className="pf flex justify-between items-center px-6 py-4 border-t border-black/[0.045] dark:border-white/[0.06] bg-[#FBF8F5] dark:bg-[#1E1C1A]">
+        <div className="pf flex justify-between items-center px-6 py-4 border-t border-black/[0.045] dark:border-white/[0.06] bg-[#FBF8F5] dark:bg-[#22201E]">
           {onDelete ? (
             <button
               type="button"

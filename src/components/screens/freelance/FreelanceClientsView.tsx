@@ -1541,7 +1541,7 @@ export const FreelanceClientsView: React.FC = () => {
               <label
                 data-sq="card"
                 data-sq-border="none"
-                className="flex items-start gap-2 p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap text-black/70 dark:text-white/75 cursor-pointer"
+                className="flex items-start gap-2 p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap text-black/70 dark:text-white/75 cursor-pointer"
               >
                 <input
                   type="checkbox"

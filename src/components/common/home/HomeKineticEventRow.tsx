@@ -268,7 +268,7 @@ export const HomeKineticEventRow: React.FC<HomeKineticEventRowProps> = React.mem
                 ? { maxHeight: isExpanded ? '280px' : '0px', opacity: isExpanded ? 1 : 0 }
                 : undefined
             }
-            className="overflow-hidden border-t border-black/[0.04] dark:border-white/[0.055] bg-[#FBF8F5] dark:bg-[#1B1917]"
+            className="overflow-hidden border-t border-black/[0.04] dark:border-white/[0.055] bg-[#FBF8F5] dark:bg-[#191716]"
           >
             <div className="px-[var(--s4,16px)] py-[var(--s3,12px)] flex flex-col lg:flex-row lg:items-center justify-between gap-[var(--s3,12px)]">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--s3,12px)] flex-1 min-w-0">

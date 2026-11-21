@@ -1464,7 +1464,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="p-4 bg-[#F3EDE7] dark:bg-[#1D1B19] space-y-2 t-cap tabular-nums"
+                className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-2 t-cap tabular-nums"
               >
                 <div className="flex justify-between text-black/55 dark:text-white/55">
                   <span>Main d'œuvre :</span>
@@ -1662,7 +1662,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
               </button>
             </div>
             <div className="space-y-3 t-cap tabular-nums">
-              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] flex justify-between">
+              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex justify-between">
                 <span>Total Espèces en Caisse :</span>
                 <span className="font-semibold text-emerald-600">
                   {formatMoney(
@@ -1671,7 +1671,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                   )}
                 </span>
               </div>
-              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] flex justify-between">
+              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex justify-between">
                 <span>Total Cartes CIB / Dahabia :</span>
                 <span className="font-semibold text-blue-600">
                   {formatMoney(
@@ -1680,7 +1680,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
                   )}
                 </span>
               </div>
-              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] flex justify-between">
+              <div data-sq="card" data-sq-border="none" className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex justify-between">
                 <span>Total Chèques & Virements :</span>
                 <span className="font-semibold text-black dark:text-white">
                   {formatMoney(

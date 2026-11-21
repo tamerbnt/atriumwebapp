@@ -276,7 +276,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       {isEditing && (
         <div
           data-sq="card"
-          className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-wrap items-center justify-between gap-[var(--s3,12px)]"
+          className="p-[var(--s4,16px)] bg-[#F5F1EC] dark:bg-[#22201E] flex flex-wrap items-center justify-between gap-[var(--s3,12px)]"
         >
           <div className="flex items-center gap-[var(--s2,8px)]">
             <span className="t-small text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">{t('members_status_col', language)}:</span>
@@ -460,7 +460,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         {isEditing && (
           <div
             data-sq="card"
-            className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between gap-[var(--s3,12px)]"
+            className="p-[var(--s3,12px)] bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between gap-[var(--s3,12px)]"
           >
             <div className="flex flex-col gap-[var(--name-sub-gap,2px)]">
               <p className="t-small text-[var(--text-2,#5A5047)] dark:text-[var(--text-dark-2,#A99E92)]">{t('apt_booked_client', language)}</p>

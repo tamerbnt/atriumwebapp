@@ -1134,7 +1134,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   key={p.id}
                   data-sq="card"
                   data-sq-border="solid"
-                  className="p-4 bg-white dark:bg-neutral-850 space-y-3 flex flex-col justify-between"
+                  className="p-4 bg-white dark:bg-[#22201E] space-y-3 flex flex-col justify-between"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -1159,7 +1159,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="p-3 bg-neutral-50 dark:bg-neutral-900/60 space-y-2"
+                    className="p-3 bg-neutral-50 dark:bg-[#191716] space-y-2"
                   >
                     <div className="flex items-center justify-between t-cap">
                       <span className="text-black/55 dark:text-white/55 font-medium">
@@ -1178,7 +1178,7 @@ export const AgricultureHarvestView: React.FC = () => {
                         onClick={() => handleIncrementCrates(p, -1)}
                         data-sq="ctl-sm"
                         data-sq-border="solid"
-                        className="py-2 px-2 bg-white dark:bg-neutral-800 t-small font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center gap-1 text-black/70 dark:text-white/75 transition-colors cursor-pointer"
+                        className="py-2 px-2 bg-white dark:bg-[#2B2825] t-small font-semibold hover:bg-neutral-100 dark:hover:bg-[#332F2B] flex items-center justify-center gap-1 text-black/70 dark:text-white/75 transition-colors cursor-pointer"
                       >
                         <Minus size={12} /> 1
                       </button>
@@ -1188,7 +1188,7 @@ export const AgricultureHarvestView: React.FC = () => {
                         data-sq="ctl-sm"
                         data-sq-border="solid"
                         style={{ '--sq-stroke': 'rgba(212, 82, 47, 0.35)' } as React.CSSProperties}
-                        className="py-2 px-2 bg-[#d4522f]/10 border border-[#d4522f]/30 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] t-small font-semibold hover:bg-[#d4522f]/20 flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        className="py-2 px-2 bg-[#d4522f]/10 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] t-small font-semibold hover:bg-[#d4522f]/20 flex items-center justify-center gap-1 transition-colors cursor-pointer"
                       >
                         +1
                       </button>
@@ -1224,7 +1224,7 @@ export const AgricultureHarvestView: React.FC = () => {
                           data-sq="check"
                           data-sq-border="solid"
                           style={{ '--sq-stroke': 'rgba(217, 119, 6, 0.4)' } as React.CSSProperties}
-                          className="px-2 py-1 t-cap bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700 cursor-pointer"
+                          className="px-2 py-1 t-cap bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 cursor-pointer"
                         >
                           +500
                         </button>
@@ -1243,7 +1243,7 @@ export const AgricultureHarvestView: React.FC = () => {
                         data-sq="ctl"
                         data-sq-border="solid"
                         style={{ '--sq-stroke': 'rgba(16, 185, 129, 0.35)' } as React.CSSProperties}
-                        className="w-full py-2 text-center t-small font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center gap-2"
+                        className="w-full py-2 text-center t-small font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center gap-2"
                       >
                         <CheckCircle2 size={14} />{' '}
                         {isAr ? 'تم تسليم الأجر نقداً' : 'Payé en espèces (Caisse)'}
@@ -1298,7 +1298,7 @@ export const AgricultureHarvestView: React.FC = () => {
             : undefined
         }
         statusLabel={isAr ? 'وزن معتمد' : 'Pesée Validée'}
-        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]"
+        statusClassName="bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]"
         tabs={[
           { id: 'ticket', label: isAr ? 'البيانات' : isEn ? 'Overview' : 'Fiche Pesée' },
           { id: 'pesee', label: isAr ? 'الأوزان' : isEn ? 'Tonnage' : 'Tonnage' },
@@ -1460,7 +1460,7 @@ export const AgricultureHarvestView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
                 <div className="flex items-center gap-2">
@@ -1588,7 +1588,7 @@ export const AgricultureHarvestView: React.FC = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] w-full p-6 space-y-5"
             >
               <div className="flex items-center justify-between border-b border-[var(--atr-divider)] pb-3">
                 <div className="flex items-center gap-2">
@@ -1651,7 +1651,7 @@ export const AgricultureHarvestView: React.FC = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-3 bg-neutral-50 dark:bg-neutral-800/60 t-cap space-y-1"
+                className="p-3 bg-neutral-50 dark:bg-[#22201E] t-cap space-y-1"
               >
                 <div className="flex justify-between">
                   <span className="text-black/55 dark:text-white/55">Rémunération calculée :</span>

@@ -100,8 +100,8 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({ is
 	};
 	return /* @__PURE__ */ <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
 <div className="sq-elev-pop w-full max-w-3xl">
-<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-neutral-900 w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[88vh] overflow-hidden">
-<div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#141312]">
+<div data-sq="panel" data-sq-border="solid" className="bg-white dark:bg-[#262422] w-full [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[88vh] overflow-hidden">
+<div className="px-6 py-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-[#F3EDE7] dark:bg-[#22201E]">
 <div className="flex items-center gap-3">
 <div data-sq="tile" data-sq-border="none" className="w-10 h-10 bg-[#0D9488]/15 text-[#0D9488] flex items-center justify-center font-semibold"><Microscope size={20} /></div>
 <div>
@@ -113,20 +113,20 @@ export const MedicalLabViewerModal: React.FC<MedicalLabViewerModalProps> = ({ is
 </div>
 </div>
 <div className="flex items-center gap-2">
-<div data-sq="ctl" data-sq-border="none" className="flex bg-neutral-200/80 dark:bg-neutral-800 p-[3px] t-small font-semibold">
-<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setActiveTab("list")} className={`px-3 py-1 transition-all cursor-pointer ${activeTab === "list" ? "bg-white dark:bg-neutral-700 text-black dark:text-white" : "text-black/70 dark:text-white/75"}`}>
+<div data-sq="ctl" data-sq-border="none" className="flex bg-[#EFE9E2] dark:bg-[#191716] p-[3px] t-small font-semibold">
+<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setActiveTab("list")} className={`px-3 py-1 transition-all cursor-pointer ${activeTab === "list" ? "bg-white dark:bg-[#2B2825] text-black dark:text-white" : "text-black/70 dark:text-white/75"}`}>
 Bilans (
 {patientLabs.length}
 )
 </button>
-<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setActiveTab("create")} className={`px-3 py-1 transition-all cursor-pointer ${activeTab === "create" ? "bg-white dark:bg-neutral-700 text-black dark:text-white" : "text-black/70 dark:text-white/75"}`}>+ Saisir Résultats</button>
+<button type="button" data-no-liquid="true" data-sq="thumb" data-sq-border="none" onClick={() => setActiveTab("create")} className={`px-3 py-1 transition-all cursor-pointer ${activeTab === "create" ? "bg-white dark:bg-[#2B2825] text-black dark:text-white" : "text-black/70 dark:text-white/75"}`}>+ Saisir Résultats</button>
 </div>
-<button type="button" onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"><X size={18} /></button>
+<button type="button" onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-black/55 dark:text-white/55 hover:text-black/80 dark:hover:text-white hover:bg-[#F3EDE7] dark:hover:bg-[#2B2825] cursor-pointer"><X size={18} /></button>
 </div>
 </div>
 <div className="p-6 overflow-y-auto flex-1">
 {activeTab === "list" ? patientLabs.length > 0 ? /* @__PURE__ */ <div className="space-y-4">
-{patientLabs.map((lab: any) => /* @__PURE__ */ <div key={lab.id} data-sq="card" data-sq-border="solid" className="p-5 bg-[#F3EDE7] dark:bg-[#141312] space-y-3">
+{patientLabs.map((lab: any) => /* @__PURE__ */ <div key={lab.id} data-sq="card" data-sq-border="solid" className="p-5 bg-[#F3EDE7] dark:bg-[#191716] space-y-3">
 <div className="flex items-center justify-between">
 <div className="flex items-center gap-2">
 <span className="font-semibold t-small text-black dark:text-white">{lab.testCategory}</span>
@@ -141,7 +141,7 @@ Bilans (
 </div>
 <span className="t-small font-semibold tabular-nums px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">{lab.status}</span>
 </div>
-<div data-sq="table" data-sq-border="solid" className="bg-white dark:bg-neutral-800 overflow-hidden">
+<div data-sq="table" data-sq-border="solid" className="bg-white dark:bg-[#22201E] overflow-hidden">
 <table className="w-full t-cap text-left">
 <thead>
 <tr className="bg-neutral-50 dark:bg-neutral-750 t-cap tabular-nums text-black/55 dark:text-white/55 border-b border-[var(--atr-divider)]">
@@ -224,7 +224,7 @@ Rapport d'Imagerie (
 									label: p.fullName
 								}))} />
 </div>
-<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#141312] space-y-3">
+<div data-sq="card" data-sq-border="solid" className="p-4 bg-[#F3EDE7] dark:bg-[#191716] space-y-3">
 <span className="t-small font-semibold text-black/70 dark:text-white/75 block">Valeurs Biologiques Mesurées</span>
 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
 <LabelInput label="Glycémie (0.7-1.1 g/L)" value={glycemieVal} onChange={(e) => setGlycemieVal(e.target.value)} />
@@ -235,7 +235,7 @@ Rapport d'Imagerie (
 </div>
 <div>
 <label className="t-small font-semibold text-black/70 dark:text-white/75 block mb-1">Conclusion & Interprétation Clinique</label>
-<div data-sq="ctl" data-sq-border="solid" className="bg-[#F3EDE7] dark:bg-neutral-800">
+<div data-sq="ctl" data-sq-border="solid" className="bg-[#F5F1EC] dark:bg-[#292624]">
 <textarea value={clinicalConclusion} onChange={(e) => setClinicalConclusion(e.target.value)} rows={3} className="lbi-field w-full px-3 py-2 t-cap bg-transparent border-0 text-black dark:text-white focus:outline-hidden" required />
 </div>
 </div>

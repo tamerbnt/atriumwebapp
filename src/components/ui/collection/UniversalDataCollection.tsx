@@ -1335,7 +1335,7 @@ export function UniversalDataCollection<T>({
         <div
           data-sq="ctl"
           data-sq-border="solid"
-          className="w-full px-[var(--empty-pad-x,16px)] py-[var(--empty-pad-y,14px)] border border-rose-300 dark:border-rose-800 [--sq-stroke:#fda4af] dark:[--sq-stroke:#9f1239] bg-rose-50 dark:bg-rose-950/30 flex items-center justify-between gap-[var(--s3,12px)] t-cap text-rose-700 dark:text-rose-300"
+          className="w-full px-[var(--empty-pad-x,16px)] py-[var(--empty-pad-y,14px)] [--sq-stroke:#fda4af] dark:[--sq-stroke:#9f1239] bg-rose-50 dark:bg-rose-950/30 flex items-center justify-between gap-[var(--s3,12px)] t-cap text-rose-700 dark:text-rose-300"
         >
           <span>{loadMoreError}</span>
           {(onRetryLoadMore || onLoadMore) && (
@@ -1344,7 +1344,7 @@ export function UniversalDataCollection<T>({
               data-sq="ctl-sm"
               data-sq-border="solid"
               onClick={() => void (onRetryLoadMore || onLoadMore)?.()}
-              className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] border border-rose-300 dark:border-rose-700 [--sq-stroke:#fda4af] dark:[--sq-stroke:#be123c] t-btn hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+              className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] [--sq-stroke:#fda4af] dark:[--sq-stroke:#be123c] t-btn hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors cursor-pointer whitespace-nowrap shrink-0"
             >
               {storeLanguage === 'ar' ? 'إعادة المحاولة' : storeLanguage === 'fr' ? 'Réessayer' : 'Retry'}
             </button>

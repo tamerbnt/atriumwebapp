@@ -1202,7 +1202,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
               <div
                 data-sq="card"
                 data-sq-border="none"
-                className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] flex items-center justify-between t-cap"
+                className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between t-cap"
               >
                 <span className="text-black/55 dark:text-white/55">
                   {isAr ? 'إجمالي قيمة الطلبية HT:' : 'Montant Total Commande HT:'}

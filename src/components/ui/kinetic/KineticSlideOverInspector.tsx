@@ -548,7 +548,7 @@ function KineticSlideOverInspectorInner<T>({
             role="tablist"
             data-sq="ctl"
             data-sq-border="none"
-            className="ptabs relative flex mx-[var(--drawer-pad,24px)] p-[var(--seg-l-pad,4px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#1C1A18]"
+            className="ptabs relative flex mx-[var(--drawer-pad,24px)] p-[var(--seg-l-pad,4px)] bg-[var(--atr-bg,#F3EDE7)] dark:bg-[#191716]"
           >
             <i
               ref={pindRef}

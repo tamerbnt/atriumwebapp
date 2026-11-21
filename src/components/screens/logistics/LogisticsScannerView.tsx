@@ -607,7 +607,7 @@ export const LogisticsScannerView: React.FC = () => {
             <div
               data-sq="ctl"
               data-sq-border="none"
-              className="flex bg-[#F3EDE7] dark:bg-[#1D1B19] p-[3px]"
+              className="flex bg-[#F3EDE7] dark:bg-[#191716] p-[3px]"
             >
               {(['Bagging', 'Intake', 'Unbagging'] as const).map((m) => (
                 <button
@@ -734,6 +734,7 @@ export const LogisticsScannerView: React.FC = () => {
                   </AtriumButton>
                 )}
               </div>
+            </div>
             </div>
           )}
 

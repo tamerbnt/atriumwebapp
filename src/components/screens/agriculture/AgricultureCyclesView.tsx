@@ -138,7 +138,7 @@ export const AgricultureCyclesView: React.FC = () => {
         case 'planned':
           return {
             label: isAr ? 'مخطط (Budget)' : 'Planifié',
-            bg: 'bg-[#F3EDE7] text-black/70 dark:bg-neutral-800 dark:text-white/75',
+            bg: 'bg-[#F3EDE7] text-black/70 dark:bg-[#2B2825] dark:text-white/75',
           };
         case 'sowing':
           return {
@@ -163,7 +163,7 @@ export const AgricultureCyclesView: React.FC = () => {
         case 'closed':
           return {
             label: isAr ? 'مكتمل ومغلق' : 'Clôturé',
-            bg: 'bg-neutral-100 text-black/70 dark:bg-neutral-800 dark:text-white/75',
+            bg: 'bg-neutral-100 text-black/70 dark:bg-[#2B2825] dark:text-white/75',
           };
         default:
           return {
@@ -1017,7 +1017,7 @@ export const AgricultureCyclesView: React.FC = () => {
           data-sq="card"
           data-sq-border="solid"
           style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
-          className="p-4 bg-amber-500/10 border border-amber-500/25 flex items-center gap-3 text-amber-800 dark:text-amber-300 t-cap"
+          className="p-4 bg-amber-500/10 flex items-center gap-3 text-amber-800 dark:text-amber-300 t-cap"
         >
           <AlertTriangle size={20} className="shrink-0 text-amber-600" />
           <div className="flex-1">
@@ -1351,10 +1351,10 @@ export const AgricultureCyclesView: React.FC = () => {
         statusLabel={activeCycle ? getPhaseConfig(activeCycle.currentPhase).label : undefined}
         statusClassName={
           activeCycle?.currentPhase === 'treatment_locked'
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
             : activeCycle?.currentPhase === 'ready_harvest' || activeCycle?.currentPhase === 'vegetative'
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
-            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD] border border-[#BFDBFE] dark:border-[#1E3A8A]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+            : 'bg-[#DBEAFE] dark:bg-[#172554] text-[#1D4ED8] dark:text-[#93C5FD]'
         }
         tabs={[
           { id: 'details', label: isAr ? 'نظرة عامة' : isEn ? 'Overview' : 'Détails' },
@@ -1538,8 +1538,8 @@ export const AgricultureCyclesView: React.FC = () => {
         statusLabel={activeTreatment ? `${activeTreatment.darDays}j DAR` : undefined}
         statusClassName={
           activeTreatment && evaluateDarSafety(activeTreatment.treatmentDate, activeTreatment.darDays).isLocked
-            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
-            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
+            ? 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
+            : 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
         }
         tabs={[
           { id: 'overview', label: isAr ? 'نظرة عامة' : isEn ? 'Overview' : 'Aperçu' },

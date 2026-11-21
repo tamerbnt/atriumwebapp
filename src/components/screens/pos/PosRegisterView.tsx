@@ -2476,7 +2476,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
                 <div
                   data-sq="card"
                   data-sq-border="none"
-                  className="p-4 bg-[#F5F1EC] dark:bg-[#1D1B19] space-y-2"
+                  className="p-4 bg-[#F5F1EC] dark:bg-[#22201E] space-y-2"
                 >
                   <div className="flex items-center justify-between pb-1">
                     <span className="t-small font-semibold text-black/55 dark:text-white/55">

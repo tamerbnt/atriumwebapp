@@ -920,7 +920,7 @@ export const VenueFinanceView: React.FC = () => {
               <div
                 data-sq="ctl"
                 data-sq-border="none"
-                className="p-3 bg-[#F5F1EC] dark:bg-[#1D1B19] t-cap space-y-1"
+                className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] t-cap space-y-1"
               >
                 <div>
                   Locataire: <strong className="text-black dark:text-white">{deductionTarget.renterName}</strong>

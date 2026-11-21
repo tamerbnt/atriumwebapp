@@ -55,7 +55,7 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({ isOp
 							}
 						]} />
 </div>
-<div data-sq="card" data-sq-border="none" className="p-5 bg-[#F3EDE7] dark:bg-[#1D1B19] space-y-4">
+<div data-sq="card" data-sq-border="none" className="p-5 bg-[#F3EDE7] dark:bg-[#22201E] space-y-4">
 <div className="flex items-center justify-between">
 <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">Décomposition Détaillée de l'Acquisition</span>
 <span className="t-small font-semibold px-2 py-1 rounded-full bg-[#d4522f]/15 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">

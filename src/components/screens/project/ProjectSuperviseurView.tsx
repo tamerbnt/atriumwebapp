@@ -1127,7 +1127,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                     <div
                       data-sq="ctl"
                       data-sq-border="none"
-                      className="flex items-center gap-3 t-small font-semibold tabular-nums px-4 py-2 bg-[#F5F1EC] dark:bg-[#1D1B19]"
+                      className="flex items-center gap-3 t-small font-semibold tabular-nums px-4 py-2 bg-[#F5F1EC] dark:bg-[#191716]"
                     >
                       <span className="text-emerald-600">
                         {presentCount} {isAr ? 'حاضر' : isEn ? 'Present' : 'Présents'}

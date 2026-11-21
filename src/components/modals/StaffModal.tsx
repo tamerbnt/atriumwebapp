@@ -387,7 +387,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
           </div>
 
           {/* Access Badge */}
-          <div data-sq="card" data-sq-border="none" className="p-[var(--s4)] bg-[#F5F1EC] dark:bg-[#1D1B19] flex flex-col gap-[var(--s1)]">
+          <div data-sq="card" data-sq-border="none" className="p-[var(--s4)] bg-[#F5F1EC] dark:bg-[#22201E] flex flex-col gap-[var(--s1)]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-[var(--s3)]">
               <div className="flex items-center gap-[var(--s3)]">
                 <div data-sq="tile" data-sq-border="none" className="w-[var(--tile,40px)] h-[var(--tile,40px)] bg-[#d4522f]/10 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center shrink-0">
@@ -435,7 +435,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
             data-sq="ctl"
             data-sq-border="none"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-between p-[var(--s3)] bg-[#EFE9E2] dark:bg-[#1D1B19] hover:bg-[#E7E0D7] dark:hover:bg-[#2B2825] text-left rtl:text-right transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between p-[var(--s3)] bg-[#EFE9E2] dark:bg-[#2B2825] hover:bg-[#E7E0D7] dark:hover:bg-[#312D2A] text-left rtl:text-right transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-[var(--s3)]">
               <FileText size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
@@ -543,7 +543,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
               </div>
 
               {/* Multi-Credential Authentication Toggles */}
-              <div data-sq="panel" data-sq-border="none" className="flex flex-col gap-[var(--s3)] p-[var(--s3)] bg-[#F5F1EC] dark:bg-[#1D1B19]">
+              <div data-sq="panel" data-sq-border="none" className="flex flex-col gap-[var(--s3)] p-[var(--s3)] bg-[#F5F1EC] dark:bg-[#22201E]">
                 <div className="flex items-center gap-[var(--s2)] t-small font-semibold text-[var(--text-1)]">
                   <KeyRound size={16} strokeWidth={1.5} className="text-[var(--brand-text)] dark:text-[var(--brand-on-dark)]" />
                   <span>{isAr ? 'بيانات الدخول' : isEn ? 'Login Access' : 'Accès Connexion'}</span>

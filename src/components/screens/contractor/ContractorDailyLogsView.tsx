@@ -822,7 +822,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
       <div
         data-sq="ctl"
         data-sq-border="solid"
-        className="flex items-center gap-1 p-[3px] bg-neutral-100 dark:bg-neutral-850 w-fit"
+        className="flex items-center gap-1 p-[3px] bg-neutral-100 dark:bg-[#191716] w-fit"
       >
         <button
           type="button"
@@ -831,13 +831,13 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
           data-sq-border="none"
           className={`flex items-center gap-2 px-4 py-2 t-small font-semibold transition-all cursor-pointer ${
             activeSection === 'logs'
-              ? 'bg-white dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
+              ? 'bg-white dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
               : 'text-black/70 dark:text-white/75 hover:text-black'
           }`}
         >
           <Calendar size={14} />
           <span>{isAr ? 'محاضر الورشة والحضور' : 'Journaux & Effectifs'}</span>
-          <span className="t-cap tabular-nums px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-700">
+          <span className="t-cap tabular-nums px-2 py-1 rounded-full bg-neutral-100 dark:bg-[#191716]">
             {projectLogs.length}
           </span>
         </button>
@@ -848,13 +848,13 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
           data-sq-border="none"
           className={`flex items-center gap-2 px-4 py-2 t-small font-semibold transition-all cursor-pointer ${
             activeSection === 'concrete'
-              ? 'bg-white dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
+              ? 'bg-white dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
               : 'text-black/70 dark:text-white/75 hover:text-black'
           }`}
         >
           <Layers size={14} />
           <span>{isAr ? 'صبات الخرسانة ومطابقة CTC' : 'Coulées Béton & CTC (CBA 93)'}</span>
-          <span className="t-cap tabular-nums px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-700">
+          <span className="t-cap tabular-nums px-2 py-1 rounded-full bg-neutral-100 dark:bg-[#191716]">
             {projectConcretePours.length}
           </span>
         </button>
@@ -865,13 +865,13 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
           data-sq-border="none"
           className={`flex items-center gap-2 px-4 py-2 t-small font-semibold transition-all cursor-pointer ${
             activeSection === 'equipment'
-              ? 'bg-white dark:bg-neutral-800 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
+              ? 'bg-white dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]'
               : 'text-black/70 dark:text-white/75 hover:text-black'
           }`}
         >
           <Fuel size={14} />
           <span>{isAr ? 'ساعات العتاد والوقود' : 'Parc Engins & Gasoil'}</span>
-          <span className="t-cap tabular-nums px-2 py-1 rounded-full bg-neutral-100 dark:bg-neutral-700">
+          <span className="t-cap tabular-nums px-2 py-1 rounded-full bg-neutral-100 dark:bg-[#191716]">
             {projectEquipmentLogs.length}
           </span>
         </button>
@@ -1003,7 +1003,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         <div
           data-sq="panel"
           data-sq-border="solid"
-          className="bg-[#F3EDE7] dark:bg-[#141312] p-3 space-y-4"
+          className="bg-[#F3EDE7] dark:bg-[#191716] p-3 space-y-4"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h2 className="t-label font-semibold text-black dark:text-white">
@@ -1042,7 +1042,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   key={pour.id}
                   data-sq="card"
                   data-sq-border="solid"
-                  className="bg-white dark:bg-neutral-850 p-4 flex flex-col justify-between space-y-3"
+                  className="bg-white dark:bg-[#22201E] p-4 flex flex-col justify-between space-y-3"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -1107,7 +1107,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                       data-sq="ctl"
                       data-sq-border="solid"
                       style={{ '--sq-stroke': 'rgba(245, 158, 11, 0.35)' } as React.CSSProperties}
-                      className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 space-y-1"
+                      className="p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 space-y-1"
                     >
                       <div className="flex items-center gap-2 font-semibold t-small">
                         <AlertOctagon size={13} className="text-amber-600 shrink-0" />
@@ -1123,7 +1123,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                       data-sq="ctl"
                       data-sq-border="solid"
                       style={{ '--sq-stroke': 'rgba(16, 185, 129, 0.35)' } as React.CSSProperties}
-                      className="p-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-300 flex items-center gap-2 t-small font-semibold"
+                      className="p-2 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 flex items-center gap-2 t-small font-semibold"
                     >
                       <CheckCircle2 size={13} className="shrink-0" />
                       <span>Conforme · Visa CTC accordé</span>
@@ -1385,8 +1385,8 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
         }
         statusClassName={
           activeLog?.weather.toLowerCase().includes('ensoleill')
-            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]'
-            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166] border border-[#F0D79B] dark:border-[#59471E]'
+            ? 'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]'
+            : 'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]'
         }
         tabs={[
           { id: 'fiche', label: isAr ? 'محضر الأشغال' : 'Fiche Chantier' },
@@ -1523,7 +1523,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5 max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-5 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-2">
@@ -1565,7 +1565,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
               <div
                 data-sq="card"
                 data-sq-border="solid"
-                className="p-4 bg-neutral-50 dark:bg-neutral-850 space-y-3"
+                className="p-4 bg-neutral-50 dark:bg-[#22201E] space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -1592,7 +1592,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                       key={c.label}
                       data-sq="ctl"
                       data-sq-border="solid"
-                      className="p-2 bg-white dark:bg-neutral-900 flex items-center justify-between"
+                      className="p-2 bg-white dark:bg-[#191716] flex items-center justify-between"
                     >
                       <div>
                         <span className="t-small font-medium block">{c.label}</span>
@@ -1604,7 +1604,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                           onClick={() => c.set((n) => Math.max(0, n - 1))}
                           data-sq="check"
                           data-sq-border="none"
-                          className="w-6 h-6 bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"
+                          className="w-6 h-6 bg-neutral-100 dark:bg-[#2B2825] flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 dark:hover:bg-[#332F2B] cursor-pointer"
                         >
                           <Minus size={12} />
                         </button>
@@ -1613,7 +1613,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                           onClick={() => c.set((n) => n + 1)}
                           data-sq="check"
                           data-sq-border="none"
-                          className="w-6 h-6 bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 cursor-pointer"
+                          className="w-6 h-6 bg-neutral-100 dark:bg-[#2B2825] flex items-center justify-center text-black/70 dark:text-white/75 hover:bg-neutral-200 dark:hover:bg-[#332F2B] cursor-pointer"
                         >
                           <Plus size={12} />
                         </button>
@@ -1671,7 +1671,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-4"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-2">
@@ -1785,7 +1785,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-4"
+              className="bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] p-6 w-full space-y-4"
             >
               <div className="flex items-center justify-between pb-3 border-b border-[var(--atr-divider)]">
                 <div className="flex items-center gap-2">

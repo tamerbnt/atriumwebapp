@@ -1143,7 +1143,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                         key={item.id}
                         data-sq="ctl"
                         data-sq-border="none"
-                        className="flex items-center gap-2 p-3 bg-[#F3EDE7] dark:bg-[#1D1B19] cursor-pointer t-cap"
+                        className="flex items-center gap-2 p-3 bg-[#F3EDE7] dark:bg-[#22201E] cursor-pointer t-cap"
                       >
                         <input
                           type="checkbox"

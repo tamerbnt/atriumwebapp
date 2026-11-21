@@ -142,7 +142,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 								}
 							]} />
 </div>
-<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#1D1B19] space-y-4">
+<div data-sq="card" data-sq-border="none" className="p-4 bg-[#F3EDE7] dark:bg-[#22201E] space-y-4">
 <div className="flex items-center gap-2 t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
 <ShieldCheck className="w-4 h-4" />
 <span>Identité Légale du Mandant (Propriétaire)</span>

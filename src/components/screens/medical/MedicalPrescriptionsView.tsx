@@ -53,7 +53,7 @@ const getInitials2 = (name: string): string => {
 };
 
 const MEMBER_PILL_OK =
-  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80] border border-[#B5E8CE] dark:border-[#1E4D36]';
+  'bg-[#DDF5E8] dark:bg-[#143324] text-[#0B7A45] dark:text-[#4ADE80]';
 
 export const MedicalPrescriptionsView: React.FC<any> = () => {
   const {
@@ -599,7 +599,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
         header: isAr ? 'الأدوية الموصوفة' : 'Médicaments',
         width: '1.4*',
         renderCell: (rx) => (
-          <span className="px-2.5 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 tabular-nums">
+          <span className="px-2.5 py-1 rounded-full t-small font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 tabular-nums">
             {rx.items.length} {isAr ? 'مستحضرات' : 'spécialités'}
           </span>
         ),
@@ -656,7 +656,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
             <div
               data-sq="ctl"
               data-sq-border="none"
-              className="flex bg-neutral-200/80 dark:bg-neutral-800 p-[3px] t-small font-semibold"
+              className="flex bg-[#EFE9E2] dark:bg-[#191716] p-[3px] t-small font-semibold"
             >
               <button
                 type="button"
@@ -666,7 +666,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 onClick={() => setActiveMainTab('prescriptions')}
                 className={`px-3 py-2 transition-all cursor-pointer ${
                   activeMainTab === 'prescriptions'
-                    ? 'bg-white dark:bg-neutral-700 text-black dark:text-white font-semibold'
+                    ? 'bg-white dark:bg-[#2B2825] text-black dark:text-white font-semibold'
                     : 'text-black/70 dark:text-white/75'
                 }`}
               >
@@ -680,7 +680,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 onClick={() => setActiveMainTab('ngap')}
                 className={`px-3 py-2 transition-all cursor-pointer ${
                   activeMainTab === 'ngap'
-                    ? 'bg-white dark:bg-neutral-700 text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
+                    ? 'bg-white dark:bg-[#2B2825] text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] font-semibold'
                     : 'text-black/70 dark:text-white/75'
                 }`}
               >
@@ -693,7 +693,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               data-sq="ctl"
               data-sq-border="solid"
               onClick={() => setIsPersonalizerOpen(true)}
-              className="px-4 py-2 bg-white dark:bg-neutral-800 text-black/70 dark:text-white hover:[--sq-stroke:#d4522f] t-small font-semibold flex items-center gap-2 transition-colors cursor-pointer"
+              className="px-4 py-2 bg-white dark:bg-[#2B2825] text-black/70 dark:text-white hover:[--sq-stroke:#d4522f] t-small font-semibold flex items-center gap-2 transition-colors cursor-pointer"
             >
               <Settings size={14} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
               <span>{isAr ? 'تخصيص الأوردونونس' : 'Studio Ordonnance'}</span>
@@ -768,7 +768,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                   header: 'Code NGAP',
                   width: '1.0*',
                   renderCell: (act) => (
-                    <span className="px-2.5 py-1 rounded-full bg-[#d4522f]/10 border border-[#d4522f]/20 tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                    <span className="px-2.5 py-1 rounded-full bg-[#d4522f]/10 tabular-nums font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
                       {act.code}
                     </span>
                   ),
@@ -1293,7 +1293,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         data-sq="empty"
                         data-sq-border="dashed"
                         data-sq-stroke-w={2}
-                        className="p-5 bg-white dark:bg-neutral-800 [--sq-stroke:rgba(212,82,47,0.4)] flex flex-col items-center justify-center space-y-2 text-center mb-3"
+                        className="p-5 bg-white dark:bg-[#22201E] [--sq-stroke:rgba(212,82,47,0.4)] flex flex-col items-center justify-center space-y-2 text-center mb-3"
                       >
                         <QrCode size={72} className="text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]" />
                         <div>
@@ -1375,9 +1375,9 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
             <div
               data-sq="panel"
               data-sq-border="solid"
-              className="w-full bg-white dark:bg-neutral-900 [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[90vh] overflow-hidden"
+              className="w-full bg-white dark:bg-[#262422] [--sq-stroke:var(--sq-stroke-pop)] flex flex-col max-h-[90vh] overflow-hidden"
             >
-              <div className="p-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
+              <div className="p-4 border-b border-[var(--atr-divider)] flex items-center justify-between bg-neutral-50 dark:bg-[#22201E]">
                 <div className="flex items-center gap-2">
                   <div
                     data-sq="tile"
@@ -1413,7 +1413,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     <div
                       data-sq="ctl"
                       data-sq-border="solid"
-                      className="bg-neutral-50 dark:bg-neutral-800"
+                      className="bg-[#F5F1EC] dark:bg-[#292624]"
                     >
                       <select
                         value={compDoctorId}
@@ -1435,7 +1435,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     <div
                       data-sq="ctl"
                       data-sq-border="solid"
-                      className="bg-neutral-50 dark:bg-neutral-800"
+                      className="bg-[#F5F1EC] dark:bg-[#292624]"
                     >
                       <select
                         value={compPatientId}
@@ -1459,7 +1459,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 <div
                   data-sq="card"
                   data-sq-border="solid"
-                  className="p-3 bg-neutral-50 dark:bg-neutral-800 flex items-center justify-between"
+                  className="p-3 bg-neutral-50 dark:bg-[#22201E] flex items-center justify-between"
                 >
                   <div className="space-y-0.5">
                     <span className="t-small text-black/55 dark:text-white/55 font-semibold">
@@ -1554,7 +1554,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                     key={idx}
                     data-sq="card"
                     data-sq-border="solid"
-                    className="p-3 bg-neutral-50 dark:bg-neutral-800 space-y-2"
+                    className="p-3 bg-neutral-50 dark:bg-[#22201E] space-y-2"
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-black/55 dark:text-white/55 t-small w-4">
@@ -1563,7 +1563,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                       <div
                         data-sq="ctl-sm"
                         data-sq-border="solid"
-                        className="flex-1 bg-white dark:bg-neutral-900"
+                        className="flex-1 bg-white dark:bg-[#292624]"
                       >
                         <input
                           type="text"
@@ -1596,7 +1596,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         <div
                           data-sq="ctl-sm"
                           data-sq-border="solid"
-                          className="bg-white dark:bg-neutral-900"
+                          className="bg-white dark:bg-[#292624]"
                         >
                           <input
                             type="text"
@@ -1617,7 +1617,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         <div
                           data-sq="ctl-sm"
                           data-sq-border="solid"
-                          className="bg-white dark:bg-neutral-900"
+                          className="bg-white dark:bg-[#292624]"
                         >
                           <input
                             type="text"
@@ -1638,7 +1638,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                         <div
                           data-sq="ctl-sm"
                           data-sq-border="solid"
-                          className="bg-white dark:bg-neutral-900"
+                          className="bg-white dark:bg-[#292624]"
                         >
                           <input
                             type="number"
@@ -1667,7 +1667,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
                 <div
                   data-sq="ctl"
                   data-sq-border="solid"
-                  className="bg-neutral-50 dark:bg-neutral-800"
+                  className="bg-[#F5F1EC] dark:bg-[#292624]"
                 >
                   <textarea
                     value={compNotes}
@@ -1680,7 +1680,7 @@ export const MedicalPrescriptionsView: React.FC<any> = () => {
               </div>
             </div>
 
-            <div className="p-4 border-t border-[var(--atr-divider)] flex items-center justify-between bg-neutral-50 dark:bg-neutral-850">
+            <div className="p-4 border-t border-[var(--atr-divider)] flex items-center justify-between bg-neutral-50 dark:bg-[#22201E]">
               <span className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                 Code QR sécurisé généré automatiquement
               </span>
