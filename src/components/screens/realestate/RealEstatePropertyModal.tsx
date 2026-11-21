@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { Building2, X, ShieldCheck, CheckCircle } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { RealEstateProperty, PropertyLegalTitleType } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -19,7 +25,15 @@ interface RealEstatePropertyModalProps {
 const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
 
 export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = ({ isOpen, onClose, onSave, propertyToEdit }) => {
-	const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+	const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+	  (s) => ({
+	    language: s.language,
+	    currentBusiness: selectCurrentBusinessFromState(s),
+	    currentBranch: selectCurrentBranchFromState(s),
+	    currentUser: s.currentUser,
+	  }),
+	  shallowEqualObjects
+	);
 	const [activeTab, setActiveTab] = React.useState("general");
 	const [title, setTitle] = React.useState(propertyToEdit?.title || "");
 	const [propertyType, setPropertyType] = React.useState<RealEstateProperty['propertyType']>(propertyToEdit?.propertyType || "Apartment");

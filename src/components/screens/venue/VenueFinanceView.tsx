@@ -6,7 +6,15 @@ import {
   Printer,
   Unlock,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentSecurityDepositsFromState,
+  selectCurrentRentalBookingsFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { SecurityDepositRecord } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -52,17 +60,18 @@ export const VenueFinanceView: React.FC = () => {
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 
-  const {
-    securityDeposits,
-    rentalBookings,
-    releaseSecurityDeposit,
-    deductSecurityDeposit,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+  const { securityDeposits, rentalBookings, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+    (s) => ({
+      securityDeposits: selectCurrentSecurityDepositsFromState(s),
+      rentalBookings: selectCurrentRentalBookingsFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
+  const { releaseSecurityDeposit, deductSecurityDeposit, retryCloudSync } = useAtriumActions();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');

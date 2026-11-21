@@ -12,7 +12,14 @@ import {
   FileCheck,
   Check,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentRentableUnitsFromState,
+  selectCurrentRentalRentersFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { RentableUnit, RentalBooking, BookingAddon, BookingStatus, DepositStatus } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
@@ -41,13 +48,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   initialRenterId,
 }) => {
   const { t, language } = useTranslation();
-  const {
-    rentableUnits,
-    rentalRenters,
-    createRentalBooking,
-    updateRentalBooking,
-    createRentalRenter,
-  } = useAtriumStore();
+  const { rentableUnits, rentalRenters } = useAtriumSelector(
+    (s) => ({
+      rentableUnits: selectCurrentRentableUnitsFromState(s),
+      rentalRenters: selectCurrentRentalRentersFromState(s),
+    }),
+    shallowEqualObjects
+  );
+  const { createRentalBooking, updateRentalBooking, createRentalRenter } = useAtriumActions();
 
   const todayStr = initialDate || new Date().toISOString().split('T')[0];
   const startHourStr = initialStartTime || '14:00';

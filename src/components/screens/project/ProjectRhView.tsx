@@ -1,8 +1,11 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
-  useAtriumStore,
   selectCurrentBranchFromState,
   showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentPmTalentsFromState,
+  useAtriumActions,
 } from '../../../services/store';
 import { registerUndoEntry } from '../../../services/undoEngine';
 import { PMTalent } from '../../../types/index';
@@ -106,21 +109,26 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
   const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
+  const { currentBranch, branches, pmTalents, activePmSubScreen, isSyncing, networkMode, lastSyncedAt } = useAtriumSelector(
+    (s) => ({
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      pmTalents: selectCurrentPmTalentsFromState(s),
+      activePmSubScreen: s.activePmSubScreen || 'dashboard',
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
   const {
-    currentBranch,
-    branches,
-    pmTalents,
     addPmTalent,
     updatePmTalentStatus,
     batchUpdatePmTalentStatus,
     batchDeletePmTalents,
-    activePmSubScreen,
     setActivePmSubScreen,
-    isSyncing,
-    networkMode,
     retryCloudSync,
-    lastSyncedAt,
-  } = useAtriumStore();
+  } = useAtriumActions();
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
   const activeTab =

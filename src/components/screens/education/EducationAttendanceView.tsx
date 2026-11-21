@@ -9,7 +9,19 @@ import {
   Eye,
   Pin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  selectCurrentEduCohortsFromState,
+  selectCurrentEduSessionsFromState,
+  selectCurrentEduStudentsFromState,
+  selectCurrentEduEnrollmentsFromState,
+  selectCurrentEduAttendanceFromState,
+  selectCurrentEduGradesFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { RollCallModal } from './RollCallModal';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -58,23 +70,24 @@ export const EducationAttendanceView: React.FC = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const {
-    currentBranch,
-    branches,
-    eduCohorts,
-    eduSessions,
-    eduStudents,
-    eduEnrollments,
-    eduAttendance,
-    eduGrades,
-    recordEduGrade,
-    batchRecordAttendance,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  const { currentBranch, branches, eduCohorts, eduSessions, eduStudents, eduEnrollments, eduAttendance, eduGrades, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      eduCohorts: selectCurrentEduCohortsFromState(s),
+      eduSessions: selectCurrentEduSessionsFromState(s),
+      eduStudents: selectCurrentEduStudentsFromState(s),
+      eduEnrollments: selectCurrentEduEnrollmentsFromState(s),
+      eduAttendance: selectCurrentEduAttendanceFromState(s),
+      eduGrades: selectCurrentEduGradesFromState(s),
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
+  const { recordEduGrade, batchRecordAttendance, retryCloudSync } = useAtriumActions();
 
   const [activeTab, setActiveTab] = useState<ModeKey>('attendance');
   const [selectedCohortId, setSelectedCohortId] = useState<string>(eduCohorts[0]?.id || 'all');

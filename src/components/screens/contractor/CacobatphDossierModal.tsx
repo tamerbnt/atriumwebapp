@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Cloud, Printer, X, ShieldCheck, CheckCircle2, AlertTriangle, Users, Calendar, Download } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { showToast, useAtriumSelector } from '../../../services/store';
 import { ContractorProject, ContractorDailyLog } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
@@ -16,7 +16,7 @@ interface CacobatphDossierModalProps {
 
 
 export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({ isOpen, onClose, project, dailyLog }) => {
-	const { language } = useAtriumStore();
+	const language = useAtriumSelector((s) => s.language);
 	const isAr = language === "ar";
 	const [onmBulletin, setOnmBulletin] = React.useState(dailyLog?.onmBulletinReference || "ONM-METEO-DZ-2026-8841");
 	const [stoppageHours, setStoppageHours] = React.useState(String(dailyLog?.stoppageHours || 5));

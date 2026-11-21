@@ -13,7 +13,13 @@ import {
   Eye,
   Pin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { LogisticsShipment } from '../../../types';
 import { localizeStatus } from '../../../utils/rules';
 import { useLogisticsData } from './logisticsData';
@@ -76,14 +82,17 @@ const playSound = (type: 'success' | 'error') => {
 };
 
 export const LogisticsScannerView: React.FC = () => {
-  const {
-    language,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+  const { language, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
   const { shipments, bags, updateShipmentStatus, sealBag } = useLogisticsData();

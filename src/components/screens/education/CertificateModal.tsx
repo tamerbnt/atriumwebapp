@@ -8,7 +8,15 @@ import {
   ShieldCheck,
   GraduationCap,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentEduStudentsFromState,
+  selectCurrentEduCohortsFromState,
+  selectCurrentEduCertificatesFromState,
+  selectCurrentBusinessFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { EduCertificate } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -25,13 +33,16 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   onClose,
 }) => {
   const { t } = useTranslation();
-  const {
-    eduStudents,
-    eduCohorts,
-    eduCertificates,
-    issueEduCertificate,
-    currentBusiness,
-  } = useAtriumStore();
+  const { eduStudents, eduCohorts, eduCertificates, currentBusiness } = useAtriumSelector(
+    (s) => ({
+      eduStudents: selectCurrentEduStudentsFromState(s),
+      eduCohorts: selectCurrentEduCohortsFromState(s),
+      eduCertificates: selectCurrentEduCertificatesFromState(s),
+      currentBusiness: selectCurrentBusinessFromState(s),
+    }),
+    shallowEqualObjects
+  );
+  const { issueEduCertificate } = useAtriumActions();
 
   const [studentId, setStudentId] = useState<string>(
     existingCert?.studentId || eduStudents[0]?.id || ''

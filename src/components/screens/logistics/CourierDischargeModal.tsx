@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { CreditCard, DollarSign, CheckCircle2, AlertTriangle, Printer, X, ShieldCheck } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+} from '../../../services/store';
 import { CourierCashDischarge, LogisticsManifest } from '../../../types';
 import { computeCourierDischargeBalance } from '../../../utils/logisticsRules';
 import { formatMoney } from '../../../utils/rules';
@@ -19,7 +23,13 @@ export const CourierDischargeModal: React.FC<CourierDischargeModalProps> = ({
   manifest,
   onSaveDischarge,
 }) => {
-  const { language, currentUser } = useAtriumStore();
+  const { language, currentUser } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
   const isAr = language === 'ar';
 
   const [n2000, setN2000] = useState(0);

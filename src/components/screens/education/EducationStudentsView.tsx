@@ -12,7 +12,18 @@ import {
   Phone,
   Mail,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentEduStudentsFromState,
+  selectCurrentEduCohortsFromState,
+  selectCurrentEduEnrollmentsFromState,
+  selectCurrentEduAttendanceFromState,
+  selectCurrentEduGradesFromState,
+  selectCurrentEduCertificatesFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { EduStudent, StudentStatus } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
@@ -59,27 +70,32 @@ export const EducationStudentsView: React.FC = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
+  const { eduStudents, eduCohorts, eduEnrollments, eduAttendance, eduGrades, eduCertificates, currentBranch, branches, activeEducationRole, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      eduStudents: selectCurrentEduStudentsFromState(s),
+      eduCohorts: selectCurrentEduCohortsFromState(s),
+      eduEnrollments: selectCurrentEduEnrollmentsFromState(s),
+      eduAttendance: selectCurrentEduAttendanceFromState(s),
+      eduGrades: selectCurrentEduGradesFromState(s),
+      eduCertificates: selectCurrentEduCertificatesFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      activeEducationRole: s.activeEducationRole || 'owner',
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
   const {
-    eduStudents,
-    eduCohorts,
-    eduEnrollments,
-    eduAttendance,
-    eduGrades,
-    eduCertificates,
-    currentBranch,
-    branches,
     addEduStudent,
     updateEduStudent,
     deleteEduStudent,
     addEduEnrollment,
     setScreen,
-    activeEducationRole,
-    isSyncing,
-    networkMode,
     retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const isStaff = activeEducationRole === 'staff';
 

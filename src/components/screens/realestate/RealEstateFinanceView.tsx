@@ -10,7 +10,13 @@ import {
   MapPin,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { registerUndoEntry } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useRealEstateData } from './realEstateData';
@@ -44,14 +50,17 @@ import {
 } from '../../ui/kinetic';
 
 export const RealEstateFinanceView: React.FC<any> = () => {
-  const {
-    language,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+  const { language, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 

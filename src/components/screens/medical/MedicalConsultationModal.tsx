@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { Stethoscope, X, UserCheck, AlertTriangle } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { MedicalPatient, MedicalConsultation } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
@@ -25,7 +30,15 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
   onSave,
   preselectedPatientId,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
   const { practitioners, getNextAvailableGeneralist, depleteForAct } = useMedicalData();
   const effectivePatients = patient
     ? (patients.some((p) => p.id === patient.id) ? patients : [patient, ...patients])

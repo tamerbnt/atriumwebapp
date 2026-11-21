@@ -12,7 +12,13 @@ import {
   LayoutGrid,
   List,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { MedicalConsultation } from '../../../types';
 import { useMedicalData } from './medicalData';
@@ -63,14 +69,17 @@ const getQueueStatusClassName = (status: MedicalConsultation['status']): string 
 };
 
 export const MedicalQueueView: React.FC<any> = () => {
-  const {
-    language,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+  const { language, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 

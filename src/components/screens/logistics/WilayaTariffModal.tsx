@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, X, Save, RotateCcw } from 'lucide-react';
-import { useAtriumStore, useAtriumSelector } from '../../../services/store';
+import { useAtriumSelector } from '../../../services/store';
 import { DEFAULT_TARIFF_RULES, TariffRule, WilayaZone } from '../../../utils/logisticsRules';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { isSupabaseConfigured, logisticsService, syncCoordinator } from '../../../lib/supabase';
@@ -22,7 +22,7 @@ function persistTariffRules(
 }
 
 export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, onClose }) => {
-  const { language } = useAtriumStore();
+  const language = useAtriumSelector((s) => s.language);
   const currentBranchId = useAtriumSelector((s) => s.currentBranchId);
   const currentBusinessId = useAtriumSelector((s) => s.currentBusinessId);
   const currentAccountId = useAtriumSelector((s) => s.account.id);

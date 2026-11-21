@@ -12,7 +12,13 @@ import {
   Microscope,
   Activity,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { MedicalPatient } from '../../../types';
 import { useMedicalData } from './medicalData';
@@ -60,14 +66,17 @@ const MEMBER_PILL_DANGER =
   'bg-[#FDE4DF] dark:bg-[#3D1E1A] text-[#B8321C] dark:text-[#FF8D7A]';
 
 export const MedicalPatientsView: React.FC<any> = () => {
-  const {
-    language,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-  } = useAtriumStore();
+  const { language, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 

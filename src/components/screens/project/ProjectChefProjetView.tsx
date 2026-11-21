@@ -1,8 +1,14 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
-  useAtriumStore,
   selectCurrentBranchFromState,
   showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentPmProjectsFromState,
+  selectCurrentPmPrintOrdersFromState,
+  selectCurrentPmBatDeliverablesFromState,
+  selectCurrentPmExpensesFromState,
+  useAtriumActions,
 } from '../../../services/store';
 import {
   PMCollateralItem,
@@ -166,15 +172,24 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const state = useAtriumStore();
+  const { currentBranch, branches, pmProjects, pmCollateralCatalog, pmPrintOrders, pmBatDeliverables, pmExpenses, activePmSubScreen, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      pmProjects: selectCurrentPmProjectsFromState(s),
+      pmCollateralCatalog: s.pmCollateralCatalog || [],
+      pmPrintOrders: selectCurrentPmPrintOrdersFromState(s),
+      pmBatDeliverables: selectCurrentPmBatDeliverablesFromState(s),
+      pmExpenses: selectCurrentPmExpensesFromState(s),
+      activePmSubScreen: s.activePmSubScreen || 'dashboard',
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
   const {
-    currentBranch,
-    branches,
-    pmProjects,
-    pmCollateralCatalog,
-    pmPrintOrders,
-    pmBatDeliverables,
-    pmExpenses,
     addPmPrintOrder,
     batchUpdatePmPrintOrderStatus,
     batchDeletePmPrintOrders,
@@ -183,14 +198,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     batchDeletePmBatDeliverables,
     addPmExpense,
     batchDeletePmExpenses,
-    activePmSubScreen,
     setActivePmSubScreen,
-    isSyncing,
-    networkMode,
     retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = state;
+  } = useAtriumActions();
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 

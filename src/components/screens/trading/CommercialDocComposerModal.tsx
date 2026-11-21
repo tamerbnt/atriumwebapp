@@ -14,7 +14,15 @@ import {
   AlertCircle,
   HelpCircle,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentB2bClientsFromState,
+  selectCurrentWarehousesFromState,
+  selectCurrentProductsFromState,
+  selectCurrentBusinessFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import {
   CommercialDocument,
   CommercialDocType,
@@ -40,7 +48,18 @@ interface CommercialDocComposerModalProps {
 
 export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProps> = ({ isOpen, onClose, initialType = "devis", editingDoc, onSaved }) => {
 	const { t, isRtl, language } = useTranslation();
-	const { b2bClients, warehouses, products, createCommercialDoc, updateCommercialDoc, allCommercialDocs, currentBusiness, currentBranchId } = useAtriumStore();
+	const { b2bClients, warehouses, products, allCommercialDocs, currentBusiness, currentBranchId } = useAtriumSelector(
+	  (s) => ({
+	    b2bClients: selectCurrentB2bClientsFromState(s),
+	    warehouses: selectCurrentWarehousesFromState(s),
+	    products: selectCurrentProductsFromState(s),
+	    allCommercialDocs: s.commercialDocs || [],
+	    currentBusiness: selectCurrentBusinessFromState(s),
+	    currentBranchId: s.currentBranchId,
+	  }),
+	  shallowEqualObjects
+	);
+	const { createCommercialDoc, updateCommercialDoc } = useAtriumActions();
 	const isEdit = !!editingDoc;
 	const [docType, setDocType] = React.useState(editingDoc?.type || initialType);
 	const [clientId, setClientId] = React.useState(editingDoc?.clientId || b2bClients[0]?.id || "");

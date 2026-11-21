@@ -4,7 +4,12 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AgriMilkingRecord, AgriDairyCow } from '../../../types';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { computeOnilMilkSubsidy } from '../../../utils/agriRules';
 import { formatMoney } from '../../../utils/rules';
 
@@ -21,7 +26,15 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
   onSave,
   dairyCows,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
   const isAr = language === 'ar';
 
   const [sessionDate, setSessionDate] = useState(() => new Date().toISOString().split('T')[0]);

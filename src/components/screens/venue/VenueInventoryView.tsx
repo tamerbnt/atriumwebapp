@@ -8,7 +8,15 @@ import {
   Calendar,
   Power,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentRentableUnitsFromState,
+  selectCurrentRentalBookingsFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { RentableUnit, RentableUnitType, RentableUnitStatus } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
@@ -61,18 +69,23 @@ export const VenueInventoryView: React.FC = () => {
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 
+  const { rentableUnits, rentalBookings, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+    (s) => ({
+      rentableUnits: selectCurrentRentableUnitsFromState(s),
+      rentalBookings: selectCurrentRentalBookingsFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
   const {
-    rentableUnits,
-    rentalBookings,
     createRentableUnit,
     updateRentableUnit,
     deleteRentableUnit,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
     retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('All');

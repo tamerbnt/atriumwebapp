@@ -77,7 +77,9 @@ export const manufacturingService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('mfg_raw_materials')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, sku, name, stock_quantity, min_stock_alert, unit, unit_cost_dzd, supplier_name, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('name', { ascending: true })
@@ -163,7 +165,9 @@ export const manufacturingService = {
         fetchAllPages<any>((from, to) => {
           let recipeQuery = (client as any)
             .from('mfg_bom_recipes')
-            .select('*')
+            .select(
+              'id, account_id, business_id, branch_id, staff_id, code, finished_product_name, output_unit, batch_size, estimated_unit_cost_dzd, standard_cycle_minutes, version, row_version, is_active, created_at, updated_at'
+            )
             .eq('branch_id', toValidUuid(branchId))
             .is('deleted_at', null)
             .order('created_at', { ascending: false })
@@ -176,7 +180,9 @@ export const manufacturingService = {
         fetchAllPages<any>((from, to) =>
           (client as any)
             .from('mfg_bom_ingredients')
-            .select('*')
+            .select(
+              'id, bom_id, material_id, material_name, quantity_per_batch, unit, scrap_factor_percent'
+            )
             .eq('branch_id', toValidUuid(branchId))
             .is('deleted_at', null)
             .order('id', { ascending: true })
@@ -312,7 +318,9 @@ export const manufacturingService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('mfg_orders')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, of_number, bom_id, product_name, target_quantity, produced_quantity, scrap_quantity, workstation_name, due_date, notes, version, created_at, updated_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -421,7 +429,7 @@ export const manufacturingService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('mfg_workstation_logs')
-          .select('*')
+          .select('id, notes, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -484,7 +492,9 @@ export const manufacturingService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('mfg_qc_inspections')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, order_id, of_number, sample_size, defects_found, result, checklist, inspector_name, inspected_at, notes, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -572,7 +582,9 @@ export const manufacturingService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('mfg_material_vouchers')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, voucher_number, voucher_type, order_id, operator_name, material_id, material_name, quantity, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })

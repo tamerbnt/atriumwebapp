@@ -12,10 +12,11 @@ import {
   Eye,
 } from 'lucide-react';
 import {
-  useAtriumStore,
   useAtriumSelector,
   showToast,
   selectCurrentBranchFromState,
+  shallowEqualObjects,
+  useAtriumActions,
 } from '../../../services/store';
 import { computeScrapYield } from '../../../utils/manufacturingRules';
 import { formatMoney } from '../../../utils/rules';
@@ -78,14 +79,17 @@ export const ManufacturingWorkstationView: React.FC = () => {
   const { language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const {
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  const { branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const currentBranch = useAtriumSelector(selectCurrentBranchFromState);
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
   const { orders, updateOrder } = useManufacturingData();

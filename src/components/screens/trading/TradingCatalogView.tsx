@@ -6,7 +6,14 @@ import {
   Trash2,
   PackagePlus,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentProductsFromState,
+  selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { Product } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
@@ -53,20 +60,25 @@ export const TradingCatalogView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
+  const { products, currentBranch, currentBusinessConfig, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      products: selectCurrentProductsFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
   const {
-    products,
     addProduct,
     updateProduct,
     deleteProduct,
-    currentBranch,
-    currentBusinessConfig,
-    branches,
-    isSyncing,
-    networkMode,
-    lastSyncedAt,
-    isSyncTimeout,
     retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumActions();
   const configuredDefaultTva = currentBusinessConfig.defaultTvaRate ?? 19;
 
   const [activeTab, setActiveTab] = useState<CatalogTab>('products');

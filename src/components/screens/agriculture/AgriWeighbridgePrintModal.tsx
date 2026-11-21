@@ -1,6 +1,10 @@
 import React from 'react';
 import { Printer, X, Scale, Truck, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { AgriWeighbridgeTicket } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -16,7 +20,13 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
   onClose,
   ticket,
 }) => {
-  const { language, currentBusiness } = useAtriumStore();
+  const { language, currentBusiness } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: selectCurrentBusinessFromState(s),
+    }),
+    shallowEqualObjects
+  );
   const isAr = language === 'ar';
 
   if (!isOpen || !ticket) return null;

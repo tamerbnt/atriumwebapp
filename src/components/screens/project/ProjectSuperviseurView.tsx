@@ -1,8 +1,13 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
-  useAtriumStore,
   selectCurrentBranchFromState,
   showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentPmMissionsFromState,
+  selectCurrentPmTalentsFromState,
+  selectCurrentPmAttendancesFromState,
+  useAtriumActions,
 } from '../../../services/store';
 import { PMAttendance, PMMission, PMTalent } from '../../../types/index';
 import { MobilePhoneSimulator } from './MobilePhoneSimulator';
@@ -135,26 +140,30 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const state = useAtriumStore();
+  const { currentBranch, branches, pmMissions, pmTalents, pmAttendances, activePmSubScreen, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      pmMissions: selectCurrentPmMissionsFromState(s),
+      pmTalents: selectCurrentPmTalentsFromState(s),
+      pmAttendances: selectCurrentPmAttendancesFromState(s),
+      activePmSubScreen: s.activePmSubScreen || 'dashboard',
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
   const {
-    currentBranch,
-    branches,
-    pmMissions,
-    pmTalents,
-    pmAttendances,
     updatePmAttendanceStatus,
     batchUpdatePmAttendanceStatus,
     closePmRollCall,
     addPmExpense,
     batchDeletePmMissions,
-    activePmSubScreen,
     setActivePmSubScreen,
-    isSyncing,
-    networkMode,
     retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = state;
+  } = useAtriumActions();
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 

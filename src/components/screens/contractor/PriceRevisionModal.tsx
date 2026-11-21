@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { X, Calculator, Printer, CheckCircle2, TrendingUp, Info, Building2 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { showToast, useAtriumSelector } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { calculatePriceRevisionCoeff } from '../../../utils/contractorRules';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -16,7 +16,7 @@ interface PriceRevisionModalProps {
 
 
 export const PriceRevisionModal: React.FC<PriceRevisionModalProps> = ({ isOpen, onClose, project }) => {
-	const { language } = useAtriumStore();
+	const language = useAtriumSelector((s) => s.language);
 	const isAr = language === "ar";
 	const [baseLaborS0, setBaseLaborS0] = React.useState("120.0");
 	const [currentLaborS, setCurrentLaborS] = React.useState("134.5");

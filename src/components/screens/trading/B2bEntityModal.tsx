@@ -10,7 +10,7 @@ import {
   MapPin,
   CheckCircle,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumActions } from '../../../services/store';
 import { B2bClient, B2bSupplier } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -38,7 +38,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
     updateB2bClient,
     createB2bSupplier,
     updateB2bSupplier,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const isEdit = !!editingEntity;
   const isSupplier = entityType === 'supplier';

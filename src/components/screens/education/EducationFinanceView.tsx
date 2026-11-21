@@ -10,7 +10,15 @@ import {
   Eye,
   CreditCard,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentEduEnrollmentsFromState,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { EduEnrollment } from '../../../types';
@@ -56,18 +64,20 @@ export const EducationFinanceView: React.FC = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const {
-    eduEnrollments,
-    recordTuitionPayment,
-    currentBusiness,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    lastSyncedAt,
-    isSyncTimeout,
-    retryCloudSync,
-  } = useAtriumStore();
+  const { eduEnrollments, currentBusiness, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      eduEnrollments: selectCurrentEduEnrollmentsFromState(s),
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
+  const { recordTuitionPayment, retryCloudSync } = useAtriumActions();
 
   const [filterKey, setFilterKey] = useState<PaymentFilterKey>('all');
   const [branchFilter, setBranchFilter] = useState<string>('All');

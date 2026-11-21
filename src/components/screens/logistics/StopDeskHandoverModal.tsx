@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Package, ShieldCheck, CheckCircle2, X, Phone, User, KeyRound, Receipt, AlertCircle } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { showToast, useAtriumSelector } from '../../../services/store';
 import { LogisticsShipment } from '../../../types';
 import { computeAlgerianFiscalStamp } from '../../../utils/logisticsRules';
 import { formatMoney } from '../../../utils/rules';
@@ -18,7 +18,7 @@ interface StopDeskHandoverModalProps {
 
 
 export const StopDeskHandoverModal: React.FC<StopDeskHandoverModalProps> = ({ isOpen, onClose, shipment, onConfirmDelivery }) => {
-	const { language } = useAtriumStore();
+	const language = useAtriumSelector((s) => s.language);
 	const isAr = language === "ar";
 	const [enteredOtp, setEnteredOtp] = React.useState("");
 	const [idType, setIdType] = React.useState("CNI_Biometrique");

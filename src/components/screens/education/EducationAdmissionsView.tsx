@@ -13,7 +13,16 @@ import {
   Columns,
   Eye,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentEduAdmissionsFromState,
+  selectCurrentEduCoursesFromState,
+  selectCurrentEduCohortsFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { AdmissionStage, EduAdmissionLead } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
@@ -56,22 +65,27 @@ export const EducationAdmissionsView: React.FC = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
+  const { eduAdmissions, eduCourses, eduCohorts, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      eduAdmissions: selectCurrentEduAdmissionsFromState(s),
+      eduCourses: selectCurrentEduCoursesFromState(s),
+      eduCohorts: selectCurrentEduCohortsFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
   const {
-    eduAdmissions,
-    eduCourses,
-    eduCohorts,
-    currentBranch,
-    branches,
     addEduAdmissionLead,
     updateAdmissionStage,
     deleteEduAdmissionLead,
     convertAdmissionToStudent,
-    isSyncing,
-    networkMode,
     retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const [viewLayout, setViewLayout] = useState<'kanban' | 'collection'>('kanban');
   const [collectionViewMode, setCollectionViewMode] = useState<'list' | 'grid'>('list');

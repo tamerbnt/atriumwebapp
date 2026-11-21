@@ -134,7 +134,9 @@ export const rentalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('rental_units')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, name, code, type, capacity, surface_area_sqm, hourly_rate, daily_rate, currency, amenities, status, description, color_hex, version, created_at'
+          )
           .eq('branch_id', safeBranchId)
           .is('deleted_at', null)
           .order('created_at', { ascending: true })
@@ -208,7 +210,9 @@ export const rentalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('rental_renters')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, full_name, company_name, email, phone, id_doc_number, total_bookings, total_spent, currency, notes, version, created_at'
+          )
           .eq('branch_id', safeBranchId)
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -279,7 +283,9 @@ export const rentalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('rental_bookings')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, renter_id, renter_name, renter_phone, renter_email, renter_company, unit_id, unit_name, unit_type, purpose, start_date_time, end_date_time, duration_hours, attendee_count, status, base_amount, addons_amount, total_amount, currency, deposit_amount, deposit_status, paid_amount, balance_due, addons, contract_signed, notes, version, created_at, updated_at'
+          )
           .eq('branch_id', safeBranchId)
           .is('deleted_at', null)
           .order('start_date_time', { ascending: true })
@@ -366,7 +372,9 @@ export const rentalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('rental_security_deposits')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, booking_id, renter_name, unit_name, amount, currency, payment_method, status, deduction_reason, version, collected_at, released_at'
+          )
           .eq('branch_id', safeBranchId)
           .is('deleted_at', null)
           .order('collected_at', { ascending: false })

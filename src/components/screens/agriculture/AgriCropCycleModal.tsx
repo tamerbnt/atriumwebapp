@@ -4,7 +4,12 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AgriCropCycle, AgriParcel, AgriCyclePhase } from '../../../types';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 
 interface AgriCropCycleModalProps {
   isOpen: boolean;
@@ -21,7 +26,15 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
   cycleToEdit,
   parcels,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
   const isAr = language === 'ar';
 
   const [parcelId, setParcelId] = useState(parcels[0]?.id || 'parc_01');

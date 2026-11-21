@@ -74,7 +74,9 @@ export const legalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('legal_clients')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, client_kind, full_name, nif, rc_number, phone, email, address, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -157,7 +159,9 @@ export const legalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('legal_matters')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, matter_number, title, practice_area, client_name, opposing_party, jurisdiction, lead_counsel_name, agreed_fee_dzd, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -261,7 +265,9 @@ export const legalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('legal_hearings')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, matter_id, matter_title, hearing_at, court_name, chamber, outcome_notes, status, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('hearing_at', { ascending: true })
@@ -362,7 +368,7 @@ export const legalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('legal_deadlines')
-          .select('*')
+          .select('id, title, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('due_date', { ascending: true })
@@ -424,7 +430,7 @@ export const legalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('legal_documents')
-          .select('*')
+          .select('id, file_url, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .eq('doc_category', 'NotaryDeed')
@@ -485,7 +491,9 @@ export const legalService = {
       return await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('legal_escrow_movements')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, client_id, matter_id, movement_type, amount_dzd, reference, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -552,7 +560,7 @@ export const legalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('legal_time_entries')
-          .select('*')
+          .select('id, description, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .ilike('description', '__atrium_legal__:%')
@@ -615,7 +623,9 @@ export const legalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('legal_cash_receipts')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, receipt_number, client_name, amount_dzd, payment_method, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })

@@ -9,7 +9,13 @@ import {
   TrendingDown,
   TrendingUp,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentWarehousesFromState,
+  selectCurrentProductsFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { StockMovementVoucher, StockVoucherType } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -31,8 +37,16 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
   onSaved,
 }) => {
   const { t } = useTranslation();
-  const { warehouses, products, createStockVoucher, allStockVouchers, currentUser } =
-    useAtriumStore();
+  const { warehouses, products, allStockVouchers, currentUser } = useAtriumSelector(
+    (s) => ({
+      warehouses: selectCurrentWarehousesFromState(s),
+      products: selectCurrentProductsFromState(s),
+      allStockVouchers: s.stockVouchers || [],
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
+  const { createStockVoucher } = useAtriumActions();
 
   const [type, setType] = useState<StockVoucherType>(initialType);
   const [depotSourceId, setDepotSourceId] = useState<string>(

@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { UserPlus, X } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { MedicalPatient } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -20,7 +26,15 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
   onSave,
   patientToEdit,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
   const [fullName, setFullName] = useState(patientToEdit?.fullName || '');
   const [nationalId, setNationalId] = useState(patientToEdit?.nationalId || '');
   const [phone, setPhone] = useState(patientToEdit?.phone || '');

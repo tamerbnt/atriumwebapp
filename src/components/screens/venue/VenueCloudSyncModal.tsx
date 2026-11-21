@@ -14,7 +14,16 @@ import {
   Layers,
   Send,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentRentableUnitsFromState,
+  selectCurrentRentalBookingsFromState,
+  selectCurrentRentalRentersFromState,
+  selectCurrentSecurityDepositsFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { rentalService } from '../../../lib/supabase/services/rentalService';
 import { isSupabaseConfigured } from '../../../lib/supabase/client';
 import { RentalBooking } from '../../../types/index';
@@ -25,13 +34,16 @@ interface VenueCloudSyncModalProps {
 }
 
 export const VenueCloudSyncModal: React.FC<VenueCloudSyncModalProps> = ({ isOpen, onClose }) => {
-  const {
-    rentableUnits,
-    rentalBookings,
-    rentalRenters,
-    securityDeposits,
-    syncWithSupabase,
-  } = useAtriumStore();
+  const { rentableUnits, rentalBookings, rentalRenters, securityDeposits } = useAtriumSelector(
+    (s) => ({
+      rentableUnits: selectCurrentRentableUnitsFromState(s),
+      rentalBookings: selectCurrentRentalBookingsFromState(s),
+      rentalRenters: selectCurrentRentalRentersFromState(s),
+      securityDeposits: selectCurrentSecurityDepositsFromState(s),
+    }),
+    shallowEqualObjects
+  );
+  const { syncWithSupabase } = useAtriumActions();
 
   const [isLoading, setIsLoading] = useState(false);
   const [cloudCounts, setCloudCounts] = useState<{

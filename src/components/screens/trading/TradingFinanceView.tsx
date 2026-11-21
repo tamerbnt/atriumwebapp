@@ -5,7 +5,15 @@ import {
   X,
   Pin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentCommercialDocsFromState,
+  selectCurrentB2bClientsFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { CommercialDocument } from '../../../types';
@@ -50,20 +58,21 @@ export const TradingFinanceView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const {
-    commercialDocs,
-    b2bClients,
-    b2bSuppliers,
-    updateCommercialDoc,
-    updateB2bClient,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    isSyncTimeout,
-    retryCloudSync,
-    lastSyncedAt,
-  } = useAtriumStore();
+  const { commercialDocs, b2bClients, b2bSuppliers, currentBranch, branches, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
+    (s) => ({
+      commercialDocs: selectCurrentCommercialDocsFromState(s),
+      b2bClients: selectCurrentB2bClientsFromState(s),
+      b2bSuppliers: s.b2bSuppliers || [],
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      isSyncTimeout: s.isSyncTimeout || false,
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { updateCommercialDoc, updateB2bClient, retryCloudSync } = useAtriumActions();
 
   const [settlementDoc, setSettlementDoc] = useState<CommercialDocument | null>(null);
   const [settleMethod, setSettleMethod] = useState('Virement bancaire');

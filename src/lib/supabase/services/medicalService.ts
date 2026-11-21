@@ -90,7 +90,9 @@ export const medicalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('medical_staff')
-          .select('*')
+          .select(
+            'id, full_name, specialty, cnom_license, is_active, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('full_name', { ascending: true })
@@ -169,7 +171,7 @@ export const medicalService = {
       const data = await fetchAllPages<any>((from, to) =>
         (client as any)
           .from('medical_departments')
-          .select('*')
+          .select('id, head_doctor_name, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .ilike('code', 'ORDCFG:%')
@@ -225,7 +227,9 @@ export const medicalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('medical_patients')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, full_name, phone, gender, birth_date, blood_group, allergies, chronic_conditions, chifa_card_number, emergency_contact, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -331,7 +335,9 @@ export const medicalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('medical_appointments')
-          .select('*')
+          .select(
+            'id, doctor_id, doctor_name, patient_id, patient_name, patient_phone, appointment_date, start_time, duration_minutes, reason, status, triage_priority, notes, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('appointment_date', { ascending: false })
@@ -418,7 +424,9 @@ export const medicalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('medical_consultations')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, doctor_name, patient_id, patient_name, visit_date, chief_complaint, vitals, diagnosis, icd10_code, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -532,7 +540,9 @@ export const medicalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('medical_consultations')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, doctor_name, patient_id, patient_name, visit_date, prescription_items, diagnosis, icd10_code, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .ilike('chief_complaint', '__rx__:%')
@@ -627,7 +637,9 @@ export const medicalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('medical_consultations')
-          .select('*')
+          .select(
+            'id, patient_id, patient_name, doctor_name, diagnosis, visit_date, icd10_code, medical_acts, notes, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .ilike('chief_complaint', '__lab__:%')
@@ -715,7 +727,7 @@ export const medicalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('medical_consultations')
-          .select('*')
+          .select('id, notes, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .ilike('chief_complaint', '__cert__:%')
@@ -783,7 +795,9 @@ export const medicalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('medical_consumables')
-          .select('*')
+          .select(
+            'id, sku, name, category, stock_quantity, min_stock_alert, unit, unit_cost_dzd, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('name', { ascending: true })
@@ -854,7 +868,7 @@ export const medicalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('medical_invoices')
-          .select('*')
+          .select('id, items, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .ilike('invoice_number', 'CHIFA-%')
@@ -925,7 +939,7 @@ export const medicalService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('medical_invoices')
-          .select('*')
+          .select('id, items, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .ilike('invoice_number', 'CLOSE-%')

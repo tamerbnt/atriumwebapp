@@ -243,7 +243,9 @@ export const educationService = {
     const data = await fetchAllPages<any>((from, to) => {
       let query = (client as any)
         .from('edu_courses')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, code, title, category, description, duration_weeks, total_hours, default_price, currency, version, created_at'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('created_at', { ascending: true })
@@ -291,7 +293,9 @@ export const educationService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('edu_classrooms')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, name, capacity, has_projector, has_computers, color_hex, version, created_at'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
@@ -332,7 +336,9 @@ export const educationService = {
     const data = await fetchAllPages<any>((from, to) => {
       let query = (client as any)
         .from('edu_cohorts')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, code, name, course_id, course_title, instructor_id, instructor_name, classroom_name, start_date, end_date, max_students, enrolled_count, tuition_fee, currency, schedule_summary, status, version, created_at'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('created_at', { ascending: false })
@@ -392,7 +398,9 @@ export const educationService = {
     const data = await fetchAllPages<any>((from, to) => {
       let query = (client as any)
         .from('edu_students')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, full_name, email, phone, guardian_name, guardian_phone, guardian_relation, birth_date, rfid_badge_code, school_grade, attendance_rate_percent, status, notes, version, created_at'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('created_at', { ascending: false })
@@ -449,7 +457,9 @@ export const educationService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('edu_enrollments')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, student_id, student_name, cohort_id, cohort_name, enrolled_at, agreed_tuition, discount_amount, discount_reason, paid_amount, balance_due, currency, payment_status, status, installments, version, created_at'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
@@ -499,7 +509,9 @@ export const educationService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('edu_sessions')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, cohort_id, cohort_name, classroom_id, classroom_name, instructor_id, instructor_name, topic, date, start_time, end_time, status, version, created_at'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
@@ -551,7 +563,9 @@ export const educationService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('edu_attendance')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, session_id, cohort_id, student_id, student_name, status, minutes_late, excuse_note, recorded_at, version'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
@@ -595,7 +609,9 @@ export const educationService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('edu_grades')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, cohort_id, student_id, student_name, assessment_title, score, max_score, weight_percent, teacher_remarks, graded_at, version'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
@@ -645,7 +661,9 @@ export const educationService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('edu_certificates')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, student_id, student_name, cohort_id, course_title, certificate_number, verification_hash, issue_date, average_grade_score, honors, signatory_name, signatory_title, version, created_at'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('id', { ascending: true })
@@ -692,7 +710,9 @@ export const educationService = {
     const data = await fetchAllPages<any>((from, to) =>
       (client as any)
         .from('edu_admissions')
-        .select('*')
+        .select(
+          'id, account_id, business_id, branch_id, staff_id, student_name, email, phone, desired_course_id, desired_course_title, stage, guardian_name, placement_score, source, notes, version, created_at'
+        )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
         .order('created_at', { ascending: false })

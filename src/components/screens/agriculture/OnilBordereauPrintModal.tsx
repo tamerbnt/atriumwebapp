@@ -1,6 +1,11 @@
 import React from 'react';
 import { Printer, X, Download, ShieldCheck, Milk, Building2 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { AgriMilkingRecord, AgriDairyCow } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -15,7 +20,14 @@ interface OnilBordereauPrintModalProps {
 
 
 export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = ({ isOpen, onClose, milkingRecords, dairyCows }) => {
-	const { language, currentBusiness, currentBranch } = useAtriumStore();
+	const { language, currentBusiness, currentBranch } = useAtriumSelector(
+	  (s) => ({
+	    language: s.language,
+	    currentBusiness: selectCurrentBusinessFromState(s),
+	    currentBranch: selectCurrentBranchFromState(s),
+	  }),
+	  shallowEqualObjects
+	);
 	const isAr = language === "ar";
 	if (!isOpen) return null;
 	const totalGrossLiters = milkingRecords.reduce((acc, m) => acc + m.totalTankLiters, 0);

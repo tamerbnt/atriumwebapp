@@ -69,7 +69,9 @@ export const realEstateService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('re_properties')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, title, property_type, transaction_type, surface_sqm, rooms, address, wilaya, asking_price_dzd, monthly_rent_dzd, owner_name, owner_phone, legal_act_type, features, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -205,7 +207,9 @@ export const realEstateService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('re_mandates')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, mandate_number, mandate_type, status, property_id, property_title, owner_name, commission_percent, start_date, end_date, version, created_at, updated_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -321,7 +325,9 @@ export const realEstateService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('re_leases')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, lease_number, property_id, property_title, tenant_name, tenant_phone, start_date, end_date, monthly_rent_dzd, security_deposit_dzd, agency_fee_dzd, status, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -420,7 +426,7 @@ export const realEstateService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('re_rent_schedules')
-          .select('*')
+          .select('id, period_label, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -481,7 +487,9 @@ export const realEstateService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('re_visits')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, agent_name, property_id, property_title, client_name, client_phone, visit_at, feedback, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -574,7 +582,9 @@ export const realEstateService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('re_inspections')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, lease_id, property_title, inspection_type, inspection_date, inspector_name, overall_condition, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -669,7 +679,9 @@ export const realEstateService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('re_leads')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, full_name, phone, preferred_wilaya, interest_type, budget_dzd, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })

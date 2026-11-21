@@ -163,6 +163,7 @@ export interface Database {
           phone: string | null;
           logo_url: string | null;
           is_active: boolean;
+          version?: number;
           created_at: string;
           updated_at: string;
         };
@@ -176,6 +177,7 @@ export interface Database {
           phone?: string | null;
           logo_url?: string | null;
           is_active?: boolean;
+          version?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -193,6 +195,7 @@ export interface Database {
           phone: string | null;
           is_main_branch: boolean;
           is_active: boolean;
+          version?: number;
           created_at: string;
           updated_at: string;
         };
@@ -206,6 +209,7 @@ export interface Database {
           phone?: string | null;
           is_main_branch?: boolean;
           is_active?: boolean;
+          version?: number;
           created_at?: string;
           updated_at?: string;
         };

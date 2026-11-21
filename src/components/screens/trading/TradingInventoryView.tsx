@@ -5,7 +5,15 @@ import {
   Building2,
   Warehouse,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentProductsFromState,
+  selectCurrentWarehousesFromState,
+  selectCurrentStockVouchersFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { StockMovementVoucher, Product } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -54,19 +62,21 @@ export const TradingInventoryView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const {
-    products,
-    warehouses,
-    stockVouchers,
-    createWarehouseDepot,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  const { products, warehouses, stockVouchers, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      products: selectCurrentProductsFromState(s),
+      warehouses: selectCurrentWarehousesFromState(s),
+      stockVouchers: selectCurrentStockVouchersFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
+  const { createWarehouseDepot, retryCloudSync } = useAtriumActions();
 
   const [selectedDepotId, setSelectedDepotId] = useState('all');
   const [subTab, setSubTab] = useState<InventoryViewTab>('stock_state');

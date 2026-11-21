@@ -292,7 +292,9 @@ export const tradingService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('trading_warehouses')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, code, name, address, wilaya, manager_name, is_default, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: true })
@@ -348,7 +350,9 @@ export const tradingService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('trading_b2b_clients')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, company_name, email, phone, address, wilaya, rc_number, nif, nis, article_imposition, contact_name, credit_limit_dzd, current_balance_dzd, payment_terms, notes, version, created_at, updated_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -427,7 +431,9 @@ export const tradingService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('trading_b2b_suppliers')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, supplier_name, email, phone, address, wilaya, rc_number, nif, nis, contact_name, lead_time_days, balance_payable_dzd, notes, version, created_at, updated_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -500,7 +506,9 @@ export const tradingService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('trading_products')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, sku, name, category, unit, selling_price_ht, purchase_price_ht, tva_rate, stock_quantity, min_stock_alert, is_active, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('name', { ascending: true })
@@ -561,7 +569,9 @@ export const tradingService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('trading_commercial_docs')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, doc_type, doc_number, client_id, client_name, depot_id, doc_date, due_date, payment_method, status, items, total_ht, total_tva, timbre_fiscal, total_ttc, linked_doc_id, linked_doc_number, notes, version, created_at, updated_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -666,7 +676,9 @@ export const tradingService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('trading_purchase_docs')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, doc_type, doc_number, supplier_id, supplier_name, depot_id, depot_name, doc_date, expected_delivery_date, actual_delivery_date, status, items, total_ht, total_tva, total_ttc, linked_po_id, linked_po_number, notes, version, created_at, updated_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -736,7 +748,9 @@ export const tradingService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('trading_stock_vouchers')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, voucher_number, voucher_type, voucher_date, depot_source_id, depot_source_name, depot_dest_id, depot_dest_name, reason, operator_name, items, total_valuation_dzd, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })

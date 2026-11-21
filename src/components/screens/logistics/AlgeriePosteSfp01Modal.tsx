@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, Copy, Download, Check, X, Building2, ShieldCheck } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import { showToast, useAtriumSelector } from '../../../services/store';
 import { MerchantRemittanceBatch } from '../../../types';
 import { formatCcpSfp01Line } from '../../../utils/logisticsRules';
 import { formatMoney } from '../../../utils/rules';
@@ -17,7 +17,7 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
   onClose,
   batches,
 }) => {
-  const { language } = useAtriumStore();
+  const language = useAtriumSelector((s) => s.language);
   const isAr = language === 'ar';
   const [copied, setCopied] = useState(false);
 

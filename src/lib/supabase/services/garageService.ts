@@ -98,7 +98,9 @@ export const garageService = {
         (from, to) => {
           let query = (client as any)
             .from('garage_bays')
-            .select('*')
+            .select(
+              'id, branch_id, bay_code, name, bay_type, status, active_work_order_id, assigned_mechanic_name, version'
+            )
             .eq('branch_id', toValidUuid(branchId))
             .is('deleted_at', null)
             .order('bay_code', { ascending: true })
@@ -187,7 +189,9 @@ export const garageService = {
         (from, to) => {
           let query = (client as any)
             .from('garage_vehicles')
-            .select('*')
+            .select(
+              'id, account_id, business_id, branch_id, staff_id, plate_number, make, model, model_year, vin, fuel_type, owner_name, owner_phone, fleet_name, mileage_km, notes, version'
+            )
             .eq('branch_id', toValidUuid(branchId))
             .is('deleted_at', null)
             .order('created_at', { ascending: false })
@@ -289,7 +293,9 @@ export const garageService = {
         (from, to) => {
           let query = (client as any)
             .from('garage_work_orders')
-            .select('*')
+            .select(
+              'id, account_id, business_id, branch_id, staff_id, order_number, plate_number, vehicle_label, client_name, client_phone, created_at, promised_at, diagnostic_summary, status, total_ttc_dzd, labor_total_dzd, parts_total_dzd, mechanic_name, bay_id, intake_mileage_km, version'
+            )
             .eq('branch_id', toValidUuid(branchId))
             .is('deleted_at', null)
             .order('created_at', { ascending: false })
@@ -420,7 +426,9 @@ export const garageService = {
         (from, to) => {
           let query = (client as any)
             .from('garage_parts')
-            .select('*')
+            .select(
+              'id, account_id, business_id, branch_id, staff_id, part_number, name, brand, category, stock_quantity, min_stock, cost_dzd, sell_price_dzd, bin_location, created_at, version'
+            )
             .eq('branch_id', toValidUuid(branchId))
             .is('deleted_at', null)
             .order('name', { ascending: true })
@@ -520,7 +528,9 @@ export const garageService = {
         (from, to) => {
           let query = (client as any)
             .from('garage_fleet_contracts')
-            .select('*')
+            .select(
+              'id, account_id, business_id, branch_id, staff_id, company_name, contact_name, phone, discount_percent, vehicles_count, status, version'
+            )
             .eq('branch_id', toValidUuid(branchId))
             .is('deleted_at', null)
             .order('company_name', { ascending: true })
@@ -612,7 +622,9 @@ export const garageService = {
         (from, to) => {
           let query = (client as any)
             .from('garage_invoices')
-            .select('*')
+            .select(
+              'id, account_id, business_id, branch_id, staff_id, invoice_number, work_order_id, plate_number, client_name, payment_method, total_ht_dzd, tva_dzd, total_ttc_dzd, created_at, status, version'
+            )
             .eq('branch_id', toValidUuid(branchId))
             .is('deleted_at', null)
             .order('created_at', { ascending: false })

@@ -9,7 +9,14 @@ import {
   Download,
   ArrowRight,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentCommercialDocsFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { CommercialDocument, CommercialDocType } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
@@ -57,18 +64,19 @@ export const TradingSalesView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const {
-    commercialDocs,
-    deleteCommercialDoc,
-    convertCommercialDoc,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  const { commercialDocs, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      commercialDocs: selectCurrentCommercialDocsFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
+  const { deleteCommercialDoc, convertCommercialDoc, retryCloudSync } = useAtriumActions();
 
   const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(() => new Set<string>());
   const [pinnedDocIds, setPinnedDocIds] = useState<Set<string>>(() => new Set<string>());

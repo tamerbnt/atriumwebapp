@@ -68,7 +68,9 @@ export const contractorService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('btp_projects')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_code, title, client_name, location, wilaya, contract_amount_ht_dzd, retention_guarantee_percent, start_date, expected_end_date, progress_percent, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -161,7 +163,9 @@ export const contractorService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('btp_boq_items')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_id, lot_code, designation, unit, contract_qty, executed_qty, unit_price_dzd, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('lot_code', { ascending: true })
@@ -245,7 +249,9 @@ export const contractorService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('btp_daily_logs')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_id, log_date, weather, workers_count, activities_summary, incidents_noted, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('log_date', { ascending: false })
@@ -329,7 +335,9 @@ export const contractorService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('btp_decomptes')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_id, situation_number, period_label, gross_cumulative_dzd, previous_cumulative_dzd, period_gross_dzd, retention_deducted_dzd, net_payable_ttc_dzd, status, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('situation_number', { ascending: true })
@@ -416,7 +424,7 @@ export const contractorService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('btp_daily_logs')
-          .select('*')
+          .select('id, activities_summary, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .ilike('activities_summary', '__atrium_btp__:%service_order%')
@@ -474,7 +482,7 @@ export const contractorService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('btp_daily_logs')
-          .select('*')
+          .select('id, activities_summary, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .ilike('activities_summary', '__atrium_btp__:%concrete_pour%')
@@ -532,7 +540,7 @@ export const contractorService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('btp_subcontractors')
-          .select('*')
+          .select('id, nif, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -590,7 +598,7 @@ export const contractorService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('btp_equipment')
-          .select('*')
+          .select('id, name, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -650,7 +658,7 @@ export const contractorService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('btp_materials')
-          .select('*')
+          .select('id, name, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .ilike('name', '__atrium_btp__:%')

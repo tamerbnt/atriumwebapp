@@ -9,7 +9,15 @@ import {
   LogOut,
   Edit2,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentRentableUnitsFromState,
+  selectCurrentRentalBookingsFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { RentableUnit, RentalBooking } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -53,18 +61,23 @@ export const VenueTimelineView: React.FC = () => {
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 
+  const { rentableUnits, rentalBookings, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+    (s) => ({
+      rentableUnits: selectCurrentRentableUnitsFromState(s),
+      rentalBookings: selectCurrentRentalBookingsFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
   const {
-    rentableUnits,
-    rentalBookings,
     checkInBooking,
     checkOutBooking,
     deleteRentalBooking,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
     retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [searchQuery, setSearchQuery] = useState('');

@@ -11,7 +11,14 @@ import {
   LogOut,
   Edit2,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentRentalBookingsFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { RentalBooking, BookingStatus } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
@@ -76,18 +83,23 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 
+  const { rentalBookings, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+    (s) => ({
+      rentalBookings: selectCurrentRentalBookingsFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
   const {
-    rentalBookings,
     checkInBooking,
     checkOutBooking,
     updateRentalBooking,
     deleteRentalBooking,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
     retryCloudSync,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('All');

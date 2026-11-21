@@ -1,6 +1,6 @@
 import React from 'react';
 import { Printer, X, ShieldCheck, CheckCircle2, FileText, Building2 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumSelector } from '../../../services/store';
 import { ContractorDgp, ContractorProject } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { numberToAlgerianWords } from '../../../utils/algerianPtt';
@@ -16,7 +16,7 @@ interface ContractorDecomptePrintModalProps {
 
 
 export const ContractorDecomptePrintModal: React.FC<ContractorDecomptePrintModalProps> = ({ isOpen, onClose, dgp, project }) => {
-	const { language } = useAtriumStore();
+	const language = useAtriumSelector((s) => s.language);
 	const isAr = language === "ar";
 	if (!isOpen || !dgp) return null;
 	const handlePrint = () => {

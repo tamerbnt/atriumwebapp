@@ -353,7 +353,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_staff')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, full_name, agency_role, email, phone, is_active, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('full_name', { ascending: true })
@@ -424,7 +426,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_clients')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, name, logo_url, contact_person, email, phone, wilaya, address, is_active, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -486,7 +490,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_projects')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, client_id, client_name, title, scope_of_work, budget_cap_dzd, max_field_expenses_dzd, target_gross_margin_percent, start_date, end_date, kv_deadline, print_deadline, execution_start_date, project_manager_id, project_manager_name, lead_creative_id, lead_creative_name, status, version, created_at, updated_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -554,7 +560,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_milestones')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_id, title, phase, target_date, completed_at, is_completed, assigned_role, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('target_date', { ascending: true })
@@ -617,7 +625,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_collateral_catalog')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, sku, title, category, dimensions, material, unit_cost_dzd, image_url, is_customizable'
+          )
           .is('deleted_at', null)
           .order('title', { ascending: true })
           .order('id', { ascending: true })
@@ -656,7 +666,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_print_orders')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_id, project_title, order_number, items, total_cost_dzd, status, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -716,7 +728,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_bat_deliverables')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_id, project_title, print_order_id, title, file_format, color_space, resolution_dpi, bleed_mm, has_bleed_included, version, version_code, preview_url, master_source_url, file_size_bytes, uploaded_by_creative_id, uploaded_by_creative_name, approval_status, revision_comments, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -788,7 +802,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_talents')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, full_name, gender, birth_date, age, phone, email, wilaya_code, wilaya_name, commune, has_driver_license, is_vehicle_owner, desired_roles, languages, portrait_photo_url, full_body_photo_url, cv_document_url, cni_document_url, ccp_number, ccp_key, initial_hr_score, average_mission_rating, consolidated_score, completed_missions_count, absences_count, is_hr_verified, status, hr_notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('consolidated_score', { ascending: false })
@@ -869,7 +885,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_missions')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_id, project_title, client_name, code, title, activation_type, venue_name, address, wilaya_code, wilaya_name, start_date, end_date, daily_start_hour, daily_end_hour, supervisor_id, supervisor_name, required_staff_count, status, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('start_date', { ascending: false })
@@ -938,7 +956,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_mission_staff')
-          .select('*')
+          .select(
+            'id, mission_id, talent_id, talent_name, talent_photo, phone, day_rate_dzd, assigned_role_title, invitation_status, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -1012,7 +1032,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_attendances')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, mission_id, talent_id, talent_name, talent_photo, date, check_in_time, status, minutes_late, replacement_for_talent_id, replacement_talent_name, shift_rating, day_rate_dzd, gross_payable_dzd, is_locked, locked_at, supervisor_notes, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null);
 
@@ -1065,7 +1087,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_expenses')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_id, project_title, mission_id, mission_code, title, category, amount_dzd, declared_by_user_id, declared_by_user_name, declared_by_role, receipt_photo_url, has_fiscal_invoice, fiscal_nif, status, direction_approved_at, direction_notes, is_equipment_auto_created, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -1151,7 +1175,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_payroll_batches')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, project_id, project_title, mission_id, mission_code, batch_number, total_beneficiaries, total_amount_dzd, status, direction_approved_at, ccp_generated_at, disbursed_at, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -1176,7 +1202,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_ccp_slips')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, batch_id, talent_id, beneficiary_name, ccp_number, ccp_key, wilaya_name, amount_dzd, amount_in_words_fr, amount_in_words_ar, transaction_reference, is_printed, printed_at, version, created_at'
+          )
           .eq('batch_id', toValidUuid(batchId))
           .is('deleted_at', null)
           .order('beneficiary_name', { ascending: true })
@@ -1282,7 +1310,9 @@ export const projectMilestoneService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('pm_equipment_stock')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, asset_code, title, category, acquisition_cost_dzd, current_status, current_custodian_id, current_custodian_name, assigned_mission_id, condition_report, qr_label_code, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('asset_code', { ascending: true })

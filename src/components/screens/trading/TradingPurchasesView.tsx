@@ -6,7 +6,16 @@ import {
   Printer,
   X,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentPurchaseDocsFromState,
+  selectCurrentWarehousesFromState,
+  selectCurrentProductsFromState,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { PurchaseDocument, CommercialDocument } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -51,23 +60,24 @@ export const TradingPurchasesView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const {
-    purchaseDocs,
-    b2bSuppliers,
-    warehouses,
-    products,
-    createPurchaseDoc,
-    receivePurchaseDoc,
-    currentBusiness,
-    currentBranchId,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  const { purchaseDocs, b2bSuppliers, warehouses, products, currentBusiness, currentBranchId, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      purchaseDocs: selectCurrentPurchaseDocsFromState(s),
+      b2bSuppliers: s.b2bSuppliers || [],
+      warehouses: selectCurrentWarehousesFromState(s),
+      products: selectCurrentProductsFromState(s),
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranchId: s.currentBranchId,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
+  const { createPurchaseDoc, receivePurchaseDoc, retryCloudSync } = useAtriumActions();
 
   const [activeTab, setActiveTab] = useState<PurchaseTab>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');

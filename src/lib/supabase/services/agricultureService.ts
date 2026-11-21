@@ -72,7 +72,9 @@ export const agricultureService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('agri_parcels')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, name, parcel_code, soil_type, surface_hectares, status, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('parcel_code', { ascending: true })
@@ -166,7 +168,9 @@ export const agricultureService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('agri_crop_cycles')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, parcel_id, crop_name, variety, sowing_date, expected_harvest_date, estimated_yield_tons, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('sowing_date', { ascending: false })
@@ -248,7 +252,9 @@ export const agricultureService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('agri_treatments')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, target_type, parcel_id, application_date, product_name, active_ingredient, dosage, dar_days, withholding_until_date, notes, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('application_date', { ascending: false })
@@ -336,7 +342,9 @@ export const agricultureService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('agri_livestock')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, ear_tag, breed, birth_date, health_status, antibiotic_withholding_until, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('ear_tag', { ascending: true })
@@ -414,7 +422,9 @@ export const agricultureService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('agri_milking_logs')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, lot_label, milking_date, session_period, volume_liters, is_discarded, is_tank_approved, onil_bordereau_ref, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('milking_date', { ascending: false })
@@ -496,7 +506,7 @@ export const agricultureService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('agri_harvests')
-          .select('*')
+          .select('id, weighbridge_ticket_number, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('harvest_date', { ascending: false })
@@ -558,7 +568,7 @@ export const agricultureService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('agri_staff')
-          .select('*')
+          .select('id, role, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('full_name', { ascending: true })
@@ -615,7 +625,7 @@ export const agricultureService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('agri_sales')
-          .select('*')
+          .select('id, buyer_name, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .ilike('sale_number', 'PTG-%')

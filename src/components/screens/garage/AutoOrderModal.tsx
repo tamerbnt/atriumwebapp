@@ -13,7 +13,13 @@ import {
   FileText,
   PenTool,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { RepairOrder, VehicleAsset, WorkshopBay, DamageMarker } from './garageData';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -31,7 +37,15 @@ const extractStr = (eOrVal: any): string =>
   eOrVal?.target?.value !== undefined ? String(eOrVal.target.value) : String(eOrVal ?? '');
 
 export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
-	const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+	const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+	  (s) => ({
+	    language: s.language,
+	    currentBusiness: selectCurrentBusinessFromState(s),
+	    currentBranch: selectCurrentBranchFromState(s),
+	    currentUser: s.currentUser,
+	  }),
+	  shallowEqualObjects
+	);
 	const [activeTab, setActiveTab] = React.useState("intake");
 	const [selectedVehicleId, setSelectedVehicleId] = React.useState(vehicles[0]?.id || "");
 	const [currentMileage, setCurrentMileage] = React.useState("");

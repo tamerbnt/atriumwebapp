@@ -11,7 +11,13 @@ import {
   Eye,
   Edit,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { calculateCmupWeightedAverage } from '../../../utils/manufacturingRules';
@@ -52,7 +58,18 @@ const extractStr = (v: unknown): string => {
 };
 
 export const ManufacturingMaterialsView: React.FC<any> = () => {
-  const { language, currentBranch, branches, currentUser, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
+  const { language, currentBranch, branches, currentUser, isSyncing, networkMode } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      currentUser: s.currentUser,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync } = useAtriumActions();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 

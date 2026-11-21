@@ -11,7 +11,12 @@ import {
 import { CommercialDocument } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { numberToWordsFrench, numberToWordsArabic } from '../../../utils/algerianPtt';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { AtriumButton } from '../../ui/AtriumButton';
 
 interface CommercialDocPrintModalProps {
@@ -24,7 +29,13 @@ interface CommercialDocPrintModalProps {
 
 export const CommercialDocPrintModal: React.FC<CommercialDocPrintModalProps> = ({ isOpen, onClose, document: doc }) => {
 	const printRef = React.useRef<any>(null);
-	const { currentBusiness, currentBranch } = useAtriumStore();
+	const { currentBusiness, currentBranch } = useAtriumSelector(
+	  (s) => ({
+	    currentBusiness: selectCurrentBusinessFromState(s),
+	    currentBranch: selectCurrentBranchFromState(s),
+	  }),
+	  shallowEqualObjects
+	);
 	if (!isOpen || !doc) return null;
 	const handlePrint = () => {
 		window.print();

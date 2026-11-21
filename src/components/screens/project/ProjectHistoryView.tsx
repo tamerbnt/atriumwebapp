@@ -1,6 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import { History, Kanban, FolderKanban, Eye } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentPmProjectsFromState,
+  selectCurrentPmBatDeliverablesFromState,
+  selectCurrentPmExpensesFromState,
+  selectCurrentPmMissionsFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { VerticalHistoryScaffold } from '../../common/history/VerticalHistoryScaffold';
 import { ColumnDefinition } from '../../ui/collection';
@@ -29,23 +38,25 @@ interface ProjectLedgerItem {
 }
 
 export const ProjectHistoryView: React.FC = React.memo(() => {
-  const {
-    pmProjects,
-    pmBatDeliverables,
-    pmExpenses,
-    pmMissions,
-    branches,
-    currentBusinessId,
-    currentBranchId,
-    currentBranch,
-    language,
-    isSyncing,
-    networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
-    retryCloudSync,
-    setScreen,
-  } = useAtriumStore();
+  const { pmProjects, pmBatDeliverables, pmExpenses, pmMissions, branches, currentBusinessId, currentBranchId, currentBranch, language, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
+    (s) => ({
+      pmProjects: selectCurrentPmProjectsFromState(s),
+      pmBatDeliverables: selectCurrentPmBatDeliverablesFromState(s),
+      pmExpenses: selectCurrentPmExpensesFromState(s),
+      pmMissions: selectCurrentPmMissionsFromState(s),
+      branches: s.branches,
+      currentBusinessId: s.currentBusinessId,
+      currentBranchId: s.currentBranchId,
+      currentBranch: selectCurrentBranchFromState(s),
+      language: s.language,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      isSyncTimeout: s.isSyncTimeout || false,
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync, setScreen } = useAtriumActions();
 
   const isAr = language === 'ar';
   const isEn = language === 'en';

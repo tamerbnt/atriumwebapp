@@ -1,6 +1,11 @@
 import React from 'react';
 import { Printer, X, Download, ShieldCheck, QrCode } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+} from '../../../services/store';
 import { LogisticsManifest } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -14,7 +19,13 @@ interface TransportManifestPrintModalProps {
 
 
 export const TransportManifestPrintModal: React.FC<TransportManifestPrintModalProps> = ({ isOpen, onClose, manifest }) => {
-	const { language, currentBusiness } = useAtriumStore();
+	const { language, currentBusiness } = useAtriumSelector(
+	  (s) => ({
+	    language: s.language,
+	    currentBusiness: selectCurrentBusinessFromState(s),
+	  }),
+	  shallowEqualObjects
+	);
 	const isAr = language === "ar";
 	if (!isOpen) return null;
 	const handlePrint = () => {

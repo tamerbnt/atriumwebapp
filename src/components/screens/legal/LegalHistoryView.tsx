@@ -1,6 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { History, Scale, Eye } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { useLegalData } from './legalData';
 import { formatMoney } from '../../../utils/rules';
 import { VerticalHistoryScaffold } from '../../common/history/VerticalHistoryScaffold';
@@ -29,19 +34,21 @@ interface LegalLedgerItem {
 }
 
 export const LegalHistoryView: React.FC = React.memo(() => {
-  const {
-    branches,
-    currentBusinessId,
-    currentBranchId,
-    currentBranch,
-    language,
-    isSyncing,
-    networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
-    retryCloudSync,
-    setScreen,
-  } = useAtriumStore();
+  const { branches, currentBusinessId, currentBranchId, currentBranch, language, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
+    (s) => ({
+      branches: s.branches,
+      currentBusinessId: s.currentBusinessId,
+      currentBranchId: s.currentBranchId,
+      currentBranch: selectCurrentBranchFromState(s),
+      language: s.language,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      isSyncTimeout: s.isSyncTimeout || false,
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync, setScreen } = useAtriumActions();
   const { matters, notaryDeeds, hearings, cashReceipts, scfEntries } = useLegalData();
 
   const isAr = language === 'ar';

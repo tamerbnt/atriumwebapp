@@ -86,7 +86,9 @@ export const mapAccountFromDb = (row: any): Account => ({
   createdAt: row.created_at,
 });
 
-export const mapBusinessFromDb = (row: DbBusiness): Business => ({
+export const mapBusinessFromDb = (
+  row: Omit<DbBusiness, 'updated_at'> & { updated_at?: string; version?: number }
+): Business => ({
   id: row.id,
   accountId: row.account_id,
   category: row.category,
@@ -96,11 +98,13 @@ export const mapBusinessFromDb = (row: DbBusiness): Business => ({
   phone: row.phone || undefined,
   logoUrl: row.logo_url || undefined,
   isActive: row.is_active,
-  version: (row as any).version != null ? Number((row as any).version) : undefined,
+  version: row.version != null ? Number(row.version) : undefined,
   createdAt: row.created_at,
 });
 
-export const mapBranchFromDb = (row: DbBranch): Branch => ({
+export const mapBranchFromDb = (
+  row: Omit<DbBranch, 'updated_at'> & { updated_at?: string; version?: number }
+): Branch => ({
   id: row.id,
   accountId: row.account_id,
   businessId: row.business_id,
@@ -110,7 +114,7 @@ export const mapBranchFromDb = (row: DbBranch): Branch => ({
   phone: row.phone || undefined,
   isMainBranch: row.is_main_branch,
   isActive: row.is_active,
-  version: (row as any).version != null ? Number((row as any).version) : undefined,
+  version: row.version != null ? Number(row.version) : undefined,
   createdAt: row.created_at,
 });
 

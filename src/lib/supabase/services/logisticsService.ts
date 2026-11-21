@@ -87,7 +87,9 @@ export const logisticsService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('logistics_parcels')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, tracking_code, merchant_name, recipient_name, recipient_phone, wilaya_name, commune, cod_amount_dzd, delivery_fee_dzd, weight_kg, status, delivery_mode, bag_id, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -193,7 +195,9 @@ export const logisticsService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('logistics_courier_bags')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, bag_code, origin_hub, destination_wilaya, seal_number, driver_name, parcel_count, status, sealed_at, discharged_at, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -282,7 +286,7 @@ export const logisticsService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('logistics_fleet')
-          .select('*')
+          .select('id, vehicle_model, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -341,7 +345,7 @@ export const logisticsService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('logistics_discharges')
-          .select('*')
+          .select('id, driver_name, version')
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('discharged_at', { ascending: false })
@@ -410,7 +414,9 @@ export const logisticsService = {
       const rows = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('logistics_remittances')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, remittance_number, merchant_name, gross_cod_dzd, fees_deducted_dzd, net_paid_dzd, payment_method, status, remitted_at, version'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('remitted_at', { ascending: false })
@@ -500,7 +506,9 @@ export const logisticsService = {
       const rows = await fetchAllPages<any>((from, to) =>
         (client as any)
           .from('logistics_wilaya_tariffs')
-          .select('*')
+          .select(
+            'id, zone_id, base_weight_kg, home_base_price_dzd, stop_desk_base_price_dzd, overweight_per_kg_dzd, fragile_handling_surcharge_dzd'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('zone_id', { ascending: true })

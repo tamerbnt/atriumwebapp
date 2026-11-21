@@ -177,7 +177,9 @@ export const freelanceService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('freelance_clients')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, name, company, email, phone, currency, hourly_rate, status, monthly_retainer_hours, monthly_retainer_amount, notes, lifetime_billed, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -233,7 +235,9 @@ export const freelanceService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('freelance_projects')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, client_id, client_name, title, description, pricing_model, currency, budget, estimated_hours, logged_hours, stage, deadline, deliverables, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -316,7 +320,9 @@ export const freelanceService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('freelance_time_logs')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, client_id, client_name, project_id, project_title, deliverable_id, task_description, duration_seconds, is_billable, is_invoiced, rate_at_moment, currency, date, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -373,7 +379,9 @@ export const freelanceService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('freelance_invoices')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, client_id, client_name, client_company, client_email, invoice_number, currency, issue_date, due_date, status, items, subtotal, tax_percent, tax_amount, total_amount, payment_details, notes, paid_at, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -435,7 +443,9 @@ export const freelanceService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('freelance_proposals')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, client_name, client_company, client_email, title, overview, scope_items, pricing_model, proposed_budget, currency, estimated_timeline_weeks, valid_until, status, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
@@ -493,7 +503,9 @@ export const freelanceService = {
       const data = await fetchAllPages<any>((from, to) => {
         let query = (client as any)
           .from('freelance_expenses')
-          .select('*')
+          .select(
+            'id, account_id, business_id, branch_id, staff_id, vendor, description, category, amount, currency, expense_date, is_tax_deductible, version, created_at'
+          )
           .eq('branch_id', toValidUuid(branchId))
           .is('deleted_at', null)
           .order('created_at', { ascending: false })

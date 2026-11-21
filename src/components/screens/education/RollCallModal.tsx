@@ -10,7 +10,16 @@ import {
   Calendar,
   Save,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentEduCohortsFromState,
+  selectCurrentEduSessionsFromState,
+  selectCurrentEduStudentsFromState,
+  selectCurrentEduEnrollmentsFromState,
+  selectCurrentEduAttendanceFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { AttendanceStatus, EduSession } from '../../../types';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -28,14 +37,17 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
   onClose,
 }) => {
   const { t } = useTranslation();
-  const {
-    eduCohorts,
-    eduSessions,
-    eduStudents,
-    eduEnrollments,
-    eduAttendance,
-    batchRecordAttendance,
-  } = useAtriumStore();
+  const { eduCohorts, eduSessions, eduStudents, eduEnrollments, eduAttendance } = useAtriumSelector(
+    (s) => ({
+      eduCohorts: selectCurrentEduCohortsFromState(s),
+      eduSessions: selectCurrentEduSessionsFromState(s),
+      eduStudents: selectCurrentEduStudentsFromState(s),
+      eduEnrollments: selectCurrentEduEnrollmentsFromState(s),
+      eduAttendance: selectCurrentEduAttendanceFromState(s),
+    }),
+    shallowEqualObjects
+  );
+  const { batchRecordAttendance } = useAtriumActions();
 
   const [selectedCohortId, setSelectedCohortId] = useState<string>(
     session?.cohortId || propCohortId || (eduCohorts[0]?.id || '')

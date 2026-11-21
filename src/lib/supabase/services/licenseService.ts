@@ -24,7 +24,9 @@ export const licenseService = {
 
     const { data, error } = await client
       .from('account_subscriptions')
-      .select('*, subscription_plans(*)')
+      .select(
+        'id, account_id, plan_id, status, is_lifetime, trial_ends_at, current_period_end, grace_ends_at, activated_by_voucher, created_at, updated_at, subscription_plans(id, name, tier_rank, max_businesses, max_branches, max_devices, max_staff, cross_branch_reports, shared_members, is_free_tier, trial_days, price_label, created_at)'
+      )
       .eq('account_id', accountId)
       .maybeSingle();
 

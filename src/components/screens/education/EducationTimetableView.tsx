@@ -13,7 +13,17 @@ import {
   Trash2,
   ClipboardList,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentEduSessionsFromState,
+  selectCurrentEduCohortsFromState,
+  selectCurrentEduClassroomsFromState,
+  selectCurrentStaffFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { EduSession } from '../../../types';
 import { RollCallModal } from './RollCallModal';
@@ -56,21 +66,22 @@ export const EducationTimetableView: React.FC = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const {
-    eduSessions,
-    eduCohorts,
-    eduClassrooms,
-    staff,
-    currentBranch,
-    branches,
-    addEduSession,
-    deleteEduSession,
-    isSyncing,
-    networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
-    retryCloudSync,
-  } = useAtriumStore();
+  const { eduSessions, eduCohorts, eduClassrooms, staff, currentBranch, branches, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
+    (s) => ({
+      eduSessions: selectCurrentEduSessionsFromState(s),
+      eduCohorts: selectCurrentEduCohortsFromState(s),
+      eduClassrooms: selectCurrentEduClassroomsFromState(s),
+      staff: selectCurrentStaffFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      isSyncTimeout: s.isSyncTimeout || false,
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { addEduSession, deleteEduSession, retryCloudSync } = useAtriumActions();
 
   const [branchFilter, setBranchFilter] = useState<string>('All');
   const [selectedClassroomId, setSelectedClassroomId] = useState<string>('all');

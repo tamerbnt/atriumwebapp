@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { Key, X } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { RealEstateProperty, RealEstateLease } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -18,7 +24,15 @@ interface RealEstateLeaseModalProps {
 const extractStr = (v: any): string => (typeof v === 'string' ? v : String(v?.target?.value ?? v?.value ?? v ?? ''));
 
 export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOpen, onClose, properties, onSave }) => {
-	const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+	const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+	  (s) => ({
+	    language: s.language,
+	    currentBusiness: selectCurrentBusinessFromState(s),
+	    currentBranch: selectCurrentBranchFromState(s),
+	    currentUser: s.currentUser,
+	  }),
+	  shallowEqualObjects
+	);
 	const [propertyId, setPropertyId] = React.useState(properties[0]?.id || "");
 	const [tenantName, setTenantName] = React.useState("");
 	const [tenantPhone, setTenantPhone] = React.useState("");

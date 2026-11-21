@@ -12,7 +12,16 @@ import {
   BookOpen,
   MapPin,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentEduSessionsFromState,
+  selectCurrentEduCohortsFromState,
+  selectCurrentEduStudentsFromState,
+  selectCurrentEduEnrollmentsFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { EduStudent } from '../../../types/index';
 import { pickLocalizedText, registerUndoEntry, runUndoBatch } from '../../../services/undoEngine';
 import { PinVerificationModal } from '../../modals/PinVerificationModal';
@@ -33,20 +42,22 @@ type AttendanceMapState = Record<string, { status: QuickStatus }>;
 export const AcademyRollCallKiosk: React.FC = () => {
   const { language, isRtl } = useTranslation();
   const isEn = language === 'en';
-  const {
-    eduSessions,
-    eduCohorts,
-    eduStudents,
-    eduEnrollments,
-    eduQuickAttendance,
-    recordQuickAttendance,
-    currentUser,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  const { eduSessions, eduCohorts, eduStudents, eduEnrollments, eduQuickAttendance, currentUser, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      eduSessions: selectCurrentEduSessionsFromState(s),
+      eduCohorts: selectCurrentEduCohortsFromState(s),
+      eduStudents: selectCurrentEduStudentsFromState(s),
+      eduEnrollments: selectCurrentEduEnrollmentsFromState(s),
+      eduQuickAttendance: s.eduQuickAttendance || [],
+      currentUser: s.currentUser,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
+  const { recordQuickAttendance, retryCloudSync } = useAtriumActions();
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',

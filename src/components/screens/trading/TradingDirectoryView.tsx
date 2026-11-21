@@ -8,7 +8,15 @@ import {
   Trash2,
   Download,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentB2bClientsFromState,
+  selectCurrentCommercialDocsFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { B2bClient, B2bSupplier } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
@@ -56,20 +64,21 @@ export const TradingDirectoryView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const {
-    b2bClients,
-    b2bSuppliers,
-    commercialDocs,
-    deleteB2bClient,
-    deleteB2bSupplier,
-    currentBranch,
-    branches,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  const { b2bClients, b2bSuppliers, commercialDocs, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      b2bClients: selectCurrentB2bClientsFromState(s),
+      b2bSuppliers: s.b2bSuppliers || [],
+      commercialDocs: selectCurrentCommercialDocsFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
+  const { deleteB2bClient, deleteB2bSupplier, retryCloudSync } = useAtriumActions();
 
   const [mode, setMode] = useState<DirectoryMode>('clients');
   const [branchFilter, setBranchFilter] = useState<string>('All');

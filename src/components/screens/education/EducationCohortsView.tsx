@@ -10,7 +10,18 @@ import {
   Trash2,
   CheckCircle2,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentEduCohortsFromState,
+  selectCurrentEduCoursesFromState,
+  selectCurrentEduClassroomsFromState,
+  selectCurrentEduEnrollmentsFromState,
+  selectCurrentEduStudentsFromState,
+  selectCurrentStaffFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { CohortStatus, EduCohort } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
@@ -54,24 +65,29 @@ export const EducationCohortsView: React.FC = () => {
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
+  const { eduCohorts, eduCourses, eduClassrooms, eduEnrollments, eduStudents, staff, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+    (s) => ({
+      eduCohorts: selectCurrentEduCohortsFromState(s),
+      eduCourses: selectCurrentEduCoursesFromState(s),
+      eduClassrooms: selectCurrentEduClassroomsFromState(s),
+      eduEnrollments: selectCurrentEduEnrollmentsFromState(s),
+      eduStudents: selectCurrentEduStudentsFromState(s),
+      staff: selectCurrentStaffFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+      isSyncTimeout: s.isSyncTimeout || false,
+    }),
+    shallowEqualObjects
+  );
   const {
-    eduCohorts,
-    eduCourses,
-    eduClassrooms,
-    eduEnrollments,
-    eduStudents,
-    staff,
-    currentBranch,
-    branches,
     addEduCohort,
     updateEduCohort,
     deleteEduCohort,
-    isSyncing,
-    networkMode,
     retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
-  } = useAtriumStore();
+  } = useAtriumActions();
 
   const [categoryFilter, setCategoryFilter] = useState<CourseCat>('All');
   const [branchFilter, setBranchFilter] = useState<string>('All');

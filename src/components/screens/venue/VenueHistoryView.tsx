@@ -1,6 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { History, Calendar, Eye } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentRentalBookingsFromState,
+  selectCurrentSecurityDepositsFromState,
+  selectCurrentBranchFromState,
+  useAtriumActions,
+} from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { VerticalHistoryScaffold } from '../../common/history/VerticalHistoryScaffold';
 import { ColumnDefinition } from '../../ui/collection';
@@ -29,21 +36,23 @@ interface VenueLedgerItem {
 }
 
 export const VenueHistoryView: React.FC = React.memo(() => {
-  const {
-    rentalBookings,
-    securityDeposits,
-    branches,
-    currentBusinessId,
-    currentBranchId,
-    currentBranch,
-    language,
-    isSyncing,
-    networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
-    retryCloudSync,
-    setScreen,
-  } = useAtriumStore();
+  const { rentalBookings, securityDeposits, branches, currentBusinessId, currentBranchId, currentBranch, language, isSyncing, networkMode, isSyncTimeout, lastSyncedAt } = useAtriumSelector(
+    (s) => ({
+      rentalBookings: selectCurrentRentalBookingsFromState(s),
+      securityDeposits: selectCurrentSecurityDepositsFromState(s),
+      branches: s.branches,
+      currentBusinessId: s.currentBusinessId,
+      currentBranchId: s.currentBranchId,
+      currentBranch: selectCurrentBranchFromState(s),
+      language: s.language,
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      isSyncTimeout: s.isSyncTimeout || false,
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
+  const { retryCloudSync, setScreen } = useAtriumActions();
 
   const isAr = language === 'ar';
   const isEn = language === 'en';

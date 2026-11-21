@@ -1,6 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Factory, X, AlertTriangle, PackageCheck } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
+import {
+  showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+} from '../../../services/store';
 import { ManufacturingBom, ManufacturingOrder } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -33,7 +39,15 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
   onSave,
   orderToEdit,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+    (s) => ({
+      language: s.language,
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      currentUser: s.currentUser,
+    }),
+    shallowEqualObjects
+  );
   const isAr = language === 'ar';
   const { materials } = useManufacturingData();
 

@@ -1,8 +1,13 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
-  useAtriumStore,
   selectCurrentBranchFromState,
   showToast,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentPmProjectsFromState,
+  selectCurrentPmPrintOrdersFromState,
+  selectCurrentPmBatDeliverablesFromState,
+  useAtriumActions,
 } from '../../../services/store';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { PMBatDeliverable } from '../../../types/index';
@@ -92,24 +97,29 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
   const { language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
+  const { currentBranch, branches, pmProjects, pmPrintOrders, pmBatDeliverables, activePmSubScreen, isSyncing, networkMode, lastSyncedAt } = useAtriumSelector(
+    (s) => ({
+      currentBranch: selectCurrentBranchFromState(s),
+      branches: s.branches,
+      pmProjects: selectCurrentPmProjectsFromState(s),
+      pmPrintOrders: selectCurrentPmPrintOrdersFromState(s),
+      pmBatDeliverables: selectCurrentPmBatDeliverablesFromState(s),
+      activePmSubScreen: s.activePmSubScreen || 'dashboard',
+      isSyncing: s.isSyncing,
+      networkMode: s.networkMode || 'online',
+      lastSyncedAt: s.lastSyncedAt,
+    }),
+    shallowEqualObjects
+  );
   const {
-    currentBranch,
-    branches,
-    pmProjects,
-    pmPrintOrders,
-    pmBatDeliverables,
     addPmBatDeliverable,
     updatePmPrintOrderStatus,
     reviewPmBatDeliverable,
     batchReviewPmBatDeliverables,
     batchDeletePmBatDeliverables,
-    activePmSubScreen,
     setActivePmSubScreen,
-    isSyncing,
-    networkMode,
     retryCloudSync,
-    lastSyncedAt,
-  } = useAtriumStore();
+  } = useAtriumActions();
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
   const activeTab =
