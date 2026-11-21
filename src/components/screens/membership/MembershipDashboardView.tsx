@@ -68,6 +68,12 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
     hasCachedData: members.length > 0 || sales.length > 0,
   });
 
+  const [mountLowerPods, setMountLowerPods] = React.useState(false);
+  React.useEffect(() => {
+    const raf = requestAnimationFrame(() => setMountLowerPods(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   const { filters, makeFilter } = useCardFilters({
     revenue: '30d',
     mix: '30d',
@@ -281,80 +287,82 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
         </DashboardPodGrid>
       </DashboardPod>
 
-      <DashboardPod title={getDashboardPodTitle('membership', 'pipeline', language)}>
-        <DashboardPodGrid layout="equal">
-          <HourlyHeatmap
-            className={POD_SPAN.full}
-            title={localizeText(language, 'Affluence hebdomadaire', 'Hourly Check-In Heatmap', 'كثافة الحضور الأسبوعية')}
-            subtitle={localizeText(
-              language,
-              'Passages scannés par jour et créneau horaire',
-              'Check-ins grouped by weekday and hour',
-              'عمليات الدخول حسب اليوم والساعة'
-            )}
-            helpText={getDashboardHelpText('membership', 'heatmap', language)}
-            locale={locale}
-            {...standardSurface}
-            state={resolveChartState(data.hasCheckIns)}
-            rows={data.heatmap.rows}
-            cols={data.heatmap.cols}
-            cells={data.heatmap.cells}
-            filter={makeFilter('heatmap', compactTf)}
-            emptyMessage={localizeText(
-              language,
-              'Aucun passage badgé enregistré.',
-              'No check-ins recorded yet.',
-              'لم تُسجل أي عمليات دخول بعد.'
-            )}
-          />
+      {mountLowerPods && (
+        <DashboardPod title={getDashboardPodTitle('membership', 'pipeline', language)}>
+          <DashboardPodGrid layout="equal">
+            <HourlyHeatmap
+              className={POD_SPAN.full}
+              title={localizeText(language, 'Affluence hebdomadaire', 'Hourly Check-In Heatmap', 'كثافة الحضور الأسبوعية')}
+              subtitle={localizeText(
+                language,
+                'Passages scannés par jour et créneau horaire',
+                'Check-ins grouped by weekday and hour',
+                'عمليات الدخول حسب اليوم والساعة'
+              )}
+              helpText={getDashboardHelpText('membership', 'heatmap', language)}
+              locale={locale}
+              {...standardSurface}
+              state={resolveChartState(data.hasCheckIns)}
+              rows={data.heatmap.rows}
+              cols={data.heatmap.cols}
+              cells={data.heatmap.cells}
+              filter={makeFilter('heatmap', compactTf)}
+              emptyMessage={localizeText(
+                language,
+                'Aucun passage badgé enregistré.',
+                'No check-ins recorded yet.',
+                'لم تُسجل أي عمليات دخول بعد.'
+              )}
+            />
 
-          <CohortHeatmap
-            className={POD_SPAN.half}
-            title={localizeText(language, 'Rétention par cohorte', 'Cohort Retention', 'الاحتفاظ حسب الدفعة')}
-            subtitle={localizeText(
-              language,
-              'Maintien actif par mois d’inscription',
-              'Active retention by signup month',
-              'نسبة الاستمرار حسب شهر التسجيل'
-            )}
-            helpText={getDashboardHelpText('membership', 'cohorts', language)}
-            locale={locale}
-            {...standardSurface}
-            state={resolveChartState(data.cohorts.length > 0)}
-            cohorts={data.cohorts}
-            filter={makeFilter('cohorts', cohortOptions)}
-            emptyMessage={localizeText(
-              language,
-              'Historique insuffisant pour tracer les cohortes.',
-              'Not enough history to build cohorts.',
-              'لا توجد بيانات كافية لبناء الدفعات.'
-            )}
-          />
+            <CohortHeatmap
+              className={POD_SPAN.half}
+              title={localizeText(language, 'Rétention par cohorte', 'Cohort Retention', 'الاحتفاظ حسب الدفعة')}
+              subtitle={localizeText(
+                language,
+                'Maintien actif par mois d’inscription',
+                'Active retention by signup month',
+                'نسبة الاستمرار حسب شهر التسجيل'
+              )}
+              helpText={getDashboardHelpText('membership', 'cohorts', language)}
+              locale={locale}
+              {...standardSurface}
+              state={resolveChartState(data.cohorts.length > 0)}
+              cohorts={data.cohorts}
+              filter={makeFilter('cohorts', cohortOptions)}
+              emptyMessage={localizeText(
+                language,
+                'Historique insuffisant pour tracer les cohortes.',
+                'Not enough history to build cohorts.',
+                'لا توجد بيانات كافية لبناء الدفعات.'
+              )}
+            />
 
-          <ConversionFunnel
-            className={POD_SPAN.half}
-            title={localizeText(language, 'Tunnel prospects', 'Acquisition Funnel', 'مسار التسجيل')}
-            subtitle={localizeText(
-              language,
-              'Des demandes d’inscription aux membres actifs',
-              'From initial inquiries to active memberships',
-              'من طلبات التسجيل إلى الأعضاء النشطين'
-            )}
-            helpText={getDashboardHelpText('membership', 'funnel', language)}
-            locale={locale}
-            {...standardSurface}
-            state={resolveChartState(data.funnelStages.length > 0)}
-            stages={data.funnelStages}
-            filter={makeFilter('funnel', funnelOptions)}
-            emptyMessage={localizeText(
-              language,
-              'Aucun prospect ni membre enregistré.',
-              'No leads or members recorded.',
-              'لا توجد طلبات أو أعضاء مسجلين.'
-            )}
-          />
-        </DashboardPodGrid>
-      </DashboardPod>
+            <ConversionFunnel
+              className={POD_SPAN.half}
+              title={localizeText(language, 'Tunnel prospects', 'Acquisition Funnel', 'مسار التسجيل')}
+              subtitle={localizeText(
+                language,
+                'Des demandes d’inscription aux membres actifs',
+                'From initial inquiries to active memberships',
+                'من طلبات التسجيل إلى الأعضاء النشطين'
+              )}
+              helpText={getDashboardHelpText('membership', 'funnel', language)}
+              locale={locale}
+              {...standardSurface}
+              state={resolveChartState(data.funnelStages.length > 0)}
+              stages={data.funnelStages}
+              filter={makeFilter('funnel', funnelOptions)}
+              emptyMessage={localizeText(
+                language,
+                'Aucun prospect ni membre enregistré.',
+                'No leads or members recorded.',
+                'لا توجد طلبات أو أعضاء مسجلين.'
+              )}
+            />
+          </DashboardPodGrid>
+        </DashboardPod>
+      )}
     </DashboardBentoFrame>
   );
 };

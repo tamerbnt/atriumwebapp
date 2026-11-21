@@ -145,7 +145,7 @@ export function Sidebar({
     };
   }, [itemsSig]);
 
-  useEffect(() => {
+  useIsoLayoutEffect(() => {
     activeBody.current?.setIndex(activeIdx, true);
   }, [activeIdx]);
 
@@ -257,7 +257,10 @@ export function Sidebar({
                 aria-label={it.label}
                 title={open ? undefined : it.label}
                 style={{ ['--i' as string]: i + 1 } as CSSProperties}
-                onClick={() => onSelect?.(it.id)}
+                onClick={() => {
+                  activeBody.current?.setIndex(i, true);
+                  onSelect?.(it.id);
+                }}
               >
                 <span className={s.ico}>{it.icon}</span>
                 <span className={s.lab} aria-hidden="true">{it.label}</span>

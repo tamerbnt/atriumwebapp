@@ -384,6 +384,7 @@ export function useKineticCollectionLayout<T>({
   const viewportHRef = useRef<number>(640);
   const isInitialPaintRef = useRef<boolean>(true);
   const prevFilterKeyRef = useRef<string>(filterKey);
+  const prevViewModeRef = useRef<string>(viewMode);
 
   const onPruneRef = useRef(onPruneSelection);
   onPruneRef.current = onPruneSelection;
@@ -915,8 +916,8 @@ export function useKineticCollectionLayout<T>({
             r.sh.snap();
             r.fresh = false;
           } else if (snapWidthChange) {
-            r.sx.snap();
             r.sw.snap();
+            r.sh.snap();
           }
 
           if (needsStyleApply(r, mode)) {
@@ -1069,12 +1070,14 @@ export function useKineticCollectionLayout<T>({
   useLayoutEffect(() => {
     const filterChanged = prevFilterKeyRef.current !== filterKey;
     prevFilterKeyRef.current = filterKey;
+    const modeChanged = prevViewModeRef.current !== viewMode;
+    prevViewModeRef.current = viewMode;
 
     if (filterChanged) {
       onFilterChangeRef.current?.();
     }
 
-    place(false);
+    place(modeChanged);
   }, [items, expandedIds, viewMode, filterKey, place]);
 
   useEffect(() => {

@@ -103,7 +103,10 @@ export class Loop {
     this.last = now;
     this.frames++;
     this.govern(raw);
-    const dt = Math.min(Math.max(raw, 0), MAX_DT);
+    const clampedRaw = Math.min(Math.max(raw, 0), GAP);
+    // Sub-step physics on long frames (>33ms) so real elapsed time is integrated without numerical instability
+    const subSteps = clampedRaw > 0.034 ? (clampedRaw > 0.07 ? 3 : 2) : 1;
+    const dt = clampedRaw / subSteps;
 
     for (const b of this.awake) {
       try {
@@ -113,7 +116,9 @@ export class Loop {
           this.sleep(b);
           continue;
         }
-        b.step(dt);
+        for (let s = 0; s < subSteps; s++) {
+          b.step(dt);
+        }
         b.render();
         if (b.settled()) {
           b.snap();

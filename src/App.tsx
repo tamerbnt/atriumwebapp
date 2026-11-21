@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   useAtriumSelector,
   useAtriumStoreLifecycle,
@@ -464,6 +464,13 @@ export default function App() {
     setMemberPrefillName('');
   }, []);
 
+  const handleOpenVoucherModal = useCallback(() => setIsVoucherModalOpen(true), []);
+  const handleCloseVoucherModal = useCallback(() => setIsVoucherModalOpen(false), []);
+  const handleOpenLeadModal = useCallback(() => setIsLeadModalOpen(true), []);
+  const handleCloseLeadModal = useCallback(() => setIsLeadModalOpen(false), []);
+  const handleOpenCommandPalette = useCallback(() => setIsCommandPaletteOpen(true), []);
+  const handleCloseCommandPalette = useCallback(() => setIsCommandPaletteOpen(false), []);
+
   const isFreelance = currentBusiness?.category === 'freelance_solo';
   const isProjectMilestone = currentBusiness?.category === 'project_milestone';
 
@@ -685,8 +692,8 @@ export default function App() {
       return (
         <CategoryHomeView
           onAddMember={handleOpenAddMember}
-          onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
-          onAddLead={() => setIsLeadModalOpen(true)}
+          onOpenVoucherModal={handleOpenVoucherModal}
+          onAddLead={handleOpenLeadModal}
         />
       );
     }
@@ -779,7 +786,7 @@ export default function App() {
             <ProjectDirectionView initialTab="dashboard" />
           );
         case 'settings':
-          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+          return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
         default:
           return <ProjectDirectionView initialTab="dashboard" />;
       }
@@ -804,7 +811,7 @@ export default function App() {
         case 'history':
           return <FreelanceHistoryView />;
         case 'settings':
-          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+          return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
         default:
           return <FreelanceDashboardView />;
       }
@@ -830,7 +837,7 @@ export default function App() {
         case 'analytics':
           return <VenueDashboardView />;
         case 'settings':
-          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+          return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
         default:
           return <VenueDashboardView />;
       }
@@ -876,7 +883,7 @@ export default function App() {
         case 'history':
           return <EducationHistoryView />;
         case 'settings':
-          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+          return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
         default:
           return <EducationDashboardView />;
       }
@@ -910,7 +917,7 @@ export default function App() {
         case 'analytics':
           return <TradingDashboardView />;
         case 'settings':
-          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+          return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
         default:
           return <TradingDashboardView />;
       }
@@ -918,7 +925,7 @@ export default function App() {
 
     if (currentBusiness?.category === 'medical_clinic') {
       if (activeScreen === 'settings') {
-        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       }
       switch (activeScreen) {
         case 'dashboard':
@@ -944,7 +951,7 @@ export default function App() {
 
     if (currentBusiness?.category === 'auto_garage') {
       if (activeScreen === 'settings') {
-        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       }
       if (activeGarageRole === 'mecanicien') {
         switch (activeScreen) {
@@ -1000,7 +1007,7 @@ export default function App() {
         if (activeRealEstateRole !== 'direction') {
           return <RealEstateDashboardView />;
         }
-        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       }
 
       // Role-specific screen permission guards
@@ -1048,7 +1055,7 @@ export default function App() {
         if (activeManufacturingRole !== 'gerant') {
           return <ManufacturingDashboardView />;
         }
-        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       }
 
       // Role-specific screen permission guards & specialized routing
@@ -1131,7 +1138,7 @@ export default function App() {
 
     if (currentBusiness?.category === 'legal_accounting') {
       if (activeScreen === 'settings') {
-        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       }
       if (activeLegalRole === 'secretaire_caisse') {
         switch (activeScreen) {
@@ -1166,7 +1173,7 @@ export default function App() {
 
     if (currentBusiness?.category === 'logistics_delivery') {
       if (activeScreen === 'settings') {
-        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       }
       if (activeLogisticsRole === 'hub_sorter' || activeLogisticsRole === 'stop_desk_agent') {
         switch (activeScreen) {
@@ -1207,7 +1214,7 @@ export default function App() {
 
     if (currentBusiness?.category === 'construction_contractor') {
       if (activeScreen === 'settings') {
-        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       }
       if (activeContractorRole === 'chef_chantier') {
         switch (activeScreen) {
@@ -1253,7 +1260,7 @@ export default function App() {
         if (activeAgriRole !== 'gerant') {
           return <AgricultureParcelsView />;
         }
-        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       }
 
       // Role-specific screen permission guards & specialized routing
@@ -1325,7 +1332,7 @@ export default function App() {
               />
             );
           case 'registrations':
-            return <MembershipRegistrationsView onAddLead={() => setIsLeadModalOpen(true)} />;
+            return <MembershipRegistrationsView onAddLead={handleOpenLeadModal} />;
           case 'finance':
           case 'analytics':
           case 'settings':
@@ -1339,7 +1346,7 @@ export default function App() {
           return (
             <MembershipDashboardView
               onAddMember={handleOpenAddMember}
-              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+              onOpenVoucherModal={handleOpenVoucherModal}
             />
           );
         case 'members':
@@ -1350,7 +1357,7 @@ export default function App() {
             />
           );
         case 'registrations':
-          return <MembershipRegistrationsView onAddLead={() => setIsLeadModalOpen(true)} />;
+          return <MembershipRegistrationsView onAddLead={handleOpenLeadModal} />;
         case 'shop':
           return <MembershipShopView />;
         case 'scheduler':
@@ -1363,16 +1370,16 @@ export default function App() {
           return (
             <MembershipDashboardView
               onAddMember={handleOpenAddMember}
-              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+              onOpenVoucherModal={handleOpenVoucherModal}
             />
           );
         case 'settings':
-          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+          return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
         default:
           return (
             <MembershipDashboardView
               onAddMember={handleOpenAddMember}
-              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+              onOpenVoucherModal={handleOpenVoucherModal}
             />
           );
       }
@@ -1406,7 +1413,7 @@ export default function App() {
           return (
             <AppointmentDashboardView
               onAddMember={handleOpenAddMember}
-              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+              onOpenVoucherModal={handleOpenVoucherModal}
             />
           );
         case 'members':
@@ -1430,16 +1437,16 @@ export default function App() {
           return (
             <AppointmentDashboardView
               onAddMember={handleOpenAddMember}
-              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+              onOpenVoucherModal={handleOpenVoucherModal}
             />
           );
         case 'settings':
-          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+          return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
         default:
           return (
             <AppointmentDashboardView
               onAddMember={handleOpenAddMember}
-              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+              onOpenVoucherModal={handleOpenVoucherModal}
             />
           );
       }
@@ -1471,7 +1478,7 @@ export default function App() {
           return (
             <PosDashboardView
               onAddMember={handleOpenAddMember}
-              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+              onOpenVoucherModal={handleOpenVoucherModal}
             />
           );
         case 'shop':
@@ -1490,16 +1497,16 @@ export default function App() {
           return (
             <PosDashboardView
               onAddMember={handleOpenAddMember}
-              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+              onOpenVoucherModal={handleOpenVoucherModal}
             />
           );
         case 'settings':
-          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+          return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
         default:
           return (
             <PosDashboardView
               onAddMember={handleOpenAddMember}
-              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+              onOpenVoucherModal={handleOpenVoucherModal}
             />
           );
       }
@@ -1510,14 +1517,14 @@ export default function App() {
         return (
           <MembershipDashboardView
             onAddMember={handleOpenAddMember}
-            onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            onOpenVoucherModal={handleOpenVoucherModal}
           />
         );
       case 'analytics':
         return (
           <MembershipDashboardView
             onAddMember={handleOpenAddMember}
-            onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            onOpenVoucherModal={handleOpenVoucherModal}
           />
         );
       case 'members':
@@ -1528,7 +1535,7 @@ export default function App() {
           />
         );
       case 'registrations':
-        return <MembershipRegistrationsView onAddLead={() => setIsLeadModalOpen(true)} />;
+        return <MembershipRegistrationsView onAddLead={handleOpenLeadModal} />;
       case 'shop':
         return <MembershipShopView />;
       case 'scheduler':
@@ -1538,16 +1545,41 @@ export default function App() {
       case 'history':
         return <MembershipHistoryView />;
       case 'settings':
-        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        return <SettingsScreen onOpenVoucherModal={handleOpenVoucherModal} />;
       default:
         return (
           <MembershipDashboardView
             onAddMember={handleOpenAddMember}
-            onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            onOpenVoucherModal={handleOpenVoucherModal}
           />
         );
     }
   };
+
+  const renderedActiveScreen = useMemo(() => {
+    return renderActiveScreen();
+  }, [
+    activeScreen,
+    currentBusiness?.id,
+    currentBusiness?.category,
+    currentBranchId,
+    activePmRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
+    handleOpenAddMember,
+    handleOpenEditMember,
+    handleOpenVoucherModal,
+    handleOpenLeadModal,
+  ]);
 
   const handleCompleteOrSkipOnboarding = () => {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
@@ -1596,16 +1628,16 @@ export default function App() {
               <Sidebar
                 open={isSidebarOpen}
                 onOpenChange={setIsSidebarOpen}
-                onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+                onOpenVoucherModal={handleOpenVoucherModal}
                 isOpenMobile={isMobileSidebarOpen}
                 onCloseMobile={() => setIsMobileSidebarOpen(false)}
               />
             }
             topbar={
               <TopBar
-                onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+                onOpenVoucherModal={handleOpenVoucherModal}
                 onToggleMobileMenu={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-                onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+                onOpenCommandPalette={handleOpenCommandPalette}
               />
             }
             floatingOverlay={
@@ -1648,7 +1680,7 @@ export default function App() {
                     />
                   }
                 >
-                  {renderActiveScreen()}
+                  {renderedActiveScreen}
                 </React.Suspense>
               </ScreenFocusProvider>
             </div>
@@ -1662,7 +1694,7 @@ export default function App() {
         <React.Suspense fallback={null}>
           <CommandPaletteModal
             isOpen={isCommandPaletteOpen}
-            onClose={() => setIsCommandPaletteOpen(false)}
+            onClose={handleCloseCommandPalette}
           />
         </React.Suspense>
       )}
@@ -1671,7 +1703,7 @@ export default function App() {
         <React.Suspense fallback={null}>
           <VoucherModal
             isOpen={isVoucherModalOpen}
-            onClose={() => setIsVoucherModalOpen(false)}
+            onClose={handleCloseVoucherModal}
           />
         </React.Suspense>
       )}
@@ -1699,7 +1731,7 @@ export default function App() {
         <React.Suspense fallback={null}>
           <LeadModal
             isOpen={isLeadModalOpen}
-            onClose={() => setIsLeadModalOpen(false)}
+            onClose={handleCloseLeadModal}
           />
         </React.Suspense>
       )}
@@ -1721,7 +1753,7 @@ export default function App() {
           <DesktopUpgradeModal
             isOpen={isDesktopUpgradeModalOpen}
             onClose={closeDesktopUpgradeModal}
-            onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            onOpenVoucherModal={handleOpenVoucherModal}
             reason={desktopUpgradeReason}
           />
         </React.Suspense>

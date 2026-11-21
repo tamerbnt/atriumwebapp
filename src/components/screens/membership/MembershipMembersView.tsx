@@ -172,11 +172,11 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   const deferredSearchQuery = useDeferredValue(searchQuery);
-  const deferredStatusFilter = useDeferredValue(statusFilter);
-  const deferredPlanFilter = useDeferredValue(planFilter);
-  const deferredGenderFilter = useDeferredValue(genderFilter);
-  const deferredAgeGroupFilter = useDeferredValue(ageGroupFilter);
-  const deferredBranchFilter = useDeferredValue(branchFilter);
+  const deferredStatusFilter = statusFilter;
+  const deferredPlanFilter = planFilter;
+  const deferredGenderFilter = genderFilter;
+  const deferredAgeGroupFilter = ageGroupFilter;
+  const deferredBranchFilter = branchFilter;
 
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(() => new Set());
   const [pinnedMemberIds, setPinnedMemberIds] = useState<Set<string>>(() => new Set());
