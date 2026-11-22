@@ -176,8 +176,8 @@ describe('shellBodies', () => {
 
       // Move down from index 0 (top=4) to index 3 (top=145, bottom=185)
       active.setIndex(3, true);
-      expect(active.B.k).toBe(420); // leading bottom edge stiffer
-      expect(active.T.k).toBe(200); // trailing top edge looser
+      expect(active.B.k).toBe(700); // leading bottom edge stiffer
+      expect(active.T.k).toBe(480); // trailing top edge looser
 
       for (let i = 0; i < 4; i++) active.step(1 / 60);
       active.render();
@@ -198,8 +198,8 @@ describe('shellBodies', () => {
 
       // Move back up from index 3 to index 0
       active.setIndex(0, true);
-      expect(active.T.k).toBe(420); // leading top edge stiffer
-      expect(active.B.k).toBe(200); // trailing bottom edge looser
+      expect(active.T.k).toBe(700); // leading top edge stiffer
+      expect(active.B.k).toBe(480); // trailing bottom edge looser
 
       for (let i = 0; i < 4; i++) active.step(1 / 60);
       active.render();

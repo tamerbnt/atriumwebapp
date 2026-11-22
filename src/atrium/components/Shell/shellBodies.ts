@@ -295,8 +295,8 @@ const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
  * with zero React re-renders and zero per-frame layout reads.
  */
 export class SidebarActiveBody implements Body {
-  T = new Spring(0, 200);
-  B = new Spring(44, 420);
+  T = new Spring(0, 480);
+  B = new Spring(44, 700);
   geo: Array<[number, number]> = [];
   index = -1;
   private lastTransform = '';
@@ -361,8 +361,8 @@ export class SidebarActiveBody implements Body {
     const shouldAnimate = animate && hadValidIndex && !motion.reduced && !motion.instant;
 
     if (shouldAnimate) {
-      this.B.k = down ? 420 : 200;
-      this.T.k = down ? 200 : 420;
+      this.B.k = down ? 700 : 480;
+      this.T.k = down ? 480 : 700;
     }
 
     this.index = j;

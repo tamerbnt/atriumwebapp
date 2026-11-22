@@ -1933,12 +1933,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleItemSelect = useCallback((id: string) => {
     const item = dockNavItems.find(it => it.id === id);
-    if (!item) {
-      setScreen(id as ActiveScreen);
-      if (onCloseMobile) onCloseMobile();
-      return;
-    }
-    setScreen(item.id);
+    const target = item ? item.id : (id as ActiveScreen);
+    // Wrap screen navigation in startTransition so the direct-DOM spring animation
+    // on the active pill glides at 60fps immediately, without waiting for the new
+    // screen's heavy synchronous React mount.
+    React.startTransition(() => {
+      setScreen(target);
+    });
     if (onCloseMobile) onCloseMobile();
   }, [dockNavItems, onCloseMobile]);
 

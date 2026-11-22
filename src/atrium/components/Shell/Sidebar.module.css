@@ -112,6 +112,7 @@
   pointer-events: none;
   z-index: 2;
   contain: layout paint;
+  will-change: transform, height;
 }
 
 .item {
@@ -169,11 +170,11 @@
   font-weight: 500;
 }
 .list[data-live='true'] .item[aria-current='page'] .lab {
-  color: #ffffff;
+  color: inherit;
   font-weight: 500;
 }
 .list[data-live='true'] .item[aria-current='page'] .ico svg {
-  stroke: #ffffff;
+  stroke: currentColor;
 }
 
 .ico {

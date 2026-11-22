@@ -31,7 +31,8 @@ export const Modal: React.FC<ModalProps> = ({
     let didLockBody = false;
     let prevOverflow = '';
     if (isOpen) {
-      if (document.documentElement.scrollHeight > document.documentElement.clientHeight) {
+      const docEl = document.documentElement;
+      if (docEl.scrollHeight > docEl.clientHeight && document.body.style.overflow !== 'hidden') {
         prevOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
         didLockBody = true;
