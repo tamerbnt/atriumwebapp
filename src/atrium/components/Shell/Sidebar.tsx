@@ -258,6 +258,7 @@ function SidebarInner({
                 title={open ? undefined : it.label}
                 style={{ ['--i' as string]: i + 1 } as CSSProperties}
                 onClick={() => {
+                  hoverBody.current?.setHover(null);
                   activeBody.current?.setIndex(i, true);
                   onSelect?.(it.id);
                 }}

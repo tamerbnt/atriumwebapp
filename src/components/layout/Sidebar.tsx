@@ -1931,15 +1931,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
      activeAppointmentRole, activePosRole, activeEducationRole,
      currentUser, language, terminology, t]);
 
+  const navTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (navTimerRef.current) clearTimeout(navTimerRef.current);
+    };
+  }, []);
+
   const handleItemSelect = useCallback((id: string) => {
     const item = dockNavItems.find(it => it.id === id);
     const target = item ? item.id : (id as ActiveScreen);
-    // Wrap screen navigation in startTransition so the direct-DOM spring animation
-    // on the active pill glides at 60fps immediately, without waiting for the new
-    // screen's heavy synchronous React mount.
-    React.startTransition(() => {
-      setScreen(target);
-    });
+    if (navTimerRef.current) clearTimeout(navTimerRef.current);
+    // Perceptual lead time: give the direct-DOM spring on the active pill 55ms of zero-CPU
+    // head start to cover 70%+ of its visual travel at a locked 60fps/120fps before React's
+    // heavy concurrent screen mount begins.
+    navTimerRef.current = setTimeout(() => {
+      React.startTransition(() => {
+        setScreen(target);
+      });
+    }, 55);
     if (onCloseMobile) onCloseMobile();
   }, [dockNavItems, onCloseMobile]);
 

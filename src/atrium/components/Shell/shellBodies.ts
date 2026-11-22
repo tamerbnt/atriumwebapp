@@ -397,6 +397,22 @@ export class SidebarActiveBody implements Body {
     this.aim();
     this.T.step(dt);
     this.B.step(dt);
+
+    // Liquid surface tension cohesion clamp:
+    // Prevents the capsule from stretching into a giant noodle during long leaps.
+    // Caps maximum liquid elongation to 58px (44px + 14px maximum stretch).
+    const maxSpan = 58;
+    if (this.B.x - this.T.x > maxSpan) {
+      if (this.B.k > this.T.k) {
+        // Moving down: leading bottom edge B pulls trailing top edge T forward
+        this.T.x = this.B.x - maxSpan;
+        if (this.T.v < this.B.v) this.T.v = this.B.v * 0.9;
+      } else {
+        // Moving up: leading top edge T pulls trailing bottom edge B upward
+        this.B.x = this.T.x + maxSpan;
+        if (this.B.v > this.T.v) this.B.v = this.T.v * 0.9;
+      }
+    }
   }
 
   render(): void {

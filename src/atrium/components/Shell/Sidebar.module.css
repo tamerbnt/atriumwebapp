@@ -176,6 +176,15 @@
 .list[data-live='true'] .item[aria-current='page'] .ico svg {
   stroke: currentColor;
 }
+.list[data-live='true'] .item .lab,
+.list[data-live='true'] .item:hover .lab {
+  color: inherit;
+}
+.list[data-live='true'] .item .ico svg,
+.list[data-live='true'] .item:hover .ico svg {
+  stroke: currentColor;
+  transition: none;
+}
 
 .ico {
   position: relative;
