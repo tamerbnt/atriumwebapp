@@ -50,7 +50,7 @@ const Chevron = () => (
  * Stays pinned open across all clicks until explicitly toggled via logo or edge button.
  * Incorporates a fluid direct-DOM magnetic hover pill with velocity stretch (0 React re-renders).
  */
-export function _SidebarInner({
+function SidebarInner({
   items, activeId, onSelect, open: openProp, defaultOpen, onOpenChange, brand, onBrandClick, footer,
   expandOn = 'click', label = 'Main navigation', className, style,
 }: SidebarProps) {
@@ -290,4 +290,4 @@ export function _SidebarInner({
  * by direct DOM writes (spring engine), AtriumSidebar does not need to re-render on
  * every navigation. Only re-render when items list or open state actually changes.
  */
-export const Sidebar = memo(_SidebarInner);
+export const Sidebar = memo(SidebarInner);
