@@ -645,17 +645,17 @@ export const TradingInventoryView: React.FC = () => {
           </button>
           </div>
           {warehouses.map((w) => (
-            <div key={w.id} className="sq-elev-card">
+            <div key={w.id} className="sq-elev-card sq-elev-card-hover">
             <button
               type="button"
               onClick={() => setSelectedDepotId(w.id)}
               data-sq="card"
               data-sq-border="solid"
               data-sq-stroke-w={selectedDepotId === w.id ? '2' : '1'}
-              className={`w-full h-full p-4 text-left rtl:text-right transition-all cursor-pointer ${
+              className={`w-full h-full p-4 text-left rtl:text-right transition-colors cursor-pointer ${
                 selectedDepotId === w.id
                   ? '[--sq-stroke:#d4522f] bg-white dark:bg-[#22201E]'
-                  : '[--sq-stroke:var(--sq-stroke-card)] bg-white dark:bg-[#22201E] hover:bg-[#FAF7F4] dark:hover:bg-[#282523]'
+                  : '[--sq-stroke:var(--sq-stroke-card)] bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523]'
               }`}
             >
               <div className="flex items-center justify-between mb-1">

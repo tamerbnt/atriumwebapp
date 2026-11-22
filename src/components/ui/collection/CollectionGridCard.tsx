@@ -142,11 +142,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
       {/* 260px Fixed Width Card */}
       <div
         onClick={onCardClick}
-        style={{
-          transform: isHovered ? 'scale(1.01)' : 'scale(1)',
-          transition: 'transform 200ms ease, filter 200ms ease',
-        }}
-        className={`relative w-[260px] p-6 sq-elev-card-hover flex flex-col items-center justify-center text-center cursor-pointer ${
+        className={`relative w-[260px] p-6 sq-elev-card sq-elev-card-hover flex flex-col items-center justify-center text-center cursor-pointer ${
           isSelected ? 'text-white' : ''
         }`}
       >
@@ -159,7 +155,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
             isSelected
               ? 'bg-gradient-to-br from-[#d4522f] to-[#a8583c]'
               : isHovered
-              ? 'bg-[#FFFCFA] dark:bg-[#282523] [--sq-stroke:rgba(212,82,47,0.45)] dark:[--sq-stroke:rgba(232,100,63,0.5)]'
+              ? 'bg-[#FCF9F6] dark:bg-[#282523]'
               : isPinned
               ? 'bg-white dark:bg-[#22201E] [--sq-stroke:rgba(245,158,11,0.5)]'
               : 'bg-white dark:bg-[#22201E]'

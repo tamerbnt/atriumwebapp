@@ -349,14 +349,14 @@ export const SalonQuickChairKiosk: React.FC = React.memo(() => {
                     ? ({ '--sq-stroke': 'rgba(52, 211, 153, 0.8)' } as React.CSSProperties)
                     : undefined
                 }
-                className={`border-0 transition-all p-5 flex flex-col justify-between min-h-[290px] ${
+                className={`border-0 transition-colors duration-200 p-5 flex flex-col justify-between min-h-[290px] ${
                   !isOccupied
                     ? 'bg-[#FBF8F5] dark:bg-[#191716]'
                     : active.stage === 'in_progress'
-                    ? 'bg-white dark:bg-[#22201E] sq-elev-card'
+                    ? 'bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] sq-elev-card sq-elev-card-hover'
                     : active.stage === 'completed'
-                    ? 'bg-emerald-50/40 dark:bg-emerald-950/20'
-                    : 'bg-white dark:bg-[#22201E] sq-elev-card'
+                    ? 'bg-emerald-50/40 dark:bg-emerald-950/20 sq-elev-card sq-elev-card-hover'
+                    : 'bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] sq-elev-card sq-elev-card-hover'
                 }`}
               >
                 <div>

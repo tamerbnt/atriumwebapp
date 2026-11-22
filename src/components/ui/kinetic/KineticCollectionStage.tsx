@@ -200,21 +200,29 @@ function KineticCollectionStageInner<T>({
   // Responsive empty stage: column headers remain intact above for context while
   // the EmptyState container uses true viewport/pod width so 3/4/6 ghost tracks and centered island adapt cleanly.
   if (isEmpty) {
-    const emptyKey =
+    const emptyTone =
+      emptyState && typeof emptyState === 'object' && 'tone' in emptyState
+        ? (emptyState as EmptyStateProps).tone ?? 'neutral'
+        : 'neutral';
+    const emptyTitle =
       emptyState && typeof emptyState === 'object' && 'title' in emptyState
-        ? `${(emptyState as EmptyStateProps).tone ?? 'neutral'}-${String((emptyState as EmptyStateProps).title)}-${filterKey}`
-        : filterKey;
+        ? String((emptyState as EmptyStateProps).title)
+        : '';
+    const emptyKey = `${emptyTone}-${emptyTitle}`;
 
     return (
-      <div className="w-full flex flex-col gap-[var(--row-gap,8px)]" data-stage-mode={viewMode === 'grid' ? 'g' : 'l'}>
+      <div
+        className="w-full flex flex-col gap-[var(--row-gap,8px)] flex-1 min-h-[460px] sm:min-h-[520px]"
+        data-stage-mode={viewMode === 'grid' ? 'g' : 'l'}
+      >
         {viewMode === 'list' && (
-          <div className="w-full members-x-wrap">
+          <div className="w-full members-x-wrap shrink-0">
             <div className="min-w-[980px]">{headerBar}</div>
           </div>
         )}
         <div
           ref={scrollContainerRef}
-          className="scr relative w-full min-w-0 min-h-[350px] flex flex-col"
+          className="scr relative w-full min-w-0 flex-1 min-h-[350px] flex flex-col"
         >
           <KineticEmptyStateMotion motionKey={emptyKey}>
             {React.isValidElement(emptyState) ? (
@@ -247,7 +255,8 @@ function KineticCollectionStageInner<T>({
           {/* Windowed Virtual Kinetic Stage */}
           <div
             ref={scrollContainerRef}
-            className="scr relative overflow-y-auto overflow-x-hidden flex-1 min-h-0 pb-[70px]"
+            data-no-rubber-band="true"
+            className="scr relative overflow-y-auto overflow-x-hidden flex-1 min-h-0 pb-[70px] overscroll-auto"
           >
             <div
               ref={rowsElRef}

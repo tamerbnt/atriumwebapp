@@ -214,14 +214,12 @@
   transform: translateX(calc((1 - min(1, var(--open))) * -10px));
 }
 
-/* In collapsed state: strictly force zero text, badges, titles or footers */
+/* In collapsed state: prevent mouse interactions while collapsed */
 .root:not([data-open]) .lab,
 .root:not([data-open]) .badge,
 .root:not([data-open]) .brandTitle,
 .root:not([data-open]) .footer {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
+  pointer-events: none;
 }
 .badge {
   position: relative;

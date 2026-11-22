@@ -61,13 +61,9 @@ export function initFluidScrollbar(): () => void {
 
   // Capture scroll events across containers (passive; zero forced reflow)
   window.addEventListener('scroll', onScrollActivity, { capture: true, passive: true });
-  window.addEventListener('wheel', onScrollActivity, { capture: true, passive: true });
-  window.addEventListener('touchmove', onScrollActivity, { capture: true, passive: true });
 
   return () => {
     window.removeEventListener('scroll', onScrollActivity, { capture: true });
-    window.removeEventListener('wheel', onScrollActivity, { capture: true });
-    window.removeEventListener('touchmove', onScrollActivity, { capture: true });
     if (globalScrollTimer) clearTimeout(globalScrollTimer);
     setDocScrolling(false);
     isInitialized = false;

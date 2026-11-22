@@ -439,4 +439,56 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
   );
 };
 
-export const KineticRow = React.memo(KineticRowInner);
+export function areRowPropsEqual(prev: KineticRowProps, next: KineticRowProps): boolean {
+  if (prev.viewMode !== next.viewMode) return false;
+  if (prev.isSelected !== next.isSelected) return false;
+  if (prev.isOpen !== next.isOpen) return false;
+  if (prev.isExpanded !== next.isExpanded) return false;
+  if (prev.isPinned !== next.isPinned) return false;
+  if (prev.className !== next.className) return false;
+  if (prev.secondaryLabel !== next.secondaryLabel) return false;
+  if (prev.secondaryIcon !== next.secondaryIcon) return false;
+  if (prev.detailChildren !== next.detailChildren) return false;
+  if (prev.registerRowRefs !== next.registerRowRefs) return false;
+  if (prev.onSelect !== next.onSelect) return false;
+  if (prev.onToggleExpand !== next.onToggleExpand) return false;
+  if (prev.onOpenDetails !== next.onOpenDetails) return false;
+  if (prev.onEdit !== next.onEdit) return false;
+  if (prev.onSecondaryAction !== next.onSecondaryAction) return false;
+  if (prev.onDelete !== next.onDelete) return false;
+
+  const pr = prev.row;
+  const nr = next.row;
+  if (pr !== nr) {
+    if (
+      pr.id !== nr.id ||
+      pr.title !== nr.title ||
+      pr.subline !== nr.subline ||
+      pr.statusLabel !== nr.statusLabel ||
+      pr.statusVariant !== nr.statusVariant ||
+      pr.metricPrimary !== nr.metricPrimary ||
+      pr.metricSecondary !== nr.metricSecondary ||
+      pr.branchName !== nr.branchName ||
+      pr.branchCode !== nr.branchCode ||
+      pr.isPinned !== nr.isPinned ||
+      pr.vipBadge !== nr.vipBadge ||
+      pr.avatarText !== nr.avatarText ||
+      pr.avatarColor !== nr.avatarColor ||
+      pr.categoryLabel !== nr.categoryLabel ||
+      pr.notes !== nr.notes
+    ) {
+      return false;
+    }
+  }
+
+  if (prev.fanActions !== next.fanActions) {
+    if ((prev.fanActions?.length ?? 0) !== (next.fanActions?.length ?? 0)) return false;
+  }
+  if (prev.detailActions !== next.detailActions) {
+    if ((prev.detailActions?.length ?? 0) !== (next.detailActions?.length ?? 0)) return false;
+  }
+
+  return true;
+}
+
+export const KineticRow = React.memo(KineticRowInner, areRowPropsEqual);

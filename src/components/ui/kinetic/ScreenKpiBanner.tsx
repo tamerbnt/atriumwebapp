@@ -112,20 +112,18 @@ const WhiteKpiCard: React.FC<{
       </div>
       <div
         ref={countRef}
-        className="relative z-10 t-kpi-m text-[var(--text-1)] dark:text-white transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03] mt-auto"
+        className="relative z-10 t-kpi-m text-[var(--text-1)] dark:text-white mt-auto"
       >
         {card.formatValue ? card.formatValue(card.count) : card.count}
       </div>
     </>
   );
 
-  const sharedClass = `relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-white dark:bg-[#22201E] text-left rtl:text-right flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full w-full select-none focus:outline-none ${
+  const sharedClass = `relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] transition-colors duration-200 text-left rtl:text-right flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full w-full select-none focus:outline-none ${
     card.onToggle ? 'cursor-pointer' : ''
   } ${card.isActive ? activeStrokeVars : inactiveStrokeVars}`;
 
-  const wrapperClass = `group sq-elev-card-hover h-full transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] motion-reduce:transition-none motion-reduce:hover:transform-none ${
-    card.onToggle ? 'active:translate-y-0 active:scale-[0.995]' : ''
-  }`;
+  const wrapperClass = 'group sq-elev-card sq-elev-card-hover h-full';
 
   if (card.onToggle) {
     return (
@@ -216,19 +214,18 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
         <WhiteKpiCard card={secondaryCard} defaultTone="terracotta" language={language} />
 
         {/* 3rd Dark Espresso Card with #FF8F63 orange figure */}
-        <div className="group sq-elev-card-hover h-full transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:scale-[1.008] motion-reduce:transition-none motion-reduce:hover:transform-none">
+        <div className="group sq-elev-card sq-elev-card-hover h-full">
           <div
             data-surface="dark"
             data-sq="card"
             data-sq-border="solid"
-            className="relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-gradient-to-br from-[#282523] to-[#22201E] [--sq-stroke:var(--sq-stroke-obsidian,url(#sq-spec-dark-card))] group-hover:[--sq-stroke:rgba(255,143,99,0.45)] text-white flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full"
+            className="relative overflow-hidden p-[var(--card-pad,20px)] card-opt rounded-[var(--r-card,16px)] bg-gradient-to-br from-[#282523] to-[#22201E] [--sq-stroke:var(--sq-stroke-obsidian,url(#sq-spec-dark-card))] text-white flex flex-col justify-between gap-[var(--s3,12px)] min-h-[var(--kpi-min-h,168px)] h-full"
           >
-            <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(260px_circle_at_88%_12%,rgba(255,143,99,0.14),transparent_70%)]" />
             <div className="relative z-10 flex items-center justify-between gap-[var(--s2,8px)]">
               <span className="t-small text-[var(--text-dark-2)] truncate">
                 {darkCard.label}
               </span>
-              <span className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--badge-h,22px)] px-[var(--s2,8px)] rounded-full t-small bg-[#3D2817] text-[var(--brand-on-dark)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5 shrink-0">
+              <span className="inline-flex items-center gap-[var(--s1,4px)] h-[var(--badge-h,22px)] px-[var(--s2,8px)] rounded-full t-small bg-[#3D2817] text-[var(--brand-on-dark)] shrink-0">
                 <span ref={darkChipCountRef}>
                   {darkCard.formatBadgeValue
                     ? darkCard.formatBadgeValue(darkCard.badgeCount)
@@ -239,7 +236,7 @@ export const ScreenKpiBanner: React.FC<ScreenKpiBannerProps> = React.memo(({
             </div>
             <div
               ref={darkBigCountRef}
-              className="relative z-10 t-kpi-m text-[var(--brand-on-dark)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left rtl:origin-right group-hover:scale-[1.03] mt-auto"
+              className="relative z-10 t-kpi-m text-[var(--brand-on-dark)] mt-auto"
             >
               {darkCard.formatValue
                 ? darkCard.formatValue(darkCard.valueCount)

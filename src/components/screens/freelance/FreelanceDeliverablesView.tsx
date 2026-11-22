@@ -1224,7 +1224,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         (item.loggedHours / (item.estimatedHours || 1)) * 100
                       );
                       return (
-                        <div key={item.id} className="sq-elev-card">
+                        <div key={item.id} className="sq-elev-card sq-elev-card-hover">
                           <div
                             data-sq="ctl"
                             data-sq-border="solid"

@@ -114,6 +114,7 @@ export interface UniversalDataCollectionProps<T> {
   sortDirection?: 'asc' | 'desc';
   sortDir?: 'asc' | 'desc';
   onSortChange?: (field: string, direction: 'asc' | 'desc') => void;
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
 
   // Search and Filters passthroughs
   searchQuery?: string;
@@ -282,6 +283,7 @@ export function UniversalDataCollection<T>({
   sortDirection = 'asc',
   sortDir,
   onSortChange,
+  scrollContainerRef,
   viewMode: controlledViewMode,
   onViewModeChange,
   showViewToggle = true,
@@ -1186,7 +1188,7 @@ export function UniversalDataCollection<T>({
     storeLanguage === 'ar' ? 'ar' : storeLanguage === 'en' ? 'en' : 'fr';
 
   return (
-    <div className="w-full flex flex-col relative gap-[var(--s4,16px)]">
+    <div className="w-full flex flex-col relative gap-[var(--s4,16px)] flex-1 min-h-0">
       <OfflineRetryBanner
         isOffline={effectiveIsOffline}
         isTimedOut={effectiveIsTimedOut}
@@ -1274,6 +1276,7 @@ export function UniversalDataCollection<T>({
         )
       ) : (
         <KineticCollectionStage<T>
+          scrollContainerRef={scrollContainerRef}
           items={pagedItems}
           keyExtractor={(it) => String(keyExtractor(it))}
           columns={kineticHeaders}

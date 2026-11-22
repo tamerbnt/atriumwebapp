@@ -92,9 +92,8 @@
   position: relative;
   height: var(--row-h, 64px);
   box-sizing: border-box;
-  border: 0;
+  border: 1.5px dashed var(--sq-stroke-dashed, var(--ghost-border));
   border-radius: var(--r-row, 12px);
-  --sq-stroke: var(--sq-stroke-dashed, var(--ghost-border));
   display: grid;
   gap: var(--col-gap, 16px);
   align-items: center;
@@ -105,9 +104,8 @@
   position: relative;
   width: var(--check, 20px);
   height: var(--check, 20px);
+  border: 1.5px dashed var(--sq-stroke-dashed, var(--ghost-border));
   border-radius: var(--r-check, 6px);
-  border: 0;
-  --sq-stroke: var(--sq-stroke-dashed, var(--ghost-border));
   box-sizing: border-box;
 }
 

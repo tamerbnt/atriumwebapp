@@ -230,6 +230,14 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
         activeRef.current.direction === axis &&
         Math.abs(activeRef.current.offset) > 0.05);
 
+      // On stepped mouse wheels (discrete wheel clicks), pass through directly to native scrolling.
+      // Synthetic rubber-band overscroll should never hijack discrete mouse wheel clicks,
+      // which causes stutter, lag, impulse clamp stalls, and 95ms bounce locks.
+      const isSteppedWheel = e.deltaMode !== 0 || (Math.abs(rawAxisDelta) >= 40 && Number.isInteger(rawAxisDelta));
+      if (!isAlreadyActive && isSteppedWheel) {
+        return;
+      }
+
       // Fast-path: if wheel is continuing on the same container during in-bounds scroll, bypass DOM traversal
       if (
         !isAlreadyActive &&

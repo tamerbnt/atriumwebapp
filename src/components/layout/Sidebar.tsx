@@ -120,9 +120,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // Reactive selector: a cheap re-render just to track the current screen for activeId resolution.
   // The expensive dockNavItems useMemo below does NOT depend on this, so it won't re-run.
   const activeScreen = useAtriumSelector((s) => s.activeScreen);
-  const [internalExpanded, setInternalExpanded] = useState(false);
-  const isExpanded = openProp !== undefined ? openProp : internalExpanded;
-  const setIsExpanded = onOpenChangeProp || setInternalExpanded;
   const isRtl = language === 'ar';
 
   const category = currentBusiness?.category || 'pos_inventory';
@@ -1949,25 +1946,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [category]);
 
-  const navRafRef = React.useRef<number | null>(null);
+  const navTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   React.useEffect(() => {
     return () => {
-      if (navRafRef.current) cancelAnimationFrame(navRafRef.current);
+      if (navTimerRef.current) clearTimeout(navTimerRef.current);
     };
   }, []);
 
   const handleItemSelect = useCallback((id: string) => {
     const item = dockNavItems.find(it => it.id === id);
     const target = item ? item.id : (id as ActiveScreen);
-    if (navRafRef.current) cancelAnimationFrame(navRafRef.current);
-    // Yield 1 animation frame for the pill spring to launch cleanly at 60fps,
-    // then dispatch screen state. With chunks preloaded in memory, mounting is instantaneous.
-    navRafRef.current = requestAnimationFrame(() => {
+    if (navTimerRef.current) clearTimeout(navTimerRef.current);
+    // Preload target screen immediately while the liquid pill spring launches
+    preloadScreen(target, category);
+    // Yield 120ms so the liquid pill spring completes its fluid glide with zero frame drops
+    // before heavy screen reconciliation runs on the main thread
+    navTimerRef.current = setTimeout(() => {
       setScreen(target);
-    });
+    }, 120);
     if (onCloseMobile) onCloseMobile();
-  }, [dockNavItems, onCloseMobile]);
+  }, [dockNavItems, category, onCloseMobile]);
 
   const handleItemHover = useCallback((id: string) => {
     preloadScreen(id, category);
@@ -2027,8 +2026,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           activeId={activeId}
           onSelect={handleItemSelect}
           onItemHover={handleItemHover}
-          open={isExpanded}
-          onOpenChange={setIsExpanded}
+          open={openProp}
+          onOpenChange={onOpenChangeProp}
           expandOn="click"
           brand={{
             mark: <AtriumLogo variant="mark" height={24} style={{ color: '#E8643F' }} />,

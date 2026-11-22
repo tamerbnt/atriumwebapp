@@ -605,8 +605,8 @@ export const MembershipShopView: React.FC = React.memo(() => {
           onResetAllFilters={handleResetFilters}
         />
 
-        <div className="flex flex-col xl:flex-row gap-6 items-start">
-          <div className="flex-1 min-w-0 w-full">
+        <div className="flex flex-col xl:flex-row gap-6 items-stretch">
+          <div className="flex-1 min-w-0 w-full flex flex-col min-h-0">
             <UniversalDataCollection<Product>
               items={sortedProducts}
               keyExtractor={(p) => p.id}

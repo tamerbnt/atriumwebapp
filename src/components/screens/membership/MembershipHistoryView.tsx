@@ -506,7 +506,7 @@ export const MembershipHistoryView: React.FC = React.memo(() => {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200 relative">
+    <div className="space-y-6 animate-in fade-in duration-200 relative flex-1 min-h-0 flex flex-col">
       {refundSuccessToast && (
         <div className="sq-elev-card">
           <div

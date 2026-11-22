@@ -742,7 +742,7 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
             {bays.map((bay) => {
               const bayOrder = orders.find((o) => o.assignedBayId === bay.id || o.id === bay.activeOrderId);
               return (
-                <div key={bay.id} className={bay.isOccupied ? 'sq-elev-card' : undefined}>
+                <div key={bay.id} className={bay.isOccupied ? 'sq-elev-card sq-elev-card-hover' : undefined}>
                 <button
                   type="button"
                   disabled={!bayOrder}
@@ -755,9 +755,9 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                       setInspectedOrder(bayOrder);
                     }
                   }}
-                  className={`w-full h-full p-3 text-left rtl:text-right transition-all t-cap ${
+                  className={`w-full h-full p-3 text-left rtl:text-right transition-colors t-cap ${
                     bay.isOccupied
-                      ? 'bg-amber-50/70 dark:bg-amber-950/25 [--sq-stroke:#fcd34d] dark:[--sq-stroke:rgba(217,119,6,0.4)] cursor-pointer hover:[--sq-stroke:#d4522f]'
+                      ? 'bg-amber-50/70 dark:bg-amber-950/25 [--sq-stroke:#fcd34d] dark:[--sq-stroke:rgba(217,119,6,0.4)] cursor-pointer hover:bg-amber-100/70 dark:hover:bg-amber-950/40'
                       : 'bg-white dark:bg-[#22201E] opacity-85 cursor-default'
                   }`}
                 >
@@ -855,14 +855,14 @@ export const AutoGarageOrdersView: React.FC<any> = () => {
                       </KineticEmptyStateMotion>
                     ) : (
                       colOrders.map((order) => (
-                        <div key={order.id} className="sq-elev-card">
+                        <div key={order.id} className="sq-elev-card sq-elev-card-hover">
                         <div
                           data-sq="ctl"
                           data-sq-border={activeOrder?.id === order.id ? 'solid' : 'solid'}
-                          className={`p-3 transition-all space-y-2 ${
+                          className={`p-3 transition-colors space-y-2 ${
                             activeOrder?.id === order.id
                               ? 'bg-[#FDF4F0] dark:bg-[#2B2825] [--sq-stroke:#d4522f]'
-                              : 'bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] hover:[--sq-stroke:rgba(212,82,47,0.45)]'
+                              : 'bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-card)] hover:bg-[#FCF9F6] dark:hover:bg-[#282523]'
                           }`}
                         >
                           <button

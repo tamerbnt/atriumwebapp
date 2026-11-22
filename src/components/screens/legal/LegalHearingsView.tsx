@@ -884,7 +884,7 @@ export const LegalHearingsView: React.FC<any> = () => {
 
                   <div className="grid grid-cols-1 gap-3">
                     {dateHearings.map((h) => (
-                      <div key={h.id} className="sq-elev-card">
+                      <div key={h.id} className="sq-elev-card sq-elev-card-hover">
                         <button
                           type="button"
                           data-no-liquid="true"
@@ -897,7 +897,7 @@ export const LegalHearingsView: React.FC<any> = () => {
                           className={`w-full text-left rtl:text-right p-4 transition-colors cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
                             activeHearing?.id === h.id
                               ? 'bg-[#FCEEE8] dark:bg-[#2B2825] ring-2 ring-[#d4522f]/60'
-                              : 'bg-white dark:bg-[#22201E] hover:bg-[#FBF8F5] dark:hover:bg-[#282523]'
+                              : 'bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523]'
                           }`}
                         >
                           <div className="flex items-start gap-3 min-w-0">

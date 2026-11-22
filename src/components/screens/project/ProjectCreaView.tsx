@@ -760,11 +760,11 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               {pmPrintOrders
                 .filter((o) => o.status === 'sent_to_crea')
                 .map((order) => (
-                  <div key={order.id} className="sq-elev-card">
+                  <div key={order.id} className="sq-elev-card sq-elev-card-hover">
                     <div
                       data-sq="card"
                       data-sq-border="none"
-                      className="p-4 bg-white dark:bg-[#22201E] space-y-2"
+                      className="p-4 bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] space-y-2 transition-colors"
                     >
                       <div className="flex items-center justify-between t-cap">
                         <span className="tabular-nums font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
@@ -811,12 +811,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               {pmBatDeliverables
                 .filter((b) => b.approvalStatus === 'pending_review')
                 .map((bat) => (
-                  <div key={bat.id} className="sq-elev-card">
+                  <div key={bat.id} className="sq-elev-card sq-elev-card-hover">
                     <div
                       onClick={(e) => handleSelectBat(bat, e.currentTarget)}
                       data-sq="card"
                       data-sq-border="none"
-                      className="p-4 bg-white dark:bg-[#22201E] hover:bg-[#FBF8F5] dark:hover:bg-[#282523] space-y-2 cursor-pointer transition-colors"
+                      className="p-4 bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] space-y-2 cursor-pointer transition-colors"
                     >
                       <img
                         src={bat.previewUrl}
@@ -858,12 +858,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               {pmBatDeliverables
                 .filter((b) => b.approvalStatus === 'approved')
                 .map((bat) => (
-                  <div key={bat.id} className="sq-elev-card">
+                  <div key={bat.id} className="sq-elev-card sq-elev-card-hover">
                     <div
                       onClick={(e) => handleSelectBat(bat, e.currentTarget)}
                       data-sq="card"
                       data-sq-border="none"
-                      className="p-4 bg-white dark:bg-[#22201E] hover:bg-[#FBF8F5] dark:hover:bg-[#282523] space-y-2 cursor-pointer transition-colors"
+                      className="p-4 bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] space-y-2 cursor-pointer transition-colors"
                     >
                       <img
                         src={bat.previewUrl}

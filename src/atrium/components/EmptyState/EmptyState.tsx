@@ -210,16 +210,12 @@ const EmptyStateInner: React.FC<EmptyStateProps> = ({
             <div
               key={idx}
               className="es-ghost-row"
-              data-sq="row"
-              data-sq-border="dashed"
-              data-sq-stroke-w="1.5"
+              data-sq="none"
               style={{ gridTemplateColumns }}
             >
               <span
                 className="es-gc"
-                data-sq="check"
-                data-sq-border="dashed"
-                data-sq-stroke-w="1.5"
+                data-sq="none"
               />
               <span className="es-ga" />
               <span className="es-gl">

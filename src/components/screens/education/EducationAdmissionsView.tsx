@@ -899,11 +899,11 @@ export const EducationAdmissionsView: React.FC = () => {
                   </div>
                   <div className="space-y-2 flex-1">
                     {leadsInStage.map((lead) => (
-                      <div key={lead.id} className="sq-elev-card">
+                      <div key={lead.id} className="sq-elev-card sq-elev-card-hover">
                         <div
                           data-sq="ctl"
                           data-sq-border="solid"
-                          className="p-4 bg-white dark:bg-[#22201E] hover:[--sq-stroke:rgba(212,82,47,0.5)] transition-all space-y-2 group"
+                          className="p-4 bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] transition-colors space-y-2 group"
                         >
                         <button
                           type="button"

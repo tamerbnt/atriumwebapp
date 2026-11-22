@@ -20,7 +20,7 @@ export const StatTile: React.FC<StatTileProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`sq-elev-card-hover ${className}`}>
+    <div className={`sq-elev-card sq-elev-card-hover ${className}`}>
       <div
         data-sq="card"
         data-sq-border="solid"

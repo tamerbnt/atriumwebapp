@@ -705,7 +705,7 @@ aside,
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 
 /* While actively scrolling */
@@ -769,9 +769,9 @@ div[tabindex],
 .overflow-y-auto,
 .overflow-x-auto,
 .overflow-auto {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
 }
 
 .scr {
@@ -2778,21 +2778,21 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
 }
 
 .sq-elev-card-hover {
-  transition: filter 180ms ease;
-  filter: drop-shadow(0 1px 2px rgba(23, 19, 15, 0.025)) drop-shadow(0 6px 18px rgba(23, 19, 15, 0.045));
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  box-shadow: 0 1px 3px rgba(23, 19, 15, 0.03), 0 6px 18px rgba(23, 19, 15, 0.045);
 }
 .sq-elev-card-hover:hover {
-  filter: drop-shadow(0 6px 16px rgba(23, 19, 15, 0.06)) drop-shadow(0 14px 28px rgba(23, 19, 15, 0.035));
+  box-shadow: 0 6px 16px rgba(23, 19, 15, 0.06), 0 14px 28px rgba(23, 19, 15, 0.05);
 }
 .dark .sq-elev-card-hover,
 [data-theme="dark"] .sq-elev-card-hover,
 [data-atrium-theme="dark"] .sq-elev-card-hover {
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.32));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.32);
 }
 .dark .sq-elev-card-hover:hover,
 [data-theme="dark"] .sq-elev-card-hover:hover,
 [data-atrium-theme="dark"] .sq-elev-card-hover:hover {
-  filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.48));
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.48);
 }
 
 .sq-elev-pop {

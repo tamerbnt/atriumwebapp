@@ -310,7 +310,7 @@ export default function App() {
     const handleReplayIntro = () => {
       try {
         sessionStorage.removeItem('atrium-intro-seen');
-      } catch {}
+      } catch { }
       setIsIntroActive(true);
     };
     document.addEventListener('atrium:introcomplete', handleIntroComplete);
@@ -332,7 +332,6 @@ export default function App() {
   const [memberPrefillName, setMemberPrefillName] = useState<string>('');
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Global keyboard shortcuts (Ctrl+K, Cmd+K, Ctrl+Z/Cmd+Z, '/')
   useEffect(() => {
@@ -1630,12 +1629,9 @@ export default function App() {
             onBarHiddenChange={(hidden) => {
               setTopBarCollapsed(hidden);
             }}
-            sidebarOpen={isSidebarOpen}
-            onSidebarOpenChange={setIsSidebarOpen}
+            defaultSidebarOpen={false}
             sidebar={
               <Sidebar
-                open={isSidebarOpen}
-                onOpenChange={setIsSidebarOpen}
                 onOpenVoucherModal={handleOpenVoucherModal}
                 isOpenMobile={isMobileSidebarOpen}
                 onCloseMobile={handleCloseMobileSidebar}
@@ -1695,7 +1691,7 @@ export default function App() {
           </AppShell>
         </div>
       )
-    }
+      }
 
       {/* Global Modals - Loaded On-Demand via React.Suspense */}
       {isCommandPaletteOpen && (
@@ -1721,19 +1717,19 @@ export default function App() {
         (isAuthenticated &&
           currentBusiness?.category === 'membership_session' &&
           activeScreen === 'members')) && (
-        <React.Suspense fallback={null}>
-          <MemberModal
-            isOpen={isMemberModalOpen}
-            onClose={handleCloseMemberModal}
-            memberToEdit={memberToEdit}
-            prefillName={memberPrefillName}
-            useKineticSpring={
-              currentBusiness?.category === 'membership_session' && activeScreen === 'members'
-            }
-            originElement={memberModalOriginRef.current}
-          />
-        </React.Suspense>
-      )}
+          <React.Suspense fallback={null}>
+            <MemberModal
+              isOpen={isMemberModalOpen}
+              onClose={handleCloseMemberModal}
+              memberToEdit={memberToEdit}
+              prefillName={memberPrefillName}
+              useKineticSpring={
+                currentBusiness?.category === 'membership_session' && activeScreen === 'members'
+              }
+              originElement={memberModalOriginRef.current}
+            />
+          </React.Suspense>
+        )}
 
       {isLeadModalOpen && (
         <React.Suspense fallback={null}>
@@ -1776,6 +1772,6 @@ export default function App() {
 
       {/* Kinetic Category-Dedicated ToastStack */}
       <ToastStack />
-  </AppleOverscrollProvider>
-);
+    </AppleOverscrollProvider>
+  );
 }

@@ -477,14 +477,14 @@ export const AcademyRollCallKiosk: React.FC = () => {
         {filteredStudents.map((student) => {
           const status = attendanceMap[student.id]?.status || 'present';
           return (
-            <div key={student.id} className="sq-elev-card">
+            <div key={student.id} className="sq-elev-card sq-elev-card-hover">
               <div
                 data-sq="card"
                 data-sq-border="solid"
                 data-sq-stroke-w={status !== 'present' ? 2 : undefined}
-                className={`p-4 transition-all h-full ${
+                className={`p-4 transition-colors duration-200 h-full ${
                   status === 'present'
-                    ? 'bg-white dark:bg-[#22201E]'
+                    ? 'bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523]'
                     : status === 'absent'
                     ? 'bg-rose-50/50 dark:bg-rose-950/20 [--sq-stroke:#fda4af] dark:[--sq-stroke:rgba(136,19,55,0.6)]'
                     : status === 'late'
