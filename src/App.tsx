@@ -414,6 +414,14 @@ export default function App() {
     setIsMobileSidebarOpen(false);
   }, [activeScreen]);
 
+  const handleCloseMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen(false);
+  }, []);
+
+  const handleToggleMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen((prev) => !prev);
+  }, []);
+
   const memberModalOriginRef = useRef<HTMLElement | null>(null);
   const businessCategoryRef = useRef(currentBusiness?.category);
   businessCategoryRef.current = currentBusiness?.category;
@@ -1630,13 +1638,13 @@ export default function App() {
                 onOpenChange={setIsSidebarOpen}
                 onOpenVoucherModal={handleOpenVoucherModal}
                 isOpenMobile={isMobileSidebarOpen}
-                onCloseMobile={() => setIsMobileSidebarOpen(false)}
+                onCloseMobile={handleCloseMobileSidebar}
               />
             }
             topbar={
               <TopBar
                 onOpenVoucherModal={handleOpenVoucherModal}
-                onToggleMobileMenu={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                onToggleMobileMenu={handleToggleMobileSidebar}
                 onOpenCommandPalette={handleOpenCommandPalette}
               />
             }

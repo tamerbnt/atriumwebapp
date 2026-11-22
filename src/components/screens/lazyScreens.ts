@@ -1,19 +1,36 @@
-// Dedicated Lazy Screen Registry with Category-Level Code Splitting
+// Dedicated Lazy Screen Registry with Category-Level Code Splitting & Idle Preloading
 import React from 'react';
+
+export type PreloadableComponent<P = any> = React.ComponentType<P> & {
+  preload: () => Promise<any>;
+};
 
 function lazyNamed<P = any>(
   importFn: () => Promise<any>,
   name: string
-): React.ComponentType<P> {
-  return React.lazy(() =>
-    importFn().then((m: any) => {
+): PreloadableComponent<P> {
+  let promise: Promise<any> | null = null;
+  const load = () => {
+    if (!promise) {
+      promise = importFn().catch((err) => {
+        promise = null;
+        throw err;
+      });
+    }
+    return promise;
+  };
+  const Comp = React.lazy(() =>
+    load().then((m: any) => {
       const component = m[name] || m.default;
       if (!component) {
         throw new Error(`Failed to resolve component '${name}' from dynamic import.`);
       }
       return { default: component };
     })
-  ) as unknown as React.ComponentType<P>;
+  ) as unknown as PreloadableComponent<P>;
+
+  Comp.preload = load;
+  return Comp;
 }
 
 export const SettingsScreen = lazyNamed<any>(() => import('./SettingsScreen'), 'SettingsScreen');
@@ -147,3 +164,257 @@ export const LegalHistoryView = lazyNamed<any>(() => import('./legal/LegalHistor
 export const LogisticsHistoryView = lazyNamed<any>(() => import('./logistics/LogisticsHistoryView'), 'LogisticsHistoryView');
 export const ContractorHistoryView = lazyNamed<any>(() => import('./contractor/ContractorHistoryView'), 'ContractorHistoryView');
 export const AgricultureHistoryView = lazyNamed<any>(() => import('./agriculture/AgricultureHistoryView'), 'AgricultureHistoryView');
+
+/**
+ * Intelligent background preloader for all screens of the active business category.
+ * Invoked during idle time so screen chunks resolve from browser cache in 0ms on click.
+ */
+export function preloadCategoryScreens(category: string): void {
+  try {
+    CategoryHomeView.preload();
+    SettingsScreen.preload();
+
+    switch (category) {
+      case 'membership_fitness':
+      case 'membership_session':
+        MembershipDashboardView.preload();
+        MembershipMembersView.preload();
+        MembershipRegistrationsView.preload();
+        MembershipShopView.preload();
+        MembershipSchedulerView.preload();
+        MembershipFinanceView.preload();
+        MembershipHistoryView.preload();
+        GymFrontDeskKiosk.preload();
+        break;
+      case 'appointment_service':
+        AppointmentDashboardView.preload();
+        AppointmentClientsView.preload();
+        AppointmentScheduleView.preload();
+        AppointmentServicesView.preload();
+        AppointmentFinanceView.preload();
+        AppointmentHistoryView.preload();
+        SalonQuickChairKiosk.preload();
+        break;
+      case 'pos_inventory':
+        PosDashboardView.preload();
+        PosRegisterView.preload();
+        PosInventoryView.preload();
+        PosOrdersView.preload();
+        PosFinanceView.preload();
+        PosHistoryView.preload();
+        break;
+      case 'education_cohort':
+        EducationDashboardView.preload();
+        EducationStudentsView.preload();
+        EducationTimetableView.preload();
+        EducationCohortsView.preload();
+        EducationAdmissionsView.preload();
+        EducationAttendanceView.preload();
+        EducationFinanceView.preload();
+        EducationHistoryView.preload();
+        AcademyRollCallKiosk.preload();
+        break;
+      case 'freelance_solo':
+        FreelanceDashboardView.preload();
+        FreelanceClientsView.preload();
+        FreelanceDeliverablesView.preload();
+        FreelanceTimeTrackerView.preload();
+        FreelanceInvoicesView.preload();
+        FreelanceProposalsView.preload();
+        FreelanceFinanceView.preload();
+        FreelanceHistoryView.preload();
+        break;
+      case 'rental_booking':
+        VenueDashboardView.preload();
+        VenueBookingsView.preload();
+        VenueTimelineView.preload();
+        VenueInventoryView.preload();
+        VenueRentersView.preload();
+        VenueFinanceView.preload();
+        VenueHistoryView.preload();
+        break;
+      case 'project_milestone':
+        ProjectDirectionView.preload();
+        ProjectChefProjetView.preload();
+        ProjectCreaView.preload();
+        ProjectSuperviseurView.preload();
+        ProjectRhView.preload();
+        ProjectComptaView.preload();
+        ProjectHistoryView.preload();
+        break;
+      case 'trading_commercial':
+        TradingDashboardView.preload();
+        TradingSalesView.preload();
+        TradingPurchasesView.preload();
+        TradingInventoryView.preload();
+        TradingDirectoryView.preload();
+        TradingCatalogView.preload();
+        TradingFinanceView.preload();
+        TradingHistoryView.preload();
+        break;
+      case 'medical_clinic':
+        MedicalDashboardView.preload();
+        MedicalQueueView.preload();
+        MedicalAgendaView.preload();
+        MedicalPatientsView.preload();
+        MedicalPrescriptionsView.preload();
+        MedicalBillingView.preload();
+        MedicalCertificatesView.preload();
+        MedicalHistoryView.preload();
+        break;
+      case 'auto_garage':
+        AutoGarageDashboardView.preload();
+        AutoGarageOrdersView.preload();
+        AutoGarageVehiclesView.preload();
+        AutoGaragePartsView.preload();
+        AutoGarageBillingView.preload();
+        AutoGarageHistoryView.preload();
+        break;
+      case 'real_estate':
+        RealEstateDashboardView.preload();
+        RealEstateMandatesView.preload();
+        RealEstatePropertiesView.preload();
+        RealEstateLeasesView.preload();
+        RealEstateInspectionsView.preload();
+        RealEstateFinanceView.preload();
+        RealEstateHistoryView.preload();
+        break;
+      case 'manufacturing_production':
+        ManufacturingDashboardView.preload();
+        ManufacturingOrdersView.preload();
+        ManufacturingBomView.preload();
+        ManufacturingMaterialsView.preload();
+        ManufacturingQcView.preload();
+        ManufacturingWorkstationView.preload();
+        ManufacturingHistoryView.preload();
+        break;
+      case 'legal_accounting':
+        LegalDashboardView.preload();
+        LegalMattersView.preload();
+        LegalHearingsView.preload();
+        LegalVaultView.preload();
+        LegalTrustView.preload();
+        LegalHistoryView.preload();
+        break;
+      case 'logistics_delivery':
+        LogisticsDashboardView.preload();
+        LogisticsShipmentsView.preload();
+        LogisticsManifestsView.preload();
+        LogisticsScannerView.preload();
+        LogisticsCodView.preload();
+        LogisticsHistoryView.preload();
+        break;
+      case 'construction_contractor':
+        ContractorDashboardView.preload();
+        ContractorSitesView.preload();
+        ContractorBoqView.preload();
+        ContractorDailyLogsView.preload();
+        ContractorBillingView.preload();
+        ContractorHistoryView.preload();
+        break;
+      case 'agriculture_farming':
+        AgricultureDashboardView.preload();
+        AgricultureParcelsView.preload();
+        AgricultureCyclesView.preload();
+        AgricultureHarvestView.preload();
+        AgricultureLivestockView.preload();
+        AgricultureWholesaleView.preload();
+        AgricultureHistoryView.preload();
+        break;
+      default:
+        MembershipDashboardView.preload();
+        MembershipMembersView.preload();
+        break;
+    }
+  } catch {
+    // Ignore preloading errors in non-standard runtimes
+  }
+}
+
+/** Preloads a specific screen by screen id and business category on hover or focus */
+export function preloadScreen(screenId: string, category = 'membership_session'): void {
+  try {
+    if (screenId === 'home') {
+      CategoryHomeView.preload();
+      return;
+    }
+    if (screenId === 'settings') {
+      SettingsScreen.preload();
+      return;
+    }
+
+    if (category === 'membership_fitness' || category === 'membership_session') {
+      switch (screenId) {
+        case 'dashboard':
+          MembershipDashboardView.preload();
+          break;
+        case 'members':
+          MembershipMembersView.preload();
+          break;
+        case 'registrations':
+          MembershipRegistrationsView.preload();
+          break;
+        case 'shop':
+          MembershipShopView.preload();
+          break;
+        case 'scheduler':
+          MembershipSchedulerView.preload();
+          break;
+        case 'finance':
+          MembershipFinanceView.preload();
+          break;
+        case 'history':
+          MembershipHistoryView.preload();
+          break;
+      }
+    } else if (category === 'appointment_service') {
+      switch (screenId) {
+        case 'dashboard':
+          AppointmentDashboardView.preload();
+          break;
+        case 'clients':
+          AppointmentClientsView.preload();
+          break;
+        case 'scheduler':
+          AppointmentScheduleView.preload();
+          break;
+        case 'services':
+          AppointmentServicesView.preload();
+          break;
+        case 'finance':
+          AppointmentFinanceView.preload();
+          break;
+        case 'history':
+          AppointmentHistoryView.preload();
+          break;
+      }
+    } else if (category === 'pos_inventory') {
+      switch (screenId) {
+        case 'dashboard':
+          PosDashboardView.preload();
+          break;
+        case 'register':
+        case 'shop':
+          PosRegisterView.preload();
+          break;
+        case 'inventory':
+          PosInventoryView.preload();
+          break;
+        case 'orders':
+          PosOrdersView.preload();
+          break;
+        case 'finance':
+          PosFinanceView.preload();
+          break;
+        case 'history':
+          PosHistoryView.preload();
+          break;
+      }
+    } else {
+      // Fallback: preload the category bundle
+      preloadCategoryScreens(category);
+    }
+  } catch {
+    // Ignore preloading errors
+  }
+}

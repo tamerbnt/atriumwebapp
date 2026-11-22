@@ -60,6 +60,7 @@ import {
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
 import { useTranslation } from '../../utils/useTranslation';
 import { canAccessStaffScreen, getEffectiveUserRole } from '../../utils/staffRules';
+import { preloadCategoryScreens, preloadScreen } from '../screens/lazyScreens';
 
 interface SidebarProps {
   onOpenVoucherModal?: () => void;
@@ -1931,28 +1932,46 @@ export const Sidebar: React.FC<SidebarProps> = ({
      activeAppointmentRole, activePosRole, activeEducationRole,
      currentUser, language, terminology, t]);
 
-  const navTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Preload screen chunks for the current category during browser idle time
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        const id = (window as any).requestIdleCallback(() => {
+          preloadCategoryScreens(category);
+        });
+        return () => (window as any).cancelIdleCallback(id);
+      } else {
+        const id = setTimeout(() => {
+          preloadCategoryScreens(category);
+        }, 150);
+        return () => clearTimeout(id);
+      }
+    }
+  }, [category]);
+
+  const navRafRef = React.useRef<number | null>(null);
 
   React.useEffect(() => {
     return () => {
-      if (navTimerRef.current) clearTimeout(navTimerRef.current);
+      if (navRafRef.current) cancelAnimationFrame(navRafRef.current);
     };
   }, []);
 
   const handleItemSelect = useCallback((id: string) => {
     const item = dockNavItems.find(it => it.id === id);
     const target = item ? item.id : (id as ActiveScreen);
-    if (navTimerRef.current) clearTimeout(navTimerRef.current);
-    // Perceptual lead time: give the direct-DOM spring on the active pill 55ms of zero-CPU
-    // head start to cover 70%+ of its visual travel at a locked 60fps/120fps before React's
-    // heavy concurrent screen mount begins.
-    navTimerRef.current = setTimeout(() => {
-      React.startTransition(() => {
-        setScreen(target);
-      });
-    }, 55);
+    if (navRafRef.current) cancelAnimationFrame(navRafRef.current);
+    // Yield 1 animation frame for the pill spring to launch cleanly at 60fps,
+    // then dispatch screen state. With chunks preloaded in memory, mounting is instantaneous.
+    navRafRef.current = requestAnimationFrame(() => {
+      setScreen(target);
+    });
     if (onCloseMobile) onCloseMobile();
   }, [dockNavItems, onCloseMobile]);
+
+  const handleItemHover = useCallback((id: string) => {
+    preloadScreen(id, category);
+  }, [category]);
 
   // Stable array: only recreated when dockNavItems identity changes (role/category/language change).
   // Prevents AtriumSidebar from re-rendering on every screen navigation.
@@ -2007,6 +2026,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           items={sidebarItems}
           activeId={activeId}
           onSelect={handleItemSelect}
+          onItemHover={handleItemHover}
           open={isExpanded}
           onOpenChange={setIsExpanded}
           expandOn="click"

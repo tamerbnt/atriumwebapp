@@ -175,7 +175,7 @@ const TopBarTimerWidget: React.FC<{ isFreelance: boolean; language: string }> = 
 );
 TopBarTimerWidget.displayName = 'TopBarTimerWidget';
 
-export const TopBar: React.FC<TopBarProps> = ({
+const TopBarInner: React.FC<TopBarProps> = ({
   onOpenVoucherModal,
   onToggleMobileMenu,
   onOpenCommandPalette,
@@ -1145,3 +1145,5 @@ export const TopBar: React.FC<TopBarProps> = ({
     </header>
   );
 };
+
+export const TopBar = React.memo(TopBarInner);

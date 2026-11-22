@@ -1265,6 +1265,14 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
     hasCachedData: members.length > 0,
   });
 
+  // Two-phase mount: render Header, KPIs, and Toolbar immediately on Frame 0 (<16ms),
+  // then mount KineticCollectionStage on Frame 1 via RAF to eliminate the 120ms mount freeze.
+  const [mountCollectionStage, setMountCollectionStage] = useState(false);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMountCollectionStage(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   const nextExpiry = useMemo(() => {
     if (statusFilter !== 'Expiring') return undefined;
     let best: { date: string; name: string; days: number } | undefined;
@@ -1597,42 +1605,44 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
           onResetAllFilters={handleResetFilters}
         />
 
-        <KineticCollectionStage<Member>
-          scrollContainerRef={scrollContainerRef}
-          items={isErrorState || isBranchForbidden ? [] : sortedMembers}
-          keyExtractor={(m) => m.id}
-          columns={stageColumns}
-          getRowData={getRowData}
-          viewMode={viewMode}
-          filterKey={filterKey}
-          expandedIds={expandedMemberIds}
-          selectedIds={selectedMemberIds}
-          pinnedIds={pinnedMemberIds}
-          openItemId={isDetailOpen ? selectedMember?.id ?? null : null}
-          sortBy={memberSortBy}
-          sortDir={memberSortDir}
-          language={language}
-          ariaLabel="Adhérents"
-          emptyMessage={
-            language === 'ar'
-              ? 'لا يوجد مشتركين مطابقين.'
-              : language === 'fr'
-              ? 'Aucun adhérent ne correspond. Modifiez la recherche ou les filtres.'
-              : 'No members match. Adjust search or filters.'
-          }
-          emptyState={emptyStateProps}
-          onPruneSelection={handlePruneSelection}
-          onToggleSelectAll={handleToggleSelectAll}
-          onToggleSort={handleToggleSort}
-          onSelectRow={handleSelectRow}
-          onToggleExpand={toggleExpandMember}
-          onOpenDetails={handleOpenRowDetails}
-          onEdit={handleEditRow}
-          onSecondaryAction={handleMessageRow}
-          onDelete={handleDeleteRow}
-          getFanActions={getFanActions}
-          getDetailActions={getDetailActions}
-        />
+        {mountCollectionStage && (
+          <KineticCollectionStage<Member>
+            scrollContainerRef={scrollContainerRef}
+            items={isErrorState || isBranchForbidden ? [] : sortedMembers}
+            keyExtractor={(m) => m.id}
+            columns={stageColumns}
+            getRowData={getRowData}
+            viewMode={viewMode}
+            filterKey={filterKey}
+            expandedIds={expandedMemberIds}
+            selectedIds={selectedMemberIds}
+            pinnedIds={pinnedMemberIds}
+            openItemId={isDetailOpen ? selectedMember?.id ?? null : null}
+            sortBy={memberSortBy}
+            sortDir={memberSortDir}
+            language={language}
+            ariaLabel="Adhérents"
+            emptyMessage={
+              language === 'ar'
+                ? 'لا يوجد مشتركين مطابقين.'
+                : language === 'fr'
+                ? 'Aucun adhérent ne correspond. Modifiez la recherche ou les filtres.'
+                : 'No members match. Adjust search or filters.'
+            }
+            emptyState={emptyStateProps}
+            onPruneSelection={handlePruneSelection}
+            onToggleSelectAll={handleToggleSelectAll}
+            onToggleSort={handleToggleSort}
+            onSelectRow={handleSelectRow}
+            onToggleExpand={toggleExpandMember}
+            onOpenDetails={handleOpenRowDetails}
+            onEdit={handleEditRow}
+            onSecondaryAction={handleMessageRow}
+            onDelete={handleDeleteRow}
+            getFanActions={getFanActions}
+            getDetailActions={getDetailActions}
+          />
+        )}
       </ScreenPod>
 
       <KineticFilterModal

@@ -20,6 +20,7 @@ export interface SidebarProps {
   items: SidebarItem[];
   activeId?: string;
   onSelect?: (id: string) => void;
+  onItemHover?: (id: string) => void;
   /** expanded? controlled */
   open?: boolean;
   defaultOpen?: boolean;
@@ -51,7 +52,7 @@ const Chevron = () => (
  * Incorporates a fluid direct-DOM magnetic hover pill with velocity stretch (0 React re-renders).
  */
 function SidebarInner({
-  items, activeId, onSelect, open: openProp, defaultOpen, onOpenChange, brand, onBrandClick, footer,
+  items, activeId, onSelect, onItemHover, open: openProp, defaultOpen, onOpenChange, brand, onBrandClick, footer,
   expandOn = 'click', label = 'Main navigation', className, style,
 }: SidebarProps) {
   const shellCtx = useContext(ShellContext);
@@ -193,6 +194,8 @@ function SidebarInner({
     if (btn === lastTargetBtn.current) return;
     lastTargetBtn.current = btn;
     hoverBody.current?.setHover([btn.offsetTop, btn.offsetHeight || 44]);
+    const itemId = btn.getAttribute('data-id');
+    if (itemId) onItemHover?.(itemId);
   };
 
   const onListPointerLeave = (e: React.PointerEvent) => {
@@ -252,6 +255,7 @@ function SidebarInner({
                   itemRefs.current[i] = el;
                 }}
                 type="button"
+                data-id={it.id}
                 className={s.item}
                 aria-current={it.id === activeId ? 'page' : undefined}
                 aria-label={it.label}
