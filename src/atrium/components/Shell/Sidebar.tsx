@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef, memo } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { cx, useControllable, useIsoLayoutEffect } from '../../hooks';
 import { initMotionEnv } from '../../motion/env';
@@ -50,7 +50,7 @@ const Chevron = () => (
  * Stays pinned open across all clicks until explicitly toggled via logo or edge button.
  * Incorporates a fluid direct-DOM magnetic hover pill with velocity stretch (0 React re-renders).
  */
-export function Sidebar({
+export function _SidebarInner({
   items, activeId, onSelect, open: openProp, defaultOpen, onOpenChange, brand, onBrandClick, footer,
   expandOn = 'click', label = 'Main navigation', className, style,
 }: SidebarProps) {
@@ -284,3 +284,10 @@ export function Sidebar({
     </nav>
   );
 }
+
+/**
+ * React.memo wrapper: since the pill, hover, and open/close animations are all driven
+ * by direct DOM writes (spring engine), AtriumSidebar does not need to re-render on
+ * every navigation. Only re-render when items list or open state actually changes.
+ */
+export const Sidebar = memo(_SidebarInner);

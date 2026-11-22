@@ -317,7 +317,17 @@ export class SidebarActiveBody implements Body {
 
   /** Read row geometry once on mount, resize, or item list changes — never per frame. */
   measure(): void {
+    const hasGBCR = typeof this.list?.getBoundingClientRect === 'function';
+    const listRect = hasGBCR ? this.list.getBoundingClientRect() : null;
+    const scrollTop = this.list?.scrollTop || 0;
+
     this.geo = this.opts.map((o) => {
+      if (listRect && typeof o.getBoundingClientRect === 'function') {
+        const oRect = o.getBoundingClientRect();
+        const top = oRect.top - listRect.top + scrollTop;
+        const height = o.offsetHeight || oRect.height || 44;
+        return [top, top + height];
+      }
       const top =
         o.offsetParent === this.list
           ? o.offsetTop

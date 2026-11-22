@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Sidebar as AtriumSidebar, AtriumLogo, SidebarItem } from '@/atrium/core';
 import {
   Home,
@@ -77,8 +77,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenChange: onOpenChangeProp,
 }) => {
   const { t } = useTranslation();
+  // Stable selector: only re-renders when business / role / language changes (not on every navigation).
   const {
-    activeScreen,
     terminology,
     currentBusiness,
     activePmRole,
@@ -97,7 +97,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     language,
   } = useAtriumSelector(
     (s) => ({
-      activeScreen: s.activeScreen,
       terminology: selectTerminologyFromState(s),
       currentBusiness: selectCurrentBusinessFromState(s),
       activePmRole: s.activePmRole || 'direction',
@@ -117,31 +116,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }),
     shallowEqualObjects
   );
+  // Reactive selector: a cheap re-render just to track the current screen for activeId resolution.
+  // The expensive dockNavItems useMemo below does NOT depend on this, so it won't re-run.
+  const activeScreen = useAtriumSelector((s) => s.activeScreen);
   const [internalExpanded, setInternalExpanded] = useState(false);
   const isExpanded = openProp !== undefined ? openProp : internalExpanded;
   const setIsExpanded = onOpenChangeProp || setInternalExpanded;
   const isRtl = language === 'ar';
 
   const category = currentBusiness?.category || 'pos_inventory';
-  const dashboardLabel =
-    language === 'ar' ? 'لوحة القيادة' : language === 'fr' ? 'Tableau de bord' : 'Dashboard';
-  const homeNavItem = {
-    id: 'home' as ActiveScreen,
-    icon: <Home size={20} />,
-    title: t('nav_home', language),
-    label: t('nav_home', language),
-  };
 
-  let dockNavItems: Array<{
+  // Memoize the entire nav-item construction so it only reruns when category/role/language
+  // changes — NOT on every screen navigation. This is the single biggest perf win.
+  const dockNavItems = useMemo<Array<{
     id: ActiveScreen;
     icon: React.ReactNode;
     title: string;
     label: string;
-  }>;
+  }>>(() => {
+    const dashboardLabel =
+      language === 'ar' ? 'لوحة القيادة' : language === 'fr' ? 'Tableau de bord' : 'Dashboard';
+    const homeNavItem = {
+      id: 'home' as ActiveScreen,
+      icon: <Home size={20} />,
+      title: t('nav_home', language),
+      label: t('nav_home', language),
+    };
+    let items: Array<{
+      id: ActiveScreen;
+      icon: React.ReactNode;
+      title: string;
+      label: string;
+    }>;
 
   if (category === 'project_milestone') {
     if (activePmRole === 'direction') {
-      dockNavItems = [
+      items = [
         {
           id: 'pm_dir_dashboard',
           icon: <TrendingUp size={19} />,
@@ -186,7 +196,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activePmRole === 'chef_projet') {
-      dockNavItems = [
+      items = [
         {
           id: 'pm_cp_projects',
           icon: <Kanban size={19} />,
@@ -219,7 +229,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activePmRole === 'crea') {
-      dockNavItems = [
+      items = [
         {
           id: 'pm_crea_kanban',
           icon: <Layers size={19} />,
@@ -246,7 +256,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activePmRole === 'superviseur') {
-      dockNavItems = [
+      items = [
         {
           id: 'pm_sup_missions',
           icon: <Radio size={19} />,
@@ -273,7 +283,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activePmRole === 'rh') {
-      dockNavItems = [
+      items = [
         {
           id: 'pm_rh_talents',
           icon: <Users size={19} />,
@@ -301,7 +311,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     } else {
       // compta
-      dockNavItems = [
+      items = [
         {
           id: 'pm_compta_payroll',
           icon: <Wallet size={19} />,
@@ -329,7 +339,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'freelance_solo') {
-    dockNavItems = [
+    items = [
       {
         id: 'dashboard',
         icon: <LayoutDashboard size={19} />,
@@ -387,7 +397,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ];
   } else if (category === 'pos_inventory') {
     if (activePosRole === 'staff') {
-      dockNavItems = [
+      items = [
         {
           id: 'shop',
           icon: <ShoppingBag size={19} />,
@@ -408,7 +418,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      dockNavItems = [
+      items = [
         {
           id: 'shop',
           icon: <ShoppingBag size={19} />,
@@ -455,7 +465,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   } else if (category === 'appointment_service') {
     if (activeAppointmentRole === 'staff') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <Sparkles size={19} />,
@@ -476,7 +486,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -528,7 +538,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'rental_booking') {
-    dockNavItems = [
+    items = [
       {
         id: 'dashboard',
         icon: <LayoutDashboard size={19} />,
@@ -580,7 +590,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ];
   } else if (category === 'education_cohort') {
     if (activeEducationRole === 'staff') {
-      dockNavItems = [
+      items = [
         {
           id: 'analytics',
           icon: <Award size={19} />,
@@ -607,7 +617,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -665,7 +675,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'trading_commercial') {
-    dockNavItems = [
+    items = [
       {
         id: 'trading_dashboard',
         icon: <LayoutDashboard size={19} />,
@@ -722,7 +732,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       },
     ];
   } else if (category === 'medical_clinic') {
-    dockNavItems = [
+    items = [
       {
         id: 'dashboard',
         icon: <LayoutDashboard size={19} />,
@@ -780,7 +790,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ];
   } else if (category === 'auto_garage') {
     if (activeGarageRole === 'reception') {
-      dockNavItems = [
+      items = [
         {
           id: 'scheduler',
           icon: <Wrench size={19} />,
@@ -813,7 +823,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeGarageRole === 'mecanicien') {
-      dockNavItems = [
+      items = [
         {
           id: 'scheduler',
           icon: <Wrench size={19} />,
@@ -840,7 +850,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeGarageRole === 'magasinier') {
-      dockNavItems = [
+      items = [
         {
           id: 'shop',
           icon: <Boxes size={19} />,
@@ -867,7 +877,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeGarageRole === 'caisse') {
-      dockNavItems = [
+      items = [
         {
           id: 'finance',
           icon: <Wallet size={19} />,
@@ -894,7 +904,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -941,7 +951,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   } else if (category === 'real_estate') {
     if (activeRealEstateRole === 'negociateur') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -968,7 +978,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeRealEstateRole === 'gestionnaire_locatif') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1001,7 +1011,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeRealEstateRole === 'notaire_compta') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1028,7 +1038,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1081,7 +1091,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   } else if (category === 'manufacturing_production') {
     if (activeManufacturingRole === 'chef_atelier') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1114,7 +1124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeManufacturingRole === 'operateur') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <Activity size={19} />,
@@ -1129,7 +1139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeManufacturingRole === 'magasinier') {
-      dockNavItems = [
+      items = [
         {
           id: 'members',
           icon: <Boxes size={19} />,
@@ -1156,7 +1166,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeManufacturingRole === 'qualite') {
-      dockNavItems = [
+      items = [
         {
           id: 'finance',
           icon: <ShieldCheck size={19} />,
@@ -1177,7 +1187,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1224,7 +1234,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   } else if (category === 'legal_accounting') {
     if (activeLegalRole === 'notaire_titulaire') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1269,7 +1279,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeLegalRole === 'expert_comptable') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1314,7 +1324,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeLegalRole === 'secretaire_caisse') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1353,7 +1363,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1400,7 +1410,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   } else if (category === 'logistics_delivery') {
     if (activeLogisticsRole === 'dispatcher') {
-      dockNavItems = [
+      items = [
         {
           id: 'scheduler',
           icon: <Truck size={19} />,
@@ -1433,7 +1443,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeLogisticsRole === 'hub_sorter') {
-      dockNavItems = [
+      items = [
         {
           id: 'registrations',
           icon: <Boxes size={19} />,
@@ -1460,7 +1470,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeLogisticsRole === 'stop_desk_agent') {
-      dockNavItems = [
+      items = [
         {
           id: 'members',
           icon: <Package size={19} />,
@@ -1487,7 +1497,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1534,7 +1544,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   } else if (category === 'construction_contractor') {
     if (activeContractorRole === 'gerant') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1573,7 +1583,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeContractorRole === 'conducteur' || activeContractorRole === 'conducteur_travaux') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1606,7 +1616,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeContractorRole === 'chef_chantier') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1639,7 +1649,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeContractorRole === 'metreur' || activeContractorRole === 'daf_metreur') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1672,7 +1682,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1707,7 +1717,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   } else if (category === 'agriculture_farming') {
     if (activeAgriRole === 'chef_culture') {
-      dockNavItems = [
+      items = [
         {
           id: 'members',
           icon: <Sprout size={19} />,
@@ -1728,7 +1738,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeAgriRole === 'zootechnicien') {
-      dockNavItems = [
+      items = [
         {
           id: 'registrations',
           icon: <Layers size={19} />,
@@ -1737,7 +1747,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else if (activeAgriRole === 'magasinier') {
-      dockNavItems = [
+      items = [
         {
           id: 'finance',
           icon: <Wallet size={19} />,
@@ -1752,7 +1762,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1805,7 +1815,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   } else {
     if (activeMembershipRole === 'staff') {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <DoorOpen size={19} />,
@@ -1826,7 +1836,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
     } else {
-      dockNavItems = [
+      items = [
         {
           id: 'dashboard',
           icon: <LayoutDashboard size={19} />,
@@ -1874,8 +1884,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   // Always prepend global Salle d'accueil Home screen at index 0 across every category & role
-  if (!dockNavItems.some((item) => item.id === 'home')) {
-    dockNavItems.unshift(homeNavItem);
+  if (!items.some((item) => item.id === 'home')) {
+    items.unshift(homeNavItem);
   }
 
   // Unified Staff / Workforce Screen Injection Across All Categories
@@ -1896,7 +1906,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   });
 
   if (category !== 'project_milestone' && canAccessStaffScreen(category, effectiveRole)) {
-    const hasStaffItem = dockNavItems.some((item) => item.id === 'staff');
+    const hasStaffItem = items.some((item) => item.id === 'staff');
     if (!hasStaffItem) {
       const staffNavItem = {
         id: 'staff' as ActiveScreen,
@@ -1904,17 +1914,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
         title: language === 'ar' ? 'الفريق' : language === 'fr' ? 'Équipe' : 'Staff',
         label: language === 'ar' ? 'الفريق' : language === 'fr' ? 'Équipe' : 'Staff',
       };
-      const settingsIndex = dockNavItems.findIndex((item) => item.id === 'settings');
+      const settingsIndex = items.findIndex((item) => item.id === 'settings');
       if (settingsIndex >= 0) {
-        dockNavItems.splice(settingsIndex, 0, staffNavItem);
+        items.splice(settingsIndex, 0, staffNavItem);
       } else {
-        dockNavItems.push(staffNavItem);
+        items.push(staffNavItem);
       }
     }
   }
 
   
-  const handleItemSelect = (id: string) => {
+    return items;
+  }, [category, activePmRole, activeGarageRole, activeRealEstateRole,
+     activeManufacturingRole, activeLegalRole, activeLogisticsRole,
+     activeContractorRole, activeAgriRole, activeMembershipRole,
+     activeAppointmentRole, activePosRole, activeEducationRole,
+     currentUser, language, terminology, t]);
+
+  const handleItemSelect = useCallback((id: string) => {
     const item = dockNavItems.find(it => it.id === id);
     if (!item) {
       setScreen(id as ActiveScreen);
@@ -1923,13 +1940,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
     setScreen(item.id);
     if (onCloseMobile) onCloseMobile();
-  };
+  }, [dockNavItems, onCloseMobile]);
 
-  const sidebarItems: SidebarItem[] = dockNavItems.map(item => ({
+  // Stable array: only recreated when dockNavItems identity changes (role/category/language change).
+  // Prevents AtriumSidebar from re-rendering on every screen navigation.
+  const sidebarItems = useMemo<SidebarItem[]>(() => dockNavItems.map(item => ({
     id: item.id,
     label: item.label,
     icon: item.icon,
-  }));
+  })), [dockNavItems]);
 
   // Resolve current active item id
   let activeId: string = activeScreen;
