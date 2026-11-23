@@ -301,13 +301,6 @@ export const removeBody = (b: SpringBody) => {
 const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 const fmt = (v: number) => (Math.round(v * 100) / 100).toString();
 
-const SEGMENT_COLOR_MIX: string[] = Array.from({ length: 51 }, (_, i) => {
-  const pct = i * 2;
-  if (pct <= 0) return 'var(--atr-ink)';
-  if (pct >= 100) return 'var(--atr-onacc)';
-  return `color-mix(in srgb, var(--atr-onacc) ${pct}%, var(--atr-ink))`;
-});
-
 /**
  * Button Liquid Ripple & Magnetic Press Controller
  */
@@ -461,7 +454,6 @@ export class SegmentedBlobController implements SpringBody {
   rad = 9;
   index = 0;
   lastClip = '';
-  lastColors: string[] = [];
 
   constructor(group: HTMLElement, blob: HTMLElement, opts: HTMLElement[]) {
     this.group = group;
@@ -546,21 +538,6 @@ export class SegmentedBlobController implements SpringBody {
     if (clip !== this.lastClip) {
       this.blob.style.clipPath = clip;
       this.lastClip = clip;
-    }
-
-    const leftEdge = this.L.x;
-    const rightEdge = this.W - this.R.x;
-
-    for (let i = 0; i < this.opts.length; i++) {
-      const g = this.geo[i];
-      const span = g[1] - g[0];
-      const cov = span > 0 ? clamp((Math.min(rightEdge, g[1]) - Math.max(leftEdge, g[0])) / span, 0, 1) : 0;
-      const stepIdx = Math.round(cov * 50);
-      const color = SEGMENT_COLOR_MIX[stepIdx];
-      if (color !== this.lastColors[i]) {
-        this.opts[i].style.color = color;
-        this.lastColors[i] = color;
-      }
     }
   }
 

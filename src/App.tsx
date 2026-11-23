@@ -11,6 +11,7 @@ import {
   toggleTopBarCollapsedAction,
   setTopBarCollapsedAction,
   loginWithPinAction,
+  logoutAction,
   shallowEqualObjects,
 } from './services/store';
 import { Member } from './types/index';
@@ -321,8 +322,17 @@ export default function App() {
     };
   }, []);
 
-  // Direct app entry without blocking onboarding overlay
-  const [showPowerOnboarding, setShowPowerOnboarding] = useState<boolean>(false);
+  // Start on onboarding for first-time visitors until completed or explicitly skipped
+  const [showPowerOnboarding, setShowPowerOnboarding] = useState<boolean>(() => {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return true;
+    }
+    try {
+      return localStorage.getItem('atrium_has_onboarded_v1') !== 'true';
+    } catch {
+      return true;
+    }
+  });
 
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
@@ -1599,6 +1609,12 @@ export default function App() {
     closeOnboarding();
   };
 
+  const handleSwitchAccountFromOnboarding = () => {
+    logoutAction();
+    setShowPowerOnboarding(false);
+    closeOnboarding();
+  };
+
   return (
     <AppleOverscrollProvider>
       {/* Self-contained 5-second Atrium Confluence Intro Overlay mounted once at app start above all other content */}
@@ -1613,6 +1629,7 @@ export default function App() {
           <PowerOnboardingScreen
             onComplete={handleCompleteOrSkipOnboarding}
             onSkipToDashboard={handleCompleteOrSkipOnboarding}
+            onSwitchAccount={handleSwitchAccountFromOnboarding}
           />
         </React.Suspense>
       ) : !isAuthenticated ? (
@@ -1655,7 +1672,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setTopBarCollapsed(false)}
-                className="fixed top-[var(--s2)] left-1/2 -translate-x-1/2 z-50 h-[var(--btn-sm-h,32px)] flex items-center gap-[var(--btn-sm-gap,6px)] px-[var(--btn-sm-px,12px)] rounded-full bg-white/95 dark:bg-[#262422]/95 border-0 text-[var(--text-1)] dark:text-white t-btn shadow-[0_8px_24px_rgba(23,19,15,0.12)] dark:shadow-[0_12px_28px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.10)] hover:shadow-[0_10px_28px_rgba(23,19,15,0.16)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] transition-all duration-200 cursor-pointer group select-none backdrop-blur-md"
+                className="fixed top-[var(--s2)] left-1/2 -translate-x-1/2 z-50 h-[var(--btn-sm-h,32px)] flex items-center gap-[var(--btn-sm-gap,6px)] px-[var(--btn-sm-px,12px)] rounded-full bg-white dark:bg-[#262422] border-0 text-[var(--text-1)] dark:text-white t-btn shadow-[0_8px_24px_rgba(23,19,15,0.12)] dark:shadow-[0_12px_28px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.10)] hover:shadow-[0_10px_28px_rgba(23,19,15,0.16)] hover:text-[var(--brand-text)] dark:hover:text-[var(--brand-on-dark)] transition-[transform,color,box-shadow] duration-200 cursor-pointer group select-none"
                 title={t('topbar_focus_restore', "Afficher l'en-tête")}
                 aria-label={t('topbar_focus_restore', "Afficher l'en-tête")}
               >

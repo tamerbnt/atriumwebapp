@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { useAtriumSelector } from "../../services/store";
-import { syncSquircleNow } from "../../utils/squircle";
 
 /* ══ Seek ═════════════════════════════════════════════════
    A search icon that becomes a search field, as one object.
@@ -69,27 +68,6 @@ export const Seek: React.FC<SeekProps> = React.memo(({
       setIsOpen(true);
     }
   }, [value]);
-
-  // Keep 60% squircle clip-path & SVG border synced with the 280ms CSS width spring
-  useEffect(() => {
-    if (shape !== "squircle") return;
-    const el = skinRef.current;
-    if (!el) return;
-    syncSquircleNow(el);
-    let raf = 0;
-    const start = typeof performance !== "undefined" ? performance.now() : Date.now();
-    const tick = () => {
-      syncSquircleNow(el);
-      const now = typeof performance !== "undefined" ? performance.now() : Date.now();
-      if (now - start < 330) {
-        raf = requestAnimationFrame(tick);
-      }
-    };
-    raf = requestAnimationFrame(tick);
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [isOpen, shape, shutSize, openWidth]);
 
   // Click outside to collapse if empty (only active while open)
   useEffect(() => {

@@ -1,6 +1,40 @@
 import { useEffect } from 'react';
 import type { RefObject } from 'react';
 import { squirclePath } from '@/atrium/motion/shapes';
+import { injectSquircleMaskStyles } from './squircleMasks';
+
+const CSS_MASK_TOKENS = new Set([
+  'row',
+  'ctl',
+  'ctl-sm',
+  'thumb',
+  'tile',
+  'tile-lg',
+  'check',
+  'empty',
+]);
+
+/**
+ * High-churn controls, rows, checkboxes, tiles, and loading skeletons render
+ * 60% superellipse curves + strokes purely via cached CSS `mask-image` rules
+ * so zero ResizeObserver, MutationObserver, or child <svg> nodes are needed.
+ */
+export function isCssMaskSquircle(el: HTMLElement): boolean {
+  const token = el.getAttribute('data-sq');
+  if (!token || token === 'none') return false;
+  if (el.getAttribute('data-sq-border') === 'dashed' || el.hasAttribute('data-sq-dash')) {
+    return false;
+  }
+  if (CSS_MASK_TOKENS.has(token)) return true;
+  if (token === 'card' && el.classList.contains('slab')) return true;
+  if (
+    (token === 'card' || token === 'panel' || token === 'table') &&
+    Boolean(el.closest?.('[role="status"]'))
+  ) {
+    return true;
+  }
+  return false;
+}
 
 export type SquircleToken =
   | 'app'
@@ -750,6 +784,16 @@ export function syncSquircleNow(el: HTMLElement | null): void {
 }
 
 function registerNode(el: HTMLElement): void {
+  if (isCssMaskSquircle(el)) {
+    if (trackedElements.has(el)) {
+      unregisterNode(el);
+      el.style.clipPath = '';
+      (el.style as any).webkitClipPath = '';
+      removeStrokeOverlay(el);
+      restoreOverflowStyle(el);
+    }
+    return;
+  }
   if (!trackedElements.has(el)) {
     trackedElements.add(el);
     ro?.observe(el);
@@ -821,13 +865,16 @@ function scanSubtree(root: ParentNode): void {
   if (root instanceof Element && (root.tagName.toLowerCase() === 'svg' || root.hasAttribute('data-sq-stroke'))) {
     return;
   }
-  if (root instanceof HTMLElement && root.hasAttribute('data-sq')) {
+  if (root instanceof HTMLElement && root.hasAttribute('data-sq') && !isCssMaskSquircle(root)) {
     registerNode(root);
   }
   if ('querySelectorAll' in root) {
     const nodes = root.querySelectorAll<HTMLElement>('[data-sq]');
     for (let i = 0; i < nodes.length; i++) {
-      registerNode(nodes[i]);
+      const node = nodes[i];
+      if (!isCssMaskSquircle(node)) {
+        registerNode(node);
+      }
     }
   }
 }
@@ -844,6 +891,8 @@ export function initSquircleEngine(): void {
   ensureSharedSquircleDefs();
 
   const dpr = Number(window.devicePixelRatio) || 1;
+  const hairlinePx = dpr >= 2 ? 0.65 : 1;
+  injectSquircleMaskStyles(hairlinePx);
   if (document.documentElement?.style?.setProperty) {
     document.documentElement.style.setProperty('--sq-stroke-hairline', dpr >= 2 ? '0.65px' : '1px');
   }
@@ -867,7 +916,7 @@ export function initSquircleEngine(): void {
         const m = mutations[i];
         if (m.type === 'attributes') {
           if (m.target instanceof HTMLElement) {
-            if (m.target.hasAttribute('data-sq')) {
+            if (m.target.hasAttribute('data-sq') && !isCssMaskSquircle(m.target)) {
               registerNode(m.target);
             } else {
               m.target.style.clipPath = '';
@@ -930,6 +979,11 @@ export function useSquircle(
     }
     el.setAttribute('data-sq', String(token));
     el.setAttribute('data-sq-border', border);
+    if (isCssMaskSquircle(el)) {
+      return () => {
+        unregisterNode(el);
+      };
+    }
     registerNode(el);
     syncSquircleNow(el);
     return () => {

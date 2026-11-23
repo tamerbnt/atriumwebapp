@@ -11,6 +11,8 @@ import { KineticDetailAction } from './KineticDetailIsland';
 import { useKineticCollectionLayout } from './useKineticCollectionLayout';
 import { KineticEmptyStateMotion } from './KineticEmptyStateMotion';
 
+const EMPTY_DETAIL_ACTIONS: KineticDetailAction[] = [];
+
 export interface KineticColumnHeader {
   key: string;
   label: string;
@@ -197,73 +199,42 @@ function KineticCollectionStageInner<T>({
     </div>
   );
 
-  // Responsive empty stage: column headers remain intact above for context while
-  // the EmptyState container uses true viewport/pod width so 3/4/6 ghost tracks and centered island adapt cleanly.
-  if (isEmpty) {
-    const emptyTone =
-      emptyState && typeof emptyState === 'object' && 'tone' in emptyState
-        ? (emptyState as EmptyStateProps).tone ?? 'neutral'
-        : 'neutral';
-    const emptyTitle =
-      emptyState && typeof emptyState === 'object' && 'title' in emptyState
-        ? String((emptyState as EmptyStateProps).title)
-        : '';
-    const emptyKey = `${emptyTone}-${emptyTitle}`;
-
-    return (
-      <div
-        className="w-full flex flex-col gap-[var(--row-gap,8px)] flex-1 min-h-[460px] sm:min-h-[520px]"
-        data-stage-mode={viewMode === 'grid' ? 'g' : 'l'}
-      >
-        {viewMode === 'list' && (
-          <div className="w-full members-x-wrap shrink-0">
-            <div className="min-w-[980px]">{headerBar}</div>
-          </div>
-        )}
-        <div
-          ref={scrollContainerRef}
-          className="scr relative w-full min-w-0 flex-1 min-h-[350px] flex flex-col"
-        >
-          <KineticEmptyStateMotion motionKey={emptyKey}>
-            {React.isValidElement(emptyState) ? (
-              emptyState
-            ) : emptyState && typeof emptyState === 'object' && 'title' in emptyState ? (
-              <EmptyState {...(emptyState as EmptyStateProps)} />
-            ) : (
-              <EmptyState
-                variant="island"
-                tone="neutral"
-                icon={<EMPTY_STATE_ICONS.Funnel />}
-                title={defaultEmpty}
-              />
-            )}
-          </KineticEmptyStateMotion>
-        </div>
-      </div>
-    );
-  }
+  const showRowsStage = !isEmpty || renderedRows.length > 0;
+  const emptyTone =
+    isEmpty && emptyState && typeof emptyState === 'object' && 'tone' in emptyState
+      ? (emptyState as EmptyStateProps).tone ?? 'neutral'
+      : 'neutral';
+  const emptyTitle =
+    isEmpty && emptyState && typeof emptyState === 'object' && 'title' in emptyState
+      ? String((emptyState as EmptyStateProps).title)
+      : '';
+  const emptyKey = `${emptyTone}-${emptyTitle}`;
 
   return (
     <div className="w-full">
       <div className="w-full members-x-wrap">
         <div
-          className="w-full flex flex-col gap-[var(--row-gap,8px)] min-w-[980px] h-[560px] sm:h-[702px] relative"
+          className={`w-full flex flex-col gap-[var(--row-gap,8px)] h-[560px] sm:h-[702px] relative ${
+            viewMode === 'list' && showRowsStage ? 'min-w-[980px]' : 'min-w-0'
+          }`}
           data-stage-mode={viewMode === 'grid' ? 'g' : 'l'}
         >
           {headerBar}
 
-          {/* Windowed Virtual Kinetic Stage */}
+          {/* Windowed Virtual Kinetic Stage — stays mounted across empty/non-empty filter transitions */}
           <div
             ref={scrollContainerRef}
             data-no-rubber-band="true"
-            className="scr relative overflow-y-auto overflow-x-hidden flex-1 min-h-0 pb-[70px] overscroll-auto"
+            className={`scr relative flex-1 min-h-0 pb-[70px] overscroll-auto ${
+              showRowsStage ? 'overflow-y-auto overflow-x-hidden' : 'overflow-hidden min-h-[350px]'
+            }`}
           >
             <div
               ref={rowsElRef}
               role="list"
               aria-label={ariaLabel}
               data-v={viewMode === 'grid' ? 'g' : 'l'}
-              className="rows relative w-full"
+              className={`rows relative w-full ${isEmpty ? 'pointer-events-none' : ''}`}
             >
               {renderedRows.map((rowItem) => {
                 const rowData = getRowData(rowItem.item);
@@ -287,7 +258,9 @@ function KineticCollectionStageInner<T>({
                     secondaryLabel={secondaryLabel}
                     onDelete={onDelete}
                     fanActions={getFanActions ? getFanActions(rowItem.item) : undefined}
-                    detailActions={getDetailActions ? getDetailActions(rowItem.item) : []}
+                    detailActions={
+                      getDetailActions ? getDetailActions(rowItem.item) : EMPTY_DETAIL_ACTIONS
+                    }
                     detailChildren={
                       renderCustomRowDetail ? renderCustomRowDetail(rowItem.item) : undefined
                     }
@@ -295,6 +268,25 @@ function KineticCollectionStageInner<T>({
                 );
               })}
             </div>
+
+            {isEmpty && (
+              <div className="absolute inset-0 z-[5] flex flex-col min-w-0 min-h-[350px]">
+                <KineticEmptyStateMotion motionKey={emptyKey}>
+                  {React.isValidElement(emptyState) ? (
+                    emptyState
+                  ) : emptyState && typeof emptyState === 'object' && 'title' in emptyState ? (
+                    <EmptyState {...(emptyState as EmptyStateProps)} />
+                  ) : (
+                    <EmptyState
+                      variant="island"
+                      tone="neutral"
+                      icon={<EMPTY_STATE_ICONS.Funnel />}
+                      title={defaultEmpty}
+                    />
+                  )}
+                </KineticEmptyStateMotion>
+              </div>
+            )}
           </div>
         </div>
       </div>

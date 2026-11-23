@@ -1946,25 +1946,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [category]);
 
-  const navTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  React.useEffect(() => {
-    return () => {
-      if (navTimerRef.current) clearTimeout(navTimerRef.current);
-    };
-  }, []);
-
   const handleItemSelect = useCallback((id: string) => {
     const item = dockNavItems.find(it => it.id === id);
     const target = item ? item.id : (id as ActiveScreen);
-    if (navTimerRef.current) clearTimeout(navTimerRef.current);
-    // Preload target screen immediately while the liquid pill spring launches
+    // Preload target chunk and transition route state non-blockingly so the liquid
+    // pill spring and destination mount run concurrently with zero 120ms artificial delay.
     preloadScreen(target, category);
-    // Yield 120ms so the liquid pill spring completes its fluid glide with zero frame drops
-    // before heavy screen reconciliation runs on the main thread
-    navTimerRef.current = setTimeout(() => {
+    React.startTransition(() => {
       setScreen(target);
-    }, 120);
+    });
     if (onCloseMobile) onCloseMobile();
   }, [dockNavItems, category, onCloseMobile]);
 

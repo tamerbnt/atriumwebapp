@@ -47,6 +47,8 @@ interface AppliedCache {
   e: number;
   mode: 'list' | 'grid';
   moving: boolean;
+  isMatching: boolean;
+  zIndex: string;
 }
 
 interface ManagedRow<T> {
@@ -107,6 +109,7 @@ function needsStyleApply<T>(r: ManagedRow<T>, viewMode: 'list' | 'grid'): boolea
   const prev = r.lastApplied;
   if (!prev) return true;
   if (prev.mode !== viewMode) return true;
+  if (prev.isMatching !== r.isMatching) return true;
   if (!isRowAtRest(r) || prev.moving) return true;
   return (
     prev.x !== qHalf(r.sx.x) ||
@@ -132,6 +135,7 @@ function applyRowStyles<T>(r: ManagedRow<T>, viewMode: 'list' | 'grid', isRtl: b
   const re = qTenth(r.e.x);
   const isMoving = !isRowAtRest(r);
   const isSizeMorphing = isMoving && (rw !== tw || rh !== th);
+  const nextZ = r.isMatching ? (re > 0.01 ? '2' : '1') : '0';
 
   const prev = r.lastApplied;
 
@@ -145,6 +149,8 @@ function applyRowStyles<T>(r: ManagedRow<T>, viewMode: 'list' | 'grid', isRtl: b
     prev.e === re &&
     prev.mode === viewMode &&
     prev.moving === isMoving &&
+    prev.isMatching === r.isMatching &&
+    prev.zIndex === nextZ &&
     !isSizeMorphing &&
     r.innFixedW === -1
   ) {
@@ -159,8 +165,21 @@ function applyRowStyles<T>(r: ManagedRow<T>, viewMode: 'list' | 'grid', isRtl: b
     prev.w !== rw ||
     prev.h !== rh ||
     prev.mode !== viewMode;
+  const matchChanged = !prev || prev.isMatching !== r.isMatching;
+  const zChanged = !prev || prev.zIndex !== nextZ;
 
-  r.lastApplied = { x: rx, y: ry, w: rw, h: rh, p: rp, e: re, mode: viewMode, moving: isMoving };
+  r.lastApplied = {
+    x: rx,
+    y: ry,
+    w: rw,
+    h: rh,
+    p: rp,
+    e: re,
+    mode: viewMode,
+    moving: isMoving,
+    isMatching: r.isMatching,
+    zIndex: nextZ,
+  };
 
   if (r.willChangeActive !== isMoving) {
     r.willChangeActive = isMoving;
@@ -176,14 +195,19 @@ function applyRowStyles<T>(r: ManagedRow<T>, viewMode: 'list' | 'grid', isRtl: b
 
   const geom = computeRowVisualGeometry(rp, re, rw, rh, viewMode);
 
-  if (posChanged || !prev || prev.p !== rp) {
+  if (posChanged || !prev || prev.p !== rp || matchChanged || zChanged) {
     const st = rowEl.style;
     if (!prev || prev.x !== rx || prev.y !== ry) {
       st.transform = `translate3d(${rx}px, ${ry}px, 0)`;
     }
     if (!prev || prev.w !== rw) st.width = `${rw}px`;
     if (!prev || prev.h !== rh) st.height = `${rh}px`;
-    if (!prev || prev.p !== rp) st.pointerEvents = geom.pointerInteractive ? 'auto' : 'none';
+    if (!prev || prev.p !== rp || matchChanged) {
+      st.pointerEvents = r.isMatching && geom.pointerInteractive ? 'auto' : 'none';
+    }
+    if (zChanged) {
+      st.zIndex = nextZ;
+    }
   }
 
   if (innEl) {
@@ -405,7 +429,13 @@ export function useKineticCollectionLayout<T>({
   const exitingCountRef = useRef<number>(0);
   const needsCleanupScanRef = useRef<boolean>(false);
   const lastScrollWindowKeyRef = useRef<string>('');
-  const mountedWindowRef = useRef<{ minY: number; maxY: number; metaKey: string } | null>(null);
+  const mountedWindowRef = useRef<{
+    minY: number;
+    maxY: number;
+    scrollTop: number;
+    viewportH: number;
+    metaKey: string;
+  } | null>(null);
   const drawRemoveScratchRef = useRef<ManagedRow<T>[]>([]);
   const isRtlRef = useRef<boolean>(false);
 
@@ -605,6 +635,14 @@ export function useKineticCollectionLayout<T>({
     if (
       prevWin &&
       prevWin.metaKey === metaKey &&
+      Math.abs(visMinY - prevWin.scrollTop) < 4 &&
+      Math.round(viewportHRef.current) === Math.round(prevWin.viewportH)
+    ) {
+      return;
+    }
+    if (
+      prevWin &&
+      prevWin.metaKey === metaKey &&
       visMinY - 140 >= prevWin.minY &&
       visMaxY + 140 <= prevWin.maxY &&
       movingRowsRef.current.size === 0 &&
@@ -620,11 +658,23 @@ export function useKineticCollectionLayout<T>({
       movingRowsRef.current.size === 0 &&
       exitingCountRef.current === 0
     ) {
-      mountedWindowRef.current = { minY, maxY, metaKey };
+      mountedWindowRef.current = {
+        minY,
+        maxY,
+        scrollTop: visMinY,
+        viewportH: viewportHRef.current,
+        metaKey,
+      };
       return;
     }
     lastScrollWindowKeyRef.current = windowKey;
-    mountedWindowRef.current = { minY, maxY, metaKey };
+    mountedWindowRef.current = {
+      minY,
+      maxY,
+      scrollTop: visMinY,
+      viewportH: viewportHRef.current,
+      metaKey,
+    };
 
     const keepBounds = getWindowBounds(WINDOW_HYSTERESIS_PX);
     const [keepStartIdx, keepEndIdx] = findWindowRange(
@@ -928,6 +978,7 @@ export function useKineticCollectionLayout<T>({
         }
       }
 
+      const exitingSet = new Set<string>();
       map.forEach((r, id) => {
         if (!matchingSet.has(id)) {
           const inWin =
@@ -948,10 +999,64 @@ export function useKineticCollectionLayout<T>({
           r.p.setTarget(0);
           r.e.setTarget(0);
           movingRowsRef.current.add(r);
+          exitingSet.add(id);
           exitingCount++;
-          nextOrderedIds.push(id);
         }
       });
+
+      // Preserve exiting rows in their prior relative DOM slots so React does not reparent nodes
+      // or cause paint-order jumps while exiting rows collapse behind active rows (zIndex: 0 vs 1).
+      let finalOrderedIds = nextOrderedIds;
+      if (exitingSet.size > 0) {
+        const nextMatchingSet = new Set(nextOrderedIds);
+        const pendingExiting: string[] = [];
+        const exitingBefore = new Map<string, string[]>();
+        const seenExiting = new Set<string>();
+        const prevOrder = orderedIdsRef.current;
+
+        for (let i = 0; i < prevOrder.length; i++) {
+          const pid = prevOrder[i];
+          if (nextMatchingSet.has(pid)) {
+            if (pendingExiting.length > 0) {
+              exitingBefore.set(pid, pendingExiting.splice(0));
+            }
+          } else if (exitingSet.has(pid)) {
+            pendingExiting.push(pid);
+            seenExiting.add(pid);
+          }
+        }
+
+        exitingSet.forEach((eid) => {
+          if (!seenExiting.has(eid)) {
+            pendingExiting.push(eid);
+          }
+        });
+
+        const mergedIds: string[] = [];
+        for (let i = 0; i < nextOrderedIds.length; i++) {
+          const mid = nextOrderedIds[i];
+          const before = exitingBefore.get(mid);
+          if (before) {
+            for (let j = 0; j < before.length; j++) mergedIds.push(before[j]);
+          }
+          mergedIds.push(mid);
+        }
+        for (let j = 0; j < pendingExiting.length; j++) {
+          mergedIds.push(pendingExiting[j]);
+        }
+        finalOrderedIds = mergedIds;
+      }
+
+      const metaKey = `${itemsList.length}:${mode}:${openId ?? ''}:${focusedId ?? ''}:${expanded.size}`;
+      mountedWindowRef.current = hasScroller
+        ? {
+            minY,
+            maxY,
+            scrollTop: scrollTopRef.current,
+            viewportH: viewportHRef.current,
+            metaKey,
+          }
+        : null;
 
       exitingCountRef.current = exitingCount;
       needsCleanupScanRef.current = exitingCount > 0 || movingRowsRef.current.size > 0;
@@ -960,7 +1065,7 @@ export function useKineticCollectionLayout<T>({
       latestTargetsRef.current = targets;
       prevMatchingIdsRef.current = matchingSet;
 
-      commitRenderedRows(nextOrderedIds);
+      commitRenderedRows(finalOrderedIds);
 
       if (newlyHiddenIds.length > 0) {
         onPruneRef.current?.(newlyHiddenIds);
@@ -1053,18 +1158,27 @@ export function useKineticCollectionLayout<T>({
 
     if (typeof ResizeObserver === 'undefined') return;
     let prevW = containerWidthRef.current;
+    let resizeRaf = 0;
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const w = Math.round(el.clientWidth || entry.contentRect.width);
         if (w > 0 && w !== prevW) {
           prevW = w;
           containerWidthRef.current = w;
-          place(true);
+          if (!resizeRaf) {
+            resizeRaf = requestAnimationFrame(() => {
+              resizeRaf = 0;
+              place(true);
+            });
+          }
         }
       }
     });
     ro.observe(el);
-    return () => ro.disconnect();
+    return () => {
+      ro.disconnect();
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    };
   }, [rowsElRef, place]);
 
   useLayoutEffect(() => {
@@ -1075,10 +1189,13 @@ export function useKineticCollectionLayout<T>({
 
     if (filterChanged) {
       onFilterChangeRef.current?.();
+      if (scrollContainerRef?.current) {
+        scrollTopRef.current = scrollContainerRef.current.scrollTop || 0;
+      }
     }
 
     place(modeChanged);
-  }, [items, expandedIds, viewMode, filterKey, place]);
+  }, [items, expandedIds, viewMode, filterKey, place, scrollContainerRef]);
 
   useEffect(() => {
     return () => {

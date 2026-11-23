@@ -30,7 +30,7 @@ export interface ScrollJumpPillProps {
  * Positioned bottom-center, fully localized (FR / AR / EN), and automatically
  * elevates when floating bulk action toolbars are visible.
  */
-export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
+export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = React.memo(({
   containerRef,
   targetContainerId = 'main-content-scroll',
   overflowThreshold = 40,
@@ -197,11 +197,11 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
         onClick={handleScrollJump}
         aria-label={label}
         title={label}
-        className="group relative flex items-center justify-center h-[var(--btn-h,40px)] min-w-[var(--btn-h,40px)] px-[var(--s2,8px)] group-hover:ps-[var(--s3,12px)] group-hover:pe-[var(--s4,16px)] group-focus-visible:ps-[var(--s3,12px)] group-focus-visible:pe-[var(--s4,16px)] rounded-full bg-white dark:bg-[#262422] text-[var(--text-1)] dark:text-white border-0 shadow-[0_10px_28px_-6px_rgba(23,19,15,0.14),0_2px_8px_rgba(23,19,15,0.06)] dark:shadow-[0_14px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_30px_-4px_rgba(212,82,47,0.22)] hover:scale-[1.04] active:scale-95 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f] overflow-hidden"
+        className="group relative flex items-center justify-center h-[var(--btn-h,40px)] min-w-[var(--btn-h,40px)] px-[var(--s2,8px)] group-hover:ps-[var(--s3,12px)] group-hover:pe-[var(--s4,16px)] group-focus-visible:ps-[var(--s3,12px)] group-focus-visible:pe-[var(--s4,16px)] rounded-full bg-white dark:bg-[#262422] text-[var(--text-1)] dark:text-white border-0 shadow-[0_10px_28px_-6px_rgba(23,19,15,0.14),0_2px_8px_rgba(23,19,15,0.06)] dark:shadow-[0_14px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_12px_30px_-4px_rgba(212,82,47,0.22)] hover:scale-[1.04] active:scale-95 transition-[transform,box-shadow,padding] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4522f] overflow-hidden"
       >
         {/* Animated Direction Arrow Icon */}
         <span
-          className="w-[var(--s6,24px)] h-[var(--s6,24px)] rounded-full bg-[#d4522f]/15 dark:bg-[#d4522f]/25 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-[var(--brand-fill)] group-hover:text-white shrink-0"
+          className="w-[var(--s6,24px)] h-[var(--s6,24px)] rounded-full bg-[#d4522f]/15 dark:bg-[#d4522f]/25 text-[var(--brand-text)] dark:text-[var(--brand-on-dark)] flex items-center justify-center transition-[transform,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-[var(--brand-fill)] group-hover:text-white shrink-0"
           style={{
             transform: direction === 'up' ? 'rotate(180deg)' : 'rotate(0deg)',
           }}
@@ -211,11 +211,13 @@ export const ScrollJumpPill: React.FC<ScrollJumpPillProps> = ({
 
         {/* Microcopy Label - icon only at rest, fluidly reveals on hover / focus */}
         {!compact && (
-          <span className="max-w-0 opacity-0 overflow-hidden whitespace-nowrap t-small text-[var(--text-1)] dark:text-white group-hover:max-w-48 group-hover:opacity-100 group-hover:ms-[var(--s2,8px)] group-focus-visible:max-w-48 group-focus-visible:opacity-100 group-focus-visible:ms-[var(--s2,8px)] group-hover:text-[var(--brand-text)] dark:group-hover:text-[var(--brand-on-dark)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none pointer-events-none">
+          <span className="max-w-0 opacity-0 overflow-hidden whitespace-nowrap t-small text-[var(--text-1)] dark:text-white group-hover:max-w-48 group-hover:opacity-100 group-hover:ms-[var(--s2,8px)] group-focus-visible:max-w-48 group-focus-visible:opacity-100 group-focus-visible:ms-[var(--s2,8px)] group-hover:text-[var(--brand-text)] dark:group-hover:text-[var(--brand-on-dark)] transition-[max-width,opacity,margin,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none pointer-events-none">
             {label}
           </span>
         )}
       </button>
     </div>
   );
-};
+});
+
+ScrollJumpPill.displayName = 'ScrollJumpPill';

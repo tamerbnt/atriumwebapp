@@ -30,6 +30,12 @@
   --sq-stroke-pop: rgba(23, 19, 15, 0.055);
   --sq-stroke-obsidian: url(#sq-spec-dark-card);
   --sq-stroke-dashed: rgba(23, 19, 15, 0.14);
+  --sq-css-pod: var(--sq-stroke-pod);
+  --sq-css-card: var(--sq-stroke-card);
+  --sq-css-row: var(--sq-stroke-row);
+  --sq-css-ctl: var(--sq-stroke-ctl);
+  --sq-css-ctl-hover: var(--sq-stroke-ctl-hover);
+  --sq-css-pop: var(--sq-stroke-pop);
   /* text: calibrated warm-ink contrast ramp (>= 4.5:1) */
   --atr-ink: #17130F;
   --atr-ink-2: rgba(23, 19, 15, 0.88);
@@ -275,6 +281,13 @@
   --sq-stroke-pop: url(#sq-spec-dark-pop);
   --sq-stroke-obsidian: url(#sq-spec-dark-card);
   --sq-stroke-dashed: rgba(255, 255, 255, 0.16);
+  /* Pure CSS top-lit white specular gradients matching DARK_SPECULAR_GRADIENTS for CSS-masked squircles */
+  --sq-css-pod: linear-gradient(180deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.02) 8%, rgba(255, 255, 255, 0.005) 24%, transparent 55%, transparent 100%);
+  --sq-css-card: linear-gradient(180deg, rgba(255, 255, 255, 0.115) 0%, rgba(255, 255, 255, 0.055) 8%, rgba(255, 255, 255, 0.012) 22%, rgba(255, 255, 255, 0.002) 50%, transparent 100%);
+  --sq-css-row: var(--sq-css-card);
+  --sq-css-ctl: linear-gradient(180deg, rgba(255, 255, 255, 0.135) 0%, rgba(255, 255, 255, 0.065) 8%, rgba(255, 255, 255, 0.015) 24%, rgba(255, 255, 255, 0.003) 52%, transparent 100%);
+  --sq-css-ctl-hover: linear-gradient(180deg, rgba(255, 255, 255, 0.21) 0%, rgba(255, 255, 255, 0.105) 8%, rgba(255, 255, 255, 0.025) 26%, rgba(255, 255, 255, 0.005) 55%, transparent 100%);
+  --sq-css-pop: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.075) 8%, rgba(255, 255, 255, 0.018) 24%, rgba(255, 255, 255, 0.004) 55%, transparent 100%);
   --atr-ink: #ffffff;
   --atr-ink-2: rgba(255, 255, 255, 0.88);
   --atr-ink-3: #A99E92;

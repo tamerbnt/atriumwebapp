@@ -29,6 +29,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.root[data-sq]:not([data-sq='none']) {
+  --sq-b-inset: -1px;
+}
+
 .root[data-atr-size='sm'] {
   --h: var(--btn-sm-h, 32px);
   padding: 0 var(--btn-sm-px, 12px);

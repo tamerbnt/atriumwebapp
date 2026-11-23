@@ -148,10 +148,15 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(fun
     body.scheduleNoise();
 
     let ro: ResizeObserver | undefined;
+    let resizeRaf = 0;
     if (typeof ResizeObserver !== 'undefined') {
       ro = new ResizeObserver(() => {
         rect.current = null;
-        body.measure();
+        if (resizeRaf) return;
+        resizeRaf = requestAnimationFrame(() => {
+          resizeRaf = 0;
+          body.measure();
+        });
       });
       ro.observe(els.button);
     }
@@ -171,6 +176,7 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(fun
     return () => {
       mounted.current = false;
       ro?.disconnect();
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
       io?.disconnect();
       body.dispose();
       bodyRef.current = null;

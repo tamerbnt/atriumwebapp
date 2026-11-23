@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useEffect, useRef } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, ReactNode, RefObject } from 'react';
 import { cx, useControllable, useIsoLayoutEffect } from '../../hooks';
 import { initMotionEnv } from '../../motion/env';
@@ -156,12 +156,20 @@ export function AppShell({
     measure(true);
 
     let ro: ResizeObserver | undefined;
+    let measureRaf: number | null = null;
     if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(() => measure(false));
+      ro = new ResizeObserver(() => {
+        if (measureRaf !== null) return;
+        measureRaf = requestAnimationFrame(() => {
+          measureRaf = null;
+          measure(false);
+        });
+      });
       ro.observe(bar.current);
       ro.observe(root.current);
     }
     return () => {
+      if (measureRaf !== null) cancelAnimationFrame(measureRaf);
       ro?.disconnect();
       b.dispose();
       pb.dispose();
@@ -242,8 +250,13 @@ export function AppShell({
   // keyboard focus inside the bar always shows it
   const onBarFocus = () => request(false);
 
+  const shellCtxValue = useMemo(
+    () => ({ sidebarOpen, setSidebarOpen }),
+    [sidebarOpen, setSidebarOpen],
+  );
+
   return (
-    <ShellContext.Provider value={{ sidebarOpen, setSidebarOpen }}>
+    <ShellContext.Provider value={shellCtxValue}>
       <div
         ref={root}
         className={cx(s.root, className)}

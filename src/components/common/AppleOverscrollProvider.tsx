@@ -115,6 +115,19 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
       return null;
     };
 
+    const resolveTransformTarget = (container: HTMLElement): HTMLElement => {
+      const explicit = container.querySelector(':scope > [data-list-pod-root]') as HTMLElement | null;
+      if (explicit) return explicit;
+      let child = container.firstElementChild as HTMLElement | null;
+      while (child) {
+        if (!child.classList.contains('fixed') && window.getComputedStyle(child).position !== 'fixed') {
+          return child;
+        }
+        child = child.nextElementSibling as HTMLElement | null;
+      }
+      return container;
+    };
+
     const stopLoop = () => {
       if (animFrameId.current !== null) {
         cancelAnimationFrame(animFrameId.current);
@@ -137,6 +150,10 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
 
     const clearActive = () => {
       stopLoop();
+      if (wheelTimeoutRef.current !== null) {
+        window.clearTimeout(wheelTimeoutRef.current);
+        wheelTimeoutRef.current = null;
+      }
       if (activeRef.current) {
         applyTransform({ ...activeRef.current, offset: 0 });
         activeRef.current = null;
@@ -260,10 +277,19 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
         }
       }
 
-      const resolved = isAlreadyActive
-        ? { container: activeRef.current!.container, canScrollNatively: false, edgeSign: activeRef.current!.edgeSign }
-        : resolveScrollContainer(targetEl, axis, rawAxisDelta);
-      if (!resolved) return;
+      const isReversingFromEdge =
+        isAlreadyActive && activeRef.current!.edgeSign * rawAxisDelta > 0;
+
+      const resolved =
+        isAlreadyActive && !isReversingFromEdge
+          ? { container: activeRef.current!.container, canScrollNatively: false, edgeSign: activeRef.current!.edgeSign }
+          : resolveScrollContainer(targetEl, axis, rawAxisDelta);
+      if (!resolved) {
+        if (isReversingFromEdge) {
+          clearActive();
+        }
+        return;
+      }
 
       const { container, canScrollNatively, edgeSign } = resolved;
 
@@ -287,16 +313,11 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
         activeRef.current.direction === axis &&
         Math.abs(activeRef.current.offset) > 0.05;
 
-      // If already rubber-banding but user scrolls the OPPOSITE direction,
-      // immediately release and let native scroll take over — prevents the
-      // "stuck at top/bottom" lockout feeling.
-      if (isAlreadyOverscrolling && canScrollNatively) {
-        const activeEdgeSign = activeRef.current!.edgeSign;
-        const inputEdgeSign = rawAxisDelta > 0 ? 1 : -1;
-        if (activeEdgeSign !== inputEdgeSign) {
-          clearActive(); // Drop rubber-band immediately
-          return;        // Native scroll handles the rest
-        }
+      // If already rubber-banding but user scrolls AWAY from the active edge and
+      // the container can scroll natively, drop rubber-band immediately with zero lockout.
+      if (isReversingFromEdge && canScrollNatively) {
+        clearActive();
+        return;
       }
 
       if (canScrollNatively && !isAlreadyOverscrolling) {
@@ -311,7 +332,7 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
         if (activeRef.current) {
           clearActive();
         }
-        const transformTarget = (container.firstElementChild as HTMLElement) || container;
+        const transformTarget = resolveTransformTarget(container);
         activeRef.current = {
           container,
           target: transformTarget,
@@ -365,6 +386,10 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
       const targetEl = e.target as HTMLElement | null;
       if (!targetEl || targetEl.closest?.('[data-no-rubber-band]')) return;
 
+      if (wheelTimeoutRef.current !== null) {
+        window.clearTimeout(wheelTimeoutRef.current);
+        wheelTimeoutRef.current = null;
+      }
       stopLoop();
       touchStartRef.current = {
         x: e.touches[0].clientX,
@@ -389,7 +414,12 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
       // Positive touchDelta drags content down/right (toward scrollTop = 0, so scroll direction is negative)
       const scrollDeltaSign = -touchDelta;
       const resolved = resolveScrollContainer(touchStartRef.current.target, axis, scrollDeltaSign);
-      if (!resolved || resolved.canScrollNatively) return;
+      if (!resolved || resolved.canScrollNatively) {
+        if (activeRef.current && activeRef.current.direction === axis && activeRef.current.edgeSign * scrollDeltaSign > 0) {
+          clearActive();
+        }
+        return;
+      }
 
       const { container, edgeSign } = resolved;
 
@@ -401,7 +431,7 @@ export const AppleOverscrollProvider: React.FC<{ children: React.ReactNode }> = 
         if (activeRef.current) {
           clearActive();
         }
-        const transformTarget = (container.firstElementChild as HTMLElement) || container;
+        const transformTarget = resolveTransformTarget(container);
         activeRef.current = {
           container,
           target: transformTarget,

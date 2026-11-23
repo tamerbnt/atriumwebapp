@@ -68,6 +68,8 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
   onPay,
 }) => {
   const rowRef = useRef<HTMLDivElement>(null);
+  const dtRef = useRef<HTMLDivElement>(null);
+  const prevExpandedRef = useRef<boolean>(isExpanded);
   const [isHovered, setIsHovered] = useState(false);
 
   // Accordion height spring physics (0 -> 1)
@@ -75,18 +77,23 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
+    if (prevExpandedRef.current === isExpanded) return;
+    prevExpandedRef.current = isExpanded;
     springRef.current.t = isExpanded ? 1 : 0;
-    const tick = () => {
-      stepSpring(springRef.current, 1 / 120);
+
+    let lastTime = 0;
+    const tick = (now: number) => {
+      const dt = lastTime ? Math.min(Math.max((now - lastTime) / 1000, 0.001), 1 / 20) : 1 / 60;
+      lastTime = now;
+      stepSpring(springRef.current, dt);
       const e = clamp(springRef.current.x, 0, 1.08);
       if (rowRef.current) {
         // H = 72px base, DH = 150px expanded drawer, G = 8px gap
         const h = 72 + 8 + e * (150 + 8);
         rowRef.current.style.height = `${formatDec(h)}px`;
-        const dtEl = rowRef.current.querySelector<HTMLElement>('.kinetic-dt');
-        if (dtEl) {
-          dtEl.style.opacity = formatDec(clamp((e - 0.4) / 0.5, 0, 1));
-          dtEl.style.pointerEvents = e > 0.8 ? 'auto' : 'none';
+        if (dtRef.current) {
+          dtRef.current.style.opacity = formatDec(clamp((e - 0.4) / 0.5, 0, 1));
+          dtRef.current.style.pointerEvents = e > 0.8 ? 'auto' : 'none';
         }
       }
       if (!isSpringCalm(springRef.current)) {
@@ -94,11 +101,15 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
       } else {
         springRef.current.x = springRef.current.t;
         springRef.current.v = 0;
+        rafRef.current = 0;
       }
     };
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    };
   }, [isExpanded]);
 
   // Derived member metadata with robust fallbacks
@@ -363,6 +374,7 @@ export const MemberKineticRow: React.FC<MemberKineticRowProps> = ({
 
       {/* ================= INLINE ACCORDION QUICK DRAWER (.dt) ================= */}
       <div
+        ref={dtRef}
         data-sq="card"
         data-sq-border="solid"
         className="kinetic-dt absolute left-0 right-0 top-[80px] h-[150px] bg-white dark:bg-[#22201E] border-0 grid gap-6 p-4 px-6 box-border opacity-0 select-text"

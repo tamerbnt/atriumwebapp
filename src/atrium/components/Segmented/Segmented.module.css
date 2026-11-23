@@ -26,7 +26,7 @@
 :global(.dark) .root,
 :global([data-surface='dark']) .root {
   background: #242220;
-  --sq-stroke: var(--sq-stroke-ctl, url(#sq-spec-dark-ctl));
+  --sq-stroke: var(--sq-css-ctl, rgba(255, 255, 255, 0.135));
 }
 
 :global([data-surface='light']) .root {

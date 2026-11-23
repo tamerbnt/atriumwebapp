@@ -1868,7 +1868,7 @@ export function setScreenAction(activeScreen: ActiveScreen) {
     activePmRole: nextRole,
     activePmSubScreen: nextSubScreen,
   };
-  notify();
+  notify(false, true);
 }
 
 export function openOnboardingAction() {

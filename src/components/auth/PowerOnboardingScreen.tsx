@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2,
   Check,
@@ -65,12 +64,14 @@ import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
 import { deriveCategoryConfigDefaultsFromOnboarding } from '../../utils/businessConfig';
 import { OnboardingBackdrop } from './OnboardingBackdrop';
+import { OnboardingShowcaseCard } from './OnboardingShowcaseCard';
 import { LiquidContinueButton } from '../ui/liquid/LiquidContinueButton';
 import { AtriumButton } from '../ui/AtriumButton';
 
 interface PowerOnboardingScreenProps {
   onComplete: () => void;
   onSkipToDashboard: () => void;
+  onSwitchAccount?: () => void;
 }
 
 export type SubscriptionPlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
@@ -203,6 +204,7 @@ const CATALOG_SECTORS: { id: BusinessCategory | 'all'; labelFr: string; labelAr:
 export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   onComplete,
   onSkipToDashboard,
+  onSwitchAccount,
 }) => {
   const { completeOnboarding, logout } = useAtriumActions();
   const { language, isAuthenticated, currentUser } = useAtriumSelector(
@@ -222,67 +224,66 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     window.dispatchEvent(new CustomEvent('atrium:replayintro'));
   };
 
-  // Curated Brand Marketing Showcase Imagery (High-Speed Optimized WebP)
-  const PREVIEW_SLIDES = useMemo(
-    () => [
-      {
-        id: 'chaos_archives',
-        src: '/assets/aistudio/chaos_archives.webp',
-        alt: 'Chaos des archives et paperasse manuelle',
-      },
-      {
-        id: 'souvenirs_velours',
-        src: '/assets/aistudio/souvenirs_velours.webp',
-        alt: 'Surcharge et processus administratifs fragmentés',
-      },
-      {
-        id: 'chaos_vers_serenite',
-        src: '/assets/aistudio/du_chaos_vers_serenite.webp',
-        alt: 'Du chaos vers la sérénité avec Atrium OS',
-      },
-      {
-        id: 'reseau_futuriste',
-        src: '/assets/aistudio/reseau_futuriste.webp',
-        alt: 'Réseau futuriste d’espaces de travail interconnectés',
-      },
-    ],
-    []
-  );
-
-  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
-
-  // Instant browser cache preloading to eliminate initial load latency
-  useEffect(() => {
-    PREVIEW_SLIDES.forEach((slide) => {
-      const img = new Image();
-      img.src = slide.src;
-    });
-  }, [PREVIEW_SLIDES]);
-
-  // Auto-swipe marketing showcase images smoothly every 4.5 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveSlideIndex((prev) => (prev + 1) % PREVIEW_SLIDES.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, [PREVIEW_SLIDES.length]);
-
   // Stage 2: 10 Conversational Question Cards (Indices 0 to 9)
   const [currentStep, setCurrentStep] = useState<number>(0);
   // Ref that collects every step-transition setTimeout handle so they can be
-  // cleared if the component unmounts before the 60-120 ms delay fires.
+  // cleared if the component unmounts or the user manually navigates elsewhere.
   const stepTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const isContinuePendingRef = useRef(false);
+
+  const clearStepTimers = () => {
+    stepTimers.current.forEach(clearTimeout);
+    stepTimers.current = [];
+    isContinuePendingRef.current = false;
+  };
+
+  const getContinueAnimDelayMs = () => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return 0;
+    const reduced =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tier = document.documentElement.getAttribute('data-atr-motion');
+    return reduced || tier === 'off' ? 0 : 400;
+  };
+
+  const goToStepImmediate = (step: number) => {
+    clearStepTimers();
+    setCurrentStep(step);
+  };
+
   const scheduleStep = (step: number, delay: number) => {
+    clearStepTimers();
+    if (delay <= 0) {
+      setCurrentStep(step);
+      return;
+    }
     const id = setTimeout(() => {
       stepTimers.current = stepTimers.current.filter((t) => t !== id);
+      isContinuePendingRef.current = false;
       setCurrentStep(step);
     }, delay);
     stepTimers.current.push(id);
   };
+
+  const scheduleAfterContinueSlingshot = (action: () => void) => {
+    if (isContinuePendingRef.current) return;
+    const delay = getContinueAnimDelayMs();
+    if (delay <= 0) {
+      action();
+      return;
+    }
+    isContinuePendingRef.current = true;
+    const id = setTimeout(() => {
+      stepTimers.current = stepTimers.current.filter((t) => t !== id);
+      isContinuePendingRef.current = false;
+      action();
+    }, delay);
+    stepTimers.current.push(id);
+  };
+
   useEffect(() => {
     return () => {
-      stepTimers.current.forEach(clearTimeout);
-      stepTimers.current = [];
+      clearStepTimers();
     };
   }, []);
   const [step9WideView, setStep9WideView] = useState<boolean>(false);
@@ -619,86 +620,6 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     },
   ];
 
-  // Helper Renderer: Left Card that holds ONLY the marketing showcase images with smooth auto-swipe (no switcher, no upload button, zero text)
-  const renderLeftImageCard = () => {
-    const activeSlide = PREVIEW_SLIDES[activeSlideIndex] || PREVIEW_SLIDES[0];
-
-    return (
-      <div className="sq-elev-pop h-full min-h-0">
-        <div
-          data-sq="panel"
-          data-sq-border="solid"
-          className="bg-[#181512]/80 backdrop-blur-md rounded-[var(--r-panel,28px)] [--sq-stroke:rgba(255,255,255,0.1)] p-3 flex flex-col justify-between h-full min-h-0 overflow-hidden relative group/card"
-        >
-          {/* Main Image Viewport with Spatial Momentum Transition */}
-          <div
-            data-sq="card"
-            data-sq-border="solid"
-            className="relative flex-1 min-h-0 w-full h-full rounded-[var(--r-card,16px)] overflow-hidden bg-[#100D0B] [--sq-stroke:rgba(255,255,255,0.1)] select-none"
-          >
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.div
-              key={activeSlide.id}
-              initial={{
-                opacity: 0,
-                x: isAr ? -50 : 50,
-                scale: 1.04,
-                filter: 'blur(6px)',
-              }}
-              animate={{
-                opacity: 1,
-                x: 0,
-                scale: 1,
-                filter: 'blur(0px)',
-              }}
-              exit={{
-                opacity: 0,
-                x: isAr ? 40 : -40,
-                scale: 0.96,
-                filter: 'blur(6px)',
-              }}
-              transition={{
-                duration: 0.8,
-                ease: [0.16, 1, 0.3, 1], // Apple fluid deceleration curve
-              }}
-              className="absolute inset-0 w-full h-full"
-            >
-              <img
-                src={activeSlide.src}
-                alt={activeSlide.alt || 'Atrium OS Showcase'}
-                width={1200}
-                height={1800}
-                className="w-full h-full object-cover object-center"
-                loading="eager"
-                decoding="async"
-                fetchPriority="high"
-              />
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Luxury Edge Lighting Vignette */}
-          <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.55)] rounded-[var(--r-card,16px)]" />
-
-          <div className="flex flex-col justify-between gap-[var(--s2,8px)] z-20 pointer-events-none">
-            <div className="absolute bottom-[var(--s3,12px)] inset-x-0 flex items-center justify-center gap-[var(--s2,8px)] z-20 pointer-events-none">
-              {PREVIEW_SLIDES.map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`h-[var(--s1,4px)] rounded-full transition-all duration-500 ${
-                    activeSlideIndex === idx
-                      ? 'w-[var(--s6,24px)] bg-[var(--brand-on-dark,#FF8F63)] shadow-[0_0_8px_rgba(255,138,76,0.8)]'
-                      : 'w-[var(--s2,8px)] bg-white/30'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-      </div>
-    );
-  };
-
   // Helper Renderer: Standalone SaaS Plan Tier Cards
   const renderPlanCards = (isWide: boolean) => (
     <div className={`grid ${isWide ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[var(--s3,12px)]' : 'grid-cols-2 gap-[var(--s2,8px)]'} w-full`}>
@@ -881,15 +802,49 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   );
 
   // Helper Renderer: Bottom Navigation Bar
-  const renderBottomNavigation = (withMtAuto = false) => (
-    <div className={`${withMtAuto ? 'mt-auto' : ''} pt-[var(--s3,12px)] border-t border-white/10 flex items-center justify-between gap-[var(--s3,12px)] shrink-0 w-full`}>
+  const renderBottomNavigation = (withMtAuto = false) => {
+    const continueConfig =
+      currentStep === 0
+        ? {
+            id: 'onb-step-0-continue',
+            label: undefined,
+            onClick: () => scheduleAfterContinueSlingshot(() => setCurrentStep(1)),
+          }
+        : currentStep === 2
+        ? {
+            id: 'onb-step-2-continue',
+            label: undefined,
+            onClick: () => scheduleAfterContinueSlingshot(() => setCurrentStep(3)),
+          }
+        : currentStep === 6
+        ? {
+            id: 'onb-step-6-continue',
+            label: undefined,
+            onClick: () => scheduleAfterContinueSlingshot(() => setCurrentStep(7)),
+          }
+        : currentStep === 8
+        ? {
+            id: 'onb-step-8-continue',
+            label: isAr ? 'متابعة لاختيار الخطة' : isFr ? 'Continuer (forfaits)' : 'Continue to plans',
+            onClick: () => scheduleAfterContinueSlingshot(() => setCurrentStep(9)),
+          }
+        : currentStep === 9
+        ? {
+            id: 'onb-step-9-launch',
+            label: isAr ? 'إطلاق مساحة العمل' : isFr ? 'Lancer mon espace' : 'Launch workspace',
+            onClick: () => scheduleAfterContinueSlingshot(handleLaunchWorkspace),
+          }
+        : null;
+
+    return (
+      <div className={`${withMtAuto ? 'mt-auto' : ''} pt-[var(--s3,12px)] border-t border-white/10 flex items-center justify-between gap-[var(--s3,12px)] shrink-0 w-full`}>
         {currentStep > 0 ? (
           <button
             type="button"
             data-sq="ctl-sm"
             data-sq-border="none"
-            onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
-            className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] flex items-center gap-[var(--btn-sm-gap,6px)] rounded-[var(--r-ctl-sm,10px)] t-btn text-[var(--text-dark-2,#A99E92)] hover:text-[#FFF5EE] hover:bg-white/5 transition-all cursor-pointer active:scale-95"
+            onClick={() => goToStepImmediate(Math.max(0, currentStep - 1))}
+            className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] flex items-center gap-[var(--btn-sm-gap,6px)] rounded-[var(--r-ctl-sm,10px)] t-btn text-[var(--text-dark-2,#A99E92)] hover:text-[#FFF5EE] hover:bg-white/5 transition-colors cursor-pointer active:scale-95"
           >
             <ChevronLeft className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />
             <span>{isAr ? 'السابق' : isFr ? 'Précédent' : 'Back'}</span>
@@ -898,64 +853,20 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           <div />
         )}
 
-        {/* Step 0: Continue button */}
-        {currentStep === 0 && (
+        {continueConfig && (
           <div className="ms-auto">
             <LiquidContinueButton
+              key="onb-continue-btn"
               size="md"
-              onClick={() => setCurrentStep(1)}
-              id="onb-step-0-continue"
+              onClick={continueConfig.onClick}
+              label={continueConfig.label}
+              id={continueConfig.id}
             />
           </div>
         )}
-
-        {/* Step 2: Continue button */}
-        {currentStep === 2 && (
-          <div className="ms-auto">
-            <LiquidContinueButton
-              size="md"
-              onClick={() => setCurrentStep(3)}
-              id="onb-step-2-continue"
-            />
-          </div>
-        )}
-
-        {/* Step 6: Continue button */}
-        {currentStep === 6 && (
-          <div className="ms-auto">
-            <LiquidContinueButton
-              size="md"
-              onClick={() => setCurrentStep(7)}
-              id="onb-step-6-continue"
-            />
-          </div>
-        )}
-
-        {/* Step 8: Workspace Identity Configured -> Advance to Dedicated Step 9 (Subscription Plans) */}
-        {currentStep === 8 && (
-          <div className="ms-auto">
-            <LiquidContinueButton
-              size="md"
-              onClick={() => setCurrentStep(9)}
-              label={isAr ? 'متابعة لاختيار الخطة' : isFr ? 'Continuer (forfaits)' : 'Continue to plans'}
-              id="onb-step-8-continue"
-            />
-          </div>
-        )}
-
-        {/* Step 9: Final Launch Workspace Button */}
-        {currentStep === 9 && (
-          <div className="ms-auto">
-            <LiquidContinueButton
-              size="md"
-              onClick={handleLaunchWorkspace}
-              label={isAr ? 'إطلاق مساحة العمل' : isFr ? 'Lancer mon espace' : 'Launch workspace'}
-              id="onb-step-9-launch"
-            />
-          </div>
-        )}
-    </div>
-  );
+      </div>
+    );
+  };
 
   return (
     <OnboardingBackdrop
@@ -979,7 +890,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               <div
                 data-sq="ctl"
                 data-sq-border="solid"
-                className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-white/5 [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-md shrink-0"
+                className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-white/[0.06] [--sq-stroke:rgba(255,255,255,0.1)] shrink-0"
               >
                 <div className="flex items-center gap-[var(--s2,8px)] min-w-0">
                   <span className="t-small text-white/85 truncate">
@@ -990,7 +901,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      logout();
+                      if (onSwitchAccount) onSwitchAccount();
+                      else logout();
                     }}
                     className="t-small text-[var(--brand-on-dark,#FF8F63)] hover:underline cursor-pointer"
                   >
@@ -1022,7 +934,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setCurrentStep(idx)}
+                    onClick={() => goToStepImmediate(idx)}
                     title={`Étape ${idx + 1}`}
                     className={`h-[var(--s1,4px)] rounded-full transition-all duration-300 cursor-pointer ${
                       isActive
@@ -1073,9 +985,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           /* Standard 2-Column Workstation: Left Image Card + Right Questionnaire */
           <div className="w-full flex-1 min-h-0 flex flex-col lg:flex-row justify-between items-stretch gap-6 lg:gap-10 xl:gap-16 2xl:gap-24 overflow-hidden">
             
-            {/* Left Column: Left Card Holding the Images - Docked to the Side */}
+            {/* Left Column: Isolated Marketing Showcase Card */}
             <div className="hidden lg:flex w-full lg:w-[430px] xl:w-[480px] 2xl:w-[520px] shrink-0 h-full min-h-0 flex-col">
-              {renderLeftImageCard()}
+              <OnboardingShowcaseCard isAr={isAr} />
             </div>
 
             {/* Right Column: Questionnaire - Vertically Centralized & Balanced */}
@@ -1090,7 +1002,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-white/5 [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-md shrink-0"
+                    className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-white/[0.06] [--sq-stroke:rgba(255,255,255,0.1)] shrink-0"
                   >
                     <div className="flex flex-col gap-[var(--name-sub-gap,2px)] min-w-0">
                       <span className="t-small text-white/85 truncate">
@@ -1100,7 +1012,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <button
                         type="button"
                         onClick={() => {
-                          logout();
+                          if (onSwitchAccount) onSwitchAccount();
+                          else logout();
                         }}
                         className="t-small text-[var(--brand-on-dark,#FF8F63)] hover:underline text-start cursor-pointer"
                       >
@@ -1132,7 +1045,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <button
                         key={idx}
                         type="button"
-                        onClick={() => setCurrentStep(idx)}
+                        onClick={() => goToStepImmediate(idx)}
                         title={`Étape ${idx + 1}`}
                         className={`h-[var(--s1,4px)] rounded-full transition-all duration-300 cursor-pointer ${
                           isActive
@@ -1831,7 +1744,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               data-sq="ctl"
                               data-sq-border="solid"
                               onClick={() => handleSelectTrade(trade)}
-                              className={`flex items-center justify-between gap-[var(--s2,8px)] p-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] text-start transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.98] min-h-[48px] ${
+                              className={`flex items-center justify-between gap-[var(--s2,8px)] p-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] text-start transition-[background-color,transform] duration-150 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.98] min-h-[48px] ${
                                 isSelected
                                   ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:#E8622C]'
                                   : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.22)] hover:bg-white/[0.07]'

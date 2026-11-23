@@ -17,25 +17,78 @@
 .panel {
   position: absolute;
   inset: 0 auto 0 0;
-  width: calc(var(--wx) + var(--bleed));
+  width: var(--wx);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: var(--sb-pad, 12px);
   padding: var(--sb-pad, 12px) 0;
-  background: var(--atr-side);
+  background: transparent;
   border-radius: var(--r);
-  clip-path: inset(0 calc(var(--bleed) + (1 - var(--open)) * (var(--wx) - var(--wr))) 0 0 round var(--r));
-  contain: layout paint;
+  pointer-events: none;
+  contain: layout style;
+}
+
+.root[data-open] .panel {
+  pointer-events: auto;
+}
+
+/* 3-part GPU-composited backdrop: left 34px radius cap + scaleX center fill + translating right 34px radius cap.
+   Preserves exact 34px corner radii & spring overshoot with zero clip-path or layout work per frame. */
+.panelBg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.panelCapL {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 35px;
+  border-radius: var(--r) 0 0 var(--r);
+  background: var(--atr-side);
+}
+.panelMid {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 34px;
+  width: calc(var(--wx) - var(--wr) + 2px);
+  background: var(--atr-side);
+  transform-origin: 0 50%;
+  transform: scaleX(max(0, var(--open)));
+}
+.panelCapR {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 34px;
+  width: 34px;
+  border-radius: 0 var(--r) var(--r) 0;
+  background: var(--atr-side);
+  transform: translate3d(calc((var(--wx) - var(--wr)) * max(0, var(--open))), 0, 0);
+}
+.root[data-sb-moving] .panelMid,
+.root[data-sb-moving] .panelCapR {
+  will-change: transform;
 }
 
 .brand {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: var(--s2, 8px);
   height: var(--sb-item, 44px);
   padding: 0 var(--sb-pad, 12px);
   flex: none;
+  pointer-events: none;
+}
+.root[data-open] .brand,
+.brandMark {
+  pointer-events: auto;
 }
 .brandMark {
   width: var(--sb-item, 44px);
@@ -58,6 +111,7 @@
 
 .list {
   position: relative;
+  z-index: 2;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -79,40 +133,67 @@
   flex: none;
 }
 
-/* Fluid terracotta magnetic hover pill: tracking pointer with velocity stretch */
-.magneticHl {
-  position: absolute;
-  left: var(--sb-pad, 12px);
-  /* Width tracks --open so it collapses to a 44px circle in the rail and expands with the panel */
-  width: calc(var(--sb-item, 44px) + var(--open, 0) * 176px);
-  top: 0;
-  height: var(--sb-item, 44px);
-  border-radius: 22px;
-  background: rgba(212, 82, 47, 0.18);
-  box-shadow: 0 2px 10px rgba(212, 82, 47, 0.14);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 1;
-  contain: layout paint;
-  will-change: transform, height, opacity;
-}
-
-/* Dual-spring active terracotta liquid blob */
+/* Fluid terracotta magnetic hover & active pills: 3-part GPU capsule (static geometry, compositor transforms only) */
+.magneticHl,
 .activeBlob {
   position: absolute;
   left: var(--sb-pad, 12px);
-  /* Width tracks --open so it collapses to a 44px circle in the rail and expands with the panel */
-  width: calc(var(--sb-item, 44px) + var(--open, 0) * 176px);
   top: 0;
+  width: var(--sb-item, 44px);
   height: var(--sb-item, 44px);
-  border-radius: 22px;
-  background: var(--brand-fill, #C9461F);
-  box-shadow: 0 4px 14px rgba(201, 70, 31, 0.38);
   opacity: 0;
   pointer-events: none;
+  transform-origin: center top;
+  contain: layout style;
+}
+
+.magneticHl {
+  z-index: 1;
+  --pill-bg: rgba(212, 82, 47, 0.18);
+  --pill-shadow: 0 2px 10px -2px rgba(212, 82, 47, 0.14);
+}
+
+.activeBlob {
   z-index: 2;
-  contain: layout paint;
-  will-change: transform, height;
+  --pill-bg: var(--brand-fill, #C9461F);
+  --pill-shadow: 0 4px 12px -2px rgba(201, 70, 31, 0.36);
+}
+
+.pillCapL {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 22px;
+  border-radius: 22px 0 0 22px;
+  background: var(--pill-bg);
+  box-shadow: var(--pill-shadow);
+}
+.pillMid {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 22px;
+  width: 176px;
+  background: var(--pill-bg);
+  box-shadow: var(--pill-shadow);
+  transform-origin: 0 50%;
+  transform: scaleX(clamp(0, var(--open), 1.15));
+}
+.pillCapR {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 22px;
+  width: 22px;
+  border-radius: 0 22px 22px 0;
+  background: var(--pill-bg);
+  box-shadow: var(--pill-shadow);
+  transform: translate3d(calc(176px * clamp(0, var(--open), 1.15)), 0, 0);
+}
+.root[data-sb-moving] .pillMid,
+.root[data-sb-moving] .pillCapR {
+  will-change: transform;
 }
 
 .item {
@@ -138,13 +219,19 @@
   overflow: hidden;
   transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
 }
+.root:not([data-open]) .item {
+  pointer-events: none;
+}
+.root:not([data-open]) .ico {
+  pointer-events: auto;
+}
 .list[data-live='true'] .item {
-  transition: none;
+  transition: color 130ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .item:hover { color: var(--atr-side-ink); }
 .item:hover:not([aria-current='page']) .ico svg {
   stroke: var(--brand-on-dark, #FF8F63);
-  transition: stroke 0.15s ease;
+  transition: stroke 130ms ease;
 }
 .item:hover:not([aria-current='page']) .lab {
   color: var(--atr-side-ink);
@@ -160,6 +247,7 @@
 .list[data-live='true'] .item[aria-current='page'] {
   background: transparent;
   box-shadow: none;
+  color: #ffffff;
   font-weight: 500;
 }
 .list:not([data-live]) .item[aria-current='page'] .ico svg {
@@ -170,11 +258,11 @@
   font-weight: 500;
 }
 .list[data-live='true'] .item[aria-current='page'] .lab {
-  color: inherit;
+  color: #ffffff;
   font-weight: 500;
 }
 .list[data-live='true'] .item[aria-current='page'] .ico svg {
-  stroke: currentColor;
+  stroke: #ffffff;
 }
 .list[data-live='true'] .item .lab,
 .list[data-live='true'] .item:hover .lab {
@@ -183,7 +271,6 @@
 .list[data-live='true'] .item .ico svg,
 .list[data-live='true'] .item:hover .ico svg {
   stroke: currentColor;
-  transition: none;
 }
 
 .ico {
@@ -210,8 +297,8 @@
   position: relative;
   z-index: 2;
   white-space: nowrap;
-  opacity: clamp(0, (var(--open) - 0.28 - var(--i, 0) * 0.035) * 2.4, 1);
-  transform: translateX(calc((1 - min(1, var(--open))) * -10px));
+  opacity: clamp(0, (var(--open) - 0.32 - var(--i, 0) * 0.03) * 2.6, 1);
+  transform: translate3d(calc((1 - min(1, max(0, var(--open)))) * -10px), 0, 0);
 }
 
 /* In collapsed state: prevent mouse interactions while collapsed */
@@ -239,6 +326,8 @@
   opacity: clamp(0, (var(--open) - 0.5) * 2.4, 1);
 }
 .footer {
+  position: relative;
+  z-index: 2;
   flex: none;
   padding: 0 var(--sb-pad, 12px);
   opacity: clamp(0, (var(--open) - 0.4) * 2.4, 1);
@@ -263,7 +352,7 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  transform: translateX(calc((var(--wx) - var(--wr)) * var(--open)));
+  transform: translate3d(calc((var(--wx) - var(--wr)) * var(--open)), 0, 0);
   box-shadow: 0 0 0 3px var(--atr-bg);
 }
 .edge svg {
@@ -279,7 +368,8 @@
 .edge:focus-visible { outline: 2px solid var(--atr-ink); outline-offset: 2px; }
 
 @media (forced-colors: active) {
-  .panel { border: 1px solid CanvasText; }
+  .panelBg { display: none; }
+  .panel { background: var(--atr-side); border: 1px solid CanvasText; }
   .activeBlob { display: none; }
   .item[aria-current='page'] { background: Highlight !important; color: HighlightText !important; forced-color-adjust: none; }
 }
@@ -287,12 +377,28 @@
 /* RTL layout optical adjustments */
 [dir="rtl"] .panel {
   inset: 0 0 0 auto;
-  clip-path: inset(0 0 0 calc(var(--bleed) + (1 - var(--open)) * (var(--wx) - var(--wr))) round var(--r));
+}
+[dir="rtl"] .panelCapL {
+  left: auto;
+  right: 0;
+  border-radius: 0 var(--r) var(--r) 0;
+}
+[dir="rtl"] .panelMid {
+  left: auto;
+  right: 34px;
+  transform-origin: 100% 50%;
+  transform: scaleX(max(0, var(--open)));
+}
+[dir="rtl"] .panelCapR {
+  left: auto;
+  right: 34px;
+  border-radius: var(--r) 0 0 var(--r);
+  transform: translate3d(calc((var(--wx) - var(--wr)) * -1 * max(0, var(--open))), 0, 0);
 }
 [dir="rtl"] .edge {
   left: auto;
   right: calc(var(--wr) - 11px);
-  transform: translateX(calc((var(--wx) - var(--wr)) * -1 * var(--open)));
+  transform: translate3d(calc((var(--wx) - var(--wr)) * -1 * var(--open)), 0, 0);
 }
 [dir="rtl"] .edge svg {
   transform: rotate(calc(var(--open) * -180deg + 180deg));
@@ -309,8 +415,24 @@
   left: auto;
   right: var(--sb-pad, 12px);
 }
+[dir="rtl"] .pillCapL {
+  left: auto;
+  right: 0;
+  border-radius: 0 22px 22px 0;
+}
+[dir="rtl"] .pillMid {
+  left: auto;
+  right: 22px;
+  transform-origin: 100% 50%;
+}
+[dir="rtl"] .pillCapR {
+  left: auto;
+  right: 22px;
+  border-radius: 22px 0 0 22px;
+  transform: translate3d(calc(-176px * clamp(0, var(--open), 1.15)), 0, 0);
+}
 [dir="rtl"] .lab {
-  transform: translateX(calc((1 - min(1, var(--open))) * 10px));
+  transform: translate3d(calc((1 - min(1, max(0, var(--open)))) * 10px), 0, 0);
 }
 [dir="rtl"] .badge {
   margin-left: var(--s3, 12px);

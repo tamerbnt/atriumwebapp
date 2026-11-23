@@ -1144,10 +1144,18 @@ export function UniversalDataCollection<T>({
 
   const filterKey = `${effectiveSearchQuery}|${filterValue || ''}|${effectiveSortBy}|${effectiveSortDir}|${actualItems.length}`;
 
-  const toolbarSearchHandler = (val: string) => {
-    setInternalSearchQuery(val);
-    onSearchChange?.(val);
-  };
+  const toolbarSearchHandler = useCallback(
+    (val: string) => {
+      setInternalSearchQuery(val);
+      onSearchChange?.(val);
+    },
+    [onSearchChange]
+  );
+
+  const stableKeyExtractor = useCallback(
+    (it: T) => String(keyExtractor(it)),
+    [keyExtractor]
+  );
 
   const podBridge = useContext(ScreenPodBridgeContext);
   const needsEmptyBridge = Boolean(hideToolbar && actualItems.length === 0 && podBridge);
@@ -1278,7 +1286,7 @@ export function UniversalDataCollection<T>({
         <KineticCollectionStage<T>
           scrollContainerRef={scrollContainerRef}
           items={pagedItems}
-          keyExtractor={(it) => String(keyExtractor(it))}
+          keyExtractor={stableKeyExtractor}
           columns={kineticHeaders}
           getRowData={getRowData}
           viewMode={viewMode === 'grid' ? 'grid' : 'list'}

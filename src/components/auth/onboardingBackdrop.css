@@ -68,75 +68,75 @@
 .onboarding-glow {
   position: absolute;
   border-radius: 9999px;
-  mix-blend-mode: screen;
   will-change: transform;
   pointer-events: none;
   contain: layout paint;
   transform: translateZ(0);
 }
 
-/* Glow 1: Lower-Left Deep Fiery Orange Radiant Core */
+/* Glow 1: Lower-Left Deep Fiery Orange Radiant Core (softness baked into gradient stops) */
 .glow-lower-core {
-  bottom: -12%;
-  left: 6%;
-  width: 58vw;
-  height: 58vw;
-  max-width: 720px;
-  max-height: 720px;
+  bottom: -16%;
+  left: 2%;
+  width: 66vw;
+  height: 66vw;
+  max-width: 820px;
+  max-height: 820px;
+  opacity: 0.78;
   background: radial-gradient(
     circle at center,
     var(--ob-hot) 0%,
-    var(--ob-orange) 20%,
-    var(--ob-ember) 38%,
-    rgba(120, 35, 7, 0.35) 48%,
-    transparent 62%
+    var(--ob-orange) 16%,
+    var(--ob-ember) 34%,
+    rgba(120, 35, 7, 0.36) 50%,
+    rgba(120, 35, 7, 0.12) 64%,
+    transparent 76%
   );
-  filter: blur(50px);
   animation: ob-glow-drift-1 48s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 /* Glow 2: Upper-Right Luminous Fiery Orange Accent */
 .glow-upper-right {
-  top: -10%;
-  right: -4%;
-  width: 42vw;
-  height: 42vw;
-  max-width: 520px;
-  max-height: 520px;
+  top: -14%;
+  right: -8%;
+  width: 48vw;
+  height: 48vw;
+  max-width: 600px;
+  max-height: 600px;
+  opacity: 0.72;
   background: radial-gradient(
     circle at center,
     var(--ob-peach) 0%,
-    var(--ob-hot) 18%,
-    var(--ob-orange) 36%,
-    var(--ob-ember) 52%,
-    rgba(120, 35, 7, 0.25) 60%,
-    transparent 68%
+    var(--ob-hot) 15%,
+    var(--ob-orange) 32%,
+    var(--ob-ember) 48%,
+    rgba(120, 35, 7, 0.22) 62%,
+    transparent 76%
   );
-  filter: blur(45px);
   animation: ob-glow-drift-2 54s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 /* Glow 3: Faint Mid Accent (Subtle, keeping center darkness deep) */
 .glow-mid-accent {
-  top: 42%;
-  left: 36%;
-  width: 28vw;
-  height: 28vw;
-  max-width: 360px;
-  max-height: 360px;
-  opacity: 0.45;
+  top: 40%;
+  left: 34%;
+  width: 34vw;
+  height: 34vw;
+  max-width: 440px;
+  max-height: 440px;
+  opacity: 0.38;
   background: radial-gradient(
     circle at center,
     var(--ob-hot) 0%,
-    var(--ob-orange) 24%,
-    var(--ob-ember) 48%,
-    transparent 64%
+    var(--ob-orange) 20%,
+    var(--ob-ember) 42%,
+    rgba(120, 35, 7, 0.12) 60%,
+    transparent 75%
   );
-  filter: blur(40px);
   animation: ob-glow-drift-3 42s ease-in-out infinite;
 }
 
-/* Layer 3: Fluted Ribs — 14px Pitch, Mask-Tied to Light Areas, 3px Refraction Blur */
+/* Layer 3: Fluted Ribs — 14px Pitch, Mask-Tied to Light Areas (zero fullscreen backdrop-filter) */
 .onboarding-layer-ribs {
   position: absolute;
   inset: 0;
@@ -160,8 +160,6 @@
     radial-gradient(ellipse 55% 50% at 26% 88%, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.4) 40%, transparent 62%),
     radial-gradient(ellipse 42% 42% at 88% 12%, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.35) 35%, transparent 58%),
     radial-gradient(ellipse 30% 30% at 48% 46%, rgba(0, 0, 0, 0.5) 0%, transparent 48%);
-  backdrop-filter: blur(var(--ob-blur));
-  -webkit-backdrop-filter: blur(var(--ob-blur));
 }
 
 /* Layer 4: High-Performance Static Noise Dither Texture */

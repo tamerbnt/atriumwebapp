@@ -216,6 +216,11 @@ function SidebarInner({
       onPointerLeave={intent(false, 260)}
     >
       <div className={s.panel}>
+        <div className={s.panelBg} aria-hidden="true">
+          <span className={s.panelCapL} />
+          <span className={s.panelMid} />
+          <span className={s.panelCapR} />
+        </div>
         {brand ? (
           <div
             className={s.brand}
@@ -246,8 +251,16 @@ function SidebarInner({
           onPointerMove={handleListPointer}
           onPointerLeave={onListPointerLeave}
         >
-          <span ref={magneticHlRef} className={s.magneticHl} aria-hidden="true" />
-          <span ref={activeBlobRef} className={s.activeBlob} aria-hidden="true" />
+          <span ref={magneticHlRef} className={s.magneticHl} aria-hidden="true">
+            <span className={s.pillCapL} />
+            <span className={s.pillMid} />
+            <span className={s.pillCapR} />
+          </span>
+          <span ref={activeBlobRef} className={s.activeBlob} aria-hidden="true">
+            <span className={s.pillCapL} />
+            <span className={s.pillMid} />
+            <span className={s.pillCapR} />
+          </span>
           {items.map((it, i) => (
             <li key={it.id}>
               <button

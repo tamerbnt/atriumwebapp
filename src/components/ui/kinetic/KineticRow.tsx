@@ -259,7 +259,7 @@ const KineticRowInner: React.FC<KineticRowProps> = ({
             ? '!bg-[var(--atr-hl,rgba(212,82,47,0.12))] dark:!bg-[#2A1D18] [--sq-stroke:var(--atr-acc,#d4522f)]'
             : isSelected
             ? 'bg-white dark:bg-[#22201E] [--sq-stroke:var(--atr-acc,#d4522f)]'
-            : 'bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-stroke-row)]'
+            : 'bg-white dark:bg-[#22201E] [--sq-stroke:var(--sq-css-row)]'
         }`}
       />
 

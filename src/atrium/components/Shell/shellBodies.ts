@@ -23,7 +23,17 @@ export class SidebarBody implements Body {
     if (motion.reduced || motion.instant) {
       this.snap();
       this.render();
-    } else wake(this);
+      this.root.removeAttribute('data-sb-moving');
+    } else {
+      this.root.setAttribute('data-sb-moving', '');
+      wake(this);
+    }
+  }
+  onWake(): void {
+    this.root.setAttribute('data-sb-moving', '');
+  }
+  onSleep(): void {
+    this.root.removeAttribute('data-sb-moving');
   }
   step(dt: number): void {
     this.open.t = this.target;
@@ -44,6 +54,7 @@ export class SidebarBody implements Body {
     return this.root.isConnected;
   }
   dispose(): void {
+    this.root.removeAttribute('data-sb-moving');
     unschedule(this);
   }
 }
@@ -240,6 +251,10 @@ export class SidebarHoverBody implements Body {
     this.ho.step(dt);
   }
 
+  onWake(): void {
+    this.hl.style.willChange = 'transform, opacity';
+  }
+
   render(): void {
     const s = this.hl.style;
     const op = Math.max(0, Math.min(1, this.ho.x));
@@ -249,11 +264,12 @@ export class SidebarHoverBody implements Body {
       return;
     }
     s.visibility = 'visible';
+    const baseH = this.hl.offsetHeight || 44;
     const stretch = Math.min(10, Math.abs(this.hy.v) * 0.03);
     const h = Math.max(20, this.hh.x) + stretch;
     const y = this.hy.x - stretch * 0.5;
-    s.height = `${f3(h)}px`;
-    s.transform = `translate3d(0,${f3(y)}px,0)`;
+    const scaleY = h / baseH;
+    s.transform = `translate3d(0,${f3(y)}px,0) scaleY(${f3(scaleY)})`;
   }
 
   settled(): boolean {
@@ -272,6 +288,7 @@ export class SidebarHoverBody implements Body {
   }
 
   onSleep(): void {
+    this.hl.style.willChange = '';
     if (!this.hover) {
       this.hl.style.opacity = '0';
       this.hl.style.visibility = 'hidden';
@@ -280,11 +297,10 @@ export class SidebarHoverBody implements Body {
   }
 
   dispose(): void {
+    this.hl.style.willChange = '';
     unschedule(this);
   }
 }
-
-const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
 /**
  * Sidebar active pill: dual-spring vertical liquid blob matching SegBody.
@@ -299,10 +315,9 @@ export class SidebarActiveBody implements Body {
   B = new Spring(44, 700);
   geo: Array<[number, number]> = [];
   index = -1;
+  private baseH = 44;
   private lastTransform = '';
-  private lastHeight = '';
   private lastOpacity = '';
-  private lastColors: string[] = [];
 
   constructor(
     readonly list: HTMLElement,
@@ -312,7 +327,6 @@ export class SidebarActiveBody implements Body {
 
   setOptions(opts: HTMLElement[]): void {
     this.opts = opts;
-    this.lastColors = [];
   }
 
   /** Read row geometry once on mount, resize, or item list changes — never per frame. */
@@ -335,6 +349,10 @@ export class SidebarActiveBody implements Body {
       const height = o.offsetHeight || 44;
       return [top, top + height];
     });
+
+    const measuredBlobH = this.blob?.offsetHeight || 0;
+    const firstH = this.geo[0] ? this.geo[0][1] - this.geo[0][0] : 0;
+    this.baseH = measuredBlobH > 0 ? measuredBlobH : firstH > 0 ? firstH : 44;
   }
 
   private aim(): void {
@@ -348,7 +366,6 @@ export class SidebarActiveBody implements Body {
   setIndex(j: number, animate: boolean): void {
     if (j < 0 || j >= this.geo.length) {
       this.index = -1;
-      this.clearColors();
       this.setOpacity('0');
       unschedule(this);
       return;
@@ -384,31 +401,19 @@ export class SidebarActiveBody implements Body {
     }
   }
 
-  private clearColors(): void {
-    for (let k = 0; k < this.opts.length; k++) {
-      if (this.lastColors[k] !== '') {
-        this.opts[k].style.color = '';
-        this.lastColors[k] = '';
-      }
-    }
-  }
-
   step(dt: number): void {
     this.aim();
     this.T.step(dt);
     this.B.step(dt);
 
     // Liquid surface tension cohesion clamp:
-    // Prevents the capsule from stretching into a giant noodle during long leaps.
     // Caps maximum liquid elongation to 58px (44px + 14px maximum stretch).
     const maxSpan = 58;
     if (this.B.x - this.T.x > maxSpan) {
       if (this.B.k > this.T.k) {
-        // Moving down: leading bottom edge B pulls trailing top edge T forward
         this.T.x = this.B.x - maxSpan;
         if (this.T.v < this.B.v) this.T.v = this.B.v * 0.9;
       } else {
-        // Moving up: leading top edge T pulls trailing bottom edge B upward
         this.B.x = this.T.x + maxSpan;
         if (this.B.v > this.T.v) this.B.v = this.T.v * 0.9;
       }
@@ -425,34 +430,15 @@ export class SidebarActiveBody implements Body {
     const top = Math.min(this.T.x, this.B.x);
     const bottom = Math.max(this.T.x, this.B.x);
     const height = Math.max(24, bottom - top);
+    const scaleY = height / this.baseH;
 
-    const transform = `translate3d(0,${f3(top)}px,0)`;
+    const transform =
+      Math.abs(scaleY - 1) < 0.001
+        ? `translate3d(0,${f3(top)}px,0)`
+        : `translate3d(0,${f3(top)}px,0) scaleY(${f3(scaleY)})`;
     if (transform !== this.lastTransform) {
       this.blob.style.transform = transform;
       this.lastTransform = transform;
-    }
-    const hStr = `${f3(height)}px`;
-    if (hStr !== this.lastHeight) {
-      this.blob.style.height = hStr;
-      this.lastHeight = hStr;
-    }
-
-    for (let k = 0; k < this.opts.length; k++) {
-      const g = this.geo[k];
-      if (!g) continue;
-      const span = g[1] - g[0];
-      const ov = span > 0 ? clamp((Math.min(bottom, g[1]) - Math.max(top, g[0])) / span, 0, 1) : 0;
-      const pct = Math.round(ov * 50) * 2;
-      const col =
-        pct <= 0
-          ? ''
-          : pct >= 100
-          ? '#ffffff'
-          : `color-mix(in srgb, #ffffff ${pct}%, var(--atr-side-mut))`;
-      if (col !== this.lastColors[k]) {
-        this.opts[k].style.color = col;
-        this.lastColors[k] = col;
-      }
     }
   }
 
@@ -469,16 +455,11 @@ export class SidebarActiveBody implements Body {
   }
 
   onWake(): void {
-    this.blob.style.willChange = 'transform, height';
+    this.blob.style.willChange = 'transform';
   }
 
   onSleep(): void {
     this.blob.style.willChange = '';
-    this.clearColors();
-    if (this.index >= 0 && this.opts[this.index]) {
-      this.opts[this.index].style.color = '#ffffff';
-      this.lastColors[this.index] = '#ffffff';
-    }
   }
 
   isVisible(): boolean {
@@ -486,7 +467,7 @@ export class SidebarActiveBody implements Body {
   }
 
   dispose(): void {
-    this.clearColors();
+    this.blob.style.willChange = '';
     unschedule(this);
   }
 }

@@ -63,6 +63,8 @@ import {
 } from '../../ui/kinetic';
 
 const MEMBER_COLLATOR = new Intl.Collator(undefined, { sensitivity: 'base' });
+const EMPTY_MEMBERS: Member[] = [];
+const extractMemberId = (m: Member) => m.id;
 
 const computeMemberAge = (
   dobString: any,
@@ -1608,8 +1610,8 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
         {mountCollectionStage && (
           <KineticCollectionStage<Member>
             scrollContainerRef={scrollContainerRef}
-            items={isErrorState || isBranchForbidden ? [] : sortedMembers}
-            keyExtractor={(m) => m.id}
+            items={isErrorState || isBranchForbidden ? EMPTY_MEMBERS : sortedMembers}
+            keyExtractor={extractMemberId}
             columns={stageColumns}
             getRowData={getRowData}
             viewMode={viewMode}

@@ -147,8 +147,15 @@ export const LiveSegmentedControl = React.memo(forwardRef<HTMLDivElement, LiveSe
       root.setAttribute('data-live', 'true');
 
       let ro: ResizeObserver | undefined;
+      let resizeRaf = 0;
       if (typeof ResizeObserver !== 'undefined') {
-        ro = new ResizeObserver(refresh);
+        ro = new ResizeObserver(() => {
+          if (resizeRaf) return;
+          resizeRaf = requestAnimationFrame(() => {
+            resizeRaf = 0;
+            refresh();
+          });
+        });
         ro.observe(root);
       }
 
@@ -167,6 +174,7 @@ export const LiveSegmentedControl = React.memo(forwardRef<HTMLDivElement, LiveSe
       return () => {
         active = false;
         ro?.disconnect();
+        if (resizeRaf) cancelAnimationFrame(resizeRaf);
         controller.dispose();
         controllerRef.current = null;
         root.removeAttribute('data-live');
