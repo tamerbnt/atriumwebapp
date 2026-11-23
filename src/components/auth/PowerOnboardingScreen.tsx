@@ -286,6 +286,19 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       clearStepTimers();
     };
   }, []);
+
+  const [viewportHeight, setViewportHeight] = useState<number>(() =>
+    typeof window !== 'undefined' ? window.innerHeight : 900
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onResize = () => setViewportHeight(window.innerHeight);
+    window.addEventListener('resize', onResize, { passive: true });
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  const isCompactHeight = viewportHeight < 740;
+  const isTightHeight = viewportHeight < 630;
+
   const [step9WideView, setStep9WideView] = useState<boolean>(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
@@ -321,12 +334,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(true);
 
-  // Step 8 State: Deferred Workspace Naming, Phone & Subscription Plan Switcher
+  // Step 8 & 9 State: Deferred Workspace Naming, Phone & Subscription Plan Switcher
   const [workspaceName, setWorkspaceName] = useState('Atlas Creative Studio');
   const [phone, setPhone] = useState('+213 550 12 34 56');
   const [branchAddress, setBranchAddress] = useState('14 Boulevard Didouche Mourad, Alger');
   const [wilayaCode, setWilayaCode] = useState('16');
-  const [selectedPlanTier, setSelectedPlanTier] = useState<SubscriptionPlanTier>('free');
+  const [selectedPlanTier, setSelectedPlanTier] = useState<SubscriptionPlanTier | null>(null);
   const [voucherCode, setVoucherCode] = useState('');
   const [showLicenseModal, setShowLicenseModal] = useState(false);
   const [testVoucherCopied, setTestVoucherCopied] = useState(false);
@@ -341,42 +354,52 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     scheduleStep(1, 350);
   };
 
-  // Step 1 State: Operational Challenge / Frustration
-  const [primaryFrustration, setPrimaryFrustration] = useState<
-    'scheduling' | 'inventory' | 'billing_creep' | 'postal_payments' | 'paper_records' | 'commercial_invoicing'
-  >('billing_creep');
+  type FrustrationId =
+    | 'scheduling'
+    | 'inventory'
+    | 'billing_creep'
+    | 'postal_payments'
+    | 'paper_records'
+    | 'commercial_invoicing';
+  type DailyWorkflowId =
+    | 'walkin_pos'
+    | 'appointment_schedule'
+    | 'membership_turnstile'
+    | 'project_deliverables'
+    | 'patient_queue'
+    | 'wholesale_dispatch';
+  type SettlementStyleId = 'pos_cash' | 'b2b_tva' | 'ccp_postal' | 'recurring_retainer';
 
-  // Step 2 State: Strategic Goal & Feature Blueprint Modal
-  const [selectedGoalId, setSelectedGoalId] = useState<UniversalStrategicGoalId>('goal_structure_processes');
+  // Step 1 State: Operational Challenge / Frustration (unselected initially)
+  const [primaryFrustration, setPrimaryFrustration] = useState<FrustrationId | null>(null);
+
+  // Step 2 State: Strategic Goal & Feature Blueprint Modal (unselected initially)
+  const [selectedGoalId, setSelectedGoalId] = useState<UniversalStrategicGoalId | null>(null);
   const [activeGoalModalId, setActiveGoalModalId] = useState<UniversalStrategicGoalId | null>(null);
 
-  // Step 3 State: Daily Customer & Operational Interaction
-  const [dailyWorkflow, setDailyWorkflow] = useState<
-    'walkin_pos' | 'appointment_schedule' | 'membership_turnstile' | 'project_deliverables' | 'patient_queue' | 'wholesale_dispatch'
-  >('project_deliverables');
+  // Step 3 State: Daily Customer & Operational Interaction (unselected initially)
+  const [dailyWorkflow, setDailyWorkflow] = useState<DailyWorkflowId | null>(null);
 
-  // Step 4 State: Team Scale & Working Hierarchy
-  const [teamScale, setTeamScale] = useState<OnboardingTeamScale>('small');
+  // Step 4 State: Team Scale & Working Hierarchy (unselected initially)
+  const [teamScale, setTeamScale] = useState<OnboardingTeamScale | null>(null);
 
-  // Step 5 State: Primary Payment & Settlement Flow
-  const [settlementStyle, setSettlementStyle] = useState<
-    'pos_cash' | 'b2b_tva' | 'ccp_postal' | 'recurring_retainer'
-  >('ccp_postal');
+  // Step 5 State: Primary Payment & Settlement Flow (unselected initially)
+  const [settlementStyle, setSettlementStyle] = useState<SettlementStyleId | null>(null);
 
-  // Step 6 State: Specific Business Domain & Catalog
-  const [selectedTradeId, setSelectedTradeId] = useState<string>('agency_com');
+  // Step 6 State: Specific Business Domain & Catalog (unselected initially)
+  const [selectedTradeId, setSelectedTradeId] = useState<string | null>(null);
   const [catalogSearchQuery, setCatalogSearchQuery] = useState('');
   const [selectedCatalogCategoryFilter, setSelectedCatalogCategoryFilter] = useState<string>('all');
 
-  // Step 7 State: Referral Source
-  const [referralSource, setReferralSource] = useState<string>('linkedin');
+  // Step 7 State: Referral Source (unselected initially)
+  const [referralSource, setReferralSource] = useState<string | null>(null);
 
   // Step 8 State: Category Recommendation & Manual Override
   const [manualCategoryOverride, setManualCategoryOverride] = useState<BusinessCategory | null>(null);
   const [isOverrideSelectorOpen, setIsOverrideSelectorOpen] = useState(false);
 
   // Auto-advancement transitions (Higgsfield single-selection UX: select & jump smoothly)
-  const handleSelectFrustration = (id: typeof primaryFrustration) => {
+  const handleSelectFrustration = (id: FrustrationId) => {
     setPrimaryFrustration(id);
     scheduleStep(2, 60);
   };
@@ -392,17 +415,17 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     scheduleStep(3, 60);
   };
 
-  const handleSelectWorkflow = (id: typeof dailyWorkflow) => {
+  const handleSelectWorkflow = (id: DailyWorkflowId) => {
     setDailyWorkflow(id);
     scheduleStep(4, 60);
   };
 
-  const handleSelectTeamScale = (id: typeof teamScale) => {
+  const handleSelectTeamScale = (id: OnboardingTeamScale) => {
     setTeamScale(id);
     scheduleStep(5, 60);
   };
 
-  const handleSelectSettlement = (id: typeof settlementStyle) => {
+  const handleSelectSettlement = (id: SettlementStyleId) => {
     setSettlementStyle(id);
     scheduleStep(6, 60);
   };
@@ -469,7 +492,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
     return {
       derivedCategory: bestCategory,
-      matchConfidence: 96,
+      matchConfidence: dailyWorkflow ? 96 : 85,
     };
   }, [selectedTrade, dailyWorkflow, teamScale]);
 
@@ -487,9 +510,10 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     setPaidVoucherError(null);
     const finalBusinessName = workspaceName.trim() || 'Mon Entreprise Atrium';
     const finalBranchName = 'Siège Principal';
+    const effectivePlanTier: SubscriptionPlanTier = selectedPlanTier ?? 'free';
 
     const isVoucherValid = voucherValidation && voucherValidation.isValid;
-    const isTrial = selectedPlanTier !== 'free' && !isVoucherValid;
+    const isTrial = effectivePlanTier !== 'free' && !isVoucherValid;
 
     const params: OnboardingParams = {
       fullName: fullName.trim() || 'Admin Atrium',
@@ -502,16 +526,16 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       branchAddress: branchAddress.trim() || '14 Boulevard Didouche Mourad, Alger',
       wilayaCode,
       voucherCode: isVoucherValid ? voucherCode.trim() : undefined,
-      planTier: selectedPlanTier,
+      planTier: effectivePlanTier,
       isTrial,
       onboardingContext: {
-        primaryFrustration,
-        selectedGoalId,
-        dailyWorkflow,
-        teamScale,
-        settlementStyle,
-        selectedTradeId,
-        referralSource,
+        primaryFrustration: primaryFrustration ?? undefined,
+        selectedGoalId: selectedGoalId ?? undefined,
+        dailyWorkflow: dailyWorkflow ?? undefined,
+        teamScale: teamScale ?? undefined,
+        settlementStyle: settlementStyle ?? undefined,
+        selectedTradeId: selectedTradeId ?? undefined,
+        referralSource: referralSource ?? undefined,
         wilayaCode,
       },
     };
@@ -620,118 +644,169 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     },
   ];
 
-  // Helper Renderer: Standalone SaaS Plan Tier Cards
-  const renderPlanCards = (isWide: boolean) => (
-    <div className={`grid ${isWide ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[var(--s3,12px)]' : 'grid-cols-2 gap-[var(--s2,8px)]'} w-full`}>
-      {SUBSCRIPTION_PLANS.map((plan) => {
-        const isSelected = selectedPlanTier === plan.tier;
-        const badge = isAr ? plan.badgeAr : isFr ? plan.badgeFr : plan.badgeEn;
-        const price = isAr ? plan.priceAr : isFr ? plan.priceFr : plan.priceEn;
-        const features = isAr ? plan.featuresAr : isFr ? plan.featuresFr : plan.featuresEn;
+  // Helper Renderer: Standalone SaaS Plan Tier Cards (Viewport-Adaptive)
+  const renderPlanCards = (isWide: boolean) => {
+    const visibleFeatureCount = isTightHeight || (viewportHeight < 690 && !isWide) ? 2 : isWide ? 4 : 3;
+    return (
+      <div
+        className={`grid ${
+          isWide
+            ? 'grid-cols-2 lg:grid-cols-4 gap-x-[var(--ob-grid-gap)] gap-y-[clamp(10px,1.5dvh,14px)]'
+            : 'grid-cols-2 gap-x-[var(--ob-grid-gap)] gap-y-[clamp(10px,1.5dvh,14px)]'
+        } w-full pt-[10px]`}
+      >
+        {SUBSCRIPTION_PLANS.map((plan) => {
+          const isSelected = selectedPlanTier === plan.tier;
+          const badge = isAr ? plan.badgeAr : isFr ? plan.badgeFr : plan.badgeEn;
+          const price = isAr ? plan.priceAr : isFr ? plan.priceFr : plan.priceEn;
+          const features = isAr ? plan.featuresAr : isFr ? plan.featuresFr : plan.featuresEn;
 
-        return (
-          <div
-            key={plan.tier}
-            onClick={() => {
-              setSelectedPlanTier(plan.tier);
-              setPaidVoucherError(null);
-            }}
-            data-sq="card"
-            data-sq-border="solid"
-            data-sq-stroke-w={isSelected ? '1.5' : '1'}
-            className={`flex flex-col justify-between gap-[var(--s2,8px)] ${isWide ? 'p-[var(--s3,12px)] sm:p-[var(--s4,16px)]' : 'p-[var(--s2,8px)] sm:p-[var(--s3,12px)]'} rounded-[var(--r-card,16px)] transition-all duration-200 cursor-pointer relative group text-start ${
-              isSelected
-                ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:#F4511E]'
-                : 'bg-white/[0.035] [--sq-stroke:rgba(255,255,255,0.1)] hover:[--sq-stroke:rgba(255,255,255,0.22)] hover:bg-white/[0.06]'
-            }`}
-          >
-            {/* Recommended Ribbon */}
-            {plan.isRecommended && (
-              <div className="absolute -top-[var(--s2,8px)] inset-x-0 flex justify-center pointer-events-none">
-                <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small font-semibold rounded-full bg-[var(--brand-fill,#C9461F)] text-white shadow-md">
-                  {badge}
-                </span>
-              </div>
-            )}
-
-            <div className="flex flex-col gap-[var(--s2,8px)]">
-              {/* Header row */}
-              <div className="flex items-center justify-between gap-[var(--s2,8px)]">
-                <span className={`t-small font-semibold ${
-                  isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[var(--text-dark-2,#A99E92)]'
-                }`}>
-                  {plan.isRecommended ? (isAr ? 'الأكثر اختياراً' : isFr ? 'Plus populaire' : 'Most popular') : badge}
-                </span>
-                <div
-                  className={`w-[var(--s4,16px)] h-[var(--s4,16px)] rounded-full flex items-center justify-center transition-colors shrink-0 ${
-                    isSelected ? 'bg-[var(--brand-fill,#C9461F)]' : 'bg-white/15'
-                  }`}
-                >
-                  {isSelected && <Check className="w-[var(--s3,12px)] h-[var(--s3,12px)] text-white" strokeWidth={2} />}
-                </div>
-              </div>
-
-              {/* Plan Name & Pricing */}
-              <div className="flex flex-col gap-[var(--s1,4px)]">
-                <h3 className="t-card font-medium text-[#FFF5EE]">
-                  {plan.name}
-                </h3>
-                <div className="flex items-baseline gap-[var(--num-unit-gap,6px)]">
-                  <span className="t-unit font-semibold text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
-                    {price}
-                  </span>
-                  <span className="t-cap text-[var(--text-dark-2,#A99E92)]">
-                    {isAr ? '• مدى الحياة' : isFr ? '• à vie' : '• lifetime'}
+          return (
+            <div
+              key={plan.tier}
+              onClick={() => {
+                setSelectedPlanTier(plan.tier);
+                setPaidVoucherError(null);
+              }}
+              className="relative flex flex-col min-w-0 cursor-pointer group transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
+            >
+              {/* Recommended Ribbon rendered outside data-sq="card" clip-path so it is never sliced */}
+              {plan.isRecommended && (
+                <div className="absolute -top-[10px] inset-x-0 z-20 flex justify-center pointer-events-none">
+                  <span className="inline-flex items-center h-[20px] px-[var(--pill-px,10px)] t-small font-semibold rounded-full bg-[var(--brand-fill,#C9461F)] text-white shadow-md">
+                    {badge}
                   </span>
                 </div>
-                <p className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-1">
-                  {isAr ? plan.descAr : isFr ? plan.descFr : plan.descEn}
-                </p>
-              </div>
+              )}
 
-              {/* Feature Checklist */}
-              <div className="flex flex-col gap-[var(--s1,4px)] pt-[var(--s2,8px)] border-t border-white/10">
-                {features.slice(0, isWide ? 4 : 3).map((feat, fIdx) => (
-                  <div key={fIdx} className="flex items-center gap-[var(--s2,8px)] t-cap text-[#F0DACF]">
-                    <CheckCircle2 className={`w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] shrink-0 ${
-                      isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-emerald-400'
-                    }`} strokeWidth={1.5} />
-                    <span className="truncate">{feat}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Plan Activation Status */}
-            <div className="pt-[var(--s1,4px)]">
-              <span
-                data-sq="ctl-sm"
-                data-sq-border="none"
-                className={`w-full h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] rounded-[var(--r-ctl-sm,10px)] t-btn flex items-center justify-center transition-colors ${
+              <div
+                data-sq="card"
+                data-sq-border="solid"
+                data-sq-stroke-w={isSelected ? '1.5' : '1'}
+                className={`flex-1 flex flex-col justify-between gap-[clamp(4px,0.8dvh,8px)] p-[var(--ob-card-pad)] ${
+                  plan.isRecommended ? 'pt-[calc(var(--ob-card-pad)+4px)]' : ''
+                } rounded-[var(--r-card,16px)] transition-colors duration-200 text-start ${
                   isSelected
-                    ? 'bg-[var(--brand-fill,#C9461F)] text-white font-semibold'
-                    : 'bg-white/5 group-hover:bg-white/10 text-[#F0DACF]'
+                    ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:#F4511E]'
+                    : 'bg-white/[0.035] [--sq-stroke:rgba(255,255,255,0.1)] hover:[--sq-stroke:rgba(255,255,255,0.22)] hover:bg-white/[0.06]'
                 }`}
               >
-                {isSelected
-                  ? (isAr ? 'الخطة المحددة' : isFr ? 'Formule sélectionnée' : 'Selected Plan')
-                  : (isAr ? 'اختيار' : isFr ? 'Choisir ce plan' : 'Select tier')}
-              </span>
+                <div className="flex flex-col gap-[clamp(4px,0.7dvh,8px)] min-w-0">
+                {/* Header row */}
+                <div className="flex items-center justify-between gap-[var(--s2,8px)]">
+                  <span
+                    className={`t-small font-semibold truncate ${
+                      isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[var(--text-dark-2,#A99E92)]'
+                    }`}
+                  >
+                    {plan.isRecommended ? (isAr ? 'الأكثر اختياراً' : isFr ? 'Plus populaire' : 'Most popular') : badge}
+                  </span>
+                  <div
+                    className={`w-[var(--s4,16px)] h-[var(--s4,16px)] rounded-full flex items-center justify-center transition-colors shrink-0 ${
+                      isSelected ? 'bg-[var(--brand-fill,#C9461F)]' : 'bg-white/15'
+                    }`}
+                  >
+                    {isSelected && <Check className="w-[var(--s3,12px)] h-[var(--s3,12px)] text-white" strokeWidth={2} />}
+                  </div>
+                </div>
+
+                {/* Plan Name & Pricing */}
+                <div className="flex flex-col gap-[2px] min-w-0">
+                  <div className="flex items-baseline justify-between gap-2 flex-wrap">
+                    <h3 className="t-card font-medium text-[#FFF5EE]">{plan.name}</h3>
+                    <div className="flex items-baseline gap-[4px]">
+                      <span className="t-label sm:t-unit font-semibold text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
+                        {price}
+                      </span>
+                      {!isTightHeight && (
+                        <span className="t-cap text-[var(--text-dark-2,#A99E92)] hidden sm:inline">
+                          {isAr ? '• مدى الحياة' : isFr ? '• à vie' : '• lifetime'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {!isTightHeight && (
+                    <p className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-1">
+                      {isAr ? plan.descAr : isFr ? plan.descFr : plan.descEn}
+                    </p>
+                  )}
+                </div>
+
+                {/* Feature Checklist */}
+                <div className="flex flex-col gap-[clamp(2px,0.45dvh,4px)] pt-[clamp(4px,0.7dvh,8px)] border-t border-white/10">
+                  {features.slice(0, visibleFeatureCount).map((feat, fIdx) => (
+                    <div key={fIdx} className="flex items-center gap-[var(--s2,8px)] t-cap text-[#F0DACF] min-w-0">
+                      <CheckCircle2
+                        className={`w-[14px] h-[14px] shrink-0 ${
+                          isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-emerald-400'
+                        }`}
+                        strokeWidth={1.5}
+                      />
+                      <span className="truncate">{feat}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Plan Activation Status (hidden on very tight heights so cards stay crisp) */}
+              {!isTightHeight && (
+                <div className="pt-[2px]">
+                  <span
+                    data-sq="ctl-sm"
+                    data-sq-border="none"
+                    className={`w-full h-[clamp(26px,3.6dvh,32px)] px-[var(--btn-sm-px,12px)] rounded-[var(--r-ctl-sm,10px)] t-btn flex items-center justify-center transition-colors ${
+                      isSelected
+                        ? 'bg-[var(--brand-fill,#C9461F)] text-white font-semibold'
+                        : 'bg-white/5 group-hover:bg-white/10 text-[#F0DACF]'
+                    }`}
+                  >
+                    {isSelected
+                      ? isAr
+                        ? 'الخطة المحددة'
+                        : isFr
+                        ? 'Formule sélectionnée'
+                        : 'Selected Plan'
+                      : isAr
+                      ? 'اختيار'
+                      : isFr
+                      ? 'Choisir ce plan'
+                      : 'Select tier'}
+                  </span>
+                </div>
+              )}
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+          );
+        })}
+      </div>
+    );
+  };
 
   // Helper Renderer: Voucher & Free Trial Bar
   const renderVoucherBar = () => (
-    <div className="w-full">
-      {selectedPlanTier === 'free' ? (
+    <div className="w-full shrink-0">
+      {selectedPlanTier === null ? (
         <div
           data-sq="ctl"
           data-sq-border="solid"
-          className="px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-emerald-500/10 [--sq-stroke:rgba(16,185,129,0.25)] flex items-center justify-between t-small"
+          className="px-[var(--s3,12px)] py-[clamp(6px,0.9dvh,8px)] rounded-[var(--r-ctl,12px)] bg-white/[0.03] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-between gap-[var(--s2,8px)] t-small"
+        >
+          <div className="flex items-center gap-[var(--s2,8px)] text-[var(--text-dark-2,#A99E92)]">
+            <Sparkles className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)] shrink-0" strokeWidth={1.5} />
+            <span className="t-small">
+              {isAr
+                ? 'اختر خطة أعلاه للمتابعة أو اطلب رمز ترخيص مخصص.'
+                : isFr
+                ? 'Sélectionnez une formule ci-dessus pour continuer ou saisir un code voucher.'
+                : 'Select a plan above to continue or enter a license voucher.'}
+            </span>
+          </div>
+        </div>
+      ) : selectedPlanTier === 'free' ? (
+        <div
+          data-sq="ctl"
+          data-sq-border="solid"
+          className="px-[var(--s3,12px)] py-[clamp(6px,0.9dvh,8px)] rounded-[var(--r-ctl,12px)] bg-emerald-500/10 [--sq-stroke:rgba(16,185,129,0.25)] flex items-center justify-between t-small"
         >
           <div className="flex items-center gap-[var(--s2,8px)] text-emerald-300">
             <CheckCircle2 className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-emerald-400 shrink-0" strokeWidth={1.5} />
@@ -748,28 +823,26 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         <div
           data-sq="ctl"
           data-sq-border="solid"
-          className="px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s2,8px)]"
+          className="px-[var(--s3,12px)] py-[clamp(6px,0.9dvh,8px)] rounded-[var(--r-ctl,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-[var(--s2,8px)]"
         >
-          <div className="flex items-center gap-[var(--s2,8px)] text-[#FFF5EE] t-small">
+          <div className="flex items-center gap-[var(--s2,8px)] text-[#FFF5EE] t-small min-w-0">
             <Sparkles className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)] shrink-0" strokeWidth={1.5} />
-            <span>
+            <span className="truncate">
               {isAr
-                ? `نمط تجريبي مجاني 14 يوماً مفعل تلقائياً (${selectedPlanTier.toUpperCase()}) • دخول مباشر دون دفع.`
+                ? `نمط تجريبي مجاني 14 يوماً (${selectedPlanTier.toUpperCase()}) • دخول مباشر دون دفع.`
                 : isFr
-                ? `Mode Essai Gratuit 14 Jours inclus (${selectedPlanTier.toUpperCase()}) • Accès direct illimité.`
-                : `14-Day Free Trial included (${selectedPlanTier.toUpperCase()}) • Direct full access.`}
+                ? `Essai Gratuit 14 Jours inclus (${selectedPlanTier.toUpperCase()}) • Accès direct.`
+                : `14-Day Free Trial included (${selectedPlanTier.toUpperCase()}) • Direct access.`}
             </span>
           </div>
 
           <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
-            <div className="w-40 sm:w-48">
+            <div className="w-36 sm:w-44">
               <LabelInput
                 field="voucherCode"
                 label={
                   isAr
                     ? `قسيمة (${selectedPlanTier.toUpperCase()})`
-                    : isFr
-                    ? `Voucher (${selectedPlanTier.toUpperCase()})`
                     : `Voucher (${selectedPlanTier.toUpperCase()})`
                 }
                 value={voucherCode}
@@ -837,7 +910,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         : null;
 
     return (
-      <div className={`${withMtAuto ? 'mt-auto' : ''} pt-[var(--s3,12px)] border-t border-white/10 flex items-center justify-between gap-[var(--s3,12px)] shrink-0 w-full`}>
+      <div className={`${withMtAuto ? 'mt-auto' : ''} pt-[clamp(6px,1.1dvh,12px)] border-t border-white/10 flex items-center justify-between gap-[var(--s3,12px)] shrink-0 w-full`}>
         {currentStep > 0 ? (
           <button
             type="button"
@@ -857,7 +930,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           <div className="ms-auto">
             <LiquidContinueButton
               key="onb-continue-btn"
-              size="md"
+              size={isTightHeight ? 'sm' : 'md'}
               onClick={continueConfig.onClick}
               label={continueConfig.label}
               id={continueConfig.id}
@@ -879,18 +952,18 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     >
 
       {/* Main Responsive Workstation Canvas */}
-      <main className="relative z-10 w-full max-w-[1600px] 2xl:max-w-[1780px] mx-auto px-[var(--s4,16px)] sm:px-[var(--s8,48px)] py-[var(--s2,8px)] flex-1 min-h-0 flex flex-col justify-between items-center h-[min(94vh,880px)] min-h-[620px] max-h-[880px] overflow-hidden">
+      <main className="relative z-10 w-full max-w-[1520px] mx-auto px-[clamp(16px,3vw,44px)] py-[clamp(6px,1.2dvh,16px)] flex-1 min-h-0 flex flex-col justify-center items-center overflow-hidden">
         
         {/* Workstation Body */}
         {currentStep === 9 && step9WideView ? (
           /* Step 9 Wide View: Full-Width 4-Column Layout */
-          <div className="w-full flex-1 min-h-0 flex flex-col justify-between gap-[var(--s3,12px)] overflow-hidden max-w-6xl xl:max-w-7xl mx-auto">
+          <div className="w-full h-full max-h-[820px] flex-1 min-h-0 flex flex-col justify-between gap-[var(--ob-gap)] overflow-hidden max-w-6xl xl:max-w-7xl mx-auto">
             {/* Authenticated Operator Quick Return & Switch Account Banner */}
             {isAuthenticated && (
               <div
                 data-sq="ctl"
                 data-sq-border="solid"
-                className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-white/[0.06] [--sq-stroke:rgba(255,255,255,0.1)] shrink-0"
+                className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[clamp(4px,0.7dvh,8px)] rounded-[var(--r-ctl,12px)] bg-white/[0.06] [--sq-stroke:rgba(255,255,255,0.1)] shrink-0"
               >
                 <div className="flex items-center gap-[var(--s2,8px)] min-w-0">
                   <span className="t-small text-white/85 truncate">
@@ -949,14 +1022,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             </div>
 
             <div className="flex items-center justify-between gap-[var(--s3,12px)] shrink-0">
-              <div className="flex flex-col gap-[var(--s1,4px)]">
+              <div className="flex flex-col gap-[2px] min-w-0">
                 <span className="t-small font-semibold text-[var(--brand-on-dark,#FF8F63)]">
                   {isAr ? 'المرحلة 10 من 10' : isFr ? 'Étape 10 sur 10' : 'Step 10 of 10'}
                 </span>
-                <h1 className="t-page text-white">
+                <h1 className="onboarding-title text-white">
                   {questionsMeta[9]?.title}
                 </h1>
-                {questionsMeta[9]?.subtext && (
+                {questionsMeta[9]?.subtext && !isTightHeight && (
                   <p className="t-body text-[var(--text-dark-2,#A99E92)]">
                     {questionsMeta[9]?.subtext}
                   </p>
@@ -967,44 +1040,48 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 onClick={() => setStep9WideView(false)}
                 data-sq="ctl-sm"
                 data-sq-border="solid"
-                className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-btn text-[var(--text-dark-2,#A99E92)] hover:text-white bg-white/5 hover:bg-white/10 [--sq-stroke:rgba(255,255,255,0.1)] flex items-center gap-[var(--btn-sm-gap,6px)] transition-all cursor-pointer"
+                className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-btn text-[var(--text-dark-2,#A99E92)] hover:text-white bg-white/5 hover:bg-white/10 [--sq-stroke:rgba(255,255,255,0.1)] flex items-center gap-[var(--btn-sm-gap,6px)] transition-all cursor-pointer shrink-0"
               >
                 <ImageIcon className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
                 <span>{isFr ? 'Vue avec carte visuelle' : isAr ? 'عرض مع البطاقة المرئية' : 'View with visual card'}</span>
               </button>
             </div>
 
-            <div className="w-full flex-1 min-h-0 overflow-hidden flex flex-col justify-center gap-[var(--s3,12px)] py-[var(--s1,4px)]">
+            <div className="w-full flex-1 min-h-0 flex flex-col justify-center gap-[var(--ob-gap)]">
               {renderPlanCards(true)}
               {renderVoucherBar()}
             </div>
 
-            {renderBottomNavigation(true)}
+            {renderBottomNavigation(false)}
           </div>
         ) : (
-          /* Standard 2-Column Workstation: Left Image Card + Right Questionnaire */
-          <div className="w-full flex-1 min-h-0 flex flex-col lg:flex-row justify-between items-stretch gap-6 lg:gap-10 xl:gap-16 2xl:gap-24 overflow-hidden">
+          /* Standard 2-Column Workstation: Proportional 1.05fr Image / 0.28fr Blank Center / 1fr Form */
+          <div className="w-full h-full max-h-[820px] flex-1 min-h-0 flex flex-col justify-center lg:grid lg:grid-cols-[minmax(360px,1.05fr)_minmax(56px,0.28fr)_minmax(430px,1fr)] items-stretch">
             
-            {/* Left Column: Isolated Marketing Showcase Card */}
-            <div className="hidden lg:flex w-full lg:w-[430px] xl:w-[480px] 2xl:w-[520px] shrink-0 h-full min-h-0 flex-col">
+            {/* Left Column: Larger Proportional Marketing Showcase Card */}
+            <div className="hidden lg:flex h-full min-h-0 flex-col">
               <OnboardingShowcaseCard isAr={isAr} />
             </div>
 
-            {/* Right Column: Questionnaire - Vertically Centralized & Balanced */}
+            {/* Proportional Blank Center Spacer */}
+            <div className="hidden lg:block pointer-events-none" aria-hidden="true" />
+
+            {/* Right Column: Questionnaire - 3-Zone Flex Layout */}
             <div
-              className="w-full lg:w-[540px] xl:w-[590px] 2xl:w-[640px] shrink-0 h-full min-h-0 flex flex-col justify-center overflow-hidden"
+              className="w-full max-w-[640px] lg:max-w-none mx-auto lg:mx-0 h-full min-h-0 flex flex-col justify-between gap-[var(--ob-gap)] py-[clamp(4px,1dvh,12px)] overflow-visible"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
-              <div className="w-full my-auto flex flex-col gap-[var(--s3,12px)] max-h-full overflow-hidden py-[var(--s4,16px)] pe-[var(--s1,4px)]">
+              {/* Top Chrome: Auth Banner + Step Progress + Question Title */}
+              <div className="flex flex-col gap-[var(--ob-gap)] shrink-0">
                 {/* Authenticated Operator Quick Return & Switch Account Banner */}
                 {isAuthenticated && (
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="flex items-center justify-between gap-[var(--s3,12px)] px-[var(--s3,12px)] py-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-white/[0.06] [--sq-stroke:rgba(255,255,255,0.1)] shrink-0"
+                    className="flex items-center justify-between gap-[var(--s2,8px)] px-[var(--s3,12px)] py-[clamp(4px,0.7dvh,8px)] rounded-[var(--r-ctl,12px)] bg-white/[0.06] [--sq-stroke:rgba(255,255,255,0.1)] shrink-0"
                   >
-                    <div className="flex flex-col gap-[var(--name-sub-gap,2px)] min-w-0">
+                    <div className="flex flex-wrap items-center gap-x-[var(--s2,8px)] gap-y-[2px] min-w-0">
                       <span className="t-small text-white/85 truncate">
                         {isAr ? 'أنت متصل حالياً:' : isFr ? 'Connecté en tant que :' : 'Signed in as:'}{' '}
                         <span className="text-white font-semibold">{currentUser?.fullName}</span>
@@ -1059,8 +1136,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   })}
                 </div>
 
-                {/* Right Column Header: Title and Step Badge */}
-                <div className="flex flex-col gap-[var(--ph-sub-gap,4px)] shrink-0">
+                {/* Right Column Header: Eyebrow + Full-Width Display Title */}
+                <div className="flex flex-col gap-[2px] shrink-0">
                   <div className="flex items-center justify-between gap-[var(--s2,8px)]">
                     <span className="t-small font-semibold text-[var(--brand-on-dark,#FF8F63)]">
                       {isAr ? `المرحلة ${currentStep + 1} من 10` : isFr ? `Étape ${currentStep + 1} sur 10` : `Step ${currentStep + 1} of 10`}
@@ -1069,33 +1146,34 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <button
                         type="button"
                         onClick={() => setStep9WideView(true)}
-                        data-sq="check"
+                        data-sq="ctl-sm"
                         data-sq-border="solid"
-                        className="h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] t-btn text-[var(--text-dark-2,#A99E92)] hover:text-white bg-white/5 hover:bg-white/10 [--sq-stroke:rgba(255,255,255,0.1)] flex items-center gap-[var(--btn-sm-gap,6px)] transition-all cursor-pointer"
+                        className="h-[28px] px-[var(--btn-sm-px,12px)] rounded-[var(--r-ctl-sm,10px)] t-btn text-[var(--text-dark-2,#A99E92)] hover:text-white bg-white/5 hover:bg-white/10 [--sq-stroke:rgba(255,255,255,0.1)] flex items-center gap-[var(--btn-sm-gap,6px)] transition-all cursor-pointer shrink-0"
                       >
                         <Maximize2 className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
-                        <span>{isFr ? 'Plein écran (4 colonnes)' : isAr ? 'شاشة كاملة (4 أعمدة)' : 'Full screen (4 columns)'}</span>
+                        <span className="hidden sm:inline">{isFr ? 'Plein écran (4 colonnes)' : isAr ? 'شاشة كاملة (4 أعمدة)' : 'Full screen (4 columns)'}</span>
                       </button>
                     )}
                   </div>
-                  <h1 className="t-page text-white">
+                  <h1 className="onboarding-title text-white">
                     {questionsMeta[currentStep]?.title}
                   </h1>
-                  {questionsMeta[currentStep]?.subtext && (
-                    <p className="t-body text-[var(--text-dark-2,#A99E92)]">
+                  {questionsMeta[currentStep]?.subtext && !isTightHeight && (
+                    <p className="t-body text-[var(--text-dark-2,#A99E92)] line-clamp-2">
                       {questionsMeta[currentStep]?.subtext}
                     </p>
                   )}
                 </div>
+              </div>
 
-                {/* Right Column Active Question Content Canvas */}
-                <div className="w-full py-[var(--s1,4px)]">
+              {/* Right Column Active Question Content Canvas (Flexible Middle Zone) */}
+              <div className={`w-full flex-1 min-h-0 flex flex-col ${currentStep === 6 ? 'justify-start' : 'justify-center'} py-[2px]`}>
               
               {/* ------------------------------------------------------------- */}
               {/* STEP 0: GOOGLE SSO OR WORK EMAIL VIA PROPRIETARY LABELINPUT   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 0 && (
-                <div className="flex flex-col gap-[var(--s3,12px)] w-full">
+                <div className="flex flex-col gap-[var(--ob-gap)] w-full">
                   {/* Primary Google SSO One-Click Experience */}
                   <button
                     type="button"
@@ -1103,7 +1181,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     data-sq-border="none"
                     onClick={handleGoogleLogin}
                     disabled={isGoogleLoading}
-                    className="w-full h-[var(--btn-h,40px)] px-[var(--btn-px,16px)] rounded-[var(--r-ctl,12px)] bg-white hover:bg-neutral-100 text-black t-btn font-semibold transition-all flex items-center justify-center gap-[var(--btn-icon-gap,8px)] cursor-pointer disabled:opacity-75 active:scale-[0.99]"
+                    className="w-full h-[clamp(34px,4.8dvh,40px)] px-[var(--btn-px,16px)] rounded-[var(--r-ctl,12px)] bg-white hover:bg-neutral-100 text-black t-btn font-semibold transition-all flex items-center justify-center gap-[var(--btn-icon-gap,8px)] cursor-pointer disabled:opacity-75 active:scale-[0.99]"
                   >
                     {isGoogleLoading ? (
                       <div className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] border-2 border-neutral-700 border-t-transparent rounded-full animate-spin" />
@@ -1145,14 +1223,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   </div>
 
                   {/* Proprietary LabelInput Text Boxes */}
-                  <div className="flex flex-col gap-[var(--s3,12px)]">
+                  <div className="flex flex-col gap-[var(--ob-gap)]">
                     <LabelInput
                       field="fullName"
                       label={isAr ? 'الاسم واللقب للمسؤول' : isFr ? 'Nom & prénom du responsable' : 'Full Name'}
                       value={fullName}
                       onChange={(val) => setFullName(String(val))}
                       prefix={<User className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
-                      height={40}
+                      height={isCompactHeight ? 36 : 40}
                       corner={12}
                     />
 
@@ -1163,7 +1241,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       value={email}
                       onChange={(val) => setEmail(String(val))}
                       prefix={<Mail className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
-                      height={40}
+                      height={isCompactHeight ? 36 : 40}
                       corner={12}
                     />
 
@@ -1174,7 +1252,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       value={password}
                       onChange={(val) => setPassword(String(val))}
                       prefix={<Lock className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
-                      height={40}
+                      height={isCompactHeight ? 36 : 40}
                       corner={12}
                     />
                   </div>
@@ -1203,7 +1281,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 1: OPERATIONAL FRUSTRATION / CHALLENGE                   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 1 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--card-gap,12px)] w-full">
+                <div className="grid grid-cols-2 gap-[var(--ob-grid-gap)] w-full">
                   {[
                     {
                       id: 'scheduling' as const,
@@ -1251,7 +1329,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         data-sq="card"
                         data-sq-border="solid"
                         onClick={() => handleSelectFrustration(item.id)}
-                        className={`flex flex-col text-start p-[var(--s3,12px)] sm:p-[var(--s4,16px)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] min-h-[88px] justify-between gap-[var(--s2,8px)] ${
+                        className={`flex flex-col text-start p-[var(--ob-card-pad)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] justify-between gap-[clamp(4px,0.8dvh,8px)] min-w-0 ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
                             : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
@@ -1261,7 +1339,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           <div
                             data-sq="ctl-sm"
                             data-sq-border="none"
-                            className={`w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
+                            className={`w-[clamp(26px,3.6dvh,32px)] h-[clamp(26px,3.6dvh,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[var(--brand-on-dark,#FF8F63)]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
@@ -1275,13 +1353,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             {isSelected && <Check className="w-[var(--s3,12px)] h-[var(--s3,12px)] text-white" strokeWidth={2} />}
                           </div>
                         </div>
-                        <div className="flex flex-col gap-[var(--s1,4px)]">
+                        <div className="flex flex-col gap-[2px]">
                           <span className={`t-label font-semibold transition-colors ${
                             isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[#FFF5EE]'
                           }`}>
                             {item.title}
                           </span>
-                          <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                          {!isTightHeight && (
+                            <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                          )}
                         </div>
                       </button>
                     );
@@ -1293,8 +1373,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 2: WHAT DO YOU WANT TO ACHIEVE (FEATURE BLUEPRINT MODAL) */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 2 && (
-                <div className="flex flex-col gap-[var(--s2,8px)] w-full">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--card-gap,12px)]">
+                <div className="flex flex-col gap-[var(--ob-gap)] w-full">
+                  <div className="grid grid-cols-2 gap-[var(--ob-grid-gap)]">
                     {[
                       {
                         id: 'goal_structure_processes' as const,
@@ -1349,24 +1429,24 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           data-sq="card"
                           data-sq-border="solid"
                           onClick={() => handleConfirmGoalAndContinue(goal.id)}
-                          className={`p-[var(--s3,12px)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out flex flex-col justify-between gap-[var(--s2,8px)] cursor-pointer group hover:scale-[1.015] active:scale-[0.99] ${
+                          className={`p-[var(--ob-card-pad)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out flex flex-col justify-between gap-[clamp(4px,0.8dvh,8px)] cursor-pointer group hover:scale-[1.015] active:scale-[0.99] min-w-0 ${
                             isSelected
                               ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
                               : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
                           }`}
                         >
-                          <div className="flex flex-col gap-[var(--s2,8px)]">
+                          <div className="flex flex-col gap-[clamp(4px,0.7dvh,8px)]">
                             <div className="flex items-center justify-between gap-[var(--s2,8px)]">
                               <div
                                 data-sq="ctl-sm"
                                 data-sq-border="none"
-                                className={`w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
+                                className={`w-[clamp(26px,3.6dvh,32px)] h-[clamp(26px,3.6dvh,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
                                   isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[var(--brand-on-dark,#FF8F63)]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                                 }`}
                               >
                                 <Icon className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />
                               </div>
-                              <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small text-[var(--text-dark-2,#A99E92)] rounded-full bg-white/[0.08]">
+                              <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small text-[var(--text-dark-2,#A99E92)] rounded-full bg-white/[0.08] truncate">
                                 {goal.badge}
                               </span>
                             </div>
@@ -1375,7 +1455,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             }`}>
                               {goal.title}
                             </h3>
-                            <p className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{goal.summary}</p>
+                            {!isTightHeight && (
+                              <p className={`t-cap text-[var(--text-dark-2,#A99E92)] ${isCompactHeight ? 'line-clamp-1' : 'line-clamp-2'}`}>
+                                {goal.summary}
+                              </p>
+                            )}
                           </div>
 
                           <div className="flex items-center gap-[var(--s2,8px)]">
@@ -1387,13 +1471,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                                 e.stopPropagation();
                                 handleOpenGoalModal(goal.id);
                               }}
-                              className="flex-1 h-[var(--btn-sm-h,32px)] px-[var(--btn-sm-px,12px)] flex items-center justify-center gap-[var(--btn-sm-gap,6px)] rounded-[var(--r-ctl-sm,10px)] bg-white/5 hover:bg-white/10 text-[#F0DACF] hover:text-white t-btn [--sq-stroke:rgba(255,255,255,0.12)] hover:[--sq-stroke:rgba(255,255,255,0.25)] transition-all cursor-pointer group/btn"
+                              className="flex-1 h-[clamp(26px,3.6dvh,32px)] px-[var(--btn-sm-px,12px)] flex items-center justify-center gap-[var(--btn-sm-gap,6px)] rounded-[var(--r-ctl-sm,10px)] bg-white/5 hover:bg-white/10 text-[#F0DACF] hover:text-white t-btn [--sq-stroke:rgba(255,255,255,0.12)] hover:[--sq-stroke:rgba(255,255,255,0.25)] transition-all cursor-pointer group/btn"
                             >
-                              <Eye className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)] group-hover/btn:text-white" strokeWidth={1.5} />
-                              <span>{isAr ? 'عرض المخطط التنفيذي' : isFr ? 'Voir le schéma directeur' : 'Inspect Blueprint'}</span>
+                              <Eye className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)] group-hover/btn:text-white shrink-0" strokeWidth={1.5} />
+                              <span className="truncate">{isAr ? 'عرض المخطط التنفيذي' : isFr ? 'Voir le schéma directeur' : 'Inspect Blueprint'}</span>
                             </button>
                             <div
-                              className={`w-[var(--btn-sm-h,32px)] h-[var(--btn-sm-h,32px)] rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                              className={`w-[clamp(26px,3.6dvh,32px)] h-[clamp(26px,3.6dvh,32px)] rounded-full flex items-center justify-center shrink-0 transition-colors ${
                                 isSelected ? 'bg-[var(--brand-fill,#C9461F)] text-white' : 'bg-white/10 text-[var(--text-dark-2,#A99E92)] group-hover:bg-white/20'
                               }`}
                               title={isAr ? 'اختيار ومتابعة' : isFr ? 'Sélectionner & continuer' : 'Select & continue'}
@@ -1405,13 +1489,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       );
                     })}
                   </div>
-                  <p className="text-center t-cap text-[var(--text-dark-2,#A99E92)]">
-                    {isAr
-                      ? '💡 انقر على البطاقة للمتابعة الفورية، أو اضغط "عرض المخطط التنفيذي" لمعاينة الآليات والأدوات المدمجة'
-                      : isFr
-                      ? '💡 Cliquez sur une carte pour continuer, ou sur « Voir le schéma directeur » pour inspecter les outils réels'
-                      : '💡 Click any card to proceed, or click "Inspect Blueprint" to examine real platform tools and mechanisms'}
-                  </p>
+                  {!isTightHeight && (
+                    <p className="text-center t-cap text-[var(--text-dark-2,#A99E92)]">
+                      {isAr
+                        ? '💡 انقر على البطاقة للمتابعة الفورية، أو اضغط "عرض المخطط التنفيذي" لمعاينة الآليات والأدوات المدمجة'
+                        : isFr
+                        ? '💡 Cliquez sur une carte pour continuer, ou sur « Voir le schéma directeur » pour inspecter les outils réels'
+                        : '💡 Click any card to proceed, or click "Inspect Blueprint" to examine real platform tools and mechanisms'}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -1419,7 +1505,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 3: DAILY CUSTOMER & OPERATIONAL INTERACTION              */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 3 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--card-gap,12px)] w-full">
+                <div className="grid grid-cols-2 gap-[var(--ob-grid-gap)] w-full">
                   {[
                     {
                       id: 'walkin_pos' as const,
@@ -1467,7 +1553,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         data-sq="card"
                         data-sq-border="solid"
                         onClick={() => handleSelectWorkflow(item.id)}
-                        className={`flex flex-col text-start p-[var(--s3,12px)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] gap-[var(--s2,8px)] ${
+                        className={`flex flex-col text-start p-[var(--ob-card-pad)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] gap-[clamp(4px,0.8dvh,8px)] min-w-0 ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
                             : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
@@ -1477,7 +1563,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           <div
                             data-sq="ctl-sm"
                             data-sq-border="none"
-                            className={`w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
+                            className={`w-[clamp(26px,3.6dvh,32px)] h-[clamp(26px,3.6dvh,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[var(--brand-on-dark,#FF8F63)]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
@@ -1491,13 +1577,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             {isSelected && <Check className="w-[var(--s3,12px)] h-[var(--s3,12px)] text-white" strokeWidth={2} />}
                           </div>
                         </div>
-                        <div className="flex flex-col gap-[var(--s1,4px)]">
+                        <div className="flex flex-col gap-[2px]">
                           <span className={`t-label font-semibold transition-colors ${
                             isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[#FFF5EE]'
                           }`}>
                             {item.title}
                           </span>
-                          <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                          {!isTightHeight && (
+                            <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                          )}
                         </div>
                       </button>
                     );
@@ -1509,7 +1597,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 4: TEAM SCALE & WORKING HIERARCHY                        */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 4 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--card-gap,12px)] w-full">
+                <div className="grid grid-cols-2 gap-[var(--ob-grid-gap)] w-full">
                   {[
                     {
                       id: 'solo' as const,
@@ -1549,7 +1637,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         data-sq="card"
                         data-sq-border="solid"
                         onClick={() => handleSelectTeamScale(item.id)}
-                        className={`flex flex-col text-start p-[var(--s3,12px)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] gap-[var(--s2,8px)] ${
+                        className={`flex flex-col text-start p-[var(--ob-card-pad)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] gap-[clamp(4px,0.8dvh,8px)] min-w-0 ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
                             : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
@@ -1559,7 +1647,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           <div
                             data-sq="ctl-sm"
                             data-sq-border="none"
-                            className={`w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
+                            className={`w-[clamp(26px,3.6dvh,32px)] h-[clamp(26px,3.6dvh,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[var(--brand-on-dark,#FF8F63)]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
@@ -1575,13 +1663,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             {item.badge}
                           </span>
                         </div>
-                        <div className="flex flex-col gap-[var(--s1,4px)]">
+                        <div className="flex flex-col gap-[2px]">
                           <span className={`t-label font-semibold transition-colors ${
                             isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[#FFF5EE]'
                           }`}>
                             {item.title}
                           </span>
-                          <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                          {!isTightHeight && (
+                            <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                          )}
                         </div>
                       </button>
                     );
@@ -1593,7 +1683,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 5: PRIMARY PAYMENT & SETTLEMENT FLOW                     */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 5 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--card-gap,12px)] w-full">
+                <div className="grid grid-cols-2 gap-[var(--ob-grid-gap)] w-full">
                   {[
                     {
                       id: 'pos_cash' as const,
@@ -1629,7 +1719,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         data-sq="card"
                         data-sq-border="solid"
                         onClick={() => handleSelectSettlement(item.id)}
-                        className={`flex flex-col text-start p-[var(--s3,12px)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] gap-[var(--s2,8px)] ${
+                        className={`flex flex-col text-start p-[var(--ob-card-pad)] rounded-[var(--r-card,16px)] transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] gap-[clamp(4px,0.8dvh,8px)] min-w-0 ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] [--sq-stroke:rgba(255,255,255,0.2)]'
                             : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:bg-white/[0.07]'
@@ -1639,7 +1729,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           <div
                             data-sq="ctl-sm"
                             data-sq-border="none"
-                            className={`w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
+                            className={`w-[clamp(26px,3.6dvh,32px)] h-[clamp(26px,3.6dvh,32px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[var(--brand-on-dark,#FF8F63)]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
@@ -1653,13 +1743,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             {isSelected && <Check className="w-[var(--s3,12px)] h-[var(--s3,12px)] text-white" strokeWidth={2} />}
                           </div>
                         </div>
-                        <div className="flex flex-col gap-[var(--s1,4px)]">
+                        <div className="flex flex-col gap-[2px]">
                           <span className={`t-label font-semibold transition-colors ${
                             isSelected ? 'text-[var(--brand-on-dark,#FF8F63)]' : 'text-[#FFF5EE]'
                           }`}>
                             {item.title}
                           </span>
-                          <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                          {!isTightHeight && (
+                            <span className="t-cap text-[var(--text-dark-2,#A99E92)] line-clamp-2">{item.desc}</span>
+                          )}
                         </div>
                       </button>
                     );
@@ -1671,12 +1763,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 6: SPECIFIC BUSINESS DOMAIN & 160+ CATALOG SEARCH        */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 6 && (
-                <div className="flex flex-col gap-[var(--s3,12px)] w-full">
+                <div className="flex flex-col gap-[var(--ob-gap)] w-full h-full flex-1 min-h-0">
                   {/* Search Input Box & Live Match Counter */}
                   <div
                     data-sq="ctl"
                     data-sq-border="solid"
-                    className="relative h-[var(--btn-h,40px)] rounded-[var(--r-ctl,12px)] bg-white/[0.05] [--sq-stroke:rgba(255,255,255,0.15)] focus-within:[--sq-stroke:#E8622C] flex items-center px-[var(--s3,12px)] gap-[var(--s2,8px)]"
+                    className="relative h-[clamp(34px,4.8dvh,40px)] rounded-[var(--r-ctl,12px)] bg-white/[0.05] [--sq-stroke:rgba(255,255,255,0.15)] focus-within:[--sq-stroke:#E8622C] flex items-center px-[var(--s3,12px)] gap-[var(--s2,8px)] shrink-0"
                   >
                     <Search className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)] pointer-events-none shrink-0" strokeWidth={1.5} />
                     <input
@@ -1690,7 +1782,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           ? 'Recherchez votre métier : cabinet dentaire, imprimerie, agence, salle de sport...'
                           : 'Search trade: dental clinic, bakery, gym, agency, farm, auto repair...'
                       }
-                      className="flex-1 bg-transparent border-0 t-body text-[#FFF5EE] placeholder-[var(--text-dark-2,#A99E92)]/60 outline-none"
+                      className="flex-1 min-w-0 bg-transparent border-0 t-body text-[#FFF5EE] placeholder-[var(--text-dark-2,#A99E92)]/60 outline-none"
                     />
                     <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
                       {catalogSearchQuery && (
@@ -1709,7 +1801,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   </div>
 
                   {/* Curated Sector Filter Chips (All 16 Verticals, Fluid Scrollable Bar) */}
-                  <div className="flex items-center gap-[var(--s2,8px)] overflow-x-auto pb-[var(--s1,4px)] t-small scrollbar-none shrink-0">
+                  <div className="flex items-center gap-[var(--s2,8px)] overflow-x-auto pb-[2px] t-small scrollbar-none shrink-0">
                     {CATALOG_SECTORS.map((cat) => {
                       const isFilterActive = selectedCatalogCategoryFilter === cat.id;
                       return (
@@ -1729,8 +1821,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     })}
                   </div>
 
-                  {/* Trades Grid Container (Scrollable Multi-column, Custom Scrollbar) */}
-                  <div data-sq="card" data-sq-border="none" className="overflow-y-auto pe-[var(--s1,4px)] h-[210px] max-h-[210px] focus:outline-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
+                  {/* Trades Grid Container (Adapts dynamically to available height) */}
+                  <div data-sq="card" data-sq-border="none" className="overflow-y-auto pe-[var(--s1,4px)] flex-1 min-h-[120px] focus:outline-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
                     {filteredCatalogTrades.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[var(--s2,8px)]">
                         {filteredCatalogTrades.map((trade) => {
@@ -1744,7 +1836,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               data-sq="ctl"
                               data-sq-border="solid"
                               onClick={() => handleSelectTrade(trade)}
-                              className={`flex items-center justify-between gap-[var(--s2,8px)] p-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] text-start transition-[background-color,transform] duration-150 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.98] min-h-[48px] ${
+                              className={`flex items-center justify-between gap-[var(--s2,8px)] p-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] text-start transition-[background-color,transform] duration-150 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.98] min-h-[44px] ${
                                 isSelected
                                   ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:#E8622C]'
                                   : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] hover:[--sq-stroke:rgba(255,255,255,0.22)] hover:bg-white/[0.07]'
@@ -1812,11 +1904,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               )}
 
               {/* ------------------------------------------------------------- */}
-              {/* STEP 7: HOW DID YOU HEAR ABOUT ATRIUM? (ZERO SCROLL 3x2 GRID) */}
+              {/* STEP 7: HOW DID YOU HEAR ABOUT ATRIUM? (ZERO SCROLL GRID)     */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 7 && (
                 <div className="w-full">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-[var(--card-gap,12px)]">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-[var(--ob-grid-gap)]">
                     {REFERRAL_SOURCES.map((src) => {
                       const isSelected = referralSource === src.id;
                       const label = isAr ? src.labelAr : isFr ? src.labelFr : src.labelEn;
@@ -1827,7 +1919,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           data-sq="ctl"
                           data-sq-border="solid"
                           onClick={() => handleSelectReferral(src.id)}
-                          className={`flex items-center gap-[var(--s2,8px)] p-[var(--s3,12px)] rounded-[var(--r-ctl,12px)] t-label transition-all duration-200 ease-out cursor-pointer hover:scale-[1.015] active:scale-[0.99] ${
+                          className={`flex items-center gap-[var(--s2,8px)] p-[var(--ob-card-pad)] rounded-[var(--r-ctl,12px)] t-label transition-all duration-200 ease-out cursor-pointer hover:scale-[1.015] active:scale-[0.99] min-w-0 ${
                             isSelected
                               ? 'bg-[rgba(232,98,44,0.12)] [--sq-stroke:rgba(255,255,255,0.2)] text-[var(--brand-on-dark,#FF8F63)]'
                               : 'bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.08)] text-[#F0DACF] hover:[--sq-stroke:rgba(255,255,255,0.2)] hover:text-white'
@@ -1847,88 +1939,92 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 8: WORKSPACE IDENTITY & SUBSCRIPTION PLAN SWITCHER       */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 8 && (
-                <div className="flex flex-col gap-[var(--s2,8px)] w-full">
-                  {/* Synthesis Vertical Match Pill */}
-                  <div
-                    data-sq="ctl"
-                    data-sq-border="solid"
-                    className="p-[var(--s3,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-sm flex items-center justify-between gap-[var(--s3,12px)]"
-                  >
-                    <div className="flex items-center gap-[var(--s2,8px)] min-w-0">
-                      <div
-                        data-sq="ctl-sm"
-                        data-sq-border="solid"
-                        className="w-[var(--tile-s,32px)] h-[var(--tile-s,32px)] bg-[rgba(232,98,44,0.12)] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-center shrink-0"
-                      >
-                        <Sparkles className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
-                      </div>
-                      <div className="min-w-0 flex flex-col gap-[var(--name-sub-gap,2px)]">
-                        <div className="t-small font-semibold text-[var(--brand-on-dark,#FF8F63)] truncate">
-                          {isAr ? 'النظام المقترح وفق نشاطك' : isFr ? 'Système métier calibré' : 'Calibrated vertical engine'}
-                        </div>
-                        <div className="t-label font-semibold text-[#FFF5EE] truncate">
-                          {selectedTrade ? (isAr ? selectedTrade.name.ar : isFr ? selectedTrade.name.fr : selectedTrade.name.en) : activeCategoryMeta.title}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
-                      <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small font-semibold rounded-full bg-emerald-500/15 text-emerald-400 tabular-nums">
-                        {matchConfidence} % Match
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setIsOverrideSelectorOpen(!isOverrideSelectorOpen)}
-                        className="p-[var(--s1,4px)] text-[var(--text-dark-2,#A99E92)] hover:text-white transition-colors cursor-pointer"
-                        title={isAr ? 'تغيير يدوي' : isFr ? 'Changer' : 'Change'}
-                      >
-                        {isOverrideSelectorOpen ? <ChevronUp className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} /> : <ChevronDown className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Manual Category Override Dropdown (If expanded, Zero Scroll Grid) */}
-                  {isOverrideSelectorOpen && (
+                <div className="flex flex-col gap-[var(--ob-gap)] w-full">
+                  {/* Synthesis Vertical Match Pill + Floating Popover Override */}
+                  <div className="relative">
                     <div
                       data-sq="ctl"
                       data-sq-border="solid"
-                      className="p-[var(--s2,8px)] bg-black/80 [--sq-stroke:rgba(255,255,255,0.1)] grid grid-cols-2 sm:grid-cols-4 gap-[var(--s1,4px)] t-small backdrop-blur-md"
+                      className="p-[var(--ob-card-pad)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.1)] backdrop-blur-sm flex items-center justify-between gap-[var(--s3,12px)]"
                     >
-                      {(Object.keys(CATEGORY_METADATA) as BusinessCategory[]).map((catKey) => {
-                        const meta = CATEGORY_METADATA[catKey];
-                        const isPicked = activeCategory === catKey;
-                        return (
-                          <button
-                            key={catKey}
-                            type="button"
-                            onClick={() => {
-                              setManualCategoryOverride(catKey);
-                              setIsOverrideSelectorOpen(false);
-                            }}
-                            data-sq="ctl-sm"
-                            data-sq-border="none"
-                            className={`w-full h-[var(--btn-sm-h,32px)] px-[var(--s2,8px)] flex items-center justify-between gap-[var(--s1,4px)] text-start transition-colors cursor-pointer ${
-                              isPicked
-                                ? 'bg-[var(--brand-fill,#C9461F)] text-white font-semibold'
-                                : 'hover:bg-white/10 text-[#F0DACF]'
-                            }`}
-                          >
-                            <span className="truncate">{meta.title}</span>
-                            {isPicked && <Check className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-white shrink-0" strokeWidth={1.5} />}
-                          </button>
-                        );
-                      })}
+                      <div className="flex items-center gap-[var(--s2,8px)] min-w-0">
+                        <div
+                          data-sq="ctl-sm"
+                          data-sq-border="solid"
+                          className="w-[clamp(28px,3.8dvh,32px)] h-[clamp(28px,3.8dvh,32px)] bg-[rgba(232,98,44,0.12)] [--sq-stroke:rgba(255,255,255,0.1)] flex items-center justify-center shrink-0"
+                        >
+                          <Sparkles className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />
+                        </div>
+                        <div className="min-w-0 flex flex-col gap-[var(--name-sub-gap,2px)]">
+                          <div className="t-small font-semibold text-[var(--brand-on-dark,#FF8F63)] truncate">
+                            {isAr ? 'النظام المقترح وفق نشاطك' : isFr ? 'Système métier calibré' : 'Calibrated vertical engine'}
+                          </div>
+                          <div className="t-label font-semibold text-[#FFF5EE] truncate">
+                            {selectedTrade ? (isAr ? selectedTrade.name.ar : isFr ? selectedTrade.name.fr : selectedTrade.name.en) : activeCategoryMeta.title}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-[var(--s2,8px)] shrink-0">
+                        <span className="inline-flex items-center h-[var(--badge-h,22px)] px-[var(--pill-px,10px)] t-small font-semibold rounded-full bg-emerald-500/15 text-emerald-400 tabular-nums">
+                          {matchConfidence} % Match
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsOverrideSelectorOpen(!isOverrideSelectorOpen)}
+                          className="p-[var(--s1,4px)] text-[var(--text-dark-2,#A99E92)] hover:text-white transition-colors cursor-pointer"
+                          title={isAr ? 'تغيير يدوي' : isFr ? 'Changer' : 'Change'}
+                        >
+                          {isOverrideSelectorOpen ? <ChevronUp className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} /> : <ChevronDown className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)]" strokeWidth={1.5} />}
+                        </button>
+                      </div>
                     </div>
-                  )}
+
+                    {/* Manual Category Override Floating Popover (Wrapper omits data-sq so squircleMasks position:relative never overrides absolute) */}
+                    {isOverrideSelectorOpen && (
+                      <div className="absolute inset-x-0 top-full mt-1.5 z-40">
+                        <div
+                          data-sq="ctl"
+                          data-sq-border="solid"
+                          className="p-[var(--s2,8px)] rounded-[var(--r-ctl,12px)] bg-[#14110F]/95 [--sq-stroke:rgba(255,255,255,0.16)] shadow-2xl grid grid-cols-2 sm:grid-cols-4 gap-[var(--s1,4px)] t-small backdrop-blur-md"
+                        >
+                          {(Object.keys(CATEGORY_METADATA) as BusinessCategory[]).map((catKey) => {
+                            const meta = CATEGORY_METADATA[catKey];
+                            const isPicked = activeCategory === catKey;
+                            return (
+                              <button
+                                key={catKey}
+                                type="button"
+                                onClick={() => {
+                                  setManualCategoryOverride(catKey);
+                                  setIsOverrideSelectorOpen(false);
+                                }}
+                                data-sq="ctl-sm"
+                                data-sq-border="none"
+                                className={`w-full h-[var(--btn-sm-h,32px)] px-[var(--s2,8px)] rounded-[var(--r-ctl-sm,10px)] flex items-center justify-between gap-[var(--s1,4px)] text-start transition-colors cursor-pointer ${
+                                  isPicked
+                                    ? 'bg-[var(--brand-fill,#C9461F)] text-white font-semibold'
+                                    : 'hover:bg-white/10 text-[#F0DACF]'
+                                }`}
+                              >
+                                <span className="truncate">{meta.title}</span>
+                                {isPicked && <Check className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-white shrink-0" strokeWidth={1.5} />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Section 1: Final Workspace Identity Fields using LabelInput */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--s2,8px)]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--ob-grid-gap)]">
                     <LabelInput
                       field="workspaceName"
                       label={isAr ? 'اسم المؤسسة / مساحة العمل' : isFr ? "Nom de l'entreprise ou marque" : 'Workspace / Business Name'}
                       value={workspaceName}
                       onChange={(val) => setWorkspaceName(String(val))}
                       prefix={<Building2 className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
-                      height={40}
+                      height={isCompactHeight ? 36 : 40}
                       corner={12}
                     />
 
@@ -1939,7 +2035,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       value={phone}
                       onChange={(val) => setPhone(String(val))}
                       prefix={<Phone className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
-                      height={40}
+                      height={isCompactHeight ? 36 : 40}
                       corner={12}
                     />
                   </div>
@@ -1947,26 +2043,26 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   {/* Editable Branch Address, Wilaya & Derived Fiscal Preview */}
                   {(() => {
                     const derivedPreview = deriveCategoryConfigDefaultsFromOnboarding(activeCategory, {
-                      teamScale,
-                      settlementStyle,
+                      teamScale: teamScale ?? undefined,
+                      settlementStyle: settlementStyle ?? undefined,
                       wilayaCode,
                     });
                     return (
-                      <div className="space-y-[var(--s2,8px)]">
-                        <div className="grid grid-cols-1 md:grid-cols-[1fr_170px] gap-[var(--s2,8px)]">
+                      <div className="space-y-[var(--ob-gap)]">
+                        <div className="grid grid-cols-1 md:grid-cols-[1fr_170px] gap-[var(--ob-grid-gap)]">
                           <LabelInput
                             field="branchAddress"
                             label={isAr ? 'عنوان الفرع الرئيسي' : isFr ? 'Adresse du siège / établissement' : 'Headquarters Address'}
                             value={branchAddress}
                             onChange={(val) => setBranchAddress(String(val))}
                             prefix={<MapPin className="w-[var(--icon-s,16px)] h-[var(--icon-s,16px)] text-[var(--brand-on-dark,#FF8F63)]" strokeWidth={1.5} />}
-                            height={40}
+                            height={isCompactHeight ? 36 : 40}
                             corner={12}
                           />
                           <div
                             data-sq="ctl"
                             data-sq-border="solid"
-                            className="h-[40px] px-[var(--s3,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.14)] flex items-center justify-between gap-[var(--s2,8px)]"
+                            className={`${isCompactHeight ? 'h-[36px]' : 'h-[40px]'} px-[var(--s3,12px)] bg-white/[0.04] [--sq-stroke:rgba(255,255,255,0.14)] flex items-center justify-between gap-[var(--s2,8px)]`}
                           >
                             <span className="t-cap text-[var(--text-dark-2,#A99E92)] shrink-0">
                               {isAr ? 'الولاية' : 'Wilaya'}
@@ -1994,7 +2090,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         <div
                           data-sq="ctl"
                           data-sq-border="solid"
-                          className="px-[var(--s3,12px)] py-[var(--s2,8px)] bg-white/[0.03] [--sq-stroke:rgba(255,255,255,0.1)] flex flex-wrap items-center justify-between gap-[var(--s2,8px)] t-small"
+                          className="px-[var(--s3,12px)] py-[clamp(5px,0.8dvh,8px)] bg-white/[0.03] [--sq-stroke:rgba(255,255,255,0.1)] flex flex-wrap items-center justify-between gap-[var(--s2,8px)] t-small"
                         >
                           <span className="text-[var(--text-dark-2,#A99E92)]">
                             {isAr
@@ -2019,16 +2115,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 9: STANDALONE SAAS SUBSCRIPTION PLANS MATRIX (2x2 GRID)   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 9 && (
-                <div className="flex flex-col gap-[var(--s2,8px)] w-full">
+                <div className="flex flex-col gap-[var(--ob-gap)] w-full">
                   {renderPlanCards(false)}
                   {renderVoucherBar()}
                 </div>
               )}
                 </div>
 
-                {/* Right Column Bottom Footer Actions */}
-                {renderBottomNavigation(false)}
-              </div>
+              {/* Right Column Bottom Footer Actions (Always Pinned & Visible) */}
+              {renderBottomNavigation(false)}
             </div>
           </div>
     )}
@@ -2116,12 +2211,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   {isAr ? 'الخطة المطلوبة' : isFr ? 'Formule sélectionnée' : 'Selected tier'}
                 </span>
                 <div className="t-card font-medium text-white">
-                  {SUBSCRIPTION_PLANS.find((p) => p.tier === selectedPlanTier)?.name}
+                  {SUBSCRIPTION_PLANS.find((p) => p.tier === (selectedPlanTier ?? 'starter'))?.name}
                 </div>
               </div>
               <div className="text-end flex flex-col gap-[var(--s1,4px)]">
                 <div className="t-unit text-[var(--brand-on-dark,#FF8F63)] tabular-nums">
-                  {SUBSCRIPTION_PLANS.find((p) => p.tier === selectedPlanTier)?.[isAr ? 'priceAr' : isFr ? 'priceFr' : 'priceEn']}
+                  {SUBSCRIPTION_PLANS.find((p) => p.tier === (selectedPlanTier ?? 'starter'))?.[isAr ? 'priceAr' : isFr ? 'priceFr' : 'priceEn']}
                 </div>
                 <div className="t-cap text-[var(--text-dark-2,#A99E92)]">
                   {isAr ? 'دفعة واحدة لمدى الحياة' : isFr ? 'Paiement unique à vie' : 'One-time payment'}
@@ -2152,7 +2247,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               <div className="flex flex-col sm:flex-row gap-[var(--s2,8px)]">
                 <a
                   href={`https://wa.me/213550123456?text=${encodeURIComponent(
-                    `Bonjour, je souhaite acquérir la licence Atrium OS ${selectedPlanTier.toUpperCase()} pour mon établissement "${workspaceName}".`
+                    `Bonjour, je souhaite acquérir la licence Atrium OS ${(selectedPlanTier ?? 'starter').toUpperCase()} pour mon établissement "${workspaceName}".`
                   )}`}
                   target="_blank"
                   rel="noreferrer"
