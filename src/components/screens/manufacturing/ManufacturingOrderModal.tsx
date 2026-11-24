@@ -7,6 +7,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { ManufacturingBom, ManufacturingOrder } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -30,8 +31,9 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
   onSave,
   orderToEdit,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -44,9 +46,9 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
 
   const [bomId, setBomId] = useState(orderToEdit?.bomId || boms[0]?.id || '');
   const [quantity, setQuantity] = useState(
-    orderToEdit ? String(orderToEdit.targetQuantity || orderToEdit.quantityOrdered || 10) : '10'
+    orderToEdit ? String(orderToEdit.targetQuantity || orderToEdit.quantityOrdered || '') : ''
   );
-  const [dueDate, setDueDate] = useState(orderToEdit?.dueDate?.split('T')[0] || '2026-06-15');
+  const [dueDate, setDueDate] = useState(orderToEdit?.dueDate?.split('T')[0] || '');
   const [station, setStation] = useState(orderToEdit?.assignedStation || 'Poste 03 - Découpe & Usinage CNC');
   const [clientName, setClientName] = useState(orderToEdit?.clientName || '');
   const [notes, setNotes] = useState(orderToEdit?.notes || '');
@@ -54,15 +56,15 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
   useEffect(() => {
     if (orderToEdit) {
       setBomId(orderToEdit.bomId || boms[0]?.id || '');
-      setQuantity(String(orderToEdit.targetQuantity || orderToEdit.quantityOrdered || 10));
-      setDueDate(orderToEdit.dueDate ? orderToEdit.dueDate.split('T')[0] : '2026-06-15');
+      setQuantity(String(orderToEdit.targetQuantity || orderToEdit.quantityOrdered || ''));
+      setDueDate(orderToEdit.dueDate ? orderToEdit.dueDate.split('T')[0] : '');
       setStation(orderToEdit.assignedStation || 'Poste 03 - Découpe & Usinage CNC');
       setClientName(orderToEdit.clientName || '');
       setNotes(orderToEdit.notes || '');
     } else {
       setBomId(boms[0]?.id || '');
-      setQuantity('10');
-      setDueDate('2026-06-15');
+      setQuantity('');
+      setDueDate('');
       setStation('Poste 03 - Découpe & Usinage CNC');
       setClientName('');
       setNotes('');
@@ -87,18 +89,37 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
       showToast(isAr ? 'يرجى تحديد التركيبة (BOM)' : 'Veuillez sélectionner une nomenclature (BOM)', 'error');
       return;
     }
+    const targetQty = parseInt(quantity, 10);
+    if (!Number.isFinite(targetQty) || targetQty <= 0) {
+      showToast(isAr ? 'يرجى إدخال كمية صالحة' : 'Veuillez saisir une quantité valide', 'error');
+      return;
+    }
+    if (!dueDate) {
+      showToast(isAr ? 'يرجى تحديد تاريخ التسليم' : "Veuillez saisir la date d'échéance", 'error');
+      return;
+    }
+    const activeAccountId = (orderToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (orderToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     onSave({
       id: orderToEdit ? orderToEdit.id : `of_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_manufacturing',
-      branchId: orderToEdit?.branchId || currentBranch?.id || 'branch_manufacturing_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       orderNumber: orderToEdit ? orderToEdit.orderNumber : `OF-2026-${Math.floor(1000 + Math.random() * 9000)}`,
       bomId: selectedBom.id,
       bomCode: selectedBom.bomCode,
       productName: selectedBom.finishedProductName,
-      targetQuantity: parsedQty,
-      quantityOrdered: parsedQty,
+      targetQuantity: targetQty,
+      quantityOrdered: targetQty,
       actualQuantityProduced: orderToEdit?.actualQuantityProduced || orderToEdit?.quantityProduced || 0,
       quantityProduced: orderToEdit?.actualQuantityProduced || orderToEdit?.quantityProduced || 0,
       scrapQuantity: orderToEdit?.scrapQuantity || 0,
@@ -108,12 +129,12 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
       targetDueDate: new Date(dueDate).toISOString(),
       status: orderToEdit?.status || 'Planned',
       assignedStation: station,
-      totalMaterialCostDzd: (selectedBom.estimatedCostDzd || 0) * parsedQty,
+      totalMaterialCostDzd: (selectedBom.estimatedCostDzd || 0) * targetQty,
       totalLaborCostDzd:
-        orderToEdit?.totalLaborCostDzd || Math.round((selectedBom.standardLaborHours || 10) * 1200 * parsedQty),
+        orderToEdit?.totalLaborCostDzd || Math.round((selectedBom.standardLaborHours || 10) * 1200 * targetQty),
       totalCostDzd:
         orderToEdit?.totalCostDzd ||
-        Math.round(((selectedBom.estimatedCostDzd || 0) + (selectedBom.standardLaborHours || 10) * 1200) * parsedQty),
+        Math.round(((selectedBom.estimatedCostDzd || 0) + (selectedBom.standardLaborHours || 10) * 1200) * targetQty),
       clientName: clientName.trim() || undefined,
       notes: notes.trim() || undefined,
       createdAt: orderToEdit?.createdAt || new Date().toISOString(),
@@ -177,6 +198,7 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
               field="ofQuantity"
               label={isAr ? 'الكمية المستهدفة' : 'Quantité à fabriquer'}
               type="number"
+              placeholder="10"
               value={quantity}
               onChange={setQuantity}
               width="100%"

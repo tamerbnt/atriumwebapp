@@ -21,6 +21,7 @@ import {
   selectCurrentBranchFromState,
   useAtriumActions,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { ManufacturingBom } from '../../../types';
@@ -51,8 +52,9 @@ import {
 } from '../../ui/kinetic';
 
 export const ManufacturingBomView: React.FC<any> = () => {
-  const { language, currentBusiness, currentBranch, branches, currentUser, isSyncing, networkMode } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, branches, currentUser, isSyncing, networkMode } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -86,10 +88,10 @@ export const ManufacturingBomView: React.FC<any> = () => {
   const [bomToEdit, setBomToEdit] = useState<ManufacturingBom | null>(null);
   const [bomCode, setBomCode] = useState('');
   const [productName, setProductName] = useState('');
-  const [batchYield, setBatchYield] = useState('1');
+  const [batchYield, setBatchYield] = useState('');
   const [unit, setUnit] = useState('Unité');
-  const [laborHours, setLaborHours] = useState('10');
-  const [estimatedCost, setEstimatedCost] = useState('80000');
+  const [laborHours, setLaborHours] = useState('');
+  const [estimatedCost, setEstimatedCost] = useState('');
 
   const [selectedBom, setSelectedBom] = useState<ManufacturingBom | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -108,10 +110,10 @@ export const ManufacturingBomView: React.FC<any> = () => {
     setBomToEdit(null);
     setBomCode(`BOM-PRD-${Math.floor(10 + Math.random() * 90)}`);
     setProductName('');
-    setBatchYield('1');
+    setBatchYield('');
     setUnit('Unité');
-    setLaborHours('10');
-    setEstimatedCost('80000');
+    setLaborHours('');
+    setEstimatedCost('');
     setIsModalOpen(true);
   }, []);
 
@@ -132,28 +134,35 @@ export const ManufacturingBomView: React.FC<any> = () => {
       showToast(isAr ? 'يرجى إدخال رمز التركيبة واسم المنتج' : 'Veuillez saisir le code BOM et nom produit', 'error');
       return;
     }
+    const parsedCost = parseFloat(estimatedCost);
+    if (!Number.isFinite(parsedCost) || parsedCost < 0) {
+      showToast(isAr ? 'يرجى إدخال التكلفة المعيارية' : 'Veuillez saisir un coût standard valide', 'error');
+      return;
+    }
+    const activeAccountId = (bomToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (bomToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const payload: ManufacturingBom = {
       id: bomToEdit?.id || `bom_${Date.now()}`,
-      accountId: bomToEdit?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_manufacturing',
-      branchId: bomToEdit?.branchId || currentBranch?.id || 'branch_manufacturing_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       finishedProductId: bomToEdit?.finishedProductId || `prod_${Date.now()}`,
       finishedProductName: productName.trim(),
       bomCode: bomCode.trim(),
       batchYield: parseInt(batchYield, 10) || 1,
       unit: unit.trim(),
       standardLaborHours: parseFloat(laborHours) || 1,
-      components: bomToEdit?.components || [
-        {
-          rawProductId: 'raw_01',
-          rawProductName: 'Matière Principale Standard',
-          quantity: 1,
-          unit: 'u',
-          unitCostDzd: 40000,
-        },
-      ],
-      estimatedCostDzd: parseFloat(estimatedCost) || 50000,
+      components: bomToEdit?.components || [],
+      estimatedCostDzd: parsedCost,
       isActive: bomToEdit?.isActive ?? true,
       status: bomToEdit?.status || 'Active',
       createdAt: bomToEdit?.createdAt || new Date().toISOString(),
@@ -1002,6 +1011,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                 field="bomBatchYield"
                 label={isAr ? 'الكمية المنتجة' : 'Rendement Lot'}
                 type="number"
+                placeholder="1"
                 value={batchYield}
                 onChange={setBatchYield}
                 width="100%"
@@ -1012,6 +1022,7 @@ export const ManufacturingBomView: React.FC<any> = () => {
                 field="bomLaborHours"
                 label={isAr ? 'ساعات العمل' : 'Heures MO'}
                 type="number"
+                placeholder="10"
                 value={laborHours}
                 onChange={setLaborHours}
                 width="100%"
@@ -1022,11 +1033,13 @@ export const ManufacturingBomView: React.FC<any> = () => {
                 field="bomEstimatedCost"
                 label={isAr ? 'التكلفة المعيارية' : 'Coût Total DZD'}
                 type="number"
+                placeholder="80000"
                 value={estimatedCost}
                 onChange={setEstimatedCost}
                 width="100%"
                 height={40}
                 corner={12}
+                required
               />
             </div>
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--atr-divider)]">

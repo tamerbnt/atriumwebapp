@@ -27,6 +27,7 @@ import {
   subscribeConcurrencyResolutions,
   runWithConcurrency,
 } from '../../../lib/supabase/index';
+import { isDemoModeEnabled } from '../../../lib/supabase/tenantContext';
 
 function mergeMedicalById<T extends { id: string }>(localItems: T[], remoteItems: T[]): T[] {
   if (!remoteItems || remoteItems.length === 0) return localItems;
@@ -802,10 +803,10 @@ export const useMedicalData = () => {
   const activeBranchId = currentBranchId || 'branch_medical_main';
   const medCtx = useMemo(
     () => ({
-      accountId: currentAccountId || 'acc_01',
+      accountId: currentAccountId || (isDemoModeEnabled() ? 'acc_01' : ''),
       businessId: currentBusinessId || 'biz_medical',
       branchId: activeBranchId,
-      staffId: currentStaffId || 'staff_01',
+      staffId: currentStaffId || '',
     }),
     [currentAccountId, currentBusinessId, activeBranchId, currentStaffId]
   );

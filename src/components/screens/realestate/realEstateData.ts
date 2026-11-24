@@ -24,6 +24,7 @@ import {
   subscribeConcurrencyResolutions,
   runWithConcurrency,
 } from '../../../lib/supabase/index';
+import { isDemoModeEnabled } from '../../../lib/supabase/tenantContext';
 
 function mergeReById<T extends { id: string }>(localItems: T[], remoteItems: T[]): T[] {
   if (!remoteItems || remoteItems.length === 0) return localItems;
@@ -738,7 +739,10 @@ export const useRealEstateData = () => {
       ...item,
       branchId: (item as { branchId?: string }).branchId || activeBranchId,
       businessId: (item as { businessId?: string }).businessId || currentBusinessId || 'biz_realestate',
-      accountId: (item as { accountId?: string }).accountId || currentAccountId || 'acc_01',
+      accountId:
+        (item as { accountId?: string }).accountId ||
+        currentAccountId ||
+        (isDemoModeEnabled() ? 'acc_01' : ''),
     }) as T;
 
   const [properties, setProperties] = useState<RealEstateProperty[]>(() => {

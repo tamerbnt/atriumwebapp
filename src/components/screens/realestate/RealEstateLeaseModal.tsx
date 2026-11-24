@@ -7,6 +7,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { RealEstateProperty, RealEstateLease } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -23,8 +24,9 @@ interface RealEstateLeaseModalProps {
 
 
 export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOpen, onClose, properties, onSave }) => {
-	const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+	const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
 	  (s) => ({
+	    account: s.account,
 	    language: s.language,
 	    currentBusiness: selectCurrentBusinessFromState(s),
 	    currentBranch: selectCurrentBranchFromState(s),
@@ -35,20 +37,20 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 	const [propertyId, setPropertyId] = React.useState(properties[0]?.id || "");
 	const [tenantName, setTenantName] = React.useState("");
 	const [tenantPhone, setTenantPhone] = React.useState("");
-	const [startDate, setStartDate] = React.useState("2026-06-01");
-	const [endDate, setEndDate] = React.useState("2027-05-31");
-	const [monthlyRent, setMonthlyRent] = React.useState("180000");
-	const [deposit, setDeposit] = React.useState("360000");
+	const [startDate, setStartDate] = React.useState("");
+	const [endDate, setEndDate] = React.useState("");
+	const [monthlyRent, setMonthlyRent] = React.useState("");
+	const [deposit, setDeposit] = React.useState("");
 	const [frequency, setFrequency] = React.useState("Annual");
 	React.useEffect(() => {
 		if (!isOpen) return;
 		setPropertyId(properties[0]?.id || "");
 		setTenantName("");
 		setTenantPhone("");
-		setStartDate("2026-06-01");
-		setEndDate("2027-05-31");
-		setMonthlyRent("180000");
-		setDeposit("360000");
+		setStartDate("");
+		setEndDate("");
+		setMonthlyRent("");
+		setDeposit("");
 		setFrequency("Annual");
 	}, [isOpen]);
 	const handleSubmit = (e: any) => {
@@ -58,21 +60,37 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 			showToast("Veuillez renseigner le locataire et sélectionner un bien", "error");
 			return;
 		}
+		const parsedRent = parseFloat(monthlyRent);
+		if (!Number.isFinite(parsedRent) || parsedRent <= 0) {
+			showToast("Veuillez saisir un loyer mensuel valide", "error");
+			return;
+		}
+		const parsedDeposit = deposit.trim() ? parseFloat(deposit) || 0 : 0;
+		const activeAccountId = (prop.accountId || currentBranch?.accountId || account?.id || "").trim();
+		const activeBranchId = (currentBranch?.id || prop.branchId || "").trim();
+		if (!activeAccountId || !activeBranchId) {
+			showToast({
+				type: "error",
+				title: t("tenant_context_missing_title", language),
+				message: t("tenant_context_missing_msg", language),
+			});
+			return;
+		}
 		onSave({
 			id: `lease_${Date.now()}`,
-			accountId: "acc_01",
-			businessId: currentBusiness?.id || "biz_realestate",
-			branchId: currentBranch?.id || "branch_realestate_main",
-			staffId: currentUser?.id || "staff_01",
+			accountId: activeAccountId,
+			businessId: currentBusiness?.id || prop.businessId || "",
+			branchId: activeBranchId,
+			staffId: currentUser?.id || "",
 			propertyId: prop.id,
 			propertyTitle: prop.title,
 			tenantName: tenantName.trim(),
 			tenantPhone: tenantPhone.trim(),
 			startDate,
 			endDate,
-			monthlyRentDzd: parseFloat(monthlyRent) || 1e5,
-			securityDepositDzd: parseFloat(deposit) || 2e5,
-			agencyCommissionDzd: parseFloat(monthlyRent) || 1e5,
+			monthlyRentDzd: parsedRent,
+			securityDepositDzd: parsedDeposit,
+			agencyCommissionDzd: parsedRent,
 			status: "Active",
 			paymentFrequency: frequency
 		});
@@ -109,8 +127,8 @@ export const RealEstateLeaseModal: React.FC<RealEstateLeaseModalProps> = ({ isOp
 <LabelInput label={language === "ar" ? "تاريخ نهاية العقد" : "Date d'échéance"} type="date" value={endDate} onChange={setEndDate} />
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-<LabelInput label={language === "ar" ? "الكراء الشهري (د.ج)" : "Loyer / mois (DA)"} type="number" value={monthlyRent} onChange={setMonthlyRent} />
-<LabelInput label={language === "ar" ? "مبلغ الضمان (Caution)" : "Dépôt de garantie"} type="number" value={deposit} onChange={setDeposit} />
+<LabelInput label={language === "ar" ? "الكراء الشهري (د.ج)" : "Loyer / mois (DA)"} type="number" placeholder="180000" value={monthlyRent} onChange={setMonthlyRent} required />
+<LabelInput label={language === "ar" ? "مبلغ الضمان (Caution)" : "Dépôt de garantie"} type="number" placeholder="360000" value={deposit} onChange={setDeposit} />
 <LabelSelect label={language === "ar" ? "دورية الدفع" : "Périodicité"} value={frequency} onChange={setFrequency} options={[
 									{
 										value: "Monthly",

@@ -103,14 +103,14 @@ export const TradingCatalogView: React.FC = () => {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [priceAmount, setPriceAmount] = useState(1000);
-  const [costAmount, setCostAmount] = useState(700);
+  const [priceAmount, setPriceAmount] = useState('');
+  const [costAmount, setCostAmount] = useState('');
   const [sku, setSku] = useState('');
   const [unit, setUnit] = useState('u');
   const [taxRate, setTaxRate] = useState(configuredDefaultTva);
   const [category, setCategory] = useState('Matériaux BTP');
   const [reorderLevel, setReorderLevel] = useState(10);
-  const [stockQuantity, setStockQuantity] = useState(50);
+  const [stockQuantity, setStockQuantity] = useState(0);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -261,14 +261,14 @@ export const TradingCatalogView: React.FC = () => {
     setEditingProduct(null);
     setName('');
     setDescription('');
-    setPriceAmount(1000);
-    setCostAmount(700);
+    setPriceAmount('');
+    setCostAmount('');
     setSku('');
     setUnit(activeTab === 'services' ? 'forfait' : 'u');
     setTaxRate(activeTab === 'services' ? (configuredDefaultTva === 0 ? 0 : 9) : configuredDefaultTva);
     setCategory(activeTab === 'services' ? 'Prestations & Services' : 'Matériaux BTP');
     setReorderLevel(10);
-    setStockQuantity(50);
+    setStockQuantity(0);
     setModalOpen(true);
   }, [activeTab, configuredDefaultTva]);
 
@@ -276,8 +276,8 @@ export const TradingCatalogView: React.FC = () => {
     setEditingProduct(p);
     setName(p.name);
     setDescription(p.description || '');
-    setPriceAmount(p.price?.amount || 0);
-    setCostAmount(p.cost?.amount || p.costPrice || 0);
+    setPriceAmount(String(p.price?.amount ?? ''));
+    setCostAmount(String(p.cost?.amount ?? p.costPrice ?? ''));
     setSku(p.sku || '');
     setUnit(p.unit || 'u');
     setTaxRate(p.taxRate ?? configuredDefaultTva);
@@ -289,13 +289,15 @@ export const TradingCatalogView: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    const parsedPrice = parseFloat(priceAmount);
+    const parsedCost = costAmount.trim() === '' ? 0 : parseFloat(costAmount);
+    if (!name.trim() || isNaN(parsedPrice) || parsedPrice <= 0) return;
     if (editingProduct) {
       updateProduct(editingProduct.id, {
         name: name.trim(),
         description: description.trim(),
-        price: { amount: priceAmount, currency: 'DZD' },
-        cost: { amount: costAmount, currency: 'DZD' },
+        price: { amount: parsedPrice, currency: 'DZD' },
+        cost: { amount: isNaN(parsedCost) ? 0 : parsedCost, currency: 'DZD' },
         sku: sku.trim() || undefined,
         unit,
         taxRate,
@@ -307,8 +309,8 @@ export const TradingCatalogView: React.FC = () => {
       addProduct({
         name: name.trim(),
         description: description.trim(),
-        price: { amount: priceAmount, currency: 'DZD' },
-        cost: { amount: costAmount, currency: 'DZD' },
+        price: { amount: parsedPrice, currency: 'DZD' },
+        cost: { amount: isNaN(parsedCost) ? 0 : parsedCost, currency: 'DZD' },
         sku: sku.trim() || `SKU-${Date.now().toString().slice(-4)}`,
         unit,
         taxRate,
@@ -995,17 +997,19 @@ export const TradingCatalogView: React.FC = () => {
                 <LabelInput
                   type="number"
                   label="Prix Vente HT (DA) *"
+                  placeholder="1000"
                   value={priceAmount}
                   step={10}
-                  onChange={(val) => setPriceAmount(parseFloat(val) || 0)}
+                  onChange={setPriceAmount}
                   required
                 />
                 <LabelInput
                   type="number"
                   label="Coût d'Achat HT"
+                  placeholder="700"
                   value={costAmount}
                   step={10}
-                  onChange={(val) => setCostAmount(parseFloat(val) || 0)}
+                  onChange={setCostAmount}
                 />
                 <LabelSelect
                   label="Taux TVA"

@@ -10,6 +10,7 @@ import {
   selectCurrentPmTalentsFromState,
   selectCurrentPmPayrollBatchesFromState,
   selectCurrentPmExpensesFromState,
+  selectCurrentPmAttendancesFromState,
   selectCurrentStaffFromState,
   addPmProjectAction as addPmProject,
   deletePmProjectAction as deletePmProject,
@@ -23,6 +24,10 @@ import {
   setActivePmSubScreenAction as setActivePmSubScreen,
   showToast,
 } from '../../../services/store';
+import {
+  computeAvailableAuditYears,
+  computeDirectionFinancialAudit,
+} from '../../../utils/projectMetrics';
 import { registerUndoEntry } from '../../../services/undoEngine';
 import { PMProject } from '../../../types/index';
 import {
@@ -192,6 +197,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
     useDashboardShellState();
 
   const {
+    account,
+    currentUser,
     currentBranch,
     currentBranchId,
     branches,
@@ -201,11 +208,14 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
     pmTalents,
     pmPayrollBatches,
     pmExpenses,
+    pmAttendances,
     pmClients,
     staff,
     activePmSubScreen,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
+      currentUser: s.currentUser,
       currentBranch: selectCurrentBranchFromState(s),
       currentBranchId: s.currentBranchId,
       branches: s.branches,
@@ -215,6 +225,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
       pmTalents: selectCurrentPmTalentsFromState(s),
       pmPayrollBatches: selectCurrentPmPayrollBatchesFromState(s),
       pmExpenses: selectCurrentPmExpensesFromState(s),
+      pmAttendances: selectCurrentPmAttendancesFromState(s),
       pmClients: s.pmClients || [],
       staff: selectCurrentStaffFromState(s),
       activePmSubScreen: s.activePmSubScreen || 'dashboard',
@@ -324,17 +335,58 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
   const [approvalsTab, setApprovalsTab] = useState<'all' | 'payroll' | 'expenses'>('all');
   const [approvalSearch, setApprovalSearch] = useState('');
 
+  const leadOptions = useMemo(() => {
+    const activeStaff = staff.filter((m) => m.status === 'active');
+    const source = activeStaff.length > 0 ? activeStaff : staff;
+    if (source.length > 0) {
+      return source.map((m) => ({
+        value: m.id,
+        label: m.role ? `${m.fullName} (${m.role})` : m.fullName,
+      }));
+    }
+    if (currentUser?.id && currentUser?.fullName) {
+      return [{ value: currentUser.id, label: currentUser.fullName }];
+    }
+    return [];
+  }, [staff, currentUser]);
+
+  const availableAuditYears = useMemo(
+    () =>
+      computeAvailableAuditYears(pmProjects, pmExpenses, pmMissions, pmPayrollBatches),
+    [pmProjects, pmExpenses, pmMissions, pmPayrollBatches]
+  );
+  const [selectedAuditYear, setSelectedAuditYear] = useState<number>(
+    () => availableAuditYears[0] || new Date().getFullYear()
+  );
+
+  const auditSummary = useMemo(
+    () =>
+      computeDirectionFinancialAudit({
+        projects: pmProjects,
+        expenses: pmExpenses,
+        missions: pmMissions,
+        attendances: pmAttendances,
+        payrollBatches: pmPayrollBatches,
+        selectedYear: selectedAuditYear,
+      }),
+    [pmProjects, pmExpenses, pmMissions, pmAttendances, pmPayrollBatches, selectedAuditYear]
+  );
+
   // New project form state
   const [newProjectTitle, setNewProjectTitle] = useState('');
   const [newProjectClientId, setNewProjectClientId] = useState(pmClients[0]?.id || '');
   const [newProjectScope, setNewProjectScope] = useState('');
-  const [newProjectBudgetCap, setNewProjectBudgetCap] = useState('3500000');
-  const [newProjectMaxField, setNewProjectMaxField] = useState('650000');
-  const [newProjectMargin, setNewProjectMargin] = useState('30');
-  const [newProjectStartDate, setNewProjectStartDate] = useState('2026-11-01');
-  const [newProjectEndDate, setNewProjectEndDate] = useState('2026-12-15');
-  const [newProjectPmId, setNewProjectPmId] = useState('stf_pm_01');
-  const [newProjectCreaId, setNewProjectCreaId] = useState('stf_crea_01');
+  const [newProjectBudgetCap, setNewProjectBudgetCap] = useState('');
+  const [newProjectMaxField, setNewProjectMaxField] = useState('');
+  const [newProjectMargin, setNewProjectMargin] = useState('');
+  const [newProjectStartDate, setNewProjectStartDate] = useState(
+    () => new Date().toISOString().slice(0, 10)
+  );
+  const [newProjectEndDate, setNewProjectEndDate] = useState('');
+  const [newProjectPmId, setNewProjectPmId] = useState(() => leadOptions[0]?.value || '');
+  const [newProjectCreaId, setNewProjectCreaId] = useState(
+    () => leadOptions[1]?.value || leadOptions[0]?.value || ''
+  );
   const [projectCreatedSuccess, setProjectCreatedSuccess] = useState(false);
 
   const activeInspectedProject = useMemo(() => {
@@ -663,17 +715,35 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
   }, [sortedProjects, language]);
 
   const handleExportAuditCsv = useCallback(() => {
-    const headers = ['Type', 'Ref', 'Projet', 'Montant DZD', 'Statut'];
-    const rows = [
+    const headers = ['Section', 'Année / Ref', 'Libellé', 'Montant / Valeur', 'Statut / Part'];
+    const rows: Array<Array<string | number>> = [
+      ['KPI', String(auditSummary.year), 'CA Engagé DZD', auditSummary.totalRevenueDzd, `${pmProjects.length} projets`],
+      ['KPI', String(auditSummary.year), 'Marge Moyenne %', auditSummary.avgMarginPct, 'Consolidated'],
+      ['KPI', String(auditSummary.year), 'Missions Clôturées', auditSummary.closedMissionsCount, `${auditSummary.activeWilayasCount} wilayas`],
+      ['KPI', String(auditSummary.year), 'Assiduité Pointage %', auditSummary.attendanceCompliancePct, `${auditSummary.avgMissionRating.toFixed(1)}★`],
+      ...auditSummary.clientProfitability.map((cli) => [
+        'Client',
+        String(auditSummary.year),
+        cli.clientName,
+        cli.revenueDzd,
+        `${cli.pctShare}% CA · ${cli.marginPct}% marge`,
+      ]),
+      ...auditSummary.expenseBreakdown.map((exp) => [
+        'Poste Dépense',
+        String(auditSummary.year),
+        exp.categoryKey,
+        exp.amountDzd,
+        `${exp.pctShare}%`,
+      ]),
       ...pendingPayrollBatches.map((b) => [
-        'Paie',
+        'Paie en attente',
         b.batchNumber,
         b.projectTitle,
         b.totalAmountDzd,
         'En attente',
       ]),
       ...pendingExpenses.map((e) => [
-        'Achat',
+        'Achat en attente',
         e.title,
         e.projectTitle,
         e.amountDzd,
@@ -681,7 +751,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
       ]),
     ];
     downloadCsvSafe(
-      `audit_direction_nch_${new Date().toISOString().slice(0, 10)}.csv`,
+      `audit_direction_${auditSummary.year}_${new Date().toISOString().slice(0, 10)}.csv`,
       headers,
       rows
     );
@@ -694,7 +764,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
       ),
       'info'
     );
-  }, [pendingPayrollBatches, pendingExpenses, language]);
+  }, [auditSummary, pmProjects.length, pendingPayrollBatches, pendingExpenses, language]);
 
   const projectColumns = useMemo<ColumnDefinition<PMProject>[]>(
     () => [
@@ -884,32 +954,62 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
 
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
+    const activeAccountId = (account?.id || '').trim();
+    const activeBranchId = (currentBranchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title'),
+        message: t('tenant_context_missing_msg'),
+      });
+      return;
+    }
     const client = pmClients.find((c) => c.id === newProjectClientId) || pmClients[0];
-    const pmMember = staff.find((s) => s.id === newProjectPmId) || {
-      fullName: 'Amine Meziane (PM)',
-    };
-    const creaMember = staff.find((s) => s.id === newProjectCreaId) || {
-      fullName: 'Lina Hadj-Ali (Créa)',
-    };
+    const budgetCap = Number(newProjectBudgetCap);
+    const maxField = Number(newProjectMaxField || 0);
+    const targetMargin = Number(newProjectMargin || 0);
+    if (!newProjectTitle.trim() || !Number.isFinite(budgetCap) || budgetCap <= 0) {
+      showToast({
+        type: 'warning',
+        title: localizeText(language, 'Champs requis', 'Required fields', 'حقول مطلوبة'),
+        message: localizeText(
+          language,
+          'Veuillez saisir le titre et un plafond budgétaire valide.',
+          'Please enter a project title and valid budget cap.',
+          'يرجى إدخال عنوان المشروع وسقف ميزانية صالح.'
+        ),
+      });
+      return;
+    }
+    const pmMember =
+      staff.find((s) => s.id === newProjectPmId) ||
+      (currentUser?.id ? { id: currentUser.id, fullName: currentUser.fullName } : undefined);
+    const creaMember =
+      staff.find((s) => s.id === newProjectCreaId) || pmMember;
     addPmProject({
-      tenantId: 'acc_01',
-      facilityId: currentBranchId || 'branch_agency_main',
-      clientId: client?.id || 'pm_cli_01',
-      clientName: client?.name || 'Client National',
-      title: newProjectTitle || 'Nouvelle Campagne Terrain',
-      scopeOfWork: newProjectScope || 'Cahier des charges standard activation.',
-      budgetCapDzd: Number(newProjectBudgetCap) || 2e6,
-      maxFieldExpensesDzd: Number(newProjectMaxField) || 4e5,
-      targetGrossMarginPercent: Number(newProjectMargin) || 28,
-      startDate: newProjectStartDate,
-      endDate: newProjectEndDate,
-      kvDeadline: newProjectStartDate,
-      printDeadline: newProjectStartDate,
-      executionStartDate: newProjectStartDate,
-      projectManagerId: newProjectPmId,
-      projectManagerName: pmMember.fullName,
-      leadCreativeId: newProjectCreaId,
-      leadCreativeName: creaMember.fullName,
+      tenantId: activeAccountId,
+      facilityId: activeBranchId,
+      clientId: client?.id || '',
+      clientName:
+        client?.name ||
+        localizeText(language, 'Client non défini', 'Unassigned Client', 'عميل غير محدد'),
+      title: newProjectTitle.trim(),
+      scopeOfWork:
+        newProjectScope.trim() ||
+        localizeText(language, 'Cahier des charges projet', 'Project scope of work', 'دفتر شروط المشروع'),
+      budgetCapDzd: budgetCap,
+      maxFieldExpensesDzd: Number.isFinite(maxField) && maxField >= 0 ? maxField : 0,
+      targetGrossMarginPercent:
+        Number.isFinite(targetMargin) && targetMargin >= 0 ? targetMargin : 0,
+      startDate: newProjectStartDate || new Date().toISOString().slice(0, 10),
+      endDate: newProjectEndDate || newProjectStartDate || new Date().toISOString().slice(0, 10),
+      kvDeadline: newProjectStartDate || new Date().toISOString().slice(0, 10),
+      printDeadline: newProjectStartDate || new Date().toISOString().slice(0, 10),
+      executionStartDate: newProjectStartDate || new Date().toISOString().slice(0, 10),
+      projectManagerId: pmMember?.id || newProjectPmId,
+      projectManagerName: pmMember?.fullName || '',
+      leadCreativeId: creaMember?.id || newProjectCreaId,
+      leadCreativeName: creaMember?.fullName || '',
       status: 'framing',
     });
     setProjectCreatedSuccess(true);
@@ -919,6 +1019,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
     }, 1500);
     setNewProjectTitle('');
     setNewProjectScope('');
+    setNewProjectBudgetCap('');
+    setNewProjectMaxField('');
+    setNewProjectMargin('');
   };
 
   const handleRejectConfirm = () => {
@@ -1881,6 +1984,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   field="BudgetCap"
                   label={t('pm_dir_field_budget_cap')}
                   type="number"
+                  placeholder="3500000"
+                  required
                   value={newProjectBudgetCap}
                   onChange={setNewProjectBudgetCap}
                   width="100%"
@@ -1891,6 +1996,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   field="MaxField"
                   label={t('pm_dir_field_max_field')}
                   type="number"
+                  placeholder="650000"
                   value={newProjectMaxField}
                   onChange={setNewProjectMaxField}
                   width="100%"
@@ -1901,6 +2007,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   field="Margin"
                   label={t('pm_dir_field_margin')}
                   type="number"
+                  placeholder="30"
                   value={newProjectMargin}
                   onChange={setNewProjectMargin}
                   width="100%"
@@ -1943,10 +2050,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   label={t('pm_dir_field_pm')}
                   value={newProjectPmId}
                   onChange={setNewProjectPmId}
-                  options={[
-                    { value: 'stf_pm_01', label: 'Amine Meziane (Senior PM)' },
-                    { value: 'stf_pm_02', label: 'Samy Cherif (Event Lead)' },
-                  ]}
+                  options={leadOptions}
                   height={40}
                   corner={12}
                 />
@@ -1955,10 +2059,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   label={t('pm_dir_field_crea')}
                   value={newProjectCreaId}
                   onChange={setNewProjectCreaId}
-                  options={[
-                    { value: 'stf_crea_01', label: 'Lina Hadj-Ali (Directrice Artistique)' },
-                    { value: 'stf_crea_02', label: 'Rachid Benali (Infographiste Print)' },
-                  ]}
+                  options={leadOptions}
                   height={40}
                   corner={12}
                 />
@@ -2230,13 +2331,36 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] block">
-                    Rapports d'Activité & Marges
+                    {localizeText(
+                      language,
+                      "Rapports d'Activité & Marges",
+                      'Activity & Margin Reports',
+                      'تقارير النشاط والهوامش'
+                    )}
                   </span>
                   <h2 className="t-dialog font-semibold text-black dark:text-white">
-                    Audit Financier Consolidé — Année 2026
+                    {localizeText(
+                      language,
+                      `Audit Financier Consolidé — Année ${auditSummary.year}`,
+                      `Consolidated Financial Audit — Year ${auditSummary.year}`,
+                      `التدقيق المالي الموحد — سنة ${auditSummary.year}`
+                    )}
                   </h2>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  <select
+                    aria-label={localizeText(language, "Année d'audit", 'Audit Year', 'سنة التدقيق')}
+                    value={auditSummary.year}
+                    onChange={(e) => setSelectedAuditYear(Number(e.target.value))}
+                    data-sq="ctl"
+                    className="h-10 px-3 bg-[#F5F1EC] dark:bg-[#2B2825] text-black dark:text-white t-small font-semibold tabular-nums cursor-pointer"
+                  >
+                    {auditSummary.availableYears.map((yr) => (
+                      <option key={yr} value={yr}>
+                        {yr}
+                      </option>
+                    ))}
+                  </select>
                   <AtriumButton
                     variant="primary"
                     size="md"
@@ -2252,68 +2376,105 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                   <ListAdvancedMenuButton language={language} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+              {!auditSummary.hasData ? (
                 <div
                   data-sq="ctl"
                   data-sq-border="none"
-                  className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
+                  className="p-6 bg-[#F5F1EC] dark:bg-[#191716] text-center t-small text-black/60 dark:text-white/60"
                 >
-                  <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
-                    {t('pm_dir_kpi_cumul_ca')}
-                  </span>
-                  <div className="t-dialog font-semibold text-black dark:text-white tabular-nums">
-                    58,4 M DA
-                  </div>
-                  <span className="t-small text-emerald-600 font-semibold">
-                    {t('pm_dir_vs_2025')}
-                  </span>
+                  {localizeText(
+                    language,
+                    `Aucune donnée enregistrée pour l'année ${auditSummary.year}.`,
+                    `No financial audit data recorded for ${auditSummary.year} yet.`,
+                    `لا توجد بيانات تدقيق مالي مسجلة لسنة ${auditSummary.year} بعد.`
+                  )}
                 </div>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
-                >
-                  <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
-                    {t('pm_dir_kpi_avg_margin')}
-                  </span>
-                  <div className="t-dialog font-semibold text-emerald-600 tabular-nums">
-                    31,4 %
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
+                  >
+                    <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
+                      {localizeText(
+                        language,
+                        `CA ENGAGÉ ${auditSummary.year}`,
+                        `${auditSummary.year} ENGAGED BUDGET`,
+                        `الميزانيات المعتمدة ${auditSummary.year}`
+                      )}
+                    </span>
+                    <div className="t-dialog font-semibold text-black dark:text-white tabular-nums">
+                      {formatMoney(auditSummary.totalRevenueDzd, 'DZD')}
+                    </div>
+                    <span className="t-cap text-black/55 dark:text-white/55">
+                      {localizeText(
+                        language,
+                        `${pmProjects.length} projets au total`,
+                        `${pmProjects.length} total projects`,
+                        `${pmProjects.length} مشاريع إجمالاً`
+                      )}
+                    </span>
                   </div>
-                  <span className="t-cap text-black/55 dark:text-white/55">
-                    {t('pm_dir_target_objective')}
-                  </span>
-                </div>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
-                >
-                  <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
-                    {t('pm_dir_kpi_closed_missions')}
-                  </span>
-                  <div className="t-dialog font-semibold text-black dark:text-white tabular-nums">
-                    48
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
+                  >
+                    <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
+                      {t('pm_dir_kpi_avg_margin')}
+                    </span>
+                    <div className="t-dialog font-semibold text-emerald-600 tabular-nums">
+                      {auditSummary.avgMarginPct.toFixed(1)} %
+                    </div>
+                    <span className="t-cap text-black/55 dark:text-white/55">
+                      {localizeText(
+                        language,
+                        `Coûts engagés: ${formatMoney(auditSummary.totalExpensesDzd + auditSummary.totalPayrollDzd, 'DZD')}`,
+                        `Committed costs: ${formatMoney(auditSummary.totalExpensesDzd + auditSummary.totalPayrollDzd, 'DZD')}`,
+                        `التكاليف المسجلة: ${formatMoney(auditSummary.totalExpensesDzd + auditSummary.totalPayrollDzd, 'DZD')}`
+                      )}
+                    </span>
                   </div>
-                  <span className="t-cap text-black/55 dark:text-white/55">
-                    {t('pm_dir_coverage_wilayas')}
-                  </span>
-                </div>
-                <div
-                  data-sq="ctl"
-                  data-sq-border="none"
-                  className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
-                >
-                  <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
-                    {t('pm_dir_kpi_attendance_rate')}
-                  </span>
-                  <div className="t-dialog font-semibold text-blue-600 tabular-nums">
-                    98,2 %
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
+                  >
+                    <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
+                      {t('pm_dir_kpi_closed_missions')}
+                    </span>
+                    <div className="t-dialog font-semibold text-black dark:text-white tabular-nums">
+                      {auditSummary.closedMissionsCount}
+                    </div>
+                    <span className="t-cap text-black/55 dark:text-white/55">
+                      {localizeText(
+                        language,
+                        `${auditSummary.activeWilayasCount} wilaya(s) actives`,
+                        `${auditSummary.activeWilayasCount} active wilaya(s)`,
+                        `${auditSummary.activeWilayasCount} ولايات نشطة`
+                      )}
+                    </span>
                   </div>
-                  <span className="t-cap text-black/55 dark:text-white/55">
-                    {t('pm_dir_rating_avg')}
-                  </span>
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    className="p-4 bg-[#F5F1EC] dark:bg-[#191716]"
+                  >
+                    <span className="t-small font-semibold text-black/55 dark:text-white/55 block mb-1">
+                      {t('pm_dir_kpi_attendance_rate')}
+                    </span>
+                    <div className="t-dialog font-semibold text-blue-600 tabular-nums">
+                      {auditSummary.attendanceCompliancePct.toFixed(1)} %
+                    </div>
+                    <span className="t-cap text-black/55 dark:text-white/55">
+                      {auditSummary.avgMissionRating > 0
+                        ? `${auditSummary.avgMissionRating.toFixed(1)}★`
+                        : localizeText(language, 'Aucune note', 'No ratings yet', 'لا توجد تقييمات')}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -2330,26 +2491,38 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                     {t('pm_dir_turnover_share')}
                   </span>
                 </h3>
-                <div className="space-y-3">
-                  {[
-                    { name: 'Ooredoo Algérie', ca: '24,5 M DA', pct: 42, margin: '32%', color: 'bg-red-500' },
-                    { name: t('pm_dir_client_danone'), ca: '16,3 M DA', pct: 28, margin: '30%', color: 'bg-blue-500' },
-                    { name: t('pm_dir_client_cevital'), ca: '10,5 M DA', pct: 18, margin: '34%', color: 'bg-emerald-500' },
-                    { name: t('pm_dir_client_others'), ca: '7,1 M DA', pct: 12, margin: '28%', color: 'bg-amber-500' },
-                  ].map((cli) => (
-                    <div key={cli.name} className="space-y-1 t-cap">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold text-black dark:text-white">{cli.name}</span>
-                        <span className="tabular-nums text-black/55 dark:text-white/55">
-                          {cli.ca} · Marge {cli.margin}
-                        </span>
-                      </div>
-                      <div className="w-full h-2 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden">
-                        <div className={`h-full ${cli.color}`} style={{ width: `${cli.pct}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {auditSummary.clientProfitability.length === 0 ? (
+                  <div className="py-6 text-center t-small text-black/55 dark:text-white/55">
+                    {localizeText(
+                      language,
+                      'Aucun compte client enregistré pour cette période.',
+                      'No client accounts recorded for this period.',
+                      'لا توجد حسابات عملاء مسجلة لهذه الفترة.'
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {auditSummary.clientProfitability.map((cli, idx) => {
+                      const barColors = ['bg-red-500', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500'];
+                      return (
+                        <div key={cli.clientName} className="space-y-1 t-cap">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold text-black dark:text-white">{cli.clientName}</span>
+                            <span className="tabular-nums text-black/55 dark:text-white/55">
+                              {formatMoney(cli.revenueDzd, 'DZD')} · {cli.marginPct}%
+                            </span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden">
+                            <div
+                              className={`h-full ${barColors[idx % barColors.length]}`}
+                              style={{ width: `${Math.min(100, Math.max(0, cli.pctShare))}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -2360,29 +2533,50 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({
                 className="p-6 bg-white dark:bg-[#22201E] space-y-4"
               >
                 <h3 className="t-label font-semibold text-black dark:text-white flex items-center justify-between">
-                  <span>Ventilation des Dépenses par Poste</span>
+                  <span>
+                    {localizeText(
+                      language,
+                      'Ventilation des Dépenses par Poste',
+                      'Expense Breakdown by Category',
+                      'توزيع النفقات حسب البند'
+                    )}
+                  </span>
                   <span className="t-cap text-black/55 dark:text-white/55 font-normal">
-                    Terrain & Logistique
+                    {localizeText(language, 'Données agrégées', 'Live aggregated data', 'بيانات مجمعة')}
                   </span>
                 </h3>
-                <div className="space-y-3">
-                  {[
-                    { label: 'Indemnités & Paies Animateurs (CCP)', amount: '34,2 M DA', pct: 58, color: 'bg-[#DC2626]' },
-                    { label: 'Production POSM & Impression Imprimeur', amount: '14,8 M DA', pct: 25, color: 'bg-purple-500' },
-                    { label: 'Transport, Carburant & Hébergement', amount: '6,5 M DA', pct: 11, color: 'bg-amber-500' },
-                    { label: 'Frais de Régie & Autorisations APC', amount: '2,9 M DA', pct: 6, color: 'bg-blue-500' },
-                  ].map((item) => (
-                    <div key={item.label} className="space-y-1 t-cap">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold text-black dark:text-white">{item.label}</span>
-                        <span className="tabular-nums text-black/55 dark:text-white/55">{item.amount}</span>
-                      </div>
-                      <div className="w-full h-2 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden">
-                        <div className={`h-full ${item.color}`} style={{ width: `${item.pct}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {auditSummary.expenseBreakdown.length === 0 ? (
+                  <div className="py-6 text-center t-small text-black/55 dark:text-white/55">
+                    {localizeText(
+                      language,
+                      'Aucune dépense ni paie enregistrée pour cette période.',
+                      'No expenses or payroll batches recorded for this period.',
+                      'لا توجد نفقات أو رواتب مسجلة لهذه الفترة.'
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {auditSummary.expenseBreakdown.map((item, idx) => {
+                      const barColors = ['bg-[#DC2626]', 'bg-purple-500', 'bg-amber-500', 'bg-blue-500'];
+                      return (
+                        <div key={item.categoryKey} className="space-y-1 t-cap">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold text-black dark:text-white">{item.categoryKey}</span>
+                            <span className="tabular-nums text-black/55 dark:text-white/55">
+                              {formatMoney(item.amountDzd, 'DZD')} ({item.pctShare}%)
+                            </span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden">
+                            <div
+                              className={`h-full ${barColors[idx % barColors.length]}`}
+                              style={{ width: `${Math.min(100, Math.max(0, item.pctShare))}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </div>

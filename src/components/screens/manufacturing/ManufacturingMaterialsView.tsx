@@ -16,8 +16,11 @@ import {
   useAtriumSelector,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
+  selectCurrentBusinessConfigFromState,
   useAtriumActions,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { calculateCmupWeightedAverage } from '../../../utils/manufacturingRules';
@@ -51,9 +54,12 @@ import {
 } from '../../ui/kinetic';
 
 export const ManufacturingMaterialsView: React.FC<any> = () => {
-  const { language, currentBranch, branches, currentUser, isSyncing, networkMode } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBusinessConfig, currentBranch, branches, currentUser, isSyncing, networkMode } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       currentUser: s.currentUser,
@@ -89,11 +95,11 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
   const [sku, setSku] = useState('');
   const [name, setName] = useState('');
   const [category, setCategory] = useState<RawMaterialStockItem['category']>('Wood');
-  const [stock, setStock] = useState('10');
+  const [stock, setStock] = useState('');
   const [unit, setUnit] = useState('m³');
-  const [minThreshold, setMinThreshold] = useState('3');
-  const [unitCostDzd, setUnitCostDzd] = useState('180000');
-  const [warehouseLocation, setWarehouseLocation] = useState('Dépôt Bois - Rack A-01');
+  const [minThreshold, setMinThreshold] = useState('');
+  const [unitCostDzd, setUnitCostDzd] = useState('');
+  const [warehouseLocation, setWarehouseLocation] = useState('');
 
   const [selectedMaterial, setSelectedMaterial] = useState<RawMaterialStockItem | null>(null);
   const [selectedVoucher, setSelectedVoucher] = useState<MaterialTransferVoucher | null>(null);
@@ -103,9 +109,9 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [voucherType, setVoucherType] = useState<'BonDeSortie' | 'BonDeReception' | 'BonDeTransfert'>('BonDeSortie');
   const [voucherMaterialId, setVoucherMaterialId] = useState(materials[0]?.id || '');
-  const [voucherQty, setVoucherQty] = useState('1');
-  const [voucherRecipient, setVoucherRecipient] = useState('M. Karim Bouzid (Opérateur)');
-  const [voucherNotes, setVoucherNotes] = useState('Sortie pour Ordre de Fabrication OF-2026-0089');
+  const [voucherQty, setVoucherQty] = useState('');
+  const [voucherRecipient, setVoucherRecipient] = useState('');
+  const [voucherNotes, setVoucherNotes] = useState('');
   const [printableVoucher, setPrintableVoucher] = useState<MaterialTransferVoucher | null>(null);
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
@@ -252,11 +258,11 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
     setSku(`RAW-ALG-${Math.floor(100 + Math.random() * 900)}`);
     setName('');
     setCategory('Wood');
-    setStock('10');
+    setStock('');
     setUnit('m³');
-    setMinThreshold('3');
-    setUnitCostDzd('15000');
-    setWarehouseLocation('Dépôt Central A-01');
+    setMinThreshold('');
+    setUnitCostDzd('');
+    setWarehouseLocation('');
     setIsMaterialModalOpen(true);
   }, []);
 
@@ -269,15 +275,30 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
     setUnit(m.unit);
     setMinThreshold(String(m.reorderThreshold));
     setUnitCostDzd(String(m.unitCostPmpDzd));
-    setWarehouseLocation(m.warehouseLocation || 'Dépôt Central A-01');
+    setWarehouseLocation(m.warehouseLocation || '');
     setIsMaterialModalOpen(true);
   }, []);
 
   const handleSaveMaterial = (e: React.FormEvent) => {
     e.preventDefault();
-    const stockNum = parseFloat(stock) || 0;
-    const threshNum = parseFloat(minThreshold) || 1;
-    const costNum = parseFloat(unitCostDzd) || 0;
+    const stockNum = parseFloat(stock);
+    const threshNum = parseFloat(minThreshold);
+    const costNum = parseFloat(unitCostDzd);
+    if (!Number.isFinite(stockNum) || stockNum < 0 || !Number.isFinite(costNum) || costNum < 0) {
+      showToast(isAr ? 'يرجى إدخال كمية وسعر صحيحين' : 'Veuillez saisir un stock et un coût PMP valides', 'error');
+      return;
+    }
+    const safeThresh = Number.isFinite(threshNum) && threshNum >= 0 ? threshNum : 0;
+    const activeAccountId = (materialToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (materialToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     if (materialToEdit) {
       const updated: RawMaterialStockItem = {
         ...materialToEdit,
@@ -286,7 +307,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
         category,
         currentStock: stockNum,
         availableStock: Math.max(0, stockNum - materialToEdit.allocatedStock),
-        reorderThreshold: threshNum,
+        reorderThreshold: safeThresh,
         unit,
         unitCostPmpDzd: costNum,
         totalValuationDzd: stockNum * costNum,
@@ -297,17 +318,17 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
     } else {
       const newItem: RawMaterialStockItem = {
         id: `raw_${Date.now()}`,
-        accountId: 'acc_01',
-        businessId: 'biz_manufacturing',
-        branchId: currentBranch?.id || 'branch_manufacturing_main',
-        staffId: currentUser?.id || 'staff_01',
+        accountId: activeAccountId,
+        businessId: currentBusiness?.id || currentBranch?.businessId || '',
+        branchId: activeBranchId,
+        staffId: currentUser?.id || '',
         sku,
         name,
         category,
         currentStock: stockNum,
         allocatedStock: 0,
         availableStock: stockNum,
-        reorderThreshold: threshNum,
+        reorderThreshold: safeThresh,
         unit,
         unitCostPmpDzd: costNum,
         totalValuationDzd: stockNum * costNum,
@@ -323,16 +344,30 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
     e.preventDefault();
     const mat = materials.find((m) => m.id === voucherMaterialId) || materials[0];
     if (!mat) return;
-    const qty = parseFloat(voucherQty) || 1;
+    const qty = parseFloat(voucherQty);
+    if (!Number.isFinite(qty) || qty <= 0) {
+      showToast(isAr ? 'يرجى إدخال كمية صالحة' : 'Veuillez saisir une quantité valide', 'error');
+      return;
+    }
+    const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const unitCost = mat.unitCostPmpDzd;
     const totalVal = qty * unitCost;
     const prefix = voucherType === 'BonDeSortie' ? 'BSM' : voucherType === 'BonDeReception' ? 'BR' : 'BT';
     const newVoucher: MaterialTransferVoucher = {
       id: `v_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: 'biz_manufacturing',
-      branchId: currentBranch?.id || 'branch_manufacturing_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       voucherNumber: `${prefix}-2026-${Math.floor(1000 + Math.random() * 9000)}`,
       voucherType,
       recipientStaffName: voucherRecipient,
@@ -354,7 +389,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
       {
         vertical: 'manufacturing_production',
         operationType: 'create',
-        branchId: currentBranch?.id || 'branch_manufacturing_main',
+        branchId: activeBranchId,
         summary: isAr
           ? `إصدار سند ${newVoucher.voucherNumber}`
           : isEn
@@ -387,6 +422,9 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
       }
     );
     setIsVoucherModalOpen(false);
+    setVoucherQty('');
+    setVoucherRecipient('');
+    setVoucherNotes('');
     setPrintableVoucher(newVoucher);
   };
 
@@ -1419,6 +1457,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                 label={isAr ? 'الكمية' : 'Stock Initial'}
                 type="number"
                 step="any"
+                placeholder="10"
                 value={stock}
                 onChange={setStock}
                 width="100%"
@@ -1442,6 +1481,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                 label={isAr ? 'عتبة التنبيه' : 'Seuil Mini'}
                 type="number"
                 step="any"
+                placeholder="3"
                 value={minThreshold}
                 onChange={setMinThreshold}
                 width="100%"
@@ -1455,6 +1495,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                 field="matUnitCost"
                 label={isAr ? 'سعر الوحدة PMP (دج)' : 'Coût Unitaire PMP (DZD)'}
                 type="number"
+                placeholder="15000"
                 value={unitCostDzd}
                 onChange={setUnitCostDzd}
                 width="100%"
@@ -1543,6 +1584,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
                 label={isAr ? 'الكمية المنقولة' : 'Quantité du Bon'}
                 type="number"
                 step="any"
+                placeholder="1"
                 value={voucherQty}
                 onChange={setVoucherQty}
                 width="100%"
@@ -1553,6 +1595,7 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
               <LabelInput
                 field="voucherRecipient"
                 label={isAr ? 'المستلم / المشغل' : 'Bénéficiaire / Demandeur'}
+                placeholder={isAr ? 'اسم المستلم' : 'Nom du bénéficiaire...'}
                 value={voucherRecipient}
                 onChange={setVoucherRecipient}
                 width="100%"
@@ -1622,8 +1665,20 @@ export const ManufacturingMaterialsView: React.FC<any> = () => {
             <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-dashed border-black/[0.18] text-black space-y-5 font-sans">
               <div className="flex justify-between items-start border-b border-black/[0.12] pb-4">
                 <div>
-                  <div className="font-semibold t-label text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
-                  <div className="t-small text-black/55 font-medium">RC: 16/00-0988421 • NIF: 001916010044589 • Alger</div>
+                  <div className="font-semibold t-label text-black">
+                    {currentBusiness?.name || currentBranch?.name || ''}
+                  </div>
+                  {(currentBusinessConfig?.fiscalProfile?.rc || currentBusinessConfig?.fiscalProfile?.nif || currentBranch?.address) && (
+                    <div className="t-small text-black/55 font-medium">
+                      {[
+                        currentBusinessConfig?.fiscalProfile?.rc ? `RC: ${currentBusinessConfig.fiscalProfile.rc}` : '',
+                        currentBusinessConfig?.fiscalProfile?.nif ? `NIF: ${currentBusinessConfig.fiscalProfile.nif}` : '',
+                        currentBranch?.address || '',
+                      ]
+                        .filter(Boolean)
+                        .join(' • ')}
+                    </div>
+                  )}
                   <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] mt-1">
                     {retainedPrintableVoucher.voucherType === 'BonDeSortie'
                       ? 'Bon de Sortie Magasin (BSM)'

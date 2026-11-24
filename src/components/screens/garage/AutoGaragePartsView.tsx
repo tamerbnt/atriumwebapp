@@ -18,6 +18,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, SparePart } from './garageData';
@@ -65,6 +66,7 @@ const PART_CATEGORIES = [
 
 export const AutoGaragePartsView: React.FC<any> = () => {
   const {
+    account,
     language,
     currentBusiness,
     currentBranch,
@@ -75,6 +77,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
     isSyncTimeout,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -110,18 +113,18 @@ export const AutoGaragePartsView: React.FC<any> = () => {
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
   const [category, setCategory] = useState('Freinage');
-  const [stockQuantity, setStockQuantity] = useState('10');
-  const [minThreshold, setMinThreshold] = useState('4');
-  const [buyingPriceDzd, setBuyingPriceDzd] = useState('4000');
-  const [sellingPriceDzd, setSellingPriceDzd] = useState('6500');
-  const [locationBin, setLocationBin] = useState('Rayon A-01');
-  const [compatibility, setCompatibility] = useState('Renault, Dacia, Peugeot');
+  const [stockQuantity, setStockQuantity] = useState('');
+  const [minThreshold, setMinThreshold] = useState('');
+  const [buyingPriceDzd, setBuyingPriceDzd] = useState('');
+  const [sellingPriceDzd, setSellingPriceDzd] = useState('');
+  const [locationBin, setLocationBin] = useState('');
+  const [compatibility, setCompatibility] = useState('');
 
   const [isPoModalOpen, setIsPoModalOpen] = useState(false);
   const [poSupplier, setPoSupplier] = useState('Comptoir Pièces Bab Ezzouar (Alger)');
-  const [poPartId, setPoPartId] = useState(parts[0]?.id || 'p_01');
-  const [poQuantity, setPoQuantity] = useState('10');
-  const [poUnitCost, setPoUnitCost] = useState('4000');
+  const [poPartId, setPoPartId] = useState(parts[0]?.id || '');
+  const [poQuantity, setPoQuantity] = useState('');
+  const [poUnitCost, setPoUnitCost] = useState('');
 
   const [inspectedPart, setInspectedPart] = useState<SparePart | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -215,14 +218,14 @@ export const AutoGaragePartsView: React.FC<any> = () => {
   const openCreateModal = useCallback(() => {
     setPartToEdit(null);
     setName('');
-    setSku(`PR-${Math.floor(1000 + Math.random() * 9000)}`);
+    setSku('');
     setCategory('Freinage');
-    setStockQuantity('10');
-    setMinThreshold('4');
-    setBuyingPriceDzd('4000');
-    setSellingPriceDzd('6500');
-    setLocationBin('Rayon A-01');
-    setCompatibility('Multi-marques');
+    setStockQuantity('');
+    setMinThreshold('');
+    setBuyingPriceDzd('');
+    setSellingPriceDzd('');
+    setLocationBin('');
+    setCompatibility('');
     setIsModalOpen(true);
   }, []);
 
@@ -242,28 +245,53 @@ export const AutoGaragePartsView: React.FC<any> = () => {
 
   const handleSaveModal = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !sku.trim()) {
+    const parsedStock = parseInt(stockQuantity, 10);
+    const parsedMin = minThreshold === '' ? 1 : parseInt(minThreshold, 10);
+    const parsedBuy = parseFloat(buyingPriceDzd);
+    const parsedSell = parseFloat(sellingPriceDzd);
+    if (
+      !name.trim() ||
+      !sku.trim() ||
+      isNaN(parsedStock) ||
+      parsedStock < 0 ||
+      isNaN(parsedBuy) ||
+      parsedBuy < 0 ||
+      isNaN(parsedSell) ||
+      parsedSell < 0
+    ) {
       showToast({
         type: 'error',
         title: isAr ? 'خطأ' : 'Champs requis',
-        message: isAr ? 'يرجى إدخال اسم القطعة ورمز SKU' : 'Veuillez saisir le nom et le SKU',
+        message: isAr
+          ? 'يرجى إدخال الاسم ورمز SKU والكمية والأسعار بشكل صحيح'
+          : 'Veuillez saisir le nom, le SKU, la quantité et les tarifs valides',
+      });
+      return;
+    }
+    const activeAccountId = (partToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (partToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
       });
       return;
     }
     const payload: SparePart = {
       id: partToEdit?.id || `part_${Date.now()}`,
-      accountId: partToEdit?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_garage',
-      branchId: currentBranch?.id || 'branch_garage_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       name: name.trim(),
       sku: sku.trim(),
       category: category as SparePart['category'],
-      stockQuantity: parseInt(stockQuantity, 10) || 0,
-      minThreshold: parseInt(minThreshold, 10) || 1,
-      buyingPriceDzd: parseFloat(buyingPriceDzd) || 0,
-      sellingPriceDzd: parseFloat(sellingPriceDzd) || 0,
-      locationBin: locationBin.trim() || 'Rayon A-01',
+      stockQuantity: parsedStock,
+      minThreshold: isNaN(parsedMin) ? 1 : Math.max(0, parsedMin),
+      buyingPriceDzd: parsedBuy,
+      sellingPriceDzd: parsedSell,
+      locationBin: locationBin.trim(),
       compatibility: compatibility
         .split(',')
         .map((s) => s.trim())
@@ -666,9 +694,12 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             size="sm"
             onClick={() => {
               const target = activePart || parts[0];
+              setPoQuantity('');
               if (target) {
                 setPoPartId(target.id);
-                setPoUnitCost(String(target.buyingPriceDzd));
+                setPoUnitCost(target.buyingPriceDzd ? String(target.buyingPriceDzd) : '');
+              } else {
+                setPoUnitCost('');
               }
               setIsPoModalOpen(true);
             }}
@@ -1073,6 +1104,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 field="partStockQuantity"
                 label={isAr ? 'الكمية في المخزن' : 'Quantité Stock'}
                 type="number"
+                placeholder="10"
                 value={stockQuantity}
                 onChange={setStockQuantity}
                 width="100%"
@@ -1084,6 +1116,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 field="partMinThreshold"
                 label={isAr ? 'حد الأمان الأدنى' : 'Seuil d’Alerte Min'}
                 type="number"
+                placeholder="4"
                 value={minThreshold}
                 onChange={setMinThreshold}
                 width="100%"
@@ -1097,6 +1130,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 field="partBuyingPrice"
                 label={isAr ? 'سعر الشراء (دج)' : 'Prix d’Achat (DZD)'}
                 type="number"
+                placeholder="4000"
                 value={buyingPriceDzd}
                 onChange={setBuyingPriceDzd}
                 width="100%"
@@ -1108,6 +1142,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 field="partSellingPrice"
                 label={isAr ? 'سعر البيع (دج)' : 'Prix de Vente (DZD)'}
                 type="number"
+                placeholder="6500"
                 value={sellingPriceDzd}
                 onChange={setSellingPriceDzd}
                 width="100%"
@@ -1191,17 +1226,23 @@ export const AutoGaragePartsView: React.FC<any> = () => {
             onSubmit={(e) => {
               e.preventDefault();
               const target = parts.find((p) => p.id === poPartId);
-              const qty = parseInt(poQuantity, 10) || 5;
-              const cost = parseFloat(poUnitCost) || target?.buyingPriceDzd || 0;
-              if (target) {
-                const updated: SparePart = {
-                  ...target,
-                  stockQuantity: target.stockQuantity + qty,
-                  buyingPriceDzd: cost,
-                };
-                updatePart(updated);
-                if (inspectedPart?.id === target.id) setInspectedPart(updated);
+              const qty = parseInt(poQuantity, 10);
+              const cost = poUnitCost === '' ? target?.buyingPriceDzd : parseFloat(poUnitCost);
+              if (!target || isNaN(qty) || qty <= 0 || cost === undefined || isNaN(cost) || cost < 0) {
+                showToast({
+                  type: 'error',
+                  title: isAr ? 'خطأ' : 'Champs requis',
+                  message: isAr ? 'يرجى تحديد القطعة والكمية والسعر بشكل صحيح' : 'Veuillez saisir une quantité et un prix valides',
+                });
+                return;
               }
+              const updated: SparePart = {
+                ...target,
+                stockQuantity: target.stockQuantity + qty,
+                buyingPriceDzd: cost,
+              };
+              updatePart(updated);
+              if (inspectedPart?.id === target.id) setInspectedPart(updated);
               setIsPoModalOpen(false);
             }}
             className="space-y-4"
@@ -1243,6 +1284,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 field="poQuantity"
                 label={isAr ? 'الكمية المطلوبة *' : 'Quantité Commandée *'}
                 type="number"
+                placeholder="10"
                 value={poQuantity}
                 onChange={setPoQuantity}
                 width="100%"
@@ -1254,6 +1296,7 @@ export const AutoGaragePartsView: React.FC<any> = () => {
                 field="poUnitCost"
                 label={isAr ? 'سعر الشراء الفردي (دج)' : 'Prix Achat Unitaire (DZD)'}
                 type="number"
+                placeholder="4000"
                 value={poUnitCost}
                 onChange={setPoUnitCost}
                 width="100%"

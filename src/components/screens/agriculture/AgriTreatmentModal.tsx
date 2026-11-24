@@ -10,7 +10,9 @@ import {
   shallowEqualObjects,
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface AgriTreatmentModalProps {
@@ -90,8 +92,9 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
   parcels,
   cropCycles = [],
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -154,6 +157,16 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const activeAccountId = (logToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (logToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const dar = parseInt(darDays, 10) || 7;
     const baseDate = new Date(treatmentDate);
     const allowedDate = new Date(baseDate.getTime() + dar * 24 * 60 * 60 * 1000)
@@ -162,10 +175,10 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
 
     const payload: AgriTreatmentLog = {
       id: logToEdit?.id || `treat_${Date.now()}`,
-      accountId: logToEdit?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_agri',
-      branchId: currentBranch?.id || 'branch_agri_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       parcelId,
       cropCycleId: cropCycleId || undefined,
       treatmentDate,

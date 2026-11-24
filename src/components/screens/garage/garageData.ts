@@ -14,6 +14,7 @@ import {
   subscribeConcurrencyResolutions,
   runWithConcurrency,
 } from '../../../lib/supabase/index';
+import { isDemoModeEnabled } from '../../../lib/supabase/tenantContext';
 
 function mergeGarageById<T extends { id: string }>(localItems: T[], remoteItems: T[]): T[] {
   if (!remoteItems || remoteItems.length === 0) return localItems;
@@ -908,10 +909,10 @@ export const useGarageData = () => {
   const activeBranchId = currentBranchId || 'branch_garage_main';
   const garageCtx = useMemo(
     () => ({
-      accountId: currentAccountId || 'acc_01',
+      accountId: currentAccountId || (isDemoModeEnabled() ? 'acc_01' : ''),
       businessId: currentBusinessId || 'biz_garage',
       branchId: activeBranchId,
-      staffId: currentStaffId || 'stf_01',
+      staffId: currentStaffId || '',
     }),
     [currentAccountId, currentBusinessId, activeBranchId, currentStaffId]
   );

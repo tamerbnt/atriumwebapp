@@ -9,6 +9,8 @@ import {
   selectCurrentPmBatDeliverablesFromState,
   useAtriumActions,
 } from '../../../services/store';
+import { storageService, validateFileForBucket } from '../../../lib/supabase';
+import { inspectBatFile, BatMetadataResult } from '../../../utils/batMetadata';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { PMBatDeliverable } from '../../../types/index';
 import {
@@ -97,11 +99,27 @@ const getBatStatusBadge = (
 };
 
 export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) => {
-  const { language, isRtl } = useTranslation();
+  const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { currentBranch, branches, pmProjects, pmPrintOrders, pmBatDeliverables, activePmSubScreen, isSyncing, networkMode, lastSyncedAt } = useAtriumSelector(
+  const {
+    account,
+    currentUser,
+    currentBusinessId,
+    currentBranch,
+    branches,
+    pmProjects,
+    pmPrintOrders,
+    pmBatDeliverables,
+    activePmSubScreen,
+    isSyncing,
+    networkMode,
+    lastSyncedAt,
+  } = useAtriumSelector(
     (s) => ({
+      account: s.account,
+      currentUser: s.currentUser,
+      currentBusinessId: s.currentBusinessId,
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       pmProjects: selectCurrentPmProjectsFromState(s),
@@ -149,11 +167,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
   const [artworkTitle, setArtworkTitle] = useState('');
   const [fileFormat, setFileFormat] = useState('pdf');
   const [colorSpace, setColorSpace] = useState('CMJN');
-  const [resolutionDpi, setResolutionDpi] = useState('300');
-  const [hasBleedIncluded, setHasBleedIncluded] = useState(true);
-  const [previewUrl] = useState(
-    'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&auto=format&fit=crop&q=80'
-  );
+  const [resolutionDpi, setResolutionDpi] = useState('');
+  const [hasBleedIncluded, setHasBleedIncluded] = useState(false);
+  const [batFile, setBatFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [batMetaResult, setBatMetaResult] = useState<BatMetadataResult | null>(null);
+  const [isUploadingBat, setIsUploadingBat] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
   // Production collection state
@@ -388,16 +407,22 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
           const isPinned = pinnedBatIds.has(bat.id);
           return (
             <div className="flex items-center gap-2">
-              <img
-                src={bat.previewUrl}
-                alt={bat.title}
-                width={36}
-                height={36}
-                loading="lazy"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                className="w-9 h-9 rounded-[var(--r-ctl-sm,10px)] object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
-              />
+              {bat.previewUrl ? (
+                <img
+                  src={bat.previewUrl}
+                  alt={bat.title}
+                  width={36}
+                  height={36}
+                  loading="lazy"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
+                  className="w-9 h-9 rounded-[var(--r-ctl-sm,10px)] object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-[var(--r-ctl-sm,10px)] shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825] flex items-center justify-center text-black/55 dark:text-white/60">
+                  <FileText className="w-4 h-4" />
+                </div>
+              )}
               <div className="min-w-0">
                 <div className="font-semibold t-small text-black dark:text-white truncate max-w-[190px] flex items-center gap-1">
                   {bat.title}
@@ -405,6 +430,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 </div>
                 <div className="t-cap text-black/55 dark:text-white/55 tabular-nums">
                   {bat.versionCode} · {bat.fileFormat.toUpperCase()}
+                  {bat.metadataStatus === 'manual / unverified' ? ' · manual / unverified' : ''}
                 </div>
               </div>
             </div>
@@ -538,31 +564,143 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
     [isAr, reviewPmBatDeliverable]
   );
 
-  const handleUploadSubmit = (e: React.FormEvent) => {
+  const handleBatFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (!file) {
+      setBatFile(null);
+      setPreviewUrl('');
+      setBatMetaResult(null);
+      return;
+    }
+    const check = validateFileForBucket('bat-deliverables', file);
+    if (!check.valid) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'ملف غير مدعوم' : isEn ? 'Unsupported BAT file' : 'Fichier BAT invalide',
+        message: check.reason,
+      });
+      e.target.value = '';
+      return;
+    }
+    setBatFile(file);
+    if (!artworkTitle.trim()) {
+      setArtworkTitle(file.name.replace(/\.[^/.]+$/, ''));
+    }
+
+    const meta = await inspectBatFile(file);
+    setBatMetaResult(meta);
+    setFileFormat(meta.fileFormat);
+    if (meta.colorSpace) {
+      setColorSpace(meta.colorSpace);
+    }
+    if (meta.resolutionDpi !== null) {
+      setResolutionDpi(String(meta.resolutionDpi));
+    } else {
+      setResolutionDpi('');
+    }
+    if (meta.hasBleedIncluded !== null) {
+      setHasBleedIncluded(meta.hasBleedIncluded);
+    }
+
+    const isBrowserRaster =
+      file.type.startsWith('image/') && file.type !== 'image/tiff' && typeof FileReader !== 'undefined';
+    if (isBrowserRaster) {
+      const reader = new FileReader();
+      reader.onload = () => setPreviewUrl(typeof reader.result === 'string' ? reader.result : '');
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewUrl('');
+    }
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedProject || !artworkTitle) return;
+    const activeAccountId = (account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId || !currentBusinessId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title'),
+        message: t('tenant_context_missing_msg'),
+      });
+      return;
+    }
+    if (!selectedProject || !artworkTitle.trim() || !batFile) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'ملف أو عنوان مفقود' : isEn ? 'Missing file or title' : 'Fichier ou titre requis',
+        message: isAr
+          ? 'يرجى تحديد المشروع وإرفاق ملف الطباعة.'
+          : isEn
+          ? 'Please select a project and attach a valid BAT file.'
+          : 'Veuillez sélectionner un projet et joindre un fichier BAT valide.',
+      });
+      return;
+    }
+    const parsedDpi = Number(resolutionDpi);
+    if (!Number.isFinite(parsedDpi) || parsedDpi <= 0) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'دقة غير صالحة' : isEn ? 'Invalid DPI' : 'Résolution DPI invalide',
+        message: isAr ? 'يرجى تحديد دقة DPI صالحة.' : 'Veuillez saisir une résolution DPI valide.',
+      });
+      return;
+    }
+
+    setIsUploadingBat(true);
+    const uploadRes = await storageService.uploadScopedFile({
+      bucket: 'bat-deliverables',
+      file: batFile,
+      accountId: activeAccountId,
+      businessId: currentBusinessId,
+      branchId: activeBranchId,
+      prefix: 'bat',
+    });
+    setIsUploadingBat(false);
+    if (!uploadRes.success) {
+      showToast({
+        type: 'error',
+        title: isAr ? 'تعذر رفع ملف BAT' : isEn ? 'BAT upload failed' : 'Échec dépôt fichier BAT',
+        message: uploadRes.error || 'Storage upload failed',
+      });
+      return;
+    }
+
     const nextVersion =
       pmBatDeliverables.filter((b) => b.projectId === selectedProject.id).length + 1;
-    const nextTitle = artworkTitle.endsWith('.pdf') ? artworkTitle : `${artworkTitle}_v${nextVersion}.pdf`;
+    const ext = fileFormat === 'ai' ? 'ai' : fileFormat === 'tiff' ? 'tiff' : fileFormat === 'png' ? 'png' : 'pdf';
+    const nextTitle = artworkTitle.trim().toLowerCase().endsWith(`.${ext}`)
+      ? artworkTitle.trim()
+      : `${artworkTitle.trim()}_v${nextVersion}.${ext}`;
+    const isRasterPreview = batFile.type.startsWith('image/') && batFile.type !== 'image/tiff';
+    const resolvedPreviewUrl = isRasterPreview
+      ? uploadRes.localPreviewUrl || uploadRes.signedUrl || previewUrl || ''
+      : '';
+    const resolvedMasterUrl = uploadRes.signedUrl || uploadRes.storagePath;
+    const metadataStatus: PMBatDeliverable['metadataStatus'] =
+      batMetaResult?.metadataStatus === 'verified' ? 'verified' : 'manual / unverified';
+
     const commitUpload = () => {
       addPmBatDeliverable({
-        tenantId: 'acc_01',
-        facilityId: 'branch_agency_main',
+        tenantId: activeAccountId,
+        facilityId: activeBranchId,
         projectId: selectedProject.id,
         projectTitle: selectedProject.title,
         printOrderId: selectedOrderId || undefined,
         title: nextTitle,
         fileFormat: fileFormat as PMBatDeliverable['fileFormat'],
         colorSpace: colorSpace as PMBatDeliverable['colorSpace'],
-        resolutionDpi: Number(resolutionDpi) || 300,
-        bleedMm: 3,
+        resolutionDpi: parsedDpi,
+        bleedMm: hasBleedIncluded ? 3 : 0,
         hasBleedIncluded,
+        metadataStatus,
         version: nextVersion,
         versionCode: `v${nextVersion}`,
-        previewUrl,
-        fileSizeBytes: 35e6,
-        uploadedByCreativeId: 'crea_lead_01',
-        uploadedByCreativeName: 'Lina Hadj-Ali (Art Director)',
+        previewUrl: resolvedPreviewUrl,
+        masterSourceUrl: resolvedMasterUrl,
+        fileSizeBytes: batFile.size,
+        uploadedByCreativeId: currentUser?.id || '',
+        uploadedByCreativeName: currentUser?.fullName || '',
         approvalStatus: 'pending_review',
       });
       if (selectedOrderId) updatePmPrintOrderStatus(selectedOrderId, 'bat_in_progress');
@@ -583,6 +721,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
       commitUpload();
     }
     setUploadSuccess(true);
+    setBatFile(null);
+    setPreviewUrl('');
+    setBatMetaResult(null);
+    setResolutionDpi('');
     setTimeout(() => {
       setUploadSuccess(false);
       setActiveTab('production');
@@ -823,18 +965,29 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       data-sq-border="none"
                       className="p-4 bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] space-y-2 cursor-pointer transition-colors"
                     >
-                      <img
-                        src={bat.previewUrl}
-                        alt={bat.title}
-                        width={256}
-                        height={112}
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                        data-sq="ctl"
-                        data-sq-border="none"
-                        className="w-full h-28 object-cover bg-[#F3EDE7] dark:bg-[#2B2825]"
-                      />
+                      {bat.previewUrl ? (
+                        <img
+                          src={bat.previewUrl}
+                          alt={bat.title}
+                          width={256}
+                          height={112}
+                          loading="lazy"
+                          decoding="async"
+                          referrerPolicy="no-referrer"
+                          data-sq="ctl"
+                          data-sq-border="none"
+                          className="w-full h-28 object-cover bg-[#F3EDE7] dark:bg-[#2B2825]"
+                        />
+                      ) : (
+                        <div
+                          data-sq="ctl"
+                          data-sq-border="none"
+                          className="w-full h-28 bg-[#F3EDE7] dark:bg-[#2B2825] flex flex-col items-center justify-center gap-1 text-black/55 dark:text-white/60"
+                        >
+                          <FileText className="w-6 h-6" />
+                          <span className="t-cap font-semibold">{bat.fileFormat.toUpperCase()}</span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between t-cap">
                         <span className="font-semibold text-black dark:text-white truncate">
                           {bat.title}
@@ -845,6 +998,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       </div>
                       <p className="t-cap text-black/55 dark:text-white/55">
                         {bat.projectTitle}
+                        {bat.metadataStatus === 'manual / unverified' ? ' · manual / unverified' : ''}
                       </p>
                     </div>
                   </div>
@@ -870,18 +1024,29 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       data-sq-border="none"
                       className="p-4 bg-white dark:bg-[#22201E] hover:bg-[#FCF9F6] dark:hover:bg-[#282523] space-y-2 cursor-pointer transition-colors"
                     >
-                      <img
-                        src={bat.previewUrl}
-                        alt={bat.title}
-                        width={256}
-                        height={112}
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                        data-sq="ctl"
-                        data-sq-border="none"
-                        className="w-full h-28 object-cover bg-[#F3EDE7] dark:bg-[#2B2825]"
-                      />
+                      {bat.previewUrl ? (
+                        <img
+                          src={bat.previewUrl}
+                          alt={bat.title}
+                          width={256}
+                          height={112}
+                          loading="lazy"
+                          decoding="async"
+                          referrerPolicy="no-referrer"
+                          data-sq="ctl"
+                          data-sq-border="none"
+                          className="w-full h-28 object-cover bg-[#F3EDE7] dark:bg-[#2B2825]"
+                        />
+                      ) : (
+                        <div
+                          data-sq="ctl"
+                          data-sq-border="none"
+                          className="w-full h-28 bg-[#F3EDE7] dark:bg-[#2B2825] flex flex-col items-center justify-center gap-1 text-black/55 dark:text-white/60"
+                        >
+                          <FileText className="w-6 h-6" />
+                          <span className="t-cap font-semibold">{bat.fileFormat.toUpperCase()}</span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between t-cap">
                         <span className="font-semibold text-emerald-700 dark:text-[#4ADE80] truncate">
                           {bat.title}
@@ -993,21 +1158,29 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       data-sq-border="none"
                       className="w-full h-36 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
                     >
-                      <img
-                        src={bat.previewUrl}
-                        alt={bat.title}
-                        width={280}
-                        height={144}
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
-                      />
+                      {bat.previewUrl ? (
+                        <img
+                          src={bat.previewUrl}
+                          alt={bat.title}
+                          width={280}
+                          height={144}
+                          loading="lazy"
+                          decoding="async"
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-black/55 dark:text-white/60">
+                          <FileText className="w-7 h-7" />
+                          <span className="t-cap font-semibold">{bat.fileFormat.toUpperCase()}</span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex justify-between items-center t-cap">
                       <span className="font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">{bat.versionCode}</span>
                       <span className="tabular-nums text-black/55 dark:text-white/55">
                         {bat.fileFormat.toUpperCase()}
+                        {bat.metadataStatus === 'manual / unverified' ? ' · manual / unverified' : ''}
                       </span>
                     </div>
                     <h4 className="t-label font-semibold text-black dark:text-white line-clamp-1">
@@ -1081,6 +1254,56 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 </div>
               )}
             <form onSubmit={handleUploadSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="block t-small font-semibold text-black dark:text-white">
+                  {isAr
+                    ? 'ملف الطباعة (PDF, PNG, JPEG, TIFF, AI, EPS, SVG - حد أقصى 25 MB)'
+                    : isEn
+                    ? 'Artwork File (PDF, PNG, JPEG, TIFF, AI, EPS, SVG - max 25 MB)'
+                    : 'Fichier BAT Haute Définition (PDF, PNG, JPEG, TIFF, AI, EPS, SVG - max 25 Mo)'}
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.ai,.eps,.svg"
+                  onChange={handleBatFileChange}
+                  required
+                  className="block w-full t-cap text-black dark:text-white file:mr-3 file:py-2 file:px-3 file:border-0 file:bg-[#F5F1EC] dark:file:bg-[#2B2825] file:font-semibold file:cursor-pointer"
+                />
+                {batFile && (
+                  <div className="flex flex-wrap items-center justify-between gap-2 t-cap p-3 bg-[#F5F1EC] dark:bg-[#191716] rounded-[var(--r-ctl-sm,10px)]">
+                    <span className="font-semibold text-black dark:text-white">
+                      {batFile.name} ({(batFile.size / (1024 * 1024)).toFixed(2)} MB)
+                    </span>
+                    {batMetaResult && (
+                      <span
+                        className={`px-2 py-0.5 rounded-[var(--r-check,6px)] font-semibold ${
+                          batMetaResult.metadataStatus === 'verified'
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                        }`}
+                      >
+                        {batMetaResult.metadataStatus}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {batMetaResult && batMetaResult.unreadableFields.length > 0 && (
+                  <p className="t-cap text-amber-700 dark:text-amber-300">
+                    {isAr
+                      ? `حقول لم يُتحقق منها تلقائياً (${batMetaResult.unreadableFields.join(', ')}) — يرجى إدخالها يدوياً (manual / unverified).`
+                      : isEn
+                      ? `Unreadable header fields (${batMetaResult.unreadableFields.join(', ')}) — marked as manual / unverified.`
+                      : `Champs non détectables dans l'en-tête (${batMetaResult.unreadableFields.join(', ')}) — marqués « manual / unverified ».`}
+                  </p>
+                )}
+                {previewUrl && (
+                  <img
+                    src={previewUrl}
+                    alt={artworkTitle || batFile?.name || 'BAT preview'}
+                    className="w-full h-40 object-cover rounded-[var(--r-ctl,12px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
+                  />
+                )}
+              </div>
               <LabelSelect
                 field="Project"
                 label="Projet / Campagne"
@@ -1113,6 +1336,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                     { value: 'ai', label: 'Illustrator', tooltip: 'Adobe Illustrator (.ai)' },
                     { value: 'psd', label: 'Photoshop', tooltip: 'Photoshop (.psd)' },
                     { value: 'tiff', label: 'TIFF', tooltip: 'TIFF Pré-presse' },
+                    { value: 'png', label: 'PNG', tooltip: 'PNG Raster' },
                   ]}
                 />
                 <FilterSelect
@@ -1128,6 +1352,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   field="Resolution"
                   label="Résolution (DPI)"
                   type="number"
+                  placeholder="300"
                   value={resolutionDpi}
                   onChange={setResolutionDpi}
                   required
@@ -1159,10 +1384,23 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 variant="primary"
                 size="md"
                 className="w-full justify-center"
-                disabled={colorSpace !== 'CMJN' || Number(resolutionDpi) < 300 || !hasBleedIncluded}
+                disabled={
+                  !batFile ||
+                  !artworkTitle.trim() ||
+                  isUploadingBat ||
+                  colorSpace !== 'CMJN' ||
+                  Number(resolutionDpi) < 300 ||
+                  !hasBleedIncluded
+                }
                 icon={<UploadCloud className="w-4 h-4" />}
               >
-                Valider la Conformité & Déposer le BAT
+                {isUploadingBat
+                  ? isAr
+                    ? 'جاري الرفع...'
+                    : isEn
+                    ? 'Uploading BAT...'
+                    : 'Dépôt en cours...'
+                  : 'Valider la Conformité & Déposer le BAT'}
               </AtriumButton>
             </form>
             </div>
@@ -1240,16 +1478,23 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         renderBody={(bat) => (
           <>
             <InspectorSection index={0}>
-              <img
-                src={bat.previewUrl}
-                alt={bat.title}
-                width={384}
-                height={176}
-                loading="lazy"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                className="w-full h-44 object-cover rounded-[var(--r-card,16px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
-              />
+              {bat.previewUrl ? (
+                <img
+                  src={bat.previewUrl}
+                  alt={bat.title}
+                  width={384}
+                  height={176}
+                  loading="lazy"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-44 object-cover rounded-[var(--r-card,16px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
+                />
+              ) : (
+                <div className="w-full h-44 rounded-[var(--r-card,16px)] bg-[#F3EDE7] dark:bg-[#2B2825] flex flex-col items-center justify-center gap-2 text-black/55 dark:text-white/60">
+                  <FileText className="w-8 h-8" />
+                  <span className="t-small font-semibold">{bat.fileFormat.toUpperCase()}</span>
+                </div>
+              )}
             </InspectorSection>
 
             <InspectorSection index={1} title="Actions Rapides">
@@ -1291,7 +1536,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <InspectorBigStat
                 value={`${bat.colorSpace} · ${bat.resolutionDpi} DPI`}
                 tone={bat.colorSpace === 'CMJN' && bat.resolutionDpi >= 300 ? 'ok' : 'danger'}
-                caption={`Fond perdu +${bat.bleedMm}mm · ${bat.versionCode}`}
+                caption={`Fond perdu +${bat.bleedMm}mm · ${bat.versionCode}${bat.metadataStatus ? ` · ${bat.metadataStatus}` : ''}`}
               />
             </InspectorSection>
 
@@ -1301,6 +1546,14 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 <InspectorKeyValue label="Format" value={bat.fileFormat.toUpperCase()} />
                 <InspectorKeyValue label="Espace Couleur" value={bat.colorSpace} tone={bat.colorSpace === 'CMJN' ? 'ok' : 'danger'} />
                 <InspectorKeyValue label="Résolution" value={`${bat.resolutionDpi} DPI`} />
+                {bat.metadataStatus && (
+                  <InspectorKeyValue
+                    label="Métadonnées"
+                    value={bat.metadataStatus}
+                    tone={bat.metadataStatus === 'verified' ? 'ok' : 'warn'}
+                    mono={false}
+                  />
+                )}
                 <InspectorKeyValue label="Directeur Créa" value={bat.uploadedByCreativeName} mono={false} isLast />
               </InspectorCard>
             </InspectorSection>
@@ -1348,16 +1601,30 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <img
-              src={retainedPreviewBat.previewUrl}
-              alt={retainedPreviewBat.title}
-              width={512}
-              height={320}
-              loading="lazy"
-              decoding="async"
-              referrerPolicy="no-referrer"
-              className="w-full h-80 object-cover rounded-[var(--r-ctl,12px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
-            />
+            {retainedPreviewBat.previewUrl ? (
+              <img
+                src={retainedPreviewBat.previewUrl}
+                alt={retainedPreviewBat.title}
+                width={512}
+                height={320}
+                loading="lazy"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                className="w-full h-80 object-cover rounded-[var(--r-ctl,12px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
+              />
+            ) : (
+              <div className="w-full h-64 rounded-[var(--r-ctl,12px)] bg-[#F3EDE7] dark:bg-[#2B2825] flex flex-col items-center justify-center gap-2 text-black/60 dark:text-white/65">
+                <FileText className="w-10 h-10" />
+                <span className="t-small font-semibold">
+                  {retainedPreviewBat.fileFormat.toUpperCase()} — {retainedPreviewBat.title}
+                </span>
+                {retainedPreviewBat.masterSourceUrl && (
+                  <span className="t-cap text-black/55 dark:text-white/55 truncate max-w-sm px-4">
+                    {retainedPreviewBat.masterSourceUrl}
+                  </span>
+                )}
+              </div>
+            )}
             <div className="flex justify-between items-center t-cap tabular-nums text-black/55 dark:text-white/55">
               <span>
                 {retainedPreviewBat.colorSpace} · {retainedPreviewBat.resolutionDpi} DPI

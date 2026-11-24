@@ -23,6 +23,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { formatMoney } from '../../../utils/rules';
 import { useLegalData } from './legalData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -80,6 +81,7 @@ const extractStr = (v: unknown): string => {
 
 export const LegalTrustView: React.FC<any> = () => {
   const {
+    account,
     language,
     activeLegalRole,
     currentBusiness,
@@ -90,6 +92,7 @@ export const LegalTrustView: React.FC<any> = () => {
     networkMode,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       activeLegalRole: s.activeLegalRole,
       currentBusiness: selectCurrentBusinessFromState(s),
@@ -167,7 +170,7 @@ export const LegalTrustView: React.FC<any> = () => {
   const [scfLibelle, setScfLibelle] = useState('');
   const [scfJournal, setScfJournal] = useState<SCFJournalEntry['journalCode']>('VE');
   const [scfRefPiece, setScfRefPiece] = useState('');
-  const [scfDebitAmount, setScfDebitAmount] = useState(100000);
+  const [scfDebitAmount, setScfDebitAmount] = useState('');
   const [scfTvaRate, setScfTvaRate] = useState(19);
 
   const [receiptMethodFilter, setReceiptMethodFilter] = useState<string>('All');
@@ -177,7 +180,7 @@ export const LegalTrustView: React.FC<any> = () => {
   const [receiptTab, setReceiptTab] = useState<string>('quittance');
   const [receiptClientName, setReceiptClientName] = useState('');
   const [receiptMatterTitle, setReceiptMatterTitle] = useState('');
-  const [receiptAmountHt, setReceiptAmountHt] = useState(50000);
+  const [receiptAmountHt, setReceiptAmountHt] = useState('');
 
   const [carpaFilter, setCarpaFilter] = useState<string>('All');
   const [selectedMatter, setSelectedMatter] = useState<LegalMatter | null>(null);
@@ -320,7 +323,24 @@ export const LegalTrustView: React.FC<any> = () => {
       );
       return;
     }
-    const baseAmount = Number(scfDebitAmount) || 0;
+    const baseAmount = parseFloat(scfDebitAmount);
+    if (!Number.isFinite(baseAmount) || baseAmount <= 0) {
+      showToast(
+        isAr ? 'يرجى إدخال مبلغ صحيح' : 'Veuillez saisir un montant HT valide',
+        'error'
+      );
+      return;
+    }
+    const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const tvaAmount = Math.round(baseAmount * (scfTvaRate / 100));
     const totalTtc = baseAmount + tvaAmount;
     const lines = [
@@ -353,10 +373,10 @@ export const LegalTrustView: React.FC<any> = () => {
     }
     const newEntry: SCFJournalEntry = {
       id: `scf_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_legal',
-      branchId: currentBranch?.id || 'branch_legal_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       entryNumber: `EC-2026-${Math.floor(500 + Math.random() * 500)}`,
       journalCode: scfJournal,
       date: new Date().toISOString().split('T')[0],
@@ -373,6 +393,7 @@ export const LegalTrustView: React.FC<any> = () => {
     setSelectedSCFEntry(newEntry);
     setIsSCFModalOpen(false);
     setScfLibelle('');
+    setScfDebitAmount('');
   };
 
   const handleSaveCashReceipt = (e: React.FormEvent) => {
@@ -384,17 +405,34 @@ export const LegalTrustView: React.FC<any> = () => {
       );
       return;
     }
-    const ht = Number(receiptAmountHt) || 0;
+    const ht = parseFloat(receiptAmountHt);
+    if (!Number.isFinite(ht) || ht <= 0) {
+      showToast(
+        isAr ? 'يرجى إدخال مبلغ صحيح' : 'Veuillez saisir un montant HT valide',
+        'error'
+      );
+      return;
+    }
+    const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const tva = Math.round(ht * 0.19);
     const ttc = ht + tva;
     const stamp = calculateArticle317Stamp(ttc, 'especes');
     const netCollected = ttc + stamp;
     const newRc: CashReceipt = {
       id: `cr_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_legal',
-      branchId: currentBranch?.id || 'branch_legal_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       receiptNumber: `RC-2026-${Math.floor(200 + Math.random() * 800)}`,
       clientName: receiptClientName.trim(),
       matterTitle: receiptMatterTitle.trim() || 'Provision sur honoraires et diligences',
@@ -403,7 +441,7 @@ export const LegalTrustView: React.FC<any> = () => {
       paymentMethod: 'especes',
       timbreFiscalDzd: stamp,
       netCollectedDzd: netCollected,
-      cashierName: 'Samia Khelifa (Secrétaire)',
+      cashierName: currentUser?.fullName || (isAr ? 'أمين الصندوق' : 'Secrétaire Caisse'),
       createdAt: new Date().toISOString(),
     };
     addCashReceipt(newRc);
@@ -411,6 +449,7 @@ export const LegalTrustView: React.FC<any> = () => {
     setIsNewReceiptModalOpen(false);
     setReceiptClientName('');
     setReceiptMatterTitle('');
+    setReceiptAmountHt('');
   };
 
   const handleReleaseTrustFunds = useCallback(
@@ -1895,8 +1934,9 @@ export const LegalTrustView: React.FC<any> = () => {
                 <LabelInput
                   label={isAr ? 'المبلغ الصافي الخاضع (HT) *' : 'Montant HT (Prestation) *'}
                   type="number"
+                  placeholder="100000"
                   value={scfDebitAmount}
-                  onChange={(v) => setScfDebitAmount(Number(v))}
+                  onChange={(v) => setScfDebitAmount(extractStr(v))}
                   required
                 />
                 <LabelSelect
@@ -1910,31 +1950,34 @@ export const LegalTrustView: React.FC<any> = () => {
                   ]}
                 />
               </div>
-              <div
-                data-sq="card"
-                data-sq-border="none"
-                className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-1 tabular-nums t-cap"
-              >
-                <div className="flex justify-between">
-                  <span>Compte 706000 (Crédit HT):</span>
-                  <span className="font-semibold">{formatMoney(scfDebitAmount, language)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Compte 445700 (TVA {scfTvaRate}%):</span>
-                  <span className="font-semibold">
-                    {formatMoney(Math.round(scfDebitAmount * (scfTvaRate / 100)), language)}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t border-[var(--atr-divider)] pt-1 font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
-                  <span>Compte 411000 (Débit TTC):</span>
-                  <span>
-                    {formatMoney(
-                      scfDebitAmount + Math.round(scfDebitAmount * (scfTvaRate / 100)),
-                      language
-                    )}
-                  </span>
-                </div>
-              </div>
+              {(() => {
+                const scfBase = parseFloat(scfDebitAmount) || 0;
+                const scfTvaAmt = Math.round(scfBase * (scfTvaRate / 100));
+                return (
+                  <div
+                    data-sq="card"
+                    data-sq-border="none"
+                    className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] space-y-1 tabular-nums t-cap"
+                  >
+                    <div className="flex justify-between">
+                      <span>Compte 706000 (Crédit HT):</span>
+                      <span className="font-semibold">{formatMoney(scfBase, language)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Compte 445700 (TVA {scfTvaRate}%):</span>
+                      <span className="font-semibold">
+                        {formatMoney(scfTvaAmt, language)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-t border-[var(--atr-divider)] pt-1 font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                      <span>Compte 411000 (Débit TTC):</span>
+                      <span>
+                        {formatMoney(scfBase + scfTvaAmt, language)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--atr-divider)]">
                 <AtriumButton
                   variant="ghost"
@@ -2370,12 +2413,13 @@ export const LegalTrustView: React.FC<any> = () => {
               <LabelInput
                 label={isAr ? 'المبلغ الصافي الخاضع (HT) بالدينار *' : 'Montant HT (DZD) *'}
                 type="number"
+                placeholder="50000"
                 value={receiptAmountHt}
-                onChange={(v) => setReceiptAmountHt(Number(v))}
+                onChange={(v) => setReceiptAmountHt(extractStr(v))}
                 required
               />
               {(() => {
-                const ht = Number(receiptAmountHt) || 0;
+                const ht = parseFloat(receiptAmountHt) || 0;
                 const tva = Math.round(ht * 0.19);
                 const ttc = ht + tva;
                 const stamp = calculateArticle317Stamp(ttc, 'especes');

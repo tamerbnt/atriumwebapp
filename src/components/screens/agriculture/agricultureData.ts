@@ -18,6 +18,7 @@ import {
   registerUndoEntry,
 } from '../../../services/undoEngine';
 import { isSupabaseConfigured, agricultureService, realtimeService, syncCoordinator, subscribeConcurrencyResolutions, runWithConcurrency } from '../../../lib/supabase';
+import { isDemoModeEnabled } from '../../../lib/supabase/tenantContext';
 
 function mergeAgriById<T extends { id: string }>(prev: T[], remote: T[]): T[] {
   if (remote.length === 0) return prev;
@@ -571,10 +572,13 @@ export const useAgricultureData = () => {
   const withBranch = <T extends object>(item: T): T =>
     ({
       ...item,
-      accountId: (item as { accountId?: string }).accountId || currentAccountId || 'acc_01',
+      accountId:
+        (item as { accountId?: string }).accountId ||
+        currentAccountId ||
+        (isDemoModeEnabled() ? 'acc_01' : ''),
       businessId: (item as { businessId?: string }).businessId || currentBusinessId || 'biz_agri',
       branchId: (item as { branchId?: string }).branchId || activeBranchId,
-      staffId: (item as { staffId?: string }).staffId || currentStaffId || 'staff_01',
+      staffId: (item as { staffId?: string }).staffId || currentStaffId || '',
     }) as T;
 
   const [parcels, setParcels] = useState<AgriParcel[]>(() => {

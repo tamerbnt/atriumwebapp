@@ -7,6 +7,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { ContractorProject } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -27,8 +28,9 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
   onSave,
   initialData,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -41,11 +43,11 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
   const [projectName, setProjectName] = useState('');
   const [clientName, setClientName] = useState('');
   const [siteLocation, setSiteLocation] = useState('');
-  const [contractAmount, setContractAmount] = useState('45000000');
+  const [contractAmount, setContractAmount] = useState('');
   const [retentionPercent, setRetentionPercent] = useState('5');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-  const [targetEndDate, setTargetEndDate] = useState('2026-12-31');
-  const [supervisorName, setSupervisorName] = useState('Ing. Mourad Benali');
+  const [targetEndDate, setTargetEndDate] = useState('');
+  const [supervisorName, setSupervisorName] = useState('');
   const [status, setStatus] = useState<ContractorProject['status']>('InProgress');
   const [progressPercent, setProgressPercent] = useState('0');
 
@@ -65,15 +67,15 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
       setProjectName('');
       setClientName('');
       setSiteLocation('');
-      setContractAmount('45000000');
+      setContractAmount('');
       setRetentionPercent('5');
       setStartDate(new Date().toISOString().split('T')[0]);
-      setTargetEndDate('2026-12-31');
-      setSupervisorName('Ing. Mourad Benali');
+      setTargetEndDate('');
+      setSupervisorName(currentUser?.fullName || '');
       setStatus('InProgress');
       setProgressPercent('0');
     }
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen, currentUser?.fullName]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,15 +84,31 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
       return;
     }
 
-    const amount = parseFloat(contractAmount) || 0;
+    const amount = parseFloat(contractAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      showToast(isAr ? 'يرجى إدخال مبلغ الصفقة' : 'Veuillez saisir un montant de marché valide', 'error');
+      return;
+    }
+
+    const activeAccountId = (initialData?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (initialData?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
+
     const retPct = parseFloat(retentionPercent) || 5;
 
     const payload: ContractorProject = {
       id: initialData?.id || `proj_${Date.now()}`,
-      accountId: initialData?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_contractor',
-      branchId: currentBranch?.id || 'branch_contractor_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       projectCode: initialData?.projectCode || `CHANT-2026-${Math.floor(20 + Math.random() * 80)}`,
       projectName: projectName.trim(),
       clientName: clientName.trim(),
@@ -188,6 +206,7 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
               corner={12}
               label={isAr ? 'مبلغ الصفقة الإجمالي (دج)' : 'Montant du Marché (DZD)'}
               type="number"
+              placeholder="45000000"
               value={contractAmount}
               onChange={setContractAmount}
               required

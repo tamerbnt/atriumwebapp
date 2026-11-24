@@ -585,7 +585,7 @@ export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
               sublabel={
                 isFieldScanRole
                   ? l3(language, 'Lancer le poste de scan & rayonnement', 'Launch live parcel barcode scanner', 'فتح محطة المسح السريع')
-                  : l3(language, 'Ouvrir le tableau de bord 58 Wilayas', 'Open 58-wilaya delivery rate & COD dashboard', 'فتح لوحة تحكم الـ58 ولاية')
+                  : l3(language, 'Ouvrir le tableau de bord inter-wilayas', 'Open inter-wilaya delivery rate & COD dashboard', 'فتح لوحة تحكم التوصيل عبر الولايات')
               }
               targetScreen={isFieldScanRole ? 'registrations' : 'dashboard'}
             />
@@ -628,7 +628,7 @@ export const LogisticsHomeView: React.FC<HomeViewProps> = () => {
             id: 'log-shipments',
             tone: 'terracotta',
             title: l3(language, 'Colis & Stop-Desk', 'Parcels & Stop-Desk', 'الطرود ونقاط الاستلام'),
-            subtitle: l3(language, 'Suivi 58 wilayas & codes OTP', 'Live shipment tracking', 'متابعة الطرود والتسليم'),
+            subtitle: l3(language, 'Suivi inter-wilayas & codes OTP', 'Live shipment tracking', 'متابعة الطرود والتسليم'),
             icon: <Package size={18} />,
             count: shipments.length,
             countLabel: `${outForDeliveryCount} ${l3(language, 'en tournée', 'out', 'قيد التوصيل')}`,

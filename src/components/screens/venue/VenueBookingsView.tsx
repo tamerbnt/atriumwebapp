@@ -24,7 +24,7 @@ import { RentalBooking, BookingStatus } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
-import { VenueCloudSyncModal } from './VenueCloudSyncModal';
+import { VenueCloudSyncModal, useCanAccessVenueCloudDiagnostics } from './VenueCloudSyncModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -115,6 +115,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
 
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
+  const canAccessCloudDiagnostics = useCanAccessVenueCloudDiagnostics();
   const [bookingToEdit, setBookingToEdit] = useState<RentalBooking | null>(null);
   const [printedBooking, setPrintedBooking] = useState<RentalBooking | null>(null);
 
@@ -563,18 +564,20 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
           icon={<Calendar size={22} />}
           title={t('venue_bookings_page_title')}
           secondaryActions={
-            <button
-              type="button"
-              onClick={() => setIsCloudSyncModalOpen(true)}
-              data-sq="ctl"
-              data-sq-border="none"
-              className="h-10 px-4 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer"
-              title="Inspect Supabase live tables and row writes"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
-              <span className="hidden sm:inline">Supabase</span>
-            </button>
+            canAccessCloudDiagnostics ? (
+              <button
+                type="button"
+                onClick={() => setIsCloudSyncModalOpen(true)}
+                data-sq="ctl"
+                data-sq-border="none"
+                className="h-10 px-4 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer"
+                title="Inspect Supabase live tables and row writes"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
+                <span className="hidden sm:inline">Supabase</span>
+              </button>
+            ) : undefined
           }
           primaryAction={{
             label: t('venue_btn_new_res'),
@@ -1287,10 +1290,12 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
         onClose={() => setIsBookingModalOpen(false)}
         bookingToEdit={bookingToEdit}
       />
-      <VenueCloudSyncModal
-        isOpen={isCloudSyncModalOpen}
-        onClose={() => setIsCloudSyncModalOpen(false)}
-      />
+      {canAccessCloudDiagnostics && (
+        <VenueCloudSyncModal
+          isOpen={isCloudSyncModalOpen}
+          onClose={() => setIsCloudSyncModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

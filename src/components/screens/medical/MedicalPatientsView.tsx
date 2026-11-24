@@ -120,13 +120,12 @@ export const MedicalPatientsView: React.FC<any> = () => {
 
   // Vitals capture form inside inspector
   const [showAddVitals, setShowAddVitals] = useState(false);
-  const [newSys, setNewSys] = useState('120');
-  const [newDia, setNewDia] = useState('80');
-  const [newHr, setNewHr] = useState('72');
-  const [newWeight, setNewWeight] = useState('75');
-  const [newHeight] = useState('172');
-  const [newSugar, setNewSugar] = useState('95');
-  const [newSpo2, setNewSpo2] = useState('98');
+  const [newSys, setNewSys] = useState('');
+  const [newDia, setNewDia] = useState('');
+  const [newHr, setNewHr] = useState('');
+  const [newWeight, setNewWeight] = useState('');
+  const [newSugar, setNewSugar] = useState('');
+  const [newSpo2, setNewSpo2] = useState('');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -1173,7 +1172,15 @@ export const MedicalPatientsView: React.FC<any> = () => {
                           <InspectorWideButton
                             label={isAr ? 'تسجيل قراءة جديدة' : 'Prendre de nouvelles constantes'}
                             icon={<Plus size={14} />}
-                            onClick={() => setShowAddVitals(true)}
+                            onClick={() => {
+                              setNewSys('');
+                              setNewDia('');
+                              setNewHr('');
+                              setNewWeight('');
+                              setNewSugar('');
+                              setNewSpo2('');
+                              setShowAddVitals(true);
+                            }}
                           />
                         </div>
                       ) : (
@@ -1188,8 +1195,9 @@ export const MedicalPatientsView: React.FC<any> = () => {
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                             <LabelInput
                               field="vitalsSys"
-                              label="Sys (mmHg)"
+                              label="Sys (mmHg) *"
                               type="number"
+                              placeholder="120"
                               value={newSys}
                               onChange={setNewSys}
                               width="100%"
@@ -1198,8 +1206,9 @@ export const MedicalPatientsView: React.FC<any> = () => {
                             />
                             <LabelInput
                               field="vitalsDia"
-                              label="Dia (mmHg)"
+                              label="Dia (mmHg) *"
                               type="number"
+                              placeholder="80"
                               value={newDia}
                               onChange={setNewDia}
                               width="100%"
@@ -1208,8 +1217,9 @@ export const MedicalPatientsView: React.FC<any> = () => {
                             />
                             <LabelInput
                               field="vitalsHr"
-                              label={isAr ? 'النبض (bpm)' : 'Pouls (bpm)'}
+                              label={isAr ? 'النبض (bpm) *' : 'Pouls (bpm) *'}
                               type="number"
+                              placeholder="72"
                               value={newHr}
                               onChange={setNewHr}
                               width="100%"
@@ -1222,6 +1232,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                               field="vitalsWeight"
                               label={isAr ? 'الوزن (kg)' : 'Poids (kg)'}
                               type="number"
+                              placeholder="75"
                               value={newWeight}
                               onChange={setNewWeight}
                               width="100%"
@@ -1233,6 +1244,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                               label={isAr ? 'السكر (mg/dL)' : 'Glycémie (mg/dL)'}
                               type="number"
                               step="1"
+                              placeholder="95"
                               value={newSugar}
                               onChange={setNewSugar}
                               width="100%"
@@ -1243,6 +1255,7 @@ export const MedicalPatientsView: React.FC<any> = () => {
                               field="vitalsSpo2"
                               label="SpO₂ (%)"
                               type="number"
+                              placeholder="98"
                               value={newSpo2}
                               onChange={setNewSpo2}
                               width="100%"
@@ -1264,8 +1277,19 @@ export const MedicalPatientsView: React.FC<any> = () => {
                               tone="accent"
                               size={36}
                               onClick={() => {
-                                const sysVal = parseInt(newSys, 10) || 120;
-                                const diaVal = parseInt(newDia, 10) || 80;
+                                const sysVal = parseInt(newSys, 10);
+                                const diaVal = parseInt(newDia, 10);
+                                const hrVal = parseInt(newHr, 10);
+                                if (!Number.isFinite(sysVal) || sysVal <= 0 || !Number.isFinite(diaVal) || diaVal <= 0 || !Number.isFinite(hrVal) || hrVal <= 0) {
+                                  showToast({
+                                    type: 'warning',
+                                    title: isAr ? 'بيانات غير مكتملة' : 'Constantes requises',
+                                    message: isAr
+                                      ? 'يرجى إدخال الضغط الانقباضي والانبساطي والنبض'
+                                      : 'Veuillez saisir la tension (Sys / Dia) et le pouls (bpm).',
+                                  });
+                                  return;
+                                }
                                 if (sysVal <= diaVal) {
                                   showToast({
                                     type: 'error',
@@ -1276,20 +1300,26 @@ export const MedicalPatientsView: React.FC<any> = () => {
                                   });
                                   return;
                                 }
+                                const parsedWeight = newWeight.trim() !== '' ? parseFloat(newWeight) : undefined;
+                                const parsedSugar = newSugar.trim() !== '' ? parseFloat(newSugar) : undefined;
+                                const parsedSpo2 = newSpo2.trim() !== '' ? parseInt(newSpo2, 10) : undefined;
+                                const lastVitals = patient.vitalsHistory?.[patient.vitalsHistory.length - 1];
+                                const prevHeight = lastVitals?.heightCm;
+                                const prevWeight = lastVitals?.weightKg;
                                 const newPoint = {
                                   date: new Date().toISOString().slice(0, 10),
                                   systolic: sysVal,
                                   diastolic: diaVal,
-                                  pulseBpm: parseInt(newHr, 10) || 72,
+                                  pulseBpm: hrVal,
                                   tempCelsius: 37,
-                                  weightKg: parseFloat(newWeight) || 70,
+                                  weightKg: Number.isFinite(parsedWeight) ? (parsedWeight as number) : (prevWeight ?? 0),
                                   systolicBp: sysVal,
                                   diastolicBp: diaVal,
-                                  heartRateBpm: parseInt(newHr, 10) || 72,
-                                  heightCm: parseInt(newHeight, 10) || 172,
-                                  bloodSugarMgDl: parseFloat(newSugar) || 95,
-                                  spO2: parseInt(newSpo2, 10) || 98,
-                                  spO2Percent: parseInt(newSpo2, 10) || 98,
+                                  heartRateBpm: hrVal,
+                                  heightCm: prevHeight,
+                                  bloodSugarMgDl: Number.isFinite(parsedSugar) ? parsedSugar : undefined,
+                                  spO2: Number.isFinite(parsedSpo2) ? parsedSpo2 : undefined,
+                                  spO2Percent: Number.isFinite(parsedSpo2) ? parsedSpo2 : undefined,
                                 };
                                 const updated: MedicalPatient = {
                                   ...patient,

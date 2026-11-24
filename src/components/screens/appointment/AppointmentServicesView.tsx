@@ -18,6 +18,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { ServiceItem } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { LabelInput } from '../../ui/LabelInput';
@@ -64,6 +65,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export const AppointmentServicesView: React.FC = React.memo(() => {
   const {
+    account,
     servicesCatalog,
     branches,
     currentBranch,
@@ -74,6 +76,7 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
     isSyncTimeout,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       servicesCatalog: selectCurrentServicesFromState(s),
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
@@ -117,11 +120,11 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
 
   const [formName, setFormName] = useState('');
   const [formCategory, setFormCategory] = useState<ServiceItem['category']>('Hair');
-  const [formDuration, setFormDuration] = useState(60);
-  const [formPrice, setFormPrice] = useState(5000);
-  const [formCostPrice, setFormCostPrice] = useState(500);
-  const [formCommission, setFormCommission] = useState(40);
-  const [formBuffer, setFormBuffer] = useState(10);
+  const [formDuration, setFormDuration] = useState('');
+  const [formPrice, setFormPrice] = useState('');
+  const [formCostPrice, setFormCostPrice] = useState('');
+  const [formCommission, setFormCommission] = useState('');
+  const [formBuffer, setFormBuffer] = useState('');
   const [formColor, setFormColor] = useState('#d4522f');
   const [formDescription, setFormDescription] = useState('');
 
@@ -220,11 +223,11 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
     setEditingService(null);
     setFormName('');
     setFormCategory('Hair');
-    setFormDuration(60);
-    setFormPrice(5000);
-    setFormCostPrice(500);
-    setFormCommission(40);
-    setFormBuffer(10);
+    setFormDuration('');
+    setFormPrice('');
+    setFormCostPrice('');
+    setFormCommission('');
+    setFormBuffer('');
     setFormColor('#d4522f');
     setFormDescription('');
     setIsServiceModalOpen(true);
@@ -234,11 +237,11 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
     setEditingService(service);
     setFormName(service.name);
     setFormCategory(service.category);
-    setFormDuration(service.durationMinutes);
-    setFormPrice(service.price);
-    setFormCostPrice(service.costPrice || 0);
-    setFormCommission(service.commissionRate || 40);
-    setFormBuffer(service.bufferMinutes || 0);
+    setFormDuration(String(service.durationMinutes));
+    setFormPrice(String(service.price));
+    setFormCostPrice(String(service.costPrice ?? ''));
+    setFormCommission(String(service.commissionRate ?? ''));
+    setFormBuffer(String(service.bufferMinutes ?? ''));
     setFormColor(service.color || '#d4522f');
     setFormDescription(service.description || '');
     setIsServiceModalOpen(true);
@@ -251,28 +254,48 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
         showToast?.({ type: 'error', title: 'Nom requis', message: 'Saisissez le nom du soin.' });
         return;
       }
+      const parsedDuration = parseInt(formDuration, 10);
+      const parsedPrice = parseFloat(formPrice);
+      if (!Number.isFinite(parsedDuration) || parsedDuration <= 0 || !Number.isFinite(parsedPrice) || parsedPrice < 0) {
+        showToast?.({ type: 'error', title: 'Saisie invalide', message: 'Saisissez une durée et un tarif valides.' });
+        return;
+      }
+      const parsedCost = formCostPrice.trim() ? parseFloat(formCostPrice) || 0 : 0;
+      const parsedComm = formCommission.trim() ? parseFloat(formCommission) || 0 : 0;
+      const parsedBuf = formBuffer.trim() ? parseInt(formBuffer, 10) || 0 : 0;
+
       if (editingService) {
         updateServiceItem(editingService.id, {
           name: formName.trim(),
           category: formCategory,
-          durationMinutes: Number(formDuration),
-          price: Number(formPrice),
-          costPrice: Number(formCostPrice),
-          commissionRate: Number(formCommission),
-          bufferMinutes: Number(formBuffer),
+          durationMinutes: parsedDuration,
+          price: parsedPrice,
+          costPrice: parsedCost,
+          commissionRate: parsedComm,
+          bufferMinutes: parsedBuf,
           color: formColor,
           description: formDescription.trim(),
         });
       } else {
+        const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
+        const activeBranchId = (currentBranch?.id || '').trim();
+        if (!activeAccountId || !activeBranchId) {
+          showToast?.({
+            type: 'error',
+            title: t('tenant_context_missing_title', language),
+            message: t('tenant_context_missing_msg', language),
+          });
+          return;
+        }
         addServiceItem({
-          tenantId: 'acc_01',
+          tenantId: activeAccountId,
           name: formName.trim(),
           category: formCategory,
-          durationMinutes: Number(formDuration),
-          price: Number(formPrice),
-          costPrice: Number(formCostPrice),
-          commissionRate: Number(formCommission),
-          bufferMinutes: Number(formBuffer),
+          durationMinutes: parsedDuration,
+          price: parsedPrice,
+          costPrice: parsedCost,
+          commissionRate: parsedComm,
+          bufferMinutes: parsedBuf,
           color: formColor,
           colorCode: formColor,
           description: formDescription.trim(),
@@ -292,6 +315,9 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
       formBuffer,
       formColor,
       formDescription,
+      account,
+      currentBranch,
+      language,
       updateServiceItem,
       addServiceItem,
     ]
@@ -889,9 +915,10 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   field="Duration"
                   label="Durée cabine (minutes)"
                   type="number"
+                  placeholder="60"
                   required
-                  value={String(formDuration)}
-                  onChange={(v) => setFormDuration(parseInt(v, 10) || 30)}
+                  value={formDuration}
+                  onChange={setFormDuration}
                   width="100%"
                   height={40}
                   corner={12}
@@ -902,9 +929,10 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   field="Price"
                   label="Tarif Client (DZD)"
                   type="number"
+                  placeholder="5000"
                   required
-                  value={String(formPrice)}
-                  onChange={(v) => setFormPrice(parseFloat(v) || 0)}
+                  value={formPrice}
+                  onChange={setFormPrice}
                   width="100%"
                   height={40}
                   corner={12}
@@ -913,8 +941,9 @@ export const AppointmentServicesView: React.FC = React.memo(() => {
                   field="Commission"
                   label="Commission Styliste (%)"
                   type="number"
-                  value={String(formCommission)}
-                  onChange={(v) => setFormCommission(parseFloat(v) || 0)}
+                  placeholder="40"
+                  value={formCommission}
+                  onChange={setFormCommission}
                   width="100%"
                   height={40}
                   corner={12}

@@ -15,6 +15,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
   useAtriumActions,
+  showToast,
 } from '../../../services/store';
 import { PurchaseDocument, CommercialDocument } from '../../../types';
 import { formatMoney, localizeStatus } from '../../../utils/rules';
@@ -61,8 +62,9 @@ export const TradingPurchasesView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { purchaseDocs, b2bSuppliers, warehouses, products, currentBusiness, currentBranchId, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const { account, purchaseDocs, b2bSuppliers, warehouses, products, currentBusiness, currentBranchId, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       purchaseDocs: selectCurrentPurchaseDocsFromState(s),
       b2bSuppliers: s.b2bSuppliers || [],
       warehouses: selectCurrentWarehousesFromState(s),
@@ -245,6 +247,16 @@ export const TradingPurchasesView: React.FC = () => {
 
   const handleCreatePo = (e: React.FormEvent) => {
     e.preventDefault();
+    const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (currentBranchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title'),
+        message: t('tenant_context_missing_msg'),
+      });
+      return;
+    }
     const sup = b2bSuppliers.find((s) => s.id === supplierId) || b2bSuppliers[0];
     const dep = warehouses.find((w) => w.id === depotId) || warehouses[0];
     const docNumber = `PO-${new Date().getFullYear()}-${(
@@ -255,8 +267,8 @@ export const TradingPurchasesView: React.FC = () => {
     const totalHt = poItems.reduce((sum, it) => sum + (it.totalHt || 0), 0);
     const totalTva = totalHt * 0.19;
     createPurchaseDoc({
-      tenantId: currentBusiness?.id || 'acc_01',
-      facilityId: currentBranchId || 'fac_01',
+      tenantId: activeAccountId,
+      facilityId: activeBranchId,
       type: 'po',
       docNumber,
       supplierId: sup?.id || 'sup_01',

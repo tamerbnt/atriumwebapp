@@ -7,6 +7,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { AgriParcel, AgriTenureType, AgriIrrigationType, AgriParcelStatus } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -26,8 +27,9 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
   onSave,
   initialData,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -38,49 +40,49 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
   const isAr = language === 'ar';
 
   const [name, setName] = useState('');
-  const [code, setCode] = useState('P-01');
+  const [code, setCode] = useState('');
   const [tenureType, setTenureType] = useState<AgriTenureType>('concession_loi_10_03');
-  const [cadastralSection, setCadastralSection] = useState('Section 04, Îlot 12');
-  const [cadastralDeedRef, setCadastralDeedRef] = useState('Acte Notarié N° 1048/2012');
-  const [surfaceHectares, setSurfaceHectares] = useState('5.0');
+  const [cadastralSection, setCadastralSection] = useState('');
+  const [cadastralDeedRef, setCadastralDeedRef] = useState('');
+  const [surfaceHectares, setSurfaceHectares] = useState('');
   const [irrigationType, setIrrigationType] = useState<AgriIrrigationType>('Drip');
-  const [anrhAnnualQuotaM3, setAnrhAnnualQuotaM3] = useState('50000');
-  const [soilType, setSoilType] = useState('Argilo-limoneux fertile');
+  const [anrhAnnualQuotaM3, setAnrhAnnualQuotaM3] = useState('');
+  const [soilType, setSoilType] = useState('');
   const [currentCrop, setCurrentCrop] = useState('');
-  const [plantingDate, setPlantingDate] = useState(new Date().toISOString().split('T')[0]);
-  const [expectedHarvestDate, setExpectedHarvestDate] = useState('2026-10-30');
+  const [plantingDate, setPlantingDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [expectedHarvestDate, setExpectedHarvestDate] = useState('');
   const [status, setStatus] = useState<AgriParcelStatus>('Growing');
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);
-      setCode(initialData.code || 'P-01');
+      setCode(initialData.code || '');
       setTenureType(initialData.tenureType || 'concession_loi_10_03');
       setCadastralSection(initialData.cadastralSection || '');
       setCadastralDeedRef(initialData.cadastralDeedRef || '');
       setSurfaceHectares(String(initialData.surfaceHectares));
       setIrrigationType(initialData.irrigationType);
-      setAnrhAnnualQuotaM3(String(initialData.anrhAnnualQuotaM3 || 50000));
+      setAnrhAnnualQuotaM3(initialData.anrhAnnualQuotaM3 ? String(initialData.anrhAnnualQuotaM3) : '');
       setSoilType(initialData.soilType);
       setCurrentCrop(initialData.currentCrop || '');
       setPlantingDate(initialData.plantingDate || new Date().toISOString().split('T')[0]);
-      setExpectedHarvestDate(initialData.expectedHarvestDate || '2026-10-30');
+      setExpectedHarvestDate(initialData.expectedHarvestDate || '');
       setStatus(initialData.status);
       setNotes(initialData.notes || '');
     } else {
       setName('');
-      setCode(`P-0${Math.floor(1 + Math.random() * 9)}`);
+      setCode('');
       setTenureType('concession_loi_10_03');
-      setCadastralSection('Section 04, Îlot 12');
-      setCadastralDeedRef('Acte Notarié N° 1048/2012');
-      setSurfaceHectares('5.0');
+      setCadastralSection('');
+      setCadastralDeedRef('');
+      setSurfaceHectares('');
       setIrrigationType('Drip');
-      setAnrhAnnualQuotaM3('50000');
-      setSoilType('Argilo-limoneux fertile');
+      setAnrhAnnualQuotaM3('');
+      setSoilType('');
       setCurrentCrop('');
       setPlantingDate(new Date().toISOString().split('T')[0]);
-      setExpectedHarvestDate('2026-10-30');
+      setExpectedHarvestDate('');
       setStatus('Growing');
       setNotes('');
     }
@@ -88,28 +90,40 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !currentCrop.trim()) {
+    const surfaceVal = parseFloat(surfaceHectares);
+    if (!name.trim() || !currentCrop.trim() || isNaN(surfaceVal) || surfaceVal <= 0) {
       showToast(
-        isAr ? 'يرجى إدخال اسم القطعة والمحصول' : 'Veuillez saisir le nom de la parcelle et la culture',
+        isAr ? 'يرجى إدخال اسم القطعة والمحصول والمساحة بشكل صحيح' : 'Veuillez saisir le nom de la parcelle, la culture et une superficie valide',
         'error'
       );
       return;
     }
 
+    const activeAccountId = (initialData?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (initialData?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
+
     const payload: AgriParcel = {
       id: initialData?.id || `parc_${Date.now()}`,
-      accountId: initialData?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_agri',
-      branchId: currentBranch?.id || 'branch_agri_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       name: name.trim(),
       code: code.trim(),
       tenureType,
       cadastralSection: cadastralSection.trim(),
       cadastralDeedRef: cadastralDeedRef.trim(),
-      surfaceHectares: parseFloat(surfaceHectares) || 1.0,
+      surfaceHectares: surfaceVal,
       irrigationType,
-      anrhAnnualQuotaM3: parseFloat(anrhAnnualQuotaM3) || 50000,
+      anrhAnnualQuotaM3: parseFloat(anrhAnnualQuotaM3) || 0,
       anrhConsumedM3: initialData?.anrhConsumedM3 || 0,
       soilType: soilType.trim(),
       currentCrop: currentCrop.trim(),
@@ -240,6 +254,7 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
               label={isAr ? 'المساحة (هكتار)' : 'Superficie (Ha)'}
               type="number"
               step="0.1"
+              placeholder="5.0"
               value={surfaceHectares}
               onChange={setSurfaceHectares}
               width="100%"

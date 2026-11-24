@@ -143,16 +143,16 @@ export const PosInventoryView: React.FC<any> = () => {
   const [formCategory, setFormCategory] = useState('Beverage');
   const [formSku, setFormSku] = useState('');
   const [formBarcode, setFormBarcode] = useState('');
-  const [formPrice, setFormPrice] = useState(1500);
-  const [formCost, setFormCost] = useState(900);
-  const [formStock, setFormStock] = useState(25);
-  const [formReorder, setFormReorder] = useState(5);
+  const [formPrice, setFormPrice] = useState('');
+  const [formCost, setFormCost] = useState('');
+  const [formStock, setFormStock] = useState('');
+  const [formReorder, setFormReorder] = useState('');
   const [formUnit, setFormUnit] = useState('pcs');
   const [formTaxRate, setFormTaxRate] = useState(19);
 
   const [isAdjustStockModalOpen, setIsAdjustStockModalOpen] = useState(false);
   const [selectedProductForAdjust, setSelectedProductForAdjust] = useState<Product | null>(null);
-  const [adjustQuantity, setAdjustQuantity] = useState(10);
+  const [adjustQuantity, setAdjustQuantity] = useState('');
   const [adjustMode, setAdjustMode] = useState<'add' | 'remove' | 'set'>('add');
   const [adjustReason, setAdjustReason] = useState('');
   const retainedProductForAdjust = useRetainedModalValue(
@@ -160,7 +160,7 @@ export const PosInventoryView: React.FC<any> = () => {
   );
 
   const [isBatchRestockModalOpen, setIsBatchRestockModalOpen] = useState(false);
-  const [batchRestockQty, setBatchRestockQty] = useState(10);
+  const [batchRestockQty, setBatchRestockQty] = useState('');
 
   const [isRetailPoModalOpen, setIsRetailPoModalOpen] = useState(false);
   const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
@@ -403,10 +403,10 @@ export const PosInventoryView: React.FC<any> = () => {
     setFormCategory(prod.category || 'Beverage');
     setFormSku(prod.sku || '');
     setFormBarcode(prod.barcode || '');
-    setFormPrice(prod.price.amount);
-    setFormCost(prod.costPrice || prod.cost?.amount || Math.round(prod.price.amount * 0.6));
-    setFormStock(prod.stockQuantity);
-    setFormReorder(prod.reorderLevel || 5);
+    setFormPrice(String(prod.price.amount));
+    setFormCost(String(prod.costPrice || prod.cost?.amount || Math.round(prod.price.amount * 0.6)));
+    setFormStock(String(prod.stockQuantity));
+    setFormReorder(String(prod.reorderLevel || 5));
     setFormUnit(prod.unit || 'pcs');
     setFormTaxRate(prod.taxRate || 19);
     setIsProductFormModalOpen(true);
@@ -416,12 +416,12 @@ export const PosInventoryView: React.FC<any> = () => {
     setEditingProductId(null);
     setFormName('');
     setFormCategory('Beverage');
-    setFormSku(`SKU-${Date.now().toString().slice(-4)}`);
-    setFormBarcode(`6131100${Date.now().toString().slice(-6)}`);
-    setFormPrice(1500);
-    setFormCost(900);
-    setFormStock(25);
-    setFormReorder(5);
+    setFormSku('');
+    setFormBarcode('');
+    setFormPrice('');
+    setFormCost('');
+    setFormStock('');
+    setFormReorder('');
     setFormUnit('pcs');
     setFormTaxRate(19);
     setIsProductFormModalOpen(true);
@@ -429,18 +429,22 @@ export const PosInventoryView: React.FC<any> = () => {
 
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName.trim() || formPrice <= 0) return;
+    const priceNum = parseFloat(formPrice);
+    const costNum = formCost === '' ? 0 : parseFloat(formCost);
+    const stockNum = parseInt(formStock, 10);
+    const reorderNum = formReorder === '' ? 5 : parseInt(formReorder, 10);
+    if (!formName.trim() || isNaN(priceNum) || priceNum <= 0 || isNaN(stockNum) || stockNum < 0) return;
     if (editingProductId) {
       updateProduct(editingProductId, {
         name: formName.trim(),
         category: formCategory,
         sku: formSku.trim(),
         barcode: formBarcode.trim() || undefined,
-        price: { amount: formPrice, currency: 'DZD' },
-        cost: { amount: formCost, currency: 'DZD' },
-        costPrice: formCost,
-        stockQuantity: formStock,
-        reorderLevel: formReorder,
+        price: { amount: priceNum, currency: 'DZD' },
+        cost: { amount: isNaN(costNum) ? 0 : costNum, currency: 'DZD' },
+        costPrice: isNaN(costNum) ? 0 : costNum,
+        stockQuantity: stockNum,
+        reorderLevel: isNaN(reorderNum) ? 5 : reorderNum,
         unit: formUnit,
         taxRate: formTaxRate,
       });
@@ -451,11 +455,11 @@ export const PosInventoryView: React.FC<any> = () => {
         category: formCategory,
         sku: formSku.trim() || `SKU-${Date.now().toString().slice(-4)}`,
         barcode: formBarcode.trim() || `6131100${Date.now().toString().slice(-6)}`,
-        price: { amount: formPrice, currency: 'DZD' },
-        cost: { amount: formCost, currency: 'DZD' },
-        costPrice: formCost,
-        stockQuantity: formStock,
-        reorderLevel: formReorder,
+        price: { amount: priceNum, currency: 'DZD' },
+        cost: { amount: isNaN(costNum) ? 0 : costNum, currency: 'DZD' },
+        costPrice: isNaN(costNum) ? 0 : costNum,
+        stockQuantity: stockNum,
+        reorderLevel: isNaN(reorderNum) ? 5 : reorderNum,
         unit: formUnit,
         taxRate: formTaxRate,
         isActive: true,
@@ -469,12 +473,14 @@ export const PosInventoryView: React.FC<any> = () => {
   const handleConfirmStockAdjust = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProductForAdjust) return;
+    const qtyNum = parseInt(adjustQuantity, 10);
+    if (isNaN(qtyNum) || qtyNum < 0) return;
     const deltaOrVal =
       adjustMode === 'add'
-        ? Math.abs(adjustQuantity)
+        ? Math.abs(qtyNum)
         : adjustMode === 'remove'
-        ? -Math.abs(adjustQuantity)
-        : Math.max(0, adjustQuantity);
+        ? -Math.abs(qtyNum)
+        : Math.max(0, qtyNum);
     const movementType =
       adjustMode === 'set' ? 'Adjustment' : adjustMode === 'add' ? 'Restock' : 'Damage';
     adjustStock(
@@ -484,14 +490,18 @@ export const PosInventoryView: React.FC<any> = () => {
       adjustReason || (adjustMode === 'add' ? 'Réassort stock régulier' : 'Ajustement manuel inventaire'),
       movementType
     );
+    setAdjustQuantity('');
+    setAdjustReason('');
     setIsAdjustStockModalOpen(false);
     setSelectedProductForAdjust(null);
   };
 
   const handleConfirmBatchRestock = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedProductIds.size === 0) return;
-    batchRestockProducts(Array.from(selectedProductIds), batchRestockQty);
+    const qtyNum = parseInt(batchRestockQty, 10);
+    if (selectedProductIds.size === 0 || isNaN(qtyNum) || qtyNum <= 0) return;
+    batchRestockProducts(Array.from(selectedProductIds), qtyNum);
+    setBatchRestockQty('');
     setSelectedProductIds(new Set<string>());
     setIsBatchRestockModalOpen(false);
   };
@@ -727,7 +737,7 @@ export const PosInventoryView: React.FC<any> = () => {
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedProductForAdjust(p);
-                setAdjustQuantity(10);
+                setAdjustQuantity('');
                 setAdjustMode('add');
                 setIsAdjustStockModalOpen(true);
               }}
@@ -1135,7 +1145,7 @@ export const PosInventoryView: React.FC<any> = () => {
                   onClick: (e) => {
                     e.stopPropagation();
                     setSelectedProductForAdjust(p);
-                    setAdjustQuantity(10);
+                    setAdjustQuantity('');
                     setAdjustMode('add');
                     setIsAdjustStockModalOpen(true);
                   },
@@ -1176,7 +1186,7 @@ export const PosInventoryView: React.FC<any> = () => {
                   icon: <ArrowDownUp className="w-3.5 h-3.5" />,
                   onClick: () => {
                     setSelectedProductForAdjust(p);
-                    setAdjustQuantity(10);
+                    setAdjustQuantity('');
                     setAdjustMode('add');
                     setIsAdjustStockModalOpen(true);
                   },
@@ -1537,7 +1547,7 @@ export const PosInventoryView: React.FC<any> = () => {
                         primary: true,
                         onClick: () => {
                           setSelectedProductForAdjust(prod);
-                          setAdjustQuantity(10);
+                          setAdjustQuantity('');
                           setAdjustMode('add');
                           setInspectingProduct(null);
                           setIsAdjustStockModalOpen(true);
@@ -1570,7 +1580,7 @@ export const PosInventoryView: React.FC<any> = () => {
                     icon={<ArrowDownUp size={15} />}
                     onClick={() => {
                       setSelectedProductForAdjust(prod);
-                      setAdjustQuantity(10);
+                      setAdjustQuantity('');
                       setAdjustMode('add');
                       setInspectingProduct(null);
                       setIsAdjustStockModalOpen(true);
@@ -1593,7 +1603,7 @@ export const PosInventoryView: React.FC<any> = () => {
                       primary: true,
                       onClick: () => {
                         setSelectedProductForAdjust(prod);
-                        setAdjustQuantity(10);
+                        setAdjustQuantity('');
                         setAdjustMode('add');
                         setInspectingProduct(null);
                         setIsAdjustStockModalOpen(true);
@@ -1840,9 +1850,10 @@ export const PosInventoryView: React.FC<any> = () => {
               field="ProdRetail"
               label={isAr ? 'سعر البيع للعموم (د.ج)' : isEn ? 'Retail Price TTC (DA)' : 'Prix de Vente TTC (DA)'}
               type="number"
+              placeholder="1500"
               required
-              value={formPrice ? String(formPrice) : ''}
-              onChange={(v) => setFormPrice(parseFloat(v) || 0)}
+              value={formPrice}
+              onChange={setFormPrice}
               width="100%"
               height={40}
               corner={12}
@@ -1852,9 +1863,10 @@ export const PosInventoryView: React.FC<any> = () => {
                 field="ProdCost"
                 label={isAr ? 'سعر التكلفة / الشراء (د.ج)' : isEn ? 'Cost Price HT (DA)' : 'Coût d’Achat HT (DA)'}
                 type="number"
+                placeholder="900"
                 required
-                value={formCost ? String(formCost) : ''}
-                onChange={(v) => setFormCost(parseFloat(v) || 0)}
+                value={formCost}
+                onChange={setFormCost}
                 width="100%"
                 height={40}
                 corner={12}
@@ -1866,9 +1878,10 @@ export const PosInventoryView: React.FC<any> = () => {
               field="ProdStock"
               label={isAr ? 'الكمية المتوفرة حالياً' : isEn ? 'Initial Stock' : 'Stock Initial Réel'}
               type="number"
+              placeholder="25"
               required
-              value={formStock !== undefined ? String(formStock) : ''}
-              onChange={(v) => setFormStock(parseInt(v) || 0)}
+              value={formStock}
+              onChange={setFormStock}
               width="100%"
               height={40}
               corner={12}
@@ -1877,9 +1890,10 @@ export const PosInventoryView: React.FC<any> = () => {
               field="ProdReorder"
               label={isAr ? 'حد التنبيه بالنقص' : isEn ? 'Reorder Threshold' : 'Seuil d’Alerte Réassort'}
               type="number"
+              placeholder="5"
               required
-              value={formReorder !== undefined ? String(formReorder) : ''}
-              onChange={(v) => setFormReorder(parseInt(v) || 0)}
+              value={formReorder}
+              onChange={setFormReorder}
               width="100%"
               height={40}
               corner={12}
@@ -1925,9 +1939,10 @@ export const PosInventoryView: React.FC<any> = () => {
                   : (isAr ? 'الكمية المعدلة' : isEn ? 'Quantity' : 'Quantité à modifier')
               }
               type="number"
+              placeholder="10"
               required
-              value={adjustQuantity ? String(adjustQuantity) : ''}
-              onChange={(v) => setAdjustQuantity(parseInt(v) || 0)}
+              value={adjustQuantity}
+              onChange={setAdjustQuantity}
               width="100%"
               height={40}
               corner={12}
@@ -1963,9 +1978,10 @@ export const PosInventoryView: React.FC<any> = () => {
             field="BatchQty"
             label={isAr ? 'الكمية الإضافية لكل صنف (+)' : isEn ? 'Quantity to add per item (+)' : 'Quantité à rajouter par article (+)'}
             type="number"
+            placeholder="10"
             required
-            value={batchRestockQty ? String(batchRestockQty) : ''}
-            onChange={(v) => setBatchRestockQty(parseInt(v) || 0)}
+            value={batchRestockQty}
+            onChange={setBatchRestockQty}
             width="100%"
             height={40}
             corner={12}

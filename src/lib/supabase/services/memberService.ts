@@ -20,7 +20,8 @@ export const mapMembershipPlanFromDb = (row: any): MembershipPlan => ({
   facilityId: row.branch_id,
   name: row.name,
   description: row.description || '',
-  durationDays: Number(row.duration_days || 30),
+  durationDays: row.duration_days != null ? Number(row.duration_days) : null,
+  totalSessions: row.total_sessions != null ? Number(row.total_sessions) : null,
   price: { amount: Number(row.price_dzd || 0), currency: row.currency || 'DZD' },
   isActive: row.is_active ?? true,
   sessionsPerWeek: Number(row.session_quota ?? 0),
@@ -244,7 +245,7 @@ export const memberService = {
       (client as any)
         .from('gym_plans')
         .select(
-          'id, account_id, business_id, branch_id, name, description, duration_days, price_dzd, currency, is_active, session_quota, version'
+          'id, account_id, business_id, branch_id, name, description, duration_days, total_sessions, price_dzd, currency, is_active, session_quota, version'
         )
         .eq('branch_id', toValidUuid(branchId))
         .is('deleted_at', null)
@@ -261,7 +262,8 @@ export const memberService = {
       ...trace,
       name: plan.name,
       description: plan.description || null,
-      duration_days: plan.durationDays,
+      duration_days: plan.durationDays ?? null,
+      total_sessions: plan.totalSessions ?? null,
       session_quota: plan.sessionsPerWeek ?? null,
       price_dzd: plan.price.amount,
       currency: plan.price.currency || 'DZD',

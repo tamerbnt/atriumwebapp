@@ -58,6 +58,7 @@ import { SkeletonSchedulerView } from '../../ui/skeleton/StructuralSkeletons';
 
 export const MembershipSchedulerView: React.FC = React.memo(() => {
   const {
+    account,
     schedule,
     branches,
     currentBranch,
@@ -69,6 +70,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
     lastSyncedAt,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       schedule: selectCurrentScheduleFromState(s),
       branches: s.branches,
       currentBranch: selectCurrentBranchFromState(s),
@@ -275,10 +277,20 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
   }, []);
 
   const handleSaveNewSession = useCallback(() => {
+    const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const created: ScheduleEvent = {
       id: `sch_${Date.now()}`,
-      tenantId: currentBranch?.accountId || 'acc_01',
-      facilityId: currentBranch?.id || 'fac_01',
+      tenantId: activeAccountId,
+      facilityId: activeBranchId,
       title: newTitle.trim() || 'Session Fitness',
       category: newCategory.trim() || 'Fitness',
       dayOfWeek: selectedDay,
@@ -291,7 +303,7 @@ export const MembershipSchedulerView: React.FC = React.memo(() => {
     };
     upsertScheduleEvent(created);
     setIsAddModalOpen(false);
-  }, [currentBranch, newTitle, newCategory, selectedDay, newStartTime, newEndTime, newTrainer, newRoom, newCapacity, upsertScheduleEvent]);
+  }, [account?.id, currentBranch, language, newTitle, newCategory, selectedDay, newStartTime, newEndTime, newTrainer, newRoom, newCapacity, upsertScheduleEvent]);
 
   const eventColumns: ColumnDefinition<ScheduleEvent>[] = useMemo(
     () => [

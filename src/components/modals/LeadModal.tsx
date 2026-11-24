@@ -118,7 +118,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
               ...plans.map((p) => ({
                 value: p.id,
                 label: p.name,
-                sublabel: `${p.durationDays} ${language === 'ar' ? 'يوم' : language === 'fr' ? 'jours' : 'days'} · ${p.price.toLocaleString()} DA`,
+                sublabel: `${p.durationDays != null ? `${p.durationDays} ${language === 'ar' ? 'يوم' : language === 'fr' ? 'jours' : 'days'}` : '—'} · ${p.price.toLocaleString()} DA`,
               })),
             ]}
             width="100%"

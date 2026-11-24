@@ -18,6 +18,7 @@ import {
   selectCurrentBusinessConfigFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import {
@@ -60,6 +61,7 @@ import {
 
 export const AutoGarageBillingView: React.FC<any> = () => {
   const {
+    account,
     language,
     currentBranch,
     currentBusinessConfig,
@@ -69,6 +71,7 @@ export const AutoGarageBillingView: React.FC<any> = () => {
     isSyncTimeout,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBranch: selectCurrentBranchFromState(s),
       currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
@@ -290,6 +293,16 @@ export const AutoGarageBillingView: React.FC<any> = () => {
   const handleExecutePayment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!orderToSettle) return;
+    const activeAccountId = (orderToSettle.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (orderToSettle.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const laborHt =
       orderToSettle.laborCostDzd || (orderToSettle.finalCostDzd ? orderToSettle.finalCostDzd * 0.25 : defaultLaborFallback);
     const partsHt =
@@ -300,26 +313,29 @@ export const AutoGarageBillingView: React.FC<any> = () => {
     const ttc = subtotalHt + tva;
     const timbre = applyTimbre ? computeAlgerianTimbreFiscal(ttc, paymentMethod) : 0;
     const net = ttc + timbre;
+    const matchedFleet = orderToSettle.clientType === 'corporate_fleet'
+      ? fleets.find((f) => f.id === orderToSettle.fleetId || f.companyName === orderToSettle.clientName)
+      : undefined;
     const newInvoice: GarageInvoice = {
       id: `inv_${Date.now()}`,
-      accountId: orderToSettle.accountId || 'acc_01',
-      businessId: orderToSettle.businessId || 'biz_garage',
-      branchId: orderToSettle.branchId || currentBranch?.id || 'branch_garage_main',
-      staffId: orderToSettle.staffId || 'stf_01',
+      accountId: activeAccountId,
+      businessId: orderToSettle.businessId || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: orderToSettle.staffId || '',
       invoiceNumber:
         billingType === 'facture_dgi'
-          ? `FAC-2026-${Math.floor(1000 + Math.random() * 9000)}`
-          : `BC-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+          ? `FAC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`
+          : `BC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
       orderId: orderToSettle.id,
       orderNumber: orderToSettle.orderNumber,
       vehiclePlate: orderToSettle.vehiclePlate,
       vehicleModel: orderToSettle.vehicleModel,
-      clientId: orderToSettle.fleetId || 'client_01',
+      clientId: orderToSettle.fleetId || '',
       clientName: orderToSettle.clientName,
       clientPhone: orderToSettle.clientPhone,
       clientType: orderToSettle.clientType || 'individual',
-      clientNif: orderToSettle.clientType === 'corporate_fleet' ? '001916012345678' : undefined,
-      clientNis: orderToSettle.clientType === 'corporate_fleet' ? '00191601234' : undefined,
+      clientNif: matchedFleet?.nif || undefined,
+      clientNis: matchedFleet?.nis || undefined,
       billingType,
       paymentMethod,
       laborTotalHt: laborHt,

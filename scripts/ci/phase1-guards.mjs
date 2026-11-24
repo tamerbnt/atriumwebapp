@@ -65,6 +65,14 @@ const FORBIDDEN_PATTERNS = [
   { name: 'acc_01 fallback/literal', regex: /['"`]acc_01['"`]/g },
   { name: 'hardcoded staging supabase host', regex: /tzzncsbvezywtaknwind\.supabase\.co/g },
   { name: 'unsplash demo avatar/artwork url', regex: /images\.unsplash\.com\/photo-/g },
+  { name: 'demo NIF fiscal identifier', regex: /001916010044589/g },
+  { name: 'demo RC registration identifier', regex: /16\/00-0988421/g },
+  { name: 'demo Carte Fellah identifier', regex: /CAW-16-09418/g },
+  { name: 'hardcoded PM staff fallback id', regex: /['"`]stf_pm_01['"`]/g },
+  { name: 'hardcoded PM lead fallback id', regex: /['"`]crea_lead_01['"`]/g },
+  { name: 'hardcoded salon member fallback id', regex: /['"`]mem_salon_/g },
+  { name: 'hardcoded salon staff fallback id', regex: /['"`]stf_salon_01['"`]/g },
+  { name: 'stale 58 wilayas reference', regex: /\b58\s*[Ww]ilayas?\b/g },
 ];
 const literalFindings = [];
 for (const file of tsxFiles) {

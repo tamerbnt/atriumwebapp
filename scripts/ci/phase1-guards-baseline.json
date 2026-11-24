@@ -4,7 +4,7 @@
   "note": "Phase 1 ratchet baseline (Section 12.5). Default CI guard mode fails if any metric increases above baseline; Step 8 switches to --strict (0 allowed).",
   "metrics": {
     "showToastOnly": 66,
-    "forbiddenLiterals": 143,
+    "forbiddenLiterals": 0,
     "unregisteredStorageKeys": 0,
     "i18nAsymmetry": 0
   },

@@ -9,6 +9,11 @@ import {
   selectCurrentPmAttendancesFromState,
   useAtriumActions,
 } from '../../../services/store';
+import { computeSuperviseurSlaSummary } from '../../../utils/projectMetrics';
+import {
+  storageService,
+  validateFileForBucket,
+} from '../../../lib/supabase/services/storageService';
 import { PMAttendance, PMMission, PMTalent } from '../../../types/index';
 import { MobilePhoneSimulator } from './MobilePhoneSimulator';
 import {
@@ -138,12 +143,29 @@ const getAttendanceBadge = (
 };
 
 export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ initialTab }) => {
-  const { language, isRtl } = useTranslation();
+  const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { currentBranch, branches, pmMissions, pmTalents, pmAttendances, activePmSubScreen, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const {
+    account,
+    currentUser,
+    currentBusinessId,
+    currentBranch,
+    branches,
+    pmMissions,
+    pmTalents,
+    pmAttendances,
+    activePmSubScreen,
+    isSyncing,
+    networkMode,
+    lastSyncedAt,
+    isSyncTimeout,
+  } = useAtriumSelector(
     (s) => ({
+      account: s.account,
+      currentUser: s.currentUser,
+      currentBusinessId: s.currentBusinessId,
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       pmMissions: selectCurrentPmMissionsFromState(s),
@@ -191,11 +213,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 
   // Expense quick form
   const [expenseTitle, setExpenseTitle] = useState('');
-  const [expenseAmount, setExpenseAmount] = useState('2500');
+  const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseCategory, setExpenseCategory] = useState('materials');
-  const [expensePhotoUrl] = useState(
-    'https://images.unsplash.com/photo-1554415707-9e49fe74a64c?w=500&auto=format&fit=crop&q=80'
-  );
+  const [expenseReceiptFile, setExpenseReceiptFile] = useState<File | null>(null);
+  const [expensePhotoPreview, setExpensePhotoPreview] = useState<string>('');
+  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
   const [expenseSubmitted, setExpenseSubmitted] = useState(false);
 
   // Missions collection state
@@ -234,6 +256,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
   const missionAttendances = useMemo(
     () => pmAttendances.filter((a) => a.missionId === selectedMission?.id),
     [pmAttendances, selectedMission]
+  );
+
+  const slaSummary = useMemo(
+    () => computeSuperviseurSlaSummary(pmMissions, pmAttendances),
+    [pmMissions, pmAttendances]
   );
 
   const presentCount = missionAttendances.filter((a) => a.status === 'present').length;
@@ -316,26 +343,100 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
     closePmRollCall(selectedMission.id);
   }, [selectedMission, closePmRollCall]);
 
-  const handleExpenseSubmit = (e: React.FormEvent) => {
+  const handleReceiptFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const validation = validateFileForBucket('expense-receipts', file);
+    if (!validation.valid) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'ملف غير صالح' : isEn ? 'Invalid file' : 'Fichier invalide',
+        message: validation.reason,
+      });
+      e.target.value = '';
+      return;
+    }
+    setExpenseReceiptFile(file);
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') setExpensePhotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setExpensePhotoPreview('');
+    }
+  };
+
+  const handleExpenseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMission || !expenseTitle) return;
+    const activeAccountId = (account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId || !currentBusinessId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title'),
+        message: t('tenant_context_missing_msg'),
+      });
+      return;
+    }
+    const parsedAmount = Number(expenseAmount);
+    if (!selectedMission || !expenseTitle.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'بيانات ناقصة' : isEn ? 'Missing fields' : 'Champs requis',
+        message: isAr
+          ? 'يرجى إدخال سبب ومبلغ صالح.'
+          : isEn
+          ? 'Please provide a valid expense title and amount.'
+          : 'Veuillez saisir un motif et un montant valide.',
+      });
+      return;
+    }
+
+    let uploadedReceiptUrl: string | undefined;
+    if (expenseReceiptFile) {
+      setIsUploadingReceipt(true);
+      const uploadRes = await storageService.uploadScopedFile({
+        bucket: 'expense-receipts',
+        file: expenseReceiptFile,
+        accountId: activeAccountId,
+        businessId: currentBusinessId,
+        branchId: activeBranchId,
+        prefix: 'sup_exp',
+      });
+      setIsUploadingReceipt(false);
+      if (!uploadRes.success) {
+        showToast({
+          type: 'error',
+          title: isAr ? 'تعذر رفع الوصل' : isEn ? 'Receipt upload failed' : 'Échec envoi reçu',
+          message: uploadRes.error || 'Storage upload failed',
+        });
+        return;
+      }
+      uploadedReceiptUrl = uploadRes.signedUrl || uploadRes.storagePath;
+    }
+
     addPmExpense({
-      tenantId: 'acc_01',
-      facilityId: currentBranch?.id || 'branch_agency_main',
+      tenantId: activeAccountId,
+      facilityId: activeBranchId,
       projectId: selectedMission.projectId,
       projectTitle: selectedMission.projectTitle,
       missionId: selectedMission.id,
       missionCode: selectedMission.code,
-      title: expenseTitle,
+      title: expenseTitle.trim(),
       category: expenseCategory as 'materials' | 'catering' | 'transport',
-      amountDzd: Number(expenseAmount) || 1000,
-      declaredByUserId: 'talent_02',
-      declaredByUserName: 'Sofiane Ryad (Superviseur)',
-      declaredByRole: 'superviseur',
-      receiptPhotoUrl: expensePhotoUrl,
+      amountDzd: parsedAmount,
+      declaredByUserId: currentUser?.id || '',
+      declaredByUserName: currentUser?.fullName || '',
+      declaredByRole: (currentUser?.role === 'chef_projet' ? 'chef_projet' : 'superviseur') as 'chef_projet' | 'superviseur',
+      receiptPhotoUrl: uploadedReceiptUrl,
       hasFiscalInvoice: false,
     });
     setExpenseSubmitted(true);
+    setExpenseReceiptFile(null);
+    setExpensePhotoPreview('');
+    setExpenseAmount('');
     setTimeout(() => {
       setExpenseSubmitted(false);
       setExpenseTitle('');
@@ -909,11 +1010,11 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             : isEn
             ? 'SLA Closure Compliance'
             : 'SLA Conformité Clôture',
-          valueCount: 98.6,
-          formatValue: (v) => `${v.toFixed(1)}%`,
-          badgeCount: 58,
+          valueCount: slaSummary.closureCompliancePct,
+          formatValue: (v) => (slaSummary.hasData ? `${v.toFixed(1)}%` : '—'),
+          badgeCount: slaSummary.activeWilayasCount,
           badgePrefix: '',
-          badgeSuffix: ' WILAYAS LIVE',
+          badgeSuffix: isAr ? ' ولايات' : isEn ? ' WILAYAS' : ' WILAYAS',
           caption: isAr
             ? 'توقيعات حضور محددة جغرافياً ومؤكدة'
             : isEn
@@ -1321,7 +1422,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
           {activeTab === 'staffing' && (
             <div className="space-y-4">
               <ScreenCollectionToolbar
-                title={isAr ? 'دليل المنشطين (58 ولاية)' : isEn ? 'Field Promoters (58 Wilayas)' : 'Répertoire des Animateurs (58 Wilayas)'}
+                title={isAr ? 'دليل المنشطين' : isEn ? 'Field Promoters Directory' : 'Répertoire des Animateurs'}
                 liveRegionText={`${filteredTalents.length} ${isAr ? 'منشط' : 'profils'}`}
                 language={language}
                 searchQuery={talentSearch}
@@ -1451,6 +1552,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                   field="ExpAmount"
                   label={isAr ? 'المبلغ (دج)' : isEn ? 'Amount (DZD)' : 'Montant (DZD)'}
                   type="number"
+                  placeholder="2500"
                   value={expenseAmount}
                   onChange={setExpenseAmount}
                   required
@@ -1479,13 +1581,47 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                     },
                   ]}
                 />
+                <div className="space-y-2">
+                  <label className="block t-small font-semibold text-black dark:text-white">
+                    {isAr
+                      ? 'صورة الوصل (JPG, PNG, WEBP, PDF - حد أقصى 5 MB)'
+                      : isEn
+                      ? 'Receipt File (JPG, PNG, WEBP, PDF - max 5 MB)'
+                      : 'Justificatif / Reçu (JPG, PNG, WEBP, PDF - max 5 Mo)'}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    onChange={handleReceiptFileChange}
+                    className="block w-full t-cap text-black dark:text-white file:mr-3 file:py-2 file:px-3 file:border-0 file:bg-[#F5F1EC] dark:file:bg-[#2B2825] file:font-semibold file:cursor-pointer"
+                  />
+                  {expenseReceiptFile && (
+                    <div className="t-cap text-emerald-700 dark:text-emerald-400">
+                      {expenseReceiptFile.name} ({(expenseReceiptFile.size / 1024).toFixed(0)} KB)
+                    </div>
+                  )}
+                  {expensePhotoPreview && (
+                    <img
+                      src={expensePhotoPreview}
+                      alt={expenseReceiptFile?.name || 'Receipt preview'}
+                      className="w-24 h-24 object-cover rounded-[var(--r-ctl,10px)] border border-[var(--atr-divider)]"
+                    />
+                  )}
+                </div>
                 <AtriumButton
                   type="submit"
                   variant="primary"
                   className="w-full"
+                  disabled={isUploadingReceipt}
                   icon={<Plus className="w-4 h-4" />}
                 >
-                  {isAr
+                  {isUploadingReceipt
+                    ? isAr
+                      ? 'جاري الرفع...'
+                      : isEn
+                      ? 'Uploading...'
+                      : 'Envoi en cours...'
+                    : isAr
                     ? 'إرسال الوصل للإدارة'
                     : isEn
                     ? 'Submit Receipt to Direction'

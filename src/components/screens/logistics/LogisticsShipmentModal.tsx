@@ -7,6 +7,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { LogisticsShipment } from '../../../types';
 import {
   computeShipmentTariff,
@@ -42,8 +43,9 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
   onSave,
   shipmentToEdit,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -59,7 +61,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
   const [destinationWilaya, setDestinationWilaya] = useState(shipmentToEdit?.destinationWilaya || '16 - Alger');
   const [address, setAddress] = useState(shipmentToEdit?.destinationAddress || '');
   const [deliveryMode, setDeliveryMode] = useState<'HomeDelivery' | 'StopDesk'>(shipmentToEdit?.deliveryMode || 'HomeDelivery');
-  const [codAmount, setCodAmount] = useState(shipmentToEdit ? String(shipmentToEdit.codAmountDzd) : '5000');
+  const [codAmount, setCodAmount] = useState(shipmentToEdit ? String(shipmentToEdit.codAmountDzd) : '');
   const [weightKg, setWeightKg] = useState(shipmentToEdit ? String(shipmentToEdit.weightKg) : '1.5');
   const [lengthCm, setLengthCm] = useState('25');
   const [widthCm, setWidthCm] = useState('20');
@@ -88,7 +90,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
       setDestinationWilaya('16 - Alger');
       setAddress('');
       setDeliveryMode('HomeDelivery');
-      setCodAmount('5000');
+      setCodAmount('');
       setWeightKg('1.5');
       setLengthCm('25');
       setWidthCm('20');
@@ -156,15 +158,26 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
       return;
     }
 
+    const activeAccountId = (shipmentToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (shipmentToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
+
     const randomOtp = String(Math.floor(1000 + Math.random() * 9000));
     const randomShelf = `RACK-${String.fromCharCode(65 + Math.floor(Math.random() * 4))}-${String(Math.floor(1 + Math.random() * 20)).padStart(2, '0')}`;
 
     const saved: LogisticsShipment = {
       id: shipmentToEdit ? shipmentToEdit.id : `ship_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_logistics',
-      branchId: currentBranch?.id || 'branch_logistics_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       trackingCode: shipmentToEdit ? shipmentToEdit.trackingCode : `ATR-EXP-${Math.floor(10000 + Math.random() * 90000)}`,
       merchantName: merchantName.trim() || 'Client Expéditeur Comptoir',
       recipientName: recipientName.trim(),
@@ -217,7 +230,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
       onClose={onClose}
       maxWidthClass="max-w-2xl"
       scrimClassName="bg-black/60"
-      ariaLabel={isAr ? 'تسجيل طرد وشحنة جديدة (AWB 58 ولاية)' : 'Nouvelle Expédition (AWB 58 Wilayas)'}
+      ariaLabel={isAr ? 'تسجيل طرد وشحنة جديدة (AWB)' : 'Nouvelle Expédition (AWB)'}
     >
       <div
         data-sq="panel"
@@ -236,7 +249,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
             </div>
             <div>
               <h3 className="font-semibold t-card text-black dark:text-white">
-                {isAr ? 'تسجيل طرد وشحنة جديدة (AWB 58 ولاية)' : 'Nouvelle Expédition (AWB 58 Wilayas)'}
+                {isAr ? 'تسجيل طرد وشحنة جديدة (AWB)' : 'Nouvelle Expédition (AWB)'}
               </h3>
             </div>
           </div>
@@ -391,6 +404,7 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
                 <LabelInput
                   label="COD (DZD)"
                   type="number"
+                  placeholder="5000"
                   value={codAmount}
                   onChange={setCodAmount}
                   suffix={<span className="t-cap text-white/65">DZD</span>}

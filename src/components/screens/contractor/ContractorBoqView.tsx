@@ -17,6 +17,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { useContractorData } from './contractorData';
@@ -56,6 +57,7 @@ import {
 
 export const ContractorBoqView: React.FC<any> = () => {
   const {
+    account,
     language,
     currentBusiness,
     currentBranch,
@@ -66,6 +68,7 @@ export const ContractorBoqView: React.FC<any> = () => {
     lastSyncedAt,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -105,8 +108,8 @@ export const ContractorBoqView: React.FC<any> = () => {
   const [itemCode, setItemCode] = useState('05.01');
   const [designation, setDesignation] = useState('');
   const [unit, setUnit] = useState<ContractorBoqItem['unit']>('m2');
-  const [plannedQty, setPlannedQty] = useState('100');
-  const [unitPrice, setUnitPrice] = useState('3500');
+  const [plannedQty, setPlannedQty] = useState('');
+  const [unitPrice, setUnitPrice] = useState('');
   const [targetProjectId, setTargetProjectId] = useState(projects[0]?.id || selectedProjectId);
 
   const [selectedItem, setSelectedItem] = useState<ContractorBoqItem | null>(null);
@@ -157,8 +160,8 @@ export const ContractorBoqView: React.FC<any> = () => {
     setItemCode(`0${Math.floor(1 + Math.random() * 9)}.01`);
     setDesignation('');
     setUnit('m2');
-    setPlannedQty('100');
-    setUnitPrice('3500');
+    setPlannedQty('');
+    setUnitPrice('');
     setTargetProjectId(projects[0]?.id || selectedProjectId);
     setIsModalOpen(true);
   }, [projects, selectedProjectId]);
@@ -183,14 +186,31 @@ export const ContractorBoqView: React.FC<any> = () => {
       );
       return;
     }
-    const qty = parseFloat(plannedQty) || 0;
-    const price = parseFloat(unitPrice) || 0;
+    const activeAccountId = (itemToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (itemToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
+    const qty = parseFloat(plannedQty);
+    const price = parseFloat(unitPrice);
+    if (!Number.isFinite(qty) || qty <= 0 || !Number.isFinite(price) || price < 0) {
+      showToast(
+        isAr ? 'يرجى إدخال كمية وسعر صحيحين' : 'Veuillez saisir une quantité et un prix unitaire valides',
+        'error'
+      );
+      return;
+    }
     const payload: ContractorBoqItem = {
       id: itemToEdit?.id || `boq_${Date.now()}`,
-      accountId: itemToEdit?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_contractor',
-      branchId: itemToEdit?.branchId || currentBranch?.id || 'branch_contractor_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       projectId: targetProjectId || projects[0]?.id || '',
       lotCode: itemToEdit?.lotCode || 'LOT_01_GROS_OEUVRE',
       lotTitle: itemToEdit?.lotTitle || 'Travaux Principaux',
@@ -1120,6 +1140,7 @@ export const ContractorBoqView: React.FC<any> = () => {
                   corner={12}
                   label={isAr ? 'الكمية التعاقدية المخططة' : 'Quantité Prévue'}
                   type="number"
+                  placeholder="100"
                   value={plannedQty}
                   onChange={setPlannedQty}
                   required
@@ -1131,6 +1152,7 @@ export const ContractorBoqView: React.FC<any> = () => {
                   corner={12}
                   label={isAr ? 'السعر الأحادي (دج)' : 'Prix Unitaire (DZD)'}
                   type="number"
+                  placeholder="3500"
                   value={unitPrice}
                   onChange={setUnitPrice}
                   required

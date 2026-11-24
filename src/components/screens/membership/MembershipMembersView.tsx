@@ -1308,9 +1308,6 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
 
         const defaultPlan = plans[0];
         const todayIso = new Date().toISOString().split('T')[0];
-        const expIso = new Date(Date.now() + (defaultPlan?.durationDays || 30) * 864e5)
-          .toISOString()
-          .split('T')[0];
 
         let imported = 0;
         lines.forEach((line, idx) => {
@@ -1324,6 +1321,10 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
           const planName = cols[3] || defaultPlan?.name || 'Standard';
           if (!fullName) return;
           const matchedPlan = plans.find((p) => p.name.toLowerCase() === planName.toLowerCase()) || defaultPlan;
+          const expIso =
+            matchedPlan?.durationDays != null && matchedPlan.durationDays > 0
+              ? new Date(Date.now() + matchedPlan.durationDays * 864e5).toISOString().split('T')[0]
+              : todayIso;
           addMember({
             fullName,
             email: '',
@@ -1334,7 +1335,7 @@ export const MembershipMembersView: React.FC<any> = React.memo(({ onAddMember, o
             expirationDate: expIso,
             membershipPlanId: matchedPlan?.id,
             membershipPlanName: matchedPlan?.name || planName,
-            remainingSessions: 30,
+            remainingSessions: matchedPlan?.totalSessions ?? 0,
             gender: 'Male',
           });
           imported++;

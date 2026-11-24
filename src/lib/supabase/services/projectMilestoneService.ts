@@ -792,7 +792,7 @@ export const projectMilestoneService = {
   },
 
   // ============================================================
-  // Talents (58 Wilayas + CCP Banking)
+  // Talents (69 Wilayas + CCP Banking)
   // ============================================================
   async fetchTalents(branchId: string, updatedAfter?: string | null): Promise<PMTalent[]> {
     const client = getSupabaseClient();

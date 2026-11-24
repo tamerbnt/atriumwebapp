@@ -20,6 +20,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { RepairOrder, VehicleAsset, WorkshopBay, DamageMarker } from './garageData';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -37,8 +38,9 @@ interface AutoOrderModalProps {
 }
 
 export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose, vehicles, bays = [], onSave }) => {
-	const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+	const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
 	  (s) => ({
+	    account: s.account,
 	    language: s.language,
 	    currentBusiness: selectCurrentBusinessFromState(s),
 	    currentBranch: selectCurrentBranchFromState(s),
@@ -65,9 +67,9 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 	const [selectedSeverity, setSelectedSeverity] = React.useState("minor");
 	const [markerNote, setMarkerNote] = React.useState("");
 	const [diagnostic, setDiagnostic] = React.useState("");
-	const [estimatedCost, setEstimatedCost] = React.useState("18500");
+	const [estimatedCost, setEstimatedCost] = React.useState("");
 	const [assignedBayId, setAssignedBayId] = React.useState(bays[0]?.id || "bay_01");
-	const [technician, setTechnician] = React.useState("Karim (Chef Atelier)");
+	const [technician, setTechnician] = React.useState(currentUser?.fullName || "Chef Atelier");
 	const [isClientSigned, setIsClientSigned] = React.useState(false);
 	const activeVehicle = vehicles.find((v: VehicleAsset) => v.id === selectedVehicleId) || vehicles[0];
 	React.useEffect(() => {
@@ -80,10 +82,10 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 		setDamageMarkers([]);
 		setMarkerNote("");
 		setDiagnostic("");
-		setEstimatedCost("18500");
-		setTechnician("Karim (Chef Atelier)");
+		setEstimatedCost("");
+		setTechnician(currentUser?.fullName || "Chef Atelier");
 		setIsClientSigned(false);
-	}, [isOpen, vehicles]);
+	}, [isOpen, vehicles, currentUser?.fullName]);
 	React.useEffect(() => {
 		if (activeVehicle) {
 			setCurrentMileage(String(activeVehicle.mileageKm || 5e4));
@@ -134,13 +136,23 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 			});
 			return;
 		}
+		const activeAccountId = (activeVehicle.accountId || currentBranch?.accountId || account?.id || '').trim();
+		const activeBranchId = (currentBranch?.id || activeVehicle.branchId || '').trim();
+		if (!activeAccountId || !activeBranchId) {
+			showToast({
+				type: 'error',
+				title: t('tenant_context_missing_title', language),
+				message: t('tenant_context_missing_msg', language),
+			});
+			return;
+		}
 		const assignedBay = bays.find((b: WorkshopBay) => b.id === assignedBayId);
 		const newOrder: RepairOrder = {
 			id: `ro_${Date.now()}`,
-			accountId: activeVehicle.accountId || 'acc_01',
-			businessId: currentBusiness?.id || activeVehicle.businessId || 'biz_garage',
-			branchId: currentBranch?.id || activeVehicle.branchId || 'branch_garage_main',
-			staffId: currentUser?.id || 'stf_01',
+			accountId: activeAccountId,
+			businessId: currentBusiness?.id || activeVehicle.businessId || currentBranch?.businessId || '',
+			branchId: activeBranchId,
+			staffId: currentUser?.id || '',
 			orderNumber: `OR-2026-${Math.floor(1e3 + Math.random() * 9e3)}`,
 			vehiclePlate: activeVehicle.plateNumber,
 			vehicleModel: `${activeVehicle.brand} ${activeVehicle.model}`,
@@ -152,7 +164,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 			intakeDate: new Date().toISOString(),
 			diagnosticNotes: diagnostic.trim() || "Diagnostic préliminaire & révision générale",
 			status: "Diagnostic",
-			estimatedCostDzd: parseFloat(estimatedCost) || 15e3,
+			estimatedCostDzd: estimatedCost.trim() ? parseFloat(estimatedCost) || 0 : 0,
 			finalCostDzd: 0,
 			partsUsed: [],
 			technicianName: technician,
@@ -413,7 +425,7 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({ isOpen, onClose,
 {activeTab === "dispatch" && <div className="space-y-4 animate-in fade-in">
 <LabelInput field="orderDiagnostic" label={language === "ar" ? "وصف العطل والشكوى الأولية" : "Symptômes & motif de dépose (Panne constatée)"} value={diagnostic} onChange={setDiagnostic} placeholder="Ex: Bruit suspect au freinage, voyant moteur orange, révision vidange..." width="100%" height={40} corner={12} required />
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-<LabelInput field="orderEstimatedCost" label={language === "ar" ? "التقدير المالي الأولي (د.ج)" : "Devis prévisionnel (DA HT)"} type="number" value={estimatedCost} onChange={setEstimatedCost} width="100%" height={40} corner={12} />
+<LabelInput field="orderEstimatedCost" label={language === "ar" ? "التقدير المالي الأولي (د.ج)" : "Devis prévisionnel (DA HT)"} type="number" placeholder="18500" value={estimatedCost} onChange={setEstimatedCost} width="100%" height={40} corner={12} />
 <LabelSelect field="orderAssignedBayId" label={language === "ar" ? "جسر الرفع / المنصة" : "Pont élévateur assigné"} value={assignedBayId} onChange={setAssignedBayId} options={bayOptions} width="100%" height={40} corner={12} />
 <LabelSelect field="orderTechnician" label={language === "ar" ? "الميكانيكي المكلف" : "Technicien responsable"} value={technician} onChange={setTechnician} options={[
 												{

@@ -21,6 +21,7 @@ import {
   subscribeConcurrencyResolutions,
   runWithConcurrency,
 } from '../../../lib/supabase/index';
+import { isDemoModeEnabled } from '../../../lib/supabase/tenantContext';
 
 function mergeMfgById<T extends { id: string }>(localItems: T[], remoteItems: T[]): T[] {
   if (!remoteItems || remoteItems.length === 0) return localItems;
@@ -619,7 +620,10 @@ export const useManufacturingData = () => {
       ...item,
       branchId: (item as { branchId?: string }).branchId || activeBranchId,
       businessId: (item as { businessId?: string }).businessId || currentBusinessId || 'biz_manufacturing',
-      accountId: (item as { accountId?: string }).accountId || currentAccountId || 'acc_01',
+      accountId:
+        (item as { accountId?: string }).accountId ||
+        currentAccountId ||
+        (isDemoModeEnabled() ? 'acc_01' : ''),
     }) as T;
 
   const [boms, setBoms] = useState<ManufacturingBom[]>(() => {

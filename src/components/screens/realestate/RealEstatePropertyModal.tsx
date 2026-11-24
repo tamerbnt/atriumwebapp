@@ -7,6 +7,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { RealEstateProperty, PropertyLegalTitleType } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -26,8 +27,9 @@ interface RealEstatePropertyModalProps {
 
 
 export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = ({ isOpen, onClose, onSave, propertyToEdit }) => {
-	const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+	const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
 	  (s) => ({
+	    account: s.account,
 	    language: s.language,
 	    currentBusiness: selectCurrentBusinessFromState(s),
 	    currentBranch: selectCurrentBranchFromState(s),
@@ -95,12 +97,22 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
 			showToast("Veuillez renseigner le titre, l'adresse et le propriétaire", "error");
 			return;
 		}
+		const activeAccountId = (propertyToEdit?.accountId || currentBranch?.accountId || account?.id || "").trim();
+		const activeBranchId = (propertyToEdit?.branchId || currentBranch?.id || "").trim();
+		if (!activeAccountId || !activeBranchId) {
+			showToast({
+				type: "error",
+				title: t("tenant_context_missing_title", language),
+				message: t("tenant_context_missing_msg", language),
+			});
+			return;
+		}
 		onSave({
 			id: propertyToEdit ? propertyToEdit.id : `prop_${Date.now()}`,
-			accountId: "acc_01",
-			businessId: currentBusiness?.id || "biz_realestate",
-			branchId: currentBranch?.id || "branch_realestate_main",
-			staffId: currentUser?.id || "staff_01",
+			accountId: activeAccountId,
+			businessId: currentBusiness?.id || currentBranch?.businessId || "",
+			branchId: activeBranchId,
+			staffId: currentUser?.id || "",
 			title: title.trim(),
 			propertyType,
 			listingType,

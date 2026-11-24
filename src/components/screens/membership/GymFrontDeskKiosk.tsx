@@ -21,6 +21,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -200,17 +201,27 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
         }
       }
 
+      const activeAccountId = (account?.id || currentBranch?.accountId || '').trim();
+      const resolvedBranchId = (currentBranchId || currentBranch?.id || member.branchId || '').trim();
+      if (!activeAccountId || !resolvedBranchId) {
+        showToast?.({
+          type: 'error',
+          title: t('tenant_context_missing_title', language),
+          message: t('tenant_context_missing_msg', language),
+        });
+        return;
+      }
+
       if (status === 'Granted') playChime('success');
       else if (status === 'Warning_Expiring') playChime('warning');
       else playChime('error');
 
-      const resolvedBranchId = currentBranchId || member.branchId || 'branch_gym_main';
       const checkInLog = {
         id: `chk_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        accountId: account?.id || 'acc_01',
-        businessId: currentBusinessId || 'biz_01',
+        accountId: activeAccountId,
+        businessId: currentBusinessId || currentBranch?.businessId || '',
         branchId: resolvedBranchId,
-        staffId: currentUser?.id || 'staff_01',
+        staffId: currentUser?.id || '',
         memberId: member.id,
         memberName: member.fullName,
         planId: member.membershipPlanId || 'standard_plan',
@@ -280,14 +291,24 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
   const handleCreateWalkIn = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
+      const activeAccountId = (account?.id || currentBranch?.accountId || '').trim();
+      const activeBranchId = (currentBranchId || currentBranch?.id || '').trim();
+      if (!activeAccountId || !activeBranchId) {
+        showToast?.({
+          type: 'error',
+          title: t('tenant_context_missing_title', language),
+          message: t('tenant_context_missing_msg', language),
+        });
+        return;
+      }
       const amountNum = parseFloat(walkInAmount) || 500;
       const timbre = walkInPaymentMethod === 'cash' ? calculateArt317Timbre(amountNum) : 0;
       const ticket = {
         id: `wi_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        accountId: account?.id || 'acc_01',
-        businessId: currentBusinessId || 'biz_01',
-        branchId: currentBranchId || 'branch_gym_main',
-        staffId: currentUser?.id || 'staff_frontdesk_01',
+        accountId: activeAccountId,
+        businessId: currentBusinessId || currentBranch?.businessId || '',
+        branchId: activeBranchId,
+        staffId: currentUser?.id || '',
         ticketNumber: `WI-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
         clientName: walkInName.trim() || (isRtl ? 'زبون غير مسجل' : 'Client Séance Libre'),
         phone: walkInPhone.trim() || undefined,
@@ -303,7 +324,7 @@ export const GymFrontDeskKiosk: React.FC = React.memo(() => {
       setWalkInPhone('');
       playChime('success');
     },
-    [walkInAmount, walkInPaymentMethod, account, currentBusinessId, currentBranchId, currentUser, walkInName, walkInPhone, isRtl, addWalkInTicket, playChime]
+    [walkInAmount, walkInPaymentMethod, account, currentBusinessId, currentBranchId, currentBranch, currentUser, isRtl, language, walkInName, walkInPhone, addWalkInTicket, playChime]
   );
 
   const { activeMembersCount, grantedLogsCount, alertLogsCount, visibleLogs } = useMemo(() => {

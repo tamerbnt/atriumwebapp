@@ -30,3 +30,4 @@ export * from './services/agricultureService';
 export * from './services/configService';
 export * from './services/referenceDataService';
 export * from './services/sequenceService';
+export * from './services/storageService';

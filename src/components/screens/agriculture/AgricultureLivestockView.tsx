@@ -19,6 +19,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -60,6 +61,7 @@ import {
 
 export const AgricultureLivestockView: React.FC = () => {
   const {
+    account,
     language,
     currentBusiness,
     currentBranch,
@@ -70,6 +72,7 @@ export const AgricultureLivestockView: React.FC = () => {
     lastSyncedAt,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -187,12 +190,22 @@ export const AgricultureLivestockView: React.FC = () => {
       );
       return;
     }
+    const activeAccountId = (animalToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (animalToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const payload: AgriLivestock = {
       id: animalToEdit?.id || `ani_${Date.now()}`,
-      accountId: animalToEdit?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_agri',
-      branchId: animalToEdit?.branchId || currentBranch?.id || 'branch_agri_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       earTagNumber: earTag.trim(),
       nameOrNumber: nameOrNumber.trim() || earTag.trim(),
       species,

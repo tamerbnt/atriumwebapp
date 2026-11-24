@@ -207,7 +207,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       conversionLead.id,
       plan ? plan.id : 'standard_pkg',
       plan ? plan.name : 'Standard Package',
-      plan ? plan.durationDays : 365
+      plan?.durationDays ?? 0
     );
     setConversionLead(null);
     if (selectedLead?.id === conversionLead.id) setSelectedLead(null);
@@ -237,7 +237,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
               lead.id,
               lead.preferredPlanId || (plan ? plan.id : 'standard_pkg'),
               lead.preferredPlanName || (plan ? plan.name : 'Standard Package'),
-              plan ? plan.durationDays : 365
+              plan?.durationDays ?? 0
             );
           }
         });
@@ -1001,7 +1001,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
                 options={plans.map((p) => ({
                   value: p.id,
                   label: p.name,
-                  sublabel: `${p.durationDays} ${t('member_days_unit', language)} · ${p.price.amount.toLocaleString()} ${
+                  sublabel: `${p.durationDays != null ? `${p.durationDays} ${t('member_days_unit', language)}` : '—'} · ${p.price.amount.toLocaleString()} ${
                     language === 'ar' ? 'د.ج' : 'DA'
                   }`,
                 }))}

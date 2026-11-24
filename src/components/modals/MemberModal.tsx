@@ -214,9 +214,12 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
     setIsSubmitting(true);
 
     const selectedPlan = plans.find((p) => p.id === planId) || plans[0];
-    const durationDays = selectedPlan ? selectedPlan.durationDays : 30;
+    const durationDays = selectedPlan?.durationDays ?? null;
     const start = new Date(startDate || Date.now());
-    const expDate = new Date(start.getTime() + durationDays * 24 * 60 * 60 * 1000);
+    const expDate =
+      durationDays != null && durationDays > 0
+        ? new Date(start.getTime() + durationDays * 24 * 60 * 60 * 1000)
+        : start;
     const expirationDate = expDate.toISOString().split('T')[0];
 
     const targetEdit = effectiveMember || displayedEdit;
@@ -250,7 +253,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         expirationDate,
         membershipPlanId: selectedPlan?.id,
         membershipPlanName: selectedPlan?.name,
-        remainingSessions: durationDays >= 90 ? 999 : 30,
+        remainingSessions: selectedPlan?.totalSessions ?? 0,
         gender,
         dateOfBirth,
         source,
@@ -281,7 +284,7 @@ export const MemberModal: React.FC<MemberModalProps> = React.memo(({
         return {
           value: p.id,
           label: p.name,
-          sublabel: `${p.durationDays} j · ${priceVal.toLocaleString()} DZD`,
+          sublabel: `${p.durationDays != null ? `${p.durationDays} j` : '—'} · ${priceVal.toLocaleString()} DZD`,
         };
       }),
     [plans]

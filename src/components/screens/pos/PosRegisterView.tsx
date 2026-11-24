@@ -125,6 +125,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
   const { isSyncing, networkMode, isSyncTimeout, lastSyncedAt, retryCloudSync } =
     useDashboardShellState();
   const {
+    account,
     products,
     members,
     staff,
@@ -137,6 +138,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     receiptConfig,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       products: selectCurrentProductsFromState(s),
       members: selectCurrentMembersFromState(s),
       staff: selectCurrentStaffFromState(s),
@@ -171,7 +173,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
 
   const [isCustomItemModalOpen, setIsCustomItemModalOpen] = useState(false);
   const [customItemName, setCustomItemName] = useState('');
-  const [customItemPrice, setCustomItemPrice] = useState(1000);
+  const [customItemPrice, setCustomItemPrice] = useState('');
   const [customItemCategory, setCustomItemCategory] = useState('General');
 
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
@@ -198,7 +200,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
   const retainedProductForAdjust = useRetainedModalValue(
     isAdjustStockModalOpen ? selectedProductForAdjust : null
   );
-  const [adjustQuantity, setAdjustQuantity] = useState(10);
+  const [adjustQuantity, setAdjustQuantity] = useState('');
   const [adjustMode, setAdjustMode] = useState<'add' | 'remove' | 'set'>('add');
   const [adjustReason, setAdjustReason] = useState('');
 
@@ -208,10 +210,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
   const [formCategory, setFormCategory] = useState('Beverage');
   const [formSku, setFormSku] = useState('');
   const [formBarcode, setFormBarcode] = useState('');
-  const [formPrice, setFormPrice] = useState(1500);
-  const [formCost, setFormCost] = useState(900);
-  const [formStock, setFormStock] = useState(25);
-  const [formReorder, setFormReorder] = useState(5);
+  const [formPrice, setFormPrice] = useState('');
+  const [formCost, setFormCost] = useState('');
+  const [formStock, setFormStock] = useState('');
+  const [formReorder, setFormReorder] = useState('');
   const [formUnit, setFormUnit] = useState('pcs');
   const [formTaxRate, setFormTaxRate] = useState(configuredDefaultTva);
 
@@ -474,16 +476,26 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
 
   const handleAddCustomItem = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customItemName.trim() || customItemPrice <= 0) return;
+    const parsedCustomPrice = parseFloat(customItemPrice);
+    if (!customItemName.trim() || isNaN(parsedCustomPrice) || parsedCustomPrice <= 0) return;
+    const activeAccountId = account?.id?.trim();
+    if (!activeAccountId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title'),
+        message: t('tenant_context_missing_msg'),
+      });
+      return;
+    }
     const tempProduct: Product = {
       id: `custom_${Date.now()}`,
-      tenantId: 'acc_01',
+      tenantId: activeAccountId,
       facilityId: currentBranch.id,
       name: customItemName.trim(),
       description: 'Quick custom entered register item',
-      price: { amount: customItemPrice, currency: 'DZD' },
-      cost: { amount: Math.round(customItemPrice * 0.6), currency: 'DZD' },
-      costPrice: Math.round(customItemPrice * 0.6),
+      price: { amount: parsedCustomPrice, currency: 'DZD' },
+      cost: { amount: Math.round(parsedCustomPrice * 0.6), currency: 'DZD' },
+      costPrice: Math.round(parsedCustomPrice * 0.6),
       stockQuantity: 9999,
       sku: `QUICK-${Date.now().toString().slice(-4)}`,
       category: customItemCategory,
@@ -493,7 +505,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     };
     addToCart(tempProduct);
     setCustomItemName('');
-    setCustomItemPrice(1000);
+    setCustomItemPrice('');
     setIsCustomItemModalOpen(false);
   };
 
@@ -599,7 +611,7 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         restoredCart.push({
           product: {
             id: item.productId,
-            tenantId: 'acc_01',
+            tenantId: account?.id || '',
             facilityId: currentBranch.id,
             name: item.productName,
             description: 'Restored from held order',
@@ -632,12 +644,14 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
   const handleConfirmStockAdjust = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProductForAdjust) return;
+    const qtyNum = parseInt(adjustQuantity, 10);
+    if (isNaN(qtyNum) || qtyNum < 0) return;
     const deltaOrVal =
       adjustMode === 'add'
-        ? Math.abs(adjustQuantity)
+        ? Math.abs(qtyNum)
         : adjustMode === 'remove'
-        ? -Math.abs(adjustQuantity)
-        : Math.max(0, adjustQuantity);
+        ? -Math.abs(qtyNum)
+        : Math.max(0, qtyNum);
     const movementType = adjustMode === 'set' ? 'Adjustment' : adjustMode === 'add' ? 'Restock' : 'Damage';
     adjustStock(
       selectedProductForAdjust.id,
@@ -646,24 +660,30 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
       adjustReason || 'Manual Inventory Adjustment',
       movementType
     );
+    setAdjustQuantity('');
+    setAdjustReason('');
     setIsAdjustStockModalOpen(false);
     setSelectedProductForAdjust(null);
   };
 
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName.trim() || formPrice <= 0) return;
+    const priceNum = parseFloat(formPrice);
+    const costNum = formCost === '' ? 0 : parseFloat(formCost);
+    const stockNum = parseInt(formStock, 10);
+    const reorderNum = formReorder === '' ? 5 : parseInt(formReorder, 10);
+    if (!formName.trim() || isNaN(priceNum) || priceNum <= 0 || isNaN(stockNum) || stockNum < 0) return;
     if (editingProductId) {
       updateProduct(editingProductId, {
         name: formName.trim(),
         category: formCategory,
         sku: formSku.trim(),
         barcode: formBarcode.trim() || undefined,
-        price: { amount: formPrice, currency: 'DZD' },
-        cost: { amount: formCost, currency: 'DZD' },
-        costPrice: formCost,
-        stockQuantity: formStock,
-        reorderLevel: formReorder,
+        price: { amount: priceNum, currency: 'DZD' },
+        cost: { amount: isNaN(costNum) ? 0 : costNum, currency: 'DZD' },
+        costPrice: isNaN(costNum) ? 0 : costNum,
+        stockQuantity: stockNum,
+        reorderLevel: isNaN(reorderNum) ? 5 : reorderNum,
         unit: formUnit,
         taxRate: formTaxRate,
       });
@@ -674,11 +694,11 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
         category: formCategory,
         sku: formSku.trim() || `SKU-${Date.now().toString().slice(-4)}`,
         barcode: formBarcode.trim() || `6131100${Date.now().toString().slice(-6)}`,
-        price: { amount: formPrice, currency: 'DZD' },
-        cost: { amount: formCost, currency: 'DZD' },
-        costPrice: formCost,
-        stockQuantity: formStock,
-        reorderLevel: formReorder,
+        price: { amount: priceNum, currency: 'DZD' },
+        cost: { amount: isNaN(costNum) ? 0 : costNum, currency: 'DZD' },
+        costPrice: isNaN(costNum) ? 0 : costNum,
+        stockQuantity: stockNum,
+        reorderLevel: isNaN(reorderNum) ? 5 : reorderNum,
         unit: formUnit,
         taxRate: formTaxRate,
         isActive: true,
@@ -695,10 +715,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     setFormCategory(prod.category || 'Beverage');
     setFormSku(prod.sku || '');
     setFormBarcode(prod.barcode || '');
-    setFormPrice(prod.price.amount);
-    setFormCost(prod.costPrice || prod.cost?.amount || Math.round(prod.price.amount * 0.6));
-    setFormStock(prod.stockQuantity);
-    setFormReorder(prod.reorderLevel || 5);
+    setFormPrice(String(prod.price.amount));
+    setFormCost(String(prod.costPrice || prod.cost?.amount || Math.round(prod.price.amount * 0.6)));
+    setFormStock(String(prod.stockQuantity));
+    setFormReorder(String(prod.reorderLevel || 5));
     setFormUnit(prod.unit || 'pcs');
     setFormTaxRate(prod.taxRate ?? configuredDefaultTva);
     setIsProductFormModalOpen(true);
@@ -708,12 +728,12 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
     setEditingProductId(null);
     setFormName('');
     setFormCategory('Beverage');
-    setFormSku(`SKU-${Date.now().toString().slice(-4)}`);
-    setFormBarcode(`6131100${Date.now().toString().slice(-6)}`);
-    setFormPrice(1500);
-    setFormCost(900);
-    setFormStock(25);
-    setFormReorder(5);
+    setFormSku('');
+    setFormBarcode('');
+    setFormPrice('');
+    setFormCost('');
+    setFormStock('');
+    setFormReorder('');
     setFormUnit('pcs');
     setFormTaxRate(configuredDefaultTva);
     setIsProductFormModalOpen(true);
@@ -2055,74 +2075,159 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               data-sq-border="solid"
               className="p-5 bg-white dark:bg-[#22201E] sq-elev-card flex flex-col items-center"
             >
-              <div className="t-small font-semibold text-black/55 dark:text-white/55 mb-3">
-                {t('shop_preview_title')}
-              </div>
-              <div className="w-[300px] bg-white text-black p-5 shadow-xl tabular-nums t-cap leading-relaxed border-t-4 border-[#d4522f]">
-                <div className="text-center space-y-1 pb-3 border-b border-dashed border-black/[0.22]">
-                  <div className="t-card font-semibold">{receiptConfig.headerTitle}</div>
-                  {receiptConfig.subHeader && <div className="t-cap text-black/75">{receiptConfig.subHeader}</div>}
-                  {receiptConfig.address && <div className="t-cap text-black/55">{receiptConfig.address}</div>}
-                  {receiptConfig.phone && <div className="t-cap text-black/55">Tel: {receiptConfig.phone}</div>}
-                  {receiptConfig.taxId && <div className="t-small font-semibold text-black/75 pt-0.5">{receiptConfig.taxId}</div>}
-                </div>
-                <div className="py-2 t-cap border-b border-dashed border-black/[0.22] space-y-0.5">
-                  <div className="flex justify-between">
-                    <span>{t('shop_receipt_sample_num')}</span>
-                    <span>{new Date().toLocaleDateString()}</span>
-                  </div>
-                  {receiptConfig.showCashier && (
-                    <div className="flex justify-between">
-                      <span>{t('shop_receipt_sample_cashier')}</span>
-                      <span>{new Date().toLocaleTimeString()}</span>
+              {(() => {
+                const latestSale = sales[0];
+                const usingLiveCart = cart.length > 0;
+                const usingLastSale = !usingLiveCart && Boolean(latestSale);
+                const isSamplePreview = !usingLiveCart && !usingLastSale;
+                const previewLines = usingLiveCart
+                  ? cart.map((c) => ({
+                      key: c.product.id,
+                      label: `${c.quantity}x ${c.product.name}`,
+                      amount: c.product.price.amount * c.quantity - c.discount,
+                    }))
+                  : usingLastSale && latestSale
+                  ? (latestSale.items || []).map((it, idx) => ({
+                      key: `${it.productId}_${idx}`,
+                      label: `${it.quantity}x ${it.productName}`,
+                      amount: it.totalPrice,
+                    }))
+                  : [
+                      {
+                        key: 'sample_1',
+                        label: isAr ? '1x منتج نموذجي' : isEn ? '1x Sample Item' : '1x Article Exemple',
+                        amount: 1000,
+                      },
+                    ];
+                const previewSubtotal = usingLiveCart
+                  ? cartSubtotal
+                  : usingLastSale && latestSale
+                  ? Number(latestSale.subtotal ?? latestSale.totalAmount ?? 0)
+                  : 1000;
+                const previewTax = usingLiveCart
+                  ? taxAmount
+                  : usingLastSale && latestSale
+                  ? Number(latestSale.taxAmount ?? 0)
+                  : Math.round(1000 * (configuredDefaultTva / 100));
+                const previewTotal = usingLiveCart
+                  ? cartTotal
+                  : usingLastSale && latestSale
+                  ? Number(latestSale.totalAmount ?? 0)
+                  : previewSubtotal + (receiptConfig.showTaxBreakdown ? previewTax : 0);
+                const previewReceiptNumber = usingLiveCart
+                  ? `#POS-${new Date().getFullYear()}-CART`
+                  : usingLastSale && latestSale
+                  ? `#${latestSale.id.slice(0, 8).toUpperCase()}`
+                  : t('shop_receipt_sample_num');
+                const previewCashier = usingLiveCart
+                  ? selectedCashierName
+                  : usingLastSale && latestSale
+                  ? latestSale.cashierName || selectedCashierName
+                  : t('shop_receipt_sample_cashier');
+                const previewClient = usingLiveCart
+                  ? members.find((m) => m.id === selectedCustomerId)?.fullName || t('shop_receipt_walkin')
+                  : usingLastSale && latestSale
+                  ? latestSale.memberName || t('shop_receipt_walkin')
+                  : t('shop_receipt_sample_client');
+
+                return (
+                  <>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="t-small font-semibold text-black/55 dark:text-white/55">
+                        {t('shop_preview_title')}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded t-small font-semibold ${
+                          isSamplePreview
+                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
+                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                        }`}
+                      >
+                        {isSamplePreview
+                          ? isAr
+                            ? 'نموذج'
+                            : isEn
+                            ? 'Sample'
+                            : 'Exemple'
+                          : usingLiveCart
+                          ? isAr
+                            ? 'السلة الحالية'
+                            : isEn
+                            ? 'Live Cart'
+                            : 'Panier en cours'
+                          : isAr
+                          ? 'آخر عملية بيع'
+                          : isEn
+                          ? 'Last Sale'
+                          : 'Dernière vente'}
+                      </span>
                     </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span>{t('shop_receipt_sample_client')}</span>
-                    <span>{t('shop_receipt_terminal')}</span>
-                  </div>
-                </div>
-                <div className="py-2 space-y-2 border-b border-dashed border-black/[0.22]">
-                  <div className="flex justify-between font-semibold t-small">
-                    <span>{t('shop_receipt_item_qty_header')}</span>
-                    <span>{t('shop_receipt_total_header')}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>1x Espresso Beans 1kg</span>
-                    <span>3,200 DA</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>2x French Croissant</span>
-                    <span>960 DA</span>
-                  </div>
-                </div>
-                <div className="py-2 space-y-1 border-b border-dashed border-black/[0.22]">
-                  <div className="flex justify-between">
-                    <span>{t('shop_receipt_subtotal_header')}</span>
-                    <span>4,160 DA</span>
-                  </div>
-                  {receiptConfig.showTaxBreakdown && (
-                    <div className="flex justify-between t-cap text-black/75">
-                      <span>{t('shop_receipt_vat_header')}</span>
-                      <span>374 DA</span>
+                    <div className="w-[300px] bg-white text-black p-5 shadow-xl tabular-nums t-cap leading-relaxed border-t-4 border-[#d4522f]">
+                      <div className="text-center space-y-1 pb-3 border-b border-dashed border-black/[0.22]">
+                        <div className="t-card font-semibold">{receiptConfig.headerTitle}</div>
+                        {receiptConfig.subHeader && <div className="t-cap text-black/75">{receiptConfig.subHeader}</div>}
+                        {receiptConfig.address && <div className="t-cap text-black/55">{receiptConfig.address}</div>}
+                        {receiptConfig.phone && <div className="t-cap text-black/55">Tel: {receiptConfig.phone}</div>}
+                        {receiptConfig.taxId && <div className="t-small font-semibold text-black/75 pt-0.5">{receiptConfig.taxId}</div>}
+                      </div>
+                      <div className="py-2 t-cap border-b border-dashed border-black/[0.22] space-y-0.5">
+                        <div className="flex justify-between">
+                          <span>{previewReceiptNumber}</span>
+                          <span>{new Date().toLocaleDateString()}</span>
+                        </div>
+                        {receiptConfig.showCashier && (
+                          <div className="flex justify-between">
+                            <span>{previewCashier}</span>
+                            <span>{new Date().toLocaleTimeString()}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between">
+                          <span>{previewClient}</span>
+                          <span>{t('shop_receipt_terminal')}</span>
+                        </div>
+                      </div>
+                      <div className="py-2 space-y-2 border-b border-dashed border-black/[0.22]">
+                        <div className="flex justify-between font-semibold t-small">
+                          <span>{t('shop_receipt_item_qty_header')}</span>
+                          <span>{t('shop_receipt_total_header')}</span>
+                        </div>
+                        {previewLines.map((line) => (
+                          <div key={line.key} className="flex justify-between gap-2">
+                            <span className="truncate">{line.label}</span>
+                            <span className="shrink-0">{formatMoney(line.amount)}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="py-2 space-y-1 border-b border-dashed border-black/[0.22]">
+                        <div className="flex justify-between">
+                          <span>{t('shop_receipt_subtotal_header')}</span>
+                          <span>{formatMoney(previewSubtotal)}</span>
+                        </div>
+                        {receiptConfig.showTaxBreakdown && (
+                          <div className="flex justify-between t-cap text-black/75">
+                            <span>{t('shop_receipt_vat_header')}</span>
+                            <span>{formatMoney(previewTax)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between t-label font-semibold pt-1">
+                          <span>{t('shop_receipt_total_due_header')}</span>
+                          <span>{formatMoney(previewTotal)}</span>
+                        </div>
+                      </div>
+                      <div className="pt-3 text-center space-y-2">
+                        {receiptConfig.showBarcode && (
+                          <div className="w-40 h-8 mx-auto bg-neutral-900 text-white t-cap flex items-center justify-center tabular-nums">
+                            ||||| | |||| || ||| ||||
+                          </div>
+                        )}
+                        <div className="t-small font-semibold text-black">
+                          {receiptConfig.footerMessage || t('shop_receipt_default_footer')}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex justify-between t-label font-semibold pt-1">
-                    <span>{t('shop_receipt_total_due_header')}</span>
-                    <span>4,160 DA</span>
-                  </div>
-                </div>
-                <div className="pt-3 text-center space-y-2">
-                  {receiptConfig.showBarcode && (
-                    <div className="w-40 h-8 mx-auto bg-neutral-900 text-white t-cap flex items-center justify-center tabular-nums">
-                      ||||| | |||| || ||| ||||
-                    </div>
-                  )}
-                  <div className="t-small font-semibold text-black">
-                    {receiptConfig.footerMessage || t('shop_receipt_default_footer')}
-                  </div>
-                </div>
-              </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </ScreenPod>
@@ -2723,9 +2828,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               field="CustomPrice"
               label={t('shop_custom_price')}
               type="number"
+              placeholder="1000"
               required
-              value={customItemPrice ? String(customItemPrice) : ''}
-              onChange={(v) => setCustomItemPrice(parseFloat(v) || 0)}
+              value={customItemPrice}
+              onChange={setCustomItemPrice}
               width="100%"
               height={40}
               corner={12}
@@ -2818,9 +2924,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               label={adjustMode === 'set' ? t('shop_adjust_new_count') : t('shop_adjust_quantity')}
               type="number"
               min="0"
+              placeholder="10"
               required
               value={adjustQuantity}
-              onChange={(val) => setAdjustQuantity(Number(val || 0))}
+              onChange={setAdjustQuantity}
               width="100%"
               height={40}
               corner={12}
@@ -2871,9 +2978,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               field="Price"
               label={t('shop_prod_price')}
               type="number"
+              placeholder="1500"
               required
-              value={formPrice ? String(formPrice) : ''}
-              onChange={(v) => setFormPrice(parseFloat(v) || 0)}
+              value={formPrice}
+              onChange={setFormPrice}
               width="100%"
               height={40}
               corner={12}
@@ -2882,9 +2990,10 @@ export const PosRegisterView: React.FC<{ initialTab?: 'register' | 'parked' | 'r
               field="Stock"
               label={t('shop_prod_stock')}
               type="number"
+              placeholder="25"
               required
-              value={formStock !== undefined ? String(formStock) : ''}
-              onChange={(v) => setFormStock(parseInt(v) || 0)}
+              value={formStock}
+              onChange={setFormStock}
               width="100%"
               height={40}
               corner={12}

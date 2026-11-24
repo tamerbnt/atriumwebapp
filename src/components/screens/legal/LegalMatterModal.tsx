@@ -7,6 +7,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { LegalMatter } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -36,8 +37,9 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
   onSave,
   matterToEdit,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -62,9 +64,9 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
   );
   const [chamber, setChamber] = useState(matterToEdit?.chamber || 'Chambre Commerciale 2');
   const [retainer, setRetainer] = useState(
-    matterToEdit ? String(matterToEdit.retainerAmountDzd) : '200000'
+    matterToEdit ? String(matterToEdit.retainerAmountDzd) : ''
   );
-  const [hearingDate, setHearingDate] = useState(matterToEdit?.nextHearingDate || '2026-06-15');
+  const [hearingDate, setHearingDate] = useState(matterToEdit?.nextHearingDate || '');
   const [notes, setNotes] = useState(matterToEdit?.notes || '');
 
   useEffect(() => {
@@ -79,8 +81,8 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
       setAdverseParty(matterToEdit.adversePartyName || '');
       setJurisdiction(matterToEdit.courtJurisdiction || "Tribunal de Sidi M'Hamed");
       setChamber(matterToEdit.chamber || 'Chambre Commerciale 2');
-      setRetainer(String(matterToEdit.retainerAmountDzd || 200000));
-      setHearingDate(matterToEdit.nextHearingDate || '2026-06-15');
+      setRetainer(matterToEdit.retainerAmountDzd != null ? String(matterToEdit.retainerAmountDzd) : '');
+      setHearingDate(matterToEdit.nextHearingDate || '');
       setNotes(matterToEdit.notes || '');
     } else {
       setTitle('');
@@ -93,8 +95,8 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
       setAdverseParty('');
       setJurisdiction("Tribunal de Sidi M'Hamed");
       setChamber('Chambre Commerciale 2');
-      setRetainer('200000');
-      setHearingDate('2026-06-15');
+      setRetainer('');
+      setHearingDate('');
       setNotes('');
     }
   }, [matterToEdit, isOpen]);
@@ -111,12 +113,32 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
       return;
     }
 
+    const parsedRetainer = parseFloat(retainer);
+    if (!Number.isFinite(parsedRetainer) || parsedRetainer < 0) {
+      showToast(
+        isAr ? 'يرجى إدخال مبلغ الأتعاب' : "Veuillez saisir un montant d'honoraires valide",
+        'error'
+      );
+      return;
+    }
+
+    const activeAccountId = (matterToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (matterToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
+
     onSave({
       id: matterToEdit ? matterToEdit.id : `mat_${Date.now()}`,
-      accountId: matterToEdit?.accountId || 'acc_01',
-      businessId: matterToEdit?.businessId || currentBusiness?.id || 'biz_legal',
-      branchId: matterToEdit?.branchId || currentBranch?.id || 'branch_legal_main',
-      staffId: matterToEdit?.staffId || currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: matterToEdit?.businessId || currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: matterToEdit?.staffId || currentUser?.id || '',
       matterNumber: matterToEdit
         ? matterToEdit.matterNumber
         : `DOS-2026-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -130,8 +152,8 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
       adversePartyName: adverseParty.trim() || undefined,
       courtJurisdiction: jurisdiction.trim(),
       chamber: chamber.trim(),
-      assignedLawyer: matterToEdit?.assignedLawyer || 'Maître Y. Cherif (Avocat à la Cour)',
-      retainerAmountDzd: parseFloat(retainer) || 150000,
+      assignedLawyer: matterToEdit?.assignedLawyer || currentUser?.fullName || '',
+      retainerAmountDzd: parsedRetainer,
       trustEscrowBalanceDzd: matterToEdit?.trustEscrowBalanceDzd || 0,
       status: matterToEdit?.status || 'Active',
       nextHearingDate: hearingDate,
@@ -215,6 +237,7 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
             <LabelInput
               label={isAr ? 'المبلغ المبدئي للأتعاب (دج)' : "Convention d'Honoraires (DZD)"}
               type="number"
+              placeholder="200000"
               value={retainer}
               onChange={setRetainer}
               required

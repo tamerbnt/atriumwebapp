@@ -26,6 +26,7 @@ import {
   shallowEqualObjects,
   selectCurrentMemberCheckInsFromState,
   selectCurrentSalesFromState,
+  selectCurrentPlansFromState,
 } from '../../../services/store';
 import {
   EmptyState,
@@ -84,6 +85,7 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
       language: s.language,
       memberCheckIns: selectCurrentMemberCheckInsFromState(s),
       sales: selectCurrentSalesFromState(s),
+      plans: selectCurrentPlansFromState(s),
     }),
     shallowEqualObjects
   );
@@ -190,18 +192,30 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
   }
   const entranceEpoch = entranceEpochRef.current;
 
-  // Compute progress percentage for sessions bar
-  const planName = activeMember?.membershipPlanName || (activeMember as any)?.membershipType || 'Standard Plan';
+  const planName = activeMember?.membershipPlanName || (activeMember as any)?.membershipType || '—';
+  const matchedPlan = useMemo(() => {
+    if (!activeMember) return null;
+    if (activeMember.membershipPlanId) {
+      const byId = branchState.plans.find((p) => p.id === activeMember.membershipPlanId);
+      if (byId) return byId;
+    }
+    if (activeMember.membershipPlanName) {
+      const target = activeMember.membershipPlanName.trim().toLowerCase();
+      return branchState.plans.find((p) => p.name.trim().toLowerCase() === target) || null;
+    }
+    return null;
+  }, [activeMember, branchState.plans]);
+
   const totalPlanSessions =
-    planName.toLowerCase().includes('year') || planName.toLowerCase().includes('annual')
-      ? 365
-      : planName.toLowerCase().includes('trimest') || planName.toLowerCase().includes('quarter')
-      ? 90
-      : planName.toLowerCase().includes('10')
-      ? 10
-      : 30;
-  const remainingSessions = activeMember?.remainingSessions ?? 24;
-  const sessionPct = clamp((remainingSessions / Math.max(1, totalPlanSessions)) * 100, 0, 100);
+    matchedPlan?.totalSessions != null && matchedPlan.totalSessions > 0
+      ? matchedPlan.totalSessions
+      : null;
+  const remainingSessions =
+    activeMember?.remainingSessions != null ? activeMember.remainingSessions : null;
+  const sessionPct =
+    totalPlanSessions != null && remainingSessions != null
+      ? clamp((remainingSessions / Math.max(1, totalPlanSessions)) * 100, 0, 100)
+      : 0;
 
   const lastPanelKeyRef = useRef<string>('');
   const lastHoldQRef = useRef<number>(-1);
@@ -728,9 +742,19 @@ export const MemberSlideOverInspector: React.FC<MemberSlideOverInspectorProps> =
                       </div>
                       <div className="kv flex justify-between items-center gap-3 py-[11px] t-body">
                         <span className="text-[var(--atr-mut,rgba(0,0,0,0.72))] dark:text-white/75">{L('Remaining sessions', 'Séances restantes', 'الحصص المتبقية')}</span>
-                        <b className="tabular-nums t-body text-end text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]">
-                          {remainingSessions} {L('sessions', 'séances', 'حصص')}
-                        </b>
+                        {remainingSessions != null && totalPlanSessions != null ? (
+                          <b className="tabular-nums t-body text-end text-[var(--atr-ok,#096b40)] dark:text-[#5BE3A3]">
+                            {remainingSessions} / {totalPlanSessions} {L('sessions', 'séances', 'حصص')}
+                          </b>
+                        ) : remainingSessions != null ? (
+                          <b className="tabular-nums t-body text-end text-amber-700 dark:text-amber-300">
+                            {remainingSessions} · {L('Configure plan quota', 'Quota formule à définir', 'يرجى ضبط حصص الباقة')}
+                          </b>
+                        ) : (
+                          <b className="t-small font-medium text-amber-700 dark:text-amber-300 text-end">
+                            {L('Configure plan sessions in Settings', 'Définir séances dans Paramètres', 'يرجى ضبط الحصص في الإعدادات')}
+                          </b>
+                        )}
                       </div>
                       <div className="bar2 h-[8px] rounded-full bg-[var(--atr-divider)] overflow-hidden mt-0.5 mb-3">
                         <i

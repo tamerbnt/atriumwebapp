@@ -19,6 +19,8 @@ import {
   useAtriumSelector,
   shallowEqualObjects,
   selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
+  selectCurrentBusinessConfigFromState,
   useAtriumActions,
 } from '../../../services/store';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
@@ -54,9 +56,11 @@ import {
 } from '../../ui/kinetic';
 
 export const ManufacturingOrdersView: React.FC<any> = () => {
-  const { language, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+  const { language, currentBusiness, currentBusinessConfig, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
     (s) => ({
       language: s.language,
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
@@ -1066,10 +1070,20 @@ export const ManufacturingOrdersView: React.FC<any> = () => {
             <div className="printable-document p-6 rounded-[var(--r-card,16px)] bg-white border-2 border-dashed border-black/[0.18] text-black space-y-5 shadow-xs font-sans">
               <div className="flex justify-between items-start border-b border-black/[0.12] pb-4">
                 <div>
-                  <div className="font-semibold t-pod text-black">ATRIUM MANUFACTURE & ATELIER PME</div>
-                  <div className="t-small text-black/55 font-medium">
-                    Zone Industrielle Oued Smar, Alger • NIF: 001916010044589 • RC: 16/00-0988421
+                  <div className="font-semibold t-pod text-black">
+                    {currentBusiness?.name || currentBranch?.name || ''}
                   </div>
+                  {(currentBranch?.address || currentBusinessConfig?.fiscalProfile?.nif || currentBusinessConfig?.fiscalProfile?.rc) && (
+                    <div className="t-small text-black/55 font-medium">
+                      {[
+                        currentBranch?.address || '',
+                        currentBusinessConfig?.fiscalProfile?.nif ? `NIF: ${currentBusinessConfig.fiscalProfile.nif}` : '',
+                        currentBusinessConfig?.fiscalProfile?.rc ? `RC: ${currentBusinessConfig.fiscalProfile.rc}` : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' • ')}
+                    </div>
+                  )}
                   <div className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] mt-1">
                     FICHE SUIVEUSE DE PRODUCTION • ORDRE DE FABRICATION
                   </div>

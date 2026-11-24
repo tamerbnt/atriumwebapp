@@ -9,7 +9,9 @@ import {
   shallowEqualObjects,
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
 
 interface AgriCropCycleModalProps {
@@ -27,8 +29,9 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
   cycleToEdit,
   parcels,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -38,21 +41,21 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
   );
   const isAr = language === 'ar';
 
-  const [parcelId, setParcelId] = useState(parcels[0]?.id || 'parc_01');
-  const [cropName, setCropName] = useState('Tomates Maraîchères');
-  const [variety, setVariety] = useState('Marmande F1');
-  const [campaignYear, setCampaignYear] = useState('2026');
-  const [surfaceAllocatedHa, setSurfaceAllocatedHa] = useState('3.5');
-  const [seedLotNumber, setSeedLotNumber] = useState('INPV-SEM-2026-081');
-  const [seedQuantityKg, setSeedQuantityKg] = useState('40');
-  const [sowingDate, setSowingDate] = useState('2026-02-10');
-  const [projectedHarvestDate, setProjectedHarvestDate] = useState('2026-06-15');
-  const [projectedYieldQtx, setProjectedYieldQtx] = useState('1400');
+  const [parcelId, setParcelId] = useState(parcels[0]?.id || '');
+  const [cropName, setCropName] = useState('');
+  const [variety, setVariety] = useState('');
+  const [campaignYear, setCampaignYear] = useState(() => String(new Date().getFullYear()));
+  const [surfaceAllocatedHa, setSurfaceAllocatedHa] = useState('');
+  const [seedLotNumber, setSeedLotNumber] = useState('');
+  const [seedQuantityKg, setSeedQuantityKg] = useState('');
+  const [sowingDate, setSowingDate] = useState('');
+  const [projectedHarvestDate, setProjectedHarvestDate] = useState('');
+  const [projectedYieldQtx, setProjectedYieldQtx] = useState('');
   const [actualYieldQtx, setActualYieldQtx] = useState('');
-  const [currentPhase, setCurrentPhase] = useState<AgriCyclePhase>('vegetative');
-  const [inputCost, setInputCost] = useState('890000');
-  const [laborCost, setLaborCost] = useState('420000');
-  const [machineryCost, setMachineryCost] = useState('180000');
+  const [currentPhase, setCurrentPhase] = useState<AgriCyclePhase>('planned');
+  const [inputCost, setInputCost] = useState('');
+  const [laborCost, setLaborCost] = useState('');
+  const [machineryCost, setMachineryCost] = useState('');
 
   useEffect(() => {
     if (cycleToEdit) {
@@ -72,42 +75,74 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
       setLaborCost(String(cycleToEdit.totalLaborCostDzd || 0));
       setMachineryCost(String(cycleToEdit.totalMachineryCostDzd || 0));
     } else {
-      setParcelId(parcels[0]?.id || 'parc_01');
-      setCropName('Tomates Maraîchères');
-      setVariety('Marmande F1');
-      setCampaignYear('2026');
-      setSurfaceAllocatedHa('3.5');
-      setSeedLotNumber('INPV-SEM-2026-081');
-      setSeedQuantityKg('40');
-      setSowingDate('2026-02-10');
-      setProjectedHarvestDate('2026-06-15');
-      setProjectedYieldQtx('1400');
+      setParcelId(parcels[0]?.id || '');
+      setCropName('');
+      setVariety('');
+      setCampaignYear(String(new Date().getFullYear()));
+      setSurfaceAllocatedHa('');
+      setSeedLotNumber('');
+      setSeedQuantityKg('');
+      setSowingDate('');
+      setProjectedHarvestDate('');
+      setProjectedYieldQtx('');
       setActualYieldQtx('');
-      setCurrentPhase('vegetative');
-      setInputCost('890000');
-      setLaborCost('420000');
-      setMachineryCost('180000');
+      setCurrentPhase('planned');
+      setInputCost('');
+      setLaborCost('');
+      setMachineryCost('');
     }
-  }, [cycleToEdit, parcels]);
+  }, [cycleToEdit, parcels, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const surfaceVal = parseFloat(surfaceAllocatedHa);
+    const projectedVal = parseFloat(projectedYieldQtx);
+    if (
+      !parcelId ||
+      !cropName.trim() ||
+      !variety.trim() ||
+      isNaN(surfaceVal) ||
+      surfaceVal <= 0 ||
+      !sowingDate ||
+      !projectedHarvestDate ||
+      isNaN(projectedVal) ||
+      projectedVal <= 0
+    ) {
+      showToast({
+        type: 'error',
+        title: isAr ? 'بيانات ناقصة' : 'Champs requis',
+        message: isAr
+          ? 'يرجى إدخال كافة بيانات المحصول والمساحة والمردود المتوقع'
+          : 'Veuillez renseigner la parcelle, la culture, la surface, les dates et le rendement prévu',
+      });
+      return;
+    }
+    const activeAccountId = (cycleToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (cycleToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const payload: AgriCropCycle = {
       id: cycleToEdit?.id || `cycle_${Date.now()}`,
-      accountId: cycleToEdit?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_agri',
-      branchId: currentBranch?.id || 'branch_agri_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       parcelId,
       cropName: cropName.trim(),
       variety: variety.trim(),
       campaignYear: parseInt(campaignYear, 10) || new Date().getFullYear(),
-      surfaceAllocatedHa: parseFloat(surfaceAllocatedHa) || 1.0,
+      surfaceAllocatedHa: surfaceVal,
       seedLotNumber: seedLotNumber.trim() || undefined,
       seedQuantityKg: seedQuantityKg ? parseFloat(seedQuantityKg) : undefined,
       sowingDate,
       projectedHarvestDate,
-      projectedYieldQtx: parseFloat(projectedYieldQtx) || 100,
+      projectedYieldQtx: projectedVal,
       actualYieldQtx: actualYieldQtx ? parseFloat(actualYieldQtx) : undefined,
       currentPhase,
       activeDarLockoutUntil: cycleToEdit?.activeDarLockoutUntil,
@@ -236,6 +271,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
               label={isAr ? 'المساحة المخصصة (هكتار) *' : 'Surface Allouée (ha) *'}
               type="number"
               step="0.1"
+              placeholder="3.5"
               value={surfaceAllocatedHa}
               onChange={setSurfaceAllocatedHa}
               width="100%"
@@ -260,6 +296,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
               field="SeedQuantityKg"
               label={isAr ? 'كمية البذور (كغ)' : 'Semence Utilisée (Kg)'}
               type="number"
+              placeholder="40"
               value={seedQuantityKg}
               onChange={setSeedQuantityKg}
               width="100%"
@@ -303,6 +340,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
                 field="ProjectedYieldQtx"
                 label={isAr ? 'المحصول المتوقع (قنطار) *' : 'Rendement Prévu (Quintaux) *'}
                 type="number"
+                placeholder="1400"
                 value={projectedYieldQtx}
                 onChange={setProjectedYieldQtx}
                 width="100%"
@@ -328,6 +366,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
                 field="InputCost"
                 label={isAr ? 'تكلفة الأسمدة والبذور (دج)' : 'Intrants & Semences (DZD)'}
                 type="number"
+                placeholder="0"
                 value={inputCost}
                 onChange={setInputCost}
                 width="100%"
@@ -338,6 +377,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
                 field="LaborCost"
                 label={isAr ? 'أجور العمال والتجميع (دج)' : 'Main d’Œuvre Tâcherons (DZD)'}
                 type="number"
+                placeholder="0"
                 value={laborCost}
                 onChange={setLaborCost}
                 width="100%"
@@ -348,6 +388,7 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
                 field="MachineryCost"
                 label={isAr ? 'الوقود والعتاد (دج)' : 'Carburant & Matériel (DZD)'}
                 type="number"
+                placeholder="0"
                 value={machineryCost}
                 onChange={setMachineryCost}
                 width="100%"

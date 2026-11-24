@@ -5,7 +5,15 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { RealEstateLease, RentalQuittanceRecord } from '../../../types';
 import { computeRentalTimbreFiscal } from '../../../utils/realEstateRules';
-import { useAtriumSelector, selectCurrentBusinessConfigFromState } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessConfigFromState,
+  selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
+  showToast,
+} from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { KineticModalShell } from '../../ui/kinetic';
 
 interface QuittanceModalProps {
@@ -60,7 +68,24 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
     }
   };
 
-  const businessConfig = useAtriumSelector(selectCurrentBusinessConfigFromState);
+  const {
+    account,
+    currentBranch,
+    currentBusiness,
+    currentUser,
+    language,
+    businessConfig,
+  } = useAtriumSelector(
+    (s) => ({
+      account: s.account,
+      currentBranch: selectCurrentBranchFromState(s),
+      currentBusiness: selectCurrentBusinessFromState(s),
+      currentUser: s.currentUser,
+      language: s.language,
+      businessConfig: selectCurrentBusinessConfigFromState(s),
+    }),
+    shallowEqualObjects
+  );
   const configuredMgmtFee = businessConfig.categorySettings?.defaultAgencyManagementFeePercent ?? 7.0;
   const configuredTvaRate = businessConfig.defaultTvaRate ?? 19;
   const applyTimbre = businessConfig.applyTimbreFiscal !== false;
@@ -78,18 +103,28 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const activeAccountId = (activeLease?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (activeLease?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
 
     const quittanceSeq = Math.floor(100000 + Math.random() * 900000);
     const quittanceNumber = `QTC-${periodYear}-${quittanceSeq}`;
 
     const newQuittance: RentalQuittanceRecord = {
       id: `qtc_${Date.now()}`,
-      accountId: activeLease?.accountId || 'acc_01',
-      businessId: activeLease?.businessId || 'biz_realestate',
-      branchId: activeLease?.branchId || 'branch_realestate_main',
-      staffId: activeLease?.staffId || 'staff_01',
+      accountId: activeAccountId,
+      businessId: activeLease?.businessId || currentBusiness?.id || '',
+      branchId: activeBranchId,
+      staffId: activeLease?.staffId || currentUser?.id || '',
       quittanceNumber,
-      leaseId: activeLease?.id || 'lease_01',
+      leaseId: activeLease?.id || '',
       propertyId: activeLease?.propertyId,
       propertyTitle: activeLease?.propertyTitle || 'Appartement en Gestion',
       tenantName: activeLease?.tenantName || 'Locataire',

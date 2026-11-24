@@ -20,6 +20,7 @@ import {
   useAtriumActions,
 } from '../../../services/store';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
+import { t } from '../../../utils/i18n';
 import { formatMoney } from '../../../utils/rules';
 import { LogisticsManifest } from '../../../types';
 import { useLogisticsData } from './logisticsData';
@@ -64,8 +65,9 @@ const extractStr = (v: unknown): string =>
     : (v as { target?: { value?: string } })?.target?.value ?? '';
 
 export const LogisticsManifestsView: React.FC<any> = () => {
-  const { language, currentBusiness, currentBranch, branches, currentUser, isSyncing, networkMode } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, branches, currentUser, isSyncing, networkMode } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -186,15 +188,26 @@ export const LogisticsManifestsView: React.FC<any> = () => {
       ? manifestToEdit.totalCodExpectedDzd
       : unassignedShipments.reduce((acc, s) => acc + s.codAmountDzd, 0) || 45000;
 
+    const activeAccountId = (manifestToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (manifestToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
+
     const payload: LogisticsManifest = {
       id: manifestToEdit?.id || `man_${Date.now()}`,
-      accountId: manifestToEdit?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_logistics',
-      branchId: manifestToEdit?.branchId || currentBranch?.id || 'branch_logistics_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       manifestNumber:
         manifestToEdit?.manifestNumber ||
-        `MAN-2026-${String(manifests.length + 42).padStart(3, '0')}`,
+        `MAN-${new Date().getFullYear()}-${String(manifests.length + 42).padStart(3, '0')}`,
       driverName: driverName.trim(),
       driverPhone: driverPhone.trim(),
       vehiclePlate: vehiclePlate.trim(),

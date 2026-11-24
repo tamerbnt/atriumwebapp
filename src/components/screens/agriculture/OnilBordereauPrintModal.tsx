@@ -5,6 +5,7 @@ import {
   shallowEqualObjects,
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { AgriMilkingRecord, AgriDairyCow } from '../../../types';
@@ -21,11 +22,12 @@ interface OnilBordereauPrintModalProps {
 
 
 export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = ({ isOpen, onClose, milkingRecords, dairyCows }) => {
-	const { language, currentBusiness, currentBranch } = useAtriumSelector(
+	const { language, currentBusiness, currentBranch, currentBusinessConfig } = useAtriumSelector(
 	  (s) => ({
 	    language: s.language,
 	    currentBusiness: selectCurrentBusinessFromState(s),
 	    currentBranch: selectCurrentBranchFromState(s),
+	    currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
 	  }),
 	  shallowEqualObjects
 	);
@@ -65,19 +67,25 @@ export const OnilBordereauPrintModal: React.FC<OnilBordereauPrintModalProps> = (
 <div className="grid grid-cols-2 gap-4 p-4 rounded-[var(--r-ctl,12px)] bg-neutral-50 border border-black/[0.09] t-cap">
 <div className="space-y-2">
 <span className="font-semibold text-black block t-small">Identification de l'Exploitation (Éleveur)</span>
-<p className="font-semibold text-black t-label">{currentBusiness?.name || "Domaine Agricole & Élevage El Baraka"}</p>
+<p className="font-semibold text-black t-label">{currentBusiness?.name || currentBranch?.name || ""}</p>
+{currentBusinessConfig?.fiscalProfile?.licenseNumber && (
 <p className="text-black/75">
 {"Carte Fellah N°: "}
-<span className="tabular-nums font-semibold">CAW-16-09418</span>
+<span className="tabular-nums font-semibold">{currentBusinessConfig.fiscalProfile.licenseNumber}</span>
 </p>
+)}
+{currentBranch?.address && (
 <p className="text-black/75">
 {"Wilaya / Commune: "}
-<span className="font-medium">Alger / Zéralda - Mitidja</span>
+<span className="font-medium">{currentBranch.address}</span>
 </p>
+)}
+{(currentBusinessConfig?.fiscalProfile?.rib || currentBusinessConfig?.fiscalProfile?.ccp) && (
 <p className="text-black/75">
-{"Compte Bancaire BADR / RIP: "}
-<span className="tabular-nums font-semibold">003 00116 0248192019 44</span>
+{"Compte Bancaire / RIP: "}
+<span className="tabular-nums font-semibold">{currentBusinessConfig.fiscalProfile.rib || currentBusinessConfig.fiscalProfile.ccp}</span>
 </p>
+)}
 </div>
 <div className="space-y-2 border-l border-black/[0.09] pl-4">
 <span className="font-semibold text-black block t-small">Laiterie de Transformation Agréée</span>

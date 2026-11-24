@@ -6,7 +6,15 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { RealEstateProperty, RealEstateMandate, MandateType } from '../../../types';
 import { calculateMandateCommission } from '../../../utils/realEstateRules';
-import { useAtriumSelector, selectCurrentBusinessConfigFromState } from '../../../services/store';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessConfigFromState,
+  selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
+  showToast,
+} from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { KineticModalShell } from '../../ui/kinetic';
 
 interface MandateModalProps {
@@ -20,7 +28,24 @@ interface MandateModalProps {
 
 
 export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onSave, properties, selectedProperty }) => {
-	const businessConfig = useAtriumSelector(selectCurrentBusinessConfigFromState);
+	const {
+		account,
+		currentBranch,
+		currentBusiness,
+		currentUser,
+		language,
+		businessConfig,
+	} = useAtriumSelector(
+		(s) => ({
+			account: s.account,
+			currentBranch: selectCurrentBranchFromState(s),
+			currentBusiness: selectCurrentBusinessFromState(s),
+			currentUser: s.currentUser,
+			language: s.language,
+			businessConfig: selectCurrentBusinessConfigFromState(s),
+		}),
+		shallowEqualObjects
+	);
 	const defaultSaleCommission = businessConfig.categorySettings?.defaultSaleCommissionPercent ?? 2;
 	const configuredTvaRate = businessConfig.defaultTvaRate ?? 19;
 	const [propertyId, setPropertyId] = React.useState(selectedProperty?.id || (properties[0]?.id ?? ""));
@@ -28,7 +53,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 	const [mandateType, setMandateType] = React.useState<MandateType>("Vente_Simple");
 	const [ownerFullName, setOwnerFullName] = React.useState(activeProp?.ownerName || "");
 	const [ownerPhone, setOwnerPhone] = React.useState(activeProp?.ownerPhone || "");
-	const [ownerNationalId, setOwnerNationalId] = React.useState(activeProp?.ownerNationalId || "109823487129837401");
+	const [ownerNationalId, setOwnerNationalId] = React.useState(activeProp?.ownerNationalId || "");
 	const [ownerIdIssueDate, setOwnerIdIssueDate] = React.useState("2021-05-10");
 	const [ownerIdIssueDaira, setOwnerIdIssueDaira] = React.useState("Alger");
 	const [askingPriceDzd, setAskingPriceDzd] = React.useState(activeProp?.priceDzd || 15e6);
@@ -48,7 +73,7 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 		setMandateType("Vente_Simple");
 		setOwnerFullName(nextProp?.ownerName || "");
 		setOwnerPhone(nextProp?.ownerPhone || "");
-		setOwnerNationalId(nextProp?.ownerNationalId || "109823487129837401");
+		setOwnerNationalId(nextProp?.ownerNationalId || "");
 		setOwnerIdIssueDate("2021-05-10");
 		setOwnerIdIssueDaira("Alger");
 		setAskingPriceDzd(nextProp?.priceDzd || 15e6);
@@ -78,25 +103,35 @@ export const MandateModal: React.FC<MandateModalProps> = ({ isOpen, onClose, onS
 	};
 	const handleSubmit = (e: any) => {
 		e.preventDefault();
-		const mandateNumber = `MND-2026-HYD-00${Math.floor(1e3 + Math.random() * 9e3)}`;
+		const activeAccountId = (activeProp?.accountId || currentBranch?.accountId || account?.id || "").trim();
+		const activeBranchId = (activeProp?.branchId || currentBranch?.id || "").trim();
+		if (!activeAccountId || !activeBranchId) {
+			showToast({
+				type: "error",
+				title: t("tenant_context_missing_title", language),
+				message: t("tenant_context_missing_msg", language),
+			});
+			return;
+		}
+		const mandateNumber = `MND-${new Date().getFullYear()}-HYD-00${Math.floor(1e3 + Math.random() * 9e3)}`;
 		onSave({
 			id: `mnd_${Date.now()}`,
-			accountId: activeProp?.accountId || "acc_01",
-			businessId: activeProp?.businessId || "biz_realestate",
-			branchId: activeProp?.branchId || "branch_realestate_main",
-			staffId: activeProp?.staffId || "staff_01",
-			negotiatorName: "Karim Zerrouki (Négociateur)",
+			accountId: activeAccountId,
+			businessId: activeProp?.businessId || currentBusiness?.id || "",
+			branchId: activeBranchId,
+			staffId: activeProp?.staffId || currentUser?.id || "",
+			negotiatorName: currentUser?.fullName || "",
 			mandateNumber,
 			mandateType,
 			status: "Active",
-			propertyId: activeProp?.id || "prop_01",
+			propertyId: activeProp?.id || "",
 			propertyTitle: activeProp?.title || "Bien Immobilier",
 			propertyAddress: activeProp?.address || "Adresse à Alger",
 			propertyType: activeProp?.propertyType || "Apartment",
 			listingType: mandateType.includes("Location") || mandateType === "Gestion_Locative" ? "Rental" : "Sale",
 			ownerFullName: ownerFullName.trim() || "Propriétaire Mandant",
-			ownerPhone: ownerPhone.trim() || "0550 00 00 00",
-			ownerNationalId: ownerNationalId.trim() || "109823487129837401",
+			ownerPhone: ownerPhone.trim() || "",
+			ownerNationalId: ownerNationalId.trim(),
 			ownerIdIssueDate,
 			ownerIdIssueDaira,
 			askingPriceDzd: Number(askingPriceDzd) || 0,

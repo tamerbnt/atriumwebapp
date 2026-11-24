@@ -20,6 +20,7 @@ import {
   selectCurrentBusinessConfigFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { formatMoney } from '../../../utils/rules';
 import { useContractorData } from './contractorData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -61,6 +62,7 @@ import {
 
 export const ContractorBillingView: React.FC<any> = () => {
   const {
+    account,
     language,
     currentBusiness,
     currentBusinessConfig,
@@ -72,6 +74,7 @@ export const ContractorBillingView: React.FC<any> = () => {
     lastSyncedAt,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
@@ -115,9 +118,9 @@ export const ContractorBillingView: React.FC<any> = () => {
   const [isCacobatphModalOpen, setIsCacobatphModalOpen] = useState(false);
 
   const [periodLabel, setPeriodLabel] = useState('Situation Travaux - Mois Courant');
-  const [periodGross, setPeriodGross] = useState('15000000');
+  const [periodGross, setPeriodGross] = useState('');
   const [retentionPct, setRetentionPct] = useState(String(defaultRetPct));
-  const [advanceAmort, setAdvanceAmort] = useState('1500000');
+  const [advanceAmort, setAdvanceAmort] = useState('');
   const [hasBankCaution, setHasBankCaution] = useState(false);
   const [penaltiesDzd, setPenaltiesDzd] = useState('0');
   const [vatRate, setVatRate] = useState(String(defaultTvaPct));
@@ -273,9 +276,23 @@ export const ContractorBillingView: React.FC<any> = () => {
 
   const handleCreateDgp = (e: React.FormEvent) => {
     e.preventDefault();
-    const gross = parseFloat(periodGross) || 0;
+    const activeAccountId = (selectedProject?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (selectedProject?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
+    const gross = parseFloat(periodGross);
+    if (!Number.isFinite(gross) || gross <= 0) {
+      showToast(isAr ? 'يرجى إدخال مبلغ الكشف' : 'Veuillez saisir un montant brut valide', 'error');
+      return;
+    }
     const retPercent = parseFloat(retentionPct) || 5;
-    const advance = parseFloat(advanceAmort) || 0;
+    const advance = advanceAmort.trim() ? parseFloat(advanceAmort) || 0 : 0;
     const penDzd = parseFloat(penaltiesDzd) || 0;
     const vatPercent = parseFloat(vatRate) || 19;
     const calc = calculateDecompteProvisoire({
@@ -289,10 +306,10 @@ export const ContractorBillingView: React.FC<any> = () => {
     });
     const newDgp: ContractorDgp = {
       id: `dgp_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_contractor',
-      branchId: currentBranch?.id || 'branch_contractor_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       projectId: selectedProject?.id || selectedProjectId,
       dgpNumber: `DGP-${String(projectDgps.length + 1).padStart(2, '0')}-${
         selectedProject?.projectCode || 'CHANT'
@@ -985,6 +1002,7 @@ export const ContractorBillingView: React.FC<any> = () => {
                   corner={12}
                   label="Montant brut du mois (HT DZD)"
                   type="number"
+                  placeholder="15000000"
                   value={periodGross}
                   onChange={setPeriodGross}
                   required
@@ -1009,6 +1027,7 @@ export const ContractorBillingView: React.FC<any> = () => {
                   corner={12}
                   label="Amortissement avances forfaitaires (DZD)"
                   type="number"
+                  placeholder="0"
                   value={advanceAmort}
                   onChange={setAdvanceAmort}
                 />

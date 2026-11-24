@@ -14,7 +14,9 @@ import {
   shallowEqualObjects,
   selectCurrentWarehousesFromState,
   selectCurrentProductsFromState,
+  selectCurrentBranchFromState,
   useAtriumActions,
+  showToast,
 } from '../../../services/store';
 import { StockMovementVoucher, StockVoucherType } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
@@ -39,8 +41,10 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
   onSaved,
 }) => {
   const { t } = useTranslation();
-  const { warehouses, products, allStockVouchers, currentUser } = useAtriumSelector(
+  const { account, currentBranch, warehouses, products, allStockVouchers, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
+      currentBranch: selectCurrentBranchFromState(s),
       warehouses: selectCurrentWarehousesFromState(s),
       products: selectCurrentProductsFromState(s),
       allStockVouchers: s.stockVouchers || [],
@@ -143,7 +147,24 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0 || items.some((it) => it.quantity <= 0)) {
-      alert('Veuillez spécifier des quantités valides supérieures à zéro.');
+      showToast({
+        type: 'warning',
+        title: t('required_field_title') || 'Quantité requise',
+        message: 'Veuillez spécifier des quantités valides supérieures à zéro.',
+      });
+      return;
+    }
+
+    const sourceDepot = warehouses.find((w) => w.id === depotSourceId);
+    const targetDepot = type === 'transfert' ? warehouses.find((w) => w.id === depotTargetId) : undefined;
+    const activeAccountId = (sourceDepot?.tenantId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (sourceDepot?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title'),
+        message: t('tenant_context_missing_msg'),
+      });
       return;
     }
 
@@ -152,12 +173,9 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
     const prefix = type === 'entree' ? 'BE' : type === 'sortie' ? 'BS' : 'BT';
     const voucherNumber = `${prefix}-${year}-${count.toString().padStart(4, '0')}`;
 
-    const sourceDepot = warehouses.find((w) => w.id === depotSourceId);
-    const targetDepot = type === 'transfert' ? warehouses.find((w) => w.id === depotTargetId) : undefined;
-
     const payload: Omit<StockMovementVoucher, 'id' | 'createdAt'> = {
-      tenantId: 'acc_01',
-      facilityId: sourceDepot?.branchId || 'branch_trading_main',
+      tenantId: activeAccountId,
+      facilityId: activeBranchId,
       voucherNumber,
       type,
       date,

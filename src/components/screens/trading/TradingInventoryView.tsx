@@ -12,7 +12,9 @@ import {
   selectCurrentWarehousesFromState,
   selectCurrentStockVouchersFromState,
   selectCurrentBranchFromState,
+  selectCurrentBusinessFromState,
   useAtriumActions,
+  showToast,
 } from '../../../services/store';
 import { StockMovementVoucher, Product } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
@@ -63,11 +65,13 @@ export const TradingInventoryView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { products, warehouses, stockVouchers, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const { account, products, warehouses, stockVouchers, currentBusiness, currentBranch, branches, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       products: selectCurrentProductsFromState(s),
       warehouses: selectCurrentWarehousesFromState(s),
       stockVouchers: selectCurrentStockVouchersFromState(s),
+      currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       isSyncing: s.isSyncing,
@@ -199,11 +203,21 @@ export const TradingInventoryView: React.FC = () => {
   const handleCreateDepot = (e: React.FormEvent) => {
     e.preventDefault();
     if (!depotCode || !depotName) return;
+    const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title'),
+        message: t('tenant_context_missing_msg'),
+      });
+      return;
+    }
     createWarehouseDepot({
-      businessId: 'biz_trading',
-      branchId: currentBranch?.id || 'branch_trading_main',
-      tenantId: 'acc_01',
-      facilityId: currentBranch?.id || 'branch_trading_main',
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      tenantId: activeAccountId,
+      facilityId: activeBranchId,
       code: depotCode.trim().toUpperCase(),
       name: depotName.trim(),
       address: depotAddress.trim() || 'Alger',

@@ -113,9 +113,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
     const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(() => new Set());
-    const [pinnedClientIds, setPinnedClientIds] = useState<Set<string>>(
-      () => new Set(['mem_salon_01', 'mem_salon_03'])
-    );
+    const [pinnedClientIds, setPinnedClientIds] = useState<Set<string>>(() => new Set());
     const [inspectingClient, setInspectingClient] = useState<Member | null>(null);
     const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
     const [newFormulaText, setNewFormulaText] = useState('');
@@ -125,10 +123,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = Rea
     const filterButtonRef = useRef<HTMLButtonElement | null>(null);
     const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
-    const salonClients = useMemo(
-      () => members.filter((m) => m.id.startsWith('mem_salon_') || Boolean(m.segmentData?.hairType)),
-      [members]
-    );
+    const salonClients = members;
 
     const salonStylists = useMemo(
       () =>

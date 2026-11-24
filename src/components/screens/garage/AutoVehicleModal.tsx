@@ -7,6 +7,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { VehicleAsset, useGarageData } from './garageData';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -27,8 +28,9 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
   onSave,
   vehicleToEdit,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -121,15 +123,26 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
       return;
     }
 
+    const activeAccountId = (vehicleToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (vehicleToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
+
     const curMileage = parseInt(mileage, 10) || 0;
     const selectedFleetObj = isFleet ? fleets.find((f) => f.id === fleetId) : null;
 
     const saved: VehicleAsset = {
       id: vehicleToEdit ? vehicleToEdit.id : `veh_${Date.now()}`,
-      accountId: vehicleToEdit?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_garage',
-      branchId: currentBranch?.id || 'branch_garage_main',
-      staffId: currentUser?.id || 'stf_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       plateNumber: plate.trim(),
       brand: brand.trim(),
       model: model.trim(),

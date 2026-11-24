@@ -1,5 +1,5 @@
 // Atrium ERP & CRM — Algerian Post (CCP) and Territorial Utilities
-// Certified for Algérie Poste SFP 01 postal check transfers & 58 Wilayas
+// Certified for Algérie Poste SFP 01 postal check transfers & 69 Wilayas
 
 export interface Wilaya {
   code: string;

@@ -10,9 +10,11 @@ import {
 import { registerUndoEntry } from '../../../services/undoEngine';
 import { PMTalent } from '../../../types/index';
 import { ALGERIAN_WILAYAS, validateCcpAccount } from '../../../utils/algerianPtt';
+import { validateAlgerianPhone } from '../../../utils/logisticsRules';
 import { MobilePhoneSimulator } from './MobilePhoneSimulator';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSwitch } from '../../ui/live/LiveSwitch';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EmptyState } from '../../../atrium/components/EmptyState';
@@ -109,8 +111,18 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
   const { t, language, isRtl } = useTranslation();
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const { currentBranch, branches, pmTalents, activePmSubScreen, isSyncing, networkMode, lastSyncedAt } = useAtriumSelector(
+  const {
+    account,
+    currentBranch,
+    branches,
+    pmTalents,
+    activePmSubScreen,
+    isSyncing,
+    networkMode,
+    lastSyncedAt,
+  } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       pmTalents: selectCurrentPmTalentsFromState(s),
@@ -167,21 +179,35 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
   const [talentSortDir, setTalentSortDir] = useState<'asc' | 'desc'>('asc');
 
   const [fullName, setFullName] = useState('');
-  const [gender] = useState<'Male' | 'Female'>('Female');
-  const [age, setAge] = useState('22');
-  const [phone, setPhone] = useState('+213 ');
-  const [email] = useState('');
+  const [gender, setGender] = useState<'Male' | 'Female'>('Female');
+  const [age, setAge] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [wilayaCode, setWilayaCode] = useState('16');
-  const [commune, setCommune] = useState('Bab Ezzouar');
-  const [hasDriverLicense] = useState(true);
-  const [isVehicleOwner] = useState(false);
-  const [ccpNumber, setCcpNumber] = useState('0012345678');
-  const [ccpKey, setCcpKey] = useState('45');
-  const [desiredRoles] = useState(['Animator']);
-  const [photoUrl, setPhotoUrl] = useState(
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80'
-  );
+  const [commune, setCommune] = useState('');
+  const [hasDriverLicense, setHasDriverLicense] = useState(false);
+  const [isVehicleOwner, setIsVehicleOwner] = useState(false);
+  const [ccpNumber, setCcpNumber] = useState('');
+  const [ccpKey, setCcpKey] = useState('');
+  const [desiredRoles, setDesiredRoles] = useState<string[]>(['Animator']);
+  const [photoUrl, setPhotoUrl] = useState('');
   const [formSubmittedSuccess, setFormSubmittedSuccess] = useState(false);
+
+  const roleCatalogOptions = useMemo(
+    () => [
+      { id: 'Animator', label: isAr ? 'منشط' : isEn ? 'Animator' : 'Animateur' },
+      { id: 'Hostess', label: isAr ? 'مضيف(ة)' : isEn ? 'Host / Hostess' : 'Hôte / Hôtesse' },
+      { id: 'Supervisor', label: isAr ? 'مشرف' : isEn ? 'Supervisor' : 'Superviseur' },
+      { id: 'MysteryShopper', label: isAr ? 'متسوق سري' : isEn ? 'Mystery Shopper' : 'Client Mystère' },
+    ],
+    [isAr, isEn]
+  );
+
+  const handleToggleDesiredRole = useCallback((roleId: string) => {
+    setDesiredRoles((prev) =>
+      prev.includes(roleId) ? prev.filter((r) => r !== roleId) : [...prev, roleId]
+    );
+  }, []);
 
   const activeInspectedTalent = useMemo(() => {
     if (!inspectedTalent) return null;
@@ -279,7 +305,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
       counts.set(item.wilayaCode, (counts.get(item.wilayaCode) || 0) + 1);
     });
     return [
-      { value: 'all', label: isAr ? 'الكل (58 ولاية)' : 'Toutes (58 Wilayas)', count: pmTalents.length },
+      { value: 'all', label: isAr ? 'الكل (كل الولايات)' : isEn ? 'All Wilayas' : 'Toutes les Wilayas', count: pmTalents.length },
       { value: '16', label: '16 - Alger', count: counts.get('16') || 0 },
       { value: '31', label: '31 - Oran', count: counts.get('31') || 0 },
       { value: '25', label: '25 - Constantine', count: counts.get('25') || 0 },
@@ -361,6 +387,64 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 
   const handleCreateTalent = (e: React.FormEvent, source: 'portal' | 'walkin') => {
     e.preventDefault();
+    const activeAccountId = (account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title'),
+        message: t('tenant_context_missing_msg'),
+      });
+      return;
+    }
+
+    if (!fullName.trim()) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'الاسم مطلوب' : isEn ? 'Name required' : 'Nom requis',
+        message: isAr ? 'يرجى إدخال الاسم الكامل.' : isEn ? 'Please enter the candidate full name.' : 'Veuillez saisir le nom complet.',
+      });
+      return;
+    }
+
+    const phoneCheck = validateAlgerianPhone(phone);
+    if (!phoneCheck.valid) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'رقم هاتف غير صالح' : isEn ? 'Invalid phone number' : 'Téléphone invalide',
+        message: isAr ? 'يرجى إدخال رقم جزائري صالح.' : isEn ? 'Please enter a valid Algerian phone number.' : 'Veuillez saisir un numéro algérien valide.',
+      });
+      return;
+    }
+
+    const parsedAge = Number(age);
+    if (age.trim() && (!Number.isFinite(parsedAge) || parsedAge < 18 || parsedAge > 75)) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'عمر غير صالح' : isEn ? 'Invalid age' : 'Âge invalide',
+        message: isAr ? 'يجب أن يكون العمر بين 18 و75 سنة.' : isEn ? 'Age must be between 18 and 75.' : "L'âge doit être compris entre 18 et 75 ans.",
+      });
+      return;
+    }
+
+    if (desiredRoles.length === 0) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'الدور مطلوب' : isEn ? 'Role required' : 'Rôle requis',
+        message: isAr ? 'يرجى اختيار دور واحد على الأقل.' : isEn ? 'Select at least one desired role.' : 'Sélectionnez au moins un rôle souhaité.',
+      });
+      return;
+    }
+
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'بريد إلكتروني غير صالح' : isEn ? 'Invalid email' : 'Email invalide',
+        message: isAr ? 'يرجى التحقق من البريد الإلكتروني.' : isEn ? 'Please check the email format.' : 'Veuillez vérifier le format de l’email.',
+      });
+      return;
+    }
+
     const wilayaObj = ALGERIAN_WILAYAS.find((w) => w.code === wilayaCode);
     const ccpCheck = validateCcpAccount(ccpNumber, ccpKey);
     if (!ccpCheck.isValid) {
@@ -371,25 +455,28 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
       });
       return;
     }
+
+    const finalAge = Number.isFinite(parsedAge) && parsedAge >= 18 ? Math.round(parsedAge) : 22;
+    const birthYear = new Date().getFullYear() - finalAge;
     addPmTalent({
-      tenantId: 'acc_01',
-      facilityId: 'branch_agency_main',
-      fullName,
+      tenantId: activeAccountId,
+      facilityId: activeBranchId,
+      fullName: fullName.trim(),
       gender,
-      birthDate: '2002-01-01',
-      age: Number(age) || 22,
-      phone,
-      email: email || undefined,
+      birthDate: `${birthYear}-01-01`,
+      age: finalAge,
+      phone: phoneCheck.formatted,
+      email: email.trim() || undefined,
       wilayaCode,
-      wilayaName: wilayaObj?.nameFr || 'Alger',
-      commune,
+      wilayaName: wilayaObj?.nameFr || wilayaCode,
+      commune: commune.trim() || wilayaObj?.nameFr || '',
       hasDriverLicense,
       isVehicleOwner,
       desiredRoles,
       languages: ['Arabic', 'French'],
-      portraitPhotoUrl: photoUrl,
-      ccpNumber,
-      ccpKey,
+      portraitPhotoUrl: photoUrl.trim() || undefined,
+      ccpNumber: ccpNumber.trim(),
+      ccpKey: ccpKey.trim(),
       initialHrScore: 4.5,
       averageMissionRating: 4.8,
       completedMissionsCount: 0,
@@ -405,6 +492,13 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
     setTimeout(() => {
       setFormSubmittedSuccess(false);
       setFullName('');
+      setPhone('');
+      setEmail('');
+      setAge('');
+      setCommune('');
+      setCcpNumber('');
+      setCcpKey('');
+      setPhotoUrl('');
       setActiveTab('talents');
     }, 1500);
   };
@@ -448,16 +542,22 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         sortable: true,
         renderCell: (talent) => (
           <div className="flex items-center gap-3">
-            <img
-              src={talent.portraitPhotoUrl}
-              alt={talent.fullName}
-              width={40}
-              height={40}
-              loading="lazy"
-              decoding="async"
-              referrerPolicy="no-referrer"
-              className="w-10 h-10 rounded-full object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
-            />
+            {talent.portraitPhotoUrl ? (
+              <img
+                src={talent.portraitPhotoUrl}
+                alt={talent.fullName}
+                width={40}
+                height={40}
+                loading="lazy"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                className="w-10 h-10 rounded-full object-cover shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825]"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825] flex items-center justify-center font-semibold t-small text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                {talent.fullName.slice(0, 2).toUpperCase()}
+              </div>
+            )}
             <div className="min-w-0">
               <div className="font-semibold text-black dark:text-white truncate">{talent.fullName}</div>
               <span className="t-cap text-black/55 dark:text-white/55 truncate block">
@@ -733,7 +833,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
           },
         }}
         secondaryCard={{
-          label: isAr ? 'إجمالي المسجلين' : isEn ? 'Total Enrolled' : 'Total Enrôlé (58 Wilayas)',
+          label: isAr ? 'إجمالي المسجلين' : isEn ? 'Total Enrolled' : 'Total Enrôlé',
           badgeText: isAr ? 'متوقف' : 'en pause',
           count: pmTalents.filter((x) => x.status === 'paused').length,
           formatValue: () => String(pmTalents.length),
@@ -836,16 +936,22 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               hasActiveFilters={searchTerm.length > 0 || activeFiltersCount > 0}
               renderCard={(talent) => (
                 <div className="flex flex-col items-center justify-center w-full">
-                  <img
-                    src={talent.portraitPhotoUrl}
-                    alt={talent.fullName}
-                    width={96}
-                    height={96}
-                    loading="lazy"
-                    decoding="async"
-                    referrerPolicy="no-referrer"
-                    className="w-24 h-24 rounded-full object-cover shadow-md mb-4 bg-[#F3EDE7] dark:bg-[#2B2825]"
-                  />
+                  {talent.portraitPhotoUrl ? (
+                    <img
+                      src={talent.portraitPhotoUrl}
+                      alt={talent.fullName}
+                      width={96}
+                      height={96}
+                      loading="lazy"
+                      decoding="async"
+                      referrerPolicy="no-referrer"
+                      className="w-24 h-24 rounded-full object-cover shadow-md mb-4 bg-[#F3EDE7] dark:bg-[#2B2825]"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full shadow-md mb-4 bg-[#F3EDE7] dark:bg-[#2B2825] flex items-center justify-center font-semibold t-dialog text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                      {talent.fullName.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
                   <h3 className="t-card font-semibold text-black dark:text-white truncate max-w-[210px] mb-1">
                     {talent.fullName}
                   </h3>
@@ -915,16 +1021,22 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                         data-sq-border="none"
                         className="w-16 h-16 shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
                       >
-                        <img
-                          src={selectedTalent.portraitPhotoUrl}
-                          alt={selectedTalent.fullName}
-                          width={64}
-                          height={64}
-                          loading="lazy"
-                          decoding="async"
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover"
-                        />
+                        {selectedTalent.portraitPhotoUrl ? (
+                          <img
+                            src={selectedTalent.portraitPhotoUrl}
+                            alt={selectedTalent.fullName}
+                            width={64}
+                            height={64}
+                            loading="lazy"
+                            decoding="async"
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center font-semibold t-card text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)]">
+                            {selectedTalent.fullName.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -1133,6 +1245,31 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   corner={12}
                 />
                 <div className="grid grid-cols-2 gap-2">
+                  <LabelSelect
+                    field="Gender"
+                    label={isAr ? 'الجنس' : isEn ? 'Gender' : 'Genre'}
+                    value={gender}
+                    onChange={(v) => setGender(v === 'Male' ? 'Male' : 'Female')}
+                    options={[
+                      { value: 'Female', label: isAr ? 'أنثى' : isEn ? 'Female' : 'Femme' },
+                      { value: 'Male', label: isAr ? 'ذكر' : isEn ? 'Male' : 'Homme' },
+                    ]}
+                    height={40}
+                    corner={12}
+                  />
+                  <LabelInput
+                    field="Email"
+                    label={isAr ? 'البريد الإلكتروني' : isEn ? 'Email' : 'Email'}
+                    type="email"
+                    placeholder="nom@exemple.dz"
+                    value={email}
+                    onChange={setEmail}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <LabelInput
                     field="Telephone"
                     label={t('pm_rh_field_phone')}
@@ -1149,6 +1286,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     field="Age"
                     label={t('pm_rh_field_age')}
                     type="number"
+                    placeholder="22"
                     value={age}
                     onChange={(v) => setAge(String(v || ''))}
                     width="100%"
@@ -1173,12 +1311,68 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   <LabelInput
                     field="Commune"
                     label={t('pm_rh_field_commune')}
+                    placeholder="Bab Ezzouar"
                     value={commune}
                     onChange={setCommune}
                     width="100%"
                     height={40}
                     corner={12}
                   />
+                </div>
+                <div className="space-y-1.5">
+                  <span className="t-small font-semibold text-black dark:text-white block">
+                    {isAr ? 'الأدوار المطلوبة' : isEn ? 'Desired Roles' : 'Rôles souhaités'}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {roleCatalogOptions.map((roleOpt) => {
+                      const active = desiredRoles.includes(roleOpt.id);
+                      return (
+                        <button
+                          key={roleOpt.id}
+                          type="button"
+                          onClick={() => handleToggleDesiredRole(roleOpt.id)}
+                          data-sq="ctl-sm"
+                          className={`px-2.5 py-1 t-cap font-semibold transition-colors cursor-pointer ${
+                            active
+                              ? 'bg-[#d4522f] text-white'
+                              : 'bg-[#F5F1EC] dark:bg-[#22201E] text-black/70 dark:text-white/75'
+                          }`}
+                        >
+                          {roleOpt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    className="p-2.5 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between gap-2"
+                  >
+                    <span className="t-cap font-semibold text-black dark:text-white">
+                      {isAr ? 'رخصة سياقة' : isEn ? 'Driver License' : 'Permis B'}
+                    </span>
+                    <LiveSwitch
+                      checked={hasDriverLicense}
+                      onCheckedChange={setHasDriverLicense}
+                      aria-label={isAr ? 'رخصة سياقة' : 'Permis B'}
+                    />
+                  </div>
+                  <div
+                    data-sq="ctl"
+                    data-sq-border="none"
+                    className="p-2.5 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between gap-2"
+                  >
+                    <span className="t-cap font-semibold text-black dark:text-white">
+                      {isAr ? 'يمتلك مركبة' : isEn ? 'Vehicle Owner' : 'Véhiculé'}
+                    </span>
+                    <LiveSwitch
+                      checked={isVehicleOwner}
+                      onCheckedChange={setIsVehicleOwner}
+                      aria-label={isAr ? 'يمتلك مركبة' : 'Véhiculé'}
+                    />
+                  </div>
                 </div>
                 <div
                   data-sq="ctl"
@@ -1219,6 +1413,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   field="Photo"
                   label={t('pm_rh_field_photo_url')}
                   type="url"
+                  placeholder="https://..."
                   value={photoUrl}
                   onChange={setPhotoUrl}
                   width="100%"
@@ -1226,7 +1421,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   corner={12}
                 />
                 <AtriumButton type="submit" variant="primary" className="w-full">
-                  Envoyer ma Candidature →
+                  {isAr ? 'إرسال الطلب ←' : isEn ? 'Submit Application →' : 'Envoyer ma Candidature →'}
                 </AtriumButton>
               </form>
             </div>
@@ -1245,10 +1440,14 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] tracking-wide">
-                    Saisie Express Agence
+                    {isAr ? 'تسجيل سريع بالوكالة' : isEn ? 'Agency Express Intake' : 'Saisie Express Agence'}
                   </span>
                   <h2 className="t-dialog font-semibold text-black dark:text-white mt-1">
-                    Enregistrement Direct d&apos;un Candidat Présent en Agence
+                    {isAr
+                      ? 'تسجيل مباشر لمرشح حاضر بالوكالة'
+                      : isEn
+                      ? 'Direct Registration for Walk-In Candidate'
+                      : "Enregistrement Direct d'un Candidat Présent en Agence"}
                   </h2>
                 </div>
                 <ListAdvancedMenuButton language={language} />
@@ -1266,7 +1465,43 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     height={40}
                     corner={12}
                   />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <LabelSelect
+                      field="GenderWalkin"
+                      label={isAr ? 'الجنس' : isEn ? 'Gender' : 'Genre'}
+                      value={gender}
+                      onChange={(v) => setGender(v === 'Male' ? 'Male' : 'Female')}
+                      options={[
+                        { value: 'Female', label: isAr ? 'أنثى' : isEn ? 'Female' : 'Femme' },
+                        { value: 'Male', label: isAr ? 'ذكر' : isEn ? 'Male' : 'Homme' },
+                      ]}
+                      height={40}
+                      corner={12}
+                    />
+                    <LabelInput
+                      field="AgeWalkin"
+                      label={t('pm_rh_field_age')}
+                      type="number"
+                      placeholder="22"
+                      value={age}
+                      onChange={(v) => setAge(String(v || ''))}
+                      width="100%"
+                      height={40}
+                      corner={12}
+                    />
+                    <LabelInput
+                      field="EmailWalkin"
+                      label={isAr ? 'البريد الإلكتروني' : isEn ? 'Email' : 'Email'}
+                      type="email"
+                      placeholder="nom@exemple.dz"
+                      value={email}
+                      onChange={setEmail}
+                      width="100%"
+                      height={40}
+                      corner={12}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <LabelInput
                       field="Telephone"
                       label={t('pm_rh_field_phone')}
@@ -1292,12 +1527,78 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                       corner={12}
                       searchable
                     />
+                    <LabelInput
+                      field="CommuneWalkin"
+                      label={t('pm_rh_field_commune')}
+                      placeholder="Bab Ezzouar"
+                      value={commune}
+                      onChange={setCommune}
+                      width="100%"
+                      height={40}
+                      corner={12}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <span className="t-small font-semibold text-black dark:text-white block">
+                      {isAr ? 'الأدوار المطلوبة' : isEn ? 'Desired Roles' : 'Rôles souhaités'}
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {roleCatalogOptions.map((roleOpt) => {
+                        const active = desiredRoles.includes(roleOpt.id);
+                        return (
+                          <button
+                            key={roleOpt.id}
+                            type="button"
+                            onClick={() => handleToggleDesiredRole(roleOpt.id)}
+                            data-sq="ctl-sm"
+                            className={`px-3 py-1.5 t-cap font-semibold transition-colors cursor-pointer ${
+                              active
+                                ? 'bg-[#d4522f] text-white'
+                                : 'bg-[#F5F1EC] dark:bg-[#22201E] text-black/70 dark:text-white/75'
+                            }`}
+                          >
+                            {roleOpt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between gap-2"
+                    >
+                      <span className="t-small font-semibold text-black dark:text-white">
+                        {isAr ? 'رخصة سياقة' : isEn ? 'Driver License (B)' : 'Permis B'}
+                      </span>
+                      <LiveSwitch
+                        checked={hasDriverLicense}
+                        onCheckedChange={setHasDriverLicense}
+                        aria-label={isAr ? 'رخصة سياقة' : 'Permis B'}
+                      />
+                    </div>
+                    <div
+                      data-sq="ctl"
+                      data-sq-border="none"
+                      className="p-3 bg-[#F5F1EC] dark:bg-[#22201E] flex items-center justify-between gap-2"
+                    >
+                      <span className="t-small font-semibold text-black dark:text-white">
+                        {isAr ? 'يمتلك مركبة' : isEn ? 'Vehicle Owner' : 'Véhiculé'}
+                      </span>
+                      <LiveSwitch
+                        checked={isVehicleOwner}
+                        onCheckedChange={setIsVehicleOwner}
+                        aria-label={isAr ? 'يمتلك مركبة' : 'Véhiculé'}
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="sm:col-span-2">
                       <LabelInput
                         field="CCP"
                         label={t('pm_rh_field_ccp_hint')}
+                        placeholder="0012345678"
                         required
                         value={ccpNumber}
                         onChange={setCcpNumber}
@@ -1309,6 +1610,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                     <LabelInput
                       field="Cle"
                       label={t('pm_rh_field_key_hint')}
+                      placeholder="45"
                       required
                       value={ccpKey}
                       onChange={setCcpKey}
@@ -1319,7 +1621,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   </div>
                 </div>
                 <AtriumButton type="submit" variant="primary" className="w-full">
-                  Enregistrer dans le Répertoire
+                  {isAr ? 'حفظ في الدليل' : isEn ? 'Save to Pool' : 'Enregistrer dans le Répertoire'}
                 </AtriumButton>
               </form>
             </div>

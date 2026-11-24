@@ -117,13 +117,11 @@ export const VenueInventoryView: React.FC = () => {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [type, setType] = useState<RentableUnitType>('Hall');
-  const [capacity, setCapacity] = useState(50);
-  const [surfaceAreaSqm, setSurfaceAreaSqm] = useState(120);
-  const [hourlyRate, setHourlyRate] = useState(8000);
-  const [dailyRate, setDailyRate] = useState(60000);
-  const [amenitiesStr, setAmenitiesStr] = useState(
-    'High-Speed Wifi, Climate Control AC, Sound System'
-  );
+  const [capacity, setCapacity] = useState('');
+  const [surfaceAreaSqm, setSurfaceAreaSqm] = useState('');
+  const [hourlyRate, setHourlyRate] = useState('');
+  const [dailyRate, setDailyRate] = useState('');
+  const [amenitiesStr, setAmenitiesStr] = useState('');
   const [description, setDescription] = useState('');
   const [colorHex, setColorHex] = useState('#8B5CF6');
 
@@ -227,13 +225,13 @@ export const VenueInventoryView: React.FC = () => {
   const handleOpenAdd = useCallback(() => {
     setUnitToEdit(null);
     setName('');
-    setCode(`ROOM-${Math.floor(100 + Math.random() * 900)}`);
+    setCode('');
     setType('Room');
-    setCapacity(30);
-    setSurfaceAreaSqm(80);
-    setHourlyRate(5000);
-    setDailyRate(35000);
-    setAmenitiesStr('Wifi, Presentation Screen, AC');
+    setCapacity('');
+    setSurfaceAreaSqm('');
+    setHourlyRate('');
+    setDailyRate('');
+    setAmenitiesStr('');
     setDescription('');
     setColorHex('#3B82F6');
     setIsAddModalOpen(true);
@@ -244,10 +242,10 @@ export const VenueInventoryView: React.FC = () => {
     setName(unit.name);
     setCode(unit.code);
     setType(unit.type);
-    setCapacity(unit.capacity);
-    setSurfaceAreaSqm(unit.surfaceAreaSqm || 0);
-    setHourlyRate(unit.hourlyRate);
-    setDailyRate(unit.dailyRate);
+    setCapacity(unit.capacity ? String(unit.capacity) : '');
+    setSurfaceAreaSqm(unit.surfaceAreaSqm ? String(unit.surfaceAreaSqm) : '');
+    setHourlyRate(unit.hourlyRate !== undefined ? String(unit.hourlyRate) : '');
+    setDailyRate(unit.dailyRate !== undefined ? String(unit.dailyRate) : '');
     setAmenitiesStr(unit.amenities.join(', '));
     setDescription(unit.description);
     setColorHex(unit.colorHex || '#8B5CF6');
@@ -266,6 +264,40 @@ export const VenueInventoryView: React.FC = () => {
       });
       return;
     }
+    const parsedCapacity = parseInt(capacity, 10);
+    const parsedHourly = parseFloat(hourlyRate);
+    const parsedDaily = parseFloat(dailyRate);
+    if (!Number.isFinite(parsedCapacity) || parsedCapacity < 1) {
+      showToast({
+        type: 'warning',
+        title: isFr ? 'Capacité requise' : 'Capacity Required',
+        message: isFr
+          ? 'Veuillez saisir une capacité valide (au moins 1 place).'
+          : 'Please enter a valid guest capacity (at least 1).',
+      });
+      return;
+    }
+    if (
+      hourlyRate.trim() === '' ||
+      !Number.isFinite(parsedHourly) ||
+      parsedHourly < 0 ||
+      dailyRate.trim() === '' ||
+      !Number.isFinite(parsedDaily) ||
+      parsedDaily < 0
+    ) {
+      showToast({
+        type: 'warning',
+        title: isFr ? 'Tarifs requis' : 'Rates Required',
+        message: isFr
+          ? 'Veuillez saisir les tarifs horaire et journalier (DZD).'
+          : 'Please enter valid hourly and daily rates (DZD).',
+      });
+      return;
+    }
+    const parsedSurface =
+      surfaceAreaSqm.trim() !== '' && Number.isFinite(parseFloat(surfaceAreaSqm))
+        ? parseFloat(surfaceAreaSqm)
+        : undefined;
     const amenitiesList = amenitiesStr
       .split(',')
       .map((a) => a.trim())
@@ -276,10 +308,10 @@ export const VenueInventoryView: React.FC = () => {
         name: name.trim(),
         code: code.trim().toUpperCase(),
         type,
-        capacity: Number(capacity) || 10,
-        surfaceAreaSqm: Number(surfaceAreaSqm) || 50,
-        hourlyRate: Number(hourlyRate) || 0,
-        dailyRate: Number(dailyRate) || 0,
+        capacity: parsedCapacity,
+        surfaceAreaSqm: parsedSurface,
+        hourlyRate: parsedHourly,
+        dailyRate: parsedDaily,
         amenities: amenitiesList,
         description: description.trim(),
         colorHex,
@@ -289,10 +321,10 @@ export const VenueInventoryView: React.FC = () => {
         name: name.trim(),
         code: code.trim().toUpperCase() || `ROOM-${Date.now().toString().slice(-4)}`,
         type,
-        capacity: Number(capacity) || 10,
-        surfaceAreaSqm: Number(surfaceAreaSqm) || 50,
-        hourlyRate: Number(hourlyRate) || 0,
-        dailyRate: Number(dailyRate) || 0,
+        capacity: parsedCapacity,
+        surfaceAreaSqm: parsedSurface,
+        hourlyRate: parsedHourly,
+        dailyRate: parsedDaily,
         currency: 'DZD',
         status: 'Available',
         amenities: amenitiesList,
@@ -1188,33 +1220,39 @@ export const VenueInventoryView: React.FC = () => {
                   label={t('venue_inv_capacity')}
                   type="number"
                   min={1}
+                  placeholder="50"
                   value={capacity}
-                  onChange={(v) => setCapacity(Number(extractStr(v)) || 1)}
+                  onChange={(v) => setCapacity(extractStr(v))}
                   required
                 />
                 <LabelInput
                   label={t('venue_inv_surface')}
                   type="number"
                   min={1}
+                  placeholder="120"
                   value={surfaceAreaSqm}
-                  onChange={(v) => setSurfaceAreaSqm(Number(extractStr(v)) || 1)}
+                  onChange={(v) => setSurfaceAreaSqm(extractStr(v))}
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <LabelInput
                   label={`${t('venue_inv_hourly_rate')} (DZD) *`}
                   type="number"
+                  min={0}
                   step={500}
+                  placeholder="5000"
                   value={hourlyRate}
-                  onChange={(v) => setHourlyRate(Number(extractStr(v)) || 0)}
+                  onChange={(v) => setHourlyRate(extractStr(v))}
                   required
                 />
                 <LabelInput
                   label={`${t('venue_inv_daily_rate')} (DZD) *`}
                   type="number"
+                  min={0}
                   step={1000}
+                  placeholder="35000"
                   value={dailyRate}
-                  onChange={(v) => setDailyRate(Number(extractStr(v)) || 0)}
+                  onChange={(v) => setDailyRate(extractStr(v))}
                   required
                 />
               </div>

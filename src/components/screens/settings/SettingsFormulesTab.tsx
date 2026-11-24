@@ -119,6 +119,7 @@ export const SettingsFormulesTab: React.FC = () => {
   const [formIsActive, setFormIsActive] = useState<boolean>(true);
   // Plan-specific extras
   const [planSessionsPerWeek, setPlanSessionsPerWeek] = useState<number>(3);
+  const [planTotalSessions, setPlanTotalSessions] = useState<string>('');
   const [planIsWalkIn, setPlanIsWalkIn] = useState<boolean>(false);
   const [planIsPT, setPlanIsPT] = useState<boolean>(false);
   // Salon service extras
@@ -135,11 +136,12 @@ export const SettingsFormulesTab: React.FC = () => {
     setFormDescription('');
     setFormPrice(0);
     setFormRatePercent(0);
-    setFormDurationValue(descriptor.mode === 'gym_plans' ? 30 : 1);
+    setFormDurationValue(descriptor.mode === 'gym_plans' ? 0 : 1);
     setFormDurationUnit(descriptor.mode === 'salon_services' ? 'minutes' : 'days');
     setFormTaxRate(currentBusinessConfig.defaultTvaRate ?? 19);
     setFormIsActive(true);
     setPlanSessionsPerWeek(3);
+    setPlanTotalSessions('');
     setPlanIsWalkIn(false);
     setPlanIsPT(false);
     setServiceCategory('Hair');
@@ -161,9 +163,10 @@ export const SettingsFormulesTab: React.FC = () => {
     setFormName(plan.name);
     setFormDescription(plan.description || '');
     setFormPrice(plan.price?.amount ?? 0);
-    setFormDurationValue(plan.durationDays ?? 30);
+    setFormDurationValue(plan.durationDays ?? 0);
     setFormIsActive(plan.isActive);
     setPlanSessionsPerWeek(plan.sessionsPerWeek ?? 0);
+    setPlanTotalSessions(plan.totalSessions != null ? String(plan.totalSessions) : '');
     setPlanIsWalkIn(Boolean(plan.isWalkIn));
     setPlanIsPT(Boolean(plan.isPersonalTraining));
     setIsModalOpen(true);
@@ -220,10 +223,15 @@ export const SettingsFormulesTab: React.FC = () => {
     }
 
     if (descriptor.mode === 'gym_plans') {
+      const parsedTotalSessions =
+        planTotalSessions.trim() === '' ? null : Math.max(0, Math.floor(Number(planTotalSessions) || 0));
+      const parsedDuration =
+        Number(formDurationValue) > 0 ? Math.floor(Number(formDurationValue)) : null;
       const payload = {
         name: formName.trim(),
         description: formDescription.trim() || L('Standard membership formule', 'Formule d’adhésion standard', 'باقة اشتراك قياسية'),
-        durationDays: Math.max(1, Number(formDurationValue) || 30),
+        durationDays: parsedDuration,
+        totalSessions: parsedTotalSessions,
         price: { amount: Number(formPrice) || 0, currency },
         isActive: formIsActive,
         sessionsPerWeek: Number(planSessionsPerWeek) || 0,
@@ -530,11 +538,23 @@ export const SettingsFormulesTab: React.FC = () => {
                         <p className="t-cap text-[var(--text-2)] truncate">
                           {plan.description || '—'} ·{' '}
                           <span className="tabular-nums">
-                            {plan.durationDays} {L('days', 'jours', 'يوم')} ·{' '}
+                            {plan.durationDays != null
+                              ? `${plan.durationDays} ${L('days', 'jours', 'يوم')}`
+                              : L('Duration unset', 'Durée non définie', 'المدة غير محددة')}{' '}
+                            ·{' '}
+                            {plan.totalSessions != null
+                              ? `${plan.totalSessions} ${L('sessions', 'séances', 'حصة')}`
+                              : L('Total sessions unset', 'Séances totales à définir', 'إجمالي الحصص غير محدد')}{' '}
+                            ·{' '}
                             {plan.sessionsPerWeek > 0
                               ? `${plan.sessionsPerWeek}/${L('wk', 'sem', 'أسبوع')}`
-                              : L('Unlimited sessions', 'Séances illimitées', 'حصص غير محدودة')}
+                              : L('Unlimited/wk', 'Illimité/sem', 'غير محدود/أسبوع')}
                           </span>
+                          {(plan.durationDays == null || plan.totalSessions == null) && (
+                            <span className="ms-2 inline-flex items-center px-2 py-0.5 rounded t-small font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                              {L('Set duration/sessions', 'À configurer', 'يرجى الضبط')}
+                            </span>
+                          )}
                         </p>
                       </div>
 
@@ -814,8 +834,20 @@ export const SettingsFormulesTab: React.FC = () => {
                   label={L('Duration (Days)', 'Durée (Jours)', 'المدة (أيام)')}
                   type="number"
                   min={1}
-                  value={String(formDurationValue)}
+                  placeholder="30"
+                  value={formDurationValue > 0 ? String(formDurationValue) : ''}
                   onChange={(val) => setFormDurationValue(Number(val) || 0)}
+                  height={40}
+                  corner={12}
+                />
+                <LabelInput
+                  field="planTotalSessions"
+                  label={L('Total Sessions', 'Séances totales', 'إجمالي الحصص')}
+                  type="number"
+                  min={0}
+                  placeholder="30"
+                  value={planTotalSessions}
+                  onChange={setPlanTotalSessions}
                   height={40}
                   corner={12}
                 />

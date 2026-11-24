@@ -121,7 +121,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
       operationType: 'edit',
       summary: pickLocalizedText(language, {
         en: 'Wilaya tariff matrix updated',
-        fr: 'Grille tarifaire des 58 Wilayas enregistrée',
+        fr: 'Grille tarifaire des Wilayas enregistrée',
         ar: 'تم حفظ جدول تسعيرات الولايات',
       }),
       toastType: 'success',
@@ -228,7 +228,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
       onClose={onClose}
       maxWidthClass="max-w-4xl"
       scrimClassName="bg-black/50"
-      ariaLabel={isAr ? 'شبكة تسعير التوصيل عبر 58 ولاية' : 'Grille Tarifaire des 58 Wilayas & Zones'}
+      ariaLabel={isAr ? 'شبكة تسعير التوصيل عبر الولايات' : 'Grille Tarifaire des Wilayas & Zones'}
     >
       <div
         data-sq="panel"
@@ -247,7 +247,7 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
             </div>
             <div>
               <h3 className="font-semibold t-card text-black dark:text-white">
-                {isAr ? 'شبكة تسعير التوصيل عبر 58 ولاية' : 'Grille Tarifaire des 58 Wilayas & Zones'}
+                {isAr ? 'شبكة تسعير التوصيل عبر الولايات' : 'Grille Tarifaire des Wilayas & Zones'}
               </h3>
             </div>
           </div>

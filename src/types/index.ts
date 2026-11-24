@@ -171,7 +171,8 @@ export interface MembershipPlan {
   facilityId: string;
   name: string;
   description: string;
-  durationDays: number;
+  durationDays: number | null;
+  totalSessions?: number | null;
   price: Money;
   isActive: boolean;
   sessionsPerWeek: number; // 0 = unlimited
@@ -1366,7 +1367,7 @@ export type LegalRole =
 // ============================================================================
 
 export type LogisticsRole =
-  | 'gerant'          // Gérant / Direction (Tarifs, KPIs 58 Wilayas, Bilan COD, Règlements CCP)
+  | 'gerant'          // Gérant / Direction (Tarifs, KPIs 69 Wilayas, Bilan COD, Règlements CCP)
   | 'dispatcher'      // Régulateur / Dispatcher (Tournées Chauffeurs, Manifestes LVR, Arbitrage Échecs)
   | 'hub_sorter'      // Agent de Tri Hub (Scanner Haute Cadence, Sacs-Navette & Scellés de Sécurité)
   | 'stop_desk_agent';// Agent Guichetier Stop-Desk (Rayonnage, Retrait OTP, CNI & Caisse Journalière)
@@ -1512,6 +1513,7 @@ export interface PMBatDeliverable {
   resolutionDpi: number; // e.g. 300
   bleedMm: number; // e.g. 3
   hasBleedIncluded: boolean;
+  metadataStatus?: 'verified' | 'manual / unverified';
   version: number;
   versionCode: string; // e.g. "v1", "v2"
   previewUrl: string;

@@ -7,6 +7,7 @@ import {
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { MedicalPatient } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -27,8 +28,9 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
   onSave,
   patientToEdit,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -77,12 +79,23 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
       return;
     }
 
+    const activeAccountId = (patientToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (patientToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
+
     const savedPatient: MedicalPatient = {
       id: patientToEdit ? patientToEdit.id : `pat_${Date.now()}`,
-      accountId: patientToEdit?.accountId || 'acc_01',
-      businessId: patientToEdit?.businessId || currentBusiness?.id || 'biz_medical',
-      branchId: patientToEdit?.branchId || currentBranch?.id || 'branch_medical_main',
-      staffId: patientToEdit?.staffId || currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: patientToEdit?.businessId || currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: patientToEdit?.staffId || currentUser?.id || '',
       fullName: fullName.trim(),
       nationalId: nationalId.trim() || undefined,
       phone: phone.trim(),

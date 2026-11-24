@@ -21,7 +21,9 @@ import {
   selectCurrentWarehousesFromState,
   selectCurrentProductsFromState,
   selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
   useAtriumActions,
+  showToast,
 } from '../../../services/store';
 import {
   CommercialDocument,
@@ -51,14 +53,16 @@ interface CommercialDocComposerModalProps {
 
 export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProps> = ({ isOpen, onClose, initialType = "devis", editingDoc, onSaved }) => {
 	const { t, isRtl, language } = useTranslation();
-	const { b2bClients, warehouses, products, allCommercialDocs, currentBusiness, currentBranchId } = useAtriumSelector(
+	const { account, b2bClients, warehouses, products, allCommercialDocs, currentBusiness, currentBranchId, currentBranch } = useAtriumSelector(
 	  (s) => ({
+	    account: s.account,
 	    b2bClients: selectCurrentB2bClientsFromState(s),
 	    warehouses: selectCurrentWarehousesFromState(s),
 	    products: selectCurrentProductsFromState(s),
 	    allCommercialDocs: s.commercialDocs || [],
 	    currentBusiness: selectCurrentBusinessFromState(s),
 	    currentBranchId: s.currentBranchId,
+	    currentBranch: selectCurrentBranchFromState(s),
 	  }),
 	  shallowEqualObjects
 	);
@@ -227,16 +231,26 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 	]);
 	const handleSubmit = (targetStatus: CommercialDocument["status"] = "Validated") => {
 		if (!clientId) {
-			alert(t("trading_composer_alert_select_client"));
+			showToast({ type: "warning", title: t("trading_composer_alert_select_client"), message: t("trading_composer_alert_select_client") });
 			return;
 		}
 		if (items.length === 0 || items.every((it: any) => !it.description)) {
-			alert(t("trading_composer_alert_add_item"));
+			showToast({ type: "warning", title: t("trading_composer_alert_add_item"), message: t("trading_composer_alert_add_item") });
+			return;
+		}
+		const activeAccountId = (editingDoc?.tenantId || currentBranch?.accountId || account?.id || "").trim();
+		const activeBranchId = (editingDoc?.facilityId || currentBranchId || currentBranch?.id || "").trim();
+		if (!activeAccountId || !activeBranchId) {
+			showToast({
+				type: "error",
+				title: t("tenant_context_missing_title"),
+				message: t("tenant_context_missing_msg"),
+			});
 			return;
 		}
 		const docPayload = {
-			tenantId: currentBusiness?.id || "acc_01",
-			facilityId: currentBranchId || "fac_01",
+			tenantId: activeAccountId,
+			facilityId: activeBranchId,
 			type: docType,
 			docNumber: generatedDocNumber,
 			clientId,

@@ -5,7 +5,9 @@ import {
   shallowEqualObjects,
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { runUndoBatch } from '../../../services/undoEngine';
 import { MedicalPatient, MedicalConsultation } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
@@ -32,8 +34,9 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
   onSave,
   preselectedPatientId,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -49,14 +52,14 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
   const [patientId, setPatientId] = useState(initialPatientId);
   const [doctorId, setDoctorId] = useState<string>('auto');
   const [chiefComplaint, setChiefComplaint] = useState('');
-  const [bp, setBp] = useState('120/80');
-  const [temp, setTemp] = useState('37.0');
-  const [weight, setWeight] = useState('70');
-  const [heartRate, setHeartRate] = useState('75');
+  const [bp, setBp] = useState('');
+  const [temp, setTemp] = useState('');
+  const [weight, setWeight] = useState('');
+  const [heartRate, setHeartRate] = useState('');
   const [urgency, setUrgency] = useState<'Normal' | 'Prioritaire' | 'Urgence'>('Normal');
   const [diagnosis, setDiagnosis] = useState('');
-  const [fee, setFee] = useState('3000');
-  const [copay, setCopay] = useState('600');
+  const [fee, setFee] = useState('');
+  const [copay, setCopay] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
@@ -64,14 +67,14 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
     setPatientId(patient?.id || preselectedPatientId || effectivePatients[0]?.id || '');
     setDoctorId('auto');
     setChiefComplaint('');
-    setBp('120/80');
-    setTemp('37.0');
-    setWeight('70');
-    setHeartRate('75');
+    setBp('');
+    setTemp('');
+    setWeight('');
+    setHeartRate('');
     setUrgency('Normal');
     setDiagnosis('');
-    setFee('3000');
-    setCopay('600');
+    setFee('');
+    setCopay('');
     setErrorMessage('');
   }, [isOpen, patient, preselectedPatientId]);
 
@@ -107,24 +110,43 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
       assignedDoc = getNextAvailableGeneralist() || practitioners[0];
     }
 
-    const feeNum = parseFloat(fee) || 3000;
-    const copayNum = parseFloat(copay) || 600;
+    const activeAccountId = (pat.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || pat.branchId || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
+
+    const feeNum = parseFloat(fee);
+    const copayNum = copay.trim() === '' ? 0 : parseFloat(copay);
+    if (isNaN(feeNum) || feeNum < 0 || isNaN(copayNum) || copayNum < 0) {
+      setErrorMessage(
+        language === 'ar'
+          ? 'يرجى إدخال أتعاب الكشف وحصة المريض بشكل صحيح'
+          : 'Veuillez saisir un tarif de consultation valide'
+      );
+      return;
+    }
 
     const created: MedicalConsultation = {
       id: `cons_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_medical',
-      branchId: currentBranch?.id || 'branch_medical_main',
-      staffId: assignedDoc?.id || currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || pat.businessId || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: assignedDoc?.id || currentUser?.id || '',
       patientId: pat.id,
       patientName: pat.fullName,
       consultationDate: new Date().toISOString(),
       chiefComplaint: chiefComplaint || 'Consultation générale',
       vitals: {
-        bloodPressure: bp,
-        temperatureCelsius: parseFloat(temp) || 37.0,
-        weightKg: parseFloat(weight) || 70,
-        heartRateBpm: parseInt(heartRate) || 75,
+        bloodPressure: bp.trim(),
+        temperatureCelsius: parseFloat(temp) || 0,
+        weightKg: parseFloat(weight) || 0,
+        heartRateBpm: parseInt(heartRate, 10) || 0,
       },
       diagnosis: diagnosis || 'Examen clinique en cours',
       status: 'InWaitingQueue',
@@ -141,7 +163,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
       {
         vertical: 'medical_clinic',
         operationType: 'create',
-        branchId: currentBranch?.id || 'branch_medical_main',
+        branchId: activeBranchId,
         summary:
           language === 'ar'
             ? `استشارة طبية — ${pat.fullName}`
@@ -277,6 +299,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
                 label={language === 'ar' ? 'الحرارة (°C)' : 'Temp (°C)'}
                 type="number"
                 step="0.1"
+                placeholder="37.0"
                 value={temp}
                 onChange={setTemp}
               />
@@ -287,6 +310,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
                 corner={12}
                 label={language === 'ar' ? 'الوزن (kg)' : 'Poids (kg)'}
                 type="number"
+                placeholder="70"
                 value={weight}
                 onChange={setWeight}
               />
@@ -297,6 +321,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
                 corner={12}
                 label={language === 'ar' ? 'النبض (bpm)' : 'Pouls (bpm)'}
                 type="number"
+                placeholder="75"
                 value={heartRate}
                 onChange={setHeartRate}
               />
@@ -321,8 +346,10 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
                 corner={12}
                 label={language === 'ar' ? 'أتعاب الكشف (د.ج)' : 'Tarif consultation (DA)'}
                 type="number"
+                placeholder="3000"
                 value={fee}
                 onChange={setFee}
+                required
               />
               <LabelInput
                 field="copay"
@@ -331,6 +358,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
                 corner={12}
                 label={language === 'ar' ? 'حصة المريض / الدفع المباشر (د.ج)' : 'Ticket modérateur patient (DA)'}
                 type="number"
+                placeholder="600"
                 value={copay}
                 onChange={setCopay}
               />

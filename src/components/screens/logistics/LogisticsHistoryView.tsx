@@ -247,7 +247,7 @@ export const LogisticsHistoryView: React.FC = React.memo(() => {
         valuePrefix: '',
         valueCount: stats.codTotalDzd,
         formatValue: (n) => formatMoney(n),
-        caption: `${currentBranch?.name || 'Hub'} · 58 Wilayas`,
+        caption: `${currentBranch?.name || 'Hub'} · ${l3('تغطية الولايات', 'Réseau Wilayas', 'Wilaya Network')}`,
       }}
       podTitle={l3('سجل الطرود والتحصيل', 'Registre Expéditions, Sacs & COD', 'Logistics Audit Ledger')}
       searchPlaceholder={l3('بحث برمز التتبع، الولاية، التاجر...', 'Rechercher tracking, wilaya, livreur, lot COD...', 'Search tracking, wilaya, driver...')}

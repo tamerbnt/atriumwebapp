@@ -13,6 +13,7 @@ import {
   selectCurrentServicesFromState,
   selectCurrentStaffFromState,
   shallowEqualObjects,
+  showToast,
   useAtriumActions,
   useAtriumSelector,
 } from '../../services/store';
@@ -84,7 +85,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState('10:00');
   const [durationMinutes, setDurationMinutes] = useState(60);
-  const [price, setPrice] = useState(5000);
+  const [price, setPrice] = useState('');
   const [status, setStatus] = useState<AppointmentStatus>('Confirmed');
   const [notes, setNotes] = useState('');
   const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
@@ -102,7 +103,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       setDate(appointment.date);
       setStartTime(appointment.startTime);
       setDurationMinutes(appointment.durationMinutes);
-      setPrice(appointment.price);
+      setPrice(appointment.price !== undefined ? String(appointment.price) : '');
       setStatus(appointment.status);
       setNotes(appointment.notes || '');
       setBookingMode('registered');
@@ -119,13 +120,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       setSelectedStaffId(staffMember ? staffMember.id : staff[0]?.id || '');
       setSelectedServiceId(service ? service.id : '');
       setDurationMinutes(service ? service.durationMinutes : 60);
-      setPrice(service ? service.price : 4500);
+      setPrice(service ? String(service.price) : '');
       setStatus('Confirmed');
       setNotes('');
+      setWalkinName('');
+      setWalkinPhone('');
       setBookingMode('registered');
-      if (members.length > 0) {
-        setSelectedClientId(members[0].id);
-      }
+      setSelectedClientId(members.length > 0 ? members[0].id : '');
     }
     setActionSuccessMessage(null);
     setConfirmingDelete(false);
@@ -137,7 +138,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     const service = servicesCatalog.find((s) => s.id === serviceId);
     if (service) {
       setDurationMinutes(service.durationMinutes);
-      setPrice(service.price);
+      setPrice(String(service.price));
     }
   };
 
@@ -155,20 +156,61 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const parsedPrice = parseFloat(price);
+    if (price.trim() === '' || !Number.isFinite(parsedPrice) || parsedPrice < 0) {
+      showToast({
+        type: 'warning',
+        title: language === 'ar' ? 'السعر مطلوب' : language === 'fr' ? 'Tarif requis' : 'Price Required',
+        message:
+          language === 'ar'
+            ? 'يرجى إدخال سعر صالح للموعد'
+            : language === 'fr'
+            ? 'Veuillez saisir un tarif valide pour ce rendez-vous.'
+            : 'Please enter a valid appointment price.',
+      });
+      return;
+    }
+
     const service = servicesCatalog.find((s) => s.id === selectedServiceId) || {
       id: 'srv_custom',
       name: 'Custom Salon Service',
-      price,
+      price: parsedPrice,
     };
     const assignedStaff = staff.find((s) => s.id === selectedStaffId) || staff[0];
+    if (!assignedStaff && !isEditing) {
+      showToast({
+        type: 'warning',
+        title: language === 'ar' ? 'المختص مطلوب' : language === 'fr' ? 'Praticien requis' : 'Staff Required',
+        message:
+          language === 'ar'
+            ? 'يرجى اختيار أو إضافة موظف قبل الحجز'
+            : language === 'fr'
+            ? 'Veuillez sélectionner un praticien disponible.'
+            : 'Please select an available staff member.',
+      });
+      return;
+    }
 
     let finalClientId = selectedClientId;
     let finalClientName = '';
     let finalClientPhone = '';
 
     if (bookingMode === 'walkin' && !isEditing) {
-      finalClientName = walkinName.trim() || 'Walk-in Client';
-      finalClientPhone = walkinPhone.trim() || '+213 550 00 00 00';
+      if (!walkinName.trim() || !walkinPhone.trim()) {
+        showToast({
+          type: 'warning',
+          title: language === 'ar' ? 'بيانات العميل مطلوبة' : language === 'fr' ? 'Coordonnées requises' : 'Client Details Required',
+          message:
+            language === 'ar'
+              ? 'يرجى إدخال اسم العميل ورقم هاتفه'
+              : language === 'fr'
+              ? 'Veuillez saisir le nom et le téléphone du client.'
+              : 'Please provide both client name and phone number.',
+        });
+        return;
+      }
+      finalClientName = walkinName.trim();
+      finalClientPhone = walkinPhone.trim();
 
       const createdClient = addMember({
         fullName: finalClientName,
@@ -186,8 +228,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       finalClientId = createdClient.id;
     } else {
       const client = members.find((m) => m.id === selectedClientId);
-      finalClientName = client ? client.fullName : (walkinName || 'Valued Client');
-      finalClientPhone = client ? client.phoneNumber : (walkinPhone || '');
+      finalClientName = client ? client.fullName : walkinName.trim();
+      finalClientPhone = client ? client.phoneNumber : walkinPhone.trim();
     }
 
     if (isEditing && appointment) {
@@ -200,20 +242,20 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         assignedStaff?.fullName
       );
       updateAppointmentStatus(appointment.id, status);
-    } else {
+    } else if (assignedStaff) {
       createAppointment({
         clientId: finalClientId,
         clientName: finalClientName,
         clientPhone: finalClientPhone,
-        staffId: assignedStaff?.id || 'stf_salon_01',
-        staffName: assignedStaff?.fullName || 'Sarah Louati',
+        staffId: assignedStaff.id,
+        staffName: assignedStaff.fullName,
         serviceId: service.id,
         serviceName: service.name,
         date,
         startTime,
         endTime: calculatedEndTime,
         durationMinutes,
-        price,
+        price: parsedPrice,
         status,
         notes,
       });
@@ -555,11 +597,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               type="number"
               min={0}
               step={500}
+              placeholder="4500"
               value={price}
-              onChange={(val) => setPrice(Number(val) || 0)}
+              onChange={setPrice}
               width="100%"
               height={40}
               corner={12}
+              required
             />
           </div>
 

@@ -533,7 +533,7 @@ export const SettingsReferenceRatesTab: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Official 58 Wilayas Reference Table */}
+      {/* 3. Official 69 Wilayas Reference Table */}
       <div className="sq-elev-card">
         <div data-sq="panel" className="bg-[#F3EDE7] dark:bg-[#191716] p-[var(--pod-pad,12px)] flex flex-col gap-[var(--card-gap,12px)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[var(--s3,12px)] pt-[var(--s1,4px)] px-[var(--s3,12px)] pb-[var(--s2,8px)]">

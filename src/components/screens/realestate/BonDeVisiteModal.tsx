@@ -5,6 +5,14 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { RealEstateProperty, BonDeVisiteRecord } from '../../../types';
 import { KineticModalShell } from '../../ui/kinetic';
+import {
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
+import { t } from '../../../utils/i18n';
 
 interface BonDeVisiteModalProps {
   isOpen: boolean;
@@ -17,11 +25,21 @@ interface BonDeVisiteModalProps {
 
 
 export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onClose, onSave, properties, selectedProperty }) => {
+	const { account, currentBusiness, currentBranch, currentUser, language } = useAtriumSelector(
+		(s) => ({
+			account: s.account,
+			currentBusiness: selectCurrentBusinessFromState(s),
+			currentBranch: selectCurrentBranchFromState(s),
+			currentUser: s.currentUser,
+			language: s.language,
+		}),
+		shallowEqualObjects
+	);
 	const activeProp = selectedProperty || properties[0];
 	const [clientFullName, setClientFullName] = React.useState("");
 	const [clientPhone, setClientPhone] = React.useState("");
 	const [clientNationalId, setClientNationalId] = React.useState("");
-	const [negotiatorName, setNegotiatorName] = React.useState("Karim Zerrouki");
+	const [negotiatorName, setNegotiatorName] = React.useState(currentUser?.fullName || "");
 	const [clientImpression, setClientImpression] = React.useState<'Interested' | 'NeedsNegotiation' | 'OfferSubmitted' | 'PriceTooHigh' | 'Unfavorable'>("Interested");
 	const [counterOfferDzd, setCounterOfferDzd] = React.useState(activeProp ? Math.round(activeProp.priceDzd * .95) : 0);
 	const [feedbackNotes, setFeedbackNotes] = React.useState("");
@@ -99,22 +117,32 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({ isOpen, onCl
 	};
 	const handleSubmit = (e: any) => {
 		e.preventDefault();
+		const activeAccountId = (activeProp?.accountId || currentBranch?.accountId || account?.id || "").trim();
+		const activeBranchId = (activeProp?.branchId || currentBranch?.id || "").trim();
+		if (!activeAccountId || !activeBranchId) {
+			showToast({
+				type: "error",
+				title: t("tenant_context_missing_title", language),
+				message: t("tenant_context_missing_msg", language),
+			});
+			return;
+		}
 		let signatureSvgData = "";
 		if (canvasRef.current && hasSignature) signatureSvgData = canvasRef.current.toDataURL("image/png");
 		else signatureSvgData = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cGF0aCBkPSJNMTAgOTAgQyAyMCAyMCwgODAgMjAgOTAgODAiIHN0cm9rZT0iYmxhY2siIGZpbGw9InRyYW5zcGFyZW50Ii8+PC9zdmc+";
 		onSave({
 			id: `vis_${Date.now()}`,
-			accountId: activeProp?.accountId || "acc_01",
-			businessId: activeProp?.businessId || "biz_realestate",
-			branchId: activeProp?.branchId || "branch_realestate_main",
-			staffId: activeProp?.staffId || "staff_01",
+			accountId: activeAccountId,
+			businessId: activeProp?.businessId || currentBusiness?.id || "",
+			branchId: activeBranchId,
+			staffId: activeProp?.staffId || currentUser?.id || "",
 			negotiatorName,
-			propertyId: activeProp?.id || "prop_01",
+			propertyId: activeProp?.id || "",
 			propertyTitle: activeProp?.title || "Bien Immobilier",
 			propertyAddress: activeProp?.address || "Adresse à Alger",
 			clientFullName: clientFullName.trim() || "Visiteur Enregistré",
-			clientPhone: clientPhone.trim() || "0550 00 00 00",
-			clientNationalId: clientNationalId.trim() || "109823487129837401",
+			clientPhone: clientPhone.trim() || "",
+			clientNationalId: clientNationalId.trim(),
 			visitTimestamp: (/* @__PURE__ */ new Date()).toISOString(),
 			gpsLatitude: gpsLatitude ?? 36.7538,
 			gpsLongitude: gpsLongitude ?? 3.0588,

@@ -19,6 +19,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { LegalHearing } from '../../../types';
 import { useLegalData } from './legalData';
@@ -67,6 +68,7 @@ const extractStr = (v: unknown): string => {
 
 export const LegalHearingsView: React.FC<any> = () => {
   const {
+    account,
     language,
     activeLegalRole,
     currentBusiness,
@@ -77,6 +79,7 @@ export const LegalHearingsView: React.FC<any> = () => {
     networkMode,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       activeLegalRole: s.activeLegalRole,
       currentBusiness: selectCurrentBusinessFromState(s),
@@ -239,13 +242,23 @@ export const LegalHearingsView: React.FC<any> = () => {
 
   const handleCreateHearing = (e: React.FormEvent) => {
     e.preventDefault();
+    const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const matter = matters.find((m) => m.id === formMatterId);
     const newH: LegalHearing = {
       id: `hear_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_legal',
-      branchId: currentBranch?.id || 'branch_legal_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       matterId: formMatterId,
       matterNumber: matter?.matterNumber || 'DOS-2026-AUTO',
       matterTitle: matter?.title || 'Dossier Contentieux',

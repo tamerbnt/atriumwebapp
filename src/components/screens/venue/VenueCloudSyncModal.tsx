@@ -25,18 +25,60 @@ import {
   useAtriumActions,
 } from '../../../services/store';
 import { rentalService } from '../../../lib/supabase/services/rentalService';
+import { referenceDataService } from '../../../lib/supabase/services/referenceDataService';
 import { isSupabaseConfigured } from '../../../lib/supabase/client';
 import { RentalBooking } from '../../../types/index';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
+
+function resolveSupabaseHostLabel(): string {
+  const metaEnv = typeof import.meta !== 'undefined' ? (import.meta as any).env : undefined;
+  const url = String(metaEnv?.VITE_SUPABASE_URL || '').trim();
+  if (!url) return 'Not configured (Demo/Offline mode)';
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
+  }
+}
 
 interface VenueCloudSyncModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+export function useCanAccessVenueCloudDiagnostics(): boolean {
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void referenceDataService.checkIsPlatformAdmin().then((status) => {
+      if (active) setIsPlatformAdmin(status.isAdmin);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const isDevBuild = Boolean(
+    typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV
+  );
+  return isDevBuild || isPlatformAdmin;
+}
+
 export const VenueCloudSyncModal: React.FC<VenueCloudSyncModalProps> = ({ isOpen, onClose }) => {
-  const { rentableUnits, rentalBookings, rentalRenters, securityDeposits } = useAtriumSelector(
+  const {
+    accountId,
+    businessId,
+    branchId,
+    rentableUnits,
+    rentalBookings,
+    rentalRenters,
+    securityDeposits,
+  } = useAtriumSelector(
     (s) => ({
+      accountId: s.account?.id || '',
+      businessId: s.currentBusinessId || '',
+      branchId: s.currentBranchId || '',
       rentableUnits: selectCurrentRentableUnitsFromState(s),
       rentalBookings: selectCurrentRentalBookingsFromState(s),
       rentalRenters: selectCurrentRentalRentersFromState(s),
@@ -45,6 +87,7 @@ export const VenueCloudSyncModal: React.FC<VenueCloudSyncModalProps> = ({ isOpen
     shallowEqualObjects
   );
   const { syncWithSupabase } = useAtriumActions();
+  const canAccessCloudDiagnostics = useCanAccessVenueCloudDiagnostics();
 
   const [isLoading, setIsLoading] = useState(false);
   const [cloudCounts, setCloudCounts] = useState<{
@@ -66,55 +109,36 @@ export const VenueCloudSyncModal: React.FC<VenueCloudSyncModalProps> = ({ isOpen
   }>({ tested: false });
   const [copied, setCopied] = useState(false);
 
+  const supabaseHostLabel = resolveSupabaseHostLabel();
   const sqlRepairScript = `-- ====================================================================
--- RENTALS & VENUES DIRECT ROW WRITE SCRIPT FOR SUPABASE
--- Run this in your Supabase project: SQL Editor -> New Query -> Run
+-- RENTALS & VENUES TENANT DIAGNOSTIC QUERY (RLS-RESPECTING)
+-- Target project: ${supabaseHostLabel}
+-- Active context: account=${accountId || '<missing>'} business=${businessId || '<missing>'} branch=${branchId || '<missing>'}
 -- ====================================================================
 
--- 1. Disable RLS on rental tables to allow direct app operations
-ALTER TABLE IF EXISTS public.rentable_units DISABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS public.rental_renters DISABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS public.rental_bookings DISABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS public.security_deposits DISABLE ROW LEVEL SECURITY;
-
--- 2. Drop strict Foreign Key constraints on account_id & branch_id
--- (Allows data to save directly without requiring account onboarding first)
-ALTER TABLE IF EXISTS public.rentable_units DROP CONSTRAINT IF EXISTS rentable_units_account_id_fkey;
-ALTER TABLE IF EXISTS public.rentable_units DROP CONSTRAINT IF EXISTS rentable_units_branch_id_fkey;
-ALTER TABLE IF EXISTS public.rentable_units ALTER COLUMN account_id DROP NOT NULL;
-ALTER TABLE IF EXISTS public.rentable_units ALTER COLUMN branch_id DROP NOT NULL;
-
-ALTER TABLE IF EXISTS public.rental_renters DROP CONSTRAINT IF EXISTS rental_renters_account_id_fkey;
-ALTER TABLE IF EXISTS public.rental_renters DROP CONSTRAINT IF EXISTS rental_renters_branch_id_fkey;
-ALTER TABLE IF EXISTS public.rental_renters ALTER COLUMN account_id DROP NOT NULL;
-ALTER TABLE IF EXISTS public.rental_renters ALTER COLUMN branch_id DROP NOT NULL;
-
-ALTER TABLE IF EXISTS public.rental_bookings DROP CONSTRAINT IF EXISTS rental_bookings_account_id_fkey;
-ALTER TABLE IF EXISTS public.rental_bookings DROP CONSTRAINT IF EXISTS rental_bookings_branch_id_fkey;
-ALTER TABLE IF EXISTS public.rental_bookings ALTER COLUMN account_id DROP NOT NULL;
-ALTER TABLE IF EXISTS public.rental_bookings ALTER COLUMN branch_id DROP NOT NULL;
-
-ALTER TABLE IF EXISTS public.security_deposits DROP CONSTRAINT IF EXISTS security_deposits_account_id_fkey;
-ALTER TABLE IF EXISTS public.security_deposits DROP CONSTRAINT IF EXISTS security_deposits_branch_id_fkey;
-ALTER TABLE IF EXISTS public.security_deposits ALTER COLUMN account_id DROP NOT NULL;
-ALTER TABLE IF EXISTS public.security_deposits ALTER COLUMN branch_id DROP NOT NULL;
-
--- 3. Seed default account & venue branch so any join queries work cleanly
-ALTER TABLE IF EXISTS public.accounts DISABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS public.businesses DISABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS public.branches DISABLE ROW LEVEL SECURITY;
-
-INSERT INTO public.accounts (id, full_name, email, phone)
-VALUES ('00000000-0000-0000-0000-000000000001', 'Amine Bentouati', 'bentouatitamer@gmail.com', '+213 550 12 34 56')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO public.businesses (id, account_id, name, category)
-VALUES ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'El-Bahia Grand Ballroom & Events', 'rentals_venue')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO public.branches (id, account_id, business_id, name)
-VALUES ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'Main Palace Complex')
-ON CONFLICT (id) DO NOTHING;
+SELECT 'rentable_units' AS table_name, count(*) AS row_count
+FROM public.rentable_units
+WHERE account_id = '${accountId || '<account_uuid>'}'
+  AND branch_id = '${branchId || '<branch_uuid>'}'
+  AND deleted_at IS NULL
+UNION ALL
+SELECT 'rental_renters', count(*)
+FROM public.rental_renters
+WHERE account_id = '${accountId || '<account_uuid>'}'
+  AND branch_id = '${branchId || '<branch_uuid>'}'
+  AND deleted_at IS NULL
+UNION ALL
+SELECT 'rental_bookings', count(*)
+FROM public.rental_bookings
+WHERE account_id = '${accountId || '<account_uuid>'}'
+  AND branch_id = '${branchId || '<branch_uuid>'}'
+  AND deleted_at IS NULL
+UNION ALL
+SELECT 'security_deposits', count(*)
+FROM public.security_deposits
+WHERE account_id = '${accountId || '<account_uuid>'}'
+  AND branch_id = '${branchId || '<branch_uuid>'}'
+  AND deleted_at IS NULL;
 `;
 
   const [latestBooking, setLatestBooking] = useState<RentalBooking | null>(null);
@@ -188,10 +212,10 @@ ON CONFLICT (id) DO NOTHING;
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && canAccessCloudDiagnostics) {
       refreshCloudCounts();
     }
-  }, [isOpen]);
+  }, [isOpen, canAccessCloudDiagnostics]);
 
   const handleCopySql = () => {
     navigator.clipboard.writeText(sqlRepairScript);
@@ -206,53 +230,49 @@ ON CONFLICT (id) DO NOTHING;
   };
 
   const handleSendTestBooking = async () => {
+    if (!accountId || !branchId || rentableUnits.length === 0) {
+      setTestResult({
+        tested: true,
+        success: false,
+        details: 'Active tenant/branch context and at least one rentable unit are required.',
+      });
+      return;
+    }
     setIsLoading(true);
     setTestResult({ tested: false });
 
-    const testUnit = rentableUnits[0] || {
-      id: '00000000-0000-4000-8000-000000000010',
-      name: 'Grand Ballroom (Live Test)',
-      type: 'Hall' as const,
-      currency: 'DZD',
-    };
+    const testUnit = rentableUnits[0];
+    const primaryRenter = rentalRenters[0];
 
     const res = await rentalService.upsertBooking({
-      id: `test_${Date.now()}`,
-      tenantId: '00000000-0000-0000-0000-000000000001',
-      facilityId: '00000000-0000-0000-0000-000000000003',
-      renterId: 'test_renter_01',
-      renterName: 'Karim Hadj (Supabase Verification)',
-      renterPhone: '+213 550 00 11 22',
-      renterEmail: 'karim.hadj@algeria.business',
-      renterCompany: 'Algiers Media Group',
+      id: `diag_${Date.now()}`,
+      tenantId: accountId,
+      facilityId: branchId,
+      renterId: primaryRenter?.id || 'diag_renter',
+      renterName: primaryRenter?.fullName || 'Cloud Diagnostic Check',
+      renterPhone: primaryRenter?.phone || '',
+      renterEmail: primaryRenter?.email || '',
+      renterCompany: primaryRenter?.companyName || '',
       unitId: testUnit.id,
       unitName: testUnit.name,
-      unitType: 'Hall',
-      purpose: 'Gala Dinner & Corporate Summit',
+      unitType: testUnit.type,
+      purpose: 'Diagnostic Sync Verification',
       startDateTime: new Date().toISOString(),
-      endDateTime: new Date(Date.now() + 18000000).toISOString(),
-      durationHours: 5,
-      attendeeCount: 75,
+      endDateTime: new Date(Date.now() + 3600000).toISOString(),
+      durationHours: 1,
+      attendeeCount: 1,
       status: 'Confirmed',
-      baseAmount: 60000,
-      addonsAmount: 15000,
-      totalAmount: 75000,
-      currency: 'DZD',
-      depositAmount: 25000,
+      baseAmount: 0,
+      addonsAmount: 0,
+      totalAmount: 0,
+      currency: testUnit.currency || 'DZD',
+      depositAmount: 0,
       depositStatus: 'Held',
-      paidAmount: 75000,
+      paidAmount: 0,
       balanceDue: 0,
-      contractSigned: true,
-      addons: [
-        {
-          id: 'addon-test-1',
-          name: 'LED Stage Lighting',
-          unitPrice: 15000,
-          quantity: 1,
-          totalPrice: 15000,
-        },
-      ],
-      notes: 'Test booking created to verify live Supabase table insertion',
+      contractSigned: false,
+      addons: [],
+      notes: 'Platform-admin diagnostic row verification',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
@@ -279,7 +299,7 @@ ON CONFLICT (id) DO NOTHING;
         success: false,
         error: res.error,
         details: res.error?.includes('foreign key')
-          ? 'Foreign key constraint blocked the insert because accounts/branches is empty. Run the SQL script below in Supabase to fix it in 5 seconds.'
+          ? 'Foreign key constraint blocked the insert because accounts/branches context is missing. Run the diagnostic query below to inspect tenant rows.'
           : res.error,
       });
       showToast({
@@ -291,6 +311,10 @@ ON CONFLICT (id) DO NOTHING;
       });
     }
   };
+
+  if (!canAccessCloudDiagnostics) {
+    return null;
+  }
 
   return (
     <KineticModalShell
@@ -350,7 +374,7 @@ ON CONFLICT (id) DO NOTHING;
                 </span>
               </div>
               <p className="t-cap text-black/55 dark:text-white/75 mt-1 tabular-nums">
-                Project: tzzncsbvezywtaknwind.supabase.co
+                Project: {supabaseHostLabel}
               </p>
             </div>
 

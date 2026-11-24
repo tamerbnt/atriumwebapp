@@ -2206,9 +2206,9 @@ export const FULL_16_VERTICAL_CATALOG: CatalogBusinessTrade[] = [
   {
     id: 'trade_cod_parcel_network',
     category: 'logistics_delivery',
-    name: { fr: 'Réseau Messagerie & Encaissement COD (58 Wilayas)', ar: 'شبكة نقل طرود مع الدفع عند الاستلام', en: 'National COD Parcel Delivery Network' },
+    name: { fr: 'Réseau Messagerie & Encaissement COD (Inter-Wilayas)', ar: 'شبكة نقل طرود مع الدفع عند الاستلام', en: 'National COD Parcel Delivery Network' },
     badge: { fr: 'Ramassage & CRBT', ar: 'توصيل مع الدفع', en: 'COD Network' },
-    keywords: ['cod', 'livraison e-commerce', 'crbt', '58 wilayas', 'دفع عند الاستلام', 'توصيل تجارة الكترونية'],
+    keywords: ['cod', 'livraison e-commerce', 'crbt', '69 wilayas', 'دفع عند الاستلام', 'توصيل تجارة الكترونية'],
   },
   {
     id: 'trade_freight_transport',

@@ -22,6 +22,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { calculateWorkerPieceworkWage } from '../../../utils/agriRules';
@@ -62,6 +63,7 @@ import {
 
 export const AgricultureHarvestView: React.FC = () => {
   const {
+    account,
     language,
     currentBusiness,
     currentBranch,
@@ -72,6 +74,7 @@ export const AgricultureHarvestView: React.FC = () => {
     lastSyncedAt,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -125,10 +128,10 @@ export const AgricultureHarvestView: React.FC = () => {
   const [pointageSearch, setPointageSearch] = useState('');
   const [pointageStatusFilter, setPointageStatusFilter] = useState<string>('all');
   const [isPointageModalOpen, setIsPointageModalOpen] = useState(false);
-  const [pointageWorkerId, setPointageWorkerId] = useState(workers[0]?.id || 'wrk_01');
-  const [pointageParcelId, setPointageParcelId] = useState(parcels[0]?.id || 'parc_01');
-  const [pointageCrates, setPointageCrates] = useState('45');
-  const [pointageAdvance, setPointageAdvance] = useState('0');
+  const [pointageWorkerId, setPointageWorkerId] = useState(workers[0]?.id || '');
+  const [pointageParcelId, setPointageParcelId] = useState(parcels[0]?.id || '');
+  const [pointageCrates, setPointageCrates] = useState('');
+  const [pointageAdvance, setPointageAdvance] = useState('');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterParcel, setFilterParcel] = useState<string>('all');
@@ -145,15 +148,15 @@ export const AgricultureHarvestView: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [ticketToEdit, setTicketToEdit] = useState<AgriHarvestTicket | null>(null);
-  const [parcelId, setParcelId] = useState(parcels[0]?.id || 'parc_01');
-  const [crop, setCrop] = useState('Tomates Maraîchères Calibre 1');
-  const [vehiclePlate, setVehiclePlate] = useState('00142-126-16');
-  const [driverName, setDriverName] = useState('Hakim Benziane');
-  const [grossWeight, setGrossWeight] = useState('8000');
-  const [tareWeight, setTareWeight] = useState('3200');
-  const [cratesCount, setCratesCount] = useState('250');
-  const [unitPrice, setUnitPrice] = useState('75');
-  const [market, setMarket] = useState('Marché de Gros des Eucalyptus, Alger');
+  const [parcelId, setParcelId] = useState(parcels[0]?.id || '');
+  const [crop, setCrop] = useState('');
+  const [vehiclePlate, setVehiclePlate] = useState('');
+  const [driverName, setDriverName] = useState('');
+  const [grossWeight, setGrossWeight] = useState('');
+  const [tareWeight, setTareWeight] = useState('');
+  const [cratesCount, setCratesCount] = useState('');
+  const [unitPrice, setUnitPrice] = useState('');
+  const [market, setMarket] = useState('');
 
   const [selectedTicket, setSelectedTicket] = useState<AgriHarvestTicket | null>(null);
   const [drawerOpenerEl, setDrawerOpenerEl] = useState<HTMLElement | null>(null);
@@ -170,15 +173,15 @@ export const AgricultureHarvestView: React.FC = () => {
 
   const openCreateModal = useCallback(() => {
     setTicketToEdit(null);
-    setParcelId(parcels[0]?.id || 'parc_01');
-    setCrop('Tomates Maraîchères Calibre 1');
-    setVehiclePlate('00142-126-16');
-    setDriverName('Hakim Benziane');
-    setGrossWeight('8000');
-    setTareWeight('3200');
-    setCratesCount('250');
-    setUnitPrice('75');
-    setMarket('Marché de Gros des Eucalyptus, Alger');
+    setParcelId(parcels[0]?.id || '');
+    setCrop('');
+    setVehiclePlate('');
+    setDriverName('');
+    setGrossWeight('');
+    setTareWeight('');
+    setCratesCount('');
+    setUnitPrice('');
+    setMarket('');
     setIsModalOpen(true);
   }, [parcels]);
 
@@ -198,10 +201,42 @@ export const AgricultureHarvestView: React.FC = () => {
 
   const handleSaveModal = (e: React.FormEvent) => {
     e.preventDefault();
-    const gross = parseFloat(grossWeight) || 0;
-    const tare = parseFloat(tareWeight) || 0;
+    const gross = parseFloat(grossWeight);
+    const tare = parseFloat(tareWeight);
+    const pricePerKg = parseFloat(unitPrice);
+    if (
+      !crop.trim() ||
+      !vehiclePlate.trim() ||
+      !driverName.trim() ||
+      !market.trim() ||
+      isNaN(gross) ||
+      gross <= 0 ||
+      isNaN(tare) ||
+      tare < 0 ||
+      gross <= tare ||
+      isNaN(pricePerKg) ||
+      pricePerKg < 0
+    ) {
+      showToast({
+        type: 'error',
+        title: isAr ? 'بيانات ناقصة' : 'Champs requis',
+        message: isAr
+          ? 'يرجى التحقق من الأوزان وسعر الكيلوغرام وتفاصيل الشاحنة'
+          : 'Veuillez vérifier le produit, les poids (brut > tare) et le prix unitaire',
+      });
+      return;
+    }
+    const activeAccountId = (ticketToEdit?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (ticketToEdit?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const net = Math.max(0, gross - tare);
-    const pricePerKg = parseFloat(unitPrice) || 0;
     const totalGross = net * pricePerKg;
     const feePct = 6;
     const netPayout = totalGross - (totalGross * feePct) / 100;
@@ -209,13 +244,13 @@ export const AgricultureHarvestView: React.FC = () => {
 
     const payload: AgriHarvestTicket = {
       id: ticketToEdit?.id || `pes_${Date.now()}`,
-      accountId: ticketToEdit?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_agri',
-      branchId: ticketToEdit?.branchId || currentBranch?.id || 'branch_agri_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       ticketNumber:
         ticketToEdit?.ticketNumber ||
-        `PES-2026-${String(harvestTickets.length + 20).padStart(3, '0')}`,
+        `PES-${new Date().getFullYear()}-${String(harvestTickets.length + 20).padStart(3, '0')}`,
       buyerName: ticketToEdit?.buyerName || driverName.trim() || 'Mandataire de Gros',
       truckPlate: vehiclePlate.trim(),
       vehiclePlate: vehiclePlate.trim(),
@@ -502,29 +537,47 @@ export const AgricultureHarvestView: React.FC = () => {
 
   const handleSavePointage = (e: React.FormEvent) => {
     e.preventDefault();
-    const worker = workers.find((w) => w.id === pointageWorkerId);
-    const parcel = parcels.find((pr) => pr.id === pointageParcelId);
-    const crates = parseInt(pointageCrates, 10) || 0;
+    const worker = workers.find((w) => w.id === pointageWorkerId) || workers[0];
+    const parcel = parcels.find((pr) => pr.id === pointageParcelId) || parcels[0];
+    const crates = parseInt(pointageCrates, 10);
+    if (!worker || !parcel || isNaN(crates) || crates < 0) {
+      showToast({
+        type: 'error',
+        title: isAr ? 'بيانات ناقصة' : 'Champs requis',
+        message: isAr ? 'يرجى تحديد العامل والقطعة وعدد الصناديق' : 'Veuillez sélectionner un ouvrier, une parcelle et un nombre de caisses valide',
+      });
+      return;
+    }
+    const activeAccountId = (parcel?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || parcel?.branchId || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const advance = parseFloat(pointageAdvance) || 0;
     const pieceRate = worker?.defaultPieceRateDzd || 40;
     const { grossWageDzd, netDueDzd } = calculateWorkerPieceworkWage(crates, pieceRate, advance);
     const newPnt: AgriDailyPointage = {
       id: `pnt_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_agri',
-      branchId: currentBranch?.id || 'branch_agri_main',
-      staffId: currentUser?.id || 'staff_01',
-      workerId: worker?.id || 'wrk_01',
-      workerName: worker?.fullName || 'Ouvrier Saisonnier',
-      parcelId: parcel?.id || 'parc_01',
-      parcelName: parcel?.name || 'Parcelle',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
+      workerId: worker.id,
+      workerName: worker.fullName,
+      parcelId: parcel.id,
+      parcelName: parcel.name,
       date: new Date().toISOString().split('T')[0],
       cratesCollected: crates,
       calculatedWageDzd: grossWageDzd,
       cashAdvancePaidDzd: advance,
       netDueDzd,
       isPaid: false,
-      supervisorStaffId: currentUser?.id || 'staff_01',
+      supervisorStaffId: currentUser?.id || '',
       createdAt: new Date().toISOString(),
     };
     addPointage(newPnt);
@@ -872,7 +925,15 @@ export const AgricultureHarvestView: React.FC = () => {
               ? 'تسجيل حضور / جني'
               : 'Pointer un Ouvrier',
           onClick:
-            activeMode === 'tickets' ? openCreateModal : () => setIsPointageModalOpen(true),
+            activeMode === 'tickets'
+              ? openCreateModal
+              : () => {
+                  setPointageWorkerId(workers[0]?.id || '');
+                  setPointageParcelId(parcels[0]?.id || '');
+                  setPointageCrates('');
+                  setPointageAdvance('');
+                  setIsPointageModalOpen(true);
+                },
           icon: <Plus size={14} />,
           dataAction: activeMode === 'tickets' ? 'add-weighbridge' : 'add-pointage',
         }}
@@ -1513,6 +1574,7 @@ export const AgricultureHarvestView: React.FC = () => {
                 <LabelInput
                   field="VehiclePlate"
                   label={isAr ? 'رقم ترقيم الشاحنة' : 'Immatriculation Camion'}
+                  placeholder="Ex: 00142-126-16"
                   value={vehiclePlate}
                   onChange={setVehiclePlate}
                   width="100%"
@@ -1523,6 +1585,7 @@ export const AgricultureHarvestView: React.FC = () => {
                 <LabelInput
                   field="DriverName"
                   label={isAr ? 'اسم السائق' : 'Nom du Chauffeur'}
+                  placeholder="Ex: Hakim Benziane"
                   value={driverName}
                   onChange={setDriverName}
                   width="100%"
@@ -1536,6 +1599,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   field="GrossWeight"
                   label={isAr ? 'الوزن القائم (كغ)' : 'Poids Brut (Kg)'}
                   type="number"
+                  placeholder="8000"
                   value={grossWeight}
                   onChange={setGrossWeight}
                   width="100%"
@@ -1547,6 +1611,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   field="TareWeight"
                   label={isAr ? 'الوزن الفارغ (كغ)' : 'Tare Camion (Kg)'}
                   type="number"
+                  placeholder="3200"
                   value={tareWeight}
                   onChange={setTareWeight}
                   width="100%"
@@ -1558,6 +1623,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   field="CratesCount"
                   label={isAr ? 'عدد الصناديق' : 'Nb Caisses'}
                   type="number"
+                  placeholder="250"
                   value={cratesCount}
                   onChange={setCratesCount}
                   width="100%"
@@ -1570,6 +1636,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   field="UnitPrice"
                   label={isAr ? 'سعر الكيلوغرام (دج)' : 'Prix Unitaire DZD / Kg'}
                   type="number"
+                  placeholder="75"
                   value={unitPrice}
                   onChange={setUnitPrice}
                   width="100%"
@@ -1580,6 +1647,7 @@ export const AgricultureHarvestView: React.FC = () => {
                 <LabelInput
                   field="Market"
                   label={isAr ? 'سوق الجملة / المشتري' : 'Destination / Marché'}
+                  placeholder="Ex: Marché de Gros"
                   value={market}
                   onChange={setMarket}
                   width="100%"
@@ -1672,6 +1740,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   field="PointageCrates"
                   label={isAr ? 'عدد الصناديق الأولية' : 'Nombre de Caisses'}
                   type="number"
+                  placeholder="0"
                   value={pointageCrates}
                   onChange={setPointageCrates}
                   width="100%"
@@ -1683,6 +1752,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   field="PointageAdvance"
                   label={isAr ? 'تسبيق نقدي (دج)' : 'Acompte Espèces (DZD)'}
                   type="number"
+                  placeholder="0"
                   value={pointageAdvance}
                   onChange={setPointageAdvance}
                   width="100%"

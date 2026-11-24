@@ -18,6 +18,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { AgriParcel, AgriParcelStatus, AgriTreatmentLog, AgriHarvestTicket } from '../../../types';
 import { useAgricultureData } from './agricultureData';
@@ -53,6 +54,7 @@ import {
 
 export const AgricultureParcelsView: React.FC = () => {
   const {
+    account,
     language,
     currentBranch,
     branches,
@@ -61,6 +63,7 @@ export const AgricultureParcelsView: React.FC = () => {
     lastSyncedAt,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
@@ -289,13 +292,23 @@ export const AgricultureParcelsView: React.FC = () => {
 
   const handleQuickTreatmentLog = useCallback(
     (p: AgriParcel) => {
+      const activeAccountId = (p.accountId || currentBranch?.accountId || account?.id || '').trim();
+      const activeBranchId = (p.branchId || currentBranch?.id || '').trim();
+      if (!activeAccountId || !activeBranchId) {
+        showToast({
+          type: 'error',
+          title: t('tenant_context_missing_title', language),
+          message: t('tenant_context_missing_msg', language),
+        });
+        return;
+      }
       const today = new Date().toISOString().split('T')[0];
       const newTreat: AgriTreatmentLog = {
         id: `treat_${Date.now()}`,
-        accountId: 'acc_01',
-        businessId: p.businessId,
-        branchId: p.branchId,
-        staffId: p.staffId,
+        accountId: activeAccountId,
+        businessId: p.businessId || currentBranch?.businessId || '',
+        branchId: activeBranchId,
+        staffId: p.staffId || '',
         parcelId: p.id,
         treatmentDate: today,
         commercialProductName: 'Fertilisant Foliar Oligo-Mix (Bio)',
@@ -311,7 +324,7 @@ export const AgricultureParcelsView: React.FC = () => {
       addTreatmentLog(newTreat);
       if (selectedParcel?.id === p.id) setActiveTab('treatments');
     },
-    [addTreatmentLog, selectedParcel]
+    [account?.id, addTreatmentLog, currentBranch, language, selectedParcel]
   );
 
   const handleExportCsv = useCallback(() => {

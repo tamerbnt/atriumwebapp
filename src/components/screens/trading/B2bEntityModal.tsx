@@ -10,7 +10,13 @@ import {
   MapPin,
   CheckCircle,
 } from 'lucide-react';
-import { useAtriumActions } from '../../../services/store';
+import {
+  useAtriumActions,
+  useAtriumSelector,
+  shallowEqualObjects,
+  selectCurrentBranchFromState,
+  showToast,
+} from '../../../services/store';
 import { B2bClient, B2bSupplier } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -34,6 +40,13 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
   onSaved,
 }) => {
   const { t, isRtl, language } = useTranslation();
+  const { account, currentBranch } = useAtriumSelector(
+    (s) => ({
+      account: s.account,
+      currentBranch: selectCurrentBranchFromState(s),
+    }),
+    shallowEqualObjects
+  );
   const {
     createB2bClient,
     updateB2bClient,
@@ -91,14 +104,29 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyName.trim()) {
-      alert('Veuillez spécifier la raison sociale.');
+      showToast({
+        type: 'warning',
+        title: t('required_field_title') || 'Champ requis',
+        message: 'Veuillez spécifier la raison sociale.',
+      });
+      return;
+    }
+
+    const activeAccountId = (editingEntity?.tenantId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (editingEntity?.facilityId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title'),
+        message: t('tenant_context_missing_msg'),
+      });
       return;
     }
 
     if (isSupplier) {
       const payload: Omit<B2bSupplier, 'id' | 'createdAt' | 'updatedAt'> = {
-        tenantId: 'acc_01',
-        facilityId: 'branch_trading_main',
+        tenantId: activeAccountId,
+        facilityId: activeBranchId,
         supplierName: companyName.trim(),
         sector,
         email,
@@ -128,8 +156,8 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
       }
     } else {
       const payload: Omit<B2bClient, 'id' | 'createdAt' | 'updatedAt'> = {
-        tenantId: 'acc_01',
-        facilityId: 'branch_trading_main',
+        tenantId: activeAccountId,
+        facilityId: activeBranchId,
         companyName: companyName.trim(),
         sector,
         email,

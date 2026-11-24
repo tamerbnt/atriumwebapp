@@ -28,6 +28,7 @@ import {
   selectCurrentBusinessFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { useContractorData } from './contractorData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Button } from '@/atrium/core';
@@ -69,6 +70,7 @@ import {
 
 export const ContractorDailyLogsView: React.FC<any> = () => {
   const {
+    account,
     language,
     currentBusiness,
     currentBranch,
@@ -79,6 +81,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
     lastSyncedAt,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -134,15 +137,15 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [weather, setWeather] = useState('Ensoleillé');
   const [tasks, setTasks] = useState('');
-  const [equipment, setEquipment] = useState('Grue à tour, 2x Toupie béton');
-  const [incidents, setIncidents] = useState('R.A.S. Port des EPI vérifié');
-  const [signature, setSignature] = useState('Ing. Mourad Benali');
+  const [equipment, setEquipment] = useState('');
+  const [incidents, setIncidents] = useState('');
+  const [signature, setSignature] = useState(() => currentUser?.fullName || '');
 
-  const [craftMasons, setCraftMasons] = useState(8);
-  const [craftIronworkers, setCraftIronworkers] = useState(6);
-  const [craftLaborers, setCraftLaborers] = useState(5);
-  const [craftOperators, setCraftOperators] = useState(3);
-  const [craftSupervisors, setCraftSupervisors] = useState(2);
+  const [craftMasons, setCraftMasons] = useState(0);
+  const [craftIronworkers, setCraftIronworkers] = useState(0);
+  const [craftLaborers, setCraftLaborers] = useState(0);
+  const [craftOperators, setCraftOperators] = useState(0);
+  const [craftSupervisors, setCraftSupervisors] = useState(0);
 
   const totalHeadcount = useMemo(
     () => craftMasons + craftIronworkers + craftLaborers + craftOperators + craftSupervisors,
@@ -151,21 +154,21 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 
   const [pourDate, setPourDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [pourElement, setPourElement] = useState('');
-  const [pourSupplier, setPourSupplier] = useState('Centrale Béton Oued Smar SARL');
+  const [pourSupplier, setPourSupplier] = useState('');
   const [pourSlip, setPourSlip] = useState('');
-  const [pourVolume, setPourVolume] = useState('36');
+  const [pourVolume, setPourVolume] = useState('');
   const [pourGrade, setPourGrade] = useState('B25');
-  const [pourSlump, setPourSlump] = useState('12');
-  const [pourCylinders, setPourCylinders] = useState('6');
-  const [pourStrength7D, setPourStrength7D] = useState('18.2');
+  const [pourSlump, setPourSlump] = useState('');
+  const [pourCylinders, setPourCylinders] = useState('');
+  const [pourStrength7D, setPourStrength7D] = useState('');
 
-  const [eqName, setEqName] = useState('Pelle Hydraulique Caterpillar 320D');
+  const [eqName, setEqName] = useState('');
   const [eqCategory, setEqCategory] = useState('Excavator');
-  const [eqMatricule, setEqMatricule] = useState('PEL-16-554');
-  const [eqHours, setEqHours] = useState('8');
-  const [eqFuelLiters, setEqFuelLiters] = useState('130');
-  const [eqTheoreticalBurnRate, setEqTheoreticalBurnRate] = useState('16');
-  const [eqOperator, setEqOperator] = useState('Kamel Zerrouk');
+  const [eqMatricule, setEqMatricule] = useState('');
+  const [eqHours, setEqHours] = useState('');
+  const [eqFuelLiters, setEqFuelLiters] = useState('');
+  const [eqTheoreticalBurnRate, setEqTheoreticalBurnRate] = useState('');
+  const [eqOperator, setEqOperator] = useState('');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -366,12 +369,22 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
       );
       return;
     }
+    const activeAccountId = (selectedProject?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (selectedProject?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const newLog: ContractorDailyLog = {
       id: `log_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_contractor',
-      branchId: currentBranch?.id || 'branch_contractor_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       projectId: selectedProject?.id || selectedProjectId,
       date,
       weather,
@@ -393,13 +406,36 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
 
   const handleCreateConcretePour = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pourElement.trim() || !pourSlip.trim()) {
+    const volNum = parseFloat(pourVolume);
+    const slumpNum = parseFloat(pourSlump);
+    const cylNum = parseInt(pourCylinders, 10);
+    if (
+      !pourElement.trim() ||
+      !pourSupplier.trim() ||
+      !pourSlip.trim() ||
+      isNaN(volNum) ||
+      volNum <= 0 ||
+      isNaN(slumpNum) ||
+      slumpNum < 0 ||
+      isNaN(cylNum) ||
+      cylNum < 0
+    ) {
       showToast(
         isAr
-          ? 'يرجى إدخال العنصر ورقم وصل التسليم'
-          : 'Veuillez renseigner l’élément et le numéro de BL',
+          ? 'يرجى إدخال العنصر والمورد ورقم وصل التسليم والقياسات'
+          : 'Veuillez renseigner l’élément, la centrale, le N° BL et des valeurs valides',
         'error'
       );
+      return;
+    }
+    const activeAccountId = (selectedProject?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (selectedProject?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
       return;
     }
     const s7 = parseFloat(pourStrength7D) || 0;
@@ -408,19 +444,19 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
     const validation = validateConcreteStrength(s7, targetMpa, 7);
     const newPour = {
       id: `pour_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_contractor',
-      branchId: currentBranch?.id || 'branch_contractor_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       projectId: selectedProject?.id || selectedProjectId,
       pourDate,
       elementPoured: pourElement.trim(),
       supplierName: pourSupplier.trim(),
       deliverySlipNumber: pourSlip.trim(),
-      volumePouredM3: parseFloat(pourVolume) || 24,
+      volumePouredM3: volNum,
       concreteGrade: pourGrade,
-      slumpCm: parseFloat(pourSlump) || 12,
-      testCylindersTaken: parseInt(pourCylinders, 10) || 6,
+      slumpCm: slumpNum,
+      testCylindersTaken: cylNum,
       strength7DaysMpa: s7 > 0 ? s7 : undefined,
       ctcClearanceObtained: validation.isConforming,
       status: validation.isConforming ? 'Passed7D' : 'NonConforming',
@@ -430,20 +466,53 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
     setIsConcreteModalOpen(false);
     setPourElement('');
     setPourSlip('');
+    setPourVolume('');
+    setPourSlump('');
+    setPourCylinders('');
+    setPourStrength7D('');
   };
 
   const handleCreateEquipmentLog = (e: React.FormEvent) => {
     e.preventDefault();
-    const h = parseFloat(eqHours) || 1;
-    const liters = parseFloat(eqFuelLiters) || 0;
-    const theoreticalRate = parseFloat(eqTheoreticalBurnRate) || 15;
+    const h = parseFloat(eqHours);
+    const liters = parseFloat(eqFuelLiters);
+    const theoreticalRate = parseFloat(eqTheoreticalBurnRate);
+    if (
+      !eqName.trim() ||
+      !eqMatricule.trim() ||
+      !eqOperator.trim() ||
+      isNaN(h) ||
+      h <= 0 ||
+      isNaN(liters) ||
+      liters < 0 ||
+      isNaN(theoreticalRate) ||
+      theoreticalRate <= 0
+    ) {
+      showToast(
+        isAr
+          ? 'يرجى إدخال بيانات الآلية والساعات والوقود بشكل صحيح'
+          : 'Veuillez renseigner l’engin, le matricule, le conducteur et des valeurs valides',
+        'error'
+      );
+      return;
+    }
+    const activeAccountId = (selectedProject?.accountId || currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (selectedProject?.branchId || currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const anomaly = calculateFuelConsumptionAnomaly(h, liters, theoreticalRate);
     const newLog = {
       id: `eq_log_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_contractor',
-      branchId: currentBranch?.id || 'branch_contractor_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       projectId: selectedProject?.id || selectedProjectId,
       equipmentName: eqName.trim(),
       equipmentCategory: eqCategory,
@@ -459,6 +528,8 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
     };
     addEquipmentLog(newLog as never);
     setIsEquipmentModalOpen(false);
+    setEqHours('');
+    setEqFuelLiters('');
   };
 
   const handleExportLogs = useCallback(() => {
@@ -1648,6 +1719,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   height={40}
                   corner={12}
                   label={isAr ? 'العتاد والآليات' : 'Engins mobilisés'}
+                  placeholder="Ex: Grue à tour, 2x Toupie béton"
                   value={equipment}
                   onChange={setEquipment}
                 />
@@ -1657,6 +1729,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   height={40}
                   corner={12}
                   label={isAr ? 'المشرف الموقّع' : 'Superviseur / Ingénieur'}
+                  placeholder="Ex: Ing. Mourad Benali"
                   value={signature}
                   onChange={setSignature}
                   required
@@ -1668,6 +1741,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 height={40}
                 corner={12}
                 label={isAr ? 'ملاحظات الأمان' : 'Sécurité HSE & Remarques'}
+                placeholder="Ex: R.A.S. Port des EPI vérifié"
                 value={incidents}
                 onChange={setIncidents}
               />
@@ -1764,6 +1838,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   height={40}
                   corner={12}
                   label={isAr ? 'المورد' : 'Centrale à béton'}
+                  placeholder="Ex: Centrale Béton Oued Smar"
                   value={pourSupplier}
                   onChange={setPourSupplier}
                   required
@@ -1774,6 +1849,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   height={40}
                   corner={12}
                   label={isAr ? 'رقم وصل التسليم' : 'N° Bon de Livraison'}
+                  placeholder="Ex: BL-2026-0412"
                   value={pourSlip}
                   onChange={setPourSlip}
                   required
@@ -1787,6 +1863,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   corner={12}
                   label="Volume (m³)"
                   type="number"
+                  placeholder="36"
                   value={pourVolume}
                   onChange={setPourVolume}
                   required
@@ -1798,6 +1875,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   corner={12}
                   label="Affaissement (cm)"
                   type="number"
+                  placeholder="12"
                   value={pourSlump}
                   onChange={setPourSlump}
                   required
@@ -1809,6 +1887,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   corner={12}
                   label="Éprouvettes"
                   type="number"
+                  placeholder="6"
                   value={pourCylinders}
                   onChange={setPourCylinders}
                   required
@@ -1821,6 +1900,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                 corner={12}
                 label="Résistance écrasement 7 jours (MPa)"
                 type="number"
+                placeholder="18.2"
                 value={pourStrength7D}
                 onChange={setPourStrength7D}
               />
@@ -1877,6 +1957,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   height={40}
                   corner={12}
                   label="Désignation Engin"
+                  placeholder="Ex: Pelle Hydraulique"
                   value={eqName}
                   onChange={setEqName}
                   required
@@ -1905,6 +1986,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   height={40}
                   corner={12}
                   label="Immatriculation / Matricule"
+                  placeholder="Ex: PEL-16-554"
                   value={eqMatricule}
                   onChange={setEqMatricule}
                   required
@@ -1915,6 +1997,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   height={40}
                   corner={12}
                   label="Conducteur d’engin"
+                  placeholder="Nom du conducteur"
                   value={eqOperator}
                   onChange={setEqOperator}
                   required
@@ -1928,6 +2011,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   corner={12}
                   label="Heures compteur"
                   type="number"
+                  placeholder="8"
                   value={eqHours}
                   onChange={setEqHours}
                   required
@@ -1939,6 +2023,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   corner={12}
                   label="Gasoil servi (L)"
                   type="number"
+                  placeholder="130"
                   value={eqFuelLiters}
                   onChange={setEqFuelLiters}
                   required
@@ -1950,6 +2035,7 @@ export const ContractorDailyLogsView: React.FC<any> = () => {
                   corner={12}
                   label="Norme (L/h)"
                   type="number"
+                  placeholder="16"
                   value={eqTheoreticalBurnRate}
                   onChange={setEqTheoreticalBurnRate}
                   required

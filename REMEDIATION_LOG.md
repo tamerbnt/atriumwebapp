@@ -178,6 +178,25 @@ Per Gate 1 Condition #1: **simple print/export of existing data using existing t
 
 ---
 
+## Step 3 — Hardcoded Values & Fixtures (`4.1`–`4.11`)
+
+- **Guard & Tenant Context Hardening (`4.1`–`4.5`, `4.8`–`4.9`)**:
+  - Removed all runtime `'acc_01'` fallbacks across components, services, and Group B `*Data.ts` hooks (`src/lib/supabase/tenantContext.ts` fails closed on missing tenant context).
+  - Removed hardcoded demo tax/fiscal literals (`001916010044589`, `16/00-0988421`, `CAW-16-09418`), hardcoded PM/salon staff/member fallbacks (`stf_pm_01`, `crea_lead_01`, `mem_salon_`, `stf_salon_01`), and stale `"58 Wilayas"` UI/code references (updated to `"69 Wilayas"`, preserving `ref_wilayas_legacy_badge` for the legacy 58-wilaya catalog flag).
+  - Hardened `VenueCloudSyncModal` / cloud diagnostic gating behind dev-build or `platform_admins` check (`useCanAccessVenueCloudDiagnostics`) and removed hardcoded staging Supabase host literal.
+- **Safe Binary BAT Metadata & Real Project Metrics (`4.6`–`4.7`)**:
+  - `src/utils/batMetadata.ts` (`inspectBatFileBytes` / `inspectBatFile`): Reads PNG (`IHDR` / `pHYs`), TIFF (`ImageWidth` / `ImageLength` / `PhotometricInterpretation` / `XResolution`), and PDF/AI (`/DeviceCMYK`, `/DeviceRGB`, `/BleedBox`) headers safely without fabricating defaults; missing/unreadable fields remain `null` and tag uploads as `'manual / unverified'`.
+  - `src/utils/projectMetrics.ts` (`computeAvailableAuditYears`, `computeDirectionFinancialAudit`, `computeSuperviseurSlaSummary`): Computes direction audit and SLA metrics strictly from live project/expense/mission/attendance/payroll records.
+- **Nullable Membership Plan Quotas (`4.10`)**:
+  - `src/lib/supabase/services/memberService.ts` (`mapMembershipPlanFromDb` / `upsertPlan`) & `MembershipPlans` / `MembershipRegistrationsView`: Preserved `null` `durationDays` and `totalSessions` without name-substring heuristics.
+- **Modal Numeric Defaults Sweep (`4.11`)**:
+  - Cleared hardcoded numeric/sample creation defaults to `''` with descriptive placeholders and explicit validation across `RealEstateLeaseModal`, `ContractorProjectModal`, `ContractorBoqView`, `AutoOrderModal`, `ContractorBillingView`, `LogisticsShipmentModal`, `AutoGaragePartsView`, `AgriCropCycleModal`, `AgricultureHarvestView`, `AgriMilkingModal`, `AgricultureParcelModal`, `PosRegisterView`, `PosInventoryView`, `TradingCatalogView`, `ContractorDailyLogsView`, `MedicalConsultationModal`, `MedicalPatientsView`, `MedicalBillingView`, `VenueInventoryView`, and `AppointmentModal`.
+- **CI Guards & Step 3 Unit Tests**:
+  - Tightened `scripts/ci/phase1-guards.mjs` Guard 2 (`FORBIDDEN_PATTERNS`) to catch `acc_01`, staging Supabase host, Unsplash URLs, demo NIF/RC/Carte Fellah, `stf_pm_01`, `crea_lead_01`, `mem_salon_`, `stf_salon_01`, and stale `58 wilaya` literals; lowered `scripts/ci/phase1-guards-baseline.json` `metrics.forbiddenLiterals` from `143` to `0`.
+  - Added Vitest unit tests: `src/utils/__tests__/batMetadata.test.ts`, `src/utils/__tests__/projectMetrics.test.ts`, and `src/lib/supabase/__tests__/storageAndPlans.test.ts`.
+
+---
+
 ## Section 14 Backlog (Deferred Verifications — Untouched in Phase 1)
 
 1. **Art. 317 Fiscal Stamp Duty Bracket Divergence (`src/utils/rules.ts:511-519` vs `src/utils/logisticsRules.ts:103-113`)**:

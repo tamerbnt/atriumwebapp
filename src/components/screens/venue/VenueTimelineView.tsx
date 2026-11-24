@@ -22,7 +22,7 @@ import { RentableUnit, RentalBooking } from '../../../types/index';
 import { formatCurrencyAmount, localizeStatus } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
-import { VenueCloudSyncModal } from './VenueCloudSyncModal';
+import { VenueCloudSyncModal, useCanAccessVenueCloudDiagnostics } from './VenueCloudSyncModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCalendarTimeline } from '../../ui/skeleton/StructuralSkeletons';
@@ -91,6 +91,7 @@ export const VenueTimelineView: React.FC = () => {
 
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
+  const canAccessCloudDiagnostics = useCanAccessVenueCloudDiagnostics();
   const [bookingToEdit, setBookingToEdit] = useState<RentalBooking | null>(null);
   const [modalInitialUnitId, setModalInitialUnitId] = useState<string | undefined>(undefined);
   const [modalInitialHour, setModalInitialHour] = useState<string | undefined>(undefined);
@@ -692,6 +693,7 @@ export const VenueTimelineView: React.FC = () => {
         icon={<CalendarIcon size={22} />}
         title={t('venue_timeline_matrix_title')}
         secondaryActions={
+          canAccessCloudDiagnostics ? (
             <button
               type="button"
               onClick={() => setIsCloudSyncModalOpen(true)}
@@ -700,10 +702,11 @@ export const VenueTimelineView: React.FC = () => {
               className="h-10 px-4 bg-[#F5F1EC] hover:bg-[#EFE9E2] dark:bg-[#2B2825] dark:hover:bg-[#332F2B] t-small font-semibold text-black dark:text-white transition-colors flex items-center gap-2 cursor-pointer"
               title="Inspect Supabase live tables and row writes"
             >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
-            <span className="hidden sm:inline">Supabase</span>
-          </button>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
+              <span className="hidden sm:inline">Supabase</span>
+            </button>
+          ) : undefined
         }
         primaryAction={{
           label: t('venue_btn_new_booking'),
@@ -1158,10 +1161,12 @@ export const VenueTimelineView: React.FC = () => {
         initialStartTime={modalInitialHour}
         initialDate={selectedDate}
       />
-      <VenueCloudSyncModal
-        isOpen={isCloudSyncModalOpen}
-        onClose={() => setIsCloudSyncModalOpen(false)}
-      />
+      {canAccessCloudDiagnostics && (
+        <VenueCloudSyncModal
+          isOpen={isCloudSyncModalOpen}
+          onClose={() => setIsCloudSyncModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

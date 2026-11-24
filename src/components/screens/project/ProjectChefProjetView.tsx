@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
   showToast,
   useAtriumSelector,
   shallowEqualObjects,
@@ -10,6 +11,7 @@ import {
   selectCurrentPmExpensesFromState,
   useAtriumActions,
 } from '../../../services/store';
+import { storageService, validateFileForBucket } from '../../../lib/supabase';
 import {
   PMCollateralItem,
   PMPrintOrder,
@@ -175,8 +177,29 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  const { currentBranch, branches, pmProjects, pmCollateralCatalog, pmPrintOrders, pmBatDeliverables, pmExpenses, activePmSubScreen, isSyncing, networkMode, lastSyncedAt, isSyncTimeout } = useAtriumSelector(
+  const {
+    account,
+    currentUser,
+    currentBusinessId,
+    businessConfig,
+    currentBranch,
+    branches,
+    pmProjects,
+    pmCollateralCatalog,
+    pmPrintOrders,
+    pmBatDeliverables,
+    pmExpenses,
+    activePmSubScreen,
+    isSyncing,
+    networkMode,
+    lastSyncedAt,
+    isSyncTimeout,
+  } = useAtriumSelector(
     (s) => ({
+      account: s.account,
+      currentUser: s.currentUser,
+      currentBusinessId: s.currentBusinessId,
+      businessConfig: selectCurrentBusinessConfigFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
       pmProjects: selectCurrentPmProjectsFromState(s),
@@ -273,9 +296,12 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
   const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(() => new Set<string>());
   const [inspectedExpense, setInspectedExpense] = useState<PMExpense | null>(null);
   const [expenseOpenerEl, setExpenseOpenerEl] = useState<HTMLElement | null>(null);
-  const [purchaseTitle, setPurchaseTitle] = useState('Nappe comptoir brandée');
-  const [purchaseAmount, setPurchaseAmount] = useState('8400');
+  const [purchaseTitle, setPurchaseTitle] = useState('');
+  const [purchaseAmount, setPurchaseAmount] = useState('');
   const [purchaseCategory, setPurchaseCategory] = useState('materials');
+  const [purchaseReceiptFile, setPurchaseReceiptFile] = useState<File | null>(null);
+  const [purchaseReceiptPreview, setPurchaseReceiptPreview] = useState('');
+  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
   const [purchaseSuccessMessage, setPurchaseSuccessMessage] = useState<string | null>(null);
 
   const selectedProject: PMProject | undefined = useMemo(
@@ -346,10 +372,20 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 
   const handleTransmitToCrea = () => {
     if (cartItems.length === 0 || !selectedProject) return;
+    const activeAccountId = (account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title'),
+        message: t('tenant_context_missing_msg'),
+      });
+      return;
+    }
     const orderNumber = `CMD-PRINT-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
     addPmPrintOrder({
-      tenantId: 'acc_01',
-      facilityId: currentBranch?.id || 'branch_agency_main',
+      tenantId: activeAccountId,
+      facilityId: activeBranchId,
       projectId: selectedProject.id,
       projectTitle: selectedProject.title,
       orderNumber,
@@ -383,29 +419,106 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     }
   };
 
-  const handleDeclarePurchase = (e: React.FormEvent) => {
+  const handlePurchaseReceiptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (!file) {
+      setPurchaseReceiptFile(null);
+      setPurchaseReceiptPreview('');
+      return;
+    }
+    const check = validateFileForBucket('expense-receipts', file);
+    if (!check.valid) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'ملف غير صالح' : isEn ? 'Invalid receipt file' : 'Justificatif invalide',
+        message: check.reason,
+      });
+      e.target.value = '';
+      return;
+    }
+    setPurchaseReceiptFile(file);
+    if (file.type.startsWith('image/') && typeof FileReader !== 'undefined') {
+      const reader = new FileReader();
+      reader.onload = () =>
+        setPurchaseReceiptPreview(typeof reader.result === 'string' ? reader.result : '');
+      reader.readAsDataURL(file);
+    } else {
+      setPurchaseReceiptPreview('');
+    }
+  };
+
+  const handleDeclarePurchase = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!purchaseTitle || !purchaseAmount || !selectedProject) return;
+    const activeAccountId = (account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId || !currentBusinessId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title'),
+        message: t('tenant_context_missing_msg'),
+      });
+      return;
+    }
+    const parsedAmount = Number(purchaseAmount);
+    if (!purchaseTitle.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0 || !selectedProject) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'بيانات ناقصة' : isEn ? 'Missing fields' : 'Champs requis',
+        message: isAr
+          ? 'يرجى إدخال بيان ومبلغ صالح.'
+          : isEn
+          ? 'Please enter a valid item description and amount.'
+          : 'Veuillez saisir une désignation et un montant valide.',
+      });
+      return;
+    }
+
+    let uploadedReceiptUrl: string | undefined;
+    if (purchaseReceiptFile) {
+      setIsUploadingReceipt(true);
+      const uploadRes = await storageService.uploadScopedFile({
+        bucket: 'expense-receipts',
+        file: purchaseReceiptFile,
+        accountId: activeAccountId,
+        businessId: currentBusinessId,
+        branchId: activeBranchId,
+        prefix: 'cdp_exp',
+      });
+      setIsUploadingReceipt(false);
+      if (!uploadRes.success) {
+        showToast({
+          type: 'error',
+          title: isAr ? 'تعذر رفع الوصل' : isEn ? 'Receipt upload failed' : 'Échec envoi reçu',
+          message: uploadRes.error || 'Storage upload failed',
+        });
+        return;
+      }
+      uploadedReceiptUrl = uploadRes.signedUrl || uploadRes.storagePath;
+    }
+
+    const fiscalNif = businessConfig?.fiscalProfile?.nif?.trim() || undefined;
     addPmExpense({
-      tenantId: 'acc_01',
-      facilityId: currentBranch?.id || 'branch_agency_main',
+      tenantId: activeAccountId,
+      facilityId: activeBranchId,
       projectId: selectedProject.id,
       projectTitle: selectedProject.title,
-      declaredByUserId: 'stf_pm_01',
-      declaredByUserName: 'K. Yacine (CDP)',
-      declaredByRole: 'chef_projet',
-      title: purchaseTitle,
+      declaredByUserId: currentUser?.id || '',
+      declaredByUserName: currentUser?.fullName || '',
+      declaredByRole: (currentUser?.role === 'superviseur' ? 'superviseur' : 'chef_projet') as PMExpense['declaredByRole'],
+      title: purchaseTitle.trim(),
       category: purchaseCategory as PMExpense['category'],
-      amountDzd: Number(purchaseAmount),
-      receiptPhotoUrl:
-        'https://images.unsplash.com/photo-1554415707-9e49fe74a64c?w=500&auto=format&fit=crop&q=80',
-      fiscalNif: '001916001234567',
-      hasFiscalInvoice: true,
+      amountDzd: parsedAmount,
+      receiptPhotoUrl: uploadedReceiptUrl,
+      fiscalNif,
+      hasFiscalInvoice: Boolean(fiscalNif),
     });
-    const msg = t('pm_cp_toast_purchase_desc', { title: purchaseTitle });
+    const msg = t('pm_cp_toast_purchase_desc', { title: purchaseTitle.trim() });
     setPurchaseSuccessMessage(msg);
     setTimeout(() => setPurchaseSuccessMessage(null), 3000);
     setPurchaseTitle('');
+    setPurchaseAmount('');
+    setPurchaseReceiptFile(null);
+    setPurchaseReceiptPreview('');
   };
 
   // Filtered lists
@@ -879,16 +992,22 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               data-sq-border="none"
               className="w-10 h-10 shrink-0 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
             >
-              <img
-                src={bat.previewUrl}
-                alt={bat.title}
-                width={40}
-                height={40}
-                loading="lazy"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
-              />
+              {bat.previewUrl ? (
+                <img
+                  src={bat.previewUrl}
+                  alt={bat.title}
+                  width={40}
+                  height={40}
+                  loading="lazy"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-black/55 dark:text-white/60">
+                  <FileCheck2 className="w-4 h-4" />
+                </div>
+              )}
             </div>
             <div className="min-w-0">
               <div className="font-semibold t-small text-black dark:text-white truncate">
@@ -1700,16 +1819,23 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         data-sq-border="none"
                         className="w-full h-44 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
                       >
-                        <img
-                          src={bat.previewUrl}
-                          alt={bat.title}
-                          width={280}
-                          height={176}
-                          loading="lazy"
-                          decoding="async"
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover"
-                        />
+                        {bat.previewUrl ? (
+                          <img
+                            src={bat.previewUrl}
+                            alt={bat.title}
+                            width={280}
+                            height={176}
+                            loading="lazy"
+                            decoding="async"
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-black/55 dark:text-white/60">
+                            <FileCheck2 className="w-7 h-7" />
+                            <span className="t-cap font-semibold">{bat.fileFormat.toUpperCase()}</span>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-start justify-between gap-2">
                         <span className="t-small font-semibold text-[var(--brand-text,#BF431F)] dark:text-[var(--brand-on-dark,#FF8F63)] truncate">
@@ -1891,6 +2017,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   <LabelInput
                     field="PurchaseTitle"
                     label={isAr ? 'بيان المشتريات' : isEn ? 'Item Description' : 'Désignation du Matériel'}
+                    placeholder={isAr ? 'مثال: غطاء طاولة مطبوع' : isEn ? 'e.g. Branded counter cloth' : 'Ex: Nappe comptoir brandée'}
                     value={purchaseTitle}
                     onChange={setPurchaseTitle}
                     required
@@ -1901,6 +2028,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     field="PurchaseAmount"
                     label={isAr ? 'المبلغ (دج)' : isEn ? 'Amount TTC (DZD)' : 'Montant TTC (DZD)'}
                     type="number"
+                    placeholder="8400"
                     value={purchaseAmount}
                     onChange={setPurchaseAmount}
                     required
@@ -1929,13 +2057,51 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       },
                     ]}
                   />
+                  <div className="space-y-2">
+                    <label className="block t-small font-semibold text-black dark:text-white">
+                      {isAr
+                        ? 'الفاتورة أو الوصل (JPG, PNG, WEBP, PDF - حد أقصى 5 MB)'
+                        : isEn
+                        ? 'Receipt / Invoice File (JPG, PNG, WEBP, PDF - max 5 MB)'
+                        : 'Justificatif / Facture (JPG, PNG, WEBP, PDF - max 5 Mo)'}
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,application/pdf"
+                      onChange={handlePurchaseReceiptChange}
+                      className="block w-full t-cap text-black dark:text-white file:mr-3 file:py-2 file:px-3 file:border-0 file:bg-[#F5F1EC] dark:file:bg-[#2B2825] file:font-semibold file:cursor-pointer"
+                    />
+                    {purchaseReceiptFile && (
+                      <div className="t-cap text-emerald-700 dark:text-emerald-400">
+                        {purchaseReceiptFile.name} ({(purchaseReceiptFile.size / 1024).toFixed(0)} KB)
+                      </div>
+                    )}
+                    {purchaseReceiptPreview && (
+                      <img
+                        src={purchaseReceiptPreview}
+                        alt={purchaseReceiptFile?.name || 'Receipt'}
+                        className="w-full h-32 object-cover rounded-[var(--r-ctl,12px)] bg-[#F3EDE7] dark:bg-[#2B2825]"
+                      />
+                    )}
+                  </div>
                   <AtriumButton
                     type="submit"
                     variant="primary"
                     className="w-full"
+                    disabled={isUploadingReceipt}
                     icon={<Plus className="w-4 h-4" />}
                   >
-                    {isAr ? 'تصريح وتحميل على المشروع' : isEn ? 'Submit to Project' : 'Déclarer & Imputer au Projet'}
+                    {isUploadingReceipt
+                      ? isAr
+                        ? 'جاري الرفع...'
+                        : isEn
+                        ? 'Uploading...'
+                        : 'Envoi en cours...'
+                      : isAr
+                      ? 'تصريح وتحميل على المشروع'
+                      : isEn
+                      ? 'Submit to Project'
+                      : 'Déclarer & Imputer au Projet'}
                   </AtriumButton>
                 </form>
                 </div>
@@ -2195,16 +2361,23 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 data-sq-border="none"
                 className="w-full h-48 bg-[#F3EDE7] dark:bg-[#2B2825] overflow-hidden"
               >
-                <img
-                  src={bat.previewUrl}
-                  alt={bat.title}
-                  width={384}
-                  height={192}
-                  loading="lazy"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
-                />
+                {bat.previewUrl ? (
+                  <img
+                    src={bat.previewUrl}
+                    alt={bat.title}
+                    width={384}
+                    height={192}
+                    loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-black/55 dark:text-white/60">
+                    <FileCheck2 className="w-8 h-8" />
+                    <span className="t-small font-semibold">{bat.fileFormat.toUpperCase()}</span>
+                  </div>
+                )}
               </div>
             </InspectorSection>
             <InspectorSection index={1} title={isAr ? 'إجراءات الاعتماد' : 'Contrôle Qualité BAT'}>

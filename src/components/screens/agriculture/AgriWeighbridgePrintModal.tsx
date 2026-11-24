@@ -4,6 +4,8 @@ import {
   useAtriumSelector,
   shallowEqualObjects,
   selectCurrentBusinessFromState,
+  selectCurrentBranchFromState,
+  selectCurrentBusinessConfigFromState,
 } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { AgriWeighbridgeTicket } from '../../../types';
@@ -21,10 +23,12 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
   onClose,
   ticket: rawTicket,
 }) => {
-  const { language, currentBusiness } = useAtriumSelector(
+  const { language, currentBusiness, currentBranch, currentBusinessConfig } = useAtriumSelector(
     (s) => ({
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
+      currentBranch: selectCurrentBranchFromState(s),
+      currentBusinessConfig: selectCurrentBusinessConfigFromState(s),
     }),
     shallowEqualObjects
   );
@@ -86,14 +90,30 @@ export const AgriWeighbridgePrintModal: React.FC<AgriWeighbridgePrintModalProps>
           <div className="flex items-start justify-between border-b border-black/[0.14] pb-4">
             <div className="space-y-1">
               <h2 className="t-label font-semibold text-black rtl:normal-case rtl:tracking-normal">
-                {currentBusiness?.name || 'DOMAINE AGRICOLE & ÉLEVAGE EL BARAKA'}
+                {currentBusiness?.name || currentBranch?.name || ''}
               </h2>
-              <p className="t-cap text-black/75">
-                Exploitation Maraîchère, Arboricole & Céréalière · Mitidja
-              </p>
-              <p className="t-cap text-black/75 tabular-nums">
-                Carte Fellah: CAW-16-09418 · RC/NIF: 001916024810931
-              </p>
+              {currentBranch?.address && (
+                <p className="t-cap text-black/75">{currentBranch.address}</p>
+              )}
+              {(currentBusinessConfig?.fiscalProfile?.licenseNumber ||
+                currentBusinessConfig?.fiscalProfile?.rc ||
+                currentBusinessConfig?.fiscalProfile?.nif) && (
+                <p className="t-cap text-black/75 tabular-nums">
+                  {[
+                    currentBusinessConfig.fiscalProfile.licenseNumber
+                      ? `Carte Fellah: ${currentBusinessConfig.fiscalProfile.licenseNumber}`
+                      : '',
+                    currentBusinessConfig.fiscalProfile.rc
+                      ? `RC: ${currentBusinessConfig.fiscalProfile.rc}`
+                      : '',
+                    currentBusinessConfig.fiscalProfile.nif
+                      ? `NIF: ${currentBusinessConfig.fiscalProfile.nif}`
+                      : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              )}
             </div>
             <div className="text-right space-y-0.5">
               <span className="t-small font-semibold text-black/75 block rtl:normal-case">

@@ -18,6 +18,7 @@ import {
   selectCurrentBranchFromState,
   showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { pickLocalizedText, runUndoBatch } from '../../../services/undoEngine';
 import { formatMoney } from '../../../utils/rules';
 import { ContractorProject, ContractorDailyLog } from '../../../types';
@@ -56,6 +57,7 @@ import {
 
 export const ContractorSitesView: React.FC = () => {
   const {
+    account,
     language,
     currentBranch,
     branches,
@@ -64,6 +66,7 @@ export const ContractorSitesView: React.FC = () => {
     lastSyncedAt,
   } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
@@ -283,13 +286,23 @@ export const ContractorSitesView: React.FC = () => {
 
   const handleCreateDailyLogQuick = useCallback(
     (p: ContractorProject) => {
+      const activeAccountId = (p.accountId || currentBranch?.accountId || account?.id || '').trim();
+      const activeBranchId = (p.branchId || currentBranch?.id || '').trim();
+      if (!activeAccountId || !activeBranchId) {
+        showToast({
+          type: 'error',
+          title: t('tenant_context_missing_title', language),
+          message: t('tenant_context_missing_msg', language),
+        });
+        return;
+      }
       const today = new Date().toISOString().split('T')[0];
       const newLog: ContractorDailyLog = {
         id: `log_${Date.now()}`,
-        accountId: 'acc_01',
-        businessId: p.businessId,
-        branchId: p.branchId,
-        staffId: p.staffId,
+        accountId: activeAccountId,
+        businessId: p.businessId || currentBranch?.businessId || '',
+        branchId: activeBranchId,
+        staffId: p.staffId || '',
         projectId: p.id,
         date: today,
         logDate: today,
@@ -308,7 +321,7 @@ export const ContractorSitesView: React.FC = () => {
       addDailyLog(newLog);
       if (selectedProject?.id === p.id) setActiveTab('logs');
     },
-    [addDailyLog, selectedProject]
+    [account?.id, addDailyLog, currentBranch, language, selectedProject]
   );
 
   const handleExportCsv = useCallback(() => {

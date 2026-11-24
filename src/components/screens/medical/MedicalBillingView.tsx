@@ -65,11 +65,12 @@ const MEMBER_PILL_WARN =
   'bg-[#FCEFD2] dark:bg-[#3A2E14] text-[#8A5A06] dark:text-[#FFD166]';
 
 export const MedicalBillingView: React.FC<any> = () => {
-  const { language, currentBranch, branches, isSyncing, networkMode } = useAtriumSelector(
+  const { language, currentBranch, branches, currentUser, isSyncing, networkMode } = useAtriumSelector(
     (s) => ({
       language: s.language,
       currentBranch: selectCurrentBranchFromState(s),
       branches: s.branches,
+      currentUser: s.currentUser,
       isSyncing: s.isSyncing,
       networkMode: s.networkMode || 'online',
     }),
@@ -117,10 +118,8 @@ export const MedicalBillingView: React.FC<any> = () => {
   const [activeInspectorTab, setActiveInspectorTab] = useState<string>('decompte');
 
   const [paymentMethod, setPaymentMethod] = useState('Cash');
-  const [countedCash, setCountedCash] = useState('24500');
-  const [closureNotes, setClosureNotes] = useState(
-    'Caisse journalière équilibrée. Aucune anomalie constatée.'
-  );
+  const [countedCash, setCountedCash] = useState('');
+  const [closureNotes, setClosureNotes] = useState('');
 
   const branchesById = useMemo(() => buildBranchesByIdMap(branches), [branches]);
 
@@ -344,20 +343,35 @@ export const MedicalBillingView: React.FC<any> = () => {
   };
 
   const handleSaveCashClosure = () => {
-    const counted = parseFloat(countedCash) || 0;
+    const trimmed = countedCash.trim();
+    const counted = parseFloat(trimmed);
+    if (!trimmed || !Number.isFinite(counted) || counted < 0) {
+      showToast({
+        type: 'warning',
+        title: isAr ? 'مبلغ مطلوب' : isFr ? 'Montant requis' : 'Amount Required',
+        message: isAr
+          ? 'يرجى إدخال المبلغ النقدي المعدود في الصندوق'
+          : isFr
+          ? 'Veuillez saisir le montant des espèces comptées en caisse.'
+          : 'Please enter the physically counted cash drawer amount.',
+      });
+      return;
+    }
     const diff = counted - expectedCashTotal;
     const closure = {
       id: `closure_${Date.now()}`,
       date: new Date().toISOString().slice(0, 10),
-      closedBySecretary: 'Secrétariat Principal (Rania M.)',
+      closedBySecretary: currentUser?.fullName || (isAr ? 'الأمانة' : isFr ? 'Secrétariat' : 'Front Desk'),
       totalConsultationsCount: consultations.length,
       expectedCashDzd: expectedCashTotal,
       countedCashDzd: counted,
       discrepancyDzd: diff,
-      notes: closureNotes,
+      notes: closureNotes.trim(),
       verifiedAt: new Date().toLocaleTimeString(),
     };
     addDailyClosure(closure as any);
+    setCountedCash('');
+    setClosureNotes('');
   };
 
   const handleExportCSV = useCallback(() => {
@@ -1276,11 +1290,12 @@ export const MedicalBillingView: React.FC<any> = () => {
                         corner={12}
                         label="Espèces Comptées Physiquement (DZD)"
                         type="number"
+                        placeholder={String(Math.round(expectedCashTotal))}
                         value={countedCash}
                         onChange={setCountedCash}
                       />
-                      {(() => {
-                        const diff = (parseFloat(countedCash) || 0) - expectedCashTotal;
+                      {countedCash.trim() !== '' && Number.isFinite(parseFloat(countedCash)) && (() => {
+                        const diff = parseFloat(countedCash) - expectedCashTotal;
                         return (
                           <span
                             className={`t-small font-semibold block ${
@@ -1307,6 +1322,7 @@ export const MedicalBillingView: React.FC<any> = () => {
                     width="100%"
                     corner={12}
                     label="Observations et Justificatifs"
+                    placeholder={isAr ? 'ملاحظات وإثباتات الإغلاق...' : isFr ? 'Observations et justificatifs (ex: Caisse équilibrée)...' : 'Cash closure observations and notes...'}
                     value={closureNotes}
                     onChange={setClosureNotes}
                     rows={3}

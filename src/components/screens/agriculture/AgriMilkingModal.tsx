@@ -10,7 +10,9 @@ import {
   shallowEqualObjects,
   selectCurrentBusinessFromState,
   selectCurrentBranchFromState,
+  showToast,
 } from '../../../services/store';
+import { t } from '../../../utils/i18n';
 import { computeOnilMilkSubsidy } from '../../../utils/agriRules';
 import { formatMoney } from '../../../utils/rules';
 import { KineticModalShell } from '../../ui/kinetic/KineticModalShell';
@@ -28,8 +30,9 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
   onSave,
   dairyCows,
 }) => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
+  const { account, language, currentBusiness, currentBranch, currentUser } = useAtriumSelector(
     (s) => ({
+      account: s.account,
       language: s.language,
       currentBusiness: selectCurrentBusinessFromState(s),
       currentBranch: selectCurrentBranchFromState(s),
@@ -41,45 +44,68 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
 
   const [sessionDate, setSessionDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [sessionPeriod, setSessionPeriod] = useState<'morning' | 'evening'>('morning');
-  const [totalTankLiters, setTotalTankLiters] = useState('480');
-  const [tankTemperature, setTankTemperature] = useState('3.8');
+  const [totalTankLiters, setTotalTankLiters] = useState('');
+  const [tankTemperature, setTankTemperature] = useState('');
   const [destinationDairy, setDestinationDairy] = useState('Laiterie Giplait Draa Ben Khedda');
-  const [dairyDeliverySlipNo, setDairyDeliverySlipNo] = useState(`BL-GIP-2026-${Math.floor(1000 + Math.random() * 9000)}`);
-  const [fatContentMg, setFatContentMg] = useState('35.2');
-  const [density, setDensity] = useState('1.030');
+  const [dairyDeliverySlipNo, setDairyDeliverySlipNo] = useState('');
+  const [fatContentMg, setFatContentMg] = useState('');
+  const [density, setDensity] = useState('');
 
   // Automatically count cows under withholding
   const lockedCows = dairyCows.filter((c) => c.isInWithholdingLockout || c.healthStatus === 'InTreatment' || c.healthStatus === 'Quarantine');
   const estimatedWithholdingLiters = lockedCows.reduce((acc, c) => acc + (c.dailyAvgLiters || c.dailyProductionLiters || 20) / 2, 0);
 
-  const [rejectedWithholdingLiters, setRejectedWithholdingLiters] = useState(String(Math.round(estimatedWithholdingLiters)));
+  const [rejectedWithholdingLiters, setRejectedWithholdingLiters] = useState(
+    estimatedWithholdingLiters > 0 ? String(Math.round(estimatedWithholdingLiters)) : ''
+  );
 
   const total = parseFloat(totalTankLiters) || 0;
   const rejected = parseFloat(rejectedWithholdingLiters) || 0;
-  const temp = parseFloat(tankTemperature) || 3.8;
+  const parsedTemp = parseFloat(tankTemperature);
+  const temp = isNaN(parsedTemp) ? 0 : parsedTemp;
   const subsidy = computeOnilMilkSubsidy(total, rejected, 12.0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (total <= 0 || tankTemperature.trim() === '' || isNaN(parsedTemp)) {
+      showToast({
+        type: 'error',
+        title: isAr ? 'بيانات ناقصة' : 'Champs requis',
+        message: isAr
+          ? 'يرجى إدخال كمية الحليب وحرارة الخزان بشكل صحيح'
+          : 'Veuillez saisir le volume total trait et la température du tank',
+      });
+      return;
+    }
+    const activeAccountId = (currentBranch?.accountId || account?.id || '').trim();
+    const activeBranchId = (currentBranch?.id || '').trim();
+    if (!activeAccountId || !activeBranchId) {
+      showToast({
+        type: 'error',
+        title: t('tenant_context_missing_title', language),
+        message: t('tenant_context_missing_msg', language),
+      });
+      return;
+    }
     const payload: AgriMilkingRecord = {
       id: `milk_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_agri',
-      branchId: currentBranch?.id || 'branch_agri_main',
-      staffId: currentUser?.id || 'staff_01',
+      accountId: activeAccountId,
+      businessId: currentBusiness?.id || currentBranch?.businessId || '',
+      branchId: activeBranchId,
+      staffId: currentUser?.id || '',
       sessionDate,
       sessionPeriod,
       totalTankLiters: total,
       rejectedWithholdingLiters: rejected,
       conformingLiters: subsidy.conformingLiters,
-      tankTemperatureCelsius: temp,
+      tankTemperatureCelsius: parsedTemp,
       destinationDairy: destinationDairy.trim(),
       dairyDeliverySlipNo: dairyDeliverySlipNo.trim() || undefined,
       fatContentMg: parseFloat(fatContentMg) || undefined,
       density: parseFloat(density) || undefined,
       onilSubsidyRateDzd: 12.0,
       onilTotalSubsidyDzd: subsidy.subsidyAmountDzd,
-      operatorStaffId: currentUser?.id || 'staff_01',
+      operatorStaffId: currentUser?.id || '',
       createdAt: new Date().toISOString(),
     };
     onSave(payload);
@@ -160,6 +186,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               field="TotalTankLiters"
               label={isAr ? 'إجمالي لترات الحلب بالخزان *' : 'Volume Total Trait (Litres) *'}
               type="number"
+              placeholder="480"
               value={totalTankLiters}
               onChange={setTotalTankLiters}
               width="100%"
@@ -172,6 +199,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               label={isAr ? 'حرارة الخزان (°C) *' : 'Température Tank Réfrigéré (°C) *'}
               type="number"
               step="0.1"
+              placeholder="3.8"
               value={tankTemperature}
               onChange={setTankTemperature}
               width="100%"
@@ -182,7 +210,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
           </div>
 
           {/* Temperature Warning if > 4°C */}
-          {temp > 4.0 && (
+          {tankTemperature.trim() !== '' && temp > 4.0 && (
             <div
               data-sq="card"
               data-sq-border="solid"
@@ -223,6 +251,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               field="RejectedWithholdingLiters"
               label={isAr ? 'اللترات المعزولة المهدورة (غير مطابقة) *' : 'Litres Écartés / Jetés (Non-Conformes) *'}
               type="number"
+              placeholder="0"
               value={rejectedWithholdingLiters}
               onChange={setRejectedWithholdingLiters}
               width="100%"
@@ -251,6 +280,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
             <LabelInput
               field="DairyDeliverySlipNo"
               label={isAr ? 'رقم وصل التسليم (BL)' : 'N° Bon de Livraison Laiterie'}
+              placeholder="Ex: BL-GIP-2026-0001"
               value={dairyDeliverySlipNo}
               onChange={setDairyDeliverySlipNo}
               width="100%"
@@ -265,6 +295,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               label={isAr ? 'نسبة المادة الدسمة (غ/ل)' : 'Matière Grasse (g/L)'}
               type="number"
               step="0.1"
+              placeholder="35.2"
               value={fatContentMg}
               onChange={setFatContentMg}
               width="100%"
@@ -276,6 +307,7 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               label={isAr ? 'الكثافة (Densité)' : 'Densité'}
               type="number"
               step="0.001"
+              placeholder="1.030"
               value={density}
               onChange={setDensity}
               width="100%"
